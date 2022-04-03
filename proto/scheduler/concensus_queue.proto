@@ -1,0 +1,19 @@
+syntax = "proto3";
+import "google/protobuf/any.proto";
+
+package volumefi.cronchain.scheduler;
+
+option go_package = "github.com/volumefi/cronchain/x/scheduler/types";
+
+message QueuedSignedMessage {
+  google.protobuf.Any msg = 1;
+  repeated Signer signers = 2;
+}
+
+message Signer {
+  string valAddress = 1;
+  google.protobuf.Any pubkey = 2; 
+  bytes signature = 3;
+  int32 signMode = 4;
+  uint64 sequence = 5;
+}

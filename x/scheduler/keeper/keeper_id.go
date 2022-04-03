@@ -8,11 +8,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+type ider struct {
+	sg    storeGetter
+	idKey []byte
+}
+
 // getLastID returns the last id that was inserted for the given name.
 // If one does not exist, then it returns 0,
-func (k Keeper) getLastID(ctx sdk.Context, name string) uint64 {
-	store := k.store(ctx)
-	prefixKey := nextKeyPrefix([]byte(name))
+func (i ider) getLastID(ctx sdk.Context, name string) uint64 {
+	store := i.sg.Store(ctx)
+	prefixKey := i.nextKeyPrefix([]byte(name))
 	if !store.Has(prefixKey) {
 		return 0
 	}
@@ -23,12 +28,12 @@ func (k Keeper) getLastID(ctx sdk.Context, name string) uint64 {
 
 // incrementNextID returns new ID which can now be used for referencing data
 // and increments the counter internally. It returns the newly inserted ID.
-func (k Keeper) incrementNextID(ctx sdk.Context, name string) uint64 {
-	store := k.store(ctx)
+func (i ider) incrementNextID(ctx sdk.Context, name string) uint64 {
+	store := i.sg.Store(ctx)
 
-	nextID := k.getLastID(ctx, name) + 1
+	nextID := i.getLastID(ctx, name) + 1
 
-	prefixKey := nextKeyPrefix([]byte(name))
+	prefixKey := i.nextKeyPrefix([]byte(name))
 	store.Set(prefixKey, uint64ToByte(nextID))
 
 	return nextID
@@ -40,7 +45,6 @@ func uint64ToByte(n uint64) []byte {
 	return b
 }
 
-func nextKeyPrefix(key []byte) []byte {
-	nextIDKey := []byte("id-counter-")
-	return append(nextIDKey, key...)
+func (i ider) nextKeyPrefix(key []byte) []byte {
+	return append(i.idKey[:], key...)
 }

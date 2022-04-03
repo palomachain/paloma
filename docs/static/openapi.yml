@@ -19960,13 +19960,7 @@ definitions:
       and
 
       freezing clients
-  volumefi.cronchain.scheduler.MsgHelloResponse:
-    type: object
-  volumefi.cronchain.scheduler.MsgPauseRecurringJobResponse:
-    type: object
-  volumefi.cronchain.scheduler.MsgResumeRecurringJobResponse:
-    type: object
-  volumefi.cronchain.scheduler.MsgSubmitRecurringJobResponse:
+  volumefi.cronchain.scheduler.MsgSigningQueueMessageResponse:
     type: object
   volumefi.cronchain.scheduler.Params:
     type: object

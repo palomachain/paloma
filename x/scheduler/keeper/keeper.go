@@ -23,8 +23,14 @@ type (
 		memKey     sdk.StoreKey
 		paramstore paramtypes.Subspace
 		bankKeeper sdkbankkeeper.Keeper
+
+		ider ider
 	}
 )
+
+type storeGetter interface {
+	Store(ctx sdk.Context) sdk.KVStore
+}
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
@@ -43,7 +49,7 @@ func NewKeeper(
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
-	return &Keeper{
+	k := &Keeper{
 		Keeper: cosmosibckeeper.NewKeeper(
 			types.PortKey,
 			storeKey,
@@ -57,6 +63,13 @@ func NewKeeper(
 		paramstore: ps,
 		bankKeeper: bankKeeper,
 	}
+
+	k.ider = ider{
+		sg:    k,
+		idKey: []byte(`id-counter-`),
+	}
+
+	return k
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
@@ -64,10 +77,10 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // store returns default store for this keeper!
-func (k Keeper) store(ctx sdk.Context) sdk.KVStore {
+func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
 	return ctx.KVStore(k.storeKey)
 }
 
 func (k Keeper) jobRequestStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(k.store(ctx), types.KeyPrefix("queue-signing-messages-"))
+	return prefix.NewStore(k.Store(ctx), types.KeyPrefix("queue-signing-messages-"))
 }
