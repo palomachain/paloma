@@ -7,13 +7,10 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkbankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/tendermint/starport/starport/pkg/cosmosibckeeper"
 	keeperutil "github.com/volumefi/cronchain/util/keeper"
-	"github.com/volumefi/cronchain/x/scheduler/types"
-
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/volumefi/cronchain/x/concensus/types"
 )
 
 type (
@@ -23,9 +20,9 @@ type (
 		storeKey   sdk.StoreKey
 		memKey     sdk.StoreKey
 		paramstore paramtypes.Subspace
-		bankKeeper sdkbankkeeper.Keeper
 
-		ider keeperutil.IDGenerator
+		ider          keeperutil.IDGenerator
+		queueRegistry map[string]any
 	}
 )
 
@@ -37,8 +34,6 @@ func NewKeeper(
 	channelKeeper cosmosibckeeper.ChannelKeeper,
 	portKeeper cosmosibckeeper.PortKeeper,
 	scopedKeeper cosmosibckeeper.ScopedKeeper,
-	// todo(mm): use expected keepers for bankKeeper
-	bankKeeper sdkbankkeeper.Keeper,
 
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -46,7 +41,7 @@ func NewKeeper(
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
-	k := &Keeper{
+	return &Keeper{
 		Keeper: cosmosibckeeper.NewKeeper(
 			types.PortKey,
 			storeKey,
@@ -58,23 +53,13 @@ func NewKeeper(
 		storeKey:   storeKey,
 		memKey:     memKey,
 		paramstore: ps,
-		bankKeeper: bankKeeper,
 	}
-
-	k.ider = keeperutil.NewIDGenerator(k, nil)
-
-	return k
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// store returns default store for this keeper!
 func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
 	return ctx.KVStore(k.storeKey)
-}
-
-func (k Keeper) jobRequestStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(k.Store(ctx), types.KeyPrefix("queue-signing-messages-"))
 }

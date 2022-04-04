@@ -12574,42 +12574,6 @@ paths:
                         }
       tags:
         - Query
-  /volumefi/cronchain/scheduler/params:
-    get:
-      summary: Parameters queries the parameters of the module.
-      operationId: VolumefiCronchainSchedulerParams
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              params:
-                description: params holds all the parameters of this module.
-                type: object
-            description: >-
-              QueryParamsResponse is response type for the Query/Params RPC
-              method.
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    '@type':
-                      type: string
-                  additionalProperties: {}
-      tags:
-        - Query
 definitions:
   cosmos.authz.v1beta1.Grant:
     type: object
@@ -19960,15 +19924,3 @@ definitions:
       and
 
       freezing clients
-  volumefi.cronchain.scheduler.MsgSigningQueueMessageResponse:
-    type: object
-  volumefi.cronchain.scheduler.Params:
-    type: object
-    description: Params defines the parameters for the module.
-  volumefi.cronchain.scheduler.QueryParamsResponse:
-    type: object
-    properties:
-      params:
-        description: params holds all the parameters of this module.
-        type: object
-    description: QueryParamsResponse is response type for the Query/Params RPC method.

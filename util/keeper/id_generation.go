@@ -8,14 +8,29 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type ider struct {
-	sg    storeGetter
+const (
+	defaultIDKey = "generated-ids-"
+)
+
+type IDGenerator struct {
+	sg    StoreGetter
 	idKey []byte
+}
+
+// NewIDGenerator creates a new ID generator. IT uses idKey as a main
+func NewIDGenerator(sg StoreGetter, idkey []byte) IDGenerator {
+	if idkey == nil {
+		idkey = []byte(defaultIDKey)
+	}
+	return IDGenerator{
+		sg:    sg,
+		idKey: idkey,
+	}
 }
 
 // getLastID returns the last id that was inserted for the given name.
 // If one does not exist, then it returns 0,
-func (i ider) getLastID(ctx sdk.Context, name string) uint64 {
+func (i IDGenerator) GetLastID(ctx sdk.Context, name string) uint64 {
 	store := i.sg.Store(ctx)
 	prefixKey := i.nextKeyPrefix([]byte(name))
 	if !store.Has(prefixKey) {
@@ -28,23 +43,23 @@ func (i ider) getLastID(ctx sdk.Context, name string) uint64 {
 
 // incrementNextID returns new ID which can now be used for referencing data
 // and increments the counter internally. It returns the newly inserted ID.
-func (i ider) incrementNextID(ctx sdk.Context, name string) uint64 {
+func (i IDGenerator) IncrementNextID(ctx sdk.Context, name string) uint64 {
 	store := i.sg.Store(ctx)
 
-	nextID := i.getLastID(ctx, name) + 1
+	nextID := i.GetLastID(ctx, name) + 1
 
 	prefixKey := i.nextKeyPrefix([]byte(name))
-	store.Set(prefixKey, uint64ToByte(nextID))
+	store.Set(prefixKey, Uint64ToByte(nextID))
 
 	return nextID
 }
 
-func uint64ToByte(n uint64) []byte {
+func Uint64ToByte(n uint64) []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, n)
 	return b
 }
 
-func (i ider) nextKeyPrefix(key []byte) []byte {
+func (i IDGenerator) nextKeyPrefix(key []byte) []byte {
 	return append(i.idKey[:], key...)
 }
