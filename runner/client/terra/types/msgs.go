@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	fmt "fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -56,7 +55,6 @@ func (msg MsgExecuteContract) ValidateBasic() error {
 	}
 
 	if !json.Valid(msg.ExecuteMsg) {
-		fmt.Println("WHGAAAAAAAAAAAAAAAAT")
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "wasm msg byte format is invalid json")
 	}
 

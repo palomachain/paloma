@@ -1,6 +1,7 @@
 package types
 
 import (
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	proto "github.com/gogo/protobuf/proto"
 )
@@ -8,6 +9,7 @@ import (
 type QueuedSignedMessageI interface {
 	proto.Message
 	GetId() uint64
+	GetMsg() *codectypes.Any
 	SdkMsg() (sdk.Msg, error)
 	GetSigners() []*Signer
 	AddSignature(*Signer)

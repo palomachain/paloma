@@ -7,7 +7,15 @@ option go_package = "github.com/volumefi/cronchain/x/concensus/types";
 
 // Msg defines the Msg service.
 service Msg {
-    // this line is used by starport scaffolding # proto/tx/rpc
+      rpc AddMessagesSignatures(MsgAddMessagesSignatures) returns (MsgAddMessagesSignaturesResponse);
+// this line is used by starport scaffolding # proto/tx/rpc
+}
+
+message MsgAddMessagesSignatures {
+  string creator = 1;
+}
+
+message MsgAddMessagesSignaturesResponse {
 }
 
 // this line is used by starport scaffolding # proto/tx/message

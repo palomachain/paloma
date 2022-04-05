@@ -5,6 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "concensus/params.proto";
+import "google/protobuf/any.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/volumefi/cronchain/x/concensus/types";
@@ -15,7 +16,12 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/volumefi/cronchain/concensus/params";
   }
-  // this line is used by starport scaffolding # 2
+  // Queries a list of QueuedMessagesForSigning items.
+	rpc QueuedMessagesForSigning(QueryQueuedMessagesForSigningRequest) returns (QueryQueuedMessagesForSigningResponse) {
+		option (google.api.http).get = "/volumefi/cronchain/concensus/queued_messages_for_signing";
+	}
+
+// this line is used by starport scaffolding # 2
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -25,6 +31,15 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryQueuedMessagesForSigningRequest {
+  string valAddress = 1;
+  string queueTypeName = 2;
+}
+
+message QueryQueuedMessagesForSigningResponse {
+  repeated google.protobuf.Any msgs = 1;
 }
 
 // this line is used by starport scaffolding # 3

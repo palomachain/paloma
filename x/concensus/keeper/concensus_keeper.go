@@ -1,45 +1,67 @@
 package keeper
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/volumefi/cronchain/x/concensus/types"
 )
 
-func addConcencusQueueType[T ConcensusMsg](k *Keeper) {
-	var msg T
-	_, ok := k.queueRegistry[msg.QueueName()]
+func (k *Keeper) addConcencusQueueType(queueTypeName string) {
+	if k.queueRegistry == nil {
+		k.queueRegistry = make(map[string]concensusQueue)
+	}
+	_, ok := k.queueRegistry[queueTypeName]
 	if ok {
 		panic("concencus queue already registered")
 	}
 
-	k.queueRegistry[msg.QueueName()] = concensusQueue[T]{
-		sg:   *k,
-		ider: k.ider,
-		cdc:  k.cdc,
+	k.queueRegistry[queueTypeName] = concensusQueue{
+		queueTypeName: queueTypeName,
+		sg:            *k,
+		ider:          k.ider,
+		cdc:           k.cdc,
 	}
 }
 
 // getConcensusQueue gets the concensus queue for the given type.
-func getConcensusQueue[T ConcensusMsg](k Keeper) concensusQueue[T] {
-	var msg T
-	cqAny, ok := k.queueRegistry[msg.QueueName()]
+func (k Keeper) getConcensusQueue(queueTypeName string) (concensusQueue, error) {
+	cq, ok := k.queueRegistry[queueTypeName]
 	if !ok {
-		panic("concencus queue not implemented for type")
+		return concensusQueue{}, fmt.Errorf("type %s: %w", queueTypeName, ErrConcensusQueueNotImplemented)
 	}
+	return cq, nil
+}
 
-	cq := cqAny.(concensusQueue[T])
-	return cq
+func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName string, msg ConcensusMsg) error {
+	cq, err := k.getConcensusQueue(queueTypeName)
+	if err != nil {
+		k.Logger(ctx).Error("error while getting concensus queue: %s", err)
+		return err
+	}
+	err = cq.put(ctx, msg)
+	if err != nil {
+		k.Logger(ctx).Error("error while putting message into queue: %s", err)
+		return err
+	}
+	return nil
 }
 
 // GetMessagesForSigning returns messages for a single validator that needs to be signed.
-func GetMessagesForSigning[T ConcensusMsg](ctx sdk.Context, k Keeper, val sdk.ValAddress) (msgs []Message[T], err error) {
-	cq := getConcensusQueue[T](k)
+func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+	cq, err := k.getConcensusQueue(queueTypeName)
+	if err != nil {
+		k.Logger(ctx).Error("error while getting concensus queue: %s", err)
+		return nil, err
+	}
 	all, err := cq.getAll(ctx)
 	if err != nil {
+		k.Logger(ctx).Error("error while getting all messages from queue: %s", err)
 		return nil, err
 	}
 
+	// TODO: return a max of 100 items (100 chosen at random
 	for _, msg := range all {
+		// did this validator already signed this message
 		alreadySigned := false
 		for _, signer := range msg.GetSigners() {
 			if sdk.ValAddress(signer.ValAddress).Equals(val) {
@@ -48,6 +70,7 @@ func GetMessagesForSigning[T ConcensusMsg](ctx sdk.Context, k Keeper, val sdk.Va
 			}
 		}
 		if alreadySigned {
+			// they did signed it
 			continue
 		}
 		msgs = append(msgs, msg)
@@ -61,4 +84,3 @@ func AddMessageSignature[T ConcensusMsg](ctx sdk.Context, k Keeper, msgID uint64
 	panic("NOT IMPLEMENTED")
 	return nil
 }
-

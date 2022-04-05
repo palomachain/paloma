@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"context"
+
 	"github.com/volumefi/cronchain/x/concensus/types"
 )
 
@@ -15,3 +17,22 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 }
 
 var _ types.MsgServer = msgServer{}
+
+func (k msgServer) AddMessagesSignatures(goCtx context.Context, msg *types.MsgAddMessagesSignatures) (*types.MsgAddMessagesSignaturesResponse, error) {
+	// ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// err := k.PutMessageForSigning(ctx, "m", &types.MsgAddMessagesSignatures{
+	// 	Creator: "bob",
+	// })
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// for _, signature := range msg.Signatures {
+	// 	if err := AddMessageSignature(ctx, k, signature.MsgID, signature.Signature); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+
+	return &types.MsgAddMessagesSignaturesResponse{}, nil
+}
