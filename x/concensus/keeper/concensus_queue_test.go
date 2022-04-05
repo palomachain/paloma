@@ -111,4 +111,22 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 			assert.Len(t, msgs, 2)
 		})
 	})
+
+	t.Run("putting a message of a wrong type returns an error", func(t *testing.T) {
+		msgOfWrongType := &testtypes.EvenSimplerMessage{
+			Boo: "boo",
+		}
+		err := cq.put(ctx, msgOfWrongType)
+		assert.ErrorIs(t, err, ErrIncorrectMessageType)
+	})
+
+	t.Run("saving without an ID raises an error", func(t *testing.T) {
+		err := cq.save(ctx, &types.QueuedSignedMessage{})
+		assert.ErrorIs(t, err, ErrUnableToSaveMessageWithoutID)
+	})
+
+	t.Run("fetching a message that does not exist raises an error", func(t *testing.T) {
+		_, err := cq.getMsgByID(ctx, 999999)
+		assert.ErrorIs(t, err, ErrMessageDoesNotExist)
+	})
 }

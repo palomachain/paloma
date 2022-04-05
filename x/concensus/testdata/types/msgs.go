@@ -9,6 +9,7 @@ var amino = codec.NewLegacyAmino()
 var ModuleCdc = codec.NewAminoCodec(amino)
 
 var _ sdk.Msg = &SimpleMessage{}
+var _ sdk.Msg = &EvenSimplerMessage{}
 
 func (msg *SimpleMessage) GetSigners() []sdk.AccAddress {
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
@@ -26,6 +27,20 @@ func (msg *SimpleMessage) ValidateBasic() error {
 func (msg *SimpleMessage) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
-func (msg *SimpleMessage) QueueName() string {
-	return "simple-message"
+
+func (msg *EvenSimplerMessage) GetSigners() []sdk.AccAddress {
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{sender}
+}
+
+func (msg *EvenSimplerMessage) ValidateBasic() error {
+	return nil
+}
+
+func (msg *EvenSimplerMessage) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }

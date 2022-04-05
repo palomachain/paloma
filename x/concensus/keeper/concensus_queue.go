@@ -117,6 +117,10 @@ func (c concensusQueue[T]) getMsgByID(ctx sdk.Context, id uint64) (types.QueuedS
 	queue := c.queue(ctx)
 	data := queue.Get(sdk.Uint64ToBigEndian(id))
 
+	if data == nil {
+		return nil, fmt.Errorf("msg id: %d: %w", id, ErrMessageDoesNotExist)
+	}
+
 	var sm types.QueuedSignedMessageI
 	if err := c.cdc.UnmarshalInterface(data, &sm); err != nil {
 		return nil, err
