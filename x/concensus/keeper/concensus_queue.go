@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -131,7 +129,6 @@ func (c concensusQueue) save(ctx sdk.Context, msg types.QueuedSignedMessageI) er
 // queue is a simple helper function to return the queue store
 func (c concensusQueue) queue(ctx sdk.Context) prefix.Store {
 	store := c.sg.Store(ctx)
-	fmt.Println("baaaaaa", store.Iterator(nil, nil).Error())
 	return prefix.NewStore(store, []byte(c.signingQueueKey()))
 }
 
