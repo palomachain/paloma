@@ -6,16 +6,16 @@ import (
 	"github.com/volumefi/cronchain/x/concensus/types"
 )
 
-func (k *Keeper) addConcencusQueueType(queueTypeName string) {
+func addConcencusQueueType[T ConcensusMsg](k *Keeper, queueTypeName string) {
 	if k.queueRegistry == nil {
-		k.queueRegistry = make(map[string]concensusQueue)
+		k.queueRegistry = make(map[string]concensusQueuer)
 	}
 	_, ok := k.queueRegistry[queueTypeName]
 	if ok {
 		panic("concencus queue already registered")
 	}
 
-	k.queueRegistry[queueTypeName] = concensusQueue{
+	k.queueRegistry[queueTypeName] = concensusQueue[T]{
 		queueTypeName: queueTypeName,
 		sg:            *k,
 		ider:          k.ider,
@@ -24,10 +24,10 @@ func (k *Keeper) addConcencusQueueType(queueTypeName string) {
 }
 
 // getConcensusQueue gets the concensus queue for the given type.
-func (k Keeper) getConcensusQueue(queueTypeName string) (concensusQueue, error) {
+func (k Keeper) getConcensusQueue(queueTypeName string) (concensusQueuer, error) {
 	cq, ok := k.queueRegistry[queueTypeName]
 	if !ok {
-		return concensusQueue{}, fmt.Errorf("type %s: %w", queueTypeName, ErrConcensusQueueNotImplemented)
+		return nil, fmt.Errorf("type %s: %w", queueTypeName, ErrConcensusQueueNotImplemented)
 	}
 	return cq, nil
 }

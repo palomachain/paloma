@@ -22,7 +22,7 @@ type (
 		paramstore paramtypes.Subspace
 
 		ider          keeperutil.IDGenerator
-		queueRegistry map[string]concensusQueue
+		queueRegistry map[string]concensusQueuer
 	}
 )
 
@@ -56,7 +56,7 @@ func NewKeeper(
 	ider := keeperutil.NewIDGenerator(k, nil)
 	k.ider = ider
 
-	k.addConcencusQueueType("m")
+	addConcencusQueueType[*types.MsgAddMessagesSignatures](k, "m")
 
 	return k
 }
