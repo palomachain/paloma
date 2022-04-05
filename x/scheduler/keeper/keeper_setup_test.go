@@ -34,6 +34,9 @@ func newSchedulerKeeper(t testing.TB) (*Keeper, sdk.Context) {
 	appCodec := codec.NewProtoCodec(registry)
 	capabilityKeeper := capabilitykeeper.NewKeeper(appCodec, storeKey, memStoreKey)
 
+	types.RegisterCodec(types.Amino)
+	types.RegisterInterfaces(registry)
+
 	ss := typesparams.NewSubspace(appCodec,
 		types.Amino,
 		storeKey,

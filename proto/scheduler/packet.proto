@@ -1,5 +1,6 @@
 syntax = "proto3";
 package volumefi.cronchain.scheduler;
+// this line is used by starport scaffolding # 1
 
 // this line is used by starport scaffolding # proto/packet/import
 
