@@ -33,7 +33,7 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 	types.RegisterInterfaces(registry)
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
-	cq := concensusQueue{
+	cq := concensusQueue[*testtypes.SimpleMessage]{
 		queueTypeName: "simple-message",
 		sg:            sg,
 		ider:          keeperutil.NewIDGenerator(sg, nil),
