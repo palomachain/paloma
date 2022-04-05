@@ -82,7 +82,6 @@ func verifySignature(
 	accq accountQueryier,
 	smh authsigning.SignModeHandler,
 	tx sdk.Tx,
-
 ) error {
 
 	sigTx := tx.(authsigning.SigVerifiableTx)

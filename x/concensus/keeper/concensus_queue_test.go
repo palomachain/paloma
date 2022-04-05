@@ -49,13 +49,13 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 	var msgs []Message[*testtypes.SimpleMessage]
 
 	t.Run("putting message", func(t *testing.T) {
-		err := cq.Put(ctx, msg)
+		err := cq.put(ctx, msg)
 		assert.NoError(t, err)
 	})
 
 	t.Run("getting all messages should return one", func(t *testing.T) {
 		var err error
-		msgs, err = cq.GetAll(ctx)
+		msgs, err = cq.getAll(ctx)
 		assert.NoError(t, err)
 		assert.Len(t, msgs, 1)
 		assert.Len(t, msgs[0].GetSigners(), 0)
@@ -73,36 +73,38 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 		Signature:  []byte(`custom signature`),
 	}
 
-	cq.AddSignature(ctx, msgs[0].GetId(), sig)
+	cq.addSignature(ctx, msgs[0].GetId(), sig)
 
 	t.Run("getting all messages should still return one", func(t *testing.T) {
 		var err error
-		msgs, err = cq.GetAll(ctx)
+		msgs, err = cq.getAll(ctx)
 		assert.NoError(t, err)
 		assert.Len(t, msgs, 1)
 
-		// lets compare signatures
-		signers := msgs[0].GetSigners()
-		assert.Len(t, signers, 1)
-		assert.Equal(t, sig, signers[0])
+		t.Run("there should be one signature only", func(t *testing.T) {
+			// lets compare signatures
+			signers := msgs[0].GetSigners()
+			assert.Len(t, signers, 1)
+			assert.Equal(t, sig, signers[0])
+		})
 	})
 
 	t.Run("removing a message", func(t *testing.T) {
-		err := cq.Remove(ctx, msgs[0].GetId())
+		err := cq.remove(ctx, msgs[0].GetId())
 		assert.NoError(t, err)
 		t.Run("getting all should return zero messages", func(t *testing.T) {
-			msgs, err = cq.GetAll(ctx)
+			msgs, err = cq.getAll(ctx)
 			assert.NoError(t, err)
 			assert.Len(t, msgs, 0)
 		})
 
 		t.Run("adding two new messages should add them", func(t *testing.T) {
-			cq.Put(
+			cq.put(
 				ctx,
 				&testtypes.SimpleMessage{},
 				&testtypes.SimpleMessage{},
 			)
-			msgs, err = cq.GetAll(ctx)
+			msgs, err = cq.getAll(ctx)
 			assert.NoError(t, err)
 			assert.Len(t, msgs, 2)
 		})

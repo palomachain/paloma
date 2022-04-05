@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/volumefi/cronchain/x/concensus/types"
 )
 
 func addConcencusQueueType[T ConcensusMsg](k *Keeper) {
@@ -18,10 +19,8 @@ func addConcencusQueueType[T ConcensusMsg](k *Keeper) {
 	}
 }
 
-type concensusQueueKeeper interface{}
-
-// GetConcensusQueue gets the concensus queue for the given type.
-func GetConcensusQueue[T ConcensusMsg](k Keeper) concensusQueue[T] {
+// getConcensusQueue gets the concensus queue for the given type.
+func getConcensusQueue[T ConcensusMsg](k Keeper) concensusQueue[T] {
 	var msg T
 	cqAny, ok := k.queueRegistry[msg.QueueName()]
 	if !ok {
@@ -32,16 +31,16 @@ func GetConcensusQueue[T ConcensusMsg](k Keeper) concensusQueue[T] {
 	return cq
 }
 
-func MessagesForSigning[T ConcensusMsg](ctx sdk.Context, k Keeper, val sdk.ValAddress) (msgs []Message[T], err error) {
-	cq := GetConcensusQueue[T](k)
-	all, err := cq.GetAll(ctx)
+// GetMessagesForSigning returns messages for a single validator that needs to be signed.
+func GetMessagesForSigning[T ConcensusMsg](ctx sdk.Context, k Keeper, val sdk.ValAddress) (msgs []Message[T], err error) {
+	cq := getConcensusQueue[T](k)
+	all, err := cq.getAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, msg := range all {
 		alreadySigned := false
-		// TODO: this is using wrong method for GetSigners
 		for _, signer := range msg.GetSigners() {
 			if sdk.ValAddress(signer.ValAddress).Equals(val) {
 				alreadySigned = true
@@ -55,5 +54,11 @@ func MessagesForSigning[T ConcensusMsg](ctx sdk.Context, k Keeper, val sdk.ValAd
 	}
 
 	return msgs, nil
+}
+
+func AddMessageSignature[T ConcensusMsg](ctx sdk.Context, k Keeper, msgID uint64, sig *types.Signer) (err error) {
+	// TODO: verify signature here? (or maybe just store the signature and let runners verify them)
+	panic("NOT IMPLEMENTED")
+	return nil
 }
 
