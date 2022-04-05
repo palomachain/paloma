@@ -40,6 +40,10 @@ const (
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgResumeRecurringJob int = 100
 
+	opWeightMsgSigningQueueMessage = "op_weight_msg_create_chain"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgSigningQueueMessage int = 100
+
 	// this line is used by starport scaffolding # simapp/module/const
 )
 
@@ -98,6 +102,13 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgResumeRecurringJob, &weightMsgResumeRecurringJob, nil,
 		func(_ *rand.Rand) {
 			weightMsgResumeRecurringJob = defaultWeightMsgResumeRecurringJob
+		},
+	)
+
+	var weightMsgSigningQueueMessage int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgSigningQueueMessage, &weightMsgSigningQueueMessage, nil,
+		func(_ *rand.Rand) {
+			weightMsgSigningQueueMessage = defaultWeightMsgSigningQueueMessage
 		},
 	)
 
