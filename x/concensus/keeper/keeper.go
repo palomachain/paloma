@@ -22,7 +22,7 @@ type (
 		paramstore paramtypes.Subspace
 
 		ider          keeperutil.IDGenerator
-		queueRegistry map[string]any
+		queueRegistry map[string]concensusQueue
 	}
 )
 
@@ -34,14 +34,13 @@ func NewKeeper(
 	channelKeeper cosmosibckeeper.ChannelKeeper,
 	portKeeper cosmosibckeeper.PortKeeper,
 	scopedKeeper cosmosibckeeper.ScopedKeeper,
-
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
-	return &Keeper{
+	k := &Keeper{
 		Keeper: cosmosibckeeper.NewKeeper(
 			types.PortKey,
 			storeKey,
@@ -54,6 +53,12 @@ func NewKeeper(
 		memKey:     memKey,
 		paramstore: ps,
 	}
+	ider := keeperutil.NewIDGenerator(k, nil)
+	k.ider = ider
+
+	k.addConcencusQueueType("m")
+
+	return k
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {

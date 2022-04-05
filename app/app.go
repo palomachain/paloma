@@ -27,6 +27,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -444,9 +445,31 @@ func New(
 		evidencetypes.ModuleName, stakingtypes.ModuleName, ibchost.ModuleName,
 		feegrant.ModuleName,
 		schedulermoduletypes.ModuleName,
+		concensusmoduletypes.ModuleName,
+		govtypes.ModuleName,
+		crisistypes.ModuleName,
+		banktypes.ModuleName,
+		paramstypes.ModuleName,
+		transferModule.Name(),
+		authtypes.ModuleName,
+		vestingtypes.ModuleName,
+		genutiltypes.ModuleName,
 	)
 
-	app.mm.SetOrderEndBlockers(crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, schedulermoduletypes.ModuleName)
+	app.mm.SetOrderEndBlockers(
+		crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, schedulermoduletypes.ModuleName,
+		upgradetypes.ModuleName, capabilitytypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
+		evidencetypes.ModuleName, ibchost.ModuleName,
+		feegrant.ModuleName,
+		concensusmoduletypes.ModuleName,
+		crisistypes.ModuleName,
+		banktypes.ModuleName,
+		paramstypes.ModuleName,
+		transferModule.Name(),
+		authtypes.ModuleName,
+		vestingtypes.ModuleName,
+		genutiltypes.ModuleName,
+	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -462,9 +485,14 @@ func New(
 		slashingtypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
+		feegrant.ModuleName,
+		upgradetypes.ModuleName,
 		crisistypes.ModuleName,
-		ibchost.ModuleName,
+		paramstypes.ModuleName,
+		transferModule.Name(),
+		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
+		ibchost.ModuleName,
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		schedulermoduletypes.ModuleName,

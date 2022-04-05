@@ -4,7 +4,7 @@ accounts:
   - name: bob
     coins: ["10000token", "100000000stake"]
 validator:
-  name: alice
+  name: bob
   staked: "100000000stake"
 client:
   openapi:
@@ -13,4 +13,7 @@ client:
     path: "vue/src/store"
 faucet:
   name: bob
-  coins: ["5token", "100000stake"]
+  coins: ["5token", "1000000000stake"]
+
+build:
+  main: cmd/cronchaind

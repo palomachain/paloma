@@ -4,7 +4,7 @@
 # TODO: make this better! 
 protoc -I . -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:. runner/client/terra/proto/tx.proto
 protoc -I . -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:.  runner/testdata/proto/*
-protoc -I . -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:.  x/scheduler/testdata/proto/*
+protoc -I . -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:.  x/concensus/testdata/proto/*
 protoc -I proto -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:.  proto/scheduler/*.proto
 protoc -I proto -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:.  proto/concensus/*.proto
 

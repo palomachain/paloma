@@ -10,8 +10,8 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 	keeperutil "github.com/volumefi/cronchain/util/keeper"
+	testtypes "github.com/volumefi/cronchain/x/concensus/testdata/types"
 	"github.com/volumefi/cronchain/x/concensus/types"
-	testtypes "github.com/volumefi/cronchain/x/scheduler/testdata/types"
 )
 
 func TestConcensusQueueAllMethods(t *testing.T) {
@@ -33,10 +33,11 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 	types.RegisterInterfaces(registry)
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
-	cq := concensusQueue[*testtypes.SimpleMessage]{
-		sg:   sg,
-		ider: keeperutil.NewIDGenerator(sg, nil),
-		cdc:  types.ModuleCdc,
+	cq := concensusQueue{
+		queueTypeName: "simple-message",
+		sg:            sg,
+		ider:          keeperutil.NewIDGenerator(sg, nil),
+		cdc:           types.ModuleCdc,
 	}
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 
@@ -46,7 +47,7 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 		World:  "WORLD",
 	}
 
-	var msgs []Message[*testtypes.SimpleMessage]
+	var msgs []types.QueuedSignedMessageI
 
 	t.Run("putting message", func(t *testing.T) {
 		err := cq.put(ctx, msg)
@@ -62,9 +63,10 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 		assert.Positive(t, msgs[0].GetId())
 
 		// lets see if it's equal to what we actually put in the queue
-		realMsg, err := msgs[0].RealMessage()
+		realMsg := msgs[0]
+		sdkMsg, err := realMsg.SdkMsg()
 		assert.NoError(t, err)
-		assert.Equal(t, msg, realMsg)
+		assert.Equal(t, msg, sdkMsg)
 	})
 
 	// lets add a signature to the message
