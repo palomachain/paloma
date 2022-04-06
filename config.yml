@@ -14,6 +14,3 @@ client:
 faucet:
   name: bob
   coins: ["5token", "1000000000stake"]
-
-build:
-  main: cmd/cronchaind
