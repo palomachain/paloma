@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
 
+proto_dirs=$(find ./proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
+for dir in $proto_dirs; do
+  protoc \
+  -I "proto" \
+  -I "third_party_proto/proto" \
+  --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:. \
+  $(find "${dir}" -maxdepth 1 -name '*.proto')
 
-# TODO: make this better! 
-protoc -I . -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:. runner/client/terra/proto/tx.proto
-protoc -I . -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:.  runner/testdata/proto/*
-protoc -I . -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:.  x/concensus/testdata/proto/*
-protoc -I proto -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:.  proto/scheduler/*.proto
-protoc -I proto -I third_party/proto/ --gocosmos_out=plugins=interfacetype+grpc,Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:.  proto/concensus/*.proto
+done
 
-
-cp -r ./github.com/terra-money/core/x/wasm/types runner/client/terra/types
-cp -r ./github.com/volumefi/cronchain/runner/* runner
-cp -r ./github.com/volumefi/cronchain/x/* x
-
+cp -r ./github.com/volumefi/cronchain/* .
 
 rm -rf ./github.com
