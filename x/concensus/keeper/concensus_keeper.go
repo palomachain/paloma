@@ -6,6 +6,8 @@ import (
 	"github.com/volumefi/cronchain/x/concensus/types"
 )
 
+// TODO: add private type for queueTypeName
+
 func addConcencusQueueType[T ConcensusMsg](k *Keeper, queueTypeName string) {
 	if k.queueRegistry == nil {
 		k.queueRegistry = make(map[string]concensusQueuer)
