@@ -56,7 +56,7 @@ func NewKeeper(
 	ider := keeperutil.NewIDGenerator(k, nil)
 	k.ider = ider
 
-	addConcencusQueueType[*types.MsgAddMessagesSignatures](k, "m")
+	addConcencusQueueType[*types.SignSmartContractExecute](k, "a")
 
 	return k
 }

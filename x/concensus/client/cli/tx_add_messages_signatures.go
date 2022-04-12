@@ -19,6 +19,7 @@ func CmdAddMessagesSignatures() *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// TODO: we don't need to have this from the CLI
+			panic("don't use from cli")
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {

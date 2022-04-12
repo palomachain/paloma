@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/volumefi/cronchain/x/concensus/types"
 )
 
@@ -19,20 +20,18 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 var _ types.MsgServer = msgServer{}
 
 func (k msgServer) AddMessagesSignatures(goCtx context.Context, msg *types.MsgAddMessagesSignatures) (*types.MsgAddMessagesSignaturesResponse, error) {
-	// ctx := sdk.UnwrapSDKContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// err := k.PutMessageForSigning(ctx, "m", &types.MsgAddMessagesSignatures{
-	// 	Creator: "bob",
-	// })
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// for _, signature := range msg.Signatures {
-	// 	if err := AddMessageSignature(ctx, k, signature.MsgID, signature.Signature); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+	for _, signedMessage := range msg.SignedMessages {
+		if err := k.AddMessageSignature(
+			ctx,
+			signedMessage.GetId(),
+			signedMessage.GetQueueTypeName(),
+			signedMessage.GetSignature(),
+		); err != nil {
+			return nil, err
+		}
+	}
 
 	return &types.MsgAddMessagesSignaturesResponse{}, nil
 }

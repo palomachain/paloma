@@ -15,11 +15,9 @@ const (
 	concensusQueueSigningKey   = `concensus-queue-signing-type-`
 )
 
-type (
-	ConcensusMsg interface {
-		sdk.Msg
-	}
+type ConcensusMsg = types.ConcensusMsg
 
+type (
 	codecMarshaler interface {
 		MarshalInterface(i proto.Message) ([]byte, error)
 		UnmarshalInterface(bz []byte, ptr interface{}) error
@@ -38,7 +36,7 @@ type (
 	concensusQueuer interface {
 		put(sdk.Context, ...ConcensusMsg) error
 		getAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
-		addSignature(sdk.Context, uint64, *types.Signer) error
+		addSignature(sdk.Context, uint64, *types.SignData) error
 		remove(sdk.Context, uint64) error
 	}
 )
@@ -56,9 +54,9 @@ func (c concensusQueue[T]) put(ctx sdk.Context, msgs ...ConcensusMsg) error {
 			return err
 		}
 		queuedMsg := &types.QueuedSignedMessage{
-			Id:      newID,
-			Msg:     anyMsg,
-			Signers: []*types.Signer{},
+			Id:       newID,
+			Msg:      anyMsg,
+			SignData: []*types.SignData{},
 		}
 		if err := c.save(ctx, queuedMsg); err != nil {
 			return err
@@ -90,13 +88,13 @@ func (c concensusQueue[T]) getAll(ctx sdk.Context) ([]types.QueuedSignedMessageI
 
 // addSignature adds a signature to the message. It does not verifies the signature. It
 // just adds it to the message.
-func (c concensusQueue[T]) addSignature(ctx sdk.Context, msgID uint64, sig *types.Signer) error {
+func (c concensusQueue[T]) addSignature(ctx sdk.Context, msgID uint64, signData *types.SignData) error {
 	msg, err := c.getMsgByID(ctx, msgID)
 	if err != nil {
 		return err
 	}
 
-	msg.AddSignature(sig)
+	msg.AddSignData(signData)
 
 	return c.save(ctx, msg)
 }

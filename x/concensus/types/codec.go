@@ -10,9 +10,9 @@ import (
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&QueuedSignedMessage{}, "concensus/QueuedSignedMessage", nil)
-	cdc.RegisterConcrete(&Signer{}, "concensus/Signer", nil)
+	cdc.RegisterConcrete(&SignData{}, "concensus/SignData", nil)
 	cdc.RegisterConcrete(&MsgAddMessagesSignatures{}, "concensus/AddMessagesSignatures", nil)
-// this line is used by starport scaffolding # 2
+	// this line is used by starport scaffolding # 2
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -21,9 +21,12 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&QueuedSignedMessage{},
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
-	&MsgAddMessagesSignatures{},
-)
-// this line is used by starport scaffolding # 3
+		&MsgAddMessagesSignatures{},
+	)
+	registry.RegisterImplementations((*ConcensusMsg)(nil),
+		&SignSmartContractExecute{},
+	)
+	// this line is used by starport scaffolding # 3
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

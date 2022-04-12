@@ -3,12 +3,15 @@ package keeper
 import (
 	"context"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/volumefi/cronchain/x/concensus/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+func nonceFromID(id uint64) []byte {
+	return sdk.Uint64ToBigEndian(id)
+}
 
 func (k Keeper) QueuedMessagesForSigning(goCtx context.Context, req *types.QueryQueuedMessagesForSigningRequest) (*types.QueryQueuedMessagesForSigningResponse, error) {
 	if req == nil {
@@ -20,17 +23,17 @@ func (k Keeper) QueuedMessagesForSigning(goCtx context.Context, req *types.Query
 	if err != nil {
 		return nil, err
 	}
-	var res []*codectypes.Any
 
+	var res []*types.MessageToSign
 	for _, msg := range msgs {
-		anyMsg, err := codectypes.NewAnyWithValue(msg)
-		if err != nil {
-			return nil, err
-		}
-		res = append(res, anyMsg)
+		res = append(res, &types.MessageToSign{
+			Nonce: nonceFromID(msg.GetId()),
+			Id:    msg.GetId(),
+			Msg:   msg.GetMsg(),
+		})
 	}
 
 	return &types.QueryQueuedMessagesForSigningResponse{
-		Msgs: res,
+		MessageToSign: res,
 	}, nil
 }

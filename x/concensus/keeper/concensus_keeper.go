@@ -65,14 +65,14 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val
 	for _, msg := range all {
 		// did this validator already signed this message
 		alreadySigned := false
-		for _, signer := range msg.GetSigners() {
-			if sdk.ValAddress(signer.ValAddress).Equals(val) {
+		for _, signData := range msg.GetSignData() {
+			if sdk.ValAddress(signData.ValAddress).Equals(val) {
 				alreadySigned = true
 				break
 			}
 		}
 		if alreadySigned {
-			// they did signed it
+			// they signed it
 			continue
 		}
 		msgs = append(msgs, msg)
@@ -81,8 +81,12 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val
 	return msgs, nil
 }
 
-func AddMessageSignature[T ConcensusMsg](ctx sdk.Context, k Keeper, msgID uint64, sig *types.Signer) (err error) {
-	// TODO: verify signature here? (or maybe just store the signature and let runners verify them)
-	panic("NOT IMPLEMENTED")
+func (k Keeper) AddMessageSignature(ctx sdk.Context, msgID uint64, queueTypeName string, signature []byte) (err error) {
+	// TODO: once we have validatorsets get them here, take their keys and validate the signatures
+	// cq, err := k.getConcensusQueue(queueTypeName)
+	// if err != nil {
+	// 	return err
+	// }
+
 	return nil
 }
