@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/volumefi/cronchain/x/concensus/types"
 )
@@ -29,7 +28,7 @@ func AddConcencusQueueType[T ConcensusMsg](k *Keeper, queueTypeName string) {
 func (k Keeper) getConcensusQueue(queueTypeName string) (concensusQueuer, error) {
 	cq, ok := k.queueRegistry[queueTypeName]
 	if !ok {
-		return nil, fmt.Errorf("type %s: %w", queueTypeName, ErrConcensusQueueNotImplemented)
+		return nil, ErrConcensusQueueNotImplemented.Format(queueTypeName)
 	}
 	return cq, nil
 }

@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -44,7 +43,7 @@ func (c concensusQueue[T]) put(ctx sdk.Context, msgs ...ConcensusMsg) error {
 	for _, msg := range msgs {
 		if _, ok := msg.(T); !ok {
 			var t T
-			return fmt.Errorf("msg is incorrent type: %T: should be %T: %w", msg, t, ErrIncorrectMessageType)
+			return ErrIncorrectMessageType.Format(t, msg)
 		}
 		newID := c.ider.IncrementNextID(ctx, concensusQueueIDCounterKey)
 		anyMsg, err := codectypes.NewAnyWithValue(msg)
@@ -114,7 +113,7 @@ func (c concensusQueue[T]) getMsgByID(ctx sdk.Context, id uint64) (types.QueuedS
 	data := queue.Get(sdk.Uint64ToBigEndian(id))
 
 	if data == nil {
-		return nil, fmt.Errorf("msg id: %d: %w", id, ErrMessageDoesNotExist)
+		return nil, ErrMessageDoesNotExist.Format(id)
 	}
 
 	var sm types.QueuedSignedMessageI

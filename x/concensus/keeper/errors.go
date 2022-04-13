@@ -1,12 +1,12 @@
 package keeper
 
-type _err string
-
-func (e _err) Error() string { return string(e) }
+import (
+	"github.com/vizualni/whoops"
+)
 
 const (
-	ErrIncorrectMessageType         _err = "underlying message type does not match"
-	ErrUnableToSaveMessageWithoutID _err = "unable to save message without an ID"
-	ErrConcensusQueueNotImplemented _err = "concensus queue not implemented"
-	ErrMessageDoesNotExist          _err = "message does not exist"
+	ErrIncorrectMessageType         = whoops.Errorf("underlying message type does not match: should be %T, but provided type is %T")
+	ErrUnableToSaveMessageWithoutID = whoops.String("unable to save message without an ID")
+	ErrConcensusQueueNotImplemented = whoops.Errorf("concensus queue not implemented for queueTypeName %s")
+	ErrMessageDoesNotExist          = whoops.Errorf("message id %d does not exist")
 )
