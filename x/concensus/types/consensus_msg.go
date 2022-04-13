@@ -11,17 +11,17 @@ type QueuedSignedMessageI interface {
 	GetId() uint64
 	GetMsg() *codectypes.Any
 	SdkMsg() (sdk.Msg, error)
-	GetSigners() []*Signer
-	AddSignature(*Signer)
+	GetSignData() []*SignData
+	AddSignData(*SignData)
 }
 
 var _ QueuedSignedMessageI = &QueuedSignedMessage{}
 
-func (q *QueuedSignedMessage) AddSignature(sig *Signer) {
-	if q.Signers == nil {
-		q.Signers = []*Signer{}
+func (q *QueuedSignedMessage) AddSignData(data *SignData) {
+	if q.SignData == nil {
+		q.SignData = []*SignData{}
 	}
-	q.Signers = append(q.Signers, sig)
+	q.SignData = append(q.SignData, data)
 }
 
 func (q *QueuedSignedMessage) SdkMsg() (sdk.Msg, error) {

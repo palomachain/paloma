@@ -5,16 +5,15 @@ package volumefi.cronchain.concensus;
 
 option go_package = "github.com/volumefi/cronchain/x/concensus/types";
 
+// message for storing the queued signed message in the internal queue
 message QueuedSignedMessage {
   uint64 id = 1;
   google.protobuf.Any msg = 2;
-  repeated Signer signers = 3;
+  repeated SignData signData = 3;
 }
 
-message Signer {
+message SignData {
   string valAddress = 1;
   google.protobuf.Any pubkey = 2; 
   bytes signature = 3;
-  int32 signMode = 4;
-  uint64 sequence = 5;
 }

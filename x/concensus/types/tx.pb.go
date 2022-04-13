@@ -28,7 +28,8 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgAddMessagesSignatures struct {
-	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Creator        string                                       `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	SignedMessages []*MsgAddMessagesSignatures_MsgSignedMessage `protobuf:"bytes,2,rep,name=signedMessages,proto3" json:"signedMessages,omitempty"`
 }
 
 func (m *MsgAddMessagesSignatures) Reset()         { *m = MsgAddMessagesSignatures{} }
@@ -71,6 +72,77 @@ func (m *MsgAddMessagesSignatures) GetCreator() string {
 	return ""
 }
 
+func (m *MsgAddMessagesSignatures) GetSignedMessages() []*MsgAddMessagesSignatures_MsgSignedMessage {
+	if m != nil {
+		return m.SignedMessages
+	}
+	return nil
+}
+
+type MsgAddMessagesSignatures_MsgSignedMessage struct {
+	Id            uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	QueueTypeName string `protobuf:"bytes,2,opt,name=queueTypeName,proto3" json:"queueTypeName,omitempty"`
+	Signature     []byte `protobuf:"bytes,3,opt,name=signature,proto3" json:"signature,omitempty"`
+}
+
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) Reset() {
+	*m = MsgAddMessagesSignatures_MsgSignedMessage{}
+}
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) String() string {
+	return proto.CompactTextString(m)
+}
+func (*MsgAddMessagesSignatures_MsgSignedMessage) ProtoMessage() {}
+func (*MsgAddMessagesSignatures_MsgSignedMessage) Descriptor() ([]byte, []int) {
+	return fileDescriptor_65c463fa6b64bda5, []int{0, 0}
+}
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgAddMessagesSignatures_MsgSignedMessage.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgAddMessagesSignatures_MsgSignedMessage.Merge(m, src)
+}
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgAddMessagesSignatures_MsgSignedMessage.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgAddMessagesSignatures_MsgSignedMessage proto.InternalMessageInfo
+
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) GetQueueTypeName() string {
+	if m != nil {
+		return m.QueueTypeName
+	}
+	return ""
+}
+
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) GetSignature() []byte {
+	if m != nil {
+		return m.Signature
+	}
+	return nil
+}
+
 type MsgAddMessagesSignaturesResponse struct {
 }
 
@@ -109,27 +181,34 @@ var xxx_messageInfo_MsgAddMessagesSignaturesResponse proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterType((*MsgAddMessagesSignatures)(nil), "volumefi.cronchain.concensus.MsgAddMessagesSignatures")
+	proto.RegisterType((*MsgAddMessagesSignatures_MsgSignedMessage)(nil), "volumefi.cronchain.concensus.MsgAddMessagesSignatures.MsgSignedMessage")
 	proto.RegisterType((*MsgAddMessagesSignaturesResponse)(nil), "volumefi.cronchain.concensus.MsgAddMessagesSignaturesResponse")
 }
 
 func init() { proto.RegisterFile("concensus/tx.proto", fileDescriptor_65c463fa6b64bda5) }
 
 var fileDescriptor_65c463fa6b64bda5 = []byte{
-	// 220 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x4a, 0xce, 0xcf, 0x4b,
-	0x4e, 0xcd, 0x2b, 0x2e, 0x2d, 0xd6, 0x2f, 0xa9, 0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x92,
-	0x29, 0xcb, 0xcf, 0x29, 0xcd, 0x4d, 0x4d, 0xcb, 0xd4, 0x4b, 0x2e, 0xca, 0xcf, 0x4b, 0xce, 0x48,
-	0xcc, 0xcc, 0xd3, 0x83, 0x2b, 0x53, 0x32, 0xe1, 0x92, 0xf0, 0x2d, 0x4e, 0x77, 0x4c, 0x49, 0xf1,
-	0x4d, 0x2d, 0x2e, 0x4e, 0x4c, 0x4f, 0x2d, 0x0e, 0xce, 0x4c, 0xcf, 0x4b, 0x2c, 0x29, 0x2d, 0x4a,
-	0x2d, 0x16, 0x92, 0xe0, 0x62, 0x4f, 0x2e, 0x4a, 0x4d, 0x2c, 0xc9, 0x2f, 0x92, 0x60, 0x54, 0x60,
-	0xd4, 0xe0, 0x0c, 0x82, 0x71, 0x95, 0x94, 0xb8, 0x14, 0x70, 0xe9, 0x0a, 0x4a, 0x2d, 0x2e, 0xc8,
-	0xcf, 0x2b, 0x4e, 0x35, 0x9a, 0xce, 0xc8, 0xc5, 0xec, 0x5b, 0x9c, 0x2e, 0xd4, 0xcf, 0xc8, 0x25,
-	0x8a, 0xdd, 0x7c, 0x33, 0x3d, 0x7c, 0x4e, 0xd3, 0xc3, 0x65, 0x83, 0x94, 0x1d, 0x79, 0xfa, 0x60,
-	0x2e, 0x73, 0xf2, 0x3c, 0xf1, 0x48, 0x8e, 0xf1, 0xc2, 0x23, 0x39, 0xc6, 0x07, 0x8f, 0xe4, 0x18,
-	0x27, 0x3c, 0x96, 0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1, 0xc6, 0x63, 0x39, 0x86, 0x28, 0xfd, 0xf4,
-	0xcc, 0x92, 0x8c, 0xd2, 0x24, 0xbd, 0xe4, 0xfc, 0x5c, 0x7d, 0x98, 0x1d, 0xfa, 0x70, 0x3b, 0xf4,
-	0x2b, 0xf4, 0x91, 0xc2, 0xb7, 0xb2, 0x20, 0xb5, 0x38, 0x89, 0x0d, 0x1c, 0xc6, 0xc6, 0x80, 0x00,
-	0x00, 0x00, 0xff, 0xff, 0x0a, 0xf4, 0xff, 0xdf, 0x79, 0x01, 0x00, 0x00,
+	// 309 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0xb1, 0x4a, 0x33, 0x41,
+	0x10, 0xc7, 0xb3, 0x97, 0x8f, 0x4f, 0xb2, 0x6a, 0x90, 0x05, 0xe1, 0x08, 0x61, 0x39, 0x82, 0x45,
+	0xaa, 0x5d, 0x88, 0x60, 0x29, 0x68, 0x23, 0x16, 0xb1, 0xb8, 0x58, 0xd9, 0x5d, 0xf6, 0x26, 0x9b,
+	0x05, 0xb3, 0x7b, 0xde, 0xdc, 0x4a, 0xf2, 0x10, 0xa2, 0x9d, 0xaf, 0x64, 0x99, 0xd2, 0x52, 0x92,
+	0x17, 0x11, 0x03, 0x77, 0xc6, 0x60, 0x2c, 0x52, 0xee, 0xec, 0xcc, 0xfc, 0x7e, 0x0c, 0x7f, 0xca,
+	0x94, 0xb3, 0x0a, 0x2c, 0x7a, 0x94, 0xc5, 0x54, 0x64, 0xb9, 0x2b, 0x1c, 0x6b, 0x3f, 0xba, 0x7b,
+	0x3f, 0x81, 0x91, 0x11, 0x2a, 0x77, 0x56, 0x8d, 0x13, 0x63, 0x45, 0xd5, 0xd6, 0x79, 0x0a, 0x68,
+	0xd8, 0x47, 0x7d, 0x91, 0xa6, 0x7d, 0x40, 0x4c, 0x34, 0xe0, 0xc0, 0x68, 0x9b, 0x14, 0x3e, 0x07,
+	0x64, 0x21, 0xdd, 0x53, 0x39, 0x24, 0x85, 0xcb, 0x43, 0x12, 0x91, 0x6e, 0x23, 0x2e, 0x9f, 0xcc,
+	0xd1, 0x26, 0x1a, 0x6d, 0xa1, 0x9a, 0x0a, 0x83, 0xa8, 0xde, 0xdd, 0xef, 0x5d, 0x89, 0xbf, 0x68,
+	0x62, 0x1b, 0xe9, 0xeb, 0x63, 0xb0, 0xbe, 0x2f, 0xde, 0x58, 0xdf, 0x1a, 0xd1, 0xa3, 0xcd, 0x1e,
+	0xd6, 0xa4, 0x81, 0x49, 0x57, 0x66, 0xff, 0xe2, 0xc0, 0xa4, 0xec, 0x84, 0x1e, 0x3e, 0x78, 0xf0,
+	0x70, 0x3b, 0xcb, 0xe0, 0x26, 0x99, 0x40, 0x18, 0xac, 0xa4, 0x7f, 0x16, 0x59, 0x9b, 0x36, 0xb0,
+	0x04, 0x87, 0xf5, 0x88, 0x74, 0x0f, 0xe2, 0xef, 0x42, 0xa7, 0x43, 0xa3, 0x6d, 0x92, 0x31, 0x60,
+	0xe6, 0x2c, 0x42, 0xef, 0x95, 0xd0, 0x7a, 0x1f, 0x35, 0x7b, 0x26, 0xf4, 0xf8, 0xf7, 0xc3, 0x9d,
+	0xed, 0x76, 0x86, 0xd6, 0xf9, 0x6e, 0x73, 0xa5, 0xd9, 0xe5, 0xf5, 0xdb, 0x82, 0x93, 0xf9, 0x82,
+	0x93, 0x8f, 0x05, 0x27, 0x2f, 0x4b, 0x5e, 0x9b, 0x2f, 0x79, 0xed, 0x7d, 0xc9, 0x6b, 0x77, 0x52,
+	0x9b, 0x62, 0xec, 0x87, 0x42, 0xb9, 0x89, 0x2c, 0x19, 0xb2, 0x62, 0xc8, 0xa9, 0x5c, 0x4b, 0xce,
+	0x2c, 0x03, 0x1c, 0xfe, 0x5f, 0xa5, 0xe7, 0xf4, 0x33, 0x00, 0x00, 0xff, 0xff, 0x84, 0x7c, 0x47,
+	0xc5, 0x53, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -232,12 +311,68 @@ func (m *MsgAddMessagesSignatures) MarshalToSizedBuffer(dAtA []byte) (int, error
 	_ = i
 	var l int
 	_ = l
+	if len(m.SignedMessages) > 0 {
+		for iNdEx := len(m.SignedMessages) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.SignedMessages[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
 	if len(m.Creator) > 0 {
 		i -= len(m.Creator)
 		copy(dAtA[i:], m.Creator)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
 		i--
 		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Signature) > 0 {
+		i -= len(m.Signature)
+		copy(dAtA[i:], m.Signature)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Signature)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.QueueTypeName) > 0 {
+		i -= len(m.QueueTypeName)
+		copy(dAtA[i:], m.QueueTypeName)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.QueueTypeName)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Id != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -283,6 +418,32 @@ func (m *MsgAddMessagesSignatures) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.SignedMessages) > 0 {
+		for _, e := range m.SignedMessages {
+			l = e.Size()
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Id != 0 {
+		n += 1 + sovTx(uint64(m.Id))
+	}
+	l = len(m.QueueTypeName)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Signature)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -364,6 +525,175 @@ func (m *MsgAddMessagesSignatures) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SignedMessages", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SignedMessages = append(m.SignedMessages, &MsgAddMessagesSignatures_MsgSignedMessage{})
+			if err := m.SignedMessages[len(m.SignedMessages)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgAddMessagesSignatures_MsgSignedMessage) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgSignedMessage: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgSignedMessage: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueueTypeName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.QueueTypeName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Signature", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Signature = append(m.Signature[:0], dAtA[iNdEx:postIndex]...)
+			if m.Signature == nil {
+				m.Signature = []byte{}
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

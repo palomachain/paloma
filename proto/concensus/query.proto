@@ -39,7 +39,13 @@ message QueryQueuedMessagesForSigningRequest {
 }
 
 message QueryQueuedMessagesForSigningResponse {
-  repeated google.protobuf.Any msgs = 1;
+  repeated MessageToSign messageToSign = 1;
+}
+
+message MessageToSign {
+  bytes nonce = 1;
+  uint64 id = 2;
+  google.protobuf.Any msg = 3;
 }
 
 // this line is used by starport scaffolding # 3

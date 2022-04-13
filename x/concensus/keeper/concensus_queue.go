@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,17 +14,13 @@ const (
 	concensusQueueSigningKey   = `concensus-queue-signing-type-`
 )
 
-type (
-	ConcensusMsg interface {
-		sdk.Msg
-	}
+type ConcensusMsg = types.ConcensusMsg
 
+type (
 	codecMarshaler interface {
 		MarshalInterface(i proto.Message) ([]byte, error)
 		UnmarshalInterface(bz []byte, ptr interface{}) error
 	}
-
-	// TODO: NEED TO ENSURE TYPE SAFETY SOMEHOW
 
 	// concensusQueue is a database storing messages that need to be signed.
 	concensusQueue[T ConcensusMsg] struct {
@@ -38,7 +33,7 @@ type (
 	concensusQueuer interface {
 		put(sdk.Context, ...ConcensusMsg) error
 		getAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
-		addSignature(sdk.Context, uint64, *types.Signer) error
+		addSignature(sdk.Context, uint64, *types.SignData) error
 		remove(sdk.Context, uint64) error
 	}
 )
@@ -48,7 +43,7 @@ func (c concensusQueue[T]) put(ctx sdk.Context, msgs ...ConcensusMsg) error {
 	for _, msg := range msgs {
 		if _, ok := msg.(T); !ok {
 			var t T
-			return fmt.Errorf("msg is incorrent type: %T: should be %T: %w", msg, t, ErrIncorrectMessageType)
+			return ErrIncorrectMessageType.Format(t, msg)
 		}
 		newID := c.ider.IncrementNextID(ctx, concensusQueueIDCounterKey)
 		anyMsg, err := codectypes.NewAnyWithValue(msg)
@@ -56,9 +51,9 @@ func (c concensusQueue[T]) put(ctx sdk.Context, msgs ...ConcensusMsg) error {
 			return err
 		}
 		queuedMsg := &types.QueuedSignedMessage{
-			Id:      newID,
-			Msg:     anyMsg,
-			Signers: []*types.Signer{},
+			Id:       newID,
+			Msg:      anyMsg,
+			SignData: []*types.SignData{},
 		}
 		if err := c.save(ctx, queuedMsg); err != nil {
 			return err
@@ -90,13 +85,13 @@ func (c concensusQueue[T]) getAll(ctx sdk.Context) ([]types.QueuedSignedMessageI
 
 // addSignature adds a signature to the message. It does not verifies the signature. It
 // just adds it to the message.
-func (c concensusQueue[T]) addSignature(ctx sdk.Context, msgID uint64, sig *types.Signer) error {
+func (c concensusQueue[T]) addSignature(ctx sdk.Context, msgID uint64, signData *types.SignData) error {
 	msg, err := c.getMsgByID(ctx, msgID)
 	if err != nil {
 		return err
 	}
 
-	msg.AddSignature(sig)
+	msg.AddSignData(signData)
 
 	return c.save(ctx, msg)
 }
@@ -118,7 +113,7 @@ func (c concensusQueue[T]) getMsgByID(ctx sdk.Context, id uint64) (types.QueuedS
 	data := queue.Get(sdk.Uint64ToBigEndian(id))
 
 	if data == nil {
-		return nil, fmt.Errorf("msg id: %d: %w", id, ErrMessageDoesNotExist)
+		return nil, ErrMessageDoesNotExist.Format(id)
 	}
 
 	var sm types.QueuedSignedMessageI
