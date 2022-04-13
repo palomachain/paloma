@@ -1,4 +1,4 @@
-package concensus
+package consensus
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v2/modules/core/05-port/types"
 	host "github.com/cosmos/ibc-go/v2/modules/core/24-host"
 	ibcexported "github.com/cosmos/ibc-go/v2/modules/core/exported"
-	"github.com/volumefi/cronchain/x/concensus/types"
+	"github.com/volumefi/cronchain/x/consensus/types"
 )
 
 // OnChanOpenInit implements the IBCModule interface
@@ -135,7 +135,7 @@ func (am AppModule) OnRecvPacket(
 
 	// this line is used by starport scaffolding # oracle/packet/module/recv
 
-	var modulePacketData types.ConcensusPacketData
+	var modulePacketData types.ConsensusPacketData
 	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
 		return channeltypes.NewErrorAcknowledgement(sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error()).Error())
 	}
@@ -166,7 +166,7 @@ func (am AppModule) OnAcknowledgementPacket(
 
 	// this line is used by starport scaffolding # oracle/packet/module/ack
 
-	var modulePacketData types.ConcensusPacketData
+	var modulePacketData types.ConsensusPacketData
 	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
 	}
@@ -215,7 +215,7 @@ func (am AppModule) OnTimeoutPacket(
 	modulePacket channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	var modulePacketData types.ConcensusPacketData
+	var modulePacketData types.ConsensusPacketData
 	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
 	}

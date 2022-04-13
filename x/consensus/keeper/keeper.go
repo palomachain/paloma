@@ -10,7 +10,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/tendermint/starport/starport/pkg/cosmosibckeeper"
 	keeperutil "github.com/volumefi/cronchain/util/keeper"
-	"github.com/volumefi/cronchain/x/concensus/types"
+	"github.com/volumefi/cronchain/x/consensus/types"
 )
 
 type (
@@ -22,7 +22,7 @@ type (
 		paramstore paramtypes.Subspace
 
 		ider          keeperutil.IDGenerator
-		queueRegistry map[string]concensusQueuer
+		queueRegistry map[string]consensusQueuer
 	}
 )
 

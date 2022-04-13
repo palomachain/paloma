@@ -10,11 +10,11 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 	keeperutil "github.com/volumefi/cronchain/util/keeper"
-	testtypes "github.com/volumefi/cronchain/x/concensus/testdata/types"
-	"github.com/volumefi/cronchain/x/concensus/types"
+	testtypes "github.com/volumefi/cronchain/x/consensus/testdata/types"
+	"github.com/volumefi/cronchain/x/consensus/types"
 )
 
-func TestConcensusQueueAllMethods(t *testing.T) {
+func TestConsensusQueueAllMethods(t *testing.T) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 	db := tmdb.NewMemDB()
@@ -33,7 +33,7 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 	types.RegisterInterfaces(registry)
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
-	cq := concensusQueue[*testtypes.SimpleMessage]{
+	cq := consensusQueue[*testtypes.SimpleMessage]{
 		queueTypeName: "simple-message",
 		sg:            sg,
 		ider:          keeperutil.NewIDGenerator(sg, nil),

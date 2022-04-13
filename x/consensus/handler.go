@@ -1,12 +1,12 @@
-package concensus
+package consensus
 
 import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/volumefi/cronchain/x/concensus/keeper"
-	"github.com/volumefi/cronchain/x/concensus/types"
+	"github.com/volumefi/cronchain/x/consensus/keeper"
+	"github.com/volumefi/cronchain/x/consensus/types"
 )
 
 // NewHandler ...

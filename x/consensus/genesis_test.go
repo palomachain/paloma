@@ -1,4 +1,4 @@
-package concensus_test
+package consensus_test
 
 import (
 	"testing"
@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/require"
 	keepertest "github.com/volumefi/cronchain/testutil/keeper"
 	"github.com/volumefi/cronchain/testutil/nullify"
-	"github.com/volumefi/cronchain/x/concensus"
-	"github.com/volumefi/cronchain/x/concensus/types"
+	"github.com/volumefi/cronchain/x/consensus"
+	"github.com/volumefi/cronchain/x/consensus/types"
 )
 
 func TestGenesis(t *testing.T) {
@@ -17,9 +17,9 @@ func TestGenesis(t *testing.T) {
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
-	k, ctx := keepertest.ConcensusKeeper(t)
-	concensus.InitGenesis(ctx, *k, genesisState)
-	got := concensus.ExportGenesis(ctx, *k)
+	k, ctx := keepertest.ConsensusKeeper(t)
+	consensus.InitGenesis(ctx, *k, genesisState)
+	got := consensus.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)
 
 	nullify.Fill(&genesisState)

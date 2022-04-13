@@ -5,11 +5,11 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
-	testdata "github.com/volumefi/cronchain/x/concensus/testdata/types"
+	testdata "github.com/volumefi/cronchain/x/consensus/testdata/types"
 )
 
-func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConcensusQueue(t *testing.T) {
-	keeper, ctx := newConcensusKeeper(t)
+func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testing.T) {
+	keeper, ctx := newConsensusKeeper(t)
 
 	t.Run("it returns a message if type is not registered with the queue", func(t *testing.T) {
 		err := keeper.PutMessageForSigning(ctx, "i don't exist", &testdata.SimpleMessage{
@@ -18,7 +18,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConcensusQueue(t *testin
 			World:  "mars",
 		})
 
-		assert.ErrorIs(t, err, ErrConcensusQueueNotImplemented)
+		assert.ErrorIs(t, err, ErrConsensusQueueNotImplemented)
 	})
 
 	AddConcencusQueueType[*testdata.SimpleMessage](keeper, "simple-message")

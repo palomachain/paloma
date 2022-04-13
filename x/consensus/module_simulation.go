@@ -1,4 +1,4 @@
-package concensus
+package consensus
 
 import (
 	"math/rand"
@@ -10,14 +10,14 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 	"github.com/volumefi/cronchain/testutil/sample"
-	concensussimulation "github.com/volumefi/cronchain/x/concensus/simulation"
-	"github.com/volumefi/cronchain/x/concensus/types"
+	consensussimulation "github.com/volumefi/cronchain/x/consensus/simulation"
+	"github.com/volumefi/cronchain/x/consensus/types"
 )
 
 // avoid unused import issue
 var (
 	_ = sample.AccAddress
-	_ = concensussimulation.FindAccount
+	_ = consensussimulation.FindAccount
 	_ = simappparams.StakePerAccount
 	_ = simulation.MsgEntryKind
 	_ = baseapp.Paramspace
@@ -37,10 +37,10 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	for i, acc := range simState.Accounts {
 		accs[i] = acc.Address.String()
 	}
-	concensusGenesis := types.GenesisState{
+	consensusGenesis := types.GenesisState{
 		// this line is used by starport scaffolding # simapp/module/genesisState
 	}
-	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&concensusGenesis)
+	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&consensusGenesis)
 }
 
 // ProposalContents doesn't return any content functions for governance proposals
@@ -69,7 +69,7 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	)
 	operations = append(operations, simulation.NewWeightedOperation(
 		weightMsgAddMessagesSignatures,
-		concensussimulation.SimulateMsgAddMessagesSignatures(am.accountKeeper, am.bankKeeper, am.keeper),
+		consensussimulation.SimulateMsgAddMessagesSignatures(am.accountKeeper, am.bankKeeper, am.keeper),
 	))
 
 	// this line is used by starport scaffolding # simapp/module/operation

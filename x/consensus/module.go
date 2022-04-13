@@ -1,4 +1,4 @@
-package concensus
+package consensus
 
 import (
 	"encoding/json"
@@ -18,9 +18,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	porttypes "github.com/cosmos/ibc-go/v2/modules/core/05-port/types"
-	"github.com/volumefi/cronchain/x/concensus/client/cli"
-	"github.com/volumefi/cronchain/x/concensus/keeper"
-	"github.com/volumefi/cronchain/x/concensus/types"
+	"github.com/volumefi/cronchain/x/consensus/client/cli"
+	"github.com/volumefi/cronchain/x/consensus/keeper"
+	"github.com/volumefi/cronchain/x/consensus/types"
 )
 
 var (

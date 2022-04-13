@@ -15,11 +15,11 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
-	"github.com/volumefi/cronchain/x/concensus/keeper"
-	"github.com/volumefi/cronchain/x/concensus/types"
+	"github.com/volumefi/cronchain/x/consensus/keeper"
+	"github.com/volumefi/cronchain/x/consensus/types"
 )
 
-func ConcensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	logger := log.NewNopLogger()
 
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -39,7 +39,7 @@ func ConcensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		types.Amino,
 		storeKey,
 		memStoreKey,
-		"ConcensusSubSpace",
+		"ConsensusSubSpace",
 	)
 	IBCKeeper := ibckeeper.NewKeeper(
 		appCodec,
@@ -47,14 +47,14 @@ func ConcensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		ss,
 		nil,
 		nil,
-		capabilityKeeper.ScopeToModule("ConcensusIBCKeeper"),
+		capabilityKeeper.ScopeToModule("ConsensusIBCKeeper"),
 	)
 
 	paramsSubspace := typesparams.NewSubspace(appCodec,
 		types.Amino,
 		storeKey,
 		memStoreKey,
-		"ConcensusParams",
+		"ConsensusParams",
 	)
 	k := keeper.NewKeeper(
 		appCodec,
@@ -63,7 +63,7 @@ func ConcensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		paramsSubspace,
 		IBCKeeper.ChannelKeeper,
 		&IBCKeeper.PortKeeper,
-		capabilityKeeper.ScopeToModule("ConcensusScopedKeeper"),
+		capabilityKeeper.ScopeToModule("ConsensusScopedKeeper"),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)

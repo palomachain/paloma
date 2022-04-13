@@ -9,9 +9,9 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&QueuedSignedMessage{}, "concensus/QueuedSignedMessage", nil)
-	cdc.RegisterConcrete(&SignData{}, "concensus/SignData", nil)
-	cdc.RegisterConcrete(&MsgAddMessagesSignatures{}, "concensus/AddMessagesSignatures", nil)
+	cdc.RegisterConcrete(&QueuedSignedMessage{}, "consensus/QueuedSignedMessage", nil)
+	cdc.RegisterConcrete(&SignData{}, "consensus/SignData", nil)
+	cdc.RegisterConcrete(&MsgAddMessagesSignatures{}, "consensus/AddMessagesSignatures", nil)
 	// this line is used by starport scaffolding # 2
 }
 
@@ -23,7 +23,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgAddMessagesSignatures{},
 	)
-	registry.RegisterImplementations((*ConcensusMsg)(nil),
+	registry.RegisterImplementations((*ConsensusMsg)(nil),
 		&SignSmartContractExecute{},
 	)
 	// this line is used by starport scaffolding # 3

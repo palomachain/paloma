@@ -3,8 +3,8 @@ package simulation
 import (
 	"math/rand"
 
-	"github.com/volumefi/cronchain/x/concensus/keeper"
-	"github.com/volumefi/cronchain/x/concensus/types"
+	"github.com/volumefi/cronchain/x/consensus/keeper"
+	"github.com/volumefi/cronchain/x/consensus/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
