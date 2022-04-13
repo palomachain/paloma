@@ -15,11 +15,10 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
-	"github.com/volumefi/cronchain/x/consensus/keeper"
 	"github.com/volumefi/cronchain/x/consensus/types"
 )
 
-func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func newConsensusKeeper(t testing.TB) (*Keeper, sdk.Context) {
 	logger := log.NewNopLogger()
 
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -34,6 +33,9 @@ func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	registry := codectypes.NewInterfaceRegistry()
 	appCodec := codec.NewProtoCodec(registry)
 	capabilityKeeper := capabilitykeeper.NewKeeper(appCodec, storeKey, memStoreKey)
+
+	types.RegisterCodec(types.Amino)
+	types.RegisterInterfaces(registry)
 
 	ss := typesparams.NewSubspace(appCodec,
 		types.Amino,
@@ -56,7 +58,7 @@ func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		memStoreKey,
 		"ConsensusParams",
 	)
-	k := keeper.NewKeeper(
+	k := NewKeeper(
 		appCodec,
 		storeKey,
 		memStoreKey,

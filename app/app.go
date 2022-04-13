@@ -93,9 +93,9 @@ import (
 
 	"github.com/volumefi/cronchain/docs"
 
-	concensusmodule "github.com/volumefi/cronchain/x/concensus"
-	concensusmodulekeeper "github.com/volumefi/cronchain/x/concensus/keeper"
-	concensusmoduletypes "github.com/volumefi/cronchain/x/concensus/types"
+	consensusmodule "github.com/volumefi/cronchain/x/consensus"
+	consensusmodulekeeper "github.com/volumefi/cronchain/x/consensus/keeper"
+	consensusmoduletypes "github.com/volumefi/cronchain/x/consensus/types"
 	schedulermodule "github.com/volumefi/cronchain/x/scheduler"
 	schedulermodulekeeper "github.com/volumefi/cronchain/x/scheduler/keeper"
 	schedulermoduletypes "github.com/volumefi/cronchain/x/scheduler/types"
@@ -153,7 +153,7 @@ var (
 		vesting.AppModuleBasic{},
 		schedulermodule.AppModuleBasic{},
 
-		concensusmodule.AppModuleBasic{},
+		consensusmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -226,8 +226,8 @@ type App struct {
 	ScopedSchedulerKeeper capabilitykeeper.ScopedKeeper
 	SchedulerKeeper       schedulermodulekeeper.Keeper
 
-	ScopedConcensusKeeper capabilitykeeper.ScopedKeeper
-	ConcensusKeeper       concensusmodulekeeper.Keeper
+	ScopedConsensusKeeper capabilitykeeper.ScopedKeeper
+	ConsensusKeeper       consensusmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// mm is the module manager
@@ -265,7 +265,7 @@ func New(
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		schedulermoduletypes.StoreKey,
-		concensusmoduletypes.StoreKey,
+		consensusmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -378,18 +378,18 @@ func New(
 	)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 
-	scopedConcensusKeeper := app.CapabilityKeeper.ScopeToModule(concensusmoduletypes.ModuleName)
-	app.ScopedConcensusKeeper = scopedConcensusKeeper
-	app.ConcensusKeeper = *concensusmodulekeeper.NewKeeper(
+	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
+	app.ScopedConsensusKeeper = scopedConsensusKeeper
+	app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
 		appCodec,
-		keys[concensusmoduletypes.StoreKey],
-		keys[concensusmoduletypes.MemStoreKey],
-		app.GetSubspace(concensusmoduletypes.ModuleName),
+		keys[consensusmoduletypes.StoreKey],
+		keys[consensusmoduletypes.MemStoreKey],
+		app.GetSubspace(consensusmoduletypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
-		scopedConcensusKeeper,
+		scopedConsensusKeeper,
 	)
-	concensusModule := concensusmodule.NewAppModule(appCodec, app.ConcensusKeeper, app.AccountKeeper, app.BankKeeper)
+	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
@@ -397,7 +397,7 @@ func New(
 	ibcRouter := ibcporttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferModule)
 	ibcRouter.AddRoute(schedulermoduletypes.ModuleName, schedulerModule)
-	ibcRouter.AddRoute(concensusmoduletypes.ModuleName, concensusModule)
+	ibcRouter.AddRoute(consensusmoduletypes.ModuleName, consensusModule)
 	// this line is used by starport scaffolding # ibc/app/router
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -432,7 +432,7 @@ func New(
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
 		schedulerModule,
-		concensusModule,
+		consensusModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -445,7 +445,7 @@ func New(
 		evidencetypes.ModuleName, stakingtypes.ModuleName, ibchost.ModuleName,
 		feegrant.ModuleName,
 		schedulermoduletypes.ModuleName,
-		concensusmoduletypes.ModuleName,
+		consensusmoduletypes.ModuleName,
 		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		banktypes.ModuleName,
@@ -461,7 +461,7 @@ func New(
 		upgradetypes.ModuleName, capabilitytypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
 		evidencetypes.ModuleName, ibchost.ModuleName,
 		feegrant.ModuleName,
-		concensusmoduletypes.ModuleName,
+		consensusmoduletypes.ModuleName,
 		crisistypes.ModuleName,
 		banktypes.ModuleName,
 		paramstypes.ModuleName,
@@ -496,7 +496,7 @@ func New(
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		schedulermoduletypes.ModuleName,
-		concensusmoduletypes.ModuleName,
+		consensusmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -520,7 +520,7 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
 		schedulerModule,
-		concensusModule,
+		consensusModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 	app.sm.RegisterStoreDecoders()
@@ -709,7 +709,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
-	paramsKeeper.Subspace(concensusmoduletypes.ModuleName)
+	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper

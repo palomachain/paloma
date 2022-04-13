@@ -1,0 +1,19 @@
+syntax = "proto3";
+import "google/protobuf/any.proto";
+
+package volumefi.cronchain.consensus;
+
+option go_package = "github.com/volumefi/cronchain/x/consensus/types";
+
+// message for storing the queued signed message in the internal queue
+message QueuedSignedMessage {
+  uint64 id = 1;
+  google.protobuf.Any msg = 2;
+  repeated SignData signData = 3;
+}
+
+message SignData {
+  string valAddress = 1;
+  google.protobuf.Any pubkey = 2; 
+  bytes signature = 3;
+}
