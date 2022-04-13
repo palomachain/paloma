@@ -1,13 +1,13 @@
 syntax = "proto3";
-package volumefi.cronchain.concensus;
+package volumefi.cronchain.consensus;
 
 import "gogoproto/gogo.proto";
-import "concensus/params.proto";
+import "consensus/params.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
-option go_package = "github.com/volumefi/cronchain/x/concensus/types";
+option go_package = "github.com/volumefi/cronchain/x/consensus/types";
 
-// GenesisState defines the concensus module's genesis state.
+// GenesisState defines the consensus module's genesis state.
 message GenesisState {
   Params params = 1 [(gogoproto.nullable) = false];
   string port_id = 2;

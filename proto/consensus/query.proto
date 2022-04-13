@@ -1,24 +1,24 @@
 syntax = "proto3";
-package volumefi.cronchain.concensus;
+package volumefi.cronchain.consensus;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "concensus/params.proto";
+import "consensus/params.proto";
 import "google/protobuf/any.proto";
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/volumefi/cronchain/x/concensus/types";
+option go_package = "github.com/volumefi/cronchain/x/consensus/types";
 
 // Query defines the gRPC querier service.
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/volumefi/cronchain/concensus/params";
+    option (google.api.http).get = "/volumefi/cronchain/consensus/params";
   }
   // Queries a list of QueuedMessagesForSigning items.
 	rpc QueuedMessagesForSigning(QueryQueuedMessagesForSigningRequest) returns (QueryQueuedMessagesForSigningResponse) {
-		option (google.api.http).get = "/volumefi/cronchain/concensus/queued_messages_for_signing";
+		option (google.api.http).get = "/volumefi/cronchain/consensus/queued_messages_for_signing";
 	}
 
 // this line is used by starport scaffolding # 2

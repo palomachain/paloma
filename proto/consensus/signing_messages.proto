@@ -1,9 +1,9 @@
 syntax = "proto3";
 //import "google/protobuf/any.proto";
 
-package volumefi.cronchain.concensus;
+package volumefi.cronchain.consensus;
 
-option go_package = "github.com/volumefi/cronchain/x/concensus/types";
+option go_package = "github.com/volumefi/cronchain/x/consensus/types";
 
 // THIS IS ONLY TEPORARY HERE TO TEST THINGS OUT
 message SignSmartContractExecute {

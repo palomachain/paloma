@@ -1,9 +1,9 @@
 syntax = "proto3";
-package volumefi.cronchain.concensus;
+package volumefi.cronchain.consensus;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/volumefi/cronchain/x/concensus/types";
+option go_package = "github.com/volumefi/cronchain/x/consensus/types";
 
 // Params defines the parameters for the module.
 message Params {
