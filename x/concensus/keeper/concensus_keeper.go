@@ -8,7 +8,7 @@ import (
 
 // TODO: add private type for queueTypeName
 
-func addConcencusQueueType[T ConcensusMsg](k *Keeper, queueTypeName string) {
+func AddConcencusQueueType[T ConcensusMsg](k *Keeper, queueTypeName string) {
 	if k.queueRegistry == nil {
 		k.queueRegistry = make(map[string]concensusQueuer)
 	}
@@ -61,7 +61,7 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val
 		return nil, err
 	}
 
-	// TODO: return a max of 100 items (100 chosen at random
+	// TODO: return a max of 100 items (100 chosen at random)
 	for _, msg := range all {
 		// did this validator already signed this message
 		alreadySigned := false
@@ -72,7 +72,7 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val
 			}
 		}
 		if alreadySigned {
-			// they signed it
+			// they have already signed it
 			continue
 		}
 		msgs = append(msgs, msg)

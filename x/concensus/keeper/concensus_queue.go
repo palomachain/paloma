@@ -23,8 +23,6 @@ type (
 		UnmarshalInterface(bz []byte, ptr interface{}) error
 	}
 
-	// TODO: NEED TO ENSURE TYPE SAFETY SOMEHOW
-
 	// concensusQueue is a database storing messages that need to be signed.
 	concensusQueue[T ConcensusMsg] struct {
 		queueTypeName string

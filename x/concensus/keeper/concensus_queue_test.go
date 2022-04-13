@@ -59,7 +59,7 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 		msgs, err = cq.getAll(ctx)
 		assert.NoError(t, err)
 		assert.Len(t, msgs, 1)
-		assert.Len(t, msgs[0].GetSigners(), 0)
+		assert.Len(t, msgs[0].GetSignData(), 0)
 		assert.Positive(t, msgs[0].GetId())
 
 		// lets see if it's equal to what we actually put in the queue
@@ -70,7 +70,7 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 	})
 
 	// lets add a signature to the message
-	sig := &types.Signer{
+	sig := &types.SignData{
 		ValAddress: "bob",
 		Signature:  []byte(`custom signature`),
 	}
@@ -85,7 +85,7 @@ func TestConcensusQueueAllMethods(t *testing.T) {
 
 		t.Run("there should be one signature only", func(t *testing.T) {
 			// lets compare signatures
-			signers := msgs[0].GetSigners()
+			signers := msgs[0].GetSignData()
 			assert.Len(t, signers, 1)
 			assert.Equal(t, sig, signers[0])
 		})

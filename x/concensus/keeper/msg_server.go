@@ -21,6 +21,7 @@ var _ types.MsgServer = msgServer{}
 
 func (k msgServer) AddMessagesSignatures(goCtx context.Context, msg *types.MsgAddMessagesSignatures) (*types.MsgAddMessagesSignaturesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	// TODO: once we implement keeper.AddMessageSignature write te
 
 	for _, signedMessage := range msg.SignedMessages {
 		if err := k.AddMessageSignature(
