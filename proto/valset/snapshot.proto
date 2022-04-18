@@ -1,0 +1,56 @@
+syntax = "proto3";
+package volumefi.cronchain.valset;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/volumefi/cronchain/x/valset/types";
+
+
+message Validator {
+  uint64 ID = 1;
+  bytes shareCount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  google.protobuf.Any sdkValidator = 3;
+
+  ValidatorState state = 4;
+
+  repeated ExternalChainInfo externalChainInfos = 5;
+}
+
+message Snapshot {
+  uint64 ID = 1;
+  uint64 height = 2;
+  bytes totalShares = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  google.protobuf.Timestamp createdAt = 4;
+  repeated Validator validators = 5;
+}
+
+
+message ExternalChainInfo {
+  string chainID = 1 [
+    (gogoproto.nullable) = false
+  ];
+
+  bytes pubKey = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.PubKey",
+    (gogoproto.nullable) = false
+  ];
+  bytes address = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.AccAddress",
+    (gogoproto.nullable) = false
+  ];
+}
+
+enum ValidatorState {
+  NONE = 0;
+}
+

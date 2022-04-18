@@ -33,7 +33,6 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-
 		cdc:        cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
@@ -43,4 +42,27 @@ func NewKeeper(
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+func (k Keeper) PunishValidator(ctx sdk.Context) {}
+
+func (k Keeper) Heartbeat(ctx sdk.Context) {}
+
+func (k Keeper) Register(ctx sdk.Context) {}
+
+// TODO: break this into add, remove
+func (k Keeper) UpdateExternalChainInfo(ctx sdk.Context) {}
+
+func (k Keeper) CreateSnapshot(ctx sdk.Context) {}
+
+func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) {}
+
+func (k Keeper) GetValPubKey(ctx sdk.Context) {}
+
+func (k Keeper) validatorStore(ctx sdk.Context) {
+
+}
+
+func (k Keeper) snapshotStore(ctx sdk.Context) {
+
 }
