@@ -5,10 +5,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type protoUnmarshaler interface {
-	Unmarshal(bz []byte, ptr codec.ProtoMarshaler) error
-}
-
 func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler) ([]T, error) {
 	res := []T{}
 	err := IterAllFnc(store, pu, func(val T) bool {

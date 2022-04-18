@@ -53,6 +53,10 @@ func (k Keeper) PunishValidator(ctx sdk.Context) {}
 // TODO: not required now
 func (k Keeper) Heartbeat(ctx sdk.Context) {}
 
+// TODO: not required now
+// TODO: break this into add, remove
+func (k Keeper) updateExternalChainInfo(ctx sdk.Context) {}
+
 func (k Keeper) Register(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*types.ExternalChainInfo) error {
 	store := k.validatorStore(ctx)
 
@@ -61,7 +65,7 @@ func (k Keeper) Register(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*
 		return ErrValidatorAlreadyRegistered
 	}
 
-	var val types.Validator
+	val := &types.Validator{}
 
 	// TODO: more logic here
 	val.State = types.ValidatorState_ACTIVE
@@ -72,13 +76,8 @@ func (k Keeper) Register(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*
 	}
 
 	// save val
-
-	return nil
+	return keeperutil.Save(store, k.cdc, valAddr, val)
 }
-
-// TODO: not required now
-// TODO: break this into add, remove
-func (k Keeper) updateExternalChainInfo(ctx sdk.Context) {}
 
 func (k Keeper) CreateSnapshot(ctx sdk.Context) error {
 	valStore := k.validatorStore(ctx)
