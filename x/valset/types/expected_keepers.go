@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -19,4 +20,10 @@ type BankKeeper interface {
 
 type ConcensusKeeper interface {
 	PutMessageForSigning()
+}
+
+type StakingKeeper interface {
+	Validator(ctx sdk.Context, addr sdk.ValAddress) stakingtypes.ValidatorI
+	IterateBondedValidatorsByPower(ctx sdk.Context, fn func(index int64, validator stakingtypes.ValidatorI) (stop bool))
+	PowerReduction(ctx sdk.Context) sdk.Int
 }

@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"reflect"
 )
 
 func Save(store sdk.KVStore, pm protoMarshaler, key []byte, val codec.ProtoMarshaler) error {
@@ -15,13 +16,17 @@ func Save(store sdk.KVStore, pm protoMarshaler, key []byte, val codec.ProtoMarsh
 }
 
 func Load[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, key []byte) (T, error) {
+	var val T
+	// stupid reflection :(
+	va := reflect.ValueOf(&val).Elem()
+	v := reflect.New(va.Type().Elem())
+	va.Set(v)
 	bytez := store.Get(key)
 
 	if len(bytez) == 0 {
-		return nil, ErrNotFound
+		return val, ErrNotFound
 	}
 
-	var val T
 	err := pu.Unmarshal(bytez, val)
 
 	if err != nil {

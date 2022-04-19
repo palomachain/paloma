@@ -2,6 +2,7 @@ syntax = "proto3";
 package volumefi.cronchain.valset;
 
 import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 import "cosmos/base/v1beta1/coin.proto";
@@ -20,6 +21,8 @@ message Validator {
   ValidatorState state = 3;
 
   repeated ExternalChainInfo externalChainInfos = 4;
+
+  string address = 5;
 }
 
 message Snapshot {
@@ -39,18 +42,10 @@ message Snapshot {
   
 }
 
-
 message ExternalChainInfo {
   string chainID = 1;
-
-  bytes pubKey = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.PubKey",
-    (gogoproto.nullable) = false
-  ];
-  bytes address = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.AccAddress",
-    (gogoproto.nullable) = false
-  ];
+  google.protobuf.Any pubKey = 2 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
+  string address = 3;
 }
 
 enum ValidatorState {

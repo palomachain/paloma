@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"reflect"
 )
 
 func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler) ([]T, error) {
@@ -25,15 +26,20 @@ func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, 
 	for ; iterator.Valid(); iterator.Next() {
 		iterData := iterator.Value()
 
-		var typ T
-		if err := pu.Unmarshal(iterData, typ); err != nil {
+		var val T
+		// stupid reflection :(
+		va := reflect.ValueOf(&val).Elem()
+		v := reflect.New(va.Type().Elem())
+		va.Set(v)
+
+		if err := pu.Unmarshal(iterData, val); err != nil {
 			return err
 		}
-		if !fnc(typ) {
+		if !fnc(val) {
 			return nil
 		}
 
-		res = append(res, typ)
+		res = append(res, val)
 	}
 	if err := iterator.Error(); err != nil {
 		return err

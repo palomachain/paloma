@@ -20,6 +20,7 @@ type (
 		storeKey   sdk.StoreKey
 		memKey     sdk.StoreKey
 		paramstore paramtypes.Subspace
+		staking    types.StakingKeeper
 	}
 )
 
@@ -28,6 +29,7 @@ func NewKeeper(
 	storeKey,
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
+	staking types.StakingKeeper,
 
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -40,6 +42,7 @@ func NewKeeper(
 		storeKey:   storeKey,
 		memKey:     memKey,
 		paramstore: ps,
+		staking:    staking,
 	}
 }
 
@@ -57,7 +60,12 @@ func (k Keeper) Heartbeat(ctx sdk.Context) {}
 // TODO: break this into add, remove
 func (k Keeper) updateExternalChainInfo(ctx sdk.Context) {}
 
-func (k Keeper) Register(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*types.ExternalChainInfo) error {
+func (k Keeper) Register(ctx sdk.Context, valAddr sdk.ValAddress) error {
+
+	sval := k.staking.Validator(ctx, valAddr)
+	if sval == nil {
+		return ErrValidatorWithAddrNotFound.Format(valAddr)
+	}
 	store := k.validatorStore(ctx)
 
 	// check if is already registered! if yes, then error
@@ -65,15 +73,13 @@ func (k Keeper) Register(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*
 		return ErrValidatorAlreadyRegistered
 	}
 
-	val := &types.Validator{}
+	val := &types.Validator{
+		Address: sval.GetOperator().String(),
+		// TODO: add the rest
+	}
 
 	// TODO: more logic here
 	val.State = types.ValidatorState_ACTIVE
-
-	// do a bit of logic
-	if len(chainInfos) == 0 {
-		val.State = types.ValidatorState_NONE
-	}
 
 	// save val
 	return keeperutil.Save(store, k.cdc, valAddr, val)
@@ -82,6 +88,7 @@ func (k Keeper) Register(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*
 func (k Keeper) CreateSnapshot(ctx sdk.Context) error {
 	valStore := k.validatorStore(ctx)
 
+	// get all registered validators
 	validators, err := keeperutil.IterAll[*types.Validator](valStore, k.cdc)
 	if err != nil {
 		return err
@@ -91,37 +98,26 @@ func (k Keeper) CreateSnapshot(ctx sdk.Context) error {
 		Height:    ctx.BlockHeight(),
 		CreatedAt: ctx.BlockTime(),
 	}
+
 	for _, val := range validators {
-		if val.State != types.ValidatorState_ACTIVE {
-			continue
-		}
+		// if val.State != types.ValidatorState_ACTIVE {
+		// 	continue
+		// }
 		snapshot.TotalShares = snapshot.TotalShares.Add(val.ShareCount)
 		snapshot.Validators = append(snapshot.Validators, *val)
 	}
 
-	return k.setCurrentSnapshot(ctx, snapshot)
+	return k.setSnapshotAsCurrent(ctx, snapshot)
 }
 
-func (k Keeper) setCurrentSnapshot(ctx sdk.Context, snapshot *types.Snapshot) error {
+func (k Keeper) setSnapshotAsCurrent(ctx sdk.Context, snapshot *types.Snapshot) error {
 	snapStore := k.snapshotStore(ctx)
-	bytez, err := k.cdc.Marshal(snapshot)
-	if err != nil {
-		return err
-	}
-	snapStore.Set([]byte("snapshot"), bytez)
-	return nil
+	return keeperutil.Save(snapStore, k.cdc, []byte("snapshot"), snapshot)
 }
 
 func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	snapStore := k.snapshotStore(ctx)
-	bytez := snapStore.Get([]byte("snapshot"))
-	var snapshot *types.Snapshot
-	err := k.cdc.Unmarshal(bytez, snapshot)
-	if err != nil {
-		return nil, err
-	}
-	return snapshot, nil
-
+	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, []byte("snapshot"))
 }
 
 func (k Keeper) GetValidatorPubKey(ctx sdk.Context) cryptotypes.PubKey {

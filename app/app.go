@@ -403,6 +403,7 @@ func New(
 		keys[valsetmoduletypes.StoreKey],
 		keys[valsetmoduletypes.MemStoreKey],
 		app.GetSubspace(valsetmoduletypes.ModuleName),
+		stakingKeeper,
 	)
 	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 
@@ -470,6 +471,7 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -485,6 +487,7 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
