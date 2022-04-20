@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/vizualni/whoops"
 	"github.com/volumefi/cronchain/x/consensus/types"
 	signingutils "github.com/volumefi/utils/signing"
 )
@@ -93,47 +94,30 @@ func (k Keeper) AddMessageSignature(
 	}
 
 	// TODO: rewrite this with whoops.Try
-	for _, msg := range msgs {
-		cq, err := k.getConsensusQueue(msg.GetQueueTypeName())
-		if err != nil {
-			return err
+	return whoops.Try(func() {
+		for _, msg := range msgs {
+			cq := whoops.Must(k.getConsensusQueue(msg.GetQueueTypeName()))
+			wrappedMsg := whoops.Must(cq.getMsgByID(ctx, msg.Id))
+			rawMsg := whoops.Must(wrappedMsg.SdkMsg())
+
+			bytes := whoops.Must(signingutils.JsonDeterministicEncoding(rawMsg))
+			nonce := sdk.Uint64ToBigEndian(msg.Id)
+
+			bytes = append(bytes, nonce...)
+
+			if !pk.VerifySignature(bytes, msg.Signature) {
+				whoops.Assert(
+					ErrSignatureVerificationFailed.Format(
+						msg.Id, valAddr, pk.String(),
+					),
+				)
+			}
+
+			whoops.Assert(cq.addSignature(ctx, msg.Id, &types.SignData{
+				ValAddress: string(valAddr.Bytes()),
+				PubKey:     pk.String(),
+				Signature:  msg.Signature,
+			}))
 		}
-
-		wrappedMsg, err := cq.getMsgByID(ctx, msg.Id)
-		if err != nil {
-			return err
-		}
-
-		rawMsg, err := wrappedMsg.SdkMsg()
-
-		if err != nil {
-			return err
-		}
-
-		bytes, err := signingutils.JsonDeterministicEncoding(rawMsg)
-		nonce := sdk.Uint64ToBigEndian(msg.Id)
-
-		if err != nil {
-			return err
-		}
-
-		bytes = append(bytes, nonce...)
-
-		if !pk.VerifySignature(bytes, msg.Signature) {
-			return ErrSignatureVerificationFailed.Format(
-				msg.Id, valAddr, pk.String(),
-			)
-		}
-
-		err = cq.addSignature(ctx, msg.Id, &types.SignData{
-			ValAddress: string(valAddr.Bytes()),
-			PubKey:     pk.String(),
-			Signature:  msg.Signature,
-		})
-
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	})
 }

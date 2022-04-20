@@ -1544,6 +1544,8 @@ github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df/go.mod h1:JP3t17
 github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=
 github.com/vizualni/whoops v0.1.0 h1:zKOsLn1o+RwWu/bPwrSO0tcuA8v0xKX8ZWlCGroaY8k=
 github.com/vizualni/whoops v0.1.0/go.mod h1:V5mMF1aBNKTtOpQvlka6V/5F6AaUlCOw3exsBFYPX/M=
+github.com/vizualni/whoops v0.2.0 h1:LX8FHFtB1OYFwwlHnhVye27uaecRsyNgL2wyFBh7oVI=
+github.com/vizualni/whoops v0.2.0/go.mod h1:V5mMF1aBNKTtOpQvlka6V/5F6AaUlCOw3exsBFYPX/M=
 github.com/vmihailenco/msgpack/v5 v5.1.4/go.mod h1:C5gboKD0TJPqWDTVTtrQNfRbiBwHZGo8UTqP/9/XvLI=
 github.com/vmihailenco/tagparser v0.1.2/go.mod h1:OeAg3pn3UbLjkWt+rN9oFYB6u/cQgqMEUPoW2WPyhdI=
 github.com/volumefi/utils v0.1.1 h1:wSNSkUvdM65VJecwbdFSG6ZdLwMWfOILr5tpguGtBQE=
