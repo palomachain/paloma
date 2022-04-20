@@ -21,7 +21,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	stateStore := store.NewCommitMultiStore(db)
 	stateStore.MountStoreWithDB(storeKey, sdk.StoreTypeIAVL, db)
 	stateStore.MountStoreWithDB(memStoreKey, sdk.StoreTypeMemory, nil)
-	stateStore.LoadLatestVersion()
+	assert.NoError(t, stateStore.LoadLatestVersion())
 
 	registry := types.ModuleCdc.InterfaceRegistry()
 	registry.RegisterInterface(

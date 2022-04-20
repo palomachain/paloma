@@ -95,8 +95,9 @@ func (k Keeper) CreateSnapshot(ctx sdk.Context) error {
 	}
 
 	snapshot := &types.Snapshot{
-		Height:    ctx.BlockHeight(),
-		CreatedAt: ctx.BlockTime(),
+		Height:      ctx.BlockHeight(),
+		CreatedAt:   ctx.BlockTime(),
+		TotalShares: sdk.ZeroInt(),
 	}
 
 	for _, val := range validators {

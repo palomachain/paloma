@@ -41,9 +41,6 @@ func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, 
 
 		res = append(res, val)
 	}
-	if err := iterator.Error(); err != nil {
-		return err
-	}
 
 	return nil
 }

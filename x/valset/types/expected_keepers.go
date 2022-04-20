@@ -22,6 +22,8 @@ type ConcensusKeeper interface {
 	PutMessageForSigning()
 }
 
+//go:generate mockery --name=StakingKeeper
+//go:generate mockery --srcpkg=github.com/cosmos/cosmos-sdk/x/staking/types --name=ValidatorI --structname=StakingValidatorI
 type StakingKeeper interface {
 	Validator(ctx sdk.Context, addr sdk.ValAddress) stakingtypes.ValidatorI
 	IterateBondedValidatorsByPower(ctx sdk.Context, fn func(index int64, validator stakingtypes.ValidatorI) (stop bool))
