@@ -93,17 +93,22 @@ func (k Keeper) AddMessageSignature(
 		return ErrUnableToFindPubKeyForValidator.Format(valAddr)
 	}
 
-	// TODO: rewrite this with whoops.Try
 	return whoops.Try(func() {
 		for _, msg := range msgs {
-			cq := whoops.Must(k.getConsensusQueue(msg.GetQueueTypeName()))
-			wrappedMsg := whoops.Must(cq.getMsgByID(ctx, msg.Id))
-			rawMsg := whoops.Must(wrappedMsg.SdkMsg())
+			cq := whoops.Must(
+				k.getConsensusQueue(msg.GetQueueTypeName()),
+			)
+			wrappedMsg := whoops.Must(
+				cq.getMsgByID(ctx, msg.Id),
+			)
+			rawMsg := whoops.Must(
+				wrappedMsg.SdkMsg(),
+			)
+			bytes := whoops.Must(
+				signingutils.JsonDeterministicEncoding(rawMsg),
+			)
 
-			bytes := whoops.Must(signingutils.JsonDeterministicEncoding(rawMsg))
-			nonce := sdk.Uint64ToBigEndian(msg.Id)
-
-			bytes = append(bytes, nonce...)
+			bytes = append(bytes, wrappedMsg.Nonce()...)
 
 			if !pk.VerifySignature(bytes, msg.Signature) {
 				whoops.Assert(
@@ -113,11 +118,13 @@ func (k Keeper) AddMessageSignature(
 				)
 			}
 
-			whoops.Assert(cq.addSignature(ctx, msg.Id, &types.SignData{
-				ValAddress: string(valAddr.Bytes()),
-				PubKey:     pk.String(),
-				Signature:  msg.Signature,
-			}))
+			whoops.Assert(
+				cq.addSignature(ctx, msg.Id, &types.SignData{
+					ValAddress: string(valAddr.Bytes()),
+					PubKey:     pk.String(),
+					Signature:  msg.Signature,
+				})
+			)
 		}
 	})
 }
