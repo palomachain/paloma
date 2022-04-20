@@ -9,6 +9,7 @@ import (
 type QueuedSignedMessageI interface {
 	proto.Message
 	GetId() uint64
+	Nonce() []byte
 	GetMsg() *codectypes.Any
 	SdkMsg() (sdk.Msg, error)
 	GetSignData() []*SignData
@@ -22,6 +23,10 @@ func (q *QueuedSignedMessage) AddSignData(data *SignData) {
 		q.SignData = []*SignData{}
 	}
 	q.SignData = append(q.SignData, data)
+}
+
+func (q *QueuedSignedMessage) Nonce() []byte {
+	return sdk.Uint64ToBigEndian(q.GetId())
 }
 
 func (q *QueuedSignedMessage) SdkMsg() (sdk.Msg, error) {

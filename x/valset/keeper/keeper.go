@@ -60,8 +60,7 @@ func (k Keeper) Heartbeat(ctx sdk.Context) {}
 // TODO: break this into add, remove
 func (k Keeper) updateExternalChainInfo(ctx sdk.Context) {}
 
-func (k Keeper) Register(ctx sdk.Context, valAddr sdk.ValAddress) error {
-
+func (k Keeper) Register(ctx sdk.Context, valAddr sdk.ValAddress, signingKey cryptotypes.PubKey) error {
 	sval := k.staking.Validator(ctx, valAddr)
 	if sval == nil {
 		return ErrValidatorWithAddrNotFound.Format(valAddr)
@@ -121,8 +120,13 @@ func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, []byte("snapshot"))
 }
 
-func (k Keeper) GetValidatorPubKey(ctx sdk.Context) cryptotypes.PubKey {
-	return nil
+func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress) cryptotypes.PubKey {
+	val := k.staking.Validator(ctx, valAddr)
+	if val == nil {
+		return nil
+	}
+	pk, _ := val.ConsPubKey()
+	return pk
 }
 
 func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {

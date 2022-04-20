@@ -33,6 +33,7 @@ type (
 	consensusQueuer interface {
 		put(sdk.Context, ...ConsensusMsg) error
 		getAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
+		getMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error)
 		addSignature(sdk.Context, uint64, *types.SignData) error
 		remove(sdk.Context, uint64) error
 	}

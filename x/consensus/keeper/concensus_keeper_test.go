@@ -3,13 +3,16 @@ package keeper
 import (
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	testdata "github.com/volumefi/cronchain/x/consensus/testdata/types"
+	"github.com/volumefi/cronchain/x/consensus/types"
+	signingutils "github.com/volumefi/utils/signing"
 )
 
 func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testing.T) {
-	keeper, ctx := newConsensusKeeper(t)
+	keeper, _, ctx := newConsensusKeeper(t)
 
 	t.Run("it returns a message if type is not registered with the queue", func(t *testing.T) {
 		err := keeper.PutMessageForSigning(ctx, "i don't exist", &testdata.SimpleMessage{
@@ -18,7 +21,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 			World:  "mars",
 		})
 
-		assert.ErrorIs(t, err, ErrConsensusQueueNotImplemented)
+		require.ErrorIs(t, err, ErrConsensusQueueNotImplemented)
 	})
 
 	AddConcencusQueueType[*testdata.SimpleMessage](keeper, "simple-message")
@@ -29,8 +32,8 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 			"simple-message",
 			sdk.ValAddress(`bob`),
 		)
-		assert.NoError(t, err)
-		assert.Empty(t, msgs)
+		require.NoError(t, err)
+		require.Empty(t, msgs)
 	})
 	t.Run("it sucessfully puts message into the queue", func(t *testing.T) {
 		err := keeper.PutMessageForSigning(ctx, "simple-message", &testdata.SimpleMessage{
@@ -39,7 +42,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 			World:  "mars",
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("it sucessfully gets message from the queue", func(t *testing.T) {
@@ -48,11 +51,83 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 			"simple-message",
 			sdk.ValAddress(`bob`),
 		)
-		assert.NoError(t, err)
-		assert.Len(t, msgs, 1)
+		require.NoError(t, err)
+		require.Len(t, msgs, 1)
 		t.Run("it then sends a signature for the message", func(t *testing.T) {
 			// TODO: test this once we've implemented message signature adding
 			// keeper.AddMessageSignature()
 		})
+	})
+}
+
+var (
+	key1 = ed25519.GenPrivKey()
+	key2 = ed25519.GenPrivKey()
+)
+
+func TestAddingSignatures(t *testing.T) {
+	keeper, ms, ctx := newConsensusKeeper(t)
+
+	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*sdk.Msg)(nil), &testdata.SimpleMessage{})
+
+	AddConcencusQueueType[*testdata.SimpleMessage](keeper, "simple-message")
+
+	err := keeper.PutMessageForSigning(ctx, "simple-message", &testdata.SimpleMessage{
+		Sender: "bob",
+		Hello:  "hello",
+		World:  "mars",
+	})
+	require.NoError(t, err)
+
+	msgs, err := keeper.GetMessagesForSigning(ctx, "simple-message", sdk.ValAddress("val1"))
+	require.NoError(t, err)
+	require.Len(t, msgs, 1)
+
+	msg := msgs[0]
+	msgToSign, err := msg.SdkMsg()
+	require.NoError(t, err)
+
+	signedBytes, _, err := signingutils.SignBytes(
+		key1,
+		signingutils.SerializeFnc(signingutils.JsonDeterministicEncoding),
+		msgToSign,
+		msg.Nonce(),
+	)
+	require.NoError(t, err)
+
+	t.Run("with incorrect key it returns an error", func(t *testing.T) {
+		ms.ValsetKeeper.On("GetSigningKey", ctx, sdk.ValAddress("val1")).Return(key2.PubKey()).Once()
+		err = keeper.AddMessageSignature(ctx, sdk.ValAddress("val1"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+			{
+				Id:            msg.GetId(),
+				QueueTypeName: "simple-message",
+				Signature:     signedBytes,
+			},
+		})
+		require.ErrorIs(t, err, ErrSignatureVerificationFailed)
+	})
+
+	t.Run("with correct key it adds it to the store", func(t *testing.T) {
+		ms.ValsetKeeper.On("GetSigningKey", ctx, sdk.ValAddress("val1")).Return(key1.PubKey()).Once()
+		err = keeper.AddMessageSignature(ctx, sdk.ValAddress("val1"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+			{
+				Id:            msg.GetId(),
+				QueueTypeName: "simple-message",
+				Signature:     signedBytes,
+			},
+		})
+		require.NoError(t, err)
+
+		t.Run("it is no longer available for signing for this validator", func(t *testing.T) {
+			msgs, err := keeper.GetMessagesForSigning(ctx, "simple-message", sdk.ValAddress("val1"))
+			require.NoError(t, err)
+			require.Empty(t, msgs)
+		})
+		t.Run("it is available for other validator", func(t *testing.T) {
+			msgs, err := keeper.GetMessagesForSigning(ctx, "simple-message", sdk.ValAddress("404"))
+			require.NoError(t, err)
+			require.Len(t, msgs, 1)
+		})
+
 	})
 }
