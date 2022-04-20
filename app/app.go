@@ -99,6 +99,9 @@ import (
 	schedulermodule "github.com/volumefi/cronchain/x/scheduler"
 	schedulermodulekeeper "github.com/volumefi/cronchain/x/scheduler/keeper"
 	schedulermoduletypes "github.com/volumefi/cronchain/x/scheduler/types"
+	valsetmodule "github.com/volumefi/cronchain/x/valset"
+	valsetmodulekeeper "github.com/volumefi/cronchain/x/valset/keeper"
+	valsetmoduletypes "github.com/volumefi/cronchain/x/valset/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -154,6 +157,7 @@ var (
 		schedulermodule.AppModuleBasic{},
 
 		consensusmodule.AppModuleBasic{},
+		valsetmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -228,6 +232,8 @@ type App struct {
 
 	ScopedConsensusKeeper capabilitykeeper.ScopedKeeper
 	ConsensusKeeper       consensusmodulekeeper.Keeper
+
+	ValsetKeeper valsetmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// mm is the module manager
@@ -266,6 +272,7 @@ func New(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		schedulermoduletypes.StoreKey,
 		consensusmoduletypes.StoreKey,
+		valsetmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -391,6 +398,15 @@ func New(
 	)
 	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 
+	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
+		appCodec,
+		keys[valsetmoduletypes.StoreKey],
+		keys[valsetmoduletypes.MemStoreKey],
+		app.GetSubspace(valsetmoduletypes.ModuleName),
+		stakingKeeper,
+	)
+	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
+
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
 	// Create static IBC router, add transfer route, then set and seal it
@@ -433,6 +449,7 @@ func New(
 		transferModule,
 		schedulerModule,
 		consensusModule,
+		valsetModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -454,6 +471,7 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -469,6 +487,7 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -497,6 +516,7 @@ func New(
 		ibctransfertypes.ModuleName,
 		schedulermoduletypes.ModuleName,
 		consensusmoduletypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -521,6 +541,7 @@ func New(
 		transferModule,
 		schedulerModule,
 		consensusModule,
+		valsetModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 	app.sm.RegisterStoreDecoders()
@@ -710,6 +731,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
 	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
+	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper

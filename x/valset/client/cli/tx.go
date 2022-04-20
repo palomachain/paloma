@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	// "github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/volumefi/cronchain/x/consensus/types"
+	"github.com/volumefi/cronchain/x/valset/types"
 )
 
 var (
@@ -30,7 +30,6 @@ func GetTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(CmdAddMessagesSignatures())
 	// this line is used by starport scaffolding # 1
 
 	return cmd
