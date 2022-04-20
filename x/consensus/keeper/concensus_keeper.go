@@ -123,7 +123,7 @@ func (k Keeper) AddMessageSignature(
 					ValAddress: string(valAddr.Bytes()),
 					PubKey:     pk.String(),
 					Signature:  msg.Signature,
-				})
+				}),
 			)
 		}
 	})
