@@ -384,6 +384,16 @@ func New(
 		app.BankKeeper,
 	)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
+	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
+
+	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
+		appCodec,
+		keys[valsetmoduletypes.StoreKey],
+		keys[valsetmoduletypes.MemStoreKey],
+		app.GetSubspace(valsetmoduletypes.ModuleName),
+		stakingKeeper,
+	)
+	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
@@ -395,17 +405,8 @@ func New(
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		scopedConsensusKeeper,
+		app.ValsetKeeper,
 	)
-	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
-
-	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
-		appCodec,
-		keys[valsetmoduletypes.StoreKey],
-		keys[valsetmoduletypes.MemStoreKey],
-		app.GetSubspace(valsetmoduletypes.ModuleName),
-		stakingKeeper,
-	)
-	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 

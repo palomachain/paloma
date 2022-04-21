@@ -2,7 +2,9 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/vizualni/whoops"
 	"github.com/volumefi/cronchain/x/consensus/types"
+	signingutils "github.com/volumefi/utils/signing"
 )
 
 // TODO: add private type for queueTypeName
@@ -80,12 +82,49 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val
 	return msgs, nil
 }
 
-func (k Keeper) AddMessageSignature(ctx sdk.Context, msgID uint64, queueTypeName string, signature []byte) (err error) {
-	// TODO: once we have validatorsets get them here, take their keys and validate the signatures
-	// cq, err := k.getConsensusQueue(queueTypeName)
-	// if err != nil {
-	// 	return err
-	// }
+// AddMessageSignature adds signatures to the messages.
+func (k Keeper) AddMessageSignature(
+	ctx sdk.Context,
+	valAddr sdk.ValAddress,
+	msgs []*types.MsgAddMessagesSignatures_MsgSignedMessage,
+) error {
+	pk := k.valset.GetSigningKey(ctx, valAddr)
+	if pk == nil {
+		return ErrUnableToFindPubKeyForValidator.Format(valAddr)
+	}
 
-	return nil
+	return whoops.Try(func() {
+		for _, msg := range msgs {
+			cq := whoops.Must(
+				k.getConsensusQueue(msg.GetQueueTypeName()),
+			)
+			wrappedMsg := whoops.Must(
+				cq.getMsgByID(ctx, msg.Id),
+			)
+			rawMsg := whoops.Must(
+				wrappedMsg.SdkMsg(),
+			)
+			bytes := whoops.Must(
+				signingutils.JsonDeterministicEncoding(rawMsg),
+			)
+
+			bytes = append(bytes, wrappedMsg.Nonce()...)
+
+			if !pk.VerifySignature(bytes, msg.Signature) {
+				whoops.Assert(
+					ErrSignatureVerificationFailed.Format(
+						msg.Id, valAddr, pk.String(),
+					),
+				)
+			}
+
+			whoops.Assert(
+				cq.addSignature(ctx, msg.Id, &types.SignData{
+					ValAddress: string(valAddr.Bytes()),
+					PubKey:     pk.String(),
+					Signature:  msg.Signature,
+				}),
+			)
+		}
+	})
 }

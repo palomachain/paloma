@@ -16,9 +16,14 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 	"github.com/volumefi/cronchain/x/consensus/types"
+	"github.com/volumefi/cronchain/x/consensus/types/mocks"
 )
 
-func newConsensusKeeper(t testing.TB) (*Keeper, sdk.Context) {
+type mockedServices struct {
+	ValsetKeeper *mocks.ValsetKeeper
+}
+
+func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 	logger := log.NewNopLogger()
 
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -34,7 +39,6 @@ func newConsensusKeeper(t testing.TB) (*Keeper, sdk.Context) {
 	appCodec := codec.NewProtoCodec(registry)
 	capabilityKeeper := capabilitykeeper.NewKeeper(appCodec, storeKey, memStoreKey)
 
-	types.RegisterCodec(types.Amino)
 	types.RegisterInterfaces(registry)
 
 	ss := typesparams.NewSubspace(appCodec,
@@ -58,6 +62,9 @@ func newConsensusKeeper(t testing.TB) (*Keeper, sdk.Context) {
 		memStoreKey,
 		"ConsensusParams",
 	)
+	ms := mockedServices{
+		ValsetKeeper: mocks.NewValsetKeeper(t),
+	}
 	k := NewKeeper(
 		appCodec,
 		storeKey,
@@ -66,6 +73,7 @@ func newConsensusKeeper(t testing.TB) (*Keeper, sdk.Context) {
 		IBCKeeper.ChannelKeeper,
 		&IBCKeeper.PortKeeper,
 		capabilityKeeper.ScopeToModule("ConsensusScopedKeeper"),
+		ms.ValsetKeeper,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
@@ -73,5 +81,5 @@ func newConsensusKeeper(t testing.TB) (*Keeper, sdk.Context) {
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())
 
-	return k, ctx
+	return k, ms, ctx
 }

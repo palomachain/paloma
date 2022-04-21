@@ -16,7 +16,7 @@ message Validator {
     (gogoproto.nullable) = false
   ];
 
-  google.protobuf.Any sdkValidator = 2;
+  string pubKey = 2;
 
   ValidatorState state = 3;
 

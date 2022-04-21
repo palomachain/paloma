@@ -358,7 +358,6 @@ func (m *SimpleMessage) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			fmt.Println("AASDASDAS", dAtA, iNdEx, postIndex, string(dAtA[iNdEx:postIndex]))
 			m.Sender = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:

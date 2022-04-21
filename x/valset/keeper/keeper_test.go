@@ -3,9 +3,15 @@ package keeper
 import (
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"github.com/volumefi/cronchain/x/valset/types/mocks"
+)
+
+var (
+	pk1 = ed25519.GenPrivKey().PubKey()
+	pk2 = ed25519.GenPrivKey().PubKey()
 )
 
 func TestRegisterRunner(t *testing.T) {
@@ -16,7 +22,7 @@ func TestRegisterRunner(t *testing.T) {
 		// returns no validator
 		ms.StakingKeeper.On("Validator", ctx, val).Return(nil).Once()
 
-		err := k.Register(ctx, val)
+		err := k.Register(ctx, val, pk1)
 		require.ErrorIs(t, err, ErrValidatorWithAddrNotFound)
 	})
 
@@ -29,10 +35,10 @@ func TestRegisterRunner(t *testing.T) {
 		ms.StakingKeeper.On("Validator", ctx, val).Return(vali).Twice()
 		vali.On("GetOperator").Return(val).Once()
 
-		err := k.Register(ctx, val)
+		err := k.Register(ctx, val, pk1)
 		require.NoError(t, err)
 		t.Run("it returns an error if validator is already registered", func(t *testing.T) {
-			err := k.Register(ctx, val)
+			err := k.Register(ctx, val, pk1)
 			require.ErrorIs(t, err, ErrValidatorAlreadyRegistered)
 		})
 	})
@@ -51,10 +57,10 @@ func TestCreatingSnapshots(t *testing.T) {
 	ms.StakingKeeper.On("Validator", ctx, val1).Return(vali1).Once()
 	ms.StakingKeeper.On("Validator", ctx, val2).Return(vali2).Once()
 
-	err := k.Register(ctx, val1)
+	err := k.Register(ctx, val1, pk1)
 	require.NoError(t, err)
 
-	err = k.Register(ctx, val2)
+	err = k.Register(ctx, val2, pk2)
 	require.NoError(t, err)
 
 	err = k.CreateSnapshot(ctx)

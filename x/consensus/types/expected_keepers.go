@@ -1,6 +1,7 @@
 package types
 
 import (
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -15,4 +16,9 @@ type AccountKeeper interface {
 type BankKeeper interface {
 	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	// Methods imported from bank should be defined here
+}
+
+//go:generate mockery --name=ValsetKeeper
+type ValsetKeeper interface {
+	GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress) cryptotypes.PubKey
 }
