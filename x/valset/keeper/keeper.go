@@ -61,6 +61,7 @@ func (k Keeper) Heartbeat(ctx sdk.Context) {}
 // TODO: break this into add, remove
 func (k Keeper) updateExternalChainInfo(ctx sdk.Context) {}
 
+// Register registers the validator as being a part of a conductor's network.
 func (k Keeper) Register(ctx sdk.Context, msg *types.MsgRegisterConductor) error {
 
 	valAddr, err := sdk.ValAddressFromBech32(msg.Creator)
@@ -101,7 +102,10 @@ func (k Keeper) Register(ctx sdk.Context, msg *types.MsgRegisterConductor) error
 	return keeperutil.Save(store, k.cdc, valAddr, val)
 }
 
+// CreateSnapshot creates the snapshot of currently active validators that are
+// active and registered as conductors.
 func (k Keeper) CreateSnapshot(ctx sdk.Context) error {
+	// TODO: check if there is a need for snapshots being incremental and keeping the historical versions.
 	valStore := k.validatorStore(ctx)
 
 	// get all registered validators
@@ -132,11 +136,13 @@ func (k Keeper) setSnapshotAsCurrent(ctx sdk.Context, snapshot *types.Snapshot) 
 	return keeperutil.Save(snapStore, k.cdc, []byte("snapshot"), snapshot)
 }
 
+// GetCurrentSnapshot returns the currently active snapshot.
 func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	snapStore := k.snapshotStore(ctx)
 	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, []byte("snapshot"))
 }
 
+// GetSigningKey returns a signing key used by the conductor to sign arbitrary messages.
 func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress) cryptotypes.PubKey {
 	val := k.staking.Validator(ctx, valAddr)
 	if val == nil {
