@@ -34,7 +34,6 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 	registry := codectypes.NewInterfaceRegistry()
 	appCodec := codec.NewProtoCodec(registry)
 
-	types.RegisterCodec(types.Amino)
 	types.RegisterInterfaces(registry)
 
 	paramsSubspace := typesparams.NewSubspace(appCodec,

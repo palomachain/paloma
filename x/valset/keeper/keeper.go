@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	"github.com/tendermint/tendermint/libs/log"
@@ -60,11 +61,27 @@ func (k Keeper) Heartbeat(ctx sdk.Context) {}
 // TODO: break this into add, remove
 func (k Keeper) updateExternalChainInfo(ctx sdk.Context) {}
 
-func (k Keeper) Register(ctx sdk.Context, valAddr sdk.ValAddress, signingKey cryptotypes.PubKey) error {
+func (k Keeper) Register(ctx sdk.Context, msg *types.MsgRegisterConductor) error {
+
+	valAddr, err := sdk.ValAddressFromBech32(msg.Creator)
+	if err != nil {
+		return err
+	}
+
 	sval := k.staking.Validator(ctx, valAddr)
 	if sval == nil {
 		return ErrValidatorWithAddrNotFound.Format(valAddr)
 	}
+
+	// TODO: making the assumption that the pub key is of ed25519 type.
+	pk := &ed25519.PubKey{
+		Key: msg.PubKey,
+	}
+
+	if !pk.VerifySignature(msg.PubKey, msg.SignedPubKey) {
+		return ErrPublicKeyOrSignatureIsInvalid
+	}
+
 	store := k.validatorStore(ctx)
 
 	// check if is already registered! if yes, then error
