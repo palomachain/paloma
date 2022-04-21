@@ -14,3 +14,9 @@ func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {
 	k, ctx := keepertest.ValsetKeeper(t)
 	return keeper.NewMsgServerImpl(*k), sdk.WrapSDKContext(ctx)
 }
+
+func TestRegisterConductor(t *testing.T) {
+	// tapp := app.NewTestApp(false)
+
+	// tapp.MsgServiceRouter
+}
