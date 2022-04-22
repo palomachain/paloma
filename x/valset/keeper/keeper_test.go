@@ -64,6 +64,7 @@ func TestRegisterRunner(t *testing.T) {
 			SignedPubKey: whoops.Must(priv1.Sign(pk1.Bytes())),
 		})
 		require.NoError(t, err)
+
 		t.Run("it returns an error if validator is already registered", func(t *testing.T) {
 			err := k.Register(ctx, &types.MsgRegisterConductor{
 				Creator:      val.String(),
@@ -71,6 +72,50 @@ func TestRegisterRunner(t *testing.T) {
 				SignedPubKey: whoops.Must(priv1.Sign(pk1.Bytes())),
 			})
 			require.ErrorIs(t, err, ErrValidatorAlreadyRegistered)
+		})
+
+		t.Run("it adds a new chain info to the validator", func(t *testing.T) {
+			err := k.addExternalChainInfo(ctx, &types.MsgAddExternalChainInfoForValidator{
+				Creator: string(val.Bytes()),
+				ChainInfos: []*types.MsgAddExternalChainInfoForValidator_ChainInfo{
+					{
+						ChainID: "chain-1",
+						Address: "addr1",
+					},
+				},
+			})
+			require.NoError(t, err)
+			validator, err := k.getValidator(ctx, val)
+			require.NoError(t, err)
+			require.Len(t, validator.ExternalChainInfos, 1)
+			require.Equal(t, validator.ExternalChainInfos[0].ChainID, "chain-1")
+			require.Equal(t, validator.ExternalChainInfos[0].Address, "addr1")
+		})
+
+		t.Run("it returns an error if chain info is chain info already exists", func(t *testing.T) {
+			err := k.addExternalChainInfo(ctx, &types.MsgAddExternalChainInfoForValidator{
+				Creator: string(val.Bytes()),
+				ChainInfos: []*types.MsgAddExternalChainInfoForValidator_ChainInfo{
+					{
+						ChainID: "chain-1",
+						Address: "addr1",
+					},
+				},
+			})
+			require.ErrorIs(t, err, ErrExternalChainAlreadyRegistered)
+		})
+
+		t.Run("it returns an error if we try to add to the validator which does not exist", func(t *testing.T) {
+			err := k.addExternalChainInfo(ctx, &types.MsgAddExternalChainInfoForValidator{
+				Creator: "i don't exist",
+				ChainInfos: []*types.MsgAddExternalChainInfoForValidator_ChainInfo{
+					{
+						ChainID: "chain-1",
+						Address: "addr1",
+					},
+				},
+			})
+			require.Error(t, err)
 		})
 	})
 
@@ -102,7 +147,7 @@ func TestCreatingSnapshots(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = k.CreateSnapshot(ctx)
+	err = k.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
 
 	t.Run("getting the snapshot gets all validators", func(t *testing.T) {

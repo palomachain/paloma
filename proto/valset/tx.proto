@@ -8,6 +8,7 @@ option go_package = "github.com/volumefi/cronchain/x/valset/types";
 // Msg defines the Msg service.
 service Msg {
       rpc RegisterConductor(MsgRegisterConductor) returns (MsgRegisterConductorResponse);
+  rpc AddExternalChainInfoForValidator(MsgAddExternalChainInfoForValidator) returns (MsgAddExternalChainInfoForValidatorResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
@@ -23,6 +24,18 @@ message MsgRegisterConductor {
 }
 
 message MsgRegisterConductorResponse {
+}
+
+message MsgAddExternalChainInfoForValidator {
+  message ChainInfo {
+    string chainID = 1;
+    string address = 2;
+  }
+  string creator = 1;
+  repeated ChainInfo chainInfos = 2;
+}
+
+message MsgAddExternalChainInfoForValidatorResponse {
 }
 
 // this line is used by starport scaffolding # proto/tx/message

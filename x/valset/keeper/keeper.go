@@ -15,6 +15,10 @@ import (
 	"github.com/volumefi/cronchain/x/valset/types"
 )
 
+const (
+	externalChainInfoIDKey = "external-chain-info"
+)
+
 type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
@@ -22,6 +26,7 @@ type (
 		memKey     sdk.StoreKey
 		paramstore paramtypes.Subspace
 		staking    types.StakingKeeper
+		ider       keeperutil.IDGenerator
 	}
 )
 
@@ -38,13 +43,19 @@ func NewKeeper(
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
-	return &Keeper{
+	k := &Keeper{
 		cdc:        cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
 		paramstore: ps,
 		staking:    staking,
 	}
+	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx sdk.Context) sdk.KVStore {
+		return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("IDs"))
+	}), nil)
+
+	return k
+
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
@@ -57,9 +68,48 @@ func (k Keeper) PunishValidator(ctx sdk.Context) {}
 // TODO: not required now
 func (k Keeper) Heartbeat(ctx sdk.Context) {}
 
-// TODO: not required now
-// TODO: break this into add, remove
-func (k Keeper) updateExternalChainInfo(ctx sdk.Context) {}
+// addExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
+// we can attribute rewards for running the jobs.
+func (k Keeper) addExternalChainInfo(ctx sdk.Context, msg *types.MsgAddExternalChainInfoForValidator) error {
+	validatorStore := k.validatorStore(ctx)
+
+	validator, err := keeperutil.Load[*types.Validator](
+		validatorStore,
+		k.cdc,
+		[]byte(msg.Creator),
+	)
+	if err != nil {
+		return err
+	}
+
+	// O(n^2) to find if new one is already registered
+	for _, newChainInfo := range msg.ChainInfos {
+		for _, existingChainInfo := range validator.ExternalChainInfos {
+			if existingChainInfo.ChainID == newChainInfo.ChainID && existingChainInfo.Address == newChainInfo.Address {
+				return ErrExternalChainAlreadyRegistered.Format(newChainInfo.ChainID, newChainInfo.Address)
+			}
+		}
+	}
+	for _, newChainInfo := range msg.ChainInfos {
+		id := k.ider.IncrementNextID(ctx, externalChainInfoIDKey)
+		validator.ExternalChainInfos = append(validator.ExternalChainInfos, &types.ExternalChainInfo{
+			ID:      id,
+			ChainID: newChainInfo.ChainID,
+			Address: newChainInfo.Address,
+		})
+	}
+
+	err = keeperutil.Save(validatorStore, k.cdc, []byte(msg.Creator), validator)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TODO: this is not required for the private alpha
+func (k Keeper) RemoveExternalChainInfo(ctx sdk.Context) {}
 
 // Register registers the validator as being a part of a conductor's network.
 func (k Keeper) Register(ctx sdk.Context, msg *types.MsgRegisterConductor) error {
@@ -102,9 +152,14 @@ func (k Keeper) Register(ctx sdk.Context, msg *types.MsgRegisterConductor) error
 	return keeperutil.Save(store, k.cdc, valAddr, val)
 }
 
-// CreateSnapshot creates the snapshot of currently active validators that are
+// TriggerSnapshotBuild creates the snapshot of currently active validators that are
 // active and registered as conductors.
-func (k Keeper) CreateSnapshot(ctx sdk.Context) error {
+func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) error {
+	return k.createSnapshot(ctx)
+}
+
+// createSnapshot builds a current snapshot of validators.
+func (k Keeper) createSnapshot(ctx sdk.Context) error {
 	// TODO: check if there is a need for snapshots being incremental and keeping the historical versions.
 	valStore := k.validatorStore(ctx)
 
@@ -142,14 +197,18 @@ func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, []byte("snapshot"))
 }
 
+func (k Keeper) getValidator(ctx sdk.Context, valAddr sdk.ValAddress) (*types.Validator, error) {
+	return keeperutil.Load[*types.Validator](k.validatorStore(ctx), k.cdc, valAddr)
+}
+
 // GetSigningKey returns a signing key used by the conductor to sign arbitrary messages.
 func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress) cryptotypes.PubKey {
-	val := k.staking.Validator(ctx, valAddr)
-	if val == nil {
+	validator, err := k.getValidator(ctx, valAddr)
+	if err != nil {
 		return nil
 	}
-	pk, _ := val.ConsPubKey()
-	return pk
+
+	return &ed25519.PubKey{Key: validator.PubKey}
 }
 
 func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {

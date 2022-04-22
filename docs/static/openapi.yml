@@ -48205,6 +48205,8 @@ definitions:
         description: params holds all the parameters of this module.
         type: object
     description: QueryParamsResponse is response type for the Query/Params RPC method.
+  volumefi.cronchain.valset.MsgAddExternalChainInfoForValidatorResponse:
+    type: object
   volumefi.cronchain.valset.MsgRegisterConductorResponse:
     type: object
   volumefi.cronchain.valset.Params:

@@ -44,8 +44,8 @@ message Snapshot {
 }
 
 message ExternalChainInfo {
-  string chainID = 1;
-  google.protobuf.Any pubKey = 2 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
+  uint64 ID = 1;
+  string chainID = 2;
   string address = 3;
 }
 
