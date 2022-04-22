@@ -28,6 +28,10 @@ const (
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgRegisterConductor int = 100
 
+	opWeightMsgAddExternalChainInfoForValidator = "op_weight_msg_add_external_chain_info_for_validator"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgAddExternalChainInfoForValidator int = 100
+
 	// this line is used by starport scaffolding # simapp/module/const
 )
 
@@ -70,6 +74,17 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	operations = append(operations, simulation.NewWeightedOperation(
 		weightMsgRegisterConductor,
 		valsetsimulation.SimulateMsgRegisterConductor(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
+
+	var weightMsgAddExternalChainInfoForValidator int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgAddExternalChainInfoForValidator, &weightMsgAddExternalChainInfoForValidator, nil,
+		func(_ *rand.Rand) {
+			weightMsgAddExternalChainInfoForValidator = defaultWeightMsgAddExternalChainInfoForValidator
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgAddExternalChainInfoForValidator,
+		valsetsimulation.SimulateMsgAddExternalChainInfoForValidator(am.accountKeeper, am.bankKeeper, am.keeper),
 	))
 
 	// this line is used by starport scaffolding # simapp/module/operation
