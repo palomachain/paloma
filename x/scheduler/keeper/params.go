@@ -2,7 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/volumefi/cronchain/x/scheduler/types"
+	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
 // GetParams get all parameters as types.Params

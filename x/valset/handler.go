@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/volumefi/cronchain/x/valset/keeper"
-	"github.com/volumefi/cronchain/x/valset/types"
+	"github.com/palomachain/paloma/x/valset/keeper"
+	"github.com/palomachain/paloma/x/valset/types"
 )
 
 // NewHandler ...

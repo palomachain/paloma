@@ -27679,7 +27679,7 @@ paths:
           format: uint64
       tags:
         - Query
-  /volumefi/cronchain/consensus/params:
+  /volumefi/paloma/consensus/params:
     get:
       summary: Parameters queries the parameters of the module.
       operationId: VolumefiCronchainConsensusParams
@@ -27882,7 +27882,7 @@ paths:
                         }
       tags:
         - Query
-  /volumefi/cronchain/consensus/queued_messages_for_signing:
+  /volumefi/paloma/consensus/queued_messages_for_signing:
     get:
       summary: Queries a list of QueuedMessagesForSigning items.
       operationId: VolumefiCronchainConsensusQueuedMessagesForSigning
@@ -28274,7 +28274,7 @@ paths:
           type: string
       tags:
         - Query
-  /volumefi/cronchain/scheduler/params:
+  /volumefi/paloma/scheduler/params:
     get:
       summary: Parameters queries the parameters of the module.
       operationId: VolumefiCronchainSchedulerParams
@@ -28310,7 +28310,7 @@ paths:
                   additionalProperties: {}
       tags:
         - Query
-  /volumefi/cronchain/valset/params:
+  /volumefi/paloma/valset/params:
     get:
       summary: Parameters queries the parameters of the module.
       operationId: VolumefiCronchainValsetParams
@@ -28513,7 +28513,7 @@ paths:
                         }
       tags:
         - Query
-  '/volumefi/cronchain/valset/validator_info/{valAddr}':
+  '/volumefi/paloma/valset/validator_info/{valAddr}':
     get:
       summary: Queries a list of ValidatorInfo items.
       operationId: VolumefiCronchainValsetValidatorInfo
@@ -48026,7 +48026,7 @@ definitions:
     description: >-
       QueryAppVersionResponse is the response type for the Query/AppVersion RPC
       method.
-  volumefi.cronchain.consensus.MessageToSign:
+  volumefi.paloma.consensus.MessageToSign:
     type: object
     properties:
       nonce:
@@ -48192,7 +48192,7 @@ definitions:
                 "@type": "type.googleapis.com/google.protobuf.Duration",
                 "value": "1.212s"
               }
-  volumefi.cronchain.consensus.MsgAddMessagesSignatures.MsgSignedMessage:
+  volumefi.paloma.consensus.MsgAddMessagesSignatures.MsgSignedMessage:
     type: object
     properties:
       id:
@@ -48203,19 +48203,19 @@ definitions:
       signature:
         type: string
         format: byte
-  volumefi.cronchain.consensus.MsgAddMessagesSignaturesResponse:
+  volumefi.paloma.consensus.MsgAddMessagesSignaturesResponse:
     type: object
-  volumefi.cronchain.consensus.Params:
+  volumefi.paloma.consensus.Params:
     type: object
     description: Params defines the parameters for the module.
-  volumefi.cronchain.consensus.QueryParamsResponse:
+  volumefi.paloma.consensus.QueryParamsResponse:
     type: object
     properties:
       params:
         description: params holds all the parameters of this module.
         type: object
     description: QueryParamsResponse is response type for the Query/Params RPC method.
-  volumefi.cronchain.consensus.QueryQueuedMessagesForSigningResponse:
+  volumefi.paloma.consensus.QueryQueuedMessagesForSigningResponse:
     type: object
     properties:
       messageToSign:
@@ -48396,36 +48396,36 @@ definitions:
                       "@type": "type.googleapis.com/google.protobuf.Duration",
                       "value": "1.212s"
                     }
-  volumefi.cronchain.scheduler.Params:
+  volumefi.paloma.scheduler.Params:
     type: object
     description: Params defines the parameters for the module.
-  volumefi.cronchain.scheduler.QueryParamsResponse:
+  volumefi.paloma.scheduler.QueryParamsResponse:
     type: object
     properties:
       params:
         description: params holds all the parameters of this module.
         type: object
     description: QueryParamsResponse is response type for the Query/Params RPC method.
-  volumefi.cronchain.valset.MsgAddExternalChainInfoForValidator.ChainInfo:
+  volumefi.paloma.valset.MsgAddExternalChainInfoForValidator.ChainInfo:
     type: object
     properties:
       chainID:
         type: string
       address:
         type: string
-  volumefi.cronchain.valset.MsgAddExternalChainInfoForValidatorResponse:
+  volumefi.paloma.valset.MsgAddExternalChainInfoForValidatorResponse:
     type: object
-  volumefi.cronchain.valset.MsgRegisterConductorResponse:
+  volumefi.paloma.valset.MsgRegisterConductorResponse:
     type: object
-  volumefi.cronchain.valset.Params:
+  volumefi.paloma.valset.Params:
     type: object
     description: Params defines the parameters for the module.
-  volumefi.cronchain.valset.QueryParamsResponse:
+  volumefi.paloma.valset.QueryParamsResponse:
     type: object
     properties:
       params:
         description: params holds all the parameters of this module.
         type: object
     description: QueryParamsResponse is response type for the Query/Params RPC method.
-  volumefi.cronchain.valset.QueryValidatorInfoResponse:
+  volumefi.paloma.valset.QueryValidatorInfoResponse:
     type: object

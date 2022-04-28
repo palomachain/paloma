@@ -10,8 +10,8 @@ import (
 	sdkbankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/tendermint/starport/starport/pkg/cosmosibckeeper"
-	keeperutil "github.com/volumefi/cronchain/util/keeper"
-	"github.com/volumefi/cronchain/x/scheduler/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/x/scheduler/types"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 )

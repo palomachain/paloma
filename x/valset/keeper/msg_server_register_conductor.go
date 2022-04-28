@@ -4,7 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/volumefi/cronchain/x/valset/types"
+	"github.com/palomachain/paloma/x/valset/types"
 )
 
 func (k msgServer) RegisterConductor(goCtx context.Context, msg *types.MsgRegisterConductor) (*types.MsgRegisterConductorResponse, error) {

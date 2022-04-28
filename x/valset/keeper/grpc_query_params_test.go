@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	testkeeper "github.com/volumefi/cronchain/testutil/keeper"
-	"github.com/volumefi/cronchain/x/valset/types"
+	testkeeper "github.com/palomachain/paloma/testutil/keeper"
+	"github.com/palomachain/paloma/x/valset/types"
 )
 
 func TestParamsQuery(t *testing.T) {

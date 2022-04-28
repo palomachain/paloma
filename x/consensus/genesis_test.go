@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	keepertest "github.com/volumefi/cronchain/testutil/keeper"
-	"github.com/volumefi/cronchain/testutil/nullify"
-	"github.com/volumefi/cronchain/x/consensus"
-	"github.com/volumefi/cronchain/x/consensus/types"
+	keepertest "github.com/palomachain/paloma/testutil/keeper"
+	"github.com/palomachain/paloma/testutil/nullify"
+	"github.com/palomachain/paloma/x/consensus"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 func TestGenesis(t *testing.T) {

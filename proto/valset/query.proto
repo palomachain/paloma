@@ -1,5 +1,5 @@
 syntax = "proto3";
-package volumefi.cronchain.valset;
+package volumefi.paloma.valset;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -8,17 +8,17 @@ import "valset/params.proto";
 import "valset/snapshot.proto";
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/volumefi/cronchain/x/valset/types";
+option go_package = "github.com/palomachain/paloma/x/valset/types";
 
 // Query defines the gRPC querier service.
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/volumefi/cronchain/valset/params";
+    option (google.api.http).get = "/volumefi/paloma/valset/params";
   }
   // Queries a list of ValidatorInfo items.
 	rpc ValidatorInfo(QueryValidatorInfoRequest) returns (QueryValidatorInfoResponse) {
-		option (google.api.http).get = "/volumefi/cronchain/valset/validator_info/{valAddr}";
+		option (google.api.http).get = "/volumefi/paloma/valset/validator_info/{valAddr}";
 	}
 
 // this line is used by starport scaffolding # 2

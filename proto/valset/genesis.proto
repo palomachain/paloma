@@ -1,11 +1,11 @@
 syntax = "proto3";
-package volumefi.cronchain.valset;
+package volumefi.paloma.valset;
 
 import "gogoproto/gogo.proto";
 import "valset/params.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
-option go_package = "github.com/volumefi/cronchain/x/valset/types";
+option go_package = "github.com/palomachain/paloma/x/valset/types";
 
 // GenesisState defines the valset module's genesis state.
 message GenesisState {

@@ -1,10 +1,10 @@
 syntax = "proto3";
-package volumefi.cronchain.scheduler;
+package volumefi.paloma.scheduler;
 // this line is used by starport scaffolding # 1
 
 // this line is used by starport scaffolding # proto/packet/import
 
-option go_package = "github.com/volumefi/cronchain/x/scheduler/types";
+option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
 message SchedulerPacketData {
     oneof packet {

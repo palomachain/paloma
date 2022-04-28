@@ -2,8 +2,8 @@ package valset
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/volumefi/cronchain/x/valset/keeper"
-	"github.com/volumefi/cronchain/x/valset/types"
+	"github.com/palomachain/paloma/x/valset/keeper"
+	"github.com/palomachain/paloma/x/valset/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

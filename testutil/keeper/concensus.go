@@ -15,8 +15,8 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
-	"github.com/volumefi/cronchain/x/consensus/keeper"
-	"github.com/volumefi/cronchain/x/consensus/types"
+	"github.com/palomachain/paloma/x/consensus/keeper"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

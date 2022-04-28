@@ -1,9 +1,9 @@
 syntax = "proto3";
-package volumefi.cronchain.valset;
+package volumefi.paloma.valset;
 
 // this line is used by starport scaffolding # proto/tx/import
 
-option go_package = "github.com/volumefi/cronchain/x/valset/types";
+option go_package = "github.com/palomachain/paloma/x/valset/types";
 
 // Msg defines the Msg service.
 service Msg {

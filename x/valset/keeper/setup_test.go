@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
-	"github.com/volumefi/cronchain/x/valset/types"
-	"github.com/volumefi/cronchain/x/valset/types/mocks"
+	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/x/valset/types/mocks"
 )
 
 type mockedServices struct {

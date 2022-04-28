@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/volumefi/cronchain/x/consensus/testdata/types"
+	"github.com/palomachain/paloma/x/consensus/testdata/types"
 )
 
 func TestSaveAndLoad(t *testing.T) {

@@ -9,8 +9,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/tendermint/starport/starport/pkg/cosmosibckeeper"
-	keeperutil "github.com/volumefi/cronchain/util/keeper"
-	"github.com/volumefi/cronchain/x/consensus/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 type (

@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
-	keeperutil "github.com/volumefi/cronchain/util/keeper"
-	testtypes "github.com/volumefi/cronchain/x/consensus/testdata/types"
-	"github.com/volumefi/cronchain/x/consensus/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
+	testtypes "github.com/palomachain/paloma/x/consensus/testdata/types"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 func TestConsensusQueueAllMethods(t *testing.T) {

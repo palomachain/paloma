@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/volumefi/cronchain/x/scheduler/types"
+	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
 type msgServer struct {
