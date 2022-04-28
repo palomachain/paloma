@@ -7,8 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"github.com/vizualni/whoops"
-	"github.com/volumefi/cronchain/x/valset/types"
-	"github.com/volumefi/cronchain/x/valset/types/mocks"
+	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/x/valset/types/mocks"
 )
 
 var (

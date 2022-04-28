@@ -1,5 +1,5 @@
 syntax = "proto3";
-package volumefi.cronchain.valset;
+package volumefi.paloma.valset;
 
 import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 import "cosmos/base/v1beta1/coin.proto";
 
-option go_package = "github.com/volumefi/cronchain/x/valset/types";
+option go_package = "github.com/palomachain/paloma/x/valset/types";
 
 
 message Validator {

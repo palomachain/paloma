@@ -5,8 +5,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/proto"
-	keeperutil "github.com/volumefi/cronchain/util/keeper"
-	"github.com/volumefi/cronchain/x/consensus/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 const (

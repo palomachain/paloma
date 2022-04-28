@@ -91,23 +91,23 @@ import (
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 	"github.com/tendermint/starport/starport/pkg/openapiconsole"
 
-	"github.com/volumefi/cronchain/docs"
+	"github.com/palomachain/paloma/docs"
 
-	consensusmodule "github.com/volumefi/cronchain/x/consensus"
-	consensusmodulekeeper "github.com/volumefi/cronchain/x/consensus/keeper"
-	consensusmoduletypes "github.com/volumefi/cronchain/x/consensus/types"
-	schedulermodule "github.com/volumefi/cronchain/x/scheduler"
-	schedulermodulekeeper "github.com/volumefi/cronchain/x/scheduler/keeper"
-	schedulermoduletypes "github.com/volumefi/cronchain/x/scheduler/types"
-	valsetmodule "github.com/volumefi/cronchain/x/valset"
-	valsetmodulekeeper "github.com/volumefi/cronchain/x/valset/keeper"
-	valsetmoduletypes "github.com/volumefi/cronchain/x/valset/types"
+	consensusmodule "github.com/palomachain/paloma/x/consensus"
+	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
+	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
+	schedulermodule "github.com/palomachain/paloma/x/scheduler"
+	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
+	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
+	valsetmodule "github.com/palomachain/paloma/x/valset"
+	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
+	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
 const (
-	AccountAddressPrefix = "cosmos"
-	Name                 = "cronchain"
+	AccountAddressPrefix = "paloma"
+	Name                 = "paloma"
 )
 
 // this line is used by starport scaffolding # stargate/wasm/app/enabledProposals

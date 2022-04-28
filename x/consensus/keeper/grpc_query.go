@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/volumefi/cronchain/x/consensus/types"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 var _ types.QueryServer = Keeper{}

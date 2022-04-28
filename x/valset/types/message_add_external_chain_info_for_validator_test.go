@@ -5,7 +5,7 @@ import (
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
-	"github.com/volumefi/cronchain/testutil/sample"
+	"github.com/palomachain/paloma/testutil/sample"
 )
 
 func TestMsgAddExternalChainInfoForValidator_ValidateBasic(t *testing.T) {

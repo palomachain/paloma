@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	// "github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/volumefi/cronchain/x/scheduler/types"
+	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
 var (

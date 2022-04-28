@@ -17,7 +17,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
-	"github.com/volumefi/cronchain/app"
+	"github.com/palomachain/paloma/app"
 )
 
 func init() {

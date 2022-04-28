@@ -6,8 +6,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"github.com/volumefi/cronchain/x/consensus/keeper"
-	"github.com/volumefi/cronchain/x/consensus/types"
+	"github.com/palomachain/paloma/x/consensus/keeper"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 func SimulateMsgAddMessagesSignatures(

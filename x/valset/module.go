@@ -16,9 +16,9 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/volumefi/cronchain/x/valset/client/cli"
-	"github.com/volumefi/cronchain/x/valset/keeper"
-	"github.com/volumefi/cronchain/x/valset/types"
+	"github.com/palomachain/paloma/x/valset/client/cli"
+	"github.com/palomachain/paloma/x/valset/keeper"
+	"github.com/palomachain/paloma/x/valset/types"
 )
 
 var (

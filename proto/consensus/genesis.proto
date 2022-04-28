@@ -1,11 +1,11 @@
 syntax = "proto3";
-package volumefi.cronchain.consensus;
+package volumefi.paloma.consensus;
 
 import "gogoproto/gogo.proto";
 import "consensus/params.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
-option go_package = "github.com/volumefi/cronchain/x/consensus/types";
+option go_package = "github.com/palomachain/paloma/x/consensus/types";
 
 // GenesisState defines the consensus module's genesis state.
 message GenesisState {

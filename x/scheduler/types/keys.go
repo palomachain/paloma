@@ -27,7 +27,7 @@ const (
 )
 
 const (
-	CronchainDenom = "croncoin"
+	CronchainDenom = "dove"
 )
 
 var (

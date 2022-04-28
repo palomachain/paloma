@@ -18,9 +18,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	porttypes "github.com/cosmos/ibc-go/v2/modules/core/05-port/types"
-	"github.com/volumefi/cronchain/x/consensus/client/cli"
-	"github.com/volumefi/cronchain/x/consensus/keeper"
-	"github.com/volumefi/cronchain/x/consensus/types"
+	"github.com/palomachain/paloma/x/consensus/client/cli"
+	"github.com/palomachain/paloma/x/consensus/keeper"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 var (

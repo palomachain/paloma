@@ -2,8 +2,8 @@ package consensus
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/volumefi/cronchain/x/consensus/keeper"
-	"github.com/volumefi/cronchain/x/consensus/types"
+	"github.com/palomachain/paloma/x/consensus/keeper"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

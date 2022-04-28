@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/volumefi/cronchain/x/scheduler/types"
+	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {

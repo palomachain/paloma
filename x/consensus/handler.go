@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/volumefi/cronchain/x/consensus/keeper"
-	"github.com/volumefi/cronchain/x/consensus/types"
+	"github.com/palomachain/paloma/x/consensus/keeper"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 // NewHandler ...

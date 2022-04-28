@@ -10,6 +10,6 @@ for dir in $proto_dirs; do
 
 done
 
-cp -r ./github.com/volumefi/cronchain/* .
+cp -r ./github.com/palomachain/paloma/* .
 
 rm -rf ./github.com

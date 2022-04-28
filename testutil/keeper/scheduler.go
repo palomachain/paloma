@@ -15,8 +15,8 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
-	"github.com/volumefi/cronchain/x/scheduler/keeper"
-	"github.com/volumefi/cronchain/x/scheduler/types"
+	"github.com/palomachain/paloma/x/scheduler/keeper"
+	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
 func SchedulerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

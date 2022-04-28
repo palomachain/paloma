@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/volumefi/cronchain/x/scheduler/keeper"
-	"github.com/volumefi/cronchain/x/scheduler/types"
+	"github.com/palomachain/paloma/x/scheduler/keeper"
+	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
 // NewHandler ...

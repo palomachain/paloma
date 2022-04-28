@@ -3,8 +3,8 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/vizualni/whoops"
-	"github.com/volumefi/cronchain/x/consensus/types"
-	signingutils "github.com/volumefi/utils/signing"
+	"github.com/palomachain/paloma/x/consensus/types"
+	signingutils "github.com/palomachain/utils/signing"
 )
 
 // TODO: add private type for queueTypeName

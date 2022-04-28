@@ -1,4 +1,4 @@
-module github.com/volumefi/cronchain
+module github.com/palomachain/paloma
 
 go 1.18
 
@@ -9,6 +9,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
+	github.com/palomachain/utils v0.1.2
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/spf13/cast v1.4.1
 	github.com/spf13/cobra v1.4.0
@@ -17,7 +18,6 @@ require (
 	github.com/tendermint/tendermint v0.34.15
 	github.com/tendermint/tm-db v0.6.6
 	github.com/vizualni/whoops v0.2.0
-	github.com/volumefi/utils v0.1.1
 	google.golang.org/genproto v0.0.0-20220317150908-0efb43f6373e
 	google.golang.org/grpc v1.45.0
 	google.golang.org/protobuf v1.27.1

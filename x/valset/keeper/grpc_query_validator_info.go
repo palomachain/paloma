@@ -4,7 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/volumefi/cronchain/x/valset/types"
+	"github.com/palomachain/paloma/x/valset/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

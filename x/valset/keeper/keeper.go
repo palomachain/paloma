@@ -11,8 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	keeperutil "github.com/volumefi/cronchain/util/keeper"
-	"github.com/volumefi/cronchain/x/valset/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/x/valset/types"
 )
 
 const (

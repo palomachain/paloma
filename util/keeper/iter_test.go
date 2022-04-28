@@ -5,7 +5,7 @@ import (
 
 	// using any test that that extends protobuf
 	"github.com/stretchr/testify/assert"
-	"github.com/volumefi/cronchain/x/consensus/testdata/types"
+	"github.com/palomachain/paloma/x/consensus/testdata/types"
 )
 
 func TestIteration(t *testing.T) {

@@ -13,8 +13,8 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
-	"github.com/volumefi/cronchain/x/valset/keeper"
-	"github.com/volumefi/cronchain/x/valset/types"
+	"github.com/palomachain/paloma/x/valset/keeper"
+	"github.com/palomachain/paloma/x/valset/types"
 )
 
 func ValsetKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
