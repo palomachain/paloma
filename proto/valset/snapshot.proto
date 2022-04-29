@@ -24,6 +24,7 @@ message Validator {
   repeated ExternalChainInfo externalChainInfos = 4;
 
   string address = 5;
+  string signerAddress = 6;
 }
 
 message Snapshot {
