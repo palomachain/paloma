@@ -1,9 +1,9 @@
 package types
 
 import (
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -20,5 +20,5 @@ type BankKeeper interface {
 
 //go:generate mockery --name=ValsetKeeper
 type ValsetKeeper interface {
-	GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress) cryptotypes.PubKey
+	GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress) crypto.PubKey
 }

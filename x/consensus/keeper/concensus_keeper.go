@@ -2,9 +2,9 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/vizualni/whoops"
 	"github.com/palomachain/paloma/x/consensus/types"
 	signingutils "github.com/palomachain/utils/signing"
+	"github.com/vizualni/whoops"
 )
 
 // TODO: add private type for queueTypeName
@@ -113,7 +113,7 @@ func (k Keeper) AddMessageSignature(
 			if !pk.VerifySignature(bytes, msg.Signature) {
 				whoops.Assert(
 					ErrSignatureVerificationFailed.Format(
-						msg.Id, valAddr, pk.String(),
+						msg.Id, valAddr, pk.Address(),
 					),
 				)
 			}
@@ -121,7 +121,7 @@ func (k Keeper) AddMessageSignature(
 			whoops.Assert(
 				cq.addSignature(ctx, msg.Id, &types.SignData{
 					ValAddress: string(valAddr.Bytes()),
-					PubKey:     pk.String(),
+					PubKey:     pk.Bytes(),
 					Signature:  msg.Signature,
 				}),
 			)

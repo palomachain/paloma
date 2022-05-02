@@ -3,9 +3,9 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -81,6 +81,7 @@ func (k Keeper) addExternalChainInfo(ctx sdk.Context, msg *types.MsgAddExternalC
 	if err != nil {
 		return err
 	}
+	// TODO: limit the number of external chain accounts (per chain or globally?)
 
 	// O(n^2) to find if new one is already registered
 	for _, newChainInfo := range msg.ChainInfos {
@@ -114,7 +115,7 @@ func (k Keeper) RemoveExternalChainInfo(ctx sdk.Context) {}
 // Register registers the validator as being a part of a conductor's network.
 func (k Keeper) Register(ctx sdk.Context, msg *types.MsgRegisterConductor) error {
 
-	valAddr, err := sdk.ValAddressFromBech32(msg.Creator)
+	valAddr, err := sdk.ValAddressFromBech32(msg.ValAddr)
 	if err != nil {
 		return err
 	}
@@ -124,10 +125,8 @@ func (k Keeper) Register(ctx sdk.Context, msg *types.MsgRegisterConductor) error
 		return ErrValidatorWithAddrNotFound.Format(valAddr)
 	}
 
-	// TODO: making the assumption that the pub key is of ed25519 type.
-	pk := &ed25519.PubKey{
-		Key: msg.PubKey,
-	}
+	// TODO: making the assumption that the pub key is of secp256k1 type.
+	pk := secp256k1.PubKey(msg.PubKey)
 
 	if !pk.VerifySignature(msg.PubKey, msg.SignedPubKey) {
 		return ErrPublicKeyOrSignatureIsInvalid
@@ -141,7 +140,8 @@ func (k Keeper) Register(ctx sdk.Context, msg *types.MsgRegisterConductor) error
 	}
 
 	val := &types.Validator{
-		Address: sval.GetOperator().String(),
+		Address:       sval.GetOperator().String(),
+		SignerAddress: msg.Creator,
 		// TODO: add the rest
 	}
 
@@ -202,13 +202,13 @@ func (k Keeper) getValidator(ctx sdk.Context, valAddr sdk.ValAddress) (*types.Va
 }
 
 // GetSigningKey returns a signing key used by the conductor to sign arbitrary messages.
-func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress) cryptotypes.PubKey {
+func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress) crypto.PubKey {
 	validator, err := k.getValidator(ctx, valAddr)
 	if err != nil {
 		return nil
 	}
 
-	return &ed25519.PubKey{Key: validator.PubKey}
+	return secp256k1.PubKey(validator.PubKey)
 }
 
 func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {
