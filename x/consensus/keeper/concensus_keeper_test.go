@@ -3,12 +3,12 @@ package keeper
 import (
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
 	testdata "github.com/palomachain/paloma/x/consensus/testdata/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	signingutils "github.com/palomachain/utils/signing"
+	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/crypto/secp256k1"
 )
 
 func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testing.T) {
@@ -61,8 +61,8 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 }
 
 var (
-	key1 = ed25519.GenPrivKey()
-	key2 = ed25519.GenPrivKey()
+	key1 = secp256k1.GenPrivKey()
+	key2 = secp256k1.GenPrivKey()
 )
 
 func TestAddingSignatures(t *testing.T) {

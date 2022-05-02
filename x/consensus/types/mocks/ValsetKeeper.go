@@ -3,8 +3,8 @@
 package mocks
 
 import (
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	mock "github.com/stretchr/testify/mock"
+	crypto "github.com/tendermint/tendermint/crypto"
 
 	testing "testing"
 
@@ -17,15 +17,15 @@ type ValsetKeeper struct {
 }
 
 // GetSigningKey provides a mock function with given fields: ctx, valAddr
-func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddress) cryptotypes.PubKey {
+func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddress) crypto.PubKey {
 	ret := _m.Called(ctx, valAddr)
 
-	var r0 cryptotypes.PubKey
-	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) cryptotypes.PubKey); ok {
+	var r0 crypto.PubKey
+	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) crypto.PubKey); ok {
 		r0 = rf(ctx, valAddr)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(cryptotypes.PubKey)
+			r0 = ret.Get(0).(crypto.PubKey)
 		}
 	}
 

@@ -3,23 +3,24 @@ package keeper
 import (
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
-	"github.com/vizualni/whoops"
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/palomachain/paloma/x/valset/types/mocks"
+	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/crypto/secp256k1"
+	"github.com/vizualni/whoops"
 )
 
 var (
-	priv1 = ed25519.GenPrivKey()
+	priv1 = secp256k1.GenPrivKey()
 	pk1   = priv1.PubKey()
 
-	priv2 = ed25519.GenPrivKey()
+	priv2 = secp256k1.GenPrivKey()
 	pk2   = priv2.PubKey()
 )
 
 func TestRegisterRunner(t *testing.T) {
+	addr := sdk.AccAddress([]byte("bob"))
 	val := sdk.ValAddress([]byte("validator"))
 	t.Run("it returns error if validator does not exist", func(t *testing.T) {
 		k, ms, ctx := newValsetKeeper(t)
@@ -28,7 +29,8 @@ func TestRegisterRunner(t *testing.T) {
 		ms.StakingKeeper.On("Validator", ctx, val).Return(nil).Once()
 
 		err := k.Register(ctx, &types.MsgRegisterConductor{
-			Creator:      val.String(),
+			Creator:      addr.String(),
+			ValAddr:      val.String(),
 			PubKey:       pk1.Bytes(),
 			SignedPubKey: whoops.Must(priv1.Sign(pk1.Bytes())),
 		})
@@ -42,7 +44,8 @@ func TestRegisterRunner(t *testing.T) {
 		ms.StakingKeeper.On("Validator", ctx, val).Return(vali).Once()
 
 		err := k.Register(ctx, &types.MsgRegisterConductor{
-			Creator:      val.String(),
+			Creator:      addr.String(),
+			ValAddr:      val.String(),
 			PubKey:       pk1.Bytes(),
 			SignedPubKey: []byte("invalid signature"),
 		})
@@ -59,7 +62,8 @@ func TestRegisterRunner(t *testing.T) {
 		vali.On("GetOperator").Return(val).Once()
 
 		err := k.Register(ctx, &types.MsgRegisterConductor{
-			Creator:      val.String(),
+			Creator:      addr.String(),
+			ValAddr:      val.String(),
 			PubKey:       pk1.Bytes(),
 			SignedPubKey: whoops.Must(priv1.Sign(pk1.Bytes())),
 		})
@@ -67,7 +71,8 @@ func TestRegisterRunner(t *testing.T) {
 
 		t.Run("it returns an error if validator is already registered", func(t *testing.T) {
 			err := k.Register(ctx, &types.MsgRegisterConductor{
-				Creator:      val.String(),
+				Creator:      addr.String(),
+				ValAddr:      val.String(),
 				PubKey:       pk1.Bytes(),
 				SignedPubKey: whoops.Must(priv1.Sign(pk1.Bytes())),
 			})
@@ -122,6 +127,7 @@ func TestRegisterRunner(t *testing.T) {
 }
 
 func TestCreatingSnapshots(t *testing.T) {
+	addr := sdk.AccAddress([]byte("bob"))
 	val1, val2 := sdk.ValAddress("validator1"), sdk.ValAddress("validator2")
 	vali1, vali2 := mocks.NewStakingValidatorI(t), mocks.NewStakingValidatorI(t)
 
@@ -134,14 +140,16 @@ func TestCreatingSnapshots(t *testing.T) {
 	ms.StakingKeeper.On("Validator", ctx, val2).Return(vali2).Once()
 
 	err := k.Register(ctx, &types.MsgRegisterConductor{
-		Creator:      val1.String(),
+		Creator:      addr.String(),
+		ValAddr:      val1.String(),
 		PubKey:       pk1.Bytes(),
 		SignedPubKey: whoops.Must(priv1.Sign(pk1.Bytes())),
 	})
 	require.NoError(t, err)
 
 	err = k.Register(ctx, &types.MsgRegisterConductor{
-		Creator:      val2.String(),
+		Creator:      addr.String(),
+		ValAddr:      val2.String(),
 		PubKey:       pk2.Bytes(),
 		SignedPubKey: whoops.Must(priv2.Sign(pk2.Bytes())),
 	})
