@@ -4,10 +4,10 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/x/scheduler/keeper"
 	"github.com/palomachain/paloma/x/scheduler/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 func appForTesting() (app.TestApp, sdk.Context) {

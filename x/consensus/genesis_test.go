@@ -3,11 +3,11 @@ package consensus_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	keepertest "github.com/palomachain/paloma/testutil/keeper"
 	"github.com/palomachain/paloma/testutil/nullify"
 	"github.com/palomachain/paloma/x/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenesis(t *testing.T) {

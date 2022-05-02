@@ -11,12 +11,12 @@ import (
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	ibckeeper "github.com/cosmos/ibc-go/v2/modules/core/keeper"
+	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/consensus/types/mocks"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
-	"github.com/palomachain/paloma/x/consensus/types"
-	"github.com/palomachain/paloma/x/consensus/types/mocks"
 )
 
 type mockedServices struct {

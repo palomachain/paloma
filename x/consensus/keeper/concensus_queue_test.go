@@ -6,12 +6,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/assert"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmdb "github.com/tendermint/tm-db"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	testtypes "github.com/palomachain/paloma/x/consensus/testdata/types"
 	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/stretchr/testify/assert"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmdb "github.com/tendermint/tm-db"
 )
 
 func TestConsensusQueueAllMethods(t *testing.T) {

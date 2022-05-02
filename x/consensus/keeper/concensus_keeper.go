@@ -3,6 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	signingutils "github.com/palomachain/utils/signing"
 	"github.com/vizualni/whoops"
 )
@@ -80,6 +81,55 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val
 	}
 
 	return msgs, nil
+}
+
+// GetMessagesThatHaveReachedConsensus returns messages from a given
+// queueTypeName that have reached consensus based on the latest snapshot
+// available.
+func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeName string) ([]types.QueuedSignedMessageI, error) {
+	var consensusReached []types.QueuedSignedMessageI
+
+	err := whoops.Try(func() {
+		snapshot := whoops.Must(k.valset.GetCurrentSnapshot(ctx))
+		cq := whoops.Must(k.getConsensusQueue(queueTypeName))
+		msgs := whoops.Must(cq.getAll(ctx))
+
+		validatorMap := make(map[string]valsettypes.Validator)
+		for _, validator := range snapshot.GetValidators() {
+			validatorMap[validator.Address] = validator
+		}
+
+		for _, msg := range msgs {
+			msgTotal := sdk.ZeroInt()
+			// add shares of validators that have signed the message
+			for _, signData := range msg.GetSignData() {
+				signedValidator, ok := validatorMap[signData.ValAddress]
+				if !ok {
+					k.Logger(ctx).Info("validator not found", "validator", signData.ValAddress)
+					continue
+				}
+				msgTotal = msgTotal.Add(signedValidator.ShareCount)
+			}
+
+			// Now we need to check if the consensus was reached. We do this by
+			// checking if there were at least 2/3 of total signatures in
+			// staking power.
+			// The formula goes like this:
+			// msgTotal >= 2/3 * snapshotTotal
+			// the "issue" now becomes: 2/3 which could be problematic as we
+			// could lose precision using floating point arithmetic.
+			// If we multiply both sides with 3, we don't need to do division.
+			// 3 * msgTotal >= 2 * snapshotTotal
+			if msgTotal.Mul(sdk.NewInt(3)).GTE(snapshot.TotalShares.Mul(sdk.NewInt(2))) {
+				// consensus has been reached
+				consensusReached = append(consensusReached, msg)
+			}
+		}
+	})
+	if err != nil {
+		return nil, err
+	}
+	return consensusReached, nil
 }
 
 // AddMessageSignature adds signatures to the messages.

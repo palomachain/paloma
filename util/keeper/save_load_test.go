@@ -3,8 +3,8 @@ package keeper
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/palomachain/paloma/x/consensus/testdata/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSaveAndLoad(t *testing.T) {
