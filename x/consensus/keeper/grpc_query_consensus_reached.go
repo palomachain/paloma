@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// ConsensusReached returns messages that given a queueTypeName have reched a consensus.
 func (k Keeper) ConsensusReached(goCtx context.Context, req *types.QueryConsensusReachedRequest) (*types.QueryConsensusReachedResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
@@ -16,18 +17,19 @@ func (k Keeper) ConsensusReached(goCtx context.Context, req *types.QueryConsensu
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	snapshot, err := k.valset.GetCurrentSnapshot(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	cq, err := k.getConsensusQueue(req.QueueTypeName)
+	msgs, err := k.GetMessagesThatHaveReachedConsensus(ctx, req.QueueTypeName)
 
 	if err != nil {
 		return nil, err
 	}
 
-	cq.
+	res := &types.QueryConsensusReachedResponse{
+		QueueTypeName: req.QueueTypeName,
+	}
+
+	for _, msg := range msgs {
+		res.Messages = append(res.Messages, queuedMessageToMessageToSign(msg))
+	}
 
 	return &types.QueryConsensusReachedResponse{}, nil
 }

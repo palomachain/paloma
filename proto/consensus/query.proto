@@ -58,6 +58,8 @@ message QueryConsensusReachedRequest {
 }
 
 message QueryConsensusReachedResponse {
+  string queueTypeName = 1;
+  repeated MessageToSign messages = 2;
 }
 
 // this line is used by starport scaffolding # 3

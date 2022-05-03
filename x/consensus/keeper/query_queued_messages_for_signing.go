@@ -9,10 +9,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func nonceFromID(id uint64) []byte {
-	return sdk.Uint64ToBigEndian(id)
-}
-
 func (k Keeper) QueuedMessagesForSigning(goCtx context.Context, req *types.QueryQueuedMessagesForSigningRequest) (*types.QueryQueuedMessagesForSigningResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
@@ -26,11 +22,7 @@ func (k Keeper) QueuedMessagesForSigning(goCtx context.Context, req *types.Query
 
 	var res []*types.MessageToSign
 	for _, msg := range msgs {
-		res = append(res, &types.MessageToSign{
-			Nonce: nonceFromID(msg.GetId()),
-			Id:    msg.GetId(),
-			Msg:   msg.GetMsg(),
-		})
+		res = append(res, queuedMessageToMessageToSign(msg))
 	}
 
 	return &types.QueryQueuedMessagesForSigningResponse{

@@ -90,9 +90,16 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 	var consensusReached []types.QueuedSignedMessageI
 
 	err := whoops.Try(func() {
-		snapshot := whoops.Must(k.valset.GetCurrentSnapshot(ctx))
 		cq := whoops.Must(k.getConsensusQueue(queueTypeName))
 		msgs := whoops.Must(cq.getAll(ctx))
+		if len(msgs) == 0 {
+			return
+		}
+		snapshot := whoops.Must(k.valset.GetCurrentSnapshot(ctx))
+
+		if len(snapshot.Validators) == 0 || snapshot.TotalShares.Equal(sdk.ZeroInt()) {
+			return
+		}
 
 		validatorMap := make(map[string]valsettypes.Validator)
 		for _, validator := range snapshot.GetValidators() {
@@ -177,4 +184,16 @@ func (k Keeper) AddMessageSignature(
 			)
 		}
 	})
+}
+
+func nonceFromID(id uint64) []byte {
+	return sdk.Uint64ToBigEndian(id)
+}
+
+func queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *types.MessageToSign {
+	return &types.MessageToSign{
+		Nonce: nonceFromID(msg.GetId()),
+		Id:    msg.GetId(),
+		Msg:   msg.GetMsg(),
+	}
 }
