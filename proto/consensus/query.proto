@@ -21,6 +21,11 @@ service Query {
 		option (google.api.http).get = "/volumefi/paloma/consensus/queued_messages_for_signing";
 	}
 
+// Queries a list of ConsensusReached items.
+	rpc ConsensusReached(QueryConsensusReachedRequest) returns (QueryConsensusReachedResponse) {
+		option (google.api.http).get = "/palomachain/paloma/consensus/consensus_reached/{queueTypeName}";
+	}
+
 // this line is used by starport scaffolding # 2
 }
 
@@ -46,6 +51,15 @@ message MessageToSign {
   bytes nonce = 1;
   uint64 id = 2;
   google.protobuf.Any msg = 3;
+}
+
+message QueryConsensusReachedRequest {
+  string queueTypeName = 1;
+}
+
+message QueryConsensusReachedResponse {
+  string queueTypeName = 1;
+  repeated MessageToSign messages = 2;
 }
 
 // this line is used by starport scaffolding # 3

@@ -6,6 +6,7 @@ import (
 	proto "github.com/gogo/protobuf/proto"
 )
 
+//go:generate mockery --name=QueuedSignedMessageI
 type QueuedSignedMessageI interface {
 	proto.Message
 	GetId() uint64

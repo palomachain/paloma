@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/tendermint/tendermint/crypto"
 )
 
@@ -21,4 +22,5 @@ type BankKeeper interface {
 //go:generate mockery --name=ValsetKeeper
 type ValsetKeeper interface {
 	GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress) crypto.PubKey
+	GetCurrentSnapshot(ctx sdk.Context) (*valsettypes.Snapshot, error)
 }

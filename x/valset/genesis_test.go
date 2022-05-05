@@ -3,11 +3,11 @@ package valset_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	keepertest "github.com/palomachain/paloma/testutil/keeper"
 	"github.com/palomachain/paloma/testutil/nullify"
 	"github.com/palomachain/paloma/x/valset"
 	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenesis(t *testing.T) {

@@ -9,11 +9,11 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
-	"github.com/palomachain/paloma/x/valset/types"
-	"github.com/palomachain/paloma/x/valset/types/mocks"
 )
 
 type mockedServices struct {

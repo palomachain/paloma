@@ -11,12 +11,13 @@ import (
 
 var _ = strconv.Itoa(0)
 
-func CmdQueuedMessagesForSigning() *cobra.Command {
+func CmdConsensusReached() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "queued-messages-for-signing [valaddress] [queueTypeName]",
-		Short: "Query QueuedMessagesForSigning",
-		Args:  cobra.ExactArgs(2),
+		Use:   "consensus-reached [queue-type-name]",
+		Short: "Query ConsensusReached",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			reqQueueTypeName := args[0]
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -25,12 +26,12 @@ func CmdQueuedMessagesForSigning() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryQueuedMessagesForSigningRequest{
-				ValAddress:    args[0],
-				QueueTypeName: args[1],
+			params := &types.QueryConsensusReachedRequest{
+
+				QueueTypeName: reqQueueTypeName,
 			}
 
-			res, err := queryClient.QueuedMessagesForSigning(cmd.Context(), params)
+			res, err := queryClient.ConsensusReached(cmd.Context(), params)
 			if err != nil {
 				return err
 			}

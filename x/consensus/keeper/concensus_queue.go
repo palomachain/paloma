@@ -16,6 +16,7 @@ const (
 
 type ConsensusMsg = types.ConsensusMsg
 
+//go:generate mockery --name=consensusQueuer --inpackage --testonly
 type (
 	codecMarshaler interface {
 		MarshalInterface(i proto.Message) ([]byte, error)

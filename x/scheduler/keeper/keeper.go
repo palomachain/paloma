@@ -9,9 +9,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkbankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/tendermint/starport/starport/pkg/cosmosibckeeper"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/tendermint/starport/starport/pkg/cosmosibckeeper"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 )
