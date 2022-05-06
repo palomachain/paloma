@@ -9,7 +9,12 @@ WORKDIR /app
 #### Local development ####
 ###########################
 FROM base AS local-dev
-ENTRYPOINT ["go", "run", "./cmd/palomad/"]
+RUN cd /tmp && go install github.com/cosmtrek/air@latest
+
+# air is not set to entrypoint because I want to override that behaviour
+# when using docker-compose run.
+CMD ["air"]
+
 
 ###########################
 ####     Builder       ####
