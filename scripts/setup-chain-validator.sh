@@ -19,7 +19,12 @@ jq ".chain_id = \"${CHAIN_ID}\"" genesis.json > temp.json && mv temp.json genesi
 jq 'walk(if type == "string" and .. == "stake" then "dove" else . end)' genesis.json > temp.json && mv temp.json genesis.json
 popd
 
-$PALOMA keys add $VALIDATOR_ACCOUNT_NAME
+if [ "${ACCOUNT_MNEMONIC}" == "" ]; then
+  $PALOMA keys add $VALIDATOR_ACCOUNT_NAME
+else
+  echo $ACCOUNT_MNEMONIC | $PALOMA keys add $VALIDATOR_ACCOUNT_NAME --recover
+fi
+
 
 validator_address=$($PALOMA keys show $VALIDATOR_ACCOUNT_NAME -a)
 
