@@ -23,13 +23,23 @@ func (k Keeper) ConsensusReached(goCtx context.Context, req *types.QueryConsensu
 		return nil, err
 	}
 
-	res := &types.QueryConsensusReachedResponse{
-		QueueTypeName: req.QueueTypeName,
-	}
+	res := &types.QueryConsensusReachedResponse{}
 
 	for _, msg := range msgs {
-		res.Messages = append(res.Messages, queuedMessageToMessageToSign(msg))
+		approvedMessage := &types.MessageApproved{
+			Nonce:    msg.Nonce(),
+			Id:       msg.GetId(),
+			Msg:      msg.GetMsg(),
+			SignData: []*types.MessageApprovedSignData{},
+		}
+		for _, signData := range msg.GetSignData() {
+			approvedMessage.SignData = append(approvedMessage.SignData, &types.MessageApprovedSignData{
+				ValAddress: signData.GetValAddress(),
+				Signature:  signData.GetSignature(),
+			})
+		}
+		res.Messages = append(res.Messages, approvedMessage)
 	}
 
-	return &types.QueryConsensusReachedResponse{}, nil
+	return res, nil
 }
