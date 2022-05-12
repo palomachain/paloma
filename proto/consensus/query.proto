@@ -5,6 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "consensus/params.proto";
+import "consensus/consensus_queue.proto";
 import "google/protobuf/any.proto";
 // this line is used by starport scaffolding # 1
 
@@ -53,13 +54,24 @@ message MessageToSign {
   google.protobuf.Any msg = 3;
 }
 
+message MessageApprovedSignData {
+  string valAddress = 1;
+  bytes signature = 2;
+}
+
+message MessageApproved {
+  bytes nonce = 1;
+  uint64 id = 2;
+  google.protobuf.Any msg = 3;
+  repeated MessageApprovedSignData signData = 4;
+}
+
 message QueryConsensusReachedRequest {
   string queueTypeName = 1;
 }
 
 message QueryConsensusReachedResponse {
-  string queueTypeName = 1;
-  repeated MessageToSign messages = 2;
+  repeated MessageApproved messages = 1;
 }
 
 // this line is used by starport scaffolding # 3
