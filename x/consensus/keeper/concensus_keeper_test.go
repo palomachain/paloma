@@ -16,6 +16,7 @@ import (
 )
 
 func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testing.T) {
+	const simpleMessageQueue = types.ConsensusQueueType("simple-message")
 	keeper, _, ctx := newConsensusKeeper(t)
 
 	t.Run("it returns a message if type is not registered with the queue", func(t *testing.T) {
@@ -28,19 +29,19 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 		require.ErrorIs(t, err, ErrConsensusQueueNotImplemented)
 	})
 
-	keeper.AddConcencusQueueType("simple-message", &testdata.SimpleMessage{})
+	keeper.AddConcencusQueueType(simpleMessageQueue, &testdata.SimpleMessage{})
 
 	t.Run("it returns no messages for signing", func(t *testing.T) {
 		msgs, err := keeper.GetMessagesForSigning(
 			ctx,
-			"simple-message",
+			simpleMessageQueue,
 			sdk.ValAddress(`bob`),
 		)
 		require.NoError(t, err)
 		require.Empty(t, msgs)
 	})
 	t.Run("it sucessfully puts message into the queue", func(t *testing.T) {
-		err := keeper.PutMessageForSigning(ctx, "simple-message", &testdata.SimpleMessage{
+		err := keeper.PutMessageForSigning(ctx, simpleMessageQueue, &testdata.SimpleMessage{
 			Sender: "bob",
 			Hello:  "hello",
 			World:  "mars",
@@ -52,7 +53,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 	t.Run("it sucessfully gets message from the queue", func(t *testing.T) {
 		msgs, err := keeper.GetMessagesForSigning(
 			ctx,
-			"simple-message",
+			simpleMessageQueue,
 			sdk.ValAddress(`bob`),
 		)
 		require.NoError(t, err)
@@ -103,7 +104,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 
 	for _, tt := range []struct {
 		name          string
-		queueTypeName string
+		queueTypeName types.ConsensusQueueType
 		preRun        func(*testing.T, setupData)
 
 		expMsgsLen int
@@ -111,7 +112,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 	}{
 		{
 			name:          "if consensusQueuer returns an error it returns it back",
-			queueTypeName: "i don't exist",
+			queueTypeName: types.ConsensusQueueType("i don't exist"),
 			expErr:        ErrConsensusQueueNotImplemented,
 		},
 		{
@@ -285,7 +286,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					keeper, ms, cq,
 				})
 			}
-			queueTypeName := "simple-message"
+			queueTypeName := types.ConsensusQueueType("simple-message")
 			if len(tt.queueTypeName) > 0 {
 				queueTypeName = tt.queueTypeName
 			}

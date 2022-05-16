@@ -17,7 +17,7 @@ func (k Keeper) ConsensusReached(goCtx context.Context, req *types.QueryConsensu
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	msgs, err := k.GetMessagesThatHaveReachedConsensus(ctx, req.QueueTypeName)
+	msgs, err := k.GetMessagesThatHaveReachedConsensus(ctx, types.ConsensusQueueType(req.QueueTypeName))
 
 	if err != nil {
 		return nil, err
