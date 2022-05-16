@@ -33,11 +33,12 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	types.RegisterInterfaces(registry)
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
-	cq := consensusQueue[*testtypes.SimpleMessage]{
+	cq := consensusQueue{
 		queueTypeName: "simple-message",
 		sg:            sg,
 		ider:          keeperutil.NewIDGenerator(sg, nil),
 		cdc:           types.ModuleCdc,
+		typeCheck:     StaticTypeChecker(&testtypes.SimpleMessage{}),
 	}
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 
