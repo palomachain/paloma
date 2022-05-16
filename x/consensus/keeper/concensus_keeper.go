@@ -1,11 +1,17 @@
 package keeper
 
 import (
+	"crypto/sha256"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	signingutils "github.com/palomachain/utils/signing"
 	"github.com/vizualni/whoops"
+)
+
+const (
+	encodingDelimiter = byte('|')
 )
 
 // TODO: add private type for queueTypeName
@@ -166,6 +172,13 @@ func (k Keeper) AddMessageSignature(
 				signingutils.JsonDeterministicEncoding(rawMsg),
 			)
 
+			if len(msg.GetExtraData()) > 0 {
+				bytes = append(bytes, []byte{encodingDelimiter}...)
+				hash := sha256.Sum256(msg.GetExtraData())
+				bytes = append(bytes, hash[:]...)
+			}
+
+			bytes = append(bytes, []byte{encodingDelimiter}...)
 			bytes = append(bytes, wrappedMsg.Nonce()...)
 
 			if !pk.VerifySignature(bytes, msg.Signature) {
@@ -176,11 +189,18 @@ func (k Keeper) AddMessageSignature(
 				)
 			}
 
+			if att, ok := rawMsg.(types.AttestTask); ok {
+				whoops.Assert(
+					k.attestator.validateIncoming(ctx, att),
+				)
+			}
+
 			whoops.Assert(
 				cq.addSignature(ctx, msg.Id, &types.SignData{
 					ValAddress: string(valAddr.Bytes()),
 					PubKey:     pk.Bytes(),
-					Signature:  msg.Signature,
+					Signature:  msg.GetSignature(),
+					ExtraData:  msg.GetExtraData(),
 				}),
 			)
 		}

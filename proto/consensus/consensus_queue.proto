@@ -16,4 +16,5 @@ message SignData {
   string valAddress = 1;
   bytes pubKey = 2; 
   bytes signature = 3;
+  bytes extraData = 4;
 }

@@ -23,6 +23,7 @@ type (
 
 		ider          keeperutil.IDGenerator
 		queueRegistry map[types.ConsensusQueueType]consensusQueuer
+		attestator    *Attestator
 
 		valset types.ValsetKeeper
 	}
