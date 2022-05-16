@@ -6,6 +6,8 @@ import (
 	proto "github.com/gogo/protobuf/proto"
 )
 
+type ConsensusQueueType string
+
 //go:generate mockery --name=QueuedSignedMessageI
 type QueuedSignedMessageI interface {
 	proto.Message

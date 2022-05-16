@@ -27,7 +27,7 @@ type (
 
 	// consensusQueue is a database storing messages that need to be signed.
 	consensusQueue struct {
-		queueTypeName string
+		queueTypeName types.ConsensusQueueType
 		sg            keeperutil.StoreGetter
 		ider          keeperutil.IDGenerator
 		cdc           codecMarshaler

@@ -22,7 +22,7 @@ type (
 		paramstore paramtypes.Subspace
 
 		ider          keeperutil.IDGenerator
-		queueRegistry map[string]consensusQueuer
+		queueRegistry map[types.ConsensusQueueType]consensusQueuer
 
 		valset types.ValsetKeeper
 	}

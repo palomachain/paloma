@@ -10,9 +10,9 @@ import (
 
 // TODO: add private type for queueTypeName
 
-func (k Keeper) AddConcencusQueueType(queueTypeName string, typ any) {
+func (k Keeper) AddConcencusQueueType(queueTypeName types.ConsensusQueueType, typ any) {
 	if k.queueRegistry == nil {
-		k.queueRegistry = make(map[string]consensusQueuer)
+		k.queueRegistry = make(map[types.ConsensusQueueType]consensusQueuer)
 	}
 	_, ok := k.queueRegistry[queueTypeName]
 	if ok {
@@ -29,7 +29,7 @@ func (k Keeper) AddConcencusQueueType(queueTypeName string, typ any) {
 }
 
 // getConsensusQueue gets the consensus queue for the given type.
-func (k Keeper) getConsensusQueue(queueTypeName string) (consensusQueuer, error) {
+func (k Keeper) getConsensusQueue(queueTypeName types.ConsensusQueueType) (consensusQueuer, error) {
 	cq, ok := k.queueRegistry[queueTypeName]
 	if !ok {
 		return nil, ErrConsensusQueueNotImplemented.Format(queueTypeName)
@@ -37,7 +37,7 @@ func (k Keeper) getConsensusQueue(queueTypeName string) (consensusQueuer, error)
 	return cq, nil
 }
 
-func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName string, msg ConsensusMsg) error {
+func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName types.ConsensusQueueType, msg ConsensusMsg) error {
 	cq, err := k.getConsensusQueue(queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
@@ -52,7 +52,7 @@ func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName string, msg 
 }
 
 // GetMessagesForSigning returns messages for a single validator that needs to be signed.
-func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName types.ConsensusQueueType, val sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
 	cq, err := k.getConsensusQueue(queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
@@ -87,7 +87,7 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val
 // GetMessagesThatHaveReachedConsensus returns messages from a given
 // queueTypeName that have reached consensus based on the latest snapshot
 // available.
-func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeName string) ([]types.QueuedSignedMessageI, error) {
+func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeName types.ConsensusQueueType) ([]types.QueuedSignedMessageI, error) {
 	var consensusReached []types.QueuedSignedMessageI
 
 	err := whoops.Try(func() {
@@ -154,7 +154,7 @@ func (k Keeper) AddMessageSignature(
 	return whoops.Try(func() {
 		for _, msg := range msgs {
 			cq := whoops.Must(
-				k.getConsensusQueue(msg.GetQueueTypeName()),
+				k.getConsensusQueue(types.ConsensusQueueType(msg.GetQueueTypeName())),
 			)
 			wrappedMsg := whoops.Must(
 				cq.getMsgByID(ctx, msg.Id),
