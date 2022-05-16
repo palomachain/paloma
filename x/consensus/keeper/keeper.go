@@ -56,7 +56,7 @@ func NewKeeper(
 		memKey:        memKey,
 		paramstore:    ps,
 		valset:        valsetKeeper,
-		queueRegistry: make(map[string]consensusQueuer),
+		queueRegistry: make(map[types.ConsensusQueueType]consensusQueuer),
 	}
 	ider := keeperutil.NewIDGenerator(k, nil)
 	k.ider = ider

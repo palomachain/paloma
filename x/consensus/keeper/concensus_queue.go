@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"reflect"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -162,5 +163,5 @@ func (c consensusQueue) signingQueueKey() string {
 	if c.queueTypeName == "" {
 		panic("queueTypeName can't be empty")
 	}
-	return consensusQueueSigningKey + c.queueTypeName
+	return fmt.Sprintf("%s-%s", consensusQueueSigningKey, string(c.queueTypeName))
 }

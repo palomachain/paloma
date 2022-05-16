@@ -15,7 +15,7 @@ func (k Keeper) QueuedMessagesForSigning(goCtx context.Context, req *types.Query
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	msgs, err := k.GetMessagesForSigning(ctx, req.QueueTypeName, sdk.ValAddress(req.ValAddress))
+	msgs, err := k.GetMessagesForSigning(ctx, types.ConsensusQueueType(req.QueueTypeName), sdk.ValAddress(req.ValAddress))
 	if err != nil {
 		return nil, err
 	}

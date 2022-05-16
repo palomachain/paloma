@@ -34,7 +34,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
 	cq := consensusQueue{
-		queueTypeName: "simple-message",
+		queueTypeName: types.ConsensusQueueType("simple-message"),
 		sg:            sg,
 		ider:          keeperutil.NewIDGenerator(sg, nil),
 		cdc:           types.ModuleCdc,
