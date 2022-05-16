@@ -13,6 +13,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/vizualni/whoops"
 )
 
 const (
@@ -140,8 +141,8 @@ func (k Keeper) Register(ctx sdk.Context, msg *types.MsgRegisterConductor) error
 	}
 
 	val := &types.Validator{
-		Address:       sval.GetOperator().String(),
-		SignerAddress: msg.Creator,
+		Address:       sval.GetOperator(),
+		SignerAddress: whoops.Must(sdk.AccAddressFromBech32(msg.Creator)),
 		// TODO: add the rest
 	}
 

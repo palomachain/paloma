@@ -65,6 +65,7 @@ func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		&IBCKeeper.PortKeeper,
 		capabilityKeeper.ScopeToModule("ConsensusScopedKeeper"),
 		nil,
+		nil,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)

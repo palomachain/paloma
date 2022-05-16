@@ -4,11 +4,10 @@ import (
 	context "context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/consensus/types"
 )
 
+//go:generate mockery --name=AttestTask
 type AttestTask interface {
-	GetTaskDescription() []byte
 	Attest()
 }
 
@@ -21,8 +20,15 @@ type AttestResult struct {
 	// TODO
 }
 
+//go:generate mockery --name=Attestator
 type Attestator interface {
-	ConsensusQueue() types.ConsensusQueueType
+	// ConsensusQueue tells in which ConsensusQueue to store the messages that require signatures.
+	ConsensusQueue() ConsensusQueueType
+	// Type tells the type of allowed message types for the ConsensusQueue.
+	Type() any
+	// ValidateEvidence takes a task and an evidence and does a validation to make sure that it's correct.
 	ValidateEvidence(ctx context.Context, task AttestTask, evidence Evidence) error
+	// ProcessAllEvidence processes all given evidences and internally does whatever it needs to do with
+	// that information. It returns the result back to the caller.
 	ProcessAllEvidence(ctx context.Context, task AttestTask, evidence []Evidence) (AttestResult, error)
 }

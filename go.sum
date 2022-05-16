@@ -1223,8 +1223,12 @@ github.com/otiai10/curr v1.0.0/go.mod h1:LskTG5wDwr8Rs+nNQ+1LlxRjAtTZZjtJW4rMXl6
 github.com/otiai10/mint v1.3.0/go.mod h1:F5AjcsTsWUqX+Na9fpHb52P8pcRX2CI6A3ctIT91xUo=
 github.com/otiai10/mint v1.3.2/go.mod h1:/yxELlJQ0ufhjUwhshSj+wFjZ78CnZ48/1wtmBH1OTc=
 github.com/pact-foundation/pact-go v1.0.4/go.mod h1:uExwJY4kCzNPcHRj+hCR/HBbOOIwwtUjcrb0b5/5kLM=
-github.com/palomachain/utils v0.1.2 h1:Dq8klD2fOm8sJAUCK52hTfc9QaAlqR2PVoDwF/3mrJc=
-github.com/palomachain/utils v0.1.2/go.mod h1:f1HAitrlailP5kHUAveTJvYB8JeQPpFyAexc/sLVBWM=
+github.com/palomachain/utils v0.2.0 h1:vcagL2KQ+FMd7j0ePAh0oc13wgYuQOg4hdFIhsW/sw4=
+github.com/palomachain/utils v0.2.0/go.mod h1:f1HAitrlailP5kHUAveTJvYB8JeQPpFyAexc/sLVBWM=
+github.com/palomachain/utils v0.2.1-0.20220516150330-c4f02f942eeb h1:+WLEtMFibH/N7TmwvHUOd6h4RCaVgSUU0+lK8J9rmd4=
+github.com/palomachain/utils v0.2.1-0.20220516150330-c4f02f942eeb/go.mod h1:f1HAitrlailP5kHUAveTJvYB8JeQPpFyAexc/sLVBWM=
+github.com/palomachain/utils v0.2.1-0.20220516151602-2ba1433ff8e2 h1:V9uqcg8J0gX+P7ip17gQ9DBF1WT0DcHJjFlZZu/Bp8A=
+github.com/palomachain/utils v0.2.1-0.20220516151602-2ba1433ff8e2/go.mod h1:f1HAitrlailP5kHUAveTJvYB8JeQPpFyAexc/sLVBWM=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pascaldekloe/goe v0.1.0 h1:cBOtyMzM9HTpWjXfbbunk26uA6nG3a8n06Wieeh0MwY=
 github.com/pascaldekloe/goe v0.1.0/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=

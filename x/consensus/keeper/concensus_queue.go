@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"reflect"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -32,7 +31,7 @@ type (
 		sg            keeperutil.StoreGetter
 		ider          keeperutil.IDGenerator
 		cdc           codecMarshaler
-		typeCheck     TypeChecker
+		typeCheck     types.TypeChecker
 	}
 
 	consensusQueuer interface {
@@ -43,16 +42,6 @@ type (
 		remove(sdk.Context, uint64) error
 	}
 )
-
-type TypeChecker func(any) bool
-
-func StaticTypeChecker(typ any) TypeChecker {
-	return func(i any) bool {
-		expectedType := reflect.TypeOf(typ)
-		gotType := reflect.TypeOf(i)
-		return expectedType == gotType
-	}
-}
 
 // put puts raw message into a signing queue.
 func (c consensusQueue) put(ctx sdk.Context, msgs ...ConsensusMsg) error {

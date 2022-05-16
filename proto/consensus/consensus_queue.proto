@@ -1,5 +1,6 @@
 syntax = "proto3";
 import "google/protobuf/any.proto";
+import "gogoproto/gogo.proto";
 
 package volumefi.paloma.consensus;
 
@@ -13,7 +14,8 @@ message QueuedSignedMessage {
 }
 
 message SignData {
-  string valAddress = 1;
+  bytes valAddress = 1[ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
   bytes pubKey = 2; 
   bytes signature = 3;
   bytes extraData = 4;

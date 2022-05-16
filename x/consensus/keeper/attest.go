@@ -9,14 +9,10 @@ import (
 	"github.com/vizualni/whoops"
 )
 
-type AttestSeeing struct {
-	ID           uint64
-	PipelineName string
-	Data         []byte
-}
-
+// CheckAndProcessAttestedMessages is supposed to be used within the
+// EndBlocker. It will get messages for the attestators that have reached a
+// consensus and process them.
 func (k Keeper) CheckAndProcessAttestedMessages(ctx sdk.Context) error {
-
 	var gerr whoops.Group
 	// TODO
 	if ctx.BlockHeight()%5 != 0 {
@@ -46,7 +42,7 @@ mainLoop:
 			evidence := []types.Evidence{}
 			for _, sd := range msg.GetSignData() {
 				evidence = append(evidence, types.Evidence{
-					From: whoops.Must(sdk.ValAddressFromBech32(sd.ValAddress)),
+					From: sd.ValAddress,
 					Data: sd.ExtraData,
 				})
 			}
@@ -86,11 +82,11 @@ func NewAttestator() *Attestator {
 
 type Attestator struct {
 	registry        map[types.ConsensusQueueType]types.Attestator
-	ConsensusKeeper Keeper
+	ConsensusKeeper *Keeper
 }
 
-func (a *Attestator) RegisterProcessor(att types.Attestator) {
-	AddConcencusQueueType(&a.ConsensusKeeper, att.ConsensusQueue())
+func (a *Attestator) RegisterAttestator(att types.Attestator) {
+	a.ConsensusKeeper.AddConcencusQueueType(att.ConsensusQueue(), att.Type())
 	a.registry[att.ConsensusQueue()] = att
 }
 

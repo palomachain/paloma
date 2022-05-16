@@ -162,8 +162,8 @@ func TestCreatingSnapshots(t *testing.T) {
 		snapshot, err := k.GetCurrentSnapshot(ctx)
 		require.NoError(t, err)
 		require.Len(t, snapshot.Validators, 2)
-		require.Equal(t, snapshot.Validators[0].Address, val1.String())
-		require.Equal(t, snapshot.Validators[1].Address, val2.String())
+		require.Equal(t, snapshot.Validators[0].Address, val1)
+		require.Equal(t, snapshot.Validators[1].Address, val2)
 	})
 
 }

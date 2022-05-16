@@ -21,6 +21,9 @@ import (
 
 type mockedServices struct {
 	ValsetKeeper *mocks.ValsetKeeper
+
+	// not mocked
+	Attestator *Attestator
 }
 
 func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
@@ -62,8 +65,10 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		memStoreKey,
 		"ConsensusParams",
 	)
+	att := NewAttestator()
 	ms := mockedServices{
 		ValsetKeeper: mocks.NewValsetKeeper(t),
+		Attestator:   att,
 	}
 	k := NewKeeper(
 		appCodec,
@@ -74,7 +79,9 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		&IBCKeeper.PortKeeper,
 		capabilityKeeper.ScopeToModule("ConsensusScopedKeeper"),
 		ms.ValsetKeeper,
+		att,
 	)
+	att.ConsensusKeeper = k
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
 
