@@ -28,7 +28,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 		require.ErrorIs(t, err, ErrConsensusQueueNotImplemented)
 	})
 
-	AddConcencusQueueType[*testdata.SimpleMessage](keeper, "simple-message")
+	keeper.AddConcencusQueueType("simple-message", &testdata.SimpleMessage{})
 
 	t.Run("it returns no messages for signing", func(t *testing.T) {
 		msgs, err := keeper.GetMessagesForSigning(
@@ -302,7 +302,7 @@ func TestAddingSignatures(t *testing.T) {
 
 	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*sdk.Msg)(nil), &testdata.SimpleMessage{})
 
-	AddConcencusQueueType[*testdata.SimpleMessage](keeper, "simple-message")
+	keeper.AddConcencusQueueType("simple-message", &testdata.SimpleMessage{})
 
 	err := keeper.PutMessageForSigning(ctx, "simple-message", &testdata.SimpleMessage{
 		Sender: "bob",

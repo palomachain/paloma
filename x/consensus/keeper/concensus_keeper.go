@@ -10,7 +10,7 @@ import (
 
 // TODO: add private type for queueTypeName
 
-func AddConcencusQueueType[T ConsensusMsg](k *Keeper, queueTypeName string) {
+func (k Keeper) AddConcencusQueueType(queueTypeName string, typ any) {
 	if k.queueRegistry == nil {
 		k.queueRegistry = make(map[string]consensusQueuer)
 	}
@@ -19,11 +19,12 @@ func AddConcencusQueueType[T ConsensusMsg](k *Keeper, queueTypeName string) {
 		panic("concencus queue already registered")
 	}
 
-	k.queueRegistry[queueTypeName] = consensusQueue[T]{
+	k.queueRegistry[queueTypeName] = consensusQueue{
 		queueTypeName: queueTypeName,
-		sg:            *k,
+		sg:            k,
 		ider:          k.ider,
 		cdc:           k.cdc,
+		typeCheck:     StaticTypeChecker(typ),
 	}
 }
 

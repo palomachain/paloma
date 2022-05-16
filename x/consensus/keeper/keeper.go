@@ -51,16 +51,15 @@ func NewKeeper(
 			portKeeper,
 			scopedKeeper,
 		),
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
-		valset:     valsetKeeper,
+		cdc:           cdc,
+		storeKey:      storeKey,
+		memKey:        memKey,
+		paramstore:    ps,
+		valset:        valsetKeeper,
+		queueRegistry: make(map[string]consensusQueuer),
 	}
 	ider := keeperutil.NewIDGenerator(k, nil)
 	k.ider = ider
-
-	AddConcencusQueueType[*types.SignSmartContractExecute](k, "sign-smart-contract-execute-messages")
 
 	return k
 }
