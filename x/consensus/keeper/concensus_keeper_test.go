@@ -74,19 +74,19 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 	testValidators := []valsettypes.Validator{
 		{
 			ShareCount: sdk.NewInt(2),
-			Address:    "val1",
+			Address:    sdk.ValAddress("val1"),
 		},
 		{
 			ShareCount: sdk.NewInt(3),
-			Address:    "val2",
+			Address:    sdk.ValAddress("val2"),
 		},
 		{
 			ShareCount: sdk.NewInt(6),
-			Address:    "val3",
+			Address:    sdk.ValAddress("val3"),
 		},
 		{
 			ShareCount: sdk.NewInt(7),
-			Address:    "val4",
+			Address:    sdk.ValAddress("val4"),
 		},
 	}
 	total := sdk.NewInt(18)
@@ -157,7 +157,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				msg := consensusmocks.NewQueuedSignedMessageI(t)
 				msg.On("GetSignData").Return([]*types.SignData{
 					{
-						ValAddress: "val1", // val1 has only 2 shares
+						ValAddress: sdk.ValAddress("val1"), // val1 has only 2 shares
 					},
 				}).Once()
 				sd.cq.On("getAll", mock.Anything).Return([]types.QueuedSignedMessageI{msg}, nil).Once()
@@ -177,10 +177,10 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				msg := consensusmocks.NewQueuedSignedMessageI(t)
 				msg.On("GetSignData").Return([]*types.SignData{
 					{
-						ValAddress: "val3",
+						ValAddress: sdk.ValAddress("val3"),
 					},
 					{
-						ValAddress: "val4",
+						ValAddress: sdk.ValAddress("val4"),
 					},
 				}).Once()
 				sd.cq.On("getAll", mock.Anything).Return([]types.QueuedSignedMessageI{msg}, nil).Once()
@@ -200,16 +200,16 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				msg1 := consensusmocks.NewQueuedSignedMessageI(t)
 				msg1.On("GetSignData").Return([]*types.SignData{
 					{
-						ValAddress: "val4",
+						ValAddress: sdk.ValAddress("val4"),
 					},
 				}).Once()
 				msg2 := consensusmocks.NewQueuedSignedMessageI(t)
 				msg2.On("GetSignData").Return([]*types.SignData{
 					{
-						ValAddress: "val3",
+						ValAddress: sdk.ValAddress("val3"),
 					},
 					{
-						ValAddress: "val4",
+						ValAddress: sdk.ValAddress("val4"),
 					},
 				}).Once()
 				sd.cq.On("getAll", mock.Anything).Return([]types.QueuedSignedMessageI{msg1, msg2}, nil).Once()
@@ -229,22 +229,22 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				msg1 := consensusmocks.NewQueuedSignedMessageI(t)
 				msg1.On("GetSignData").Return([]*types.SignData{
 					{
-						ValAddress: "val2",
+						ValAddress: sdk.ValAddress("val2"),
 					},
 					{
-						ValAddress: "val3",
+						ValAddress: sdk.ValAddress("val3"),
 					},
 					{
-						ValAddress: "val4",
+						ValAddress: sdk.ValAddress("val4"),
 					},
 				}).Once()
 				msg2 := consensusmocks.NewQueuedSignedMessageI(t)
 				msg2.On("GetSignData").Return([]*types.SignData{
 					{
-						ValAddress: "val3",
+						ValAddress: sdk.ValAddress("val3"),
 					},
 					{
-						ValAddress: "val4",
+						ValAddress: sdk.ValAddress("val4"),
 					},
 				}).Once()
 				sd.cq.On("getAll", mock.Anything).Return([]types.QueuedSignedMessageI{msg1, msg2}, nil).Once()
@@ -263,7 +263,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				msg := consensusmocks.NewQueuedSignedMessageI(t)
 				msg.On("GetSignData").Return([]*types.SignData{
 					{
-						ValAddress: "i don't exist",
+						ValAddress: sdk.ValAddress("i don't exist"),
 					},
 				}).Once()
 				sd.cq.On("getAll", mock.Anything).Return([]types.QueuedSignedMessageI{msg}, nil).Once()
@@ -311,8 +311,9 @@ func TestAddingSignatures(t *testing.T) {
 		World:  "mars",
 	})
 	require.NoError(t, err)
+	val1 := sdk.ValAddress("val1")
 
-	msgs, err := keeper.GetMessagesForSigning(ctx, "simple-message", sdk.ValAddress("val1"))
+	msgs, err := keeper.GetMessagesForSigning(ctx, "simple-message", val1)
 	require.NoError(t, err)
 	require.Len(t, msgs, 1)
 
@@ -329,8 +330,8 @@ func TestAddingSignatures(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("with incorrect key it returns an error", func(t *testing.T) {
-		ms.ValsetKeeper.On("GetSigningKey", ctx, sdk.ValAddress("val1")).Return(key2.PubKey()).Once()
-		err = keeper.AddMessageSignature(ctx, sdk.ValAddress("val1"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+		ms.ValsetKeeper.On("GetSigningKey", ctx, val1).Return(key2.PubKey()).Once()
+		err = keeper.AddMessageSignature(ctx, val1, []*types.MsgAddMessagesSignatures_MsgSignedMessage{
 			{
 				Id:            msg.GetId(),
 				QueueTypeName: "simple-message",
@@ -341,8 +342,8 @@ func TestAddingSignatures(t *testing.T) {
 	})
 
 	t.Run("with correct key it adds it to the store", func(t *testing.T) {
-		ms.ValsetKeeper.On("GetSigningKey", ctx, sdk.ValAddress("val1")).Return(key1.PubKey()).Once()
-		err = keeper.AddMessageSignature(ctx, sdk.ValAddress("val1"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+		ms.ValsetKeeper.On("GetSigningKey", ctx, val1).Return(key1.PubKey()).Once()
+		err = keeper.AddMessageSignature(ctx, val1, []*types.MsgAddMessagesSignatures_MsgSignedMessage{
 			{
 				Id:            msg.GetId(),
 				QueueTypeName: "simple-message",
@@ -352,7 +353,7 @@ func TestAddingSignatures(t *testing.T) {
 		require.NoError(t, err)
 
 		t.Run("it is no longer available for signing for this validator", func(t *testing.T) {
-			msgs, err := keeper.GetMessagesForSigning(ctx, "simple-message", sdk.ValAddress("val1"))
+			msgs, err := keeper.GetMessagesForSigning(ctx, "simple-message", val1)
 			require.NoError(t, err)
 			require.Empty(t, msgs)
 		})

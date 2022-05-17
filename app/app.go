@@ -396,6 +396,7 @@ func New(
 
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
+	attestator := consensusmodulekeeper.NewAttestator()
 	app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
 		appCodec,
 		keys[consensusmoduletypes.StoreKey],
@@ -405,7 +406,9 @@ func New(
 		&app.IBCKeeper.PortKeeper,
 		scopedConsensusKeeper,
 		app.ValsetKeeper,
+		attestator,
 	)
+	attestator.ConsensusKeeper = &app.ConsensusKeeper
 	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition

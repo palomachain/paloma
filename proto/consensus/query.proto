@@ -40,7 +40,8 @@ message QueryParamsResponse {
 }
 
 message QueryQueuedMessagesForSigningRequest {
-  string valAddress = 1;
+  bytes valAddress = 1 [ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
   string queueTypeName = 2;
 }
 
@@ -55,7 +56,8 @@ message MessageToSign {
 }
 
 message MessageApprovedSignData {
-  string valAddress = 1;
+  bytes valAddress = 1[ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
   bytes signature = 2;
 }
 

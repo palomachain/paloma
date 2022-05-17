@@ -38,7 +38,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 		sg:            sg,
 		ider:          keeperutil.NewIDGenerator(sg, nil),
 		cdc:           types.ModuleCdc,
-		typeCheck:     StaticTypeChecker(&testtypes.SimpleMessage{}),
+		typeCheck:     types.StaticTypeChecker(&testtypes.SimpleMessage{}),
 	}
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 
@@ -72,7 +72,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 
 	// lets add a signature to the message
 	sig := &types.SignData{
-		ValAddress: "bob",
+		ValAddress: sdk.ValAddress("bob"),
 		Signature:  []byte(`custom signature`),
 	}
 

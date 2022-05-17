@@ -28,6 +28,8 @@ func (msg *SimpleMessage) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
+func (msg *SimpleMessage) Attest() {}
+
 func (msg *EvenSimplerMessage) GetSigners() []sdk.AccAddress {
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {

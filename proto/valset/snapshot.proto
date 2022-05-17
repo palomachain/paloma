@@ -23,8 +23,11 @@ message Validator {
 
   repeated ExternalChainInfo externalChainInfos = 4;
 
-  string address = 5;
-  string signerAddress = 6;
+  bytes address = 5[ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+
+  bytes signerAddress = 6[ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.AccAddress" ];
 }
 
 message Snapshot {

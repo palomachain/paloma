@@ -23,6 +23,7 @@ type (
 
 		ider          keeperutil.IDGenerator
 		queueRegistry map[types.ConsensusQueueType]consensusQueuer
+		attestator    *Attestator
 
 		valset types.ValsetKeeper
 	}
@@ -37,6 +38,7 @@ func NewKeeper(
 	portKeeper cosmosibckeeper.PortKeeper,
 	scopedKeeper cosmosibckeeper.ScopedKeeper,
 	valsetKeeper types.ValsetKeeper,
+	attestator *Attestator,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -57,6 +59,7 @@ func NewKeeper(
 		paramstore:    ps,
 		valset:        valsetKeeper,
 		queueRegistry: make(map[types.ConsensusQueueType]consensusQueuer),
+		attestator:    attestator,
 	}
 	ider := keeperutil.NewIDGenerator(k, nil)
 	k.ider = ider

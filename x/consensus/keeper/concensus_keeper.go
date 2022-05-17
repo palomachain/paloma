@@ -8,9 +8,15 @@ import (
 	"github.com/vizualni/whoops"
 )
 
-// TODO: add private type for queueTypeName
+const (
+	encodingDelimiter = byte('|')
+)
 
 func (k Keeper) AddConcencusQueueType(queueTypeName types.ConsensusQueueType, typ any) {
+	k.addConcencusQueueType(queueTypeName, types.StaticTypeChecker(typ))
+}
+
+func (k Keeper) addConcencusQueueType(queueTypeName types.ConsensusQueueType, typeChecker types.TypeChecker) {
 	if k.queueRegistry == nil {
 		k.queueRegistry = make(map[types.ConsensusQueueType]consensusQueuer)
 	}
@@ -24,7 +30,7 @@ func (k Keeper) AddConcencusQueueType(queueTypeName types.ConsensusQueueType, ty
 		sg:            k,
 		ider:          k.ider,
 		cdc:           k.cdc,
-		typeCheck:     StaticTypeChecker(typ),
+		typeCheck:     typeChecker,
 	}
 }
 
@@ -69,7 +75,7 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName types.Conse
 		// did this validator already signed this message
 		alreadySigned := false
 		for _, signData := range msg.GetSignData() {
-			if sdk.ValAddress(signData.ValAddress).Equals(val) {
+			if signData.ValAddress.Equals(val) {
 				alreadySigned = true
 				break
 			}
@@ -104,14 +110,14 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 
 		validatorMap := make(map[string]valsettypes.Validator)
 		for _, validator := range snapshot.GetValidators() {
-			validatorMap[validator.Address] = validator
+			validatorMap[validator.Address.String()] = validator
 		}
 
 		for _, msg := range msgs {
 			msgTotal := sdk.ZeroInt()
 			// add shares of validators that have signed the message
 			for _, signData := range msg.GetSignData() {
-				signedValidator, ok := validatorMap[signData.ValAddress]
+				signedValidator, ok := validatorMap[signData.ValAddress.String()]
 				if !ok {
 					k.Logger(ctx).Info("validator not found", "validator", signData.ValAddress)
 					continue
@@ -156,19 +162,21 @@ func (k Keeper) AddMessageSignature(
 			cq := whoops.Must(
 				k.getConsensusQueue(types.ConsensusQueueType(msg.GetQueueTypeName())),
 			)
-			wrappedMsg := whoops.Must(
+			consensusMsg := whoops.Must(
 				cq.getMsgByID(ctx, msg.Id),
 			)
 			rawMsg := whoops.Must(
-				wrappedMsg.SdkMsg(),
-			)
-			bytes := whoops.Must(
-				signingutils.JsonDeterministicEncoding(rawMsg),
+				consensusMsg.SdkMsg(),
 			)
 
-			bytes = append(bytes, wrappedMsg.Nonce()...)
-
-			if !pk.VerifySignature(bytes, msg.Signature) {
+			if ok := signingutils.VerifySignature(
+				pk,
+				signingutils.SerializeFnc(signingutils.JsonDeterministicEncoding),
+				msg.GetSignature(),
+				rawMsg,
+				consensusMsg.Nonce(),
+				msg.GetExtraData(),
+			); !ok {
 				whoops.Assert(
 					ErrSignatureVerificationFailed.Format(
 						msg.Id, valAddr, pk.Address(),
@@ -176,11 +184,26 @@ func (k Keeper) AddMessageSignature(
 				)
 			}
 
+			if task, ok := rawMsg.(types.AttestTask); ok {
+				whoops.Assert(
+					k.attestator.validateIncoming(
+						ctx.Context(),
+						types.ConsensusQueueType(msg.GetQueueTypeName()),
+						task,
+						types.Evidence{
+							From: valAddr,
+							Data: msg.GetExtraData(),
+						},
+					),
+				)
+			}
+
 			whoops.Assert(
 				cq.addSignature(ctx, msg.Id, &types.SignData{
-					ValAddress: string(valAddr.Bytes()),
+					ValAddress: valAddr,
 					PubKey:     pk.Bytes(),
-					Signature:  msg.Signature,
+					Signature:  msg.GetSignature(),
+					ExtraData:  msg.GetExtraData(),
 				}),
 			)
 		}
