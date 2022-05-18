@@ -34,6 +34,7 @@ jobs:
         name: Build image for release
         run: |
           docker buildx build \
+            --builder multi-builder \
             -t paloma-release \
             --target release \
             . 
