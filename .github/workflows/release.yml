@@ -21,6 +21,10 @@ jobs:
       - name: Set up QEMU
         id: qemu
         uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+
       -
         name: Use Docker Buildx
         id: buildx
@@ -29,7 +33,8 @@ jobs:
           install: true
       -
         name: Set up Docker Buildx
-        run: docker buildx create --use --name multi-builder --platform linux/arm64,linux/amd64
+        run: |
+          docker buildx create --use --name multi-builder --platform linux/arm64,linux/amd64
       -
         name: Build image for release
         run: |
