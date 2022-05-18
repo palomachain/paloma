@@ -17,6 +17,10 @@ jobs:
       -
         name: Fetch all tags
         run: git fetch --force --tags
+
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
       -
         name: Set up Docker Buildx
         id: buildx
