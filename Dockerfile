@@ -47,3 +47,12 @@ FROM ubuntu AS local-testnet
 ENTRYPOINT ["/palomad"]
 COPY --from=builder /palomad /palomad
  
+
+###########################
+####     Release       ####
+###########################
+FROM base AS release
+RUN go install github.com/goreleaser/goreleaser@latest
+COPY . /app
+
+CMD ["goreleaser", "release", "--rm-dist"]
