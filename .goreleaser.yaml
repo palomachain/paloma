@@ -1,7 +1,8 @@
 # This is an example .goreleaser.yml file with some sensible defaults.
 # Make sure to check the documentation at https://goreleaser.com
 builds:
-  - env:
+  - main: ./cmd/palomad
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
