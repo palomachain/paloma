@@ -1,4 +1,4 @@
-name: release
+name: Release
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
       -
         name: Build image for release
         run: |
-          docker build \
+          docker buildx build \
             --load \
             --builder multi-builder \
             -t paloma-release \
