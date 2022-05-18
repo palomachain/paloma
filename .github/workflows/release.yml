@@ -31,7 +31,6 @@ jobs:
         run: |
           docker buildx build \
             --load \
-            --builder multi-builder \
             -t paloma-release \
             --target release \
             . 
