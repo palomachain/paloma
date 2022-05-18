@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  buildx:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: Fetch all tags
+        run: git fetch --force --tags
+      -
+        name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          install: true
+      -
+        name: Build image for release
+        run: |
+          docker build \
+            -t paloma-release \
+            --target release \
+            . 
+      -
+        name: Release
+        run: |
+          docker run \
+            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+            paloma-release

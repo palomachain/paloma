@@ -52,7 +52,6 @@ COPY --from=builder /palomad /palomad
 ####     Release       ####
 ###########################
 FROM base AS release
-ARG GITHUB_TOKEN
 RUN go install github.com/goreleaser/goreleaser@latest
 COPY . /app
 
