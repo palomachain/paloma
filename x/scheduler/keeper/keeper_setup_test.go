@@ -8,9 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/palomachain/paloma/x/scheduler/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
@@ -32,25 +30,9 @@ func newSchedulerKeeper(t testing.TB) (*Keeper, sdk.Context) {
 
 	registry := codectypes.NewInterfaceRegistry()
 	appCodec := codec.NewProtoCodec(registry)
-	capabilityKeeper := capabilitykeeper.NewKeeper(appCodec, storeKey, memStoreKey)
 
 	types.RegisterCodec(types.Amino)
 	types.RegisterInterfaces(registry)
-
-	ss := typesparams.NewSubspace(appCodec,
-		types.Amino,
-		storeKey,
-		memStoreKey,
-		"SchedulerSubSpace",
-	)
-	IBCKeeper := ibckeeper.NewKeeper(
-		appCodec,
-		storeKey,
-		ss,
-		nil,
-		nil,
-		capabilityKeeper.ScopeToModule("SchedulerIBCKeeper"),
-	)
 
 	paramsSubspace := typesparams.NewSubspace(appCodec,
 		types.Amino,
@@ -63,9 +45,6 @@ func newSchedulerKeeper(t testing.TB) (*Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		IBCKeeper.ChannelKeeper,
-		&IBCKeeper.PortKeeper,
-		capabilityKeeper.ScopeToModule("SchedulerScopedKeeper"),
 		nil,
 	)
 
