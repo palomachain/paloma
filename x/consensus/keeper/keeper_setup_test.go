@@ -8,9 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	ibckeeper "github.com/cosmos/ibc-go/v2/modules/core/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/consensus/types/mocks"
 	"github.com/stretchr/testify/require"
@@ -40,24 +38,8 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 
 	registry := codectypes.NewInterfaceRegistry()
 	appCodec := codec.NewProtoCodec(registry)
-	capabilityKeeper := capabilitykeeper.NewKeeper(appCodec, storeKey, memStoreKey)
 
 	types.RegisterInterfaces(registry)
-
-	ss := typesparams.NewSubspace(appCodec,
-		types.Amino,
-		storeKey,
-		memStoreKey,
-		"ConsensusSubSpace",
-	)
-	IBCKeeper := ibckeeper.NewKeeper(
-		appCodec,
-		storeKey,
-		ss,
-		nil,
-		nil,
-		capabilityKeeper.ScopeToModule("ConsensusIBCKeeper"),
-	)
 
 	paramsSubspace := typesparams.NewSubspace(appCodec,
 		types.Amino,
@@ -75,9 +57,6 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		IBCKeeper.ChannelKeeper,
-		&IBCKeeper.PortKeeper,
-		capabilityKeeper.ScopeToModule("ConsensusScopedKeeper"),
 		ms.ValsetKeeper,
 		att,
 	)

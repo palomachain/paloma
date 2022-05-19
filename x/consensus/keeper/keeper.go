@@ -10,12 +10,10 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
-	"github.com/tendermint/starport/starport/pkg/cosmosibckeeper"
 )
 
 type (
 	Keeper struct {
-		*cosmosibckeeper.Keeper
 		cdc        codec.BinaryCodec
 		storeKey   sdk.StoreKey
 		memKey     sdk.StoreKey
@@ -34,9 +32,6 @@ func NewKeeper(
 	storeKey,
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
-	channelKeeper cosmosibckeeper.ChannelKeeper,
-	portKeeper cosmosibckeeper.PortKeeper,
-	scopedKeeper cosmosibckeeper.ScopedKeeper,
 	valsetKeeper types.ValsetKeeper,
 	attestator *Attestator,
 ) *Keeper {
@@ -46,13 +41,6 @@ func NewKeeper(
 	}
 
 	k := &Keeper{
-		Keeper: cosmosibckeeper.NewKeeper(
-			types.PortKey,
-			storeKey,
-			channelKeeper,
-			portKeeper,
-			scopedKeeper,
-		),
 		cdc:           cdc,
 		storeKey:      storeKey,
 		memKey:        memKey,

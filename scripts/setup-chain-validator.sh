@@ -2,6 +2,14 @@
 
 set -ex
 
+which gsed > /dev/null
+
+if [ "$?" != "0" ]; then
+  SED=$(which sed)
+else
+  SED=$(which gsed)
+fi
+
 CHAIN_ID="paloma"
 
 VALIDATOR_ACCOUNT_NAME="my_validator"
@@ -12,9 +20,9 @@ PALOMA="${PALOMA_CMD:-go run ./cmd/palomad}"
 $PALOMA init my_validator --chain-id $CHAIN_ID
 
 pushd ~/.paloma/config/
-sed -i 's/keyring-backend = ".*"/keyring-backend = "test"/' client.toml
-sed -i 's/minimum-gas-prices = ".*"/minimum-gas-prices = "0.001dove"/' app.toml
-sed -i 's/laddr = ".*:26657"/laddr = "tcp:\/\/0.0.0.0:26657"/' config.toml
+$SED -i 's/keyring-backend = ".*"/keyring-backend = "test"/' client.toml
+$SED -i 's/minimum-gas-prices = ".*"/minimum-gas-prices = "0.001dove"/' app.toml
+$SED -i 's/laddr = ".*:26657"/laddr = "tcp:\/\/0.0.0.0:26657"/' config.toml
 jq ".chain_id = \"${CHAIN_ID}\"" genesis.json > temp.json && mv temp.json genesis.json
 jq 'walk(if type == "string" and .. == "stake" then "dove" else . end)' genesis.json > temp.json && mv temp.json genesis.json
 popd

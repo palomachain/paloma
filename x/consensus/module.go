@@ -17,7 +17,6 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	porttypes "github.com/cosmos/ibc-go/v2/modules/core/05-port/types"
 	"github.com/palomachain/paloma/x/consensus/client/cli"
 	"github.com/palomachain/paloma/x/consensus/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
@@ -26,7 +25,6 @@ import (
 var (
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
-	_ porttypes.IBCModule   = AppModule{}
 )
 
 // ----------------------------------------------------------------------------

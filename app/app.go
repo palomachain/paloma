@@ -71,16 +71,16 @@ import (
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/cosmos/ibc-go/v2/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v2/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v2/modules/core"
-	ibcclient "github.com/cosmos/ibc-go/v2/modules/core/02-client"
-	ibcclientclient "github.com/cosmos/ibc-go/v2/modules/core/02-client/client"
-	ibcclienttypes "github.com/cosmos/ibc-go/v2/modules/core/02-client/types"
-	ibcporttypes "github.com/cosmos/ibc-go/v2/modules/core/05-port/types"
-	ibchost "github.com/cosmos/ibc-go/v2/modules/core/24-host"
-	ibckeeper "github.com/cosmos/ibc-go/v2/modules/core/keeper"
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
+	ibctransfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v3/modules/core"
+	ibcclient "github.com/cosmos/ibc-go/v3/modules/core/02-client"
+	ibcclientclient "github.com/cosmos/ibc-go/v3/modules/core/02-client/client"
+	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
+	ibcporttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
+	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -102,6 +102,8 @@ import (
 	valsetmodule "github.com/palomachain/paloma/x/valset"
 	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
+
+	"github.com/CosmWasm/wasmd/x/wasm"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -158,6 +160,7 @@ var (
 
 		consensusmodule.AppModuleBasic{},
 		valsetmodule.AppModuleBasic{},
+		wasm.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -170,6 +173,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		wasm.ModuleName:                {authtypes.Burner},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 )
@@ -236,6 +240,9 @@ type App struct {
 	ValsetKeeper valsetmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
+	wasmKeeper       wasm.Keeper
+	scopedWasmKeeper capabilitykeeper.ScopedKeeper
+
 	// mm is the module manager
 	mm *module.Manager
 
@@ -273,6 +280,7 @@ func New(
 		schedulermoduletypes.StoreKey,
 		consensusmoduletypes.StoreKey,
 		valsetmoduletypes.StoreKey,
+		wasm.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -301,6 +309,7 @@ func New(
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/scopedKeeper
+	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
 
 	// add keepers
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
@@ -354,6 +363,7 @@ func New(
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
+		nil,
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
@@ -365,6 +375,36 @@ func New(
 	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
+	wasmDir := filepath.Join(homePath, "data")
+
+	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
+	if err != nil {
+		panic("error while reading wasm config: " + err.Error())
+	}
+
+	app.wasmKeeper = wasm.NewKeeper(
+		appCodec,
+		keys[wasm.StoreKey],
+		app.GetSubspace(wasm.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.StakingKeeper,
+		app.DistrKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		scopedWasmKeeper,
+		app.TransferKeeper,
+		app.MsgServiceRouter(),
+		app.GRPCQueryRouter(),
+		wasmDir,
+		wasmConfig,
+		"iterator,staking,stargate,paloma",
+	)
+	// register wasm gov proposal types
+	// enabledProposals := GetEnabledProposals()
+	// if len(enabledProposals) != 0 {
+	// 	govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
+	// }
 
 	app.GovKeeper = govkeeper.NewKeeper(
 		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
@@ -378,9 +418,6 @@ func New(
 		keys[schedulermoduletypes.StoreKey],
 		keys[schedulermoduletypes.MemStoreKey],
 		app.GetSubspace(schedulermoduletypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		scopedSchedulerKeeper,
 		app.BankKeeper,
 	)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
@@ -402,9 +439,6 @@ func New(
 		keys[consensusmoduletypes.StoreKey],
 		keys[consensusmoduletypes.MemStoreKey],
 		app.GetSubspace(consensusmoduletypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		scopedConsensusKeeper,
 		app.ValsetKeeper,
 		attestator,
 	)
@@ -415,9 +449,8 @@ func New(
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
-	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferModule)
-	ibcRouter.AddRoute(schedulermoduletypes.ModuleName, schedulerModule)
-	ibcRouter.AddRoute(consensusmoduletypes.ModuleName, consensusModule)
+	// TODO: this should be enabled later
+	// ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferModule)
 	// this line is used by starport scaffolding # ibc/app/router
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -454,6 +487,7 @@ func New(
 		schedulerModule,
 		consensusModule,
 		valsetModule,
+		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -476,6 +510,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		valsetmoduletypes.ModuleName,
+		wasm.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -492,6 +527,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		valsetmoduletypes.ModuleName,
+		wasm.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -521,6 +557,7 @@ func New(
 		schedulermoduletypes.ModuleName,
 		consensusmoduletypes.ModuleName,
 		valsetmoduletypes.ModuleName,
+		wasm.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -583,6 +620,7 @@ func New(
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
+	app.scopedWasmKeeper = scopedWasmKeeper
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
 
 	return app
@@ -736,6 +774,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
 	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
 	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
+	paramsKeeper.Subspace(wasm.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper
