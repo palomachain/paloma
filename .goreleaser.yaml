@@ -2,6 +2,7 @@
 # Make sure to check the documentation at https://goreleaser.com
 builds:
   - main: ./cmd/palomad
+    binary: palomad
     tags:
       - netgo
       - gcc
@@ -12,6 +13,11 @@ builds:
       - linux
     goarch:
       - amd64
+    goamd64:
+      - v1
+      - v2
+      - v3
+
 
 archives:
   - replacements:
@@ -35,3 +41,6 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^third_party_proto:'
+      - '^testutil:'
+      - '^scripts:'
+      - '^docs:'
