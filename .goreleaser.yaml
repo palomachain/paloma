@@ -2,11 +2,14 @@
 # Make sure to check the documentation at https://goreleaser.com
 builds:
   - main: ./cmd/palomad
+    ldflags:
+      - -s -w
+      - -linkmode=external -extldflags "-Wl,-z,muldefs -static"
+      - netgo
     env:
       - CGO_ENABLED=0
     goos:
       - linux
-      - darwin
     goarch:
       - amd64
 
