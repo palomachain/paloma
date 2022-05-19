@@ -2,7 +2,11 @@
 
 set -ex
 
-which gsed > /dev/null
+if which gsed > /dev/null; then
+  SED="$(which gsed)"
+else
+  SED="$(which sed)"
+fi
 
 if [ "$?" != "0" ]; then
   SED=$(which sed)
