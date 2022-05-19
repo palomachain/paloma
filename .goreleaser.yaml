@@ -6,7 +6,10 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
-      # - darwin
+      - darwin
+    goarch:
+      - amd64
+
 archives:
   - replacements:
       darwin: Darwin
