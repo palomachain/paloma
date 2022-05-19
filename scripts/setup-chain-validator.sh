@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
-
-set -ex
+#!/bin/bash
+set -euo pipefail
+set -x
 
 if which gsed > /dev/null; then
   SED="$(which gsed)"
@@ -20,7 +20,7 @@ VALIDATOR_STAKE_AMOUNT="1000000dove"
 
 PALOMA="${PALOMA_CMD:-go run ./cmd/palomad}"
 
-$PALOMA init my_validator --chain-id $CHAIN_ID
+$PALOMA init my_validator --chain-id "$CHAIN_ID"
 
 pushd ~/.paloma/config/
 $SED -i 's/keyring-backend = ".*"/keyring-backend = "test"/' client.toml
@@ -30,15 +30,15 @@ jq ".chain_id = \"${CHAIN_ID}\"" genesis.json > temp.json && mv temp.json genesi
 jq 'walk(if type == "string" and .. == "stake" then "dove" else . end)' genesis.json > temp.json && mv temp.json genesis.json
 popd
 
-if [ "${ACCOUNT_MNEMONIC}" == "" ]; then
-  $PALOMA keys add $VALIDATOR_ACCOUNT_NAME
+if [[ -z "${ACCOUNT_MNEMONIC:-}" ]]; then
+  $PALOMA keys add "$VALIDATOR_ACCOUNT_NAME"
 else
-  echo $ACCOUNT_MNEMONIC | $PALOMA keys add $VALIDATOR_ACCOUNT_NAME --recover
+  echo "$ACCOUNT_MNEMONIC" | $PALOMA keys add "$VALIDATOR_ACCOUNT_NAME" --recover
 fi
 
 
-validator_address=$($PALOMA keys show $VALIDATOR_ACCOUNT_NAME -a)
+validator_address="$($PALOMA keys show "$VALIDATOR_ACCOUNT_NAME" -a)"
 
-$PALOMA add-genesis-account $validator_address 100000000000000dove
-$PALOMA gentx $VALIDATOR_ACCOUNT_NAME $VALIDATOR_STAKE_AMOUNT --chain-id $CHAIN_ID
+$PALOMA add-genesis-account "$validator_address" 100000000000000dove
+$PALOMA gentx "$VALIDATOR_ACCOUNT_NAME" "$VALIDATOR_STAKE_AMOUNT" --chain-id "$CHAIN_ID"
 $PALOMA collect-gentxs
