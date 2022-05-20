@@ -4,6 +4,8 @@
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/palomachain/paloma?logo=paloma)
 [![License: Apache-2.0](https://img.shields.io/github/license/umee-network/umee.svg?style=flat-square)](https://github.com/palomachain/paloma/blob/main/LICENSE)
 ![Lines of code](https://img.shields.io/tokei/lines/github/palomachain/paloma)
+[![Continuous integration](https://github.com/palomachain/paloma/actions/workflows/ci-test.yml/badge.svg?branch=master)](https://github.com/palomachain/paloma/actions/workflows/ci-test.yml)
+
 
 
 > A Golang implementation of Paloma Chain, a decentralized, automation network for smart contracts
@@ -51,5 +53,3 @@ To install the `palomad` binary:
 ```shell
 $ make install
 ```
-
-[![Continuous integration](https://github.com/palomachain/paloma/actions/workflows/ci-test.yml/badge.svg?branch=master)](https://github.com/palomachain/paloma/actions/workflows/ci-test.yml)
