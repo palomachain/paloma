@@ -1,10 +1,10 @@
 ![Logo!](assets/paloma.png)
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://img.shields.io/badge/repo%20status-WIP-yellow.svg?style=flat-square)](https://www.repostatus.org/#wip)
-[![Version](https://img.shields.io/github/tag/palomachain/paloma/.svg?style=flat-square)](https://github.com/palomachain/paloma/releases)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/palomachain/paloma?logo=paloma)
 [![License: Apache-2.0](https://img.shields.io/github/license/umee-network/umee.svg?style=flat-square)](https://github.com/palomachain/paloma/blob/main/LICENSE)
-[![Lines Of Code](https://img.shields.io/tokei/lines/github/palomachain/paloma/style=flat-square)](https://github.com/palomachain/paloma/)
-[![GitHub Super-Linter](https://img.shields.io/github/workflow/status/palomachain/paloma/Lint?style=flat-square&label=Lint)](https://github.com/marketplace/actions/super-linter)
+![Lines of code](https://img.shields.io/tokei/lines/github/palomachain/paloma)
+
 
 > A Golang implementation of Paloma Chain, a decentralized, automation network for smart contracts
 > deployed in the Cosmos, EVM, Solana, and Polkadot networks.
