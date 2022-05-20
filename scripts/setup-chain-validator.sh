@@ -8,12 +8,6 @@ else
   SED="$(which sed)"
 fi
 
-if [ "$?" != "0" ]; then
-  SED=$(which sed)
-else
-  SED=$(which gsed)
-fi
-
 if ! which jq > /dev/null; then
   echo 'command jq not found, please install jq'
   exit 1
