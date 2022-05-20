@@ -10,6 +10,11 @@ else
   SED=$(which gsed)
 fi
 
+if ! which jq > /dev/null; then
+  echo 'command jq not found, please install jq'
+  exit 1
+fi
+
 CHAIN_ID="paloma"
 
 VALIDATOR_ACCOUNT_NAME="my_validator"
