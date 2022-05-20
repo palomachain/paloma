@@ -41,7 +41,7 @@ N/A
 
 ### Private Testnets
 
-- [paloma-20220520](paloma-20220520)
+- [paloma-20220520](https://github.com/palomachain/private-testnets)
 
 
 ## Install
