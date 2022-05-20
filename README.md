@@ -44,8 +44,8 @@ N/A
 To download the `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.0.1-alphawasmd4/paloma_0.0.1-alphawasmd4_Linux_x86_64.tar.gz | \
-tar -C /usr/local/bin -xvzf - palomad
+sudo wget -O - https://github.com/palomachain/paloma/releases/download/v0.0.1-alphawasmd4/paloma_0.0.1-alphawasmd4_Linux_x86_64.tar.gz | \
+sudo tar -C /usr/local/bin -xvzf - palomad
 chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
 wget -O - https://github.com/CosmWasm/wasmvm/raw/main/api/libwasmvm.x86_64.so > /usr/lib/libwasmvm.x86_64.so
