@@ -53,6 +53,9 @@ COPY --from=builder /palomad /palomad
 ###########################
 FROM base AS release
 RUN go install github.com/goreleaser/goreleaser@latest
+COPY go.mod go.sum /app
+RUN go mod download
+RUN cp /go/pkg/mod/github.com/\!cosm\!wasm/wasmvm@v*/api/libwasmvm.x86_64.so /lib/libwasmvm.x86_64.so
 COPY . /app
 
 CMD ["goreleaser", "release", "--rm-dist"]

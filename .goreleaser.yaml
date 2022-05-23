@@ -5,7 +5,6 @@ builds:
     binary: palomad
     tags:
       - netgo
-      - gcc
       - ledger
     ldflags:
       - -s -w
