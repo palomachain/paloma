@@ -2,7 +2,7 @@
 name: Frontend request
 about: Request for Frontend and Design work
 title: ''
-labels: Ui/UX
+labels: UI/UX
 assignees: joycehermosilla, verabehr
 
 ---
