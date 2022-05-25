@@ -2,7 +2,9 @@ package keeper
 
 import (
 	"fmt"
+	"math"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,17 +14,22 @@ import (
 )
 
 const (
-	consensusQueueIDCounterKey = `consensus-queue-counter-`
-	consensusQueueSigningKey   = `consensus-queue-signing-type-`
+	consensusQueueIDCounterKey      = `consensus-queue-counter-`
+	consensusBatchQueueIDCounterKey = `consensus-batch-queue-counter-`
+	consensusQueueSigningKey        = `consensus-queue-signing-type-`
+
+	consensusQueueMaxBatchSize uint64 = 20
 )
 
 type ConsensusMsg = types.ConsensusMsg
+type batchedConsensusMsg = types.BatchedConsensusMsg
 
 //go:generate mockery --name=consensusQueuer --inpackage --testonly
 type (
 	codecMarshaler interface {
 		MarshalInterface(i proto.Message) ([]byte, error)
 		UnmarshalInterface(bz []byte, ptr interface{}) error
+		Unmarshal(bz []byte, ptr codec.ProtoMarshaler) error
 	}
 
 	// consensusQueue is a database storing messages that need to be signed.
@@ -34,7 +41,17 @@ type (
 		typeCheck     types.TypeChecker
 	}
 
+	batchOptions struct {
+		MinBatchSize int
+	}
+
+	batchedConsensusQueuer interface {
+		batchPut(sdk.Context, batchOptions, ConsensusMsg)
+		processBatchedMessages(sdk.Context) error
+	}
+
 	consensusQueuer interface {
+		batchedConsensusQueuer
 		put(sdk.Context, ...ConsensusMsg) error
 		getAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
 		getMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error)
@@ -42,6 +59,50 @@ type (
 		remove(sdk.Context, uint64) error
 	}
 )
+
+func (c consensusQueue) batchPut(ctx sdk.Context, opt batchOptions, msg ConsensusMsg) error {
+	newID := c.ider.IncrementNextID(ctx, consensusBatchQueueIDCounterKey)
+
+	anyMsg, err := codectypes.NewAnyWithValue(msg)
+	if err != nil {
+		return err
+	}
+	batchedMsg := &batchedConsensusMsg{
+		Id:           newID,
+		MinBatchSize: uint64(opt.MinBatchSize),
+		Msg:          anyMsg,
+	}
+
+	data, err := c.cdc.MarshalInterface(batchedMsg)
+	if err != nil {
+		return err
+	}
+
+	c.batchQueue(ctx).Set(sdk.Uint64ToBigEndian(newID), data)
+	return nil
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func (c consensusQueue) processBatchedMessages(ctx sdk.Context) error {
+	queue := c.batchQueue(ctx)
+	msgs, err := keeperutil.IterAll[*batchedConsensusMsg](queue, c.cdc)
+	if err != nil {
+		return err
+	}
+	deleteIDs := []uint64{}
+
+	for len(msgs) > 0 {
+		// get the optimal queue size
+		queueSize := math.MinInt(consensusQueueMaxBatchSize)
+	}
+	return nil
+}
 
 // put puts raw message into a signing queue.
 func (c consensusQueue) put(ctx sdk.Context, msgs ...ConsensusMsg) error {
@@ -145,6 +206,12 @@ func (c consensusQueue) save(ctx sdk.Context, msg types.QueuedSignedMessageI) er
 func (c consensusQueue) queue(ctx sdk.Context) prefix.Store {
 	store := c.sg.Store(ctx)
 	return prefix.NewStore(store, []byte(c.signingQueueKey()))
+}
+
+// batchQueue returns queue of messages that have been batched
+func (c consensusQueue) batchQueue(ctx sdk.Context) prefix.Store {
+	store := c.sg.Store(ctx)
+	return prefix.NewStore(store, []byte("batching-"+c.signingQueueKey()))
 }
 
 // signingQueueKey builds a key for the store where are we going to store those.

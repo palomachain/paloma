@@ -20,3 +20,9 @@ message SignData {
   bytes signature = 2;
   bytes extraData = 3;
 }
+message BatchedConsensusMsg {
+  uint64 id = 1;
+  google.protobuf.Any msg = 2;
+
+  uint64 minBatchSize = 3;
+}
