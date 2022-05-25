@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -214,9 +215,18 @@ func nonceFromID(id uint64) []byte {
 }
 
 func queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *types.MessageToSign {
+	consensusMsg, err := msg.ConsensusMsg()
+	if err != nil {
+		panic(err)
+	}
+	anyMsg, err := codectypes.NewAnyWithValue(consensusMsg)
+	if err != nil {
+		panic(err)
+	}
 	return &types.MessageToSign{
 		Nonce:       nonceFromID(msg.GetId()),
 		Id:          msg.GetId(),
-		BytesToSign: whoops.Must(msg.ConsensusMsg()).GetSignBytes(),
+		BytesToSign: consensusMsg.GetSignBytes(),
+		Msg:         anyMsg,
 	}
 }
