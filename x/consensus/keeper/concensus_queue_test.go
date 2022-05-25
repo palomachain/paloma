@@ -26,10 +26,10 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	registry := types.ModuleCdc.InterfaceRegistry()
 	registry.RegisterInterface(
 		"volumefi.tests.SimpleMessage",
-		(*sdk.Msg)(nil),
+		(*types.ConsensusMsg)(nil),
 		&testtypes.SimpleMessage{},
 	)
-	registry.RegisterImplementations((*sdk.Msg)(nil), &testtypes.SimpleMessage{})
+	registry.RegisterImplementations((*types.ConsensusMsg)(nil), &testtypes.SimpleMessage{})
 	types.RegisterInterfaces(registry)
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
@@ -65,9 +65,9 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 
 		// lets see if it's equal to what we actually put in the queue
 		realMsg := msgs[0]
-		sdkMsg, err := realMsg.SdkMsg()
+		consensusMsg, err := realMsg.ConsensusMsg()
 		assert.NoError(t, err)
-		assert.Equal(t, msg, sdkMsg)
+		assert.Equal(t, msg, consensusMsg)
 	})
 
 	// lets add a signature to the message

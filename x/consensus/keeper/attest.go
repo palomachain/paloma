@@ -28,7 +28,7 @@ mainLoop:
 		}
 
 		for _, msg := range msgs {
-			origMsg, err := msg.SdkMsg()
+			origMsg, err := msg.ConsensusMsg()
 			if err != nil {
 				gerr.Add(err)
 				continue mainLoop
@@ -36,6 +36,7 @@ mainLoop:
 
 			task, ok := origMsg.(types.AttestTask)
 			if !ok {
+				// TODO:
 				panic("what now")
 			}
 

@@ -1,7 +1,6 @@
 package types
 
 import (
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	proto "github.com/gogo/protobuf/proto"
 )
@@ -13,10 +12,10 @@ type QueuedSignedMessageI interface {
 	proto.Message
 	GetId() uint64
 	Nonce() []byte
-	GetMsg() *codectypes.Any
-	SdkMsg() (sdk.Msg, error)
+	ConsensusMsg() (ConsensusMsg, error)
 	GetSignData() []*SignData
 	AddSignData(*SignData)
+	GetBytesToSign() []byte
 }
 
 var _ QueuedSignedMessageI = &QueuedSignedMessage{}
@@ -32,10 +31,10 @@ func (q *QueuedSignedMessage) Nonce() []byte {
 	return sdk.Uint64ToBigEndian(q.GetId())
 }
 
-func (q *QueuedSignedMessage) SdkMsg() (sdk.Msg, error) {
-	var sdkMsg sdk.Msg
-	if err := ModuleCdc.UnpackAny(q.Msg, &sdkMsg); err != nil {
+func (q *QueuedSignedMessage) ConsensusMsg() (ConsensusMsg, error) {
+	var ptr ConsensusMsg
+	if err := ModuleCdc.UnpackAny(q.Msg, &ptr); err != nil {
 		return nil, err
 	}
-	return sdkMsg, nil
+	return ptr, nil
 }

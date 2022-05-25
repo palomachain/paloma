@@ -301,7 +301,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 func TestAddingSignatures(t *testing.T) {
 	keeper, ms, ctx := newConsensusKeeper(t)
 
-	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*sdk.Msg)(nil), &testdata.SimpleMessage{})
+	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*types.ConsensusMsg)(nil), &testdata.SimpleMessage{})
 
 	keeper.AddConcencusQueueType("simple-message", &testdata.SimpleMessage{})
 
@@ -318,7 +318,7 @@ func TestAddingSignatures(t *testing.T) {
 	require.Len(t, msgs, 1)
 
 	msg := msgs[0]
-	msgToSign, err := msg.SdkMsg()
+	msgToSign, err := msg.ConsensusMsg()
 	require.NoError(t, err)
 
 	signedBytes, _, err := signingutils.SignBytes(
