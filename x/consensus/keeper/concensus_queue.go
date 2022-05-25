@@ -41,23 +41,23 @@ type (
 		typeCheck     types.TypeChecker
 	}
 
-	batchOptions struct {
-		MinBatchSize int
-	}
-
-	batchedConsensusQueuer interface {
-		batchPut(sdk.Context, batchOptions, ConsensusMsg)
-		processBatchedMessages(sdk.Context) error
-	}
-
-	consensusQueuer interface {
-		batchedConsensusQueuer
+	consensusQueueModifier interface {
 		put(sdk.Context, ...ConsensusMsg) error
-		getAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
-		getMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error)
 		addSignature(sdk.Context, uint64, *types.SignData) error
 		remove(sdk.Context, uint64) error
 	}
+
+	consensusQueueReader interface {
+		getAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
+		getMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error)
+	}
+
+	consensusQueuerReaderModifier interface {
+		consensusQueueModifier
+		consensusQueueReader
+	}
+
+	consensusQueueBatcher interface{}
 )
 
 func (c consensusQueue) batchPut(ctx sdk.Context, opt batchOptions, msg ConsensusMsg) error {
