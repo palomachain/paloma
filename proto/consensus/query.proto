@@ -53,6 +53,7 @@ message MessageToSign {
   bytes nonce = 1;
   uint64 id = 2;
   bytes bytesToSign = 3;
+  google.protobuf.Any msg = 4;
 }
 
 message MessageApprovedSignData {
