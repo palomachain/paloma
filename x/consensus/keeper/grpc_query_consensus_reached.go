@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"google.golang.org/grpc/codes"
@@ -26,10 +27,19 @@ func (k Keeper) ConsensusReached(goCtx context.Context, req *types.QueryConsensu
 	res := &types.QueryConsensusReachedResponse{}
 
 	for _, msg := range msgs {
+		origMsg, err := msg.ConsensusMsg()
+
+		if err != nil {
+			return nil, err
+		}
+		anyMsg, err := codectypes.NewAnyWithValue(origMsg)
+		if err != nil {
+			return nil, err
+		}
 		approvedMessage := &types.MessageApproved{
 			Nonce:    msg.Nonce(),
 			Id:       msg.GetId(),
-			Msg:      msg.GetMsg(),
+			Msg:      anyMsg,
 			SignData: []*types.MessageApprovedSignData{},
 		}
 		for _, signData := range msg.GetSignData() {

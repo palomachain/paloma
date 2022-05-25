@@ -10,13 +10,13 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 message QueuedSignedMessage {
   uint64 id = 1;
   google.protobuf.Any msg = 2;
-  repeated SignData signData = 3;
+  bytes bytesToSign = 3;
+  repeated SignData signData = 4;
 }
 
 message SignData {
   bytes valAddress = 1[ (gogoproto.casttype) =
                          "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
-  bytes pubKey = 2; 
-  bytes signature = 3;
-  bytes extraData = 4;
+  bytes signature = 2;
+  bytes extraData = 3;
 }

@@ -166,7 +166,7 @@ func (k Keeper) AddMessageSignature(
 				cq.getMsgByID(ctx, msg.Id),
 			)
 			rawMsg := whoops.Must(
-				consensusMsg.SdkMsg(),
+				consensusMsg.ConsensusMsg(),
 			)
 
 			if ok := signingutils.VerifySignature(
@@ -201,7 +201,6 @@ func (k Keeper) AddMessageSignature(
 			whoops.Assert(
 				cq.addSignature(ctx, msg.Id, &types.SignData{
 					ValAddress: valAddr,
-					PubKey:     pk.Bytes(),
 					Signature:  msg.GetSignature(),
 					ExtraData:  msg.GetExtraData(),
 				}),
@@ -216,8 +215,8 @@ func nonceFromID(id uint64) []byte {
 
 func queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *types.MessageToSign {
 	return &types.MessageToSign{
-		Nonce: nonceFromID(msg.GetId()),
-		Id:    msg.GetId(),
-		Msg:   msg.GetMsg(),
+		Nonce:       nonceFromID(msg.GetId()),
+		Id:          msg.GetId(),
+		BytesToSign: whoops.Must(msg.ConsensusMsg()).GetSignBytes(),
 	}
 }

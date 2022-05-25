@@ -3,12 +3,9 @@
 package mocks
 
 import (
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cosmos_sdktypes "github.com/cosmos/cosmos-sdk/types"
+	testing "testing"
 
 	mock "github.com/stretchr/testify/mock"
-
-	testing "testing"
 
 	types "github.com/palomachain/paloma/x/consensus/types"
 )
@@ -23,6 +20,45 @@ func (_m *QueuedSignedMessageI) AddSignData(_a0 *types.SignData) {
 	_m.Called(_a0)
 }
 
+// ConsensusMsg provides a mock function with given fields:
+func (_m *QueuedSignedMessageI) ConsensusMsg() (types.ConsensusMsg, error) {
+	ret := _m.Called()
+
+	var r0 types.ConsensusMsg
+	if rf, ok := ret.Get(0).(func() types.ConsensusMsg); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(types.ConsensusMsg)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetBytesToSign provides a mock function with given fields:
+func (_m *QueuedSignedMessageI) GetBytesToSign() []byte {
+	ret := _m.Called()
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func() []byte); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	return r0
+}
+
 // GetId provides a mock function with given fields:
 func (_m *QueuedSignedMessageI) GetId() uint64 {
 	ret := _m.Called()
@@ -32,22 +68,6 @@ func (_m *QueuedSignedMessageI) GetId() uint64 {
 		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(uint64)
-	}
-
-	return r0
-}
-
-// GetMsg provides a mock function with given fields:
-func (_m *QueuedSignedMessageI) GetMsg() *codectypes.Any {
-	ret := _m.Called()
-
-	var r0 *codectypes.Any
-	if rf, ok := ret.Get(0).(func() *codectypes.Any); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*codectypes.Any)
-		}
 	}
 
 	return r0
@@ -93,29 +113,6 @@ func (_m *QueuedSignedMessageI) ProtoMessage() {
 // Reset provides a mock function with given fields:
 func (_m *QueuedSignedMessageI) Reset() {
 	_m.Called()
-}
-
-// SdkMsg provides a mock function with given fields:
-func (_m *QueuedSignedMessageI) SdkMsg() (cosmos_sdktypes.Msg, error) {
-	ret := _m.Called()
-
-	var r0 cosmos_sdktypes.Msg
-	if rf, ok := ret.Get(0).(func() cosmos_sdktypes.Msg); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(cosmos_sdktypes.Msg)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // String provides a mock function with given fields:

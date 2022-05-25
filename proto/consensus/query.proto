@@ -52,7 +52,7 @@ message QueryQueuedMessagesForSigningResponse {
 message MessageToSign {
   bytes nonce = 1;
   uint64 id = 2;
-  google.protobuf.Any msg = 3;
+  bytes bytesToSign = 3;
 }
 
 message MessageApprovedSignData {
