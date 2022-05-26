@@ -53,9 +53,10 @@ func (c Queue) Put(ctx sdk.Context, msgs ...ConsensusMsg) error {
 			return err
 		}
 		queuedMsg := &types.QueuedSignedMessage{
-			Id:       newID,
-			Msg:      anyMsg,
-			SignData: []*types.SignData{},
+			Id:          newID,
+			Msg:         anyMsg,
+			SignData:    []*types.SignData{},
+			BytesToSign: msg.GetSignBytes(),
 		}
 		if err := c.save(ctx, queuedMsg); err != nil {
 			return err

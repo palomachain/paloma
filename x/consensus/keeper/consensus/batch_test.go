@@ -82,6 +82,22 @@ func TestBatching(t *testing.T) {
 			require.NoError(t, err)
 			require.Len(t, msgs, 7)
 		})
+		t.Run("calling ProcessBatch shouldn't do anything", func(t *testing.T) {
+			err := cq.ProcessBatches(ctx)
+			require.NoError(t, err)
+			t.Run("still 7 results", func(t *testing.T) {
+				msgs, err := cq.GetAll(ctx)
+				require.NoError(t, err)
+				require.Len(t, msgs, 7)
+			})
+		})
+		t.Run("verifying the sign data", func(t *testing.T) {
+			msgs, err := cq.GetAll(ctx)
+			require.NoError(t, err)
+			for _, msg := range msgs {
+				require.Equal(t, msg.GetBytesToSign(), []byte("hello"))
+			}
+		})
 	})
 
 }
