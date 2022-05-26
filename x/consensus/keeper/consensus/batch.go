@@ -4,7 +4,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -16,22 +15,38 @@ type BatchToBytesToSigner interface {
 	BytesToSign(ctx sdk.Context, batch types.Batch) ([]byte, error)
 }
 
+type batchSignerWrapperFunc func(ctx sdk.Context, batch types.Batch) ([]byte, error)
+
+func (f batchSignerWrapperFunc) BytesToSign(ctx sdk.Context, batch types.Batch) ([]byte, error) {
+	return f(ctx, batch)
+}
+
+func BatchSignerFunc(fnc func(ctx sdk.Context, batch types.Batch) ([]byte, error)) BatchToBytesToSigner {
+	return batchSignerWrapperFunc(fnc)
+}
+
 type BatchQueue struct {
-	base         Queue
-	batchToBytes BatchToBytesToSigner
+	base               Queue
+	batchToBytes       BatchToBytesToSigner
+	batchedTypeChecker types.TypeChecker
 }
 
 func NewBatchQueue(qo QueueOptions, batchToBytes BatchToBytesToSigner) BatchQueue {
+	staticTypeCheck := qo.TypeCheck
+	batchedTypeCheck := types.BatchedTypeChecker(staticTypeCheck)
+
+	qo.TypeCheck = batchedTypeCheck
 	return BatchQueue{
-		base:         NewQueue(qo),
-		batchToBytes: batchToBytes,
+		base:               NewQueue(qo),
+		batchToBytes:       batchToBytes,
+		batchedTypeChecker: staticTypeCheck,
 	}
 }
 
 func (c BatchQueue) Put(ctx sdk.Context, msgs ...ConsensusMsg) error {
 	for _, msg := range msgs {
 
-		if !c.base.qo.TypeCheck(msg) {
+		if !c.batchedTypeChecker(msg) {
 			return ErrIncorrectMessageType.Format(msg)
 		}
 
@@ -42,7 +57,7 @@ func (c BatchQueue) Put(ctx sdk.Context, msgs ...ConsensusMsg) error {
 			return err
 		}
 
-		batchedMsg := &batchOfConsensusMessages{
+		var batchedMsg types.MessageQueuedForBatchingI = &batchOfConsensusMessages{
 			Msg: anyMsg,
 		}
 
@@ -50,7 +65,6 @@ func (c BatchQueue) Put(ctx sdk.Context, msgs ...ConsensusMsg) error {
 		if err != nil {
 			return err
 		}
-
 		c.batchQueue(ctx).Set(sdk.Uint64ToBigEndian(newID), data)
 	}
 	return nil
@@ -60,27 +74,32 @@ func (c BatchQueue) ProcessBatches(ctx sdk.Context) error {
 	queue := c.batchQueue(ctx)
 	deleteKeys := [][]byte{}
 
-	var batches []*types.Batch
+	iterator := queue.Iterator(nil, nil)
+	defer iterator.Close()
 
+	var msgs []types.MessageQueuedForBatchingI
+	for ; iterator.Valid(); iterator.Next() {
+		iterData := iterator.Value()
+
+		var batchedMsg types.MessageQueuedForBatchingI
+		if err := c.base.qo.Cdc.UnmarshalInterface(iterData, &batchedMsg); err != nil {
+			return err
+		}
+
+		msgs = append(msgs, batchedMsg)
+		deleteKeys = append(deleteKeys, iterator.Key())
+	}
+
+	var batches []*types.Batch
 	var batch *types.Batch
-	err := keeperutil.IterAllFnc(queue, c.base.qo.Cdc, func(key []byte, val *batchOfConsensusMessages) bool {
+
+	for _, msg := range msgs {
 		if batch == nil || len(batch.Msgs) >= consensusQueueMaxBatchSize {
 			batch = &types.Batch{}
 			batches = append(batches, batch)
 		}
 
-		batch.Msgs = append(batch.Msgs, val.GetMsg())
-		deleteKeys = append(deleteKeys, key)
-
-		return true
-	})
-
-	if len(batch.Msgs) > 0 {
-		batches = append(batches, batch)
-	}
-
-	if err != nil {
-		return err
+		batch.Msgs = append(batch.Msgs, msg.GetMsg())
 	}
 
 	// now that we have batches ready, we need to delete those elements from the db

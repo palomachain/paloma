@@ -16,15 +16,18 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	registry.RegisterImplementations(
-		(*QueuedSignedMessageI)(nil),
+	registry.RegisterImplementations((*QueuedSignedMessageI)(nil),
 		&QueuedSignedMessage{},
+	)
+	registry.RegisterImplementations((*MessageQueuedForBatchingI)(nil),
+		&BatchOfConsensusMessages{},
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgAddMessagesSignatures{},
 	)
 	registry.RegisterImplementations((*ConsensusMsg)(nil),
 		&SignSmartContractExecute{},
+		&Batch{},
 	)
 	// this line is used by starport scaffolding # 3
 

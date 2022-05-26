@@ -1,6 +1,7 @@
 package types
 
 import (
+	types "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	proto "github.com/gogo/protobuf/proto"
 )
@@ -19,6 +20,13 @@ type QueuedSignedMessageI interface {
 }
 
 var _ QueuedSignedMessageI = &QueuedSignedMessage{}
+
+type MessageQueuedForBatchingI interface {
+	proto.Message
+	GetMsg() *types.Any
+}
+
+var _ MessageQueuedForBatchingI = &BatchOfConsensusMessages{}
 
 func (q *QueuedSignedMessage) AddSignData(data *SignData) {
 	if q.SignData == nil {
