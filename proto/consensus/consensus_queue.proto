@@ -14,13 +14,13 @@ message QueuedSignedMessage {
   repeated SignData signData = 4;
 }
 
-//TODO: rename this
 message BatchOfConsensusMessages {
   google.protobuf.Any msg = 1;
 }
 
 message Batch {
   repeated google.protobuf.Any msgs = 1;
+  bytes bytesToSign = 2;
 }
 
 message SignData {

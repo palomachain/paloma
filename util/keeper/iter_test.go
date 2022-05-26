@@ -29,7 +29,7 @@ func TestIteration(t *testing.T) {
 		store.Set([]byte{byte(i)}, bz)
 	}
 
-	all, err := IterAll[*types.SimpleMessage](store, types.ModuleCdc)
+	_, all, err := IterAll[*types.SimpleMessage](store, types.ModuleCdc)
 	assert.NoError(t, err)
 	assert.Len(t, all, 3)
 	assert.Equal(t, inData, all)
@@ -40,6 +40,6 @@ func TestIterationWithError(t *testing.T) {
 	store := ms.GetKVStore(kv)
 	store.Set([]byte("1"), []byte("something that's can't be unmarshalled"))
 
-	_, err := IterAll[*types.SimpleMessage](store, types.ModuleCdc)
+	_, _, err := IterAll[*types.SimpleMessage](store, types.ModuleCdc)
 	assert.Error(t, err)
 }

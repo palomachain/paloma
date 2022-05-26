@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -20,7 +21,7 @@ type (
 		paramstore paramtypes.Subspace
 
 		ider          keeperutil.IDGenerator
-		queueRegistry map[types.ConsensusQueueType]consensusQueuer
+		queueRegistry map[types.ConsensusQueueType]consensus.Queuer
 		attestator    *Attestator
 
 		valset types.ValsetKeeper
@@ -46,7 +47,7 @@ func NewKeeper(
 		memKey:        memKey,
 		paramstore:    ps,
 		valset:        valsetKeeper,
-		queueRegistry: make(map[types.ConsensusQueueType]consensusQueuer),
+		queueRegistry: make(map[types.ConsensusQueueType]consensus.Queuer),
 		attestator:    attestator,
 	}
 	ider := keeperutil.NewIDGenerator(k, nil)

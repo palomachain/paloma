@@ -38,3 +38,7 @@ func (q *QueuedSignedMessage) ConsensusMsg() (ConsensusMsg, error) {
 	}
 	return ptr, nil
 }
+
+func (b *Batch) GetSignBytes() []byte {
+	return b.GetBytesToSign()
+}

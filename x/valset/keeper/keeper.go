@@ -165,7 +165,7 @@ func (k Keeper) createSnapshot(ctx sdk.Context) error {
 	valStore := k.validatorStore(ctx)
 
 	// get all registered validators
-	validators, err := keeperutil.IterAll[*types.Validator](valStore, k.cdc)
+	_, validators, err := keeperutil.IterAll[*types.Validator](valStore, k.cdc)
 	if err != nil {
 		return err
 	}
