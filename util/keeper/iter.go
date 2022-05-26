@@ -6,19 +6,21 @@ import (
 	"reflect"
 )
 
-func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler) ([]T, error) {
+func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler) ([][]byte, []T, error) {
 	res := []T{}
-	err := IterAllFnc(store, pu, func(val T) bool {
+	keys := [][]byte{}
+	err := IterAllFnc(store, pu, func(key []byte, val T) bool {
 		res = append(res, val)
+		keys = append(keys, key)
 		return true
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return res, nil
+	return keys, res, nil
 }
 
-func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, fnc func(T) bool) error {
+func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, fnc func([]byte, T) bool) error {
 	res := []T{}
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
@@ -35,7 +37,7 @@ func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, 
 		if err := pu.Unmarshal(iterData, val); err != nil {
 			return err
 		}
-		if !fnc(val) {
+		if !fnc(iterator.Key(), val) {
 			return nil
 		}
 
