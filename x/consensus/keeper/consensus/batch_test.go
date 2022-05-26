@@ -91,12 +91,22 @@ func TestBatching(t *testing.T) {
 				require.Len(t, msgs, 7)
 			})
 		})
-		t.Run("verifying the sign data", func(t *testing.T) {
+		t.Run("verifying the bytes to sign", func(t *testing.T) {
 			msgs, err := cq.GetAll(ctx)
 			require.NoError(t, err)
 			for _, msg := range msgs {
 				require.Equal(t, msg.GetBytesToSign(), []byte("hello"))
 			}
+		})
+		t.Run("removing all removes items", func(t *testing.T) {
+			msgs, err := cq.GetAll(ctx)
+			require.NoError(t, err)
+			for _, msg := range msgs {
+				cq.Remove(ctx, msg.GetId())
+			}
+			msgs, err = cq.GetAll(ctx)
+			require.NoError(t, err)
+			require.Empty(t, msgs)
 		})
 	})
 
