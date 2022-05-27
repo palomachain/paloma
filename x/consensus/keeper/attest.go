@@ -62,7 +62,7 @@ mainLoop:
 				gerr.Add(err)
 				continue mainLoop
 			}
-			err = cq.remove(ctx, msg.GetId())
+			err = cq.Remove(ctx, msg.GetId())
 			if err != nil {
 				gerr.Add(err)
 				continue mainLoop

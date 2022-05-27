@@ -14,6 +14,15 @@ message QueuedSignedMessage {
   repeated SignData signData = 4;
 }
 
+message BatchOfConsensusMessages {
+  google.protobuf.Any msg = 1;
+}
+
+message Batch {
+  repeated google.protobuf.Any msgs = 1;
+  bytes bytesToSign = 2;
+}
+
 message SignData {
   bytes valAddress = 1[ (gogoproto.casttype) =
                          "github.com/cosmos/cosmos-sdk/types.ValAddress" ];

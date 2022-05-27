@@ -1,4 +1,4 @@
-package keeper
+package consensus
 
 import (
 	"testing"
@@ -33,12 +33,14 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	types.RegisterInterfaces(registry)
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
-	cq := consensusQueue{
-		queueTypeName: types.ConsensusQueueType("simple-message"),
-		sg:            sg,
-		ider:          keeperutil.NewIDGenerator(sg, nil),
-		cdc:           types.ModuleCdc,
-		typeCheck:     types.StaticTypeChecker(&testtypes.SimpleMessage{}),
+	cq := Queue{
+		qo: QueueOptions{
+			QueueTypeName: types.ConsensusQueueType("simple-message"),
+			Sg:            sg,
+			Ider:          keeperutil.NewIDGenerator(sg, nil),
+			Cdc:           types.ModuleCdc,
+			TypeCheck:     types.StaticTypeChecker(&testtypes.SimpleMessage{}),
+		},
 	}
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 
@@ -51,13 +53,13 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	var msgs []types.QueuedSignedMessageI
 
 	t.Run("putting message", func(t *testing.T) {
-		err := cq.put(ctx, msg)
+		err := cq.Put(ctx, msg)
 		assert.NoError(t, err)
 	})
 
 	t.Run("getting all messages should return one", func(t *testing.T) {
 		var err error
-		msgs, err = cq.getAll(ctx)
+		msgs, err = cq.GetAll(ctx)
 		assert.NoError(t, err)
 		assert.Len(t, msgs, 1)
 		assert.Len(t, msgs[0].GetSignData(), 0)
@@ -76,11 +78,11 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 		Signature:  []byte(`custom signature`),
 	}
 
-	cq.addSignature(ctx, msgs[0].GetId(), sig)
+	cq.AddSignature(ctx, msgs[0].GetId(), sig)
 
 	t.Run("getting all messages should still return one", func(t *testing.T) {
 		var err error
-		msgs, err = cq.getAll(ctx)
+		msgs, err = cq.GetAll(ctx)
 		assert.NoError(t, err)
 		assert.Len(t, msgs, 1)
 
@@ -93,21 +95,21 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	})
 
 	t.Run("removing a message", func(t *testing.T) {
-		err := cq.remove(ctx, msgs[0].GetId())
+		err := cq.Remove(ctx, msgs[0].GetId())
 		assert.NoError(t, err)
 		t.Run("getting all should return zero messages", func(t *testing.T) {
-			msgs, err = cq.getAll(ctx)
+			msgs, err = cq.GetAll(ctx)
 			assert.NoError(t, err)
 			assert.Len(t, msgs, 0)
 		})
 
 		t.Run("adding two new messages should add them", func(t *testing.T) {
-			cq.put(
+			cq.Put(
 				ctx,
 				&testtypes.SimpleMessage{},
 				&testtypes.SimpleMessage{},
 			)
-			msgs, err = cq.getAll(ctx)
+			msgs, err = cq.GetAll(ctx)
 			assert.NoError(t, err)
 			assert.Len(t, msgs, 2)
 		})
@@ -117,7 +119,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 		msgOfWrongType := &testtypes.EvenSimplerMessage{
 			Boo: "boo",
 		}
-		err := cq.put(ctx, msgOfWrongType)
+		err := cq.Put(ctx, msgOfWrongType)
 		assert.ErrorIs(t, err, ErrIncorrectMessageType)
 	})
 
@@ -127,7 +129,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	})
 
 	t.Run("fetching a message that does not exist raises an error", func(t *testing.T) {
-		_, err := cq.getMsgByID(ctx, 999999)
+		_, err := cq.GetMsgByID(ctx, 999999)
 		assert.ErrorIs(t, err, ErrMessageDoesNotExist)
 	})
 }
