@@ -39,44 +39,19 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 
 N/A
 
-## Install
+## Testnet Setup Instructions
 
-To download the `palomad` binary:
+To get the latest `palomad` binary:
 
 ```shell
-sudo wget -O - https://github.com/palomachain/paloma/releases/download/v0.0.1-alphawasmd4/paloma_0.0.1-alphawasmd4_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.1.0-alpha/paloma_0.1.0-alpha_Linux_x86_64v3.tar.gz | \
 sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
 sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/api/libwasmvm.x86_64.so
 ```
 
-## Setting up a new chain from scratch.
-
-### Initializing a new chain
-
-Download and install the latest release of palomad.
-
-Install `jq`, used by the setup script.
-
-```shell
-apt install jq
-```
-
-Set up the chain validator.
-
-```shell
-PALOMA_CMD=/PATH/TO/palomad \
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-chain-validator.sh)"
-```
-
-We should now see an error free execution steadily increasing chain depth.
-
-```shell
-palomad start
-```
-
-### Connecting to an existing chain
+### Connecting to an existing testnet.
 
 Download and install the latest release of palomad.
 
@@ -86,11 +61,11 @@ MONIKER="$(hostname)"
 palomad init "$MONIKER"
 ```
 
-Copy several files from the original server to the new server:
-  - `.paloma/config/app.toml`
-  - `.paloma/config/client.toml`
-  - `.paloma/config/config.toml`
-  - `.paloma/config/genesis.json`
+Copy the `genesis.json` file of the testnet we wish to connect to
+
+```shell
+wget -O .paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/livia/genesis.json
+```
 
 Next you will need to add a new set of keys to the new machine.
 ```shell
@@ -98,16 +73,16 @@ VALIDATOR=<choose a name>
 palomad keys add "$VALIDATOR"
 ```
 
-Transfer yourself some funds. We'll need the address of our new validator and the address of the original validator.
+Transfer funds. We'll need the address of our new validator and the address of the original validator.
 You can run `palomad keys list` on their respective nodes. On the main node run:
 
 ```shell
-palomad --fees 200dove tx bank send "$ORIGINAL_VALIDATOR_ADDRESS" "$VALIDATOR_ADDRESS" 100000000dove
+palomad --fees 200dove tx bank send -y "$ORIGINAL_VALIDATOR_ADDRESS" "$VALIDATOR_ADDRESS" 100000000dove
 # Verify that we see the funds:
 palomad query bank balances "$VALIDATOR_ADDRESS"
 ```
 
-Stake your funds and start `palomad`.
+Stake your funds and create our validator.
 ```shell
 MAIN_VALIDATOR_NODE="tcp://157.245.76.119:26657"
 CHAIN_ID="paloma"
@@ -131,9 +106,81 @@ palomad tx staking create-validator \
       -b block
 ```
 
-Run `jq -r '.body.memo' ~/.paloma/config/gentx/gentx-*.json` on the original validator for its peer designation,
-and start our validator:
+Start it!
 
 ```shell
+MAIN_PEER_DESIGNATION=da10f3078f78dabbb38b59df2c90230716f3149c@157.245.76.119:26656
 palomad start --p2p.persistent_peers "$MAIN_PEER_DESIGNATION"
+```
+
+#### Running with `systemd`
+
+First configure the service:
+
+```shell
+cat << EOT > /etc/systemd/system/palomad.service
+[Unit]
+Description=Paloma Blockchain
+After=network.target
+ConditionPathExists=/usr/local/bin/palomad
+
+[Service]
+Type=simple
+Restart=always
+WorkingDirectory=~
+ExecStartPre=
+ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers da10f3078f78dabbb38b59df2c90230716f3149c@157.245.76.119:26656
+ExecReload=
+
+[Install]
+WantedBy=multi-user.target
+EOT
+```
+
+Then reload systemd configurations and start the service!
+
+```shell
+systemctl daemon-reload
+service palomad start
+
+# Check that it started successfully.
+service palomad status
+```
+
+### Uploading a local contract
+
+```shell
+CONTRACT=<contract.wasm>
+VALIDATOR="$(palomad keys list --list-names | head -n1)"
+palomad tx wasm store "$CONTRACT" --from "$VALIDATOR" --broadcast-mode block -y --gas auto --fees 3000dove
+```
+
+## Setting up a new private testnet
+
+Download and install the latest release of palomad.
+
+Install `jq`, used by the setup script.
+
+```shell
+apt install jq
+```
+
+Set up the chain validator.
+
+```shell
+PALOMA_CMD=/PATH/TO/palomad \
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-chain-validator.sh)"
+```
+
+We should now see an error free execution steadily increasing chain depth.
+
+```shell
+palomad start
+```
+
+Others wishing to connect to the new testnet will need your `.paloma/config/genesis.json` file,
+as well as the main peer designation. We can get the main peer designation with `jq`:
+
+```shell
+jq -r '.body.memo' ~/.paloma/config/gentx/gentx-*.json
 ```
