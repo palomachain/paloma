@@ -41,26 +41,30 @@ func NewQueue(qo QueueOptions) Queue {
 	}
 }
 
+type MessageGetter interface {
+	Message(nonce []byte)
+}
+
+func (c Queue) Put(ctx sdk.Context, msg ConsensusMsg, signBytes []byte) error {}
+
 // Put puts raw message into a signing queue.
-func (c Queue) Put(ctx sdk.Context, msgs ...ConsensusMsg) error {
-	for _, msg := range msgs {
-		if !c.qo.TypeCheck(msg) {
-			return ErrIncorrectMessageType.Format(msg)
-		}
-		newID := c.qo.Ider.IncrementNextID(ctx, consensusQueueIDCounterKey)
-		anyMsg, err := codectypes.NewAnyWithValue(msg)
-		if err != nil {
-			return err
-		}
-		queuedMsg := &types.QueuedSignedMessage{
-			Id:          newID,
-			Msg:         anyMsg,
-			SignData:    []*types.SignData{},
-			BytesToSign: msg.GetSignBytes(),
-		}
-		if err := c.save(ctx, queuedMsg); err != nil {
-			return err
-		}
+func (c Queue) Put(ctx sdk.Context, msg ConsensusMsg, signBytes []byte) error {
+	if !c.qo.TypeCheck(msg) {
+		return ErrIncorrectMessageType.Format(msg)
+	}
+	newID := c.qo.Ider.IncrementNextID(ctx, consensusQueueIDCounterKey)
+	anyMsg, err := codectypes.NewAnyWithValue(msg)
+	if err != nil {
+		return err
+	}
+	queuedMsg := &types.QueuedSignedMessage{
+		Id:          newID,
+		Msg:         anyMsg,
+		SignData:    []*types.SignData{},
+		BytesToSign: signBytes,
+	}
+	if err := c.save(ctx, queuedMsg); err != nil {
+		return err
 	}
 	return nil
 }

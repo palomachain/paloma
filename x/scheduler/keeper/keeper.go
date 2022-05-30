@@ -66,3 +66,23 @@ func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
 func (k Keeper) jobRequestStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(k.Store(ctx), types.KeyPrefix("queue-signing-messages-"))
 }
+
+func (k Keeper) AddScheduledMessageProcessors(procs []types.OnMessageProcessor) {}
+
+func (k Keeper) processMessage(ctx sdk.Context, msg any) {
+	var processors []types.OnMessageProcessor
+
+	for _, proc := range processors {
+		processed, err := proc.OnSchedulerMessageProcess(ctx, msg)
+		if err != nil {
+			return err
+		}
+
+		if processed {
+			break
+		}
+	}
+
+	return nil
+
+}
