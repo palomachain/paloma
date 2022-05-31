@@ -56,7 +56,7 @@ func TestAttesting(t *testing.T) {
 				require.Len(t, msgs, 1)
 
 				msg := msgs[0]
-				msgToSign, err := msg.ConsensusMsg(k.cdc)
+				msgToSign, err := msg.ConsensusMsg(s.keeper.cdc)
 				require.NoError(t, err)
 
 				extraData := []byte("extra data")

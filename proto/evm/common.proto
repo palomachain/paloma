@@ -10,8 +10,3 @@ message ArbitrarySmartContractCall {
   bytes payload = 2;
   string hexAddress = 3;
 }
-
-//TODO: ADD NONCE
-message Job {
-  uint64 id = 1;
-}
