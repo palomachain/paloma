@@ -28,7 +28,7 @@ mainLoop:
 		}
 
 		for _, msg := range msgs {
-			origMsg, err := msg.ConsensusMsg()
+			origMsg, err := msg.ConsensusMsg(k.cdc)
 			if err != nil {
 				gerr.Add(err)
 				continue mainLoop
@@ -87,7 +87,7 @@ type Attestator struct {
 }
 
 func (a *Attestator) RegisterAttestator(att types.Attestator) {
-	a.ConsensusKeeper.AddConcencusQueueType(att.ConsensusQueue(), att.Type())
+	a.ConsensusKeeper.AddConcencusQueueType(att.ConsensusQueue(), att.Type(), att.BytesToSign())
 	a.registry[att.ConsensusQueue()] = att
 }
 

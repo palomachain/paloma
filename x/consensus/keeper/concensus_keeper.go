@@ -14,32 +14,31 @@ const (
 	encodingDelimiter = byte('|')
 )
 
-func (k Keeper) AddConcencusQueueType(queueTypeName types.ConsensusQueueType, typ any) {
+func (k Keeper) AddConcencusQueueType(queueTypeName types.ConsensusQueueType, typ any, bytesToSign types.BytesToSignFunc) {
 	cq := consensus.NewQueue(consensus.QueueOptions{
-		QueueTypeName: queueTypeName,
-		Sg:            k,
-		Ider:          k.ider,
-		Cdc:           k.cdc,
-		TypeCheck:     types.StaticTypeChecker(typ),
+		QueueTypeName:         queueTypeName,
+		Sg:                    k,
+		Ider:                  k.ider,
+		Cdc:                   k.cdc,
+		TypeCheck:             types.StaticTypeChecker(typ),
+		BytesToSignCalculator: bytesToSign,
 	})
-
 	k.addConcencusQueueType(queueTypeName, cq)
 }
 
 func (k Keeper) AddBatchedConcencusQueueType(
 	queueTypeName types.ConsensusQueueType,
 	typ any,
-	batchToBytes consensus.BatchToBytesToSigner,
+	bytesToSign types.BytesToSignFunc,
 ) {
 	cq := consensus.NewBatchQueue(consensus.QueueOptions{
-		QueueTypeName: queueTypeName,
-		Sg:            k,
-		Ider:          k.ider,
-		Cdc:           k.cdc,
-		TypeCheck:     types.StaticTypeChecker(typ),
-	},
-		batchToBytes,
-	)
+		QueueTypeName:         queueTypeName,
+		Sg:                    k,
+		Ider:                  k.ider,
+		Cdc:                   k.cdc,
+		TypeCheck:             types.StaticTypeChecker(typ),
+		BytesToSignCalculator: bytesToSign,
+	})
 	k.addConcencusQueueType(queueTypeName, cq)
 }
 
@@ -187,7 +186,7 @@ func (k Keeper) AddMessageSignature(
 				cq.GetMsgByID(ctx, msg.Id),
 			)
 			rawMsg := whoops.Must(
-				consensusMsg.ConsensusMsg(),
+				consensusMsg.ConsensusMsg(k.cdc),
 			)
 
 			if ok := signingutils.VerifySignature(
@@ -234,8 +233,8 @@ func nonceFromID(id uint64) []byte {
 	return sdk.Uint64ToBigEndian(id)
 }
 
-func queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *types.MessageToSign {
-	consensusMsg, err := msg.ConsensusMsg()
+func (k Keeper) queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *types.MessageToSign {
+	consensusMsg, err := msg.ConsensusMsg(k.cdc)
 	if err != nil {
 		panic(err)
 	}
@@ -246,7 +245,7 @@ func queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *types.Message
 	return &types.MessageToSign{
 		Nonce:       nonceFromID(msg.GetId()),
 		Id:          msg.GetId(),
-		BytesToSign: consensusMsg.GetSignBytes(),
+		BytesToSign: msg.GetBytesToSign(),
 		Msg:         anyMsg,
 	}
 }

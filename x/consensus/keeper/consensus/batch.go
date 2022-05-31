@@ -11,41 +11,24 @@ var _ QueueBatcher = BatchQueue{}
 
 type batchOfConsensusMessages = types.BatchOfConsensusMessages
 
-type BatchToBytesToSigner interface {
-	BytesToSign(ctx sdk.Context, batch types.Batch) ([]byte, error)
-}
-
-type batchSignerWrapperFunc func(ctx sdk.Context, batch types.Batch) ([]byte, error)
-
-func (f batchSignerWrapperFunc) BytesToSign(ctx sdk.Context, batch types.Batch) ([]byte, error) {
-	return f(ctx, batch)
-}
-
-func BatchSignerFunc(fnc func(ctx sdk.Context, batch types.Batch) ([]byte, error)) BatchToBytesToSigner {
-	return batchSignerWrapperFunc(fnc)
-}
-
 type BatchQueue struct {
 	base               Queue
-	batchToBytes       BatchToBytesToSigner
 	batchedTypeChecker types.TypeChecker
 }
 
-func NewBatchQueue(qo QueueOptions, batchToBytes BatchToBytesToSigner) BatchQueue {
+func NewBatchQueue(qo QueueOptions) BatchQueue {
 	staticTypeCheck := qo.TypeCheck
 	batchedTypeCheck := types.BatchedTypeChecker(staticTypeCheck)
 
 	qo.TypeCheck = batchedTypeCheck
 	return BatchQueue{
 		base:               NewQueue(qo),
-		batchToBytes:       batchToBytes,
 		batchedTypeChecker: staticTypeCheck,
 	}
 }
 
 func (c BatchQueue) Put(ctx sdk.Context, msgs ...ConsensusMsg) error {
 	for _, msg := range msgs {
-
 		if !c.batchedTypeChecker(msg) {
 			return ErrIncorrectMessageType.Format(msg)
 		}
@@ -109,12 +92,7 @@ func (c BatchQueue) ProcessBatches(ctx sdk.Context) error {
 	}
 
 	for _, batch := range batches {
-		bytesToSign, err := c.batchToBytes.BytesToSign(ctx, *batch)
-		if err != nil {
-			return err
-		}
-		batch.BytesToSign = bytesToSign
-		err = c.base.Put(ctx, batch)
+		err := c.base.Put(ctx, batch)
 		if err != nil {
 			return err
 		}

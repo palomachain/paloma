@@ -38,19 +38,18 @@ func TestBatching(t *testing.T) {
 	types.RegisterInterfaces(registry)
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
-	batchSigner := BatchSignerFunc(func(ctx sdk.Context, batch types.Batch) ([]byte, error) {
-		return []byte("hello"), nil
-	})
+	msgType := &testtypes.SimpleMessage{}
 	cq := NewBatchQueue(
 		QueueOptions{
 			QueueTypeName: types.ConsensusQueueType("simple-message"),
 			Sg:            sg,
 			Ider:          keeperutil.NewIDGenerator(sg, nil),
 			Cdc:           types.ModuleCdc,
-			TypeCheck:     types.StaticTypeChecker(&testtypes.SimpleMessage{}),
-		},
-		batchSigner,
-	)
+			TypeCheck:     types.StaticTypeChecker(msgType),
+			BytesToSignCalculator: types.TypedBytesToSign(func(msgs *types.Batch, nonce uint64) []byte {
+				return []byte("hello")
+			}),
+		})
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 
 	var consensusMsgs []ConsensusMsg

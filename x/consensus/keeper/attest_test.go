@@ -43,8 +43,10 @@ func TestAttesting(t *testing.T) {
 			setup: func(s *state) {
 				t := s.t
 				att := mocks.NewAttestator(t)
-				att.On("Type").Return(&testdata.SimpleMessage{})
+				var msgType *testdata.SimpleMessage
+				att.On("Type").Return(msgType)
 				att.On("ConsensusQueue").Return(simpleQueue)
+				att.On("BytesToSign").Return(msgType.ConsensusSignBytes())
 				s.att.RegisterAttestator(att)
 				err := s.keeper.PutMessageForSigning(s.ctx, att.ConsensusQueue(), &testMsg)
 				require.NoError(t, err)
@@ -54,7 +56,7 @@ func TestAttesting(t *testing.T) {
 				require.Len(t, msgs, 1)
 
 				msg := msgs[0]
-				msgToSign, err := msg.ConsensusMsg()
+				msgToSign, err := msg.ConsensusMsg(s.keeper.cdc)
 				require.NoError(t, err)
 
 				extraData := []byte("extra data")
@@ -109,7 +111,6 @@ func TestAttesting(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			keeper, ms, ctx := newConsensusKeeper(t)
-			types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*types.ConsensusMsg)(nil), &testdata.SimpleMessage{})
 			s := &state{
 				t:      t,
 				att:    ms.Attestator,

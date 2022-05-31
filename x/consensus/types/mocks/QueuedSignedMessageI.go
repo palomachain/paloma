@@ -20,13 +20,13 @@ func (_m *QueuedSignedMessageI) AddSignData(_a0 *types.SignData) {
 	_m.Called(_a0)
 }
 
-// ConsensusMsg provides a mock function with given fields:
-func (_m *QueuedSignedMessageI) ConsensusMsg() (types.ConsensusMsg, error) {
-	ret := _m.Called()
+// ConsensusMsg provides a mock function with given fields: _a0
+func (_m *QueuedSignedMessageI) ConsensusMsg(_a0 types.AnyUnpacker) (types.ConsensusMsg, error) {
+	ret := _m.Called(_a0)
 
 	var r0 types.ConsensusMsg
-	if rf, ok := ret.Get(0).(func() types.ConsensusMsg); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(types.AnyUnpacker) types.ConsensusMsg); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(types.ConsensusMsg)
@@ -34,8 +34,8 @@ func (_m *QueuedSignedMessageI) ConsensusMsg() (types.ConsensusMsg, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(types.AnyUnpacker) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}

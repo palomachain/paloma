@@ -28,17 +28,25 @@ type Queue struct {
 }
 
 type QueueOptions struct {
-	QueueTypeName types.ConsensusQueueType
-	Sg            keeperutil.StoreGetter
-	Ider          keeperutil.IDGenerator
-	Cdc           codecMarshaler
-	TypeCheck     types.TypeChecker
+	QueueTypeName         types.ConsensusQueueType
+	Sg                    keeperutil.StoreGetter
+	Ider                  keeperutil.IDGenerator
+	Cdc                   codecMarshaler
+	TypeCheck             types.TypeChecker
+	BytesToSignCalculator types.BytesToSignFunc
 }
 
 func NewQueue(qo QueueOptions) Queue {
+	if qo.BytesToSignCalculator == nil {
+		panic("BytesToSignCalculator can't be nil")
+	}
 	return Queue{
 		qo: qo,
 	}
+}
+
+type MessageGetter interface {
+	Message(nonce []byte)
 }
 
 // Put puts raw message into a signing queue.
@@ -48,6 +56,8 @@ func (c Queue) Put(ctx sdk.Context, msgs ...ConsensusMsg) error {
 			return ErrIncorrectMessageType.Format(msg)
 		}
 		newID := c.qo.Ider.IncrementNextID(ctx, consensusQueueIDCounterKey)
+		// just so it's clear that nonce is an actual ID
+		nonce := newID
 		anyMsg, err := codectypes.NewAnyWithValue(msg)
 		if err != nil {
 			return err
@@ -56,7 +66,7 @@ func (c Queue) Put(ctx sdk.Context, msgs ...ConsensusMsg) error {
 			Id:          newID,
 			Msg:         anyMsg,
 			SignData:    []*types.SignData{},
-			BytesToSign: msg.GetSignBytes(),
+			BytesToSign: c.qo.BytesToSignCalculator(msg, nonce),
 		}
 		if err := c.save(ctx, queuedMsg); err != nil {
 			return err

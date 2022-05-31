@@ -15,14 +15,14 @@ func (k Keeper) QueuedMessagesForSigning(goCtx context.Context, req *types.Query
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	msgs, err := k.GetMessagesForSigning(ctx, types.ConsensusQueueType(req.QueueTypeName), sdk.ValAddress(req.ValAddress))
+	msgs, err := k.GetMessagesForSigning(ctx, types.ConsensusQueueType(req.QueueTypeName), req.ValAddress)
 	if err != nil {
 		return nil, err
 	}
 
 	var res []*types.MessageToSign
 	for _, msg := range msgs {
-		res = append(res, queuedMessageToMessageToSign(msg))
+		res = append(res, k.queuedMessageToMessageToSign(msg))
 	}
 
 	return &types.QueryQueuedMessagesForSigningResponse{

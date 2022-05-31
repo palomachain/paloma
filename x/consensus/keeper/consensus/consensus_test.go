@@ -33,13 +33,15 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	types.RegisterInterfaces(registry)
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
+	var msgType *testtypes.SimpleMessage
 	cq := Queue{
 		qo: QueueOptions{
-			QueueTypeName: types.ConsensusQueueType("simple-message"),
-			Sg:            sg,
-			Ider:          keeperutil.NewIDGenerator(sg, nil),
-			Cdc:           types.ModuleCdc,
-			TypeCheck:     types.StaticTypeChecker(&testtypes.SimpleMessage{}),
+			QueueTypeName:         types.ConsensusQueueType("simple-message"),
+			Sg:                    sg,
+			Ider:                  keeperutil.NewIDGenerator(sg, nil),
+			Cdc:                   types.ModuleCdc,
+			TypeCheck:             types.StaticTypeChecker(msgType),
+			BytesToSignCalculator: msgType.ConsensusSignBytes(),
 		},
 	}
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
@@ -67,7 +69,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 
 		// lets see if it's equal to what we actually put in the queue
 		realMsg := msgs[0]
-		consensusMsg, err := realMsg.ConsensusMsg()
+		consensusMsg, err := realMsg.ConsensusMsg(registry)
 		assert.NoError(t, err)
 		assert.Equal(t, msg, consensusMsg)
 	})

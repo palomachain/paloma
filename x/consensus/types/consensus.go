@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	proto "github.com/gogo/protobuf/proto"
@@ -13,10 +14,23 @@ type QueuedSignedMessageI interface {
 	proto.Message
 	GetId() uint64
 	Nonce() []byte
-	ConsensusMsg() (ConsensusMsg, error)
+	ConsensusMsg(AnyUnpacker) (ConsensusMsg, error)
 	GetSignData() []*SignData
 	AddSignData(*SignData)
 	GetBytesToSign() []byte
+}
+
+type BytesToSignFunc func(msg ConsensusMsg, nonce uint64) []byte
+
+func TypedBytesToSign[T any](fnc func(msg T, nonce uint64) []byte) BytesToSignFunc {
+	return BytesToSignFunc(func(raw ConsensusMsg, nonce uint64) []byte {
+		msgT, ok := raw.(T)
+		if !ok {
+			var expected T
+			panic(fmt.Sprintf("can't process message of type: %T, expected: %T", raw, expected))
+		}
+		return fnc(msgT, nonce)
+	})
 }
 
 var _ QueuedSignedMessageI = &QueuedSignedMessage{}
@@ -39,9 +53,9 @@ func (q *QueuedSignedMessage) Nonce() []byte {
 	return sdk.Uint64ToBigEndian(q.GetId())
 }
 
-func (q *QueuedSignedMessage) ConsensusMsg() (ConsensusMsg, error) {
+func (q *QueuedSignedMessage) ConsensusMsg(unpacker AnyUnpacker) (ConsensusMsg, error) {
 	var ptr ConsensusMsg
-	if err := ModuleCdc.UnpackAny(q.Msg, &ptr); err != nil {
+	if err := unpacker.UnpackAny(q.Msg, &ptr); err != nil {
 		return nil, err
 	}
 	return ptr, nil
@@ -49,4 +63,12 @@ func (q *QueuedSignedMessage) ConsensusMsg() (ConsensusMsg, error) {
 
 func (b *Batch) GetSignBytes() []byte {
 	return b.GetBytesToSign()
+}
+
+type RegistryAdder interface {
+	AddConcencusQueueType(queueTypeName ConsensusQueueType, typ any, bytesToSign BytesToSignFunc)
+}
+
+type SupportsConsensusQueue interface {
+	RegisterConsensusQueues(adder RegistryAdder)
 }

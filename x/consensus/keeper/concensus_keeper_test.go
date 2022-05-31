@@ -30,7 +30,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 		require.ErrorIs(t, err, ErrConsensusQueueNotImplemented)
 	})
 
-	keeper.AddConcencusQueueType(simpleMessageQueue, &testdata.SimpleMessage{})
+	keeper.AddConcencusQueueType(simpleMessageQueue, &testdata.SimpleMessage{}, (&testdata.SimpleMessage{}).ConsensusSignBytes())
 
 	t.Run("it returns no messages for signing", func(t *testing.T) {
 		msgs, err := keeper.GetMessagesForSigning(
@@ -304,7 +304,8 @@ func TestAddingSignatures(t *testing.T) {
 
 	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*types.ConsensusMsg)(nil), &testdata.SimpleMessage{})
 
-	keeper.AddConcencusQueueType("simple-message", &testdata.SimpleMessage{})
+	var msgType *testdata.SimpleMessage
+	keeper.AddConcencusQueueType("simple-message", msgType, msgType.ConsensusSignBytes())
 
 	err := keeper.PutMessageForSigning(ctx, "simple-message", &testdata.SimpleMessage{
 		Sender: "bob",
@@ -319,7 +320,7 @@ func TestAddingSignatures(t *testing.T) {
 	require.Len(t, msgs, 1)
 
 	msg := msgs[0]
-	msgToSign, err := msg.ConsensusMsg()
+	msgToSign, err := msg.ConsensusMsg(types.ModuleCdc)
 	require.NoError(t, err)
 
 	signedBytes, _, err := signingutils.SignBytes(

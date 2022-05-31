@@ -66,3 +66,26 @@ func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
 func (k Keeper) jobRequestStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(k.Store(ctx), types.KeyPrefix("queue-signing-messages-"))
 }
+
+func (k Keeper) AddScheduledMessageProcessors(procs []types.OnMessageProcessor) {}
+
+func (k Keeper) processMessage(ctx sdk.Context, msg any) error {
+	var processors []types.OnMessageProcessor
+
+	for _, proc := range processors {
+		processed, err := proc.OnSchedulerMessageProcess(ctx, msg)
+		if err != nil {
+			return err
+		}
+
+		if processed {
+			return nil
+		}
+	}
+
+	// since we got to here, it means that there was no processor
+	// that could process the message
+
+	//TODO: if message was not processed successfully then raise an error
+	return nil
+}

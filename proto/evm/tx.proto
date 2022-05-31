@@ -1,0 +1,23 @@
+syntax = "proto3";
+package palomachain.paloma.evm;
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/palomachain/paloma/x/evm/types";
+
+// Msg defines the Msg service.
+service Msg {
+  rpc SubmitNewJob(MsgSubmitNewJob) returns (MsgSubmitNewJobResponse);
+// this line is used by starport scaffolding # proto/tx/rpc
+}
+
+message MsgSubmitNewJob {
+  string creator = 1;
+  string hexSmartContractAddress = 2;
+  string hexPayload = 3;
+}
+
+message MsgSubmitNewJobResponse {
+}
+
+// this line is used by starport scaffolding # proto/tx/message
