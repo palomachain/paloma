@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	proto "github.com/gogo/protobuf/proto"
@@ -17,6 +18,19 @@ type QueuedSignedMessageI interface {
 	GetSignData() []*SignData
 	AddSignData(*SignData)
 	GetBytesToSign() []byte
+}
+
+type BytesToSignFunc func(msg ConsensusMsg, nonce uint64) []byte
+
+func TypedBytesToSign[T any](fnc func(msg T, nonce uint64) []byte) BytesToSignFunc {
+	return BytesToSignFunc(func(raw ConsensusMsg, nonce uint64) []byte {
+		msgT, ok := raw.(T)
+		if !ok {
+			var expected T
+			panic(fmt.Sprintf("can't process message of type: %T, expected: %T", raw, expected))
+		}
+		return fnc(msgT, nonce)
+	})
 }
 
 var _ QueuedSignedMessageI = &QueuedSignedMessage{}

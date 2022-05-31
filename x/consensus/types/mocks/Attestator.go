@@ -16,6 +16,22 @@ type Attestator struct {
 	mock.Mock
 }
 
+// BytesToSign provides a mock function with given fields:
+func (_m *Attestator) BytesToSign() types.BytesToSignFunc {
+	ret := _m.Called()
+
+	var r0 types.BytesToSignFunc
+	if rf, ok := ret.Get(0).(func() types.BytesToSignFunc); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(types.BytesToSignFunc)
+		}
+	}
+
+	return r0
+}
+
 // ConsensusQueue provides a mock function with given fields:
 func (_m *Attestator) ConsensusQueue() types.ConsensusQueueType {
 	ret := _m.Called()

@@ -30,7 +30,7 @@ func CmdSubmitNewJob() *cobra.Command {
 			msg := &types.MsgSubmitNewJob{
 				Creator:                 clientCtx.GetFromAddress().String(),
 				HexSmartContractAddress: args[0],
-				HeyPayload:              args[1],
+				HexPayload:              args[1],
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err

@@ -87,7 +87,7 @@ type Attestator struct {
 }
 
 func (a *Attestator) RegisterAttestator(att types.Attestator) {
-	a.ConsensusKeeper.AddConcencusQueueType(att.ConsensusQueue(), att.Type())
+	a.ConsensusKeeper.AddConcencusQueueType(att.ConsensusQueue(), att.Type(), att.BytesToSign())
 	a.registry[att.ConsensusQueue()] = att
 }
 

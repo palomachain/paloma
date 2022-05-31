@@ -6,7 +6,7 @@ import (
 	proto "github.com/gogo/protobuf/proto"
 )
 
-func uint64ToByte(n uint64) []byte {
+func Uint64ToByte(n uint64) []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, n)
 	return b

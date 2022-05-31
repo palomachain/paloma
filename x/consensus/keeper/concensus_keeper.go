@@ -14,32 +14,31 @@ const (
 	encodingDelimiter = byte('|')
 )
 
-func (k Keeper) AddConcencusQueueType(queueTypeName types.ConsensusQueueType, typ any) {
+func (k Keeper) AddConcencusQueueType(queueTypeName types.ConsensusQueueType, typ any, bytesToSign types.BytesToSignFunc) {
 	cq := consensus.NewQueue(consensus.QueueOptions{
-		QueueTypeName: queueTypeName,
-		Sg:            k,
-		Ider:          k.ider,
-		Cdc:           k.cdc,
-		TypeCheck:     types.StaticTypeChecker(typ),
+		QueueTypeName:         queueTypeName,
+		Sg:                    k,
+		Ider:                  k.ider,
+		Cdc:                   k.cdc,
+		TypeCheck:             types.StaticTypeChecker(typ),
+		BytesToSignCalculator: bytesToSign,
 	})
-
 	k.addConcencusQueueType(queueTypeName, cq)
 }
 
 func (k Keeper) AddBatchedConcencusQueueType(
 	queueTypeName types.ConsensusQueueType,
 	typ any,
-	batchToBytes consensus.BatchToBytesToSigner,
+	bytesToSign types.BytesToSignFunc,
 ) {
 	cq := consensus.NewBatchQueue(consensus.QueueOptions{
-		QueueTypeName: queueTypeName,
-		Sg:            k,
-		Ider:          k.ider,
-		Cdc:           k.cdc,
-		TypeCheck:     types.StaticTypeChecker(typ),
-	},
-		batchToBytes,
-	)
+		QueueTypeName:         queueTypeName,
+		Sg:                    k,
+		Ider:                  k.ider,
+		Cdc:                   k.cdc,
+		TypeCheck:             types.StaticTypeChecker(typ),
+		BytesToSignCalculator: bytesToSign,
+	})
 	k.addConcencusQueueType(queueTypeName, cq)
 }
 
@@ -64,13 +63,13 @@ func (k Keeper) getConsensusQueue(queueTypeName types.ConsensusQueueType) (conse
 	return cq, nil
 }
 
-func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName types.ConsensusQueueType, msg consensus.ConsensusMsg, signBytes []byte) error {
+func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName types.ConsensusQueueType, msg consensus.ConsensusMsg) error {
 	cq, err := k.getConsensusQueue(queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
 		return err
 	}
-	err = cq.Put(ctx, msg, signBytes)
+	err = cq.Put(ctx, msg)
 	if err != nil {
 		k.Logger(ctx).Error("error while putting message into queue: %s", err)
 		return err
@@ -246,7 +245,7 @@ func queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *types.Message
 	return &types.MessageToSign{
 		Nonce:       nonceFromID(msg.GetId()),
 		Id:          msg.GetId(),
-		BytesToSign: consensusMsg.GetSignBytes(),
+		BytesToSign: msg.GetBytesToSign(),
 		Msg:         anyMsg,
 	}
 }

@@ -21,3 +21,9 @@ func (msg *SimpleMessage) Attest() {}
 func (msg *EvenSimplerMessage) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
+
+func (msg *SimpleMessage) ConsensusSignBytes() consensus.BytesToSignFunc {
+	return consensus.TypedBytesToSign(func(m *SimpleMessage, nonce uint64) []byte {
+		return append(m.GetSignBytes(), consensus.Uint64ToByte(nonce)...)
+	})
+}

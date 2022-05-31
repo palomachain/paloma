@@ -43,8 +43,10 @@ func TestAttesting(t *testing.T) {
 			setup: func(s *state) {
 				t := s.t
 				att := mocks.NewAttestator(t)
-				att.On("Type").Return(&testdata.SimpleMessage{})
+				var msgType *testdata.SimpleMessage
+				att.On("Type").Return(msgType)
 				att.On("ConsensusQueue").Return(simpleQueue)
+				att.On("BytesToSign").Return(msgType.ConsensusSignBytes())
 				s.att.RegisterAttestator(att)
 				err := s.keeper.PutMessageForSigning(s.ctx, att.ConsensusQueue(), &testMsg)
 				require.NoError(t, err)
