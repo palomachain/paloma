@@ -96,6 +96,9 @@ import (
 	consensusmodule "github.com/palomachain/paloma/x/consensus"
 	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/evm"
+	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
+	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
 	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
@@ -161,6 +164,7 @@ var (
 		consensusmodule.AppModuleBasic{},
 		valsetmodule.AppModuleBasic{},
 		wasm.AppModuleBasic{},
+		evm.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -238,6 +242,8 @@ type App struct {
 	ConsensusKeeper       consensusmodulekeeper.Keeper
 
 	ValsetKeeper valsetmodulekeeper.Keeper
+
+	EvmKeeper evmmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	wasmKeeper       wasm.Keeper
@@ -281,6 +287,7 @@ func New(
 		consensusmoduletypes.StoreKey,
 		valsetmoduletypes.StoreKey,
 		wasm.StoreKey,
+		valsetmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -339,6 +346,9 @@ func New(
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
 
+	app.EvmKeeper = *evmmodulekeeper.NewKeeper(appCodec, keys[evmmoduletypes.StoreKey], keys[evmmoduletypes.MemStoreKey], app.GetSubspace(evmmoduletypes.ModuleName))
+	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
+
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
@@ -358,10 +368,10 @@ func New(
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 
-	// Create Transfer Keepers
-	app.TransferKeeper = ibctransferkeeper.NewKeeper(
+		// Create Transfer Keepers
+		app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
 		nil,
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
@@ -487,6 +497,7 @@ func New(
 		schedulerModule,
 		consensusModule,
 		valsetModule,
+		evmModule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
@@ -511,6 +522,7 @@ func New(
 		genutiltypes.ModuleName,
 		valsetmoduletypes.ModuleName,
 		wasm.ModuleName,
+		evmmoduletypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -528,6 +540,7 @@ func New(
 		genutiltypes.ModuleName,
 		valsetmoduletypes.ModuleName,
 		wasm.ModuleName,
+		evmmoduletypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -558,6 +571,7 @@ func New(
 		consensusmoduletypes.ModuleName,
 		valsetmoduletypes.ModuleName,
 		wasm.ModuleName,
+		evmmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -583,6 +597,7 @@ func New(
 		schedulerModule,
 		consensusModule,
 		valsetModule,
+		evmModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 	app.sm.RegisterStoreDecoders()
@@ -775,6 +790,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
 	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(wasm.ModuleName)
+	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper

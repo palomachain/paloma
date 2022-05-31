@@ -5,9 +5,9 @@ package palomachain.paloma.evm;
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 message ArbitrarySmartContractCall {
-  bytes payload = 1;
+  string chainID = 1;
 
-  string chainID = 2;
+  bytes payload = 2;
   string hexAddress = 3;
 }
 

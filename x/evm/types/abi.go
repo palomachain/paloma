@@ -1,7 +1,6 @@
 package types
 
 import (
-	fmt "fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -10,13 +9,11 @@ import (
 )
 
 func (m *ArbitrarySmartContractCall) Keccak256(nonce uint64) []byte {
-	_ = "logic_call((address,bytes),uint256,uint256)"
 	arguments := abi.Arguments{
 		abi.Argument{
 			Type: whoops.Must(abi.NewType("tuple", "", []abi.ArgumentMarshaling{
 				{Name: "addr", Type: "address"},
 				{Name: "bytes", Type: "bytes"},
-				// {Type: "bytes"},
 			})),
 		},
 		abi.Argument{
@@ -26,7 +23,7 @@ func (m *ArbitrarySmartContractCall) Keccak256(nonce uint64) []byte {
 			Type: whoops.Must(abi.NewType("uint256", "", nil)),
 		},
 	}
-	fmt.Println(arguments.Pack(
+	bytes, err := arguments.Pack(
 		struct {
 			Addr  common.Address
 			Bytes []byte
@@ -36,6 +33,10 @@ func (m *ArbitrarySmartContractCall) Keccak256(nonce uint64) []byte {
 		},
 		big.NewInt(int64(nonce)),
 		big.NewInt(123),
-	))
-	return nil
+	)
+	if err != nil {
+		panic(err)
+	}
+	return bytes
+
 }

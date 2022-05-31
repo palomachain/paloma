@@ -53498,6 +53498,8 @@ definitions:
     description: |-
       Version defines the versioning scheme used to negotiate the IBC verison in
       the connection handshake.
+  palomachain.paloma.evm.MsgSubmitNewJobResponse:
+    type: object
   palomachain.paloma.evm.Params:
     type: object
     description: Params defines the parameters for the module.
