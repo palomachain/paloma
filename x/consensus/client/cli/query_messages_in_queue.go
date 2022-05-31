@@ -11,10 +11,10 @@ import (
 
 var _ = strconv.Itoa(0)
 
-func CmdConsensusReached() *cobra.Command {
+func CmdMessagesInQueue() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "consensus-reached [queue-type-name]",
-		Short: "Query ConsensusReached",
+		Use:   "messages-in-queue [queue-type-name]",
+		Short: "Query MessagesInQueue",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			reqQueueTypeName := args[0]
@@ -26,12 +26,12 @@ func CmdConsensusReached() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryConsensusReachedRequest{
+			params := &types.QueryMessagesInQueueRequest{
 
 				QueueTypeName: reqQueueTypeName,
 			}
 
-			res, err := queryClient.ConsensusReached(cmd.Context(), params)
+			res, err := queryClient.MessagesInQueue(cmd.Context(), params)
 			if err != nil {
 				return err
 			}

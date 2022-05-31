@@ -79,18 +79,10 @@ func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName types.Consen
 
 // GetMessagesForSigning returns messages for a single validator that needs to be signed.
 func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName types.ConsensusQueueType, val sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	cq, err := k.getConsensusQueue(queueTypeName)
+	all, err := k.GetMessagesFromQueue(ctx, queueTypeName, 100)
 	if err != nil {
-		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
 		return nil, err
 	}
-	all, err := cq.GetAll(ctx)
-	if err != nil {
-		k.Logger(ctx).Error("error while getting all messages from queue: %s", err)
-		return nil, err
-	}
-
-	// TODO: return a max of 100 items (100 chosen at random)
 	for _, msg := range all {
 		// did this validator already signed this message
 		alreadySigned := false
@@ -108,6 +100,29 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName types.Conse
 	}
 
 	return msgs, nil
+}
+
+// GetMessagesFromQueue gets N messages from the queue.
+func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName types.ConsensusQueueType, n int) (msgs []types.QueuedSignedMessageI, err error) {
+	if n <= 0 {
+		return nil, ErrInvalidLimitValue.Format(n)
+	}
+	cq, err := k.getConsensusQueue(queueTypeName)
+	if err != nil {
+		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
+		return nil, err
+	}
+	msgs, err = cq.GetAll(ctx)
+	if err != nil {
+		k.Logger(ctx).Error("error while getting all messages from queue: %s", err)
+		return nil, err
+	}
+
+	if len(msgs) > n {
+		msgs = msgs[:n]
+	}
+
+	return
 }
 
 // GetMessagesThatHaveReachedConsensus returns messages from a given
