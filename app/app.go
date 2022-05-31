@@ -287,7 +287,7 @@ func New(
 		consensusmoduletypes.StoreKey,
 		valsetmoduletypes.StoreKey,
 		wasm.StoreKey,
-		valsetmoduletypes.StoreKey,
+		evmmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -636,6 +636,8 @@ func New(
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	app.scopedWasmKeeper = scopedWasmKeeper
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
+
+	consensusModule.CollectConsensusQueues(app.mm)
 
 	return app
 }

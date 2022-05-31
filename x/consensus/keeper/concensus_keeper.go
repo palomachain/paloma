@@ -186,7 +186,7 @@ func (k Keeper) AddMessageSignature(
 				cq.GetMsgByID(ctx, msg.Id),
 			)
 			rawMsg := whoops.Must(
-				consensusMsg.ConsensusMsg(),
+				consensusMsg.ConsensusMsg(k.cdc),
 			)
 
 			if ok := signingutils.VerifySignature(
@@ -233,8 +233,8 @@ func nonceFromID(id uint64) []byte {
 	return sdk.Uint64ToBigEndian(id)
 }
 
-func queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *types.MessageToSign {
-	consensusMsg, err := msg.ConsensusMsg()
+func (k Keeper) queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *types.MessageToSign {
+	consensusMsg, err := msg.ConsensusMsg(k.cdc)
 	if err != nil {
 		panic(err)
 	}

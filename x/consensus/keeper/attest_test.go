@@ -56,7 +56,7 @@ func TestAttesting(t *testing.T) {
 				require.Len(t, msgs, 1)
 
 				msg := msgs[0]
-				msgToSign, err := msg.ConsensusMsg()
+				msgToSign, err := msg.ConsensusMsg(k.cdc)
 				require.NoError(t, err)
 
 				extraData := []byte("extra data")
@@ -111,7 +111,6 @@ func TestAttesting(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			keeper, ms, ctx := newConsensusKeeper(t)
-			types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*types.ConsensusMsg)(nil), &testdata.SimpleMessage{})
 			s := &state{
 				t:      t,
 				att:    ms.Attestator,

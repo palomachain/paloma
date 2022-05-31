@@ -28,7 +28,7 @@ mainLoop:
 		}
 
 		for _, msg := range msgs {
-			origMsg, err := msg.ConsensusMsg()
+			origMsg, err := msg.ConsensusMsg(k.cdc)
 			if err != nil {
 				gerr.Add(err)
 				continue mainLoop

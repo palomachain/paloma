@@ -12,6 +12,10 @@ import (
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
+const (
+	consensusArbitraryContractCall = consensustypes.ConsensusQueueType("evm-arbitrary-smart-contract-call")
+)
+
 type Keeper struct {
 	cdc             codec.BinaryCodec
 	storeKey        sdk.StoreKey
@@ -46,7 +50,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 func (k Keeper) AddSmartContractExecutionToConsensus(ctx sdk.Context, msg *types.ArbitrarySmartContractCall) error {
-	return k.consensusKeeper.PutMessageForSigning(ctx, "eth-sc-execution", msg)
+	return k.consensusKeeper.PutMessageForSigning(ctx, consensusArbitraryContractCall, msg)
 }
 
 func (k Keeper) OnSchedulerMessageProcess(ctx sdk.Context, rawMsg any) (processed bool, err error) {
@@ -63,9 +67,9 @@ func (k Keeper) OnSchedulerMessageProcess(ctx sdk.Context, rawMsg any) (processe
 	return
 }
 
-func (k Keeper) SupportedConsensusQueues(consensusKeeper types.ConsensusKeeper) {
-	consensusKeeper.AddConcencusQueueType(
-		consensustypes.ConsensusQueueType("bla"),
+func (k Keeper) RegisterConsensusQueues(adder consensustypes.RegistryAdder) {
+	adder.AddConcencusQueueType(
+		consensusArbitraryContractCall,
 		&types.ArbitrarySmartContractCall{},
 		consensustypes.TypedBytesToSign(func(msg *types.ArbitrarySmartContractCall, nonce uint64) []byte {
 			return msg.Keccak256(nonce)

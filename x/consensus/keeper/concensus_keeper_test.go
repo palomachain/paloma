@@ -320,7 +320,7 @@ func TestAddingSignatures(t *testing.T) {
 	require.Len(t, msgs, 1)
 
 	msg := msgs[0]
-	msgToSign, err := msg.ConsensusMsg()
+	msgToSign, err := msg.ConsensusMsg(types.ModuleCdc)
 	require.NoError(t, err)
 
 	signedBytes, _, err := signingutils.SignBytes(

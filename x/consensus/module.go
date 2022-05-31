@@ -175,3 +175,16 @@ func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return EndBlocker(ctx, am.keeper)
 }
+
+// CollectConsensusQueues takes all AppModules that are implementing types.SupportsConsensusQueue
+// and registers their respected consensus queues.
+func (am AppModule) CollectConsensusQueues(mm *module.Manager) {
+	for _, m := range mm.Modules {
+		reg, ok := m.(types.SupportsConsensusQueue)
+		if !ok {
+			continue
+		}
+
+		reg.RegisterConsensusQueues(am.keeper)
+	}
+}

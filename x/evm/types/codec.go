@@ -5,6 +5,7 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
@@ -15,6 +16,9 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgSubmitNewJob{},
+	)
+	registry.RegisterImplementations((*consensustypes.ConsensusMsg)(nil),
+		&ArbitrarySmartContractCall{},
 	)
 	// this line is used by starport scaffolding # 3
 

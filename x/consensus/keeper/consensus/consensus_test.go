@@ -69,7 +69,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 
 		// lets see if it's equal to what we actually put in the queue
 		realMsg := msgs[0]
-		consensusMsg, err := realMsg.ConsensusMsg()
+		consensusMsg, err := realMsg.ConsensusMsg(registry)
 		assert.NoError(t, err)
 		assert.Equal(t, msg, consensusMsg)
 	})

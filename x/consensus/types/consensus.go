@@ -14,7 +14,7 @@ type QueuedSignedMessageI interface {
 	proto.Message
 	GetId() uint64
 	Nonce() []byte
-	ConsensusMsg() (ConsensusMsg, error)
+	ConsensusMsg(AnyUnpacker) (ConsensusMsg, error)
 	GetSignData() []*SignData
 	AddSignData(*SignData)
 	GetBytesToSign() []byte
@@ -53,9 +53,9 @@ func (q *QueuedSignedMessage) Nonce() []byte {
 	return sdk.Uint64ToBigEndian(q.GetId())
 }
 
-func (q *QueuedSignedMessage) ConsensusMsg() (ConsensusMsg, error) {
+func (q *QueuedSignedMessage) ConsensusMsg(unpacker AnyUnpacker) (ConsensusMsg, error) {
 	var ptr ConsensusMsg
-	if err := ModuleCdc.UnpackAny(q.Msg, &ptr); err != nil {
+	if err := unpacker.UnpackAny(q.Msg, &ptr); err != nil {
 		return nil, err
 	}
 	return ptr, nil
@@ -63,4 +63,12 @@ func (q *QueuedSignedMessage) ConsensusMsg() (ConsensusMsg, error) {
 
 func (b *Batch) GetSignBytes() []byte {
 	return b.GetBytesToSign()
+}
+
+type RegistryAdder interface {
+	AddConcencusQueueType(queueTypeName ConsensusQueueType, typ any, bytesToSign BytesToSignFunc)
+}
+
+type SupportsConsensusQueue interface {
+	RegisterConsensusQueues(adder RegistryAdder)
 }

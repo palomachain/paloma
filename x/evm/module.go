@@ -3,10 +3,12 @@ package evm
 import (
 	"encoding/json"
 	"fmt"
+
 	// this line is used by starport scaffolding # 1
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/spf13/cobra"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -22,8 +24,9 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule                      = AppModule{}
+	_ module.AppModuleBasic                 = AppModuleBasic{}
+	_ consensustypes.SupportsConsensusQueue = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
@@ -172,4 +175,9 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 // returns no validator updates.
 func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
+}
+
+// AddSmartContractExecutionToConsensus register
+func (am AppModule) RegisterConsensusQueues(adder consensustypes.RegistryAdder) {
+	am.keeper.RegisterConsensusQueues(adder)
 }

@@ -6,9 +6,7 @@ import (
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 )
 
-type anyUnpacker interface {
-	UnpackAny(any *types.Any, iface interface{}) error
-}
+type AnyUnpacker = types.AnyUnpacker
 
 type TypeChecker func(any) bool
 

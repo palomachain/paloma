@@ -27,7 +27,7 @@ func (k Keeper) ConsensusReached(goCtx context.Context, req *types.QueryConsensu
 	res := &types.QueryConsensusReachedResponse{}
 
 	for _, msg := range msgs {
-		origMsg, err := msg.ConsensusMsg()
+		origMsg, err := msg.ConsensusMsg(k.cdc)
 
 		if err != nil {
 			return nil, err

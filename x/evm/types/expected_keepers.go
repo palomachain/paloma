@@ -21,5 +21,4 @@ type BankKeeper interface {
 
 type ConsensusKeeper interface {
 	PutMessageForSigning(ctx sdk.Context, queueTypeName consensustypes.ConsensusQueueType, msg consensus.ConsensusMsg) error
-	AddConcencusQueueType(queueTypeName consensustypes.ConsensusQueueType, typ any, bytesToSign consensustypes.BytesToSignFunc)
 }
