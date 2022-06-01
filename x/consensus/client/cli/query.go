@@ -26,8 +26,9 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 
 	cmd.AddCommand(CmdQueryParams())
 	cmd.AddCommand(CmdQueuedMessagesForSigning())
+	cmd.AddCommand(CmdMessagesInQueue())
 
-	cmd.AddCommand(CmdConsensusReached())
+	cmd.AddCommand(CmdGetAllQueueNames())
 
 	// this line is used by starport scaffolding # 1
 

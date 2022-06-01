@@ -22,9 +22,14 @@ service Query {
 		option (google.api.http).get = "/volumefi/paloma/consensus/queued_messages_for_signing";
 	}
 
-// Queries a list of ConsensusReached items.
-	rpc ConsensusReached(QueryConsensusReachedRequest) returns (QueryConsensusReachedResponse) {
-		option (google.api.http).get = "/palomachain/paloma/consensus/consensus_reached/{queueTypeName}";
+// Queries a list of MessagesInQueue items.
+	rpc MessagesInQueue(QueryMessagesInQueueRequest) returns (QueryMessagesInQueueResponse) {
+		option (google.api.http).get = "/palomachain/paloma/consensus/messages_in_queue/{queueTypeName}";
+	}
+
+// Queries a list of GetAllQueueNames items.
+	rpc GetAllQueueNames(QueryGetAllQueueNamesRequest) returns (QueryGetAllQueueNamesResponse) {
+		option (google.api.http).get = "/palomachain/paloma/consensus/get_all_queue_names";
 	}
 
 // this line is used by starport scaffolding # 2
@@ -56,25 +61,32 @@ message MessageToSign {
   google.protobuf.Any msg = 4;
 }
 
-message MessageApprovedSignData {
+message ValidatorSignature {
   bytes valAddress = 1[ (gogoproto.casttype) =
                          "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
   bytes signature = 2;
 }
 
-message MessageApproved {
+message MessageWithSignatures {
   bytes nonce = 1;
   uint64 id = 2;
   google.protobuf.Any msg = 3;
-  repeated MessageApprovedSignData signData = 4;
+  repeated ValidatorSignature signData = 4;
 }
 
-message QueryConsensusReachedRequest {
+message QueryMessagesInQueueRequest {
   string queueTypeName = 1;
 }
 
-message QueryConsensusReachedResponse {
-  repeated MessageApproved messages = 1;
+message QueryMessagesInQueueResponse {
+  repeated MessageWithSignatures messages = 1;
+}
+
+message QueryGetAllQueueNamesRequest {
+}
+
+message QueryGetAllQueueNamesResponse {
+  repeated string queues = 1;
 }
 
 // this line is used by starport scaffolding # 3

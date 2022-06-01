@@ -10,22 +10,19 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ConsensusReached returns messages that given a queueTypeName have reched a consensus.
-func (k Keeper) ConsensusReached(goCtx context.Context, req *types.QueryConsensusReachedRequest) (*types.QueryConsensusReachedResponse, error) {
+func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesInQueueRequest) (*types.QueryMessagesInQueueResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	msgs, err := k.GetMessagesThatHaveReachedConsensus(ctx, types.ConsensusQueueType(req.QueueTypeName))
-
+	msgs, err := k.GetMessagesFromQueue(ctx, types.ConsensusQueueType(req.QueueTypeName), 200)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &types.QueryConsensusReachedResponse{}
-
+	res := &types.QueryMessagesInQueueResponse{}
 	for _, msg := range msgs {
 		origMsg, err := msg.ConsensusMsg(k.cdc)
 
@@ -36,20 +33,19 @@ func (k Keeper) ConsensusReached(goCtx context.Context, req *types.QueryConsensu
 		if err != nil {
 			return nil, err
 		}
-		approvedMessage := &types.MessageApproved{
+		approvedMessage := &types.MessageWithSignatures{
 			Nonce:    msg.Nonce(),
 			Id:       msg.GetId(),
 			Msg:      anyMsg,
-			SignData: []*types.MessageApprovedSignData{},
+			SignData: []*types.ValidatorSignature{},
 		}
 		for _, signData := range msg.GetSignData() {
-			approvedMessage.SignData = append(approvedMessage.SignData, &types.MessageApprovedSignData{
+			approvedMessage.SignData = append(approvedMessage.SignData, &types.ValidatorSignature{
 				ValAddress: signData.GetValAddress(),
 				Signature:  signData.GetSignature(),
 			})
 		}
 		res.Messages = append(res.Messages, approvedMessage)
 	}
-
 	return res, nil
 }
