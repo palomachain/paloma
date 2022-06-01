@@ -5,6 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/vizualni/whoops"
 )
 
@@ -37,6 +38,5 @@ func (m *ArbitrarySmartContractCall) Keccak256(nonce uint64) []byte {
 	if err != nil {
 		panic(err)
 	}
-	return bytes
-
+	return crypto.Keccak256(bytes)
 }

@@ -125,6 +125,15 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName types.Consen
 	return
 }
 
+func (k Keeper) deleteJob(ctx sdk.Context, queueTypeName types.ConsensusQueueType, id uint64) (err error) {
+	cq, err := k.getConsensusQueue(queueTypeName)
+	if err != nil {
+		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
+		return err
+	}
+	return cq.Remove(ctx, id)
+}
+
 // GetMessagesThatHaveReachedConsensus returns messages from a given
 // queueTypeName that have reached consensus based on the latest snapshot
 // available.
