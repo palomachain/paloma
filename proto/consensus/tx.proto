@@ -7,7 +7,8 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 
 // Msg defines the Msg service.
 service Msg {
-      rpc AddMessagesSignatures(MsgAddMessagesSignatures) returns (MsgAddMessagesSignaturesResponse);
+  rpc AddMessagesSignatures(MsgAddMessagesSignatures) returns (MsgAddMessagesSignaturesResponse);
+  rpc DeleteJob(MsgDeleteJob) returns (MsgDeleteJobResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
@@ -25,6 +26,16 @@ message MsgAddMessagesSignatures {
 
 
 message MsgAddMessagesSignaturesResponse {
+}
+
+
+message MsgDeleteJob {
+  string creator = 1;
+  string queueTypeName = 2;
+  uint64 messageID = 3;
+}
+
+message MsgDeleteJobResponse {
 }
 
 // this line is used by starport scaffolding # proto/tx/message

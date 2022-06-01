@@ -12,6 +12,7 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&QueuedSignedMessage{}, "consensus/QueuedSignedMessage", nil)
 	cdc.RegisterConcrete(&SignData{}, "consensus/SignData", nil)
 	cdc.RegisterConcrete(&MsgAddMessagesSignatures{}, "consensus/AddMessagesSignatures", nil)
+	cdc.RegisterConcrete(&MsgDeleteJob{}, "consensus/DeleteJob", nil)
 	// this line is used by starport scaffolding # 2
 }
 
@@ -28,6 +29,9 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*ConsensusMsg)(nil),
 		&SignSmartContractExecute{},
 		&Batch{},
+	)
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgDeleteJob{},
 	)
 	// this line is used by starport scaffolding # 3
 

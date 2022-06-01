@@ -54073,6 +54073,8 @@ definitions:
         format: byte
   volumefi.paloma.consensus.MsgAddMessagesSignaturesResponse:
     type: object
+  volumefi.paloma.consensus.MsgDeleteJobResponse:
+    type: object
   volumefi.paloma.consensus.Params:
     type: object
     description: Params defines the parameters for the module.
