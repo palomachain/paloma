@@ -9,4 +9,6 @@ message ArbitrarySmartContractCall {
 
   bytes payload = 2;
   string hexAddress = 3;
+
+  bytes abi = 4;
 }

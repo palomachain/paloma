@@ -15,6 +15,8 @@ message MsgSubmitNewJob {
   string creator = 1;
   string hexSmartContractAddress = 2;
   string hexPayload = 3;
+
+  string abi = 4;
 }
 
 message MsgSubmitNewJobResponse {
