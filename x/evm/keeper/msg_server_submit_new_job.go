@@ -15,7 +15,8 @@ func (k msgServer) SubmitNewJob(goCtx context.Context, msg *types.MsgSubmitNewJo
 	err := k.AddSmartContractExecutionToConsensus(ctx, &types.ArbitrarySmartContractCall{
 		HexAddress: msg.HexSmartContractAddress,
 		ChainID:    "test",
-		Payload:    common.Hex2Bytes(msg.HexPayload),
+		Payload:    common.Hex2Bytes(msg.GetHexPayload()),
+		Abi:        []byte(msg.GetAbi()),
 	})
 
 	if err != nil {
