@@ -1,16 +1,38 @@
-package keeper_test
+package keeper
 
 import (
-	"context"
+	"math/big"
+	"strings"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keepertest "github.com/palomachain/paloma/testutil/keeper"
-	"github.com/palomachain/paloma/x/evm/keeper"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/palomachain/paloma/testutil/sample"
 	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/vizualni/whoops"
 )
 
-func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {
-	k, ctx := keepertest.EvmKeeper(t)
-	return keeper.NewMsgServerImpl(*k), sdk.WrapSDKContext(ctx)
+func TestSubmittingNewMessageIsPuttingANewMessageToTheQueue(t *testing.T) {
+	keeper, ms, ctx := newEvmKeeper(t)
+	msgSvr := NewMsgServerImpl(*keeper)
+	msg := &types.MsgSubmitNewJob{
+		Creator:                 sdk.AccAddress("bla").String(),
+		HexSmartContractAddress: common.BytesToAddress([]byte("abc")).String(),
+		Abi:                     sample.SimpleABI,
+		Method:                  "store",
+		HexPayload: func() string {
+			evm := whoops.Must(abi.JSON(strings.NewReader(sample.SimpleABI)))
+			bz := whoops.Must(evm.Pack("store", big.NewInt(1337)))
+			return common.Bytes2Hex(bz)
+		}(),
+	}
+
+	ms.ConsensusKeeper.On("PutMessageForSigning", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	_, err := msgSvr.SubmitNewJob(sdk.WrapSDKContext(ctx), msg)
+
+	require.NoError(t, err)
 }
