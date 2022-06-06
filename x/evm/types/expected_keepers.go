@@ -19,6 +19,7 @@ type BankKeeper interface {
 	// Methods imported from bank should be defined here
 }
 
+//go:generate mockery --name=ConsensusKeeper
 type ConsensusKeeper interface {
 	PutMessageForSigning(ctx sdk.Context, queueTypeName consensustypes.ConsensusQueueType, msg consensus.ConsensusMsg) error
 }

@@ -3,9 +3,10 @@
 package mocks
 
 import (
-	testing "testing"
-
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	mock "github.com/stretchr/testify/mock"
+
+	testing "testing"
 
 	types "github.com/palomachain/paloma/x/consensus/types"
 )
@@ -21,11 +22,11 @@ func (_m *QueuedSignedMessageI) AddSignData(_a0 *types.SignData) {
 }
 
 // ConsensusMsg provides a mock function with given fields: _a0
-func (_m *QueuedSignedMessageI) ConsensusMsg(_a0 types.AnyUnpacker) (types.ConsensusMsg, error) {
+func (_m *QueuedSignedMessageI) ConsensusMsg(_a0 codectypes.AnyUnpacker) (types.ConsensusMsg, error) {
 	ret := _m.Called(_a0)
 
 	var r0 types.ConsensusMsg
-	if rf, ok := ret.Get(0).(func(types.AnyUnpacker) types.ConsensusMsg); ok {
+	if rf, ok := ret.Get(0).(func(codectypes.AnyUnpacker) types.ConsensusMsg); ok {
 		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
@@ -34,7 +35,7 @@ func (_m *QueuedSignedMessageI) ConsensusMsg(_a0 types.AnyUnpacker) (types.Conse
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(types.AnyUnpacker) error); ok {
+	if rf, ok := ret.Get(1).(func(codectypes.AnyUnpacker) error); ok {
 		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
