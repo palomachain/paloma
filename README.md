@@ -77,7 +77,7 @@ Transfer funds. We'll need the address of our new validator and the address of t
 You can run `palomad keys list` on their respective nodes. On the main node run:
 
 ```shell
-palomad --fees 200dove tx bank send -y "$ORIGINAL_VALIDATOR_ADDRESS" "$VALIDATOR_ADDRESS" 100000000dove
+palomad --fees 200grain tx bank send -y "$ORIGINAL_VALIDATOR_ADDRESS" "$VALIDATOR_ADDRESS" 100000000grain
 # Verify that we see the funds:
 palomad query bank balances "$VALIDATOR_ADDRESS"
 ```
@@ -87,10 +87,10 @@ Stake your funds and create our validator.
 MAIN_VALIDATOR_NODE="tcp://157.245.76.119:26657"
 CHAIN_ID="paloma"
 DEFAULT_GAS_AMOUNT="10000000"
-VALIDATOR_STAKE_AMOUNT=100000dove
+VALIDATOR_STAKE_AMOUNT=100000grain
 PUBKEY="$(palomad tendermint show-validator)"
 palomad tx staking create-validator \
-      --fees 10000dove \
+      --fees 10000grain \
       --from="$VALIDATOR" \
       --amount="$VALIDATOR_STAKE_AMOUNT" \
       --pubkey="$PUBKEY" \
@@ -152,7 +152,7 @@ service palomad status
 ```shell
 CONTRACT=<contract.wasm>
 VALIDATOR="$(palomad keys list --list-names | head -n1)"
-palomad tx wasm store "$CONTRACT" --from "$VALIDATOR" --broadcast-mode block -y --gas auto --fees 3000dove
+palomad tx wasm store "$CONTRACT" --from "$VALIDATOR" --broadcast-mode block -y --gas auto --fees 3000grain
 ```
 
 ## Setting up a new private testnet

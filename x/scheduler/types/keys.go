@@ -27,7 +27,7 @@ const (
 )
 
 const (
-	CronchainDenom = "dove"
+	CronchainDenom = "grain"
 )
 
 var (
