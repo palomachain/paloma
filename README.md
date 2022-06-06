@@ -109,7 +109,7 @@ palomad tx staking create-validator \
 Start it!
 
 ```shell
-MAIN_PEER_DESIGNATION=da10f3078f78dabbb38b59df2c90230716f3149c@157.245.76.119:26656
+MAIN_PEER_DESIGNATION=f64dd167410a242c993648faa6406edf74a7f4b7@157.245.76.119:26656
 palomad start --p2p.persistent_peers "$MAIN_PEER_DESIGNATION"
 ```
 
@@ -168,7 +168,7 @@ apt install jq
 Set up the chain validator.
 
 ```shell
-PALOMA_CMD=/PATH/TO/palomad \
+PALOMA_CMD=palomad \
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-chain-validator.sh)"
 ```
 
