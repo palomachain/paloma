@@ -10,7 +10,14 @@ import (
 func (k msgServer) AddExternalChainInfoForValidator(goCtx context.Context, msg *types.MsgAddExternalChainInfoForValidator) (*types.MsgAddExternalChainInfoForValidatorResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	err := k.addExternalChainInfo(ctx, msg)
+	accAddr, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		return nil, err
+	}
+
+	valAddr := sdk.ValAddress(accAddr)
+
+	err = k.addExternalChainInfo(ctx, valAddr, msg.ChainInfos)
 	if err != nil {
 		return nil, err
 	}

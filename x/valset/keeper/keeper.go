@@ -5,8 +5,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -18,8 +16,8 @@ import (
 )
 
 const (
-	snapshotIDKey          = "snapshot-id"
-	maxNumOfAllowedExternalAccounts = 100;
+	snapshotIDKey                   = "snapshot-id"
+	maxNumOfAllowedExternalAccounts = 100
 )
 
 type (
@@ -70,25 +68,17 @@ func (k Keeper) PunishValidator(ctx sdk.Context) {}
 // TODO: not required now
 func (k Keeper) Heartbeat(ctx sdk.Context) {}
 
-
 // addExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
 // we can attribute rewards for running the jobs.
-func (k Keeper) addExternalChainInfo(ctx sdk.Context, msg *types.MsgAddExternalChainInfoForValidator) error {
+func (k Keeper) addExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, newChainInfo []*types.ExternalChainInfo) error {
 	// verify that the acc that actually sent the message is a validator
 
-	if len(msg.ChainInfos) > maxNumOfAllowedExternalAccounts {
+	if len(newChainInfo) > maxNumOfAllowedExternalAccounts {
 		return ErrMaxNumberOfExternalAccounts.Format(
-			len(msg.ChainInfos),
+			len(newChainInfo),
 			maxNumOfAllowedExternalAccounts,
 		)
 	}
-
-	accAddr, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		return err
-	}
-
-	valAddr := sdk.ValAddress(accAddr)
 
 	// TODO: do some logic on the stakingVal's status
 	stakingVal := k.staking.Validator(ctx, valAddr)
@@ -100,33 +90,38 @@ func (k Keeper) addExternalChainInfo(ctx sdk.Context, msg *types.MsgAddExternalC
 	store := k.externalChainInfoStore(ctx, valAddr)
 
 	externalAccounts, err := k.getValidatorChainInfos(ctx, valAddr)
-
-	switch err {
-	case nil:
-		// carry on
-	case whoops.Is(err, keeperutil.ErrNotFound):
-		externalAccounts = []*types.ExternalChainInfo{}
-	default:
+	if err != nil {
 		return err
+	}
+	if externalAccounts == nil {
+		externalAccounts = []*types.ExternalChainInfo{}
 	}
 
 	eq := func(a, b *types.ExternalChainInfo) bool {
 		return a.Address == b.Address &&
-		a.ChainID == b.ChainID &&
-		a.ChainType == b.ChainType
+			a.ChainID == b.ChainID &&
+			a.ChainType == b.ChainType
+	}
+
+	allExistingChainAccounts, err := k.getAllChainInfos(ctx)
+	if err != nil {
+		return err
 	}
 
 	// TODO: limit the number of external chain accounts (per chain or globally?)
 	// O(n^2) to find if new one is already registered
-	for _, newChainInfo := range msg.ChainInfos {
-		for _, existingChainInfo := range externalAccounts {
-			if eq(existingChainInfo, newChainInfo) {
-				return ErrExternalChainAlreadyRegistered.Format(newChainInfo.ChainID, newChainInfo.Address)
+
+	for _, existingVal := range allExistingChainAccounts {
+		for _, existingChainInfo := range existingVal.ExternalChainInfo {
+			for _, chain := range newChainInfo {
+				if eq(existingChainInfo, chain) {
+					return ErrExternalChainAlreadyRegistered.Format(chain.ChainID, chain.Address)
+				}
 			}
 		}
 	}
 
-	externalAccounts = append(externalAccounts,msg.ChainInfos...)
+	externalAccounts = append(externalAccounts, newChainInfo...)
 
 	if len(externalAccounts) > maxNumOfAllowedExternalAccounts {
 		return ErrMaxNumberOfExternalAccounts.Format(
@@ -136,10 +131,9 @@ func (k Keeper) addExternalChainInfo(ctx sdk.Context, msg *types.MsgAddExternalC
 	}
 
 	return keeperutil.Save(store, k.cdc, []byte(valAddr.String()), &types.ValidatorExternalAccounts{
-		Address: valAddr,
+		Address:           valAddr,
 		ExternalChainInfo: externalAccounts,
 	})
-
 }
 
 // TODO: this is not required for the private alpha
@@ -172,9 +166,9 @@ func (k Keeper) createSnapshot(ctx sdk.Context) error {
 		}
 		snapshot.TotalShares = snapshot.TotalShares.Add(val.GetBondedTokens())
 		snapshot.Validators = append(snapshot.Validators, types.Validator{
-			Address: val.GetOperator(),
-			ShareCount: val.GetBondedTokens(),
-			State: types.ValidatorState_ACTIVE,
+			Address:            val.GetOperator(),
+			ShareCount:         val.GetBondedTokens(),
+			State:              types.ValidatorState_ACTIVE,
 			ExternalChainInfos: chainInfo,
 		})
 	}
@@ -197,25 +191,51 @@ func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 
 func (k Keeper) getValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) ([]*types.ExternalChainInfo, error) {
 	info, err := keeperutil.Load[*types.ValidatorExternalAccounts](
-		store,
+		k.externalChainInfoStore(ctx, valAddr),
 		k.cdc,
 		[]byte(valAddr.String()),
 	)
 	if err != nil {
+		if whoops.Is(err, keeperutil.ErrNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
-	return info.ExternalAccounts, nil
+	return info.ExternalChainInfo, nil
+}
+
+func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ValidatorExternalAccounts, error) {
+	chainInfoStore := k._externalChainInfoStore(ctx)
+	iter := chainInfoStore.Iterator(nil, nil)
+
+	res := []*types.ValidatorExternalAccounts{}
+	for ; iter.Valid(); iter.Next() {
+		bz := iter.Value()
+		externalAccounts := &types.ValidatorExternalAccounts{}
+		err := k.cdc.Unmarshal(bz, externalAccounts)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, externalAccounts)
+	}
+	return res, nil
 }
 
 // GetSigningKey returns a signing key used by the conductor to sign arbitrary messages.
-func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainID string) crypto.PubKey {
-	validator, err := k.getValidator(ctx, valAddr)
+func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType, chainID string) ([]byte, error) {
+	externalAccounts, err := k.getValidatorChainInfos(ctx, valAddr)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return secp256k1.PubKey(validator.PubKey)
+	for _, acc := range externalAccounts {
+		if acc.ChainID == chainID && acc.ChainType == chainType {
+			return acc.Pubkey, nil
+		}
+	}
+
+	return nil, ErrSigningKeyNotFound.Format(valAddr.String(), chainType, chainID)
 }
 
 func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {
@@ -224,10 +244,17 @@ func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {
 
 func (k Keeper) externalChainInfoStore(ctx sdk.Context, val sdk.ValAddress) sdk.KVStore {
 	return prefix.NewStore(
-		ctx.KVStore(k.storeKey),
+		k._externalChainInfoStore(ctx),
 		[]byte(
-			fmt.Sprintf("external-chain-info-%s", val.String())
+			fmt.Sprintf("val-%s", val.String()),
 		),
+	)
+}
+
+func (k Keeper) _externalChainInfoStore(ctx sdk.Context) sdk.KVStore {
+	return prefix.NewStore(
+		ctx.KVStore(k.storeKey),
+		[]byte("external-chain-info"),
 	)
 }
 
