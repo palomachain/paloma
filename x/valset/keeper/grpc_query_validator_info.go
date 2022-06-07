@@ -22,12 +22,12 @@ func (k Keeper) ValidatorInfo(goCtx context.Context, req *types.QueryValidatorIn
 		return nil, err
 	}
 
-	val, err := k.getValidator(ctx, valAddr)
+	externalAccounts, err := k.getValidatorChainInfos(ctx, valAddr)
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.QueryValidatorInfoResponse{
-		Validator: val,
+		ChainInfos: externalAccounts,
 	}, nil
 }

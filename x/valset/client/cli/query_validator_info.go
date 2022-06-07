@@ -27,7 +27,6 @@ func CmdValidatorInfo() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			params := &types.QueryValidatorInfoRequest{
-
 				ValAddr: reqValAddr,
 			}
 

@@ -33,7 +33,6 @@ message ValidatorExternalAccounts {
 }
 
 message Snapshot {
-
   repeated Validator validators = 1 [
     (gogoproto.nullable) = false
   ];
@@ -53,7 +52,7 @@ message Snapshot {
 }
 
 message ExternalChainInfo {
-  uint64 ID = 1;
+  string chainType = 1;
   string chainID = 2;
   string address = 3;
   bytes pubkey = 4;
