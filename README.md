@@ -79,8 +79,11 @@ You can run `palomad keys list` on their respective nodes. On the main node run:
 
 ```shell
 palomad --fees 200grain tx bank send -y "$ORIGINAL_VALIDATOR_ADDRESS" "$VALIDATOR_ADDRESS" 100000000grain
-# Verify that we see the funds:
-palomad query bank balances "$VALIDATOR_ADDRESS"
+```
+
+We can then verify that the funds have been deposited:
+```shell
+palomad query bank balances --node tcp://157.245.76.119:26657 "$VALIDATOR_ADDRESS"
 ```
 
 Stake your funds and create our validator.
