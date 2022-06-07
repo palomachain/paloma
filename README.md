@@ -61,10 +61,11 @@ MONIKER="$(hostname)"
 palomad init "$MONIKER"
 ```
 
-Copy the `genesis.json` file of the testnet we wish to connect to
+Copy the configs of the testnet we wish to connect to
 
 ```shell
 wget -O .paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/livia/genesis.json
+wget -O .paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/livia/addrbook.json
 ```
 
 Next you will need to add a new set of keys to the new machine.
@@ -127,13 +128,17 @@ ConditionPathExists=/usr/local/bin/palomad
 [Service]
 Type=simple
 Restart=always
+RestartSec=5
 WorkingDirectory=~
 ExecStartPre=
-ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers da10f3078f78dabbb38b59df2c90230716f3149c@157.245.76.119:26656
+ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers f64dd167410a242c993648faa6406edf74a7f4b7@157.245.76.119:26656
 ExecReload=
 
 [Install]
 WantedBy=multi-user.target
+
+[Service]
+LimitNOFILE=65535
 EOT
 ```
 
