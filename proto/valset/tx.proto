@@ -32,6 +32,7 @@ message MsgAddExternalChainInfoForValidator {
   message ChainInfo {
     string chainID = 1;
     string address = 2;
+    bytes pubKey = 3;
   }
   string creator = 1;
   repeated ChainInfo chainInfos = 2;

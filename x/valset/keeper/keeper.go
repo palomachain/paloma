@@ -18,6 +18,7 @@ import (
 
 const (
 	externalChainInfoIDKey = "external-chain-info"
+	snapshotIDKey          = "snapshot-id"
 )
 
 type (
@@ -72,14 +73,25 @@ func (k Keeper) Heartbeat(ctx sdk.Context) {}
 // addExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
 // we can attribute rewards for running the jobs.
 func (k Keeper) addExternalChainInfo(ctx sdk.Context, msg *types.MsgAddExternalChainInfoForValidator) error {
+	// verify that the acc that actually sent the message is a validator
 	validatorStore := k.validatorStore(ctx)
+
+	accAddr, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		return err
+	}
+
+	valAddr := sdk.ValAddress(accAddr)
 
 	validator, err := keeperutil.Load[*types.Validator](
 		validatorStore,
 		k.cdc,
-		[]byte(msg.Creator),
+		[]byte(valAddr.String()),
 	)
 	if err != nil {
+		if whoops.Is(err, keeperutil.ErrNotFound) {
+			return ErrMustUseAccAssociatedWithValidators
+		}
 		return err
 	}
 	// TODO: limit the number of external chain accounts (per chain or globally?)
@@ -98,6 +110,7 @@ func (k Keeper) addExternalChainInfo(ctx sdk.Context, msg *types.MsgAddExternalC
 			ID:      id,
 			ChainID: newChainInfo.ChainID,
 			Address: newChainInfo.Address,
+			Pubkey:  newChainInfo.GetPubKey(),
 		})
 	}
 
@@ -189,13 +202,15 @@ func (k Keeper) createSnapshot(ctx sdk.Context) error {
 
 func (k Keeper) setSnapshotAsCurrent(ctx sdk.Context, snapshot *types.Snapshot) error {
 	snapStore := k.snapshotStore(ctx)
-	return keeperutil.Save(snapStore, k.cdc, []byte("snapshot"), snapshot)
+	newID := k.ider.IncrementNextID(ctx, snapshotIDKey)
+	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(newID), snapshot)
 }
 
 // GetCurrentSnapshot returns the currently active snapshot.
 func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	snapStore := k.snapshotStore(ctx)
-	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, []byte("snapshot"))
+	lastID := k.ider.GetLastID(ctx, snapshotIDKey)
+	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(lastID))
 }
 
 func (k Keeper) getValidator(ctx sdk.Context, valAddr sdk.ValAddress) (*types.Validator, error) {
@@ -203,7 +218,7 @@ func (k Keeper) getValidator(ctx sdk.Context, valAddr sdk.ValAddress) (*types.Va
 }
 
 // GetSigningKey returns a signing key used by the conductor to sign arbitrary messages.
-func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress) crypto.PubKey {
+func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainID string) crypto.PubKey {
 	validator, err := k.getValidator(ctx, valAddr)
 	if err != nil {
 		return nil
