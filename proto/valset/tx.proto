@@ -7,37 +7,20 @@ option go_package = "github.com/palomachain/paloma/x/valset/types";
 
 // Msg defines the Msg service.
 service Msg {
-      rpc RegisterConductor(MsgRegisterConductor) returns (MsgRegisterConductorResponse);
   rpc AddExternalChainInfoForValidator(MsgAddExternalChainInfoForValidator) returns (MsgAddExternalChainInfoForValidatorResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
-message MsgRegisterConductor {
-  string creator = 1;
-  // TODO: make this a real pubkey type
-  bytes pubKey = 2;
-
-  string valAddr = 3;
-
-  // caller should send us a signature of the byte representation of the pub
-  // key they have sent us, so that we can validate that the pub key is
-  // actually valid cryptographic key
-  bytes signedPubKey = 4;
-}
-
-message MsgRegisterConductorResponse {
-}
-
 message MsgAddExternalChainInfoForValidator {
-  message ChainInfo {
-    string chainID = 1;
-    string address = 2;
-    bytes pubKey = 3;
-  }
   string creator = 1;
   repeated ChainInfo chainInfos = 2;
 }
 
+message ChainInfo {
+  string chainID = 1;
+  string address = 2;
+  bytes pubKey = 3;
+}
 message MsgAddExternalChainInfoForValidatorResponse {
 }
 

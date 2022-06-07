@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/libs/log"
@@ -38,7 +39,6 @@ func NewKeeper(
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
 	staking types.StakingKeeper,
-
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -70,11 +70,15 @@ func (k Keeper) PunishValidator(ctx sdk.Context) {}
 // TODO: not required now
 func (k Keeper) Heartbeat(ctx sdk.Context) {}
 
+func (k Keeper) ensureValidatorExists(ctx sdk.Context) {
+	val := k.staking.Validator()
+	val.
+}
+
 // addExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
 // we can attribute rewards for running the jobs.
 func (k Keeper) addExternalChainInfo(ctx sdk.Context, msg *types.MsgAddExternalChainInfoForValidator) error {
 	// verify that the acc that actually sent the message is a validator
-	validatorStore := k.validatorStore(ctx)
 
 	accAddr, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
@@ -83,17 +87,32 @@ func (k Keeper) addExternalChainInfo(ctx sdk.Context, msg *types.MsgAddExternalC
 
 	valAddr := sdk.ValAddress(accAddr)
 
-	validator, err := keeperutil.Load[*types.Validator](
-		validatorStore,
+	stakingVal := k.staking.Validator(ctx, valAddr)
+
+	if stakingVal == nil {
+		return "YER NOT A VALIDATOR"
+	}
+
+	if stakingVal.GetStatus() != stakingtypes.Bonded {
+		return "AAAAAAAAAAAA"
+	}
+
+	store := k.externalChainInfoStore(ctx, valAddr)
+
+	externalAccounts, err := keeperutil.Load[*types.ValidatorExternalAccounts](
+		store,
 		k.cdc,
 		[]byte(valAddr.String()),
 	)
-	if err != nil {
-		if whoops.Is(err, keeperutil.ErrNotFound) {
-			return ErrMustUseAccAssociatedWithValidators
-		}
+	switch err {
+	case nil:
+		// carry on
+	case whoops.Is(err, keeperutil.ErrNotFound):
+		externalAccounts = []*types.ValidatorExternalAccounts{}
+	default:
 		return err
 	}
+
 	// TODO: limit the number of external chain accounts (per chain or globally?)
 
 	// O(n^2) to find if new one is already registered
@@ -125,46 +144,6 @@ func (k Keeper) addExternalChainInfo(ctx sdk.Context, msg *types.MsgAddExternalC
 
 // TODO: this is not required for the private alpha
 func (k Keeper) RemoveExternalChainInfo(ctx sdk.Context) {}
-
-// Register registers the validator as being a part of a conductor's network.
-func (k Keeper) Register(ctx sdk.Context, msg *types.MsgRegisterConductor) error {
-
-	valAddr, err := sdk.ValAddressFromBech32(msg.ValAddr)
-	if err != nil {
-		return err
-	}
-
-	sval := k.staking.Validator(ctx, valAddr)
-	if sval == nil {
-		return ErrValidatorWithAddrNotFound.Format(valAddr)
-	}
-
-	// TODO: making the assumption that the pub key is of secp256k1 type.
-	pk := secp256k1.PubKey(msg.PubKey)
-
-	if !pk.VerifySignature(msg.PubKey, msg.SignedPubKey) {
-		return ErrPublicKeyOrSignatureIsInvalid
-	}
-
-	store := k.validatorStore(ctx)
-
-	// check if is already registered! if yes, then error
-	if store.Has(valAddr) {
-		return ErrValidatorAlreadyRegistered
-	}
-
-	val := &types.Validator{
-		Address:       sval.GetOperator(),
-		SignerAddress: whoops.Must(sdk.AccAddressFromBech32(msg.Creator)),
-		// TODO: add the rest
-	}
-
-	// TODO: more logic here
-	val.State = types.ValidatorState_ACTIVE
-
-	// save val
-	return keeperutil.Save(store, k.cdc, valAddr, val)
-}
 
 // TriggerSnapshotBuild creates the snapshot of currently active validators that are
 // active and registered as conductors.
@@ -229,6 +208,15 @@ func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainID s
 
 func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("validators"))
+}
+
+func (k Keeper) externalChainInfoStore(ctx sdk.Context, val sdk.ValAddress) sdk.KVStore {
+	return prefix.NewStore(
+		ctx.KVStore(k.storeKey),
+		[]byte(
+			fmt.Sprintf("external-chain-info-%s", val.String())
+		),
+	)
 }
 
 func (k Keeper) snapshotStore(ctx sdk.Context) sdk.KVStore {

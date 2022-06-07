@@ -20,16 +20,26 @@ message Validator {
 
   repeated ExternalChainInfo externalChainInfos = 3;
 
-  bytes address = 4[
+  bytes address = 4 [
     (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"
   ];
 }
 
+message ValidatorExternalAccounts {
+  bytes address = 1 [
+    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"
+  ];
+  repeated ExternalChainInfo ExternalChainInfo = 2;
+}
+
 message Snapshot {
+
   repeated Validator validators = 1 [
     (gogoproto.nullable) = false
   ];
+
   int64 height = 2;
+
   bytes totalShares = 3 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false

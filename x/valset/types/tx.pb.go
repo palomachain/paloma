@@ -27,114 +27,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type MsgRegisterConductor struct {
-	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	// TODO: make this a real pubkey type
-	PubKey  []byte `protobuf:"bytes,2,opt,name=pubKey,proto3" json:"pubKey,omitempty"`
-	ValAddr string `protobuf:"bytes,3,opt,name=valAddr,proto3" json:"valAddr,omitempty"`
-	// caller should send us a signature of the byte representation of the pub
-	// key they have sent us, so that we can validate that the pub key is
-	// actually valid cryptographic key
-	SignedPubKey []byte `protobuf:"bytes,4,opt,name=signedPubKey,proto3" json:"signedPubKey,omitempty"`
-}
-
-func (m *MsgRegisterConductor) Reset()         { *m = MsgRegisterConductor{} }
-func (m *MsgRegisterConductor) String() string { return proto.CompactTextString(m) }
-func (*MsgRegisterConductor) ProtoMessage()    {}
-func (*MsgRegisterConductor) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f173a384e172ec1f, []int{0}
-}
-func (m *MsgRegisterConductor) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgRegisterConductor) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgRegisterConductor.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgRegisterConductor) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRegisterConductor.Merge(m, src)
-}
-func (m *MsgRegisterConductor) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgRegisterConductor) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRegisterConductor.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgRegisterConductor proto.InternalMessageInfo
-
-func (m *MsgRegisterConductor) GetCreator() string {
-	if m != nil {
-		return m.Creator
-	}
-	return ""
-}
-
-func (m *MsgRegisterConductor) GetPubKey() []byte {
-	if m != nil {
-		return m.PubKey
-	}
-	return nil
-}
-
-func (m *MsgRegisterConductor) GetValAddr() string {
-	if m != nil {
-		return m.ValAddr
-	}
-	return ""
-}
-
-func (m *MsgRegisterConductor) GetSignedPubKey() []byte {
-	if m != nil {
-		return m.SignedPubKey
-	}
-	return nil
-}
-
-type MsgRegisterConductorResponse struct {
-}
-
-func (m *MsgRegisterConductorResponse) Reset()         { *m = MsgRegisterConductorResponse{} }
-func (m *MsgRegisterConductorResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgRegisterConductorResponse) ProtoMessage()    {}
-func (*MsgRegisterConductorResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f173a384e172ec1f, []int{1}
-}
-func (m *MsgRegisterConductorResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgRegisterConductorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgRegisterConductorResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgRegisterConductorResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRegisterConductorResponse.Merge(m, src)
-}
-func (m *MsgRegisterConductorResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgRegisterConductorResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRegisterConductorResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgRegisterConductorResponse proto.InternalMessageInfo
-
 type MsgAddExternalChainInfoForValidator struct {
 	Creator    string                                           `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
 	ChainInfos []*MsgAddExternalChainInfoForValidator_ChainInfo `protobuf:"bytes,2,rep,name=chainInfos,proto3" json:"chainInfos,omitempty"`
@@ -144,7 +36,7 @@ func (m *MsgAddExternalChainInfoForValidator) Reset()         { *m = MsgAddExter
 func (m *MsgAddExternalChainInfoForValidator) String() string { return proto.CompactTextString(m) }
 func (*MsgAddExternalChainInfoForValidator) ProtoMessage()    {}
 func (*MsgAddExternalChainInfoForValidator) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f173a384e172ec1f, []int{2}
+	return fileDescriptor_f173a384e172ec1f, []int{0}
 }
 func (m *MsgAddExternalChainInfoForValidator) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -201,7 +93,7 @@ func (m *MsgAddExternalChainInfoForValidator_ChainInfo) String() string {
 }
 func (*MsgAddExternalChainInfoForValidator_ChainInfo) ProtoMessage() {}
 func (*MsgAddExternalChainInfoForValidator_ChainInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f173a384e172ec1f, []int{2, 0}
+	return fileDescriptor_f173a384e172ec1f, []int{0, 0}
 }
 func (m *MsgAddExternalChainInfoForValidator_ChainInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -262,7 +154,7 @@ func (m *MsgAddExternalChainInfoForValidatorResponse) String() string {
 }
 func (*MsgAddExternalChainInfoForValidatorResponse) ProtoMessage() {}
 func (*MsgAddExternalChainInfoForValidatorResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f173a384e172ec1f, []int{3}
+	return fileDescriptor_f173a384e172ec1f, []int{1}
 }
 func (m *MsgAddExternalChainInfoForValidatorResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -292,8 +184,6 @@ func (m *MsgAddExternalChainInfoForValidatorResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgAddExternalChainInfoForValidatorResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgRegisterConductor)(nil), "volumefi.paloma.valset.MsgRegisterConductor")
-	proto.RegisterType((*MsgRegisterConductorResponse)(nil), "volumefi.paloma.valset.MsgRegisterConductorResponse")
 	proto.RegisterType((*MsgAddExternalChainInfoForValidator)(nil), "volumefi.paloma.valset.MsgAddExternalChainInfoForValidator")
 	proto.RegisterType((*MsgAddExternalChainInfoForValidator_ChainInfo)(nil), "volumefi.paloma.valset.MsgAddExternalChainInfoForValidator.ChainInfo")
 	proto.RegisterType((*MsgAddExternalChainInfoForValidatorResponse)(nil), "volumefi.paloma.valset.MsgAddExternalChainInfoForValidatorResponse")
@@ -302,32 +192,26 @@ func init() {
 func init() { proto.RegisterFile("valset/tx.proto", fileDescriptor_f173a384e172ec1f) }
 
 var fileDescriptor_f173a384e172ec1f = []byte{
-	// 386 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x53, 0xc1, 0x6a, 0xea, 0x40,
-	0x14, 0x75, 0xcc, 0xc3, 0x87, 0xf7, 0x09, 0x8f, 0x86, 0x22, 0x41, 0x4a, 0x08, 0xe9, 0x46, 0xa8,
-	0x4d, 0xc0, 0x76, 0xd7, 0x95, 0xb5, 0x0a, 0xa5, 0x08, 0x25, 0x8b, 0x16, 0xba, 0x1b, 0x33, 0x63,
-	0x0c, 0xc4, 0x4c, 0x98, 0x99, 0x58, 0xfd, 0x81, 0xae, 0xfb, 0x11, 0xed, 0xbf, 0x74, 0xe9, 0xb2,
-	0xcb, 0xa2, 0x1f, 0xd2, 0x62, 0x62, 0xc4, 0xa2, 0x58, 0x8b, 0xbb, 0x9c, 0x7b, 0xef, 0xb9, 0x39,
-	0x73, 0x0e, 0x17, 0xfe, 0x0f, 0x71, 0x20, 0xa8, 0xb4, 0xe5, 0xc8, 0x8a, 0x38, 0x93, 0x4c, 0x2d,
-	0x0f, 0x59, 0x10, 0x0f, 0x68, 0xcf, 0xb7, 0x22, 0x1c, 0xb0, 0x01, 0xb6, 0xd2, 0x01, 0xf3, 0x09,
-	0xc1, 0x61, 0x47, 0x78, 0x0e, 0xf5, 0x7c, 0x21, 0x29, 0x6f, 0xb2, 0x90, 0xc4, 0xae, 0x64, 0x5c,
-	0xd5, 0xe0, 0xaf, 0xcb, 0x29, 0x96, 0x8c, 0x6b, 0xc8, 0x40, 0xd5, 0xa2, 0x93, 0x41, 0xb5, 0x0c,
-	0x85, 0x28, 0xee, 0xde, 0xd0, 0xb1, 0x96, 0x37, 0x50, 0xb5, 0xe4, 0x2c, 0xd0, 0x9c, 0x31, 0xc4,
-	0x41, 0x83, 0x10, 0xae, 0x29, 0x29, 0x63, 0x01, 0x55, 0x13, 0x4a, 0xc2, 0xf7, 0x42, 0x4a, 0x6e,
-	0x53, 0xde, 0x9f, 0x84, 0xf7, 0xad, 0x66, 0xea, 0x70, 0xb4, 0x49, 0x87, 0x43, 0x45, 0xc4, 0x42,
-	0x41, 0xcd, 0x4f, 0x04, 0xc7, 0x1d, 0xe1, 0x35, 0x08, 0x69, 0x8d, 0x24, 0xe5, 0x21, 0x0e, 0x9a,
-	0x7d, 0xec, 0x87, 0xd7, 0x61, 0x8f, 0xb5, 0x19, 0xbf, 0xc3, 0x81, 0x4f, 0xf0, 0x76, 0xdd, 0x14,
-	0xc0, 0xcd, 0x28, 0x42, 0xcb, 0x1b, 0x4a, 0xf5, 0x5f, 0xbd, 0x65, 0x6d, 0xf6, 0xc5, 0xda, 0xe1,
-	0x57, 0xd6, 0xb2, 0xea, 0xac, 0x2c, 0xae, 0xdc, 0x43, 0x71, 0xd9, 0x48, 0xd4, 0x24, 0xe0, 0x6a,
-	0xa9, 0x26, 0x85, 0xf3, 0x0e, 0x26, 0x84, 0x53, 0x21, 0x12, 0x1b, 0x8b, 0x4e, 0x06, 0x57, 0xfc,
-	0x55, 0x56, 0xfd, 0x35, 0x4f, 0xe1, 0x64, 0x07, 0x55, 0x99, 0x61, 0xf5, 0xd7, 0x3c, 0x28, 0x1d,
-	0xe1, 0xa9, 0x8f, 0x70, 0xb0, 0x9e, 0x6e, 0x6d, 0xcb, 0xbb, 0xd7, 0xa6, 0x2b, 0xe7, 0xbf, 0x99,
-	0xce, 0x04, 0xa8, 0x2f, 0x08, 0x8c, 0x1f, 0xe3, 0xba, 0xd8, 0x23, 0x80, 0x4a, 0x73, 0x0f, 0x72,
-	0x26, 0xf3, 0xb2, 0xfd, 0x36, 0xd5, 0xd1, 0x64, 0xaa, 0xa3, 0x8f, 0xa9, 0x8e, 0x9e, 0x67, 0x7a,
-	0x6e, 0x32, 0xd3, 0x73, 0xef, 0x33, 0x3d, 0xf7, 0x50, 0xf3, 0x7c, 0xd9, 0x8f, 0xbb, 0x96, 0xcb,
-	0x06, 0x76, 0xba, 0x3f, 0x09, 0x6f, 0xf1, 0x6d, 0x8f, 0xec, 0xec, 0xc8, 0xc6, 0x11, 0x15, 0xdd,
-	0x42, 0x72, 0x68, 0x67, 0x5f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xd9, 0x0d, 0xe3, 0xfe, 0x7b, 0x03,
-	0x00, 0x00,
+	// 298 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2f, 0x4b, 0xcc, 0x29,
+	0x4e, 0x2d, 0xd1, 0x2f, 0xa9, 0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x2b, 0xcb, 0xcf,
+	0x29, 0xcd, 0x4d, 0x4d, 0xcb, 0xd4, 0x2b, 0x48, 0xcc, 0xc9, 0xcf, 0x4d, 0xd4, 0x83, 0x28, 0x50,
+	0xfa, 0xcf, 0xc8, 0xa5, 0xec, 0x5b, 0x9c, 0xee, 0x98, 0x92, 0xe2, 0x5a, 0x51, 0x92, 0x5a, 0x94,
+	0x97, 0x98, 0xe3, 0x9c, 0x91, 0x98, 0x99, 0xe7, 0x99, 0x97, 0x96, 0xef, 0x96, 0x5f, 0x14, 0x96,
+	0x98, 0x93, 0x99, 0x92, 0x58, 0x92, 0x5f, 0x24, 0x24, 0xc1, 0xc5, 0x9e, 0x5c, 0x94, 0x0a, 0x62,
+	0x4a, 0x30, 0x2a, 0x30, 0x6a, 0x70, 0x06, 0xc1, 0xb8, 0x42, 0xa9, 0x5c, 0x5c, 0xc9, 0x30, 0x2d,
+	0xc5, 0x12, 0x4c, 0x0a, 0xcc, 0x1a, 0xdc, 0x46, 0xae, 0x7a, 0xd8, 0xad, 0xd3, 0x23, 0xc2, 0x2a,
+	0x3d, 0xb8, 0x68, 0x10, 0x92, 0xc1, 0x52, 0xe1, 0x5c, 0x9c, 0x70, 0x09, 0xb0, 0x6b, 0xc0, 0x1c,
+	0x17, 0xb8, 0x6b, 0x20, 0x5c, 0x90, 0x4c, 0x62, 0x4a, 0x4a, 0x51, 0x6a, 0x31, 0xc8, 0x29, 0x60,
+	0x19, 0x28, 0x57, 0x48, 0x8c, 0x8b, 0xad, 0xa0, 0x34, 0xc9, 0x3b, 0xb5, 0x52, 0x82, 0x59, 0x81,
+	0x51, 0x83, 0x27, 0x08, 0xca, 0x53, 0xd2, 0xe5, 0xd2, 0x26, 0xc2, 0x55, 0x41, 0xa9, 0xc5, 0x05,
+	0xf9, 0x79, 0xc5, 0xa9, 0x46, 0x6b, 0x18, 0xb9, 0x98, 0x7d, 0x8b, 0xd3, 0x85, 0x96, 0x30, 0x72,
+	0x29, 0x10, 0x0c, 0x35, 0x6b, 0x0a, 0xc2, 0x41, 0xca, 0x99, 0x02, 0xcd, 0x30, 0xe7, 0x3a, 0xb9,
+	0x9d, 0x78, 0x24, 0xc7, 0x78, 0xe1, 0x91, 0x1c, 0xe3, 0x83, 0x47, 0x72, 0x8c, 0x13, 0x1e, 0xcb,
+	0x31, 0x5c, 0x78, 0x2c, 0xc7, 0x70, 0xe3, 0xb1, 0x1c, 0x43, 0x94, 0x4e, 0x7a, 0x66, 0x49, 0x46,
+	0x69, 0x92, 0x5e, 0x72, 0x7e, 0xae, 0x3e, 0xc4, 0x7c, 0x70, 0x18, 0x42, 0xd9, 0xfa, 0x15, 0xfa,
+	0xb0, 0x24, 0x54, 0x59, 0x90, 0x5a, 0x9c, 0xc4, 0x06, 0x4e, 0x46, 0xc6, 0x80, 0x00, 0x00, 0x00,
+	0xff, 0xff, 0x37, 0x59, 0x80, 0xb7, 0x59, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -342,7 +226,6 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	RegisterConductor(ctx context.Context, in *MsgRegisterConductor, opts ...grpc.CallOption) (*MsgRegisterConductorResponse, error)
 	AddExternalChainInfoForValidator(ctx context.Context, in *MsgAddExternalChainInfoForValidator, opts ...grpc.CallOption) (*MsgAddExternalChainInfoForValidatorResponse, error)
 }
 
@@ -352,15 +235,6 @@ type msgClient struct {
 
 func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
-}
-
-func (c *msgClient) RegisterConductor(ctx context.Context, in *MsgRegisterConductor, opts ...grpc.CallOption) (*MsgRegisterConductorResponse, error) {
-	out := new(MsgRegisterConductorResponse)
-	err := c.cc.Invoke(ctx, "/volumefi.paloma.valset.Msg/RegisterConductor", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *msgClient) AddExternalChainInfoForValidator(ctx context.Context, in *MsgAddExternalChainInfoForValidator, opts ...grpc.CallOption) (*MsgAddExternalChainInfoForValidatorResponse, error) {
@@ -374,7 +248,6 @@ func (c *msgClient) AddExternalChainInfoForValidator(ctx context.Context, in *Ms
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	RegisterConductor(context.Context, *MsgRegisterConductor) (*MsgRegisterConductorResponse, error)
 	AddExternalChainInfoForValidator(context.Context, *MsgAddExternalChainInfoForValidator) (*MsgAddExternalChainInfoForValidatorResponse, error)
 }
 
@@ -382,33 +255,12 @@ type MsgServer interface {
 type UnimplementedMsgServer struct {
 }
 
-func (*UnimplementedMsgServer) RegisterConductor(ctx context.Context, req *MsgRegisterConductor) (*MsgRegisterConductorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterConductor not implemented")
-}
 func (*UnimplementedMsgServer) AddExternalChainInfoForValidator(ctx context.Context, req *MsgAddExternalChainInfoForValidator) (*MsgAddExternalChainInfoForValidatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddExternalChainInfoForValidator not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 	s.RegisterService(&_Msg_serviceDesc, srv)
-}
-
-func _Msg_RegisterConductor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRegisterConductor)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).RegisterConductor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/volumefi.paloma.valset.Msg/RegisterConductor",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RegisterConductor(ctx, req.(*MsgRegisterConductor))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Msg_AddExternalChainInfoForValidator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -434,90 +286,12 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "RegisterConductor",
-			Handler:    _Msg_RegisterConductor_Handler,
-		},
-		{
 			MethodName: "AddExternalChainInfoForValidator",
 			Handler:    _Msg_AddExternalChainInfoForValidator_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "valset/tx.proto",
-}
-
-func (m *MsgRegisterConductor) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgRegisterConductor) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgRegisterConductor) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.SignedPubKey) > 0 {
-		i -= len(m.SignedPubKey)
-		copy(dAtA[i:], m.SignedPubKey)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.SignedPubKey)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.ValAddr) > 0 {
-		i -= len(m.ValAddr)
-		copy(dAtA[i:], m.ValAddr)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ValAddr)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.PubKey) > 0 {
-		i -= len(m.PubKey)
-		copy(dAtA[i:], m.PubKey)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.PubKey)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Creator) > 0 {
-		i -= len(m.Creator)
-		copy(dAtA[i:], m.Creator)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgRegisterConductorResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgRegisterConductorResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgRegisterConductorResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
 }
 
 func (m *MsgAddExternalChainInfoForValidator) Marshal() (dAtA []byte, err error) {
@@ -642,40 +416,6 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *MsgRegisterConductor) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Creator)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.PubKey)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.ValAddr)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.SignedPubKey)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *MsgRegisterConductorResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
 func (m *MsgAddExternalChainInfoForValidator) Size() (n int) {
 	if m == nil {
 		return 0
@@ -730,238 +470,6 @@ func sovTx(x uint64) (n int) {
 }
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (m *MsgRegisterConductor) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRegisterConductor: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRegisterConductor: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Creator = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PubKey", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.PubKey = append(m.PubKey[:0], dAtA[iNdEx:postIndex]...)
-			if m.PubKey == nil {
-				m.PubKey = []byte{}
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValAddr", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValAddr = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SignedPubKey", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.SignedPubKey = append(m.SignedPubKey[:0], dAtA[iNdEx:postIndex]...)
-			if m.SignedPubKey == nil {
-				m.SignedPubKey = []byte{}
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgRegisterConductorResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRegisterConductorResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRegisterConductorResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
 }
 func (m *MsgAddExternalChainInfoForValidator) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
