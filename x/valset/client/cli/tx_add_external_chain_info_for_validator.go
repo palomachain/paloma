@@ -27,7 +27,7 @@ func CmdAddExternalChainInfoForValidator() *cobra.Command {
 			}
 
 			msg := &types.MsgAddExternalChainInfoForValidator{
-				ChainInfos: []*types.MsgAddExternalChainInfoForValidator_ChainInfo{
+				ChainInfos: []*types.ExternalChainInfo{
 					{
 						ChainID: argChainID,
 						Address: argAddress,
