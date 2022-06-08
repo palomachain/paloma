@@ -45,7 +45,7 @@ func TestBatching(t *testing.T) {
 			Ider:          keeperutil.NewIDGenerator(sg, nil),
 			Cdc:           types.ModuleCdc,
 			TypeCheck:     types.StaticTypeChecker(msgType),
-			BytesToSignCalculator: types.TypedBytesToSign(func(msgs *types.Batch, nonce uint64) []byte {
+			BytesToSignCalculator: types.TypedBytesToSign(func(msgs *types.Batch, _ types.Salt) []byte {
 				return []byte("hello")
 			}),
 			VerifySignature: func([]byte, []byte, []byte) bool {

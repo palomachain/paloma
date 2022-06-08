@@ -18,7 +18,7 @@ func (msg *EvenSimplerMessage) GetSignBytes() []byte {
 }
 
 func (msg *SimpleMessage) ConsensusSignBytes() BytesToSignFunc {
-	return TypedBytesToSign(func(m *SimpleMessage, nonce uint64) []byte {
-		return append(m.GetSignBytes(), Uint64ToByte(nonce)...)
+	return TypedBytesToSign(func(m *SimpleMessage, salt Salt) []byte {
+		return append(m.GetSignBytes(), Uint64ToByte(salt.Nonce)...)
 	})
 }

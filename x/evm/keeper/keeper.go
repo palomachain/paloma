@@ -89,8 +89,8 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 		consensus.WithQueueTypeName(ConsensusArbitraryContractCall),
 		consensus.WithStaticTypeCheck(&types.ArbitrarySmartContractCall{}),
 		consensus.WithBytesToSignCalc(
-			consensustypes.TypedBytesToSign(func(msg *types.ArbitrarySmartContractCall, nonce uint64) []byte {
-				return msg.Keccak256(nonce)
+			consensustypes.TypedBytesToSign(func(msg *types.ArbitrarySmartContractCall, salt consensustypes.Salt) []byte {
+				return msg.Keccak256(salt.Nonce)
 			}),
 		),
 		consensus.WithVerifySignature(func(bz []byte, sig []byte, pk []byte) bool {

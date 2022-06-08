@@ -20,17 +20,23 @@ type QueuedSignedMessageI interface {
 	GetBytesToSign() []byte
 }
 
-type BytesToSignFunc func(msg ConsensusMsg, nonce uint64) []byte
+type Salt struct {
+	Nonce     uint64
+	ExtraData []byte
+}
+
+type BytesToSignFunc func(msg ConsensusMsg, salt Salt) []byte
+
 type VerifySignatureFunc func(msg []byte, sig []byte, pk []byte) bool
 
-func TypedBytesToSign[T any](fnc func(msg T, nonce uint64) []byte) BytesToSignFunc {
-	return BytesToSignFunc(func(raw ConsensusMsg, nonce uint64) []byte {
+func TypedBytesToSign[T any](fnc func(msg T, salt Salt) []byte) BytesToSignFunc {
+	return BytesToSignFunc(func(raw ConsensusMsg, salt Salt) []byte {
 		msgT, ok := raw.(T)
 		if !ok {
 			var expected T
 			panic(fmt.Sprintf("can't process message of type: %T, expected: %T", raw, expected))
 		}
-		return fnc(msgT, nonce)
+		return fnc(msgT, salt)
 	})
 }
 
