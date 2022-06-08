@@ -38,7 +38,7 @@ message QueryValidatorInfoRequest {
 }
 
 message QueryValidatorInfoResponse {
-  Validator validator = 1;
+  repeated ExternalChainInfo chainInfos = 1;
 }
 
 // this line is used by starport scaffolding # 3

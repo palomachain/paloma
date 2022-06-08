@@ -33,6 +33,7 @@ func (m *ArbitrarySmartContractCall) Keccak256(nonce uint64) []byte {
 			m.Payload,
 		},
 		big.NewInt(int64(nonce)),
+		// TODO: set this to be a real timeout
 		big.NewInt(123),
 	)
 	if err != nil {

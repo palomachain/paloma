@@ -17,7 +17,7 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	msgs, err := k.GetMessagesFromQueue(ctx, types.ConsensusQueueType(req.QueueTypeName), 200)
+	msgs, err := k.GetMessagesFromQueue(ctx, req.QueueTypeName, 200)
 	if err != nil {
 		return nil, err
 	}

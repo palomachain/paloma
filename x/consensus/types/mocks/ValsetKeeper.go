@@ -3,10 +3,9 @@
 package mocks
 
 import (
-	mock "github.com/stretchr/testify/mock"
-	crypto "github.com/tendermint/tendermint/crypto"
-
 	testing "testing"
+
+	mock "github.com/stretchr/testify/mock"
 
 	types "github.com/cosmos/cosmos-sdk/types"
 
@@ -41,20 +40,27 @@ func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snap
 	return r0, r1
 }
 
-// GetSigningKey provides a mock function with given fields: ctx, valAddr
-func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddress) crypto.PubKey {
-	ret := _m.Called(ctx, valAddr)
+// GetSigningKey provides a mock function with given fields: ctx, valAddr, chainType, chainID
+func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddress, chainType string, chainID string) ([]byte, error) {
+	ret := _m.Called(ctx, valAddr, chainType, chainID)
 
-	var r0 crypto.PubKey
-	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) crypto.PubKey); ok {
-		r0 = rf(ctx, valAddr)
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress, string, string) []byte); ok {
+		r0 = rf(ctx, valAddr, chainType, chainID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(crypto.PubKey)
+			r0 = ret.Get(0).([]byte)
 		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Context, types.ValAddress, string, string) error); ok {
+		r1 = rf(ctx, valAddr, chainType, chainID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // NewValsetKeeper creates a new instance of ValsetKeeper. It also registers a cleanup function to assert the mocks expectations.

@@ -8,7 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/spf13/cobra"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -24,9 +24,9 @@ import (
 )
 
 var (
-	_ module.AppModule                      = AppModule{}
-	_ module.AppModuleBasic                 = AppModuleBasic{}
-	_ consensustypes.SupportsConsensusQueue = AppModule{}
+	_ module.AppModule                 = AppModule{}
+	_ module.AppModuleBasic            = AppModuleBasic{}
+	_ consensus.SupportsConsensusQueue = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
@@ -178,6 +178,6 @@ func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Valid
 }
 
 // AddSmartContractExecutionToConsensus register
-func (am AppModule) RegisterConsensusQueues(adder consensustypes.RegistryAdder) {
+func (am AppModule) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 	am.keeper.RegisterConsensusQueues(adder)
 }

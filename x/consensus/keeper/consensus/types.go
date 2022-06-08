@@ -16,13 +16,25 @@ const (
 //go:generate mockery --name=Queuer
 type Queuer interface {
 	Put(sdk.Context, ...ConsensusMsg) error
-	AddSignature(sdk.Context, uint64, *types.SignData) error
+	AddSignature(ctx sdk.Context, id uint64, publickey []byte, signData *types.SignData) error
 	Remove(sdk.Context, uint64) error
 	GetAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
 	GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error)
+	ChainInfo() (chainType types.ChainType, chainID string)
+	ConsensusQueue() string
 }
 
 type QueueBatcher interface {
 	Queuer
 	ProcessBatches(ctx sdk.Context) error
+}
+type RegistryAdder interface {
+	AddConcencusQueueType(
+		batch bool,
+		opts ...OptFnc,
+	)
+}
+
+type SupportsConsensusQueue interface {
+	RegisterConsensusQueues(adder RegistryAdder)
 }

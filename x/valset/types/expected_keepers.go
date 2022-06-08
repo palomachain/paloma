@@ -18,10 +18,6 @@ type BankKeeper interface {
 	// Methods imported from bank should be defined here
 }
 
-type ConcensusKeeper interface {
-	PutMessageForSigning()
-}
-
 //go:generate mockery --name=StakingKeeper
 //go:generate mockery --srcpkg=github.com/cosmos/cosmos-sdk/x/staking/types --name=ValidatorI --structname=StakingValidatorI
 type StakingKeeper interface {

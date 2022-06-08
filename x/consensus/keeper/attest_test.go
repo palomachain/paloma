@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	testdata "github.com/palomachain/paloma/x/consensus/testdata/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/consensus/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -20,7 +19,7 @@ const (
 
 func TestAttesting(t *testing.T) {
 	key1 := secp256k1.GenPrivKey()
-	testMsg := testdata.SimpleMessage{
+	testMsg := types.SimpleMessage{
 		Sender: "bob",
 		Hello:  "hello",
 		World:  "mars",
@@ -42,16 +41,25 @@ func TestAttesting(t *testing.T) {
 			name: "happy path",
 			setup: func(s *state) {
 				t := s.t
+				chainType, chainID := types.ChainTypeEVM, "test"
+				queue := types.Queue(simpleQueue, chainType, chainID)
+
 				att := mocks.NewAttestator(t)
-				var msgType *testdata.SimpleMessage
+				var msgType *types.SimpleMessage
 				att.On("Type").Return(msgType)
+				att.On("ChainInfo").Return(chainType, chainID)
 				att.On("ConsensusQueue").Return(simpleQueue)
 				att.On("BytesToSign").Return(msgType.ConsensusSignBytes())
+				att.On("VerifySignature").Return(types.VerifySignatureFunc(func([]byte, []byte, []byte) bool {
+					return true
+				}))
+
 				s.att.RegisterAttestator(att)
-				err := s.keeper.PutMessageForSigning(s.ctx, att.ConsensusQueue(), &testMsg)
+
+				err := s.keeper.PutMessageForSigning(s.ctx, queue, &testMsg)
 				require.NoError(t, err)
 
-				msgs, err := s.keeper.GetMessagesForSigning(s.ctx, att.ConsensusQueue(), val1)
+				msgs, err := s.keeper.GetMessagesForSigning(s.ctx, queue, val1)
 				require.NoError(t, err)
 				require.Len(t, msgs, 1)
 
@@ -81,7 +89,11 @@ func TestAttesting(t *testing.T) {
 					},
 				}).Return(types.AttestResult{}, nil)
 
-				s.valset.On("GetSigningKey", s.ctx, val1).Return(key1.PubKey()).Once()
+				s.valset.On("GetSigningKey", s.ctx, val1, chainType, chainID).Return(
+					key1.PubKey().Bytes(),
+					nil,
+				)
+
 				s.valset.On("GetCurrentSnapshot", s.ctx).Return(
 					&valsettypes.Snapshot{
 						Validators: []valsettypes.Validator{
@@ -97,7 +109,7 @@ func TestAttesting(t *testing.T) {
 				err = s.keeper.AddMessageSignature(s.ctx, val1, []*types.MsgAddMessagesSignatures_MsgSignedMessage{
 					{
 						Id:            msg.GetId(),
-						QueueTypeName: string(att.ConsensusQueue()),
+						QueueTypeName: queue,
 						Signature:     signedBytes,
 						ExtraData:     extraData,
 					},

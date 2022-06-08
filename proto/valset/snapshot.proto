@@ -16,25 +16,29 @@ message Validator {
     (gogoproto.nullable) = false
   ];
 
-  // TODO: make this ed25519 pub key instead of bytes
-  bytes pubKey = 2;
+  ValidatorState state = 2;
 
-  ValidatorState state = 3;
+  repeated ExternalChainInfo externalChainInfos = 3;
 
-  repeated ExternalChainInfo externalChainInfos = 4;
+  bytes address = 4 [
+    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"
+  ];
+}
 
-  bytes address = 5[ (gogoproto.casttype) =
-                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
-
-  bytes signerAddress = 6[ (gogoproto.casttype) =
-                         "github.com/cosmos/cosmos-sdk/types.AccAddress" ];
+message ValidatorExternalAccounts {
+  bytes address = 1 [
+    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"
+  ];
+  repeated ExternalChainInfo ExternalChainInfo = 2;
 }
 
 message Snapshot {
   repeated Validator validators = 1 [
     (gogoproto.nullable) = false
   ];
+
   int64 height = 2;
+
   bytes totalShares = 3 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
@@ -48,9 +52,10 @@ message Snapshot {
 }
 
 message ExternalChainInfo {
-  uint64 ID = 1;
+  string chainType = 1;
   string chainID = 2;
   string address = 3;
+  bytes pubkey = 4;
 }
 
 enum ValidatorState {

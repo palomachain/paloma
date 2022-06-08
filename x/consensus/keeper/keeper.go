@@ -21,7 +21,7 @@ type (
 		paramstore paramtypes.Subspace
 
 		ider          keeperutil.IDGenerator
-		queueRegistry map[types.ConsensusQueueType]consensus.Queuer
+		queueRegistry map[string]consensus.Queuer
 		attestator    *Attestator
 
 		valset types.ValsetKeeper
@@ -47,7 +47,7 @@ func NewKeeper(
 		memKey:        memKey,
 		paramstore:    ps,
 		valset:        valsetKeeper,
-		queueRegistry: make(map[types.ConsensusQueueType]consensus.Queuer),
+		queueRegistry: make(map[string]consensus.Queuer),
 		attestator:    attestator,
 	}
 	ider := keeperutil.NewIDGenerator(k, nil)

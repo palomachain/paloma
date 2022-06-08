@@ -4,24 +4,29 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensusmock "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
-	testdata "github.com/palomachain/paloma/x/consensus/testdata/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	consensustypesmock "github.com/palomachain/paloma/x/consensus/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
-	signingutils "github.com/palomachain/utils/signing"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/vizualni/whoops"
 )
 
+const (
+	simpleMessageQueue = types.ConsensusQueueType("simple-message")
+	chainType          = types.ChainTypeEVM
+	chainID            = "test"
+)
+
 func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testing.T) {
-	const simpleMessageQueue = types.ConsensusQueueType("simple-message")
+	queue := types.Queue(simpleMessageQueue, chainType, chainID)
 	keeper, _, ctx := newConsensusKeeper(t)
 
 	t.Run("it returns a message if type is not registered with the queue", func(t *testing.T) {
-		err := keeper.PutMessageForSigning(ctx, "i don't exist", &testdata.SimpleMessage{
+		err := keeper.PutMessageForSigning(ctx, "i don't exist", &types.SimpleMessage{
 			Sender: "bob",
 			Hello:  "hello",
 			World:  "mars",
@@ -29,20 +34,30 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 
 		require.ErrorIs(t, err, ErrConsensusQueueNotImplemented)
 	})
+	msgType := &types.SimpleMessage{}
 
-	keeper.AddConcencusQueueType(simpleMessageQueue, &testdata.SimpleMessage{}, (&testdata.SimpleMessage{}).ConsensusSignBytes())
+	keeper.AddConcencusQueueType(
+		false,
+		consensus.WithQueueTypeName(simpleMessageQueue),
+		consensus.WithStaticTypeCheck(msgType),
+		consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
+		consensus.WithChainInfo(chainType, chainID),
+		consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
+			return true
+		}),
+	)
 
 	t.Run("it returns no messages for signing", func(t *testing.T) {
 		msgs, err := keeper.GetMessagesForSigning(
 			ctx,
-			simpleMessageQueue,
+			queue,
 			sdk.ValAddress(`bob`),
 		)
 		require.NoError(t, err)
 		require.Empty(t, msgs)
 	})
 	t.Run("it sucessfully puts message into the queue", func(t *testing.T) {
-		err := keeper.PutMessageForSigning(ctx, simpleMessageQueue, &testdata.SimpleMessage{
+		err := keeper.PutMessageForSigning(ctx, queue, &types.SimpleMessage{
 			Sender: "bob",
 			Hello:  "hello",
 			World:  "mars",
@@ -54,7 +69,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 	t.Run("it sucessfully gets message from the queue", func(t *testing.T) {
 		msgs, err := keeper.GetMessagesForSigning(
 			ctx,
-			simpleMessageQueue,
+			queue,
 			sdk.ValAddress(`bob`),
 		)
 		require.NoError(t, err)
@@ -105,7 +120,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 
 	for _, tt := range []struct {
 		name          string
-		queueTypeName types.ConsensusQueueType
+		queueTypeName string
 		preRun        func(*testing.T, setupData)
 
 		expMsgsLen int
@@ -113,7 +128,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 	}{
 		{
 			name:          "if consensusQueuer returns an error it returns it back",
-			queueTypeName: types.ConsensusQueueType("i don't exist"),
+			queueTypeName: "i don't exist",
 			expErr:        ErrConsensusQueueNotImplemented,
 		},
 		{
@@ -287,7 +302,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					keeper, ms, cq,
 				})
 			}
-			queueTypeName := types.ConsensusQueueType("simple-message")
+			queueTypeName := "simple-message"
 			if len(tt.queueTypeName) > 0 {
 				queueTypeName = tt.queueTypeName
 			}
@@ -300,14 +315,26 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 }
 
 func TestAddingSignatures(t *testing.T) {
+	queue := types.Queue(simpleMessageQueue, chainType, chainID)
 	keeper, ms, ctx := newConsensusKeeper(t)
 
-	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*types.ConsensusMsg)(nil), &testdata.SimpleMessage{})
+	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*types.ConsensusMsg)(nil), &types.SimpleMessage{})
 
-	var msgType *testdata.SimpleMessage
-	keeper.AddConcencusQueueType("simple-message", msgType, msgType.ConsensusSignBytes())
+	var msgType *types.SimpleMessage
 
-	err := keeper.PutMessageForSigning(ctx, "simple-message", &testdata.SimpleMessage{
+	keeper.AddConcencusQueueType(
+		false,
+		consensus.WithQueueTypeName("simple-message"),
+		consensus.WithStaticTypeCheck(msgType),
+		consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
+		consensus.WithChainInfo(chainType, chainID),
+		consensus.WithVerifySignature(func(msg []byte, sig []byte, pk []byte) bool {
+			p := secp256k1.PubKey(pk)
+			return p.VerifySignature(msg, sig)
+		}),
+	)
+
+	err := keeper.PutMessageForSigning(ctx, queue, &types.SimpleMessage{
 		Sender: "bob",
 		Hello:  "hello",
 		World:  "mars",
@@ -315,52 +342,51 @@ func TestAddingSignatures(t *testing.T) {
 	require.NoError(t, err)
 	val1 := sdk.ValAddress("val1")
 
-	msgs, err := keeper.GetMessagesForSigning(ctx, "simple-message", val1)
+	msgs, err := keeper.GetMessagesForSigning(ctx, queue, val1)
 	require.NoError(t, err)
 	require.Len(t, msgs, 1)
 
 	msg := msgs[0]
-	msgToSign, err := msg.ConsensusMsg(types.ModuleCdc)
-	require.NoError(t, err)
+	signedBytes, err := key1.Sign(msg.GetBytesToSign())
 
-	signedBytes, _, err := signingutils.SignBytes(
-		key1,
-		signingutils.SerializeFnc(signingutils.JsonDeterministicEncoding),
-		msgToSign,
-		msg.Nonce(),
-	)
 	require.NoError(t, err)
 
 	t.Run("with incorrect key it returns an error", func(t *testing.T) {
-		ms.ValsetKeeper.On("GetSigningKey", ctx, val1).Return(key2.PubKey()).Once()
+		ms.ValsetKeeper.On("GetSigningKey", ctx, val1, chainType, chainID).Return(
+			key2.PubKey().Bytes(),
+			nil,
+		).Once()
 		err = keeper.AddMessageSignature(ctx, val1, []*types.MsgAddMessagesSignatures_MsgSignedMessage{
 			{
 				Id:            msg.GetId(),
-				QueueTypeName: "simple-message",
+				QueueTypeName: queue,
 				Signature:     signedBytes,
 			},
 		})
-		require.ErrorIs(t, err, ErrSignatureVerificationFailed)
+		require.ErrorIs(t, err, consensus.ErrInvalidSignature)
 	})
 
 	t.Run("with correct key it adds it to the store", func(t *testing.T) {
-		ms.ValsetKeeper.On("GetSigningKey", ctx, val1).Return(key1.PubKey()).Once()
+		ms.ValsetKeeper.On("GetSigningKey", ctx, val1, chainType, chainID).Return(
+			key1.PubKey().Bytes(),
+			nil,
+		).Once()
 		err = keeper.AddMessageSignature(ctx, val1, []*types.MsgAddMessagesSignatures_MsgSignedMessage{
 			{
 				Id:            msg.GetId(),
-				QueueTypeName: "simple-message",
+				QueueTypeName: queue,
 				Signature:     signedBytes,
 			},
 		})
 		require.NoError(t, err)
 
 		t.Run("it is no longer available for signing for this validator", func(t *testing.T) {
-			msgs, err := keeper.GetMessagesForSigning(ctx, "simple-message", val1)
+			msgs, err := keeper.GetMessagesForSigning(ctx, queue, val1)
 			require.NoError(t, err)
 			require.Empty(t, msgs)
 		})
 		t.Run("it is available for other validator", func(t *testing.T) {
-			msgs, err := keeper.GetMessagesForSigning(ctx, "simple-message", sdk.ValAddress("404"))
+			msgs, err := keeper.GetMessagesForSigning(ctx, queue, sdk.ValAddress("404"))
 			require.NoError(t, err)
 			require.Len(t, msgs, 1)
 		})

@@ -8,7 +8,6 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	testtypes "github.com/palomachain/paloma/x/consensus/testdata/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,16 +28,16 @@ func TestBatching(t *testing.T) {
 	registry.RegisterInterface(
 		"volumefi.tests.SimpleMessage",
 		(*types.ConsensusMsg)(nil),
-		&testtypes.SimpleMessage{},
+		&types.SimpleMessage{},
 	)
 	registry.RegisterImplementations(
 		(*types.ConsensusMsg)(nil),
-		&testtypes.SimpleMessage{},
+		&types.SimpleMessage{},
 	)
 	types.RegisterInterfaces(registry)
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
-	msgType := &testtypes.SimpleMessage{}
+	msgType := &types.SimpleMessage{}
 	cq := NewBatchQueue(
 		QueueOptions{
 			QueueTypeName: types.ConsensusQueueType("simple-message"),
@@ -49,13 +48,18 @@ func TestBatching(t *testing.T) {
 			BytesToSignCalculator: types.TypedBytesToSign(func(msgs *types.Batch, nonce uint64) []byte {
 				return []byte("hello")
 			}),
+			VerifySignature: func([]byte, []byte, []byte) bool {
+				return true
+			},
+			ChainType: types.ChainTypeCosmos,
+			ChainID:   "test",
 		})
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 
 	var consensusMsgs []ConsensusMsg
 
 	for i := 0; i < 666; i++ {
-		consensusMsgs = append(consensusMsgs, &testtypes.SimpleMessage{
+		consensusMsgs = append(consensusMsgs, &types.SimpleMessage{
 			Sender: fmt.Sprintf("sender_%d", i),
 		})
 	}
