@@ -19,6 +19,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/palomachain/paloma/x/consensus/client/cli"
 	"github.com/palomachain/paloma/x/consensus/keeper"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -176,11 +177,11 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	return EndBlocker(ctx, am.keeper)
 }
 
-// CollectConsensusQueues takes all AppModules that are implementing types.SupportsConsensusQueue
+// CollectConsensusQueues takes all AppModules that are implementing consensus.SupportsConsensusQueue
 // and registers their respected consensus queues.
 func (am AppModule) CollectConsensusQueues(mm *module.Manager) {
 	for _, m := range mm.Modules {
-		reg, ok := m.(types.SupportsConsensusQueue)
+		reg, ok := m.(consensus.SupportsConsensusQueue)
 		if !ok {
 			continue
 		}

@@ -70,7 +70,7 @@ func (k Keeper) Heartbeat(ctx sdk.Context) {}
 
 // addExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
 // we can attribute rewards for running the jobs.
-func (k Keeper) addExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, newChainInfo []*types.ExternalChainInfo) error {
+func (k Keeper) AddExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, newChainInfo []*types.ExternalChainInfo) error {
 	// verify that the acc that actually sent the message is a validator
 
 	if len(newChainInfo) > maxNumOfAllowedExternalAccounts {

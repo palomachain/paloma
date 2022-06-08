@@ -34,19 +34,66 @@ type QueueOptions struct {
 	Cdc                   codecMarshaler
 	TypeCheck             types.TypeChecker
 	BytesToSignCalculator types.BytesToSignFunc
+	VerifySignature       types.VerifySignatureFunc
+	ChainType             types.ChainType
+	ChainID               string
+}
+
+type OptFnc func(*QueueOptions)
+
+func WithQueueTypeName(val types.ConsensusQueueType) OptFnc {
+	return func(opt *QueueOptions) {
+		opt.QueueTypeName = val
+	}
+}
+
+func WithStaticTypeCheck(val any) OptFnc {
+	return func(opt *QueueOptions) {
+		opt.TypeCheck = types.StaticTypeChecker(val)
+	}
+}
+
+func WithBytesToSignCalc(val types.BytesToSignFunc) OptFnc {
+	return func(opt *QueueOptions) {
+		opt.BytesToSignCalculator = val
+	}
+}
+
+func WithVerifySignature(val types.VerifySignatureFunc) OptFnc {
+	return func(opt *QueueOptions) {
+		opt.VerifySignature = val
+	}
+}
+
+func WithChainInfo(chainType, chainID string) OptFnc {
+	return func(opt *QueueOptions) {
+		opt.ChainID = chainID
+		opt.ChainType = types.ChainType(chainType)
+	}
 }
 
 func NewQueue(qo QueueOptions) Queue {
 	if qo.BytesToSignCalculator == nil {
 		panic("BytesToSignCalculator can't be nil")
 	}
+	if qo.VerifySignature == nil {
+		panic("VerifySignature can't be nil")
+	}
+
+	if len(qo.ChainType) == 0 {
+		panic("chain type can't be empty")
+	}
+
+	if len(qo.ChainID) == 0 {
+		panic("chain id can't be empty")
+	}
+
+	if len(qo.QueueTypeName) == 0 {
+		panic("queue type name can't be empty")
+	}
 	return Queue{
 		qo: qo,
 	}
-}
-
-type MessageGetter interface {
-	Message(nonce []byte)
 }
 
 // Put puts raw message into a signing queue.
@@ -96,12 +143,15 @@ func (c Queue) GetAll(ctx sdk.Context) ([]types.QueuedSignedMessageI, error) {
 	return msgs, nil
 }
 
-// AddSignature adds a signature to the message. It does not verifies the signature. It
-// just adds it to the message.
-func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignData) error {
+// AddSignature adds a signature to the message and checks if the signature is valid.
+func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, pk []byte, signData *types.SignData) error {
 	msg, err := c.GetMsgByID(ctx, msgID)
 	if err != nil {
 		return err
+	}
+
+	if !c.qo.VerifySignature(append(msg.GetBytesToSign()[:], signData.GetExtraData()...), signData.Signature, pk) {
+		return ErrInvalidSignature
 	}
 
 	msg.AddSignData(signData)
@@ -137,6 +187,14 @@ func (c Queue) GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessage
 	return sm, nil
 }
 
+func (c Queue) ChainInfo() (types.ChainType, string) {
+	return c.qo.ChainType, c.qo.ChainID
+}
+
+func (c Queue) ConsensusQueue() string {
+	return types.Queue(c.qo.QueueTypeName, c.qo.ChainType, c.qo.ChainID)
+}
+
 // save saves the message into the queue
 func (c Queue) save(ctx sdk.Context, msg types.QueuedSignedMessageI) error {
 	if msg.GetId() == 0 {
@@ -161,5 +219,5 @@ func (c Queue) signingQueueKey() string {
 	if c.qo.QueueTypeName == "" {
 		panic("queueTypeName can't be empty")
 	}
-	return fmt.Sprintf("%s-%s", consensusQueueSigningKey, string(c.qo.QueueTypeName))
+	return fmt.Sprintf("%s-%s", consensusQueueSigningKey, c.ConsensusQueue())
 }

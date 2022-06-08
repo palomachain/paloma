@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,7 +32,7 @@ func TestRegisterRunner(t *testing.T) {
 	ms.StakingKeeper.On("Validator", mock.Anything, nonExistingVal).Return(nil)
 
 	t.Run("it adds a new chain info to the validator", func(t *testing.T) {
-		err := k.addExternalChainInfo(
+		err := k.AddExternalChainInfo(
 			ctx,
 			val,
 			[]*types.ExternalChainInfo{
@@ -61,7 +62,7 @@ func TestRegisterRunner(t *testing.T) {
 	})
 
 	t.Run("it returns an error if chain info already exists", func(t *testing.T) {
-		err := k.addExternalChainInfo(
+		err := k.AddExternalChainInfo(
 			ctx,
 			val,
 			[]*types.ExternalChainInfo{
@@ -72,11 +73,12 @@ func TestRegisterRunner(t *testing.T) {
 				},
 			},
 		)
+		fmt.Println(err)
 		require.ErrorIs(t, err, ErrExternalChainAlreadyRegistered)
 	})
 
 	t.Run("it returns an error if we try to add to the validator which does not exist", func(t *testing.T) {
-		err := k.addExternalChainInfo(ctx,
+		err := k.AddExternalChainInfo(ctx,
 			nonExistingVal,
 			[]*types.ExternalChainInfo{
 				{
@@ -112,7 +114,7 @@ func TestCreatingSnapshots(t *testing.T) {
 		f(1, vali2)
 	})
 
-	err := k.addExternalChainInfo(ctx, val1, []*types.ExternalChainInfo{
+	err := k.AddExternalChainInfo(ctx, val1, []*types.ExternalChainInfo{
 		{
 			ChainType: "evm",
 			ChainID:   "123",
@@ -127,7 +129,7 @@ func TestCreatingSnapshots(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	err = k.addExternalChainInfo(ctx, val2, []*types.ExternalChainInfo{
+	err = k.AddExternalChainInfo(ctx, val2, []*types.ExternalChainInfo{
 		{
 			ChainType: "evm",
 			ChainID:   "567",
@@ -138,7 +140,7 @@ func TestCreatingSnapshots(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("adding address which already exists", func(t *testing.T) {
-		err = k.addExternalChainInfo(ctx, val1, []*types.ExternalChainInfo{
+		err = k.AddExternalChainInfo(ctx, val1, []*types.ExternalChainInfo{
 			{
 				ChainType: "evm",
 				ChainID:   "567",

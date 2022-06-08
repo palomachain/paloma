@@ -16,15 +16,50 @@ type Queuer struct {
 	mock.Mock
 }
 
-// AddSignature provides a mock function with given fields: _a0, _a1, _a2
-func (_m *Queuer) AddSignature(_a0 types.Context, _a1 uint64, _a2 *consensustypes.SignData) error {
-	ret := _m.Called(_a0, _a1, _a2)
+// AddSignature provides a mock function with given fields: ctx, id, publickey, signData
+func (_m *Queuer) AddSignature(ctx types.Context, id uint64, publickey []byte, signData *consensustypes.SignData) error {
+	ret := _m.Called(ctx, id, publickey, signData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, uint64, *consensustypes.SignData) error); ok {
-		r0 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(0).(func(types.Context, uint64, []byte, *consensustypes.SignData) error); ok {
+		r0 = rf(ctx, id, publickey, signData)
 	} else {
 		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// ChainInfo provides a mock function with given fields:
+func (_m *Queuer) ChainInfo() (string, string) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 string
+	if rf, ok := ret.Get(1).(func() string); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Get(1).(string)
+	}
+
+	return r0, r1
+}
+
+// ConsensusQueue provides a mock function with given fields:
+func (_m *Queuer) ConsensusQueue() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0

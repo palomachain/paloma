@@ -9,7 +9,6 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	testdata "github.com/palomachain/paloma/x/consensus/testdata/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/consensus/types/mocks"
 	"github.com/stretchr/testify/require"
@@ -43,7 +42,7 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 	types.RegisterInterfaces(registry)
 
 	registry.RegisterImplementations((*types.ConsensusMsg)(nil),
-		&testdata.SimpleMessage{},
+		&types.SimpleMessage{},
 	)
 
 	paramsSubspace := typesparams.NewSubspace(appCodec,

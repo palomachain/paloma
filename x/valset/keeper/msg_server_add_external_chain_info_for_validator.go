@@ -17,7 +17,7 @@ func (k msgServer) AddExternalChainInfoForValidator(goCtx context.Context, msg *
 
 	valAddr := sdk.ValAddress(accAddr)
 
-	err = k.addExternalChainInfo(ctx, valAddr, msg.ChainInfos)
+	err = k.AddExternalChainInfo(ctx, valAddr, msg.ChainInfos)
 	if err != nil {
 		return nil, err
 	}

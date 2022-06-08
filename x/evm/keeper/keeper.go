@@ -1,8 +1,11 @@
 package keeper
 
 import (
+	"bytes"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -13,7 +16,7 @@ import (
 )
 
 const (
-	consensusArbitraryContractCall = consensustypes.ConsensusQueueType("evm-arbitrary-smart-contract-call")
+	ConsensusArbitraryContractCall = consensustypes.ConsensusQueueType("evm-arbitrary-smart-contract-call")
 )
 
 type Keeper struct {
@@ -49,30 +52,54 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) AddSmartContractExecutionToConsensus(ctx sdk.Context, msg *types.ArbitrarySmartContractCall) error {
-	return k.consensusKeeper.PutMessageForSigning(ctx, consensusArbitraryContractCall, msg)
+func (k Keeper) AddSmartContractExecutionToConsensus(
+	ctx sdk.Context,
+	chainType string,
+	chainID string,
+	msg *types.ArbitrarySmartContractCall,
+) error {
+	return k.consensusKeeper.PutMessageForSigning(
+		ctx,
+		consensustypes.Queue(ConsensusArbitraryContractCall, chainType, chainID),
+		msg,
+	)
 }
 
-func (k Keeper) OnSchedulerMessageProcess(ctx sdk.Context, rawMsg any) (processed bool, err error) {
-	// when scheduler ticks then this gets executed
+// func (k Keeper) OnSchedulerMessageProcess(ctx sdk.Context, rawMsg any) (processed bool, err error) {
+// 	// when scheduler ticks then this gets executed
 
-	processed = true
-	switch msg := rawMsg.(type) {
-	case *types.ArbitrarySmartContractCall:
-		err = k.AddSmartContractExecutionToConsensus(ctx, msg)
-	default:
-		processed = false
-	}
+// 	processed = true
+// 	switch msg := rawMsg.(type) {
+// 	case *types.ArbitrarySmartContractCall:
+// 		err = k.AddSmartContractExecutionToConsensus(
+// 			ctx,
+// 			msg,
+// 		)
+// 	default:
+// 		processed = false
+// 	}
 
-	return
-}
+// 	return
+// }
 
-func (k Keeper) RegisterConsensusQueues(adder consensustypes.RegistryAdder) {
+func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 	adder.AddConcencusQueueType(
-		consensusArbitraryContractCall,
-		&types.ArbitrarySmartContractCall{},
-		consensustypes.TypedBytesToSign(func(msg *types.ArbitrarySmartContractCall, nonce uint64) []byte {
-			return msg.Keccak256(nonce)
+		false,
+		consensus.WithChainInfo(consensustypes.ChainTypeEVM, "eth-main"),
+		consensus.WithQueueTypeName(ConsensusArbitraryContractCall),
+		consensus.WithStaticTypeCheck(&types.ArbitrarySmartContractCall{}),
+		consensus.WithBytesToSignCalc(
+			consensustypes.TypedBytesToSign(func(msg *types.ArbitrarySmartContractCall, nonce uint64) []byte {
+				return msg.Keccak256(nonce)
+			}),
+		),
+		consensus.WithVerifySignature(func(bz []byte, sig []byte, pk []byte) bool {
+			recoveredPk, err := crypto.Ecrecover(bz, sig)
+			fmt.Println(recoveredPk, err)
+			if err != nil {
+				return false
+			}
+			return bytes.Equal(pk, recoveredPk)
 		}),
 	)
 }

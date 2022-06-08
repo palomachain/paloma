@@ -19,12 +19,15 @@ func (k msgServer) SubmitNewJob(goCtx context.Context, msg *types.MsgSubmitNewJo
 	}
 
 	// TODO: use real chain IDs
-	err := k.AddSmartContractExecutionToConsensus(ctx, &types.ArbitrarySmartContractCall{
-		HexAddress: msg.HexSmartContractAddress,
-		ChainID:    "test",
-		Payload:    common.Hex2Bytes(msg.GetHexPayload()),
-		Abi:        []byte(msg.GetAbi()),
-	})
+	err := k.AddSmartContractExecutionToConsensus(
+		ctx,
+		msg.GetChainType(),
+		msg.GetChainID(),
+		&types.ArbitrarySmartContractCall{
+			HexAddress: msg.HexSmartContractAddress,
+			Payload:    common.Hex2Bytes(msg.GetHexPayload()),
+			Abi:        []byte(msg.GetAbi()),
+		})
 
 	if err != nil {
 		return nil, err

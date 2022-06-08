@@ -4,6 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 
 	"github.com/vizualni/whoops"
@@ -21,7 +22,9 @@ func (k Keeper) CheckAndProcessAttestedMessages(ctx sdk.Context) error {
 
 mainLoop:
 	for _, att := range k.attestator.registry {
-		msgs, err := k.GetMessagesThatHaveReachedConsensus(ctx, att.ConsensusQueue())
+		chainType, chainID := att.ChainInfo()
+		queue := types.Queue(att.ConsensusQueue(), chainType, chainID)
+		msgs, err := k.GetMessagesThatHaveReachedConsensus(ctx, queue)
 		if err != nil {
 			gerr.Add(err)
 			continue
@@ -57,7 +60,7 @@ mainLoop:
 			// TODO: process result of processing evidence
 			_ = res
 
-			cq, err := k.getConsensusQueue(att.ConsensusQueue())
+			cq, err := k.getConsensusQueue(queue)
 			if err != nil {
 				gerr.Add(err)
 				continue mainLoop
@@ -77,21 +80,29 @@ mainLoop:
 
 func NewAttestator() *Attestator {
 	return &Attestator{
-		registry: make(map[types.ConsensusQueueType]types.Attestator),
+		registry: make(map[string]types.Attestator),
 	}
 }
 
 type Attestator struct {
-	registry        map[types.ConsensusQueueType]types.Attestator
+	registry        map[string]types.Attestator
 	ConsensusKeeper *Keeper
 }
 
 func (a *Attestator) RegisterAttestator(att types.Attestator) {
-	a.ConsensusKeeper.AddConcencusQueueType(att.ConsensusQueue(), att.Type(), att.BytesToSign())
-	a.registry[att.ConsensusQueue()] = att
+	chainType, chainID := att.ChainInfo()
+	a.ConsensusKeeper.AddConcencusQueueType(
+		false,
+		consensus.WithQueueTypeName(att.ConsensusQueue()),
+		consensus.WithStaticTypeCheck(att.Type()),
+		consensus.WithBytesToSignCalc(att.BytesToSign()),
+		consensus.WithVerifySignature(att.VerifySignature()),
+		consensus.WithChainInfo(chainType, chainID),
+	)
+	a.registry[types.Queue(att.ConsensusQueue(), chainType, chainID)] = att
 }
 
-func (a *Attestator) validateIncoming(ctx context.Context, queueTypeName types.ConsensusQueueType, task types.AttestTask, evidence types.Evidence) error {
+func (a *Attestator) validateIncoming(ctx context.Context, queueTypeName string, task types.AttestTask, evidence types.Evidence) error {
 	if att, ok := a.registry[queueTypeName]; ok {
 		return att.ValidateEvidence(ctx, task, evidence)
 	}

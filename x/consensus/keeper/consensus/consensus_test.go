@@ -7,7 +7,6 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	testtypes "github.com/palomachain/paloma/x/consensus/testdata/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/stretchr/testify/assert"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -27,13 +26,13 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	registry.RegisterInterface(
 		"volumefi.tests.SimpleMessage",
 		(*types.ConsensusMsg)(nil),
-		&testtypes.SimpleMessage{},
+		&types.SimpleMessage{},
 	)
-	registry.RegisterImplementations((*types.ConsensusMsg)(nil), &testtypes.SimpleMessage{})
+	registry.RegisterImplementations((*types.ConsensusMsg)(nil), &types.SimpleMessage{})
 	types.RegisterInterfaces(registry)
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
-	var msgType *testtypes.SimpleMessage
+	var msgType *types.SimpleMessage
 	cq := Queue{
 		qo: QueueOptions{
 			QueueTypeName:         types.ConsensusQueueType("simple-message"),
@@ -42,11 +41,16 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 			Cdc:                   types.ModuleCdc,
 			TypeCheck:             types.StaticTypeChecker(msgType),
 			BytesToSignCalculator: msgType.ConsensusSignBytes(),
+			VerifySignature: func([]byte, []byte, []byte) bool {
+				return true
+			},
+			ChainType: types.ChainTypeEVM,
+			ChainID:   "bla",
 		},
 	}
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 
-	msg := &testtypes.SimpleMessage{
+	msg := &types.SimpleMessage{
 		Sender: "bob",
 		Hello:  "HEY",
 		World:  "WORLD",
@@ -80,7 +84,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 		Signature:  []byte(`custom signature`),
 	}
 
-	cq.AddSignature(ctx, msgs[0].GetId(), sig)
+	cq.AddSignature(ctx, msgs[0].GetId(), []byte("does not matter"), sig)
 
 	t.Run("getting all messages should still return one", func(t *testing.T) {
 		var err error
@@ -108,8 +112,8 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 		t.Run("adding two new messages should add them", func(t *testing.T) {
 			cq.Put(
 				ctx,
-				&testtypes.SimpleMessage{},
-				&testtypes.SimpleMessage{},
+				&types.SimpleMessage{},
+				&types.SimpleMessage{},
 			)
 			msgs, err = cq.GetAll(ctx)
 			assert.NoError(t, err)
@@ -118,7 +122,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	})
 
 	t.Run("putting a message of a wrong type returns an error", func(t *testing.T) {
-		msgOfWrongType := &testtypes.EvenSimplerMessage{
+		msgOfWrongType := &types.EvenSimplerMessage{
 			Boo: "boo",
 		}
 		err := cq.Put(ctx, msgOfWrongType)

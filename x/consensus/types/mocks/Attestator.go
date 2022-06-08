@@ -32,6 +32,27 @@ func (_m *Attestator) BytesToSign() types.BytesToSignFunc {
 	return r0
 }
 
+// ChainInfo provides a mock function with given fields:
+func (_m *Attestator) ChainInfo() (string, string) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 string
+	if rf, ok := ret.Get(1).(func() string); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Get(1).(string)
+	}
+
+	return r0, r1
+}
+
 // ConsensusQueue provides a mock function with given fields:
 func (_m *Attestator) ConsensusQueue() types.ConsensusQueueType {
 	ret := _m.Called()
@@ -92,6 +113,22 @@ func (_m *Attestator) ValidateEvidence(ctx context.Context, task types.AttestTas
 		r0 = rf(ctx, task, evidence)
 	} else {
 		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// VerifySignature provides a mock function with given fields:
+func (_m *Attestator) VerifySignature() types.VerifySignatureFunc {
+	ret := _m.Called()
+
+	var r0 types.VerifySignatureFunc
+	if rf, ok := ret.Get(0).(func() types.VerifySignatureFunc); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(types.VerifySignatureFunc)
+		}
 	}
 
 	return r0

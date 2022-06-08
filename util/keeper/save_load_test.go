@@ -3,7 +3,7 @@ package keeper
 import (
 	"testing"
 
-	"github.com/palomachain/paloma/x/consensus/testdata/types"
+	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/stretchr/testify/assert"
 )
 

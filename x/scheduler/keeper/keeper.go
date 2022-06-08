@@ -73,6 +73,7 @@ func (k Keeper) processMessage(ctx sdk.Context, msg any) error {
 	var processors []types.OnMessageProcessor
 
 	for _, proc := range processors {
+		// TODO: add chain type and chain ID here!!!
 		processed, err := proc.OnSchedulerMessageProcess(ctx, msg)
 		if err != nil {
 			return err

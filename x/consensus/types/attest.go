@@ -31,6 +31,12 @@ type Attestator interface {
 	// and it needs to return bytes for signing.
 	BytesToSign() BytesToSignFunc
 
+	// Returns a function which is used to verify signature.
+	VerifySignature() VerifySignatureFunc
+
+	// Chain info: chain type and chain ID
+	ChainInfo() (ChainType, string)
+
 	// ValidateEvidence takes a task and an evidence and does a validation to make sure that it's correct.
 	ValidateEvidence(ctx context.Context, task AttestTask, evidence Evidence) error
 	// ProcessAllEvidence processes all given evidences and internally does whatever it needs to do with

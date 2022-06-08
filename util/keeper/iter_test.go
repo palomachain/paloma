@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	// using any test that that extends protobuf
-	"github.com/palomachain/paloma/x/consensus/testdata/types"
+	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/stretchr/testify/assert"
 )
 

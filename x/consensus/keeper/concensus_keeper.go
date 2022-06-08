@@ -1,12 +1,13 @@
 package keeper
 
 import (
+	"fmt"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
-	signingutils "github.com/palomachain/utils/signing"
 	"github.com/vizualni/whoops"
 )
 
@@ -14,56 +15,47 @@ const (
 	encodingDelimiter = byte('|')
 )
 
-func (k Keeper) AddConcencusQueueType(queueTypeName types.ConsensusQueueType, typ any, bytesToSign types.BytesToSignFunc) {
-	cq := consensus.NewQueue(consensus.QueueOptions{
-		QueueTypeName:         queueTypeName,
-		Sg:                    k,
-		Ider:                  k.ider,
-		Cdc:                   k.cdc,
-		TypeCheck:             types.StaticTypeChecker(typ),
-		BytesToSignCalculator: bytesToSign,
-	})
-	k.addConcencusQueueType(queueTypeName, cq)
-}
-
-func (k Keeper) AddBatchedConcencusQueueType(
-	queueTypeName types.ConsensusQueueType,
-	typ any,
-	bytesToSign types.BytesToSignFunc,
-) {
-	cq := consensus.NewBatchQueue(consensus.QueueOptions{
-		QueueTypeName:         queueTypeName,
-		Sg:                    k,
-		Ider:                  k.ider,
-		Cdc:                   k.cdc,
-		TypeCheck:             types.StaticTypeChecker(typ),
-		BytesToSignCalculator: bytesToSign,
-	})
-	k.addConcencusQueueType(queueTypeName, cq)
-}
-
-func (k Keeper) addConcencusQueueType(queueTypeName types.ConsensusQueueType, cq consensus.Queuer) {
-	if k.queueRegistry == nil {
-		k.queueRegistry = make(map[types.ConsensusQueueType]consensus.Queuer)
+func (k Keeper) AddConcencusQueueType(batch bool, opts ...consensus.OptFnc) {
+	qo := consensus.QueueOptions{
+		Sg:   k,
+		Ider: k.ider,
+		Cdc:  k.cdc,
 	}
-	_, ok := k.queueRegistry[queueTypeName]
+	for _, opt := range opts {
+		opt(&qo)
+	}
+	var cq consensus.Queuer
+	if batch {
+		cq = consensus.NewBatchQueue(qo)
+	} else {
+		cq = consensus.NewQueue(qo)
+	}
+
+	k.addConcencusQueueType(cq)
+}
+
+func (k Keeper) addConcencusQueueType(cq consensus.Queuer) {
+	_, ok := k.queueRegistry[cq.ConsensusQueue()]
 	if ok {
 		panic("concencus queue already registered")
 	}
 
-	k.queueRegistry[queueTypeName] = cq
+	k.queueRegistry[cq.ConsensusQueue()] = cq
 }
 
 // getConsensusQueue gets the consensus queue for the given type.
-func (k Keeper) getConsensusQueue(queueTypeName types.ConsensusQueueType) (consensus.Queuer, error) {
+func (k Keeper) getConsensusQueue(queueTypeName string) (consensus.Queuer, error) {
 	cq, ok := k.queueRegistry[queueTypeName]
+	for i := range k.queueRegistry {
+		fmt.Println("AAAAAAA", i)
+	}
 	if !ok {
 		return nil, ErrConsensusQueueNotImplemented.Format(queueTypeName)
 	}
 	return cq, nil
 }
 
-func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName types.ConsensusQueueType, msg consensus.ConsensusMsg) error {
+func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg) error {
 	cq, err := k.getConsensusQueue(queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
@@ -78,7 +70,7 @@ func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName types.Consen
 }
 
 // GetMessagesForSigning returns messages for a single validator that needs to be signed.
-func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName types.ConsensusQueueType, val sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
 	all, err := k.GetMessagesFromQueue(ctx, queueTypeName, 100)
 	if err != nil {
 		return nil, err
@@ -103,7 +95,7 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName types.Conse
 }
 
 // GetMessagesFromQueue gets N messages from the queue.
-func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName types.ConsensusQueueType, n int) (msgs []types.QueuedSignedMessageI, err error) {
+func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n int) (msgs []types.QueuedSignedMessageI, err error) {
 	if n <= 0 {
 		return nil, ErrInvalidLimitValue.Format(n)
 	}
@@ -125,7 +117,7 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName types.Consen
 	return
 }
 
-func (k Keeper) deleteJob(ctx sdk.Context, queueTypeName types.ConsensusQueueType, id uint64) (err error) {
+func (k Keeper) deleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
 	cq, err := k.getConsensusQueue(queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
@@ -137,7 +129,7 @@ func (k Keeper) deleteJob(ctx sdk.Context, queueTypeName types.ConsensusQueueTyp
 // GetMessagesThatHaveReachedConsensus returns messages from a given
 // queueTypeName that have reached consensus based on the latest snapshot
 // available.
-func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeName types.ConsensusQueueType) ([]types.QueuedSignedMessageI, error) {
+func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeName string) ([]types.QueuedSignedMessageI, error) {
 	var consensusReached []types.QueuedSignedMessageI
 
 	err := whoops.Try(func() {
@@ -196,16 +188,19 @@ func (k Keeper) AddMessageSignature(
 	valAddr sdk.ValAddress,
 	msgs []*types.MsgAddMessagesSignatures_MsgSignedMessage,
 ) error {
-	pk := k.valset.GetSigningKey(ctx, valAddr)
-	if pk == nil {
-		return ErrUnableToFindPubKeyForValidator.Format(valAddr)
-	}
-
 	return whoops.Try(func() {
 		for _, msg := range msgs {
 			cq := whoops.Must(
-				k.getConsensusQueue(types.ConsensusQueueType(msg.GetQueueTypeName())),
+				k.getConsensusQueue(msg.GetQueueTypeName()),
 			)
+			chainType, chainID := cq.ChainInfo()
+
+			publicKey := whoops.Must(k.valset.GetSigningKey(
+				ctx,
+				valAddr,
+				chainType,
+				chainID,
+			))
 			consensusMsg := whoops.Must(
 				cq.GetMsgByID(ctx, msg.Id),
 			)
@@ -213,26 +208,11 @@ func (k Keeper) AddMessageSignature(
 				consensusMsg.ConsensusMsg(k.cdc),
 			)
 
-			if ok := signingutils.VerifySignature(
-				pk,
-				signingutils.SerializeFnc(signingutils.JsonDeterministicEncoding),
-				msg.GetSignature(),
-				rawMsg,
-				consensusMsg.Nonce(),
-				msg.GetExtraData(),
-			); !ok {
-				whoops.Assert(
-					ErrSignatureVerificationFailed.Format(
-						msg.Id, valAddr, pk.Address(),
-					),
-				)
-			}
-
 			if task, ok := rawMsg.(types.AttestTask); ok {
 				whoops.Assert(
 					k.attestator.validateIncoming(
 						ctx.Context(),
-						types.ConsensusQueueType(msg.GetQueueTypeName()),
+						msg.GetQueueTypeName(),
 						task,
 						types.Evidence{
 							From: valAddr,
@@ -243,11 +223,16 @@ func (k Keeper) AddMessageSignature(
 			}
 
 			whoops.Assert(
-				cq.AddSignature(ctx, msg.Id, &types.SignData{
-					ValAddress: valAddr,
-					Signature:  msg.GetSignature(),
-					ExtraData:  msg.GetExtraData(),
-				}),
+				cq.AddSignature(
+					ctx,
+					msg.Id,
+					publicKey,
+					&types.SignData{
+						ValAddress: valAddr,
+						Signature:  msg.GetSignature(),
+						ExtraData:  msg.GetExtraData(),
+					},
+				),
 			)
 		}
 	})

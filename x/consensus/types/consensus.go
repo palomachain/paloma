@@ -21,6 +21,7 @@ type QueuedSignedMessageI interface {
 }
 
 type BytesToSignFunc func(msg ConsensusMsg, nonce uint64) []byte
+type VerifySignatureFunc func(msg []byte, sig []byte, pk []byte) bool
 
 func TypedBytesToSign[T any](fnc func(msg T, nonce uint64) []byte) BytesToSignFunc {
 	return BytesToSignFunc(func(raw ConsensusMsg, nonce uint64) []byte {
@@ -65,10 +66,6 @@ func (b *Batch) GetSignBytes() []byte {
 	return b.GetBytesToSign()
 }
 
-type RegistryAdder interface {
-	AddConcencusQueueType(queueTypeName ConsensusQueueType, typ any, bytesToSign BytesToSignFunc)
-}
-
-type SupportsConsensusQueue interface {
-	RegisterConsensusQueues(adder RegistryAdder)
+func Queue(queueTypeName ConsensusQueueType, chainType ChainType, chainID string) string {
+	return fmt.Sprintf("%s:%s:%s", chainType, chainID, queueTypeName)
 }

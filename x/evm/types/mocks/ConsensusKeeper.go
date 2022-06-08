@@ -18,11 +18,11 @@ type ConsensusKeeper struct {
 }
 
 // PutMessageForSigning provides a mock function with given fields: ctx, queueTypeName, msg
-func (_m *ConsensusKeeper) PutMessageForSigning(ctx types.Context, queueTypeName consensustypes.ConsensusQueueType, msg consensustypes.ConsensusMsg) error {
+func (_m *ConsensusKeeper) PutMessageForSigning(ctx types.Context, queueTypeName string, msg consensustypes.ConsensusMsg) error {
 	ret := _m.Called(ctx, queueTypeName, msg)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, consensustypes.ConsensusQueueType, consensustypes.ConsensusMsg) error); ok {
+	if rf, ok := ret.Get(0).(func(types.Context, string, consensustypes.ConsensusMsg) error); ok {
 		r0 = rf(ctx, queueTypeName, msg)
 	} else {
 		r0 = ret.Error(0)
