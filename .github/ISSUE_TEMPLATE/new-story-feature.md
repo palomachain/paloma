@@ -3,7 +3,7 @@ name: New story feature
 about: For creating new features that support the story features
 title: ''
 labels: enhancement
-project: Paloma
+projects: Paloma
 assignees: Vizualni
 ---
 
