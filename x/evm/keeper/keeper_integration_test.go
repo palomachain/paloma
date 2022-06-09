@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"crypto/ecdsa"
 	"math/big"
 	"strings"
 	"testing"
@@ -89,15 +88,14 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 
 	private, err := crypto.GenerateKey()
 	require.NoError(t, err)
-	pkBz := crypto.FromECDSAPub(private.Public().(*ecdsa.PublicKey))
 
-	accAddr := rand.ETHAddress()
+	accAddr := crypto.PubkeyToAddress(private.PublicKey)
 	err = a.ValsetKeeper.AddExternalChainInfo(ctx, validators[0].GetOperator(), []*valsettypes.ExternalChainInfo{
 		{
 			ChainType: chainType,
 			ChainID:   chainID,
 			Address:   accAddr.Hex(),
-			Pubkey:    pkBz,
+			Pubkey:    accAddr[:],
 		},
 	})
 

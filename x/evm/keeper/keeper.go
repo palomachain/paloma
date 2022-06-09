@@ -1,9 +1,9 @@
 package keeper
 
 import (
-	"bytes"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -93,13 +93,18 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 				return msg.Keccak256(salt.Nonce)
 			}),
 		),
-		consensus.WithVerifySignature(func(bz []byte, sig []byte, pk []byte) bool {
+		consensus.WithVerifySignature(func(bz []byte, sig []byte, address []byte) bool {
+			receivedAddr := common.BytesToAddress(address)
 			recoveredPk, err := crypto.Ecrecover(bz, sig)
-			fmt.Println(recoveredPk, err)
 			if err != nil {
 				return false
 			}
-			return bytes.Equal(pk, recoveredPk)
+			pk, err := crypto.UnmarshalPubkey(recoveredPk)
+			if err != nil {
+				return false
+			}
+			recoveredAddr := crypto.PubkeyToAddress(*pk)
+			return receivedAddr.Hex() == recoveredAddr.Hex()
 		}),
 	)
 }
