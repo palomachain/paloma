@@ -223,14 +223,14 @@ func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ValidatorExternalAcc
 }
 
 // GetSigningKey returns a signing key used by the conductor to sign arbitrary messages.
-func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType, chainID string) ([]byte, error) {
+func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType, chainID, signedByAddress string) ([]byte, error) {
 	externalAccounts, err := k.getValidatorChainInfos(ctx, valAddr)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, acc := range externalAccounts {
-		if acc.ChainID == chainID && acc.ChainType == chainType {
+		if acc.ChainID == chainID && acc.ChainType == chainType && acc.Address == signedByAddress {
 			return acc.Pubkey, nil
 		}
 	}

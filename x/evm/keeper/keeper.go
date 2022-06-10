@@ -107,4 +107,30 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 			return receivedAddr.Hex() == recoveredAddr.Hex()
 		}),
 	)
+
+	// TODO: remove this
+	adder.AddConcencusQueueType(
+		false,
+		consensus.WithChainInfo(consensustypes.ChainTypeEVM, "ropsten"),
+		consensus.WithQueueTypeName(ConsensusArbitraryContractCall),
+		consensus.WithStaticTypeCheck(&types.ArbitrarySmartContractCall{}),
+		consensus.WithBytesToSignCalc(
+			consensustypes.TypedBytesToSign(func(msg *types.ArbitrarySmartContractCall, salt consensustypes.Salt) []byte {
+				return msg.Keccak256(salt.Nonce)
+			}),
+		),
+		consensus.WithVerifySignature(func(bz []byte, sig []byte, address []byte) bool {
+			receivedAddr := common.BytesToAddress(address)
+			recoveredPk, err := crypto.Ecrecover(bz, sig)
+			if err != nil {
+				return false
+			}
+			pk, err := crypto.UnmarshalPubkey(recoveredPk)
+			if err != nil {
+				return false
+			}
+			recoveredAddr := crypto.PubkeyToAddress(*pk)
+			return receivedAddr.Hex() == recoveredAddr.Hex()
+		}),
+	)
 }

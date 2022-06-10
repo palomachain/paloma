@@ -195,6 +195,7 @@ func (k Keeper) AddMessageSignature(
 				valAddr,
 				chainType,
 				chainID,
+				msg.GetSignedByAddress(),
 			))
 			consensusMsg := whoops.Must(
 				cq.GetMsgByID(ctx, msg.Id),

@@ -22,9 +22,10 @@ var _ types.MsgServer = msgServer{}
 func (k msgServer) AddMessagesSignatures(goCtx context.Context, msg *types.MsgAddMessagesSignatures) (*types.MsgAddMessagesSignaturesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
 	if err := k.AddMessageSignature(
 		ctx,
-		sdk.ValAddress(msg.Creator),
+		sdk.ValAddress(creator.Bytes()),
 		msg.SignedMessages,
 	); err != nil {
 		return nil, err

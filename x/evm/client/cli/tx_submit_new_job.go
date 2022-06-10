@@ -17,9 +17,9 @@ type submitNewJobPayloadJson struct {
 
 func CmdSubmitNewJob() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "submit-new-job [smart contract address] [smart contract payload] [method] [smart contract JSON abi]",
+		Use:   "submit-new-job [chain-id] [smart contract address] [smart contract payload] [method] [smart contract JSON abi]",
 		Short: "Broadcast message SubmitNewJob",
-		Args:  cobra.ExactArgs(4),
+		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -29,10 +29,12 @@ func CmdSubmitNewJob() *cobra.Command {
 
 			msg := &types.MsgSubmitNewJob{
 				Creator:                 clientCtx.GetFromAddress().String(),
-				HexSmartContractAddress: args[0],
-				HexPayload:              args[1],
-				Method:                  args[2],
-				Abi:                     args[3],
+				ChainID:                 args[0],
+				HexSmartContractAddress: args[1],
+				HexPayload:              args[2],
+				Method:                  args[3],
+				Abi:                     args[4],
+				ChainType:               "EVM",
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
