@@ -111,9 +111,10 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 			validators[0].GetOperator(),
 			[]*consensustypes.MsgAddMessagesSignatures_MsgSignedMessage{
 				{
-					Id:            msg.GetId(),
-					QueueTypeName: queue,
-					Signature:     sigbz,
+					Id:              msg.GetId(),
+					QueueTypeName:   queue,
+					Signature:       sigbz,
+					SignedByAddress: accAddr.Hex(),
 				},
 			},
 		)

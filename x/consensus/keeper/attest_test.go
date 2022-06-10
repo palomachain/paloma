@@ -89,7 +89,7 @@ func TestAttesting(t *testing.T) {
 					},
 				}).Return(types.AttestResult{}, nil)
 
-				s.valset.On("GetSigningKey", s.ctx, val1, chainType, chainID).Return(
+				s.valset.On("GetSigningKey", s.ctx, val1, chainType, chainID, "bob").Return(
 					key1.PubKey().Bytes(),
 					nil,
 				)
@@ -108,10 +108,11 @@ func TestAttesting(t *testing.T) {
 				)
 				err = s.keeper.AddMessageSignature(s.ctx, val1, []*types.MsgAddMessagesSignatures_MsgSignedMessage{
 					{
-						Id:            msg.GetId(),
-						QueueTypeName: queue,
-						Signature:     signedBytes,
-						ExtraData:     extraData,
+						Id:              msg.GetId(),
+						QueueTypeName:   queue,
+						Signature:       signedBytes,
+						ExtraData:       extraData,
+						SignedByAddress: "bob",
 					},
 				})
 				require.NoError(t, err)

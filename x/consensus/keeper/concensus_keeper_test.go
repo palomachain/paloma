@@ -352,30 +352,32 @@ func TestAddingSignatures(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("with incorrect key it returns an error", func(t *testing.T) {
-		ms.ValsetKeeper.On("GetSigningKey", ctx, val1, chainType, chainID).Return(
+		ms.ValsetKeeper.On("GetSigningKey", ctx, val1, chainType, chainID, "bob").Return(
 			key2.PubKey().Bytes(),
 			nil,
 		).Once()
 		err = keeper.AddMessageSignature(ctx, val1, []*types.MsgAddMessagesSignatures_MsgSignedMessage{
 			{
-				Id:            msg.GetId(),
-				QueueTypeName: queue,
-				Signature:     signedBytes,
+				Id:              msg.GetId(),
+				QueueTypeName:   queue,
+				Signature:       signedBytes,
+				SignedByAddress: "bob",
 			},
 		})
 		require.ErrorIs(t, err, consensus.ErrInvalidSignature)
 	})
 
 	t.Run("with correct key it adds it to the store", func(t *testing.T) {
-		ms.ValsetKeeper.On("GetSigningKey", ctx, val1, chainType, chainID).Return(
+		ms.ValsetKeeper.On("GetSigningKey", ctx, val1, chainType, chainID, "bob").Return(
 			key1.PubKey().Bytes(),
 			nil,
 		).Once()
 		err = keeper.AddMessageSignature(ctx, val1, []*types.MsgAddMessagesSignatures_MsgSignedMessage{
 			{
-				Id:            msg.GetId(),
-				QueueTypeName: queue,
-				Signature:     signedBytes,
+				Id:              msg.GetId(),
+				QueueTypeName:   queue,
+				Signature:       signedBytes,
+				SignedByAddress: "bob",
 			},
 		})
 		require.NoError(t, err)
