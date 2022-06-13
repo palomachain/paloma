@@ -24,9 +24,10 @@ func (k msgServer) SubmitNewJob(goCtx context.Context, msg *types.MsgSubmitNewJo
 		msg.GetChainType(),
 		msg.GetChainID(),
 		&types.ArbitrarySmartContractCall{
-			HexAddress: msg.HexSmartContractAddress,
+			Method:     msg.Method,
 			Payload:    common.Hex2Bytes(msg.GetHexPayload()),
 			Abi:        []byte(msg.GetAbi()),
+			HexAddress: msg.HexSmartContractAddress,
 		})
 
 	if err != nil {
