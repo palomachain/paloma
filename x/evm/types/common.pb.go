@@ -227,6 +227,13 @@ func (m *TurnstoneUpdateValset) GetValsetID() uint64 {
 	return 0
 }
 
+func (m *ArbitrarySmartContractCall) GetDeadline() uint64 {
+	if m != nil {
+		return m.Deadline
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*ArbitrarySmartContractCall)(nil), "palomachain.paloma.evm.ArbitrarySmartContractCall")
 	proto.RegisterType((*TurnstoneSubmitLogicCall)(nil), "palomachain.paloma.evm.TurnstoneSubmitLogicCall")
@@ -493,6 +500,9 @@ func (m *TurnstoneUpdateValset) Size() (n int) {
 	}
 	if m.ValsetID != 0 {
 		n += 1 + sovCommon(uint64(m.ValsetID))
+	}
+	if m.Deadline != 0 {
+		n += 1 + sovCommon(uint64(m.Deadline))
 	}
 	return n
 }

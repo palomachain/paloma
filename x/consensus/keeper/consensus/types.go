@@ -16,7 +16,7 @@ const (
 //go:generate mockery --name=Queuer
 type Queuer interface {
 	Put(sdk.Context, ...ConsensusMsg) error
-	AddSignature(ctx sdk.Context, id uint64, publickey []byte, signData *types.SignData) error
+	AddSignature(ctx sdk.Context, id uint64, signData *types.SignData) error
 	Remove(sdk.Context, uint64) error
 	GetAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
 	GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error)

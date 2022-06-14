@@ -27,7 +27,6 @@ func CmdMessagesInQueue() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			params := &types.QueryMessagesInQueueRequest{
-
 				QueueTypeName: reqQueueTypeName,
 			}
 

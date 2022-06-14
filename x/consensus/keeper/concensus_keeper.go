@@ -224,9 +224,10 @@ func (k Keeper) AddMessageSignature(
 					msg.Id,
 					publicKey,
 					&types.SignData{
-						ValAddress: valAddr,
-						Signature:  msg.GetSignature(),
-						ExtraData:  msg.GetExtraData(),
+						ValAddress:             valAddr,
+						Signature:              msg.GetSignature(),
+						ExtraData:              msg.GetExtraData(),
+						ExternalAccountAddress: msg.GetSignedByAddress(),
 					},
 				),
 			)
