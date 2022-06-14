@@ -13,11 +13,17 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/evm/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 const (
 	ConsensusArbitraryContractCall = consensustypes.ConsensusQueueType("evm-arbitrary-smart-contract-call")
+	ConsensusEvmValsetUpdate       = consensustypes.ConsensusQueueType("evm-valset-update")
 )
+
+var supportedChainIDs = []string{"eth-main", "ropsten"}
+
+var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
 type Keeper struct {
 	cdc             codec.BinaryCodec
@@ -83,54 +89,50 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 // }
 
 func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
-	adder.AddConcencusQueueType(
-		false,
-		consensus.WithChainInfo(consensustypes.ChainTypeEVM, "eth-main"),
-		consensus.WithQueueTypeName(ConsensusArbitraryContractCall),
-		consensus.WithStaticTypeCheck(&types.ArbitrarySmartContractCall{}),
-		consensus.WithBytesToSignCalc(
-			consensustypes.TypedBytesToSign(func(msg *types.ArbitrarySmartContractCall, salt consensustypes.Salt) []byte {
-				return msg.Keccak256(salt.Nonce)
-			}),
-		),
-		consensus.WithVerifySignature(func(bz []byte, sig []byte, address []byte) bool {
-			receivedAddr := common.BytesToAddress(address)
-			recoveredPk, err := crypto.Ecrecover(bz, sig)
-			if err != nil {
-				return false
-			}
-			pk, err := crypto.UnmarshalPubkey(recoveredPk)
-			if err != nil {
-				return false
-			}
-			recoveredAddr := crypto.PubkeyToAddress(*pk)
-			return receivedAddr.Hex() == recoveredAddr.Hex()
-		}),
-	)
+	ethVerifySig := func(bz []byte, sig []byte, address []byte) bool {
+		receivedAddr := common.BytesToAddress(address)
+		recoveredPk, err := crypto.Ecrecover(bz, sig)
+		if err != nil {
+			return false
+		}
+		pk, err := crypto.UnmarshalPubkey(recoveredPk)
+		if err != nil {
+			return false
+		}
+		recoveredAddr := crypto.PubkeyToAddress(*pk)
+		return receivedAddr.Hex() == recoveredAddr.Hex()
+	}
 
-	// TODO: remove this
-	adder.AddConcencusQueueType(
-		false,
-		consensus.WithChainInfo(consensustypes.ChainTypeEVM, "ropsten"),
-		consensus.WithQueueTypeName(ConsensusArbitraryContractCall),
-		consensus.WithStaticTypeCheck(&types.ArbitrarySmartContractCall{}),
-		consensus.WithBytesToSignCalc(
-			consensustypes.TypedBytesToSign(func(msg *types.ArbitrarySmartContractCall, salt consensustypes.Salt) []byte {
-				return msg.Keccak256(salt.Nonce)
-			}),
-		),
-		consensus.WithVerifySignature(func(bz []byte, sig []byte, address []byte) bool {
-			receivedAddr := common.BytesToAddress(address)
-			recoveredPk, err := crypto.Ecrecover(bz, sig)
-			if err != nil {
-				return false
-			}
-			pk, err := crypto.UnmarshalPubkey(recoveredPk)
-			if err != nil {
-				return false
-			}
-			recoveredAddr := crypto.PubkeyToAddress(*pk)
-			return receivedAddr.Hex() == recoveredAddr.Hex()
-		}),
-	)
+	for _, chainID := range supportedChainIDs {
+		adder.AddConcencusQueueType(
+			false,
+			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chainID),
+			consensus.WithQueueTypeName(ConsensusArbitraryContractCall),
+			consensus.WithStaticTypeCheck(&types.ArbitrarySmartContractCall{}),
+			consensus.WithBytesToSignCalc(
+				consensustypes.TypedBytesToSign(func(msg *types.ArbitrarySmartContractCall, salt consensustypes.Salt) []byte {
+					return msg.Keccak256(salt.Nonce)
+				}),
+			),
+			consensus.WithVerifySignature(ethVerifySig),
+		)
+
+		adder.AddConcencusQueueType(
+			false,
+			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chainID),
+			consensus.WithQueueTypeName(ConsensusEvmValsetUpdate),
+			consensus.WithStaticTypeCheck(&types.UpdateValset{}),
+			consensus.WithBytesToSignCalc(
+				consensustypes.TypedBytesToSign(func(msg *types.UpdateValset, salt consensustypes.Salt) []byte {
+					return msg.Keccak256(salt.Nonce)
+				}),
+			),
+			consensus.WithVerifySignature(ethVerifySig),
+		)
+	}
+
+}
+
+func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
+	k.consensusKeeper.PutMessageForSigning(ctx)
 }

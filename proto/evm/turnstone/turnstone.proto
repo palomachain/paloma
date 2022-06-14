@@ -1,0 +1,32 @@
+syntax = "proto3";
+import "gogoproto/gogo.proto";
+
+package palomachain.paloma.evm.turnstone;
+
+option go_package = "github.com/palomachain/paloma/x/evm/types/turnstone";
+
+// matching Valset struct from the turnstone-evm
+
+message Valset {
+  uint64 valsetID = 1;
+  string turnstoneID = 2;
+  // string - is actually hex representation
+  repeated string hexAddress = 3;
+  repeated uint32 powers = 4;
+}
+
+
+message SubmitLogicCall {
+  uint64 turnstoneID = 1;
+  uint64 chainID = 2;
+  string hexContractAddress = 3;
+  bytes abi = 4;
+  bytes payload =5;
+}
+
+message UpdateValset {
+  uint64 turnstoneID = 1;
+
+  Valset valset = 2;
+}
+

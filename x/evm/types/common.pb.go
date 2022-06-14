@@ -24,12 +24,11 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type ArbitrarySmartContractCall struct {
-	Method     string `protobuf:"bytes,1,opt,name=method,proto3" json:"method,omitempty"`
-	Payload    []byte `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
-	HexAddress string `protobuf:"bytes,3,opt,name=hexAddress,proto3" json:"hexAddress,omitempty"`
-	Abi        []byte `protobuf:"bytes,4,opt,name=abi,proto3" json:"abi,omitempty"`
-	// TODO: make a new type for turnstone messages
-	ViaTurnstone bool `protobuf:"varint,5,opt,name=viaTurnstone,proto3" json:"viaTurnstone,omitempty"`
+	ChainID    string `protobuf:"bytes,1,opt,name=chainID,proto3" json:"chainID,omitempty"`
+	Method     string `protobuf:"bytes,2,opt,name=method,proto3" json:"method,omitempty"`
+	Payload    []byte `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"`
+	HexAddress string `protobuf:"bytes,4,opt,name=hexAddress,proto3" json:"hexAddress,omitempty"`
+	Abi        []byte `protobuf:"bytes,5,opt,name=abi,proto3" json:"abi,omitempty"`
 }
 
 func (m *ArbitrarySmartContractCall) Reset()         { *m = ArbitrarySmartContractCall{} }
@@ -65,6 +64,13 @@ func (m *ArbitrarySmartContractCall) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ArbitrarySmartContractCall proto.InternalMessageInfo
 
+func (m *ArbitrarySmartContractCall) GetChainID() string {
+	if m != nil {
+		return m.ChainID
+	}
+	return ""
+}
+
 func (m *ArbitrarySmartContractCall) GetMethod() string {
 	if m != nil {
 		return m.Method
@@ -93,38 +99,166 @@ func (m *ArbitrarySmartContractCall) GetAbi() []byte {
 	return nil
 }
 
-func (m *ArbitrarySmartContractCall) GetViaTurnstone() bool {
-	if m != nil {
-		return m.ViaTurnstone
+type TurnstoneSubmitLogicCall struct {
+	TurnstoneID        uint64 `protobuf:"varint,1,opt,name=turnstoneID,proto3" json:"turnstoneID,omitempty"`
+	ChainID            uint64 `protobuf:"varint,2,opt,name=chainID,proto3" json:"chainID,omitempty"`
+	HexContractAddress string `protobuf:"bytes,3,opt,name=hexContractAddress,proto3" json:"hexContractAddress,omitempty"`
+	Abi                []byte `protobuf:"bytes,4,opt,name=abi,proto3" json:"abi,omitempty"`
+	Payload            []byte `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`
+}
+
+func (m *TurnstoneSubmitLogicCall) Reset()         { *m = TurnstoneSubmitLogicCall{} }
+func (m *TurnstoneSubmitLogicCall) String() string { return proto.CompactTextString(m) }
+func (*TurnstoneSubmitLogicCall) ProtoMessage()    {}
+func (*TurnstoneSubmitLogicCall) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2ef836bbf7879f0e, []int{1}
+}
+func (m *TurnstoneSubmitLogicCall) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TurnstoneSubmitLogicCall) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TurnstoneSubmitLogicCall.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
 	}
-	return false
+}
+func (m *TurnstoneSubmitLogicCall) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TurnstoneSubmitLogicCall.Merge(m, src)
+}
+func (m *TurnstoneSubmitLogicCall) XXX_Size() int {
+	return m.Size()
+}
+func (m *TurnstoneSubmitLogicCall) XXX_DiscardUnknown() {
+	xxx_messageInfo_TurnstoneSubmitLogicCall.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TurnstoneSubmitLogicCall proto.InternalMessageInfo
+
+func (m *TurnstoneSubmitLogicCall) GetTurnstoneID() uint64 {
+	if m != nil {
+		return m.TurnstoneID
+	}
+	return 0
+}
+
+func (m *TurnstoneSubmitLogicCall) GetChainID() uint64 {
+	if m != nil {
+		return m.ChainID
+	}
+	return 0
+}
+
+func (m *TurnstoneSubmitLogicCall) GetHexContractAddress() string {
+	if m != nil {
+		return m.HexContractAddress
+	}
+	return ""
+}
+
+func (m *TurnstoneSubmitLogicCall) GetAbi() []byte {
+	if m != nil {
+		return m.Abi
+	}
+	return nil
+}
+
+func (m *TurnstoneSubmitLogicCall) GetPayload() []byte {
+	if m != nil {
+		return m.Payload
+	}
+	return nil
+}
+
+type TurnstoneUpdateValset struct {
+	TurnstoneID uint64 `protobuf:"varint,1,opt,name=turnstoneID,proto3" json:"turnstoneID,omitempty"`
+	ValsetID    uint64 `protobuf:"varint,2,opt,name=valsetID,proto3" json:"valsetID,omitempty"`
+}
+
+func (m *TurnstoneUpdateValset) Reset()         { *m = TurnstoneUpdateValset{} }
+func (m *TurnstoneUpdateValset) String() string { return proto.CompactTextString(m) }
+func (*TurnstoneUpdateValset) ProtoMessage()    {}
+func (*TurnstoneUpdateValset) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2ef836bbf7879f0e, []int{2}
+}
+func (m *TurnstoneUpdateValset) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TurnstoneUpdateValset) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TurnstoneUpdateValset.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TurnstoneUpdateValset) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TurnstoneUpdateValset.Merge(m, src)
+}
+func (m *TurnstoneUpdateValset) XXX_Size() int {
+	return m.Size()
+}
+func (m *TurnstoneUpdateValset) XXX_DiscardUnknown() {
+	xxx_messageInfo_TurnstoneUpdateValset.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TurnstoneUpdateValset proto.InternalMessageInfo
+
+func (m *TurnstoneUpdateValset) GetTurnstoneID() uint64 {
+	if m != nil {
+		return m.TurnstoneID
+	}
+	return 0
+}
+
+func (m *TurnstoneUpdateValset) GetValsetID() uint64 {
+	if m != nil {
+		return m.ValsetID
+	}
+	return 0
 }
 
 func init() {
 	proto.RegisterType((*ArbitrarySmartContractCall)(nil), "palomachain.paloma.evm.ArbitrarySmartContractCall")
+	proto.RegisterType((*TurnstoneSubmitLogicCall)(nil), "palomachain.paloma.evm.TurnstoneSubmitLogicCall")
+	proto.RegisterType((*TurnstoneUpdateValset)(nil), "palomachain.paloma.evm.TurnstoneUpdateValset")
 }
 
 func init() { proto.RegisterFile("evm/common.proto", fileDescriptor_2ef836bbf7879f0e) }
 
 var fileDescriptor_2ef836bbf7879f0e = []byte{
-	// 257 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0x90, 0x31, 0x6e, 0xb3, 0x30,
-	0x1c, 0xc5, 0xf1, 0x97, 0xaf, 0x69, 0x6b, 0x65, 0x88, 0xac, 0x2a, 0xb2, 0x32, 0x58, 0x28, 0x13,
-	0x5d, 0xf0, 0xd0, 0x13, 0xa4, 0xdc, 0x80, 0x76, 0xea, 0xf6, 0x07, 0x2c, 0xb0, 0x84, 0xfd, 0x47,
-	0xc6, 0x41, 0xe1, 0x16, 0x3d, 0x44, 0x0f, 0xd3, 0x31, 0x63, 0xc7, 0x0a, 0x2e, 0x52, 0x41, 0x52,
-	0x29, 0xdd, 0x7e, 0xef, 0xe9, 0xbd, 0xe1, 0x3d, 0xba, 0x56, 0x9d, 0x91, 0x39, 0x1a, 0x83, 0x36,
-	0x6e, 0x1c, 0x7a, 0x64, 0x9b, 0x06, 0x6a, 0x34, 0x90, 0x57, 0xa0, 0x6d, 0x7c, 0xe6, 0x58, 0x75,
-	0x66, 0xfb, 0x50, 0x62, 0x89, 0x73, 0x44, 0x4e, 0x74, 0x4e, 0xef, 0x3e, 0x08, 0xdd, 0xee, 0x5d,
-	0xa6, 0xbd, 0x03, 0xd7, 0xbf, 0x18, 0x70, 0x3e, 0x41, 0xeb, 0x1d, 0xe4, 0x3e, 0x81, 0xba, 0x66,
-	0x1b, 0xba, 0x34, 0xca, 0x57, 0x58, 0x70, 0x12, 0x92, 0xe8, 0x3e, 0xbd, 0x28, 0xc6, 0xe9, 0x6d,
-	0x03, 0x7d, 0x8d, 0x50, 0xf0, 0x7f, 0x21, 0x89, 0x56, 0xe9, 0xaf, 0x64, 0x82, 0xd2, 0x4a, 0x1d,
-	0xf7, 0x45, 0xe1, 0x54, 0xdb, 0xf2, 0xc5, 0xdc, 0xba, 0x72, 0xd8, 0x9a, 0x2e, 0x20, 0xd3, 0xfc,
-	0xff, 0xdc, 0x9a, 0x90, 0xed, 0xe8, 0xaa, 0xd3, 0xf0, 0x7a, 0x70, 0xb6, 0xf5, 0x68, 0x15, 0xbf,
-	0x09, 0x49, 0x74, 0x97, 0xfe, 0xf1, 0x9e, 0x93, 0xcf, 0x41, 0x90, 0xd3, 0x20, 0xc8, 0xf7, 0x20,
-	0xc8, 0xfb, 0x28, 0x82, 0xd3, 0x28, 0x82, 0xaf, 0x51, 0x04, 0x6f, 0x8f, 0xa5, 0xf6, 0xd5, 0x21,
-	0x8b, 0x73, 0x34, 0xf2, 0x6a, 0xf9, 0x85, 0xe5, 0x51, 0x4e, 0x07, 0xf9, 0xbe, 0x51, 0x6d, 0xb6,
-	0x9c, 0x27, 0x3f, 0xfd, 0x04, 0x00, 0x00, 0xff, 0xff, 0x80, 0xa8, 0xc1, 0x7b, 0x34, 0x01, 0x00,
-	0x00,
+	// 341 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xbf, 0x4e, 0xc3, 0x30,
+	0x10, 0xc6, 0xeb, 0xfe, 0x03, 0x0c, 0x43, 0x15, 0x41, 0x65, 0x75, 0xb0, 0xaa, 0x4e, 0x65, 0x49,
+	0x06, 0x9e, 0xa0, 0x94, 0x05, 0x89, 0xa9, 0xa5, 0x0c, 0x6c, 0x4e, 0x62, 0x25, 0x91, 0xe2, 0x5c,
+	0xe4, 0x5c, 0xab, 0xf6, 0x2d, 0x98, 0x79, 0x0c, 0x9e, 0x82, 0xb1, 0x23, 0x23, 0x6a, 0x5f, 0x04,
+	0xc5, 0x8d, 0xa3, 0x20, 0x31, 0xb0, 0x7d, 0xdf, 0x7d, 0x77, 0xd6, 0xef, 0x74, 0xa6, 0x03, 0xb9,
+	0x51, 0x5e, 0x00, 0x4a, 0x41, 0xe6, 0xe6, 0x1a, 0x10, 0x9c, 0x61, 0x2e, 0x52, 0x50, 0x22, 0x88,
+	0x45, 0x92, 0xb9, 0x27, 0xed, 0xca, 0x8d, 0x1a, 0x5d, 0x47, 0x10, 0x81, 0x69, 0xf1, 0x4a, 0x75,
+	0xea, 0x9e, 0xbc, 0x13, 0x3a, 0x9a, 0x69, 0x3f, 0x41, 0x2d, 0xf4, 0x6e, 0xa9, 0x84, 0xc6, 0x39,
+	0x64, 0xa8, 0x45, 0x80, 0x73, 0x91, 0xa6, 0x0e, 0xa3, 0x67, 0xe6, 0xa1, 0xc7, 0x07, 0x46, 0xc6,
+	0x64, 0x7a, 0xb1, 0xb0, 0xd6, 0x19, 0xd2, 0xbe, 0x92, 0x18, 0x43, 0xc8, 0xda, 0x26, 0xa8, 0x5c,
+	0x39, 0x91, 0x8b, 0x5d, 0x0a, 0x22, 0x64, 0x9d, 0x31, 0x99, 0x5e, 0x2d, 0xac, 0x75, 0x38, 0xa5,
+	0xb1, 0xdc, 0xce, 0xc2, 0x50, 0xcb, 0xa2, 0x60, 0x5d, 0x33, 0xd5, 0xa8, 0x38, 0x03, 0xda, 0x11,
+	0x7e, 0xc2, 0x7a, 0x66, 0xaa, 0x94, 0x93, 0x0f, 0x42, 0xd9, 0xf3, 0x5a, 0x67, 0x05, 0x42, 0x26,
+	0x97, 0x6b, 0x5f, 0x25, 0xf8, 0x04, 0x51, 0x12, 0x18, 0xb4, 0x31, 0xbd, 0x44, 0x9b, 0x55, 0x78,
+	0xdd, 0x45, 0xb3, 0xd4, 0x84, 0x6f, 0x9b, 0xb4, 0x86, 0x77, 0xa9, 0x13, 0xcb, 0xad, 0xdd, 0xd4,
+	0x22, 0x75, 0x0c, 0xd2, 0x1f, 0x89, 0x45, 0xeb, 0xd6, 0x68, 0xcd, 0x35, 0x7b, 0xbf, 0xd6, 0x9c,
+	0xac, 0xe8, 0x4d, 0xcd, 0xbc, 0xca, 0x43, 0x81, 0xf2, 0x45, 0xa4, 0x85, 0xc4, 0x7f, 0x00, 0x8f,
+	0xe8, 0xf9, 0xc6, 0xf4, 0xd6, 0xc4, 0xb5, 0xbf, 0x9f, 0x7f, 0x1e, 0x38, 0xd9, 0x1f, 0x38, 0xf9,
+	0x3e, 0x70, 0xf2, 0x76, 0xe4, 0xad, 0xfd, 0x91, 0xb7, 0xbe, 0x8e, 0xbc, 0xf5, 0x7a, 0x1b, 0x25,
+	0x18, 0xaf, 0x7d, 0x37, 0x00, 0xe5, 0x35, 0x6e, 0x5f, 0x69, 0x6f, 0xeb, 0x95, 0x5f, 0x04, 0x77,
+	0xb9, 0x2c, 0xfc, 0xbe, 0x39, 0xfa, 0xdd, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x09, 0x49, 0x3c,
+	0x69, 0x36, 0x02, 0x00, 0x00,
 }
 
 func (m *ArbitrarySmartContractCall) Marshal() (dAtA []byte, err error) {
@@ -147,15 +281,70 @@ func (m *ArbitrarySmartContractCall) MarshalToSizedBuffer(dAtA []byte) (int, err
 	_ = i
 	var l int
 	_ = l
-	if m.ViaTurnstone {
+	if len(m.Abi) > 0 {
+		i -= len(m.Abi)
+		copy(dAtA[i:], m.Abi)
+		i = encodeVarintCommon(dAtA, i, uint64(len(m.Abi)))
 		i--
-		if m.ViaTurnstone {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
+		dAtA[i] = 0x2a
+	}
+	if len(m.HexAddress) > 0 {
+		i -= len(m.HexAddress)
+		copy(dAtA[i:], m.HexAddress)
+		i = encodeVarintCommon(dAtA, i, uint64(len(m.HexAddress)))
 		i--
-		dAtA[i] = 0x28
+		dAtA[i] = 0x22
+	}
+	if len(m.Payload) > 0 {
+		i -= len(m.Payload)
+		copy(dAtA[i:], m.Payload)
+		i = encodeVarintCommon(dAtA, i, uint64(len(m.Payload)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Method) > 0 {
+		i -= len(m.Method)
+		copy(dAtA[i:], m.Method)
+		i = encodeVarintCommon(dAtA, i, uint64(len(m.Method)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.ChainID) > 0 {
+		i -= len(m.ChainID)
+		copy(dAtA[i:], m.ChainID)
+		i = encodeVarintCommon(dAtA, i, uint64(len(m.ChainID)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TurnstoneSubmitLogicCall) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TurnstoneSubmitLogicCall) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TurnstoneSubmitLogicCall) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Payload) > 0 {
+		i -= len(m.Payload)
+		copy(dAtA[i:], m.Payload)
+		i = encodeVarintCommon(dAtA, i, uint64(len(m.Payload)))
+		i--
+		dAtA[i] = 0x2a
 	}
 	if len(m.Abi) > 0 {
 		i -= len(m.Abi)
@@ -164,26 +353,55 @@ func (m *ArbitrarySmartContractCall) MarshalToSizedBuffer(dAtA []byte) (int, err
 		i--
 		dAtA[i] = 0x22
 	}
-	if len(m.HexAddress) > 0 {
-		i -= len(m.HexAddress)
-		copy(dAtA[i:], m.HexAddress)
-		i = encodeVarintCommon(dAtA, i, uint64(len(m.HexAddress)))
+	if len(m.HexContractAddress) > 0 {
+		i -= len(m.HexContractAddress)
+		copy(dAtA[i:], m.HexContractAddress)
+		i = encodeVarintCommon(dAtA, i, uint64(len(m.HexContractAddress)))
 		i--
 		dAtA[i] = 0x1a
 	}
-	if len(m.Payload) > 0 {
-		i -= len(m.Payload)
-		copy(dAtA[i:], m.Payload)
-		i = encodeVarintCommon(dAtA, i, uint64(len(m.Payload)))
+	if m.ChainID != 0 {
+		i = encodeVarintCommon(dAtA, i, uint64(m.ChainID))
 		i--
-		dAtA[i] = 0x12
+		dAtA[i] = 0x10
 	}
-	if len(m.Method) > 0 {
-		i -= len(m.Method)
-		copy(dAtA[i:], m.Method)
-		i = encodeVarintCommon(dAtA, i, uint64(len(m.Method)))
+	if m.TurnstoneID != 0 {
+		i = encodeVarintCommon(dAtA, i, uint64(m.TurnstoneID))
 		i--
-		dAtA[i] = 0xa
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TurnstoneUpdateValset) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TurnstoneUpdateValset) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TurnstoneUpdateValset) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.ValsetID != 0 {
+		i = encodeVarintCommon(dAtA, i, uint64(m.ValsetID))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TurnstoneID != 0 {
+		i = encodeVarintCommon(dAtA, i, uint64(m.TurnstoneID))
+		i--
+		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -205,6 +423,10 @@ func (m *ArbitrarySmartContractCall) Size() (n int) {
 	}
 	var l int
 	_ = l
+	l = len(m.ChainID)
+	if l > 0 {
+		n += 1 + l + sovCommon(uint64(l))
+	}
 	l = len(m.Method)
 	if l > 0 {
 		n += 1 + l + sovCommon(uint64(l))
@@ -221,8 +443,47 @@ func (m *ArbitrarySmartContractCall) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovCommon(uint64(l))
 	}
-	if m.ViaTurnstone {
-		n += 2
+	return n
+}
+
+func (m *TurnstoneSubmitLogicCall) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TurnstoneID != 0 {
+		n += 1 + sovCommon(uint64(m.TurnstoneID))
+	}
+	if m.ChainID != 0 {
+		n += 1 + sovCommon(uint64(m.ChainID))
+	}
+	l = len(m.HexContractAddress)
+	if l > 0 {
+		n += 1 + l + sovCommon(uint64(l))
+	}
+	l = len(m.Abi)
+	if l > 0 {
+		n += 1 + l + sovCommon(uint64(l))
+	}
+	l = len(m.Payload)
+	if l > 0 {
+		n += 1 + l + sovCommon(uint64(l))
+	}
+	return n
+}
+
+func (m *TurnstoneUpdateValset) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TurnstoneID != 0 {
+		n += 1 + sovCommon(uint64(m.TurnstoneID))
+	}
+	if m.ValsetID != 0 {
+		n += 1 + sovCommon(uint64(m.ValsetID))
 	}
 	return n
 }
@@ -264,6 +525,38 @@ func (m *ArbitrarySmartContractCall) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChainID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Method", wireType)
 			}
 			var stringLen uint64
@@ -294,7 +587,7 @@ func (m *ArbitrarySmartContractCall) Unmarshal(dAtA []byte) error {
 			}
 			m.Method = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 2:
+		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Payload", wireType)
 			}
@@ -328,7 +621,7 @@ func (m *ArbitrarySmartContractCall) Unmarshal(dAtA []byte) error {
 				m.Payload = []byte{}
 			}
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field HexAddress", wireType)
 			}
@@ -359,6 +652,160 @@ func (m *ArbitrarySmartContractCall) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.HexAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Abi", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Abi = append(m.Abi[:0], dAtA[iNdEx:postIndex]...)
+			if m.Abi == nil {
+				m.Abi = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCommon(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TurnstoneSubmitLogicCall) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCommon
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TurnstoneSubmitLogicCall: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TurnstoneSubmitLogicCall: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TurnstoneID", wireType)
+			}
+			m.TurnstoneID = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TurnstoneID |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
+			}
+			m.ChainID = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ChainID |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field HexContractAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.HexContractAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
@@ -395,10 +842,10 @@ func (m *ArbitrarySmartContractCall) Unmarshal(dAtA []byte) error {
 			}
 			iNdEx = postIndex
 		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ViaTurnstone", wireType)
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Payload", wireType)
 			}
-			var v int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowCommon
@@ -408,12 +855,114 @@ func (m *ArbitrarySmartContractCall) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				v |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			m.ViaTurnstone = bool(v != 0)
+			if byteLen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Payload = append(m.Payload[:0], dAtA[iNdEx:postIndex]...)
+			if m.Payload == nil {
+				m.Payload = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCommon(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TurnstoneUpdateValset) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCommon
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TurnstoneUpdateValset: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TurnstoneUpdateValset: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TurnstoneID", wireType)
+			}
+			m.TurnstoneID = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TurnstoneID |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValsetID", wireType)
+			}
+			m.ValsetID = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValsetID |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipCommon(dAtA[iNdEx:])

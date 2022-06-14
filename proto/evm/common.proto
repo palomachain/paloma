@@ -6,13 +6,25 @@ package palomachain.paloma.evm;
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 message ArbitrarySmartContractCall {
-  string method = 1;
-  bytes payload = 2;
-
-  string hexAddress = 3;
-  bytes abi = 4;
+  string chainID = 1;
   
-  // TODO: make a new type for turnstone messages
-  bool viaTurnstone = 5;
+  string method = 2;
+  bytes payload = 3;
+
+  string hexAddress = 4;
+  bytes abi = 5;
 }
 
+
+message TurnstoneSubmitLogicCall {
+  uint64 turnstoneID = 1;
+  uint64 chainID = 2;
+  string hexContractAddress = 3;
+  bytes abi = 4;
+  bytes payload =5;
+}
+
+message TurnstoneUpdateValset {
+  uint64 turnstoneID = 1;
+  uint64 valsetID = 2;
+}

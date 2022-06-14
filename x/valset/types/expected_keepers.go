@@ -25,3 +25,7 @@ type StakingKeeper interface {
 	IterateBondedValidatorsByPower(ctx sdk.Context, fn func(index int64, validator stakingtypes.ValidatorI) (stop bool))
 	PowerReduction(ctx sdk.Context) sdk.Int
 }
+
+type OnSnapshotBuiltListener interface {
+	OnSnapshotBuiilt(sdk.Context, *Snapshot)
+}

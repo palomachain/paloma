@@ -20,16 +20,16 @@ const (
 	maxNumOfAllowedExternalAccounts = 100
 )
 
-type (
-	Keeper struct {
-		cdc        codec.BinaryCodec
-		storeKey   sdk.StoreKey
-		memKey     sdk.StoreKey
-		paramstore paramtypes.Subspace
-		staking    types.StakingKeeper
-		ider       keeperutil.IDGenerator
-	}
-)
+type Keeper struct {
+	cdc        codec.BinaryCodec
+	storeKey   sdk.StoreKey
+	memKey     sdk.StoreKey
+	paramstore paramtypes.Subspace
+	staking    types.StakingKeeper
+	ider       keeperutil.IDGenerator
+
+	snapshotListeners []types.OnSnapshotBuiltListener
+}
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
@@ -37,6 +37,7 @@ func NewKeeper(
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
 	staking types.StakingKeeper,
+	snapshotListeners []types.OnSnapshotBuiltListener,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -44,11 +45,12 @@ func NewKeeper(
 	}
 
 	k := &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
-		staking:    staking,
+		cdc:               cdc,
+		storeKey:          storeKey,
+		memKey:            memKey,
+		paramstore:        ps,
+		staking:           staking,
+		snapshotListeners: snapshotListeners,
 	}
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx sdk.Context) sdk.KVStore {
 		return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("IDs"))
@@ -141,12 +143,18 @@ func (k Keeper) RemoveExternalChainInfo(ctx sdk.Context) {}
 
 // TriggerSnapshotBuild creates the snapshot of currently active validators that are
 // active and registered as conductors.
-func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) error {
-	return k.createSnapshot(ctx)
+func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) {
+	snapshot, err := k.createSnapshot(ctx)
+	if err != nil {
+		panic(err)
+	}
+	for _, listeners := range k.snapshotListeners {
+		listener.OnSnapshotBuilt(ctx, snapshot)
+	}
 }
 
 // createSnapshot builds a current snapshot of validators.
-func (k Keeper) createSnapshot(ctx sdk.Context) error {
+func (k Keeper) createSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	validators := []stakingtypes.ValidatorI{}
 	k.staking.IterateBondedValidatorsByPower(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		validators = append(validators, val)
@@ -162,7 +170,7 @@ func (k Keeper) createSnapshot(ctx sdk.Context) error {
 	for _, val := range validators {
 		chainInfo, err := k.getValidatorChainInfos(ctx, val.GetOperator())
 		if err != nil {
-			return err
+			return nil, err
 		}
 		snapshot.TotalShares = snapshot.TotalShares.Add(val.GetBondedTokens())
 		snapshot.Validators = append(snapshot.Validators, types.Validator{
@@ -173,7 +181,12 @@ func (k Keeper) createSnapshot(ctx sdk.Context) error {
 		})
 	}
 
-	return k.setSnapshotAsCurrent(ctx, snapshot)
+	err := k.setSnapshotAsCurrent(ctx, snapshot)
+	if err != nil {
+		return nil, err
+	}
+
+	return snapshot, nil
 }
 
 func (k Keeper) setSnapshotAsCurrent(ctx sdk.Context, snapshot *types.Snapshot) error {

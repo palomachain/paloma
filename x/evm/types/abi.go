@@ -9,21 +9,18 @@ import (
 	"github.com/vizualni/whoops"
 )
 
-func (m *ArbitrarySmartContractCall) Keccak256(nonce uint64) []byte {
+func (m *TurnstoneSmartContractCall) Keccak256(nonce uint64) []byte {
 	arguments := abi.Arguments{
-		abi.Argument{
+		{
 			Type: whoops.Must(abi.NewType("tuple", "", []abi.ArgumentMarshaling{
 				{Name: "addr", Type: "address"},
 				{Name: "bytes", Type: "bytes"},
 			})),
 		},
-		abi.Argument{
-			Type: whoops.Must(abi.NewType("uint256", "", nil)),
-		},
-		abi.Argument{
-			Type: whoops.Must(abi.NewType("uint256", "", nil)),
-		},
+		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
+		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
 	}
+
 	bytes, err := arguments.Pack(
 		struct {
 			Addr  common.Address
@@ -33,11 +30,11 @@ func (m *ArbitrarySmartContractCall) Keccak256(nonce uint64) []byte {
 			m.Payload,
 		},
 		big.NewInt(int64(nonce)),
-		// TODO: set this to be a real timeout
-		big.NewInt(123),
+		big.NewInt(m.GetTimeout()),
 	)
 	if err != nil {
 		panic(err)
 	}
+
 	return crypto.Keccak256(bytes)
 }
