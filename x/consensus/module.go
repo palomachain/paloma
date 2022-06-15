@@ -181,7 +181,6 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 // and registers their respected consensus queues.
 func (am AppModule) CollectConsensusQueues(mm *module.Manager) {
 	for _, m := range mm.Modules {
-		fmt.Println("EVO ZOVEM", m.Name())
 		reg, ok := m.(consensus.SupportsConsensusQueue)
 		if !ok {
 			continue
