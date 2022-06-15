@@ -9,7 +9,7 @@ import (
 	"github.com/vizualni/whoops"
 )
 
-func (m *TurnstoneSmartContractCall) Keccak256(nonce uint64) []byte {
+func (m *ArbitrarySmartContractCall) Keccak256(nonce uint64) []byte {
 	arguments := abi.Arguments{
 		{
 			Type: whoops.Must(abi.NewType("tuple", "", []abi.ArgumentMarshaling{
@@ -17,7 +17,6 @@ func (m *TurnstoneSmartContractCall) Keccak256(nonce uint64) []byte {
 				{Name: "bytes", Type: "bytes"},
 			})),
 		},
-		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
 	}
 
@@ -30,7 +29,6 @@ func (m *TurnstoneSmartContractCall) Keccak256(nonce uint64) []byte {
 			m.Payload,
 		},
 		big.NewInt(int64(nonce)),
-		big.NewInt(m.GetTimeout()),
 	)
 	if err != nil {
 		panic(err)

@@ -27,5 +27,5 @@ type StakingKeeper interface {
 }
 
 type OnSnapshotBuiltListener interface {
-	OnSnapshotBuiilt(sdk.Context, *Snapshot)
+	OnSnapshotBuilt(sdk.Context, *Snapshot)
 }

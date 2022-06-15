@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -13,15 +14,24 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/x/evm/types/turnstone"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 const (
 	ConsensusArbitraryContractCall = consensustypes.ConsensusQueueType("evm-arbitrary-smart-contract-call")
-	ConsensusEvmValsetUpdate       = consensustypes.ConsensusQueueType("evm-valset-update")
+	ConsensusTurnstoneMessage      = consensustypes.ConsensusQueueType("evm-turnstone-message")
 )
 
-var supportedChainIDs = []string{"eth-main", "ropsten"}
+type evmChainTemp struct {
+	chainID     string
+	turnstoneID uint64
+}
+
+var supportedChainIDs = []evmChainTemp{
+	{"eth-main", 0xabab},
+	{"ropsten", 0xaaaa},
+}
 
 var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
@@ -103,10 +113,10 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 		return receivedAddr.Hex() == recoveredAddr.Hex()
 	}
 
-	for _, chainID := range supportedChainIDs {
+	for _, chain := range supportedChainIDs {
 		adder.AddConcencusQueueType(
 			false,
-			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chainID),
+			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chain.chainID),
 			consensus.WithQueueTypeName(ConsensusArbitraryContractCall),
 			consensus.WithStaticTypeCheck(&types.ArbitrarySmartContractCall{}),
 			consensus.WithBytesToSignCalc(
@@ -119,11 +129,11 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 
 		adder.AddConcencusQueueType(
 			false,
-			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chainID),
-			consensus.WithQueueTypeName(ConsensusEvmValsetUpdate),
-			consensus.WithStaticTypeCheck(&types.UpdateValset{}),
+			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chain.chainID),
+			consensus.WithQueueTypeName(ConsensusTurnstoneMessage),
+			consensus.WithStaticTypeCheck(&turnstone.Message{}),
 			consensus.WithBytesToSignCalc(
-				consensustypes.TypedBytesToSign(func(msg *types.UpdateValset, salt consensustypes.Salt) []byte {
+				consensustypes.TypedBytesToSign(func(msg *turnstone.Message, salt consensustypes.Salt) []byte {
 					return msg.Keccak256(salt.Nonce)
 				}),
 			),
@@ -133,6 +143,58 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 
 }
 
+const (
+	maxPower = 1 << 32
+)
+
 func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
-	k.consensusKeeper.PutMessageForSigning(ctx)
+	for _, chain := range supportedChainIDs {
+		valset := transformSnapshotToTurnstoneValset(snapshot, chain.chainID)
+
+		k.consensusKeeper.PutMessageForSigning(
+			ctx,
+			consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.chainID),
+			&turnstone.Message{
+				TurnstoneID: chain.turnstoneID,
+				ChainID:     chain.chainID,
+				Action: &turnstone.Message_UpdateValset{
+					UpdateValset: &turnstone.UpdateValset{
+						Valset: &valset,
+					},
+				},
+			},
+		)
+	}
+}
+
+func transformSnapshotToTurnstoneValset(snapshot *valsettypes.Snapshot, chainID string) turnstone.Valset {
+	validators := make([]valsettypes.Validator, len(snapshot.GetValidators()))
+	copy(validators, snapshot.GetValidators())
+
+	sort.SliceStable(validators, func(i, j int) bool {
+		// doing GTE because we want a reverse sort
+		return validators[i].ShareCount.GTE(validators[j].ShareCount)
+	})
+
+	var totalPowerInt sdk.Int
+	for _, val := range validators {
+		totalPowerInt = totalPowerInt.Add(val.ShareCount)
+	}
+
+	totalPower := totalPowerInt.Int64()
+
+	valset := turnstone.Valset{}
+
+	for _, val := range snapshot.GetValidators() {
+		for _, ext := range val.GetExternalChainInfos() {
+			if ext.GetChainID() == chainID {
+				power := uint32(maxPower * (val.ShareCount.Int64() / totalPower))
+
+				valset.HexAddress = append(valset.HexAddress, ext.Address)
+				valset.Powers = append(valset.Powers, power)
+			}
+		}
+	}
+
+	return valset
 }

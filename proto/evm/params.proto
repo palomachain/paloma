@@ -8,5 +8,10 @@ option go_package = "github.com/palomachain/paloma/x/evm/types";
 // Params defines the parameters for the module.
 message Params {
   option (gogoproto.goproto_stringer) = false;
-  
+  repeated Chain chains = 1;
+}
+
+message Chain {
+  string chainID = 1;
+  bytes turnstoneID = 2;
 }

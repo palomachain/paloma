@@ -5,28 +5,37 @@ package palomachain.paloma.evm.turnstone;
 
 option go_package = "github.com/palomachain/paloma/x/evm/types/turnstone";
 
-// matching Valset struct from the turnstone-evm
 
 message Valset {
-  uint64 valsetID = 1;
-  string turnstoneID = 2;
-  // string - is actually hex representation
-  repeated string hexAddress = 3;
-  repeated uint32 powers = 4;
+  repeated string hexAddress = 1;
+  repeated uint32 powers = 2;
+  uint64 valsetID = 3;
 }
 
-
 message SubmitLogicCall {
-  uint64 turnstoneID = 1;
-  uint64 chainID = 2;
-  string hexContractAddress = 3;
-  bytes abi = 4;
-  bytes payload =5;
+  string hexContractAddress = 1;
+  bytes abi = 2;
+  bytes payload = 3;
+  int64 deadline = 4;
 }
 
 message UpdateValset {
-  uint64 turnstoneID = 1;
-
-  Valset valset = 2;
+  Valset valset = 1;
 }
 
+message UploadSmartContract {
+  bytes bytecode = 1;
+}
+
+
+message Message {
+  uint64 turnstoneID = 1;
+  string chainID = 2;
+
+  oneof action {
+    SubmitLogicCall submitLogicCall = 3;
+    UpdateValset updateValset = 4;
+    UploadSmartContract uploadSmartContract = 5;
+  }
+
+}

@@ -14,3 +14,7 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.paramstore.SetParamSet(ctx, &params)
 }
+
+func (k Keeper) GetEVMChains(ctx sdk.Context) []*types.Chain {
+	return k.GetParams(ctx).Chains
+}

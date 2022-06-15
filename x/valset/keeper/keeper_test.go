@@ -151,8 +151,7 @@ func TestCreatingSnapshots(t *testing.T) {
 		require.ErrorIs(t, err, ErrExternalChainAlreadyRegistered)
 	})
 
-	err = k.TriggerSnapshotBuild(ctx)
-	require.NoError(t, err)
+	k.TriggerSnapshotBuild(ctx)
 
 	t.Run("getting the snapshot gets all validators", func(t *testing.T) {
 		snapshot, err := k.GetCurrentSnapshot(ctx)
