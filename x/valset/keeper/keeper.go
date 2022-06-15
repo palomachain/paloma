@@ -271,7 +271,6 @@ func (k Keeper) externalChainInfoStore(ctx sdk.Context, val sdk.ValAddress) sdk.
 }
 
 func (k Keeper) _externalChainInfoStore(ctx sdk.Context) sdk.KVStore {
-	fmt.Println("EVO GA STORE KEY", k.storeKey)
 	return prefix.NewStore(
 		ctx.KVStore(k.storeKey),
 		[]byte("external-chain-info"),
@@ -280,7 +279,4 @@ func (k Keeper) _externalChainInfoStore(ctx sdk.Context) sdk.KVStore {
 
 func (k Keeper) snapshotStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("snapshot"))
-}
-func (k Keeper) A() {
-	fmt.Println("RRRRRRRRRRRR", k.storeKey)
 }

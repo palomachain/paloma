@@ -15,7 +15,12 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/palomachain/paloma/evm/params";
   }
-  // this line is used by starport scaffolding # 2
+  // Queries a list of GetValsetByID items.
+	rpc GetValsetByID(QueryGetValsetByIDRequest) returns (QueryGetValsetByIDResponse) {
+		option (google.api.http).get = "/palomachain/paloma/evm/get_valset_by_id/{valsettID}";
+	}
+
+// this line is used by starport scaffolding # 2
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -25,6 +30,13 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryGetValsetByIDRequest {
+  uint64 valsettID = 1;
+}
+
+message QueryGetValsetByIDResponse {
 }
 
 // this line is used by starport scaffolding # 3
