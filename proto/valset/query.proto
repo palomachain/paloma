@@ -21,6 +21,11 @@ service Query {
 		option (google.api.http).get = "/volumefi/paloma/valset/validator_info/{valAddr}";
 	}
 
+// Queries a list of GetSnapshotByID items.
+	rpc GetSnapshotByID(QueryGetSnapshotByIDRequest) returns (QueryGetSnapshotByIDResponse) {
+		option (google.api.http).get = "/palomachain/paloma/valset/get_snapshot_by_id/{snapshotId}";
+	}
+
 // this line is used by starport scaffolding # 2
 }
 
@@ -39,6 +44,14 @@ message QueryValidatorInfoRequest {
 
 message QueryValidatorInfoResponse {
   repeated ExternalChainInfo chainInfos = 1;
+}
+
+message QueryGetSnapshotByIDRequest {
+  uint64 snapshotId = 1;
+}
+
+message QueryGetSnapshotByIDResponse {
+  Snapshot snapshot = 1;
 }
 
 // this line is used by starport scaffolding # 3

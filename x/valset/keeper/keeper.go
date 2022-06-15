@@ -179,6 +179,7 @@ func (k Keeper) createSnapshot(ctx sdk.Context) error {
 func (k Keeper) setSnapshotAsCurrent(ctx sdk.Context, snapshot *types.Snapshot) error {
 	snapStore := k.snapshotStore(ctx)
 	newID := k.ider.IncrementNextID(ctx, snapshotIDKey)
+	snapshot.Id = newID
 	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(newID), snapshot)
 }
 
@@ -187,6 +188,11 @@ func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	snapStore := k.snapshotStore(ctx)
 	lastID := k.ider.GetLastID(ctx, snapshotIDKey)
 	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(lastID))
+}
+
+func (k Keeper) getSnapshotByID(ctx sdk.Context, id uint64) (*types.Snapshot, error) {
+	snapStore := k.snapshotStore(ctx)
+	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(id))
 }
 
 func (k Keeper) getValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) ([]*types.ExternalChainInfo, error) {
