@@ -16,7 +16,7 @@ func (k Keeper) GetSnapshotByID(goCtx context.Context, req *types.QueryGetSnapsh
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	snapshot, err := k.getSnapshotByID(ctx, req.SnapshotId)
+	snapshot, err := k.FindSnapshotByID(ctx, req.SnapshotId)
 	if err != nil {
 		return nil, err
 	}

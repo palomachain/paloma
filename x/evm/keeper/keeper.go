@@ -41,6 +41,8 @@ type Keeper struct {
 	memKey          sdk.StoreKey
 	paramstore      paramtypes.Subspace
 	consensusKeeper types.ConsensusKeeper
+
+	Valset types.ValsetKeeper
 }
 
 func NewKeeper(

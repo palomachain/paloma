@@ -5,6 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "evm/params.proto";
+import "evm/turnstone/turnstone.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/palomachain/paloma/x/evm/types";
@@ -34,9 +35,11 @@ message QueryParamsResponse {
 
 message QueryGetValsetByIDRequest {
   uint64 valsettID = 1;
+  string chainID = 2;
 }
 
 message QueryGetValsetByIDResponse {
+  turnstone.Valset valset = 1;
 }
 
 // this line is used by starport scaffolding # 3

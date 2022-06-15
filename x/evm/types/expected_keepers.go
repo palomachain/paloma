@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -21,4 +22,8 @@ type BankKeeper interface {
 //go:generate mockery --name=ConsensusKeeper
 type ConsensusKeeper interface {
 	PutMessageForSigning(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg) error
+}
+
+type ValsetKeeper interface {
+	FindSnapshotByID(ctx sdk.Context, id uint64) (*valsettypes.Snapshot, error)
 }

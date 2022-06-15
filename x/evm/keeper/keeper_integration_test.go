@@ -90,7 +90,6 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	require.NoError(t, err)
 
 	accAddr := crypto.PubkeyToAddress(private.PublicKey)
-	a.ValsetKeeper.A()
 	err = a.ValsetKeeper.AddExternalChainInfo(ctx, validators[0].GetOperator(), []*valsettypes.ExternalChainInfo{
 		{
 			ChainType: chainType,
@@ -107,7 +106,6 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	for _, msg := range msgs {
 		sigbz, err := crypto.Sign(msg.GetBytesToSign(), private)
 		require.NoError(t, err)
-		a.ValsetKeeper.A()
 		err = a.ConsensusKeeper.AddMessageSignature(
 			ctx,
 			validators[0].GetOperator(),
@@ -120,7 +118,6 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 				},
 			},
 		)
-		a.ValsetKeeper.A()
 		require.NoError(t, err)
 	}
 
