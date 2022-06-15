@@ -33,21 +33,24 @@ message ValidatorExternalAccounts {
 }
 
 message Snapshot {
-  repeated Validator validators = 1 [
+  uint64 id = 1;
+  int64 height = 2;
+
+  repeated Validator validators = 3 [
     (gogoproto.nullable) = false
   ];
 
-  int64 height = 2;
 
-  bytes totalShares = 3 [
+  bytes totalShares = 4 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
 
-  google.protobuf.Timestamp createdAt = 4 [
+  google.protobuf.Timestamp createdAt = 5 [
     (gogoproto.nullable) = false,
     (gogoproto.stdtime) = true
   ];
+
   
 }
 
