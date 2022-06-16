@@ -14,11 +14,12 @@ var _ = strconv.Itoa(0)
 
 func CmdGetValsetByID() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-valset-by-id [valsett-id]",
+		Use:   "get-valset-by-id [valset-id] [chain-id]",
 		Short: "Query GetValsetByID",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			reqValsettID, err := cast.ToUint64E(args[0])
+			reqValsetID, err := cast.ToUint64E(args[0])
+			chainID := args[1]
 			if err != nil {
 				return err
 			}
@@ -31,7 +32,8 @@ func CmdGetValsetByID() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			params := &types.QueryGetValsetByIDRequest{
-				ValsettID: reqValsettID,
+				ValsetID: reqValsetID,
+				ChainID:  chainID,
 			}
 
 			res, err := queryClient.GetValsetByID(cmd.Context(), params)

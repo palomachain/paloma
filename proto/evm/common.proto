@@ -17,7 +17,7 @@ message ArbitrarySmartContractCall {
 
 
 message TurnstoneSubmitLogicCall {
-  uint64 turnstoneID = 1;
+  string turnstoneID = 1;
   string chainID = 2;
   string hexContractAddress = 3;
   bytes abi = 4;
@@ -25,6 +25,6 @@ message TurnstoneSubmitLogicCall {
 }
 
 message TurnstoneUpdateValset {
-  uint64 turnstoneID = 1;
+  string turnstoneID = 1;
   uint64 valsetID = 2;
 }

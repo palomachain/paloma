@@ -426,7 +426,6 @@ func New(
 		app.GetSubspace(schedulermoduletypes.ModuleName),
 		app.BankKeeper,
 	)
-	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
@@ -438,11 +437,7 @@ func New(
 		keys[valsetmoduletypes.MemStoreKey],
 		app.GetSubspace(valsetmoduletypes.ModuleName),
 		stakingKeeper,
-		[]valsetmoduletypes.OnSnapshotBuiltListener{
-			app.EvmKeeper,
-		},
 	)
-	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 
 	app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
 		appCodec,
@@ -453,12 +448,15 @@ func New(
 		attestator,
 	)
 	attestator.ConsensusKeeper = &app.ConsensusKeeper
-	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 
-	app.EvmKeeper = *evmmodulekeeper.NewKeeper(appCodec, keys[evmmoduletypes.StoreKey], keys[evmmoduletypes.MemStoreKey], app.GetSubspace(evmmoduletypes.ModuleName), app.ConsensusKeeper)
-	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
+	app.EvmKeeper = *evmmodulekeeper.NewKeeper(appCodec, keys[evmmoduletypes.StoreKey], keys[evmmoduletypes.MemStoreKey], app.GetSubspace(evmmoduletypes.ModuleName))
 
 	app.EvmKeeper.Valset = app.ValsetKeeper
+	app.EvmKeeper.ConsensusKeeper = app.ConsensusKeeper
+
+	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
+		app.EvmKeeper,
+	}
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
@@ -478,6 +476,10 @@ func New(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 
+	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
+	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
+	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
+	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	app.mm = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
@@ -506,6 +508,7 @@ func New(
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
+	consensusModule.CollectConsensusQueues(app.mm)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
@@ -642,8 +645,6 @@ func New(
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	app.scopedWasmKeeper = scopedWasmKeeper
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
-
-	consensusModule.CollectConsensusQueues(app.mm)
 
 	return app
 }

@@ -13,5 +13,5 @@ message Params {
 
 message Chain {
   string chainID = 1;
-  bytes turnstoneID = 2;
+  string turnstoneID = 2;
 }

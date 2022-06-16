@@ -1,14 +1,14 @@
 syntax = "proto3";
 import "gogoproto/gogo.proto";
 
-package palomachain.paloma.evm.turnstone;
+package palomachain.paloma.evm;
 
-option go_package = "github.com/palomachain/paloma/x/evm/types/turnstone";
+option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 
 message Valset {
   repeated string hexAddress = 1;
-  repeated uint32 powers = 2;
+  repeated uint64 powers = 2;
   uint64 valsetID = 3;
 }
 
@@ -29,7 +29,7 @@ message UploadSmartContract {
 
 
 message Message {
-  uint64 turnstoneID = 1;
+  string turnstoneID = 1;
   string chainID = 2;
 
   oneof action {

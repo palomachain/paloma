@@ -1,4 +1,4 @@
-package turnstone
+package types
 
 import (
 	"encoding/binary"
@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/palomachain/paloma/util/slice"
 	"github.com/vizualni/whoops"
 )
 
@@ -29,12 +30,17 @@ func (_m *Message_UpdateValset) keccak256(orig *Message, _ uint64) []byte {
 	for i := range m.GetValset().GetHexAddress() {
 		addrs[i] = common.HexToAddress(m.GetValset().HexAddress[i])
 	}
+	var bytes32 [32]byte
+
+	copy(bytes32[:], orig.GetTurnstoneID())
 
 	bytes, err := arguments.Pack(
 		addrs,
-		m.GetValset().GetPowers(),
-		new(big.Int).SetInt64(int64(m.GetValset().GetValsetID())).Bytes(),
-		orig.GetTurnstoneID(),
+		slice.Map(m.GetValset().GetPowers(), func(a uint64) *big.Int {
+			return big.NewInt(int64(a))
+		}),
+		big.NewInt(int64(m.GetValset().GetValsetID())),
+		bytes32,
 	)
 	if err != nil {
 		panic(err)

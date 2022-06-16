@@ -51,8 +51,8 @@ func newEvmKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		ms.ConsensusKeeper,
 	)
+	k.ConsensusKeeper = ms.ConsensusKeeper
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 

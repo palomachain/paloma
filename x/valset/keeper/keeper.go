@@ -28,7 +28,7 @@ type Keeper struct {
 	staking    types.StakingKeeper
 	ider       keeperutil.IDGenerator
 
-	snapshotListeners []types.OnSnapshotBuiltListener
+	SnapshotListeners []types.OnSnapshotBuiltListener
 }
 
 func NewKeeper(
@@ -37,7 +37,6 @@ func NewKeeper(
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
 	staking types.StakingKeeper,
-	snapshotListeners []types.OnSnapshotBuiltListener,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -45,12 +44,11 @@ func NewKeeper(
 	}
 
 	k := &Keeper{
-		cdc:               cdc,
-		storeKey:          storeKey,
-		memKey:            memKey,
-		paramstore:        ps,
-		staking:           staking,
-		snapshotListeners: snapshotListeners,
+		cdc:        cdc,
+		storeKey:   storeKey,
+		memKey:     memKey,
+		paramstore: ps,
+		staking:    staking,
 	}
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx sdk.Context) sdk.KVStore {
 		return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("IDs"))
@@ -148,7 +146,7 @@ func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) {
 	if err != nil {
 		panic(err)
 	}
-	for _, listener := range k.snapshotListeners {
+	for _, listener := range k.SnapshotListeners {
 		listener.OnSnapshotBuilt(ctx, snapshot)
 	}
 }

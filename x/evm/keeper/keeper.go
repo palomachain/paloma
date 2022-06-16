@@ -14,7 +14,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/evm/types"
-	"github.com/palomachain/paloma/x/evm/types/turnstone"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -25,24 +24,24 @@ const (
 
 type evmChainTemp struct {
 	chainID     string
-	turnstoneID uint64
+	turnstoneID string
 }
 
 var supportedChainIDs = []evmChainTemp{
-	{"eth-main", 0xabab},
-	{"ropsten", 0xaaaa},
+	{"eth-main", "main"},
+	{"ropsten", "second"},
 }
 
 var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
 type Keeper struct {
-	cdc             codec.BinaryCodec
-	storeKey        sdk.StoreKey
-	memKey          sdk.StoreKey
-	paramstore      paramtypes.Subspace
-	consensusKeeper types.ConsensusKeeper
+	cdc        codec.BinaryCodec
+	storeKey   sdk.StoreKey
+	memKey     sdk.StoreKey
+	paramstore paramtypes.Subspace
 
-	Valset types.ValsetKeeper
+	ConsensusKeeper types.ConsensusKeeper
+	Valset          types.ValsetKeeper
 }
 
 func NewKeeper(
@@ -50,7 +49,6 @@ func NewKeeper(
 	storeKey,
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
-	consensusKeeper types.ConsensusKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -58,11 +56,10 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:             cdc,
-		storeKey:        storeKey,
-		memKey:          memKey,
-		paramstore:      ps,
-		consensusKeeper: consensusKeeper,
+		cdc:        cdc,
+		storeKey:   storeKey,
+		memKey:     memKey,
+		paramstore: ps,
 	}
 }
 
@@ -76,7 +73,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	chainID string,
 	msg *types.ArbitrarySmartContractCall,
 ) error {
-	return k.consensusKeeper.PutMessageForSigning(
+	return k.ConsensusKeeper.PutMessageForSigning(
 		ctx,
 		consensustypes.Queue(ConsensusArbitraryContractCall, chainType, chainID),
 		msg,
@@ -133,9 +130,9 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 			false,
 			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chain.chainID),
 			consensus.WithQueueTypeName(ConsensusTurnstoneMessage),
-			consensus.WithStaticTypeCheck(&turnstone.Message{}),
+			consensus.WithStaticTypeCheck(&types.Message{}),
 			consensus.WithBytesToSignCalc(
-				consensustypes.TypedBytesToSign(func(msg *turnstone.Message, salt consensustypes.Salt) []byte {
+				consensustypes.TypedBytesToSign(func(msg *types.Message, salt consensustypes.Salt) []byte {
 					return msg.Keccak256(salt.Nonce)
 				}),
 			),
@@ -153,14 +150,14 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 	for _, chain := range supportedChainIDs {
 		valset := transformSnapshotToTurnstoneValset(snapshot, chain.chainID)
 
-		k.consensusKeeper.PutMessageForSigning(
+		k.ConsensusKeeper.PutMessageForSigning(
 			ctx,
 			consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.chainID),
-			&turnstone.Message{
+			&types.Message{
 				TurnstoneID: chain.turnstoneID,
 				ChainID:     chain.chainID,
-				Action: &turnstone.Message_UpdateValset{
-					UpdateValset: &turnstone.UpdateValset{
+				Action: &types.Message_UpdateValset{
+					UpdateValset: &types.UpdateValset{
 						Valset: &valset,
 					},
 				},
@@ -169,7 +166,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 	}
 }
 
-func transformSnapshotToTurnstoneValset(snapshot *valsettypes.Snapshot, chainID string) turnstone.Valset {
+func transformSnapshotToTurnstoneValset(snapshot *valsettypes.Snapshot, chainID string) types.Valset {
 	validators := make([]valsettypes.Validator, len(snapshot.GetValidators()))
 	copy(validators, snapshot.GetValidators())
 
@@ -178,22 +175,24 @@ func transformSnapshotToTurnstoneValset(snapshot *valsettypes.Snapshot, chainID 
 		return validators[i].ShareCount.GTE(validators[j].ShareCount)
 	})
 
-	var totalPowerInt sdk.Int
+	totalPowerInt := sdk.NewInt(0)
 	for _, val := range validators {
 		totalPowerInt = totalPowerInt.Add(val.ShareCount)
 	}
 
 	totalPower := totalPowerInt.Int64()
 
-	valset := turnstone.Valset{}
+	valset := types.Valset{
+		ValsetID: snapshot.GetId(),
+	}
 
-	for _, val := range snapshot.GetValidators() {
+	for _, val := range validators {
 		for _, ext := range val.GetExternalChainInfos() {
 			if ext.GetChainID() == chainID {
-				power := uint32(maxPower * (val.ShareCount.Int64() / totalPower))
+				power := maxPower * (float64(val.ShareCount.Int64()) / float64(totalPower))
 
 				valset.HexAddress = append(valset.HexAddress, ext.Address)
-				valset.Powers = append(valset.Powers, power)
+				valset.Powers = append(valset.Powers, uint64(power))
 			}
 		}
 	}

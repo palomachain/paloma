@@ -16,7 +16,7 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	snapshot, err := k.Valset.FindSnapshotByID(ctx, req.GetValsettID())
+	snapshot, err := k.Valset.FindSnapshotByID(ctx, req.GetValsetID())
 	if err != nil {
 		return nil, err
 	}
