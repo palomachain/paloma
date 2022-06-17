@@ -44,7 +44,7 @@ N/A
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.1.0-alpha/paloma_0.1.0-alpha_Linux_x86_64v3.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.2.1-prealpha/paloma_0.2.1-prealpha_Linux_x86_64v3.tar.gz | \
 sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
@@ -64,31 +64,33 @@ palomad init "$MONIKER"
 Copy the configs of the testnet we wish to connect to
 
 ```shell
-wget -O .paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/livia/genesis.json
-wget -O .paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/livia/addrbook.json
+wget -O .paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/passerina/genesis.json
+wget -O .paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/passerina/addrbook.json
 ```
 
-Next you will need to add a new set of keys to the new machine.
+Next you can generate a new set of keys to the new machine, or reuse an existing key.
 ```shell
 VALIDATOR=<choose a name>
 palomad keys add "$VALIDATOR"
+
+# Or if you have a mnemonic already, we can recover the keys with:
+palomad keys add "$VALIDATOR" --recover
 ```
 
-Transfer funds. We'll need the address of our new validator and the address of the original validator.
-You can run `palomad keys list` on their respective nodes. On the main node run:
-
+Get some funds!
 ```shell
-palomad --fees 200grain tx bank send -y "$ORIGINAL_VALIDATOR_ADDRESS" "$VALIDATOR_ADDRESS" 100000000grain
+ADDRESS="$(palomad keys show "$VALIDATOR" -a)"
+JSON=$(jq -n --arg addr "$ADDRESS" '{"denom":"ugrain","address":$addr}') && curl -X POST --header "Content-Type: application/json" --data "$JSON" http://faucet.palomaswap.com:8080/claim
 ```
 
-We can then verify that the funds have been deposited:
+We can verify the new funds have been deposited.
 ```shell
-palomad query bank balances --node tcp://157.245.76.119:26657 "$VALIDATOR_ADDRESS"
+palomad query bank balances --node tcp://testnet.palomaswap.com:26657 "$ADDRESS"
 ```
 
 Stake your funds and create our validator.
 ```shell
-MAIN_VALIDATOR_NODE="tcp://157.245.76.119:26657"
+MAIN_VALIDATOR_NODE="tcp://testnet.palomaswap.com:26657"
 CHAIN_ID="paloma"
 DEFAULT_GAS_AMOUNT="10000000"
 VALIDATOR_STAKE_AMOUNT=100000grain
@@ -113,7 +115,7 @@ palomad tx staking create-validator \
 Start it!
 
 ```shell
-MAIN_PEER_DESIGNATION=f64dd167410a242c993648faa6406edf74a7f4b7@157.245.76.119:26656
+MAIN_PEER_DESIGNATION=f64dd167410a242c993648faa6406edf74a7f4b7@testnet.palomaswap.com:26656
 palomad start --p2p.persistent_peers "$MAIN_PEER_DESIGNATION"
 ```
 
@@ -134,7 +136,7 @@ Restart=always
 RestartSec=5
 WorkingDirectory=~
 ExecStartPre=
-ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers f64dd167410a242c993648faa6406edf74a7f4b7@157.245.76.119:26656
+ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers f64dd167410a242c993648faa6406edf74a7f4b7@testnet.palomaswap.com:26656
 ExecReload=
 
 [Install]
