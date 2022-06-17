@@ -65,6 +65,10 @@ message ValidatorSignature {
   bytes valAddress = 1[ (gogoproto.casttype) =
                          "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
   bytes signature = 2;
+  bytes extraData = 3;
+
+  string externalAccountAddress = 4;
+  bytes publicKey = 5;
 }
 
 message MessageWithSignatures {
@@ -72,6 +76,7 @@ message MessageWithSignatures {
   uint64 id = 2;
   google.protobuf.Any msg = 3;
   repeated ValidatorSignature signData = 4;
+  bytes bytesToSign = 5;
 }
 
 message QueryMessagesInQueueRequest {

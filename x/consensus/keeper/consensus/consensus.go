@@ -1,6 +1,7 @@
 package consensus
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -146,13 +147,21 @@ func (c Queue) GetAll(ctx sdk.Context) ([]types.QueuedSignedMessageI, error) {
 }
 
 // AddSignature adds a signature to the message and checks if the signature is valid.
-func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, pk []byte, signData *types.SignData) error {
+func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignData) error {
 	msg, err := c.GetMsgByID(ctx, msgID)
 	if err != nil {
 		return err
 	}
 
-	if !c.qo.VerifySignature(append(msg.GetBytesToSign()[:], signData.GetExtraData()...), signData.Signature, pk) {
+	// check if the same public key already signed this message
+
+	for _, existingSigData := range msg.GetSignData() {
+		if bytes.Equal(existingSigData.PublicKey, signData.PublicKey) {
+			return fmt.Errorf("TODO: already signed with this key")
+		}
+	}
+
+	if !c.qo.VerifySignature(append(msg.GetBytesToSign()[:], signData.GetExtraData()...), signData.Signature, signData.PublicKey) {
 		return ErrInvalidSignature
 	}
 

@@ -28,4 +28,8 @@ message SignData {
                          "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
   bytes signature = 2;
   bytes extraData = 3;
+
+  string externalAccountAddress = 4;
+
+  bytes publicKey = 5;
 }

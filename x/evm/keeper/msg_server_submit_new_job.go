@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,17 +19,21 @@ func (k msgServer) SubmitNewJob(goCtx context.Context, msg *types.MsgSubmitNewJo
 		return nil, err
 	}
 
-	// TODO: use real chain IDs
 	err := k.AddSmartContractExecutionToConsensus(
 		ctx,
-		msg.GetChainType(),
-		msg.GetChainID(),
-		&types.ArbitrarySmartContractCall{
-			Method:     msg.Method,
-			Payload:    common.Hex2Bytes(msg.GetHexPayload()),
-			Abi:        []byte(msg.GetAbi()),
-			HexAddress: msg.HexSmartContractAddress,
-		})
+		&types.Message{
+			ChainID:     msg.ChainID,
+			TurnstoneID: string(zero32Byte[:]),
+			Action: &types.Message_SubmitLogicCall{
+				SubmitLogicCall: &types.SubmitLogicCall{
+					HexContractAddress: msg.GetHexSmartContractAddress(),
+					Payload:            common.Hex2Bytes(msg.GetHexPayload()),
+					Abi:                []byte(msg.GetAbi()),
+					Deadline:           ctx.BlockTime().UTC().Add(5 * time.Minute).Unix(),
+				},
+			},
+		},
+	)
 
 	if err != nil {
 		return nil, err

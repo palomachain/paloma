@@ -24,24 +24,24 @@ func (_m *Message_UpdateValset) keccak256(orig *Message, _ uint64) []byte {
 		// turnstone id
 		{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
 	}
+	method := abi.NewMethod("checkpoint", "checkpoint", abi.Function, "", false, false, arguments, abi.Arguments{})
 
-	addrs := make([]common.Address, len(m.GetValset().HexAddress))
-
-	for i := range m.GetValset().GetHexAddress() {
-		addrs[i] = common.HexToAddress(m.GetValset().HexAddress[i])
-	}
 	var bytes32 [32]byte
 
 	copy(bytes32[:], orig.GetTurnstoneID())
 
 	bytes, err := arguments.Pack(
-		addrs,
+		slice.Map(m.GetValset().GetValidators(), func(s string) common.Address {
+			return common.HexToAddress(s)
+		}),
 		slice.Map(m.GetValset().GetPowers(), func(a uint64) *big.Int {
 			return big.NewInt(int64(a))
 		}),
 		big.NewInt(int64(m.GetValset().GetValsetID())),
 		bytes32,
 	)
+	bytes = append(method.ID[:], bytes...)
+
 	if err != nil {
 		panic(err)
 	}
@@ -76,6 +76,7 @@ func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte
 		// deadline
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
 	}
+	method := abi.NewMethod("logic_call", "logic_call", abi.Function, "", false, false, arguments, abi.Arguments{})
 
 	bytes, err := arguments.Pack(
 		[]any{
@@ -90,6 +91,7 @@ func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte
 	if err != nil {
 		panic(err)
 	}
+	bytes = append(method.ID[:], bytes...)
 
 	return crypto.Keccak256(bytes)
 }
