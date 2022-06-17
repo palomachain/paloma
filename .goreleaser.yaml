@@ -9,13 +9,15 @@ builds:
       - ledger
     ldflags:
       - -s -w
+      - -X github.com/cosmos/cosmos-sdk/version.Name=paloma
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=palomad
+      - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Tag }}
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .FullCommit }}
     goos:
       - linux
     goarch:
       - amd64
     goamd64:
-      - v1
-      - v2
       - v3
 
 
