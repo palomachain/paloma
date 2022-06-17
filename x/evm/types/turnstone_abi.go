@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/binary"
-	fmt "fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -42,19 +41,6 @@ func (_m *Message_UpdateValset) keccak256(orig *Message, _ uint64) []byte {
 		bytes32,
 	)
 	bytes = append(method.ID[:], bytes...)
-
-	bytes1, _ := arguments.Pack(
-		[]common.Address{
-			common.HexToAddress("0xe4ab6f4d62ba7e0bbc4cf6c5e8153e105108fba9"),
-		},
-		[]*big.Int{
-			big.NewInt(4294967296),
-		},
-		big.NewInt(int64(7)),
-		bytes32,
-	)
-	bytes1 = append(method.ID[:], bytes1...)
-	fmt.Println(common.Bytes2Hex(bytes1), common.Bytes2Hex(crypto.Keccak256(bytes1)))
 
 	if err != nil {
 		panic(err)

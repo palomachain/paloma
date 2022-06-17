@@ -72,13 +72,15 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) AddSmartContractExecutionToConsensus(
 	ctx sdk.Context,
-	chainType string,
-	chainID string,
-	msg *types.ArbitrarySmartContractCall,
+	msg *types.Message,
 ) error {
 	return k.ConsensusKeeper.PutMessageForSigning(
 		ctx,
-		consensustypes.Queue(ConsensusArbitraryContractCall, chainType, chainID),
+		consensustypes.Queue(
+			ConsensusTurnstoneMessage,
+			consensustypes.ChainTypeEVM,
+			msg.ChainID,
+		),
 		msg,
 	)
 }

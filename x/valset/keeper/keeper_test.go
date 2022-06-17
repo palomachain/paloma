@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -73,7 +72,6 @@ func TestRegisterRunner(t *testing.T) {
 				},
 			},
 		)
-		fmt.Println(err)
 		require.ErrorIs(t, err, ErrExternalChainAlreadyRegistered)
 	})
 
