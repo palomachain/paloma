@@ -115,7 +115,7 @@ palomad tx staking create-validator \
 Start it!
 
 ```shell
-MAIN_PEER_DESIGNATION=f64dd167410a242c993648faa6406edf74a7f4b7@testnet.palomaswap.com:26656
+MAIN_PEER_DESIGNATION=0f4411c257bfe7bf191c2c3fd32b385a363487cf@testnet.palomaswap.com:26656
 palomad start --p2p.persistent_peers "$MAIN_PEER_DESIGNATION"
 ```
 
@@ -136,7 +136,7 @@ Restart=always
 RestartSec=5
 WorkingDirectory=~
 ExecStartPre=
-ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers f64dd167410a242c993648faa6406edf74a7f4b7@testnet.palomaswap.com:26656
+ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers 0f4411c257bfe7bf191c2c3fd32b385a363487cf@testnet.palomaswap.com:26656
 ExecReload=
 
 [Install]
