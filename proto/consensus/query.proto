@@ -76,6 +76,7 @@ message MessageWithSignatures {
   uint64 id = 2;
   google.protobuf.Any msg = 3;
   repeated ValidatorSignature signData = 4;
+  bytes bytesToSign = 5;
 }
 
 message QueryMessagesInQueueRequest {

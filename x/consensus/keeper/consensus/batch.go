@@ -107,8 +107,8 @@ func (c BatchQueue) batchQueue(ctx sdk.Context) prefix.Store {
 	return prefix.NewStore(store, []byte("batching:"+c.base.signingQueueKey()))
 }
 
-func (c BatchQueue) AddSignature(ctx sdk.Context, id uint64, publickey []byte, signData *types.SignData) error {
-	return c.base.AddSignature(ctx, id, publickey, signData)
+func (c BatchQueue) AddSignature(ctx sdk.Context, id uint64, signData *types.SignData) error {
+	return c.base.AddSignature(ctx, id, signData)
 }
 
 func (c BatchQueue) Remove(ctx sdk.Context, msgID uint64) error {

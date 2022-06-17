@@ -20,6 +20,7 @@ import (
 const (
 	ConsensusArbitraryContractCall = consensustypes.ConsensusQueueType("evm-arbitrary-smart-contract-call")
 	ConsensusTurnstoneMessage      = consensustypes.ConsensusQueueType("evm-turnstone-message")
+	signaturePrefix                = "\x19Ethereum Signed Message:\n32"
 )
 
 type evmChainTemp struct {
@@ -27,9 +28,11 @@ type evmChainTemp struct {
 	turnstoneID string
 }
 
+var zero32Byte [32]byte
+
 var supportedChainIDs = []evmChainTemp{
-	{"eth-main", "main"},
-	{"ropsten", "second"},
+	{"eth-main", string(zero32Byte[:])},
+	{"ropsten", string(zero32Byte[:])},
 }
 
 var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
@@ -100,7 +103,12 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 	ethVerifySig := func(bz []byte, sig []byte, address []byte) bool {
 		receivedAddr := common.BytesToAddress(address)
-		recoveredPk, err := crypto.Ecrecover(bz, sig)
+
+		bytesToVerify := crypto.Keccak256(append(
+			[]byte(signaturePrefix),
+			bz...,
+		))
+		recoveredPk, err := crypto.Ecrecover(bytesToVerify, sig)
 		if err != nil {
 			return false
 		}
@@ -191,7 +199,7 @@ func transformSnapshotToTurnstoneValset(snapshot *valsettypes.Snapshot, chainID 
 			if ext.GetChainID() == chainID {
 				power := maxPower * (float64(val.ShareCount.Int64()) / float64(totalPower))
 
-				valset.HexAddress = append(valset.HexAddress, ext.Address)
+				valset.Validators = append(valset.Validators, ext.Address)
 				valset.Powers = append(valset.Powers, uint64(power))
 			}
 		}

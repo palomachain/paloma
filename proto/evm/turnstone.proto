@@ -7,7 +7,8 @@ option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 
 message Valset {
-  repeated string hexAddress = 1;
+  // hex addresses on the EVM network
+  repeated string validators = 1;
   repeated uint64 powers = 2;
   uint64 valsetID = 3;
 }

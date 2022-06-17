@@ -222,12 +222,12 @@ func (k Keeper) AddMessageSignature(
 				cq.AddSignature(
 					ctx,
 					msg.Id,
-					publicKey,
 					&types.SignData{
 						ValAddress:             valAddr,
 						Signature:              msg.GetSignature(),
 						ExtraData:              msg.GetExtraData(),
 						ExternalAccountAddress: msg.GetSignedByAddress(),
+						PublicKey:              publicKey,
 					},
 				),
 			)

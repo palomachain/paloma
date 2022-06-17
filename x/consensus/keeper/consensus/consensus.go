@@ -157,7 +157,7 @@ func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignD
 
 	for _, existingSigData := range msg.GetSignData() {
 		if bytes.Equal(existingSigData.PublicKey, signData.PublicKey) {
-			return "lready signed with this key"
+			return fmt.Errorf("TODO: already signed with this key")
 		}
 	}
 
