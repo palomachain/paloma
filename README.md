@@ -80,7 +80,7 @@ palomad keys add "$VALIDATOR" --recover
 Get some funds!
 ```shell
 ADDRESS="$(palomad keys show "$VALIDATOR" -a)"
-JSON=$(jq -n --arg addr "$ADDRESS" '{"denom":"ugrain","address":$addr}') && curl -X POST --header "Content-Type: application/json" --data "$JSON" http://faucet.palomaswap.com:8080/claim
+JSON=$(jq -n --arg addr "$ADDRESS" '{"denom":"ugrain","address":$addr}') && curl -X POST --header "Content-Type: application/json" --data "$JSON" https://backend.faucet.palomaswap.com/claim
 ```
 
 We can verify the new funds have been deposited.
