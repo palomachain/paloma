@@ -93,10 +93,10 @@ Stake your funds and create our validator.
 MAIN_VALIDATOR_NODE="tcp://testnet.palomaswap.com:26657"
 CHAIN_ID="paloma-testnet-4"
 DEFAULT_GAS_AMOUNT="10000000"
-VALIDATOR_STAKE_AMOUNT=100000grain
+VALIDATOR_STAKE_AMOUNT=100000000000ugrain
 PUBKEY="$(palomad tendermint show-validator)"
 palomad tx staking create-validator \
-      --fees 10000grain \
+      --fees 10000000000ugrain \
       --from="$VALIDATOR" \
       --amount="$VALIDATOR_STAKE_AMOUNT" \
       --pubkey="$PUBKEY" \
@@ -162,7 +162,7 @@ service palomad status
 ```shell
 CONTRACT=<contract.wasm>
 VALIDATOR="$(palomad keys list --list-names | head -n1)"
-palomad tx wasm store "$CONTRACT" --from "$VALIDATOR" --broadcast-mode block -y --gas auto --fees 3000grain
+palomad tx wasm store "$CONTRACT" --from "$VALIDATOR" --broadcast-mode block -y --gas auto --fees 3000000000ugrain
 ```
 
 ## Setting up a new private testnet
