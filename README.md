@@ -178,7 +178,7 @@ apt install jq
 Set up the chain validator.
 
 ```shell
-PALOMA_CMD=palomad \
+CHAIN_ID=<choose a chain id> \
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-chain-validator.sh)"
 ```
 

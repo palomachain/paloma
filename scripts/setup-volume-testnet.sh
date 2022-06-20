@@ -7,8 +7,19 @@ if ! which jq > /dev/null; then
   exit 1
 fi
 
-CHAIN_ID="paloma"
+if [[ -z "${CHAIN_ID:-}" ]]; then
+  echo 'CHAIN_ID required'
+  exit 1
+fi
+
 VALIDATOR_STAKE_AMOUNT=100000000grain
+
+jq-i() {
+  edit="$1"
+  f="$2"
+  jq "$edit" "$f" > "${f}.tmp"
+  mv "${f}.tmp" "$f"
+}
 
 palomad init my_validator --chain-id "$CHAIN_ID"
 
@@ -16,8 +27,8 @@ pushd ~/.paloma/config/
 sed -i 's/^keyring-backend = ".*"/keyring-backend = "test"/' client.toml
 sed -i 's/^minimum-gas-prices = ".*"/minimum-gas-prices = "0.001grain"/' app.toml
 sed -i 's/^laddr = ".*:26657"/laddr = "tcp:\/\/0.0.0.0:26657"/' config.toml
-jq ".chain_id = \"${CHAIN_ID}\"" genesis.json > genesis.json.tmp && mv genesis.json.tmp genesis.json
-jq 'walk(if type == "string" and .. == "stake" then "grain" else . end)' genesis.json > genesis.json.tmp && mv genesis.json.tmp genesis.json
+jq-i ".chain_id = \"${CHAIN_ID}\"" genesis.json
+jq-i 'walk(if type == "string" and .. == "stake" then "grain" else . end)' genesis.json
 popd
 
 name="chase"
