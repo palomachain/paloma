@@ -31,9 +31,13 @@ type evmChainTemp struct {
 	turnstoneID string
 }
 
+func (e evmChainTemp) ChainID() string {
+	return e.chainID
+}
+
 var zero32Byte [32]byte
 
-var supportedChainIDs = []evmChainTemp{
+var SupportedChainIDs = []evmChainTemp{
 	{"eth-main", string(zero32Byte[:])},
 	{"ropsten", string(zero32Byte[:])},
 }
@@ -133,7 +137,7 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 		return receivedAddr.Hex() == recoveredAddr.Hex()
 	}
 
-	for _, chain := range supportedChainIDs {
+	for _, chain := range SupportedChainIDs {
 		adder.AddConcencusQueueType(
 			false,
 			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chain.chainID),
@@ -164,7 +168,7 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 }
 
 func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
-	for _, chain := range supportedChainIDs {
+	for _, chain := range SupportedChainIDs {
 		valset := transformSnapshotToTurnstoneValset(snapshot, chain.chainID)
 
 		k.ConsensusKeeper.PutMessageForSigning(

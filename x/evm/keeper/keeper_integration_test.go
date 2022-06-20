@@ -15,6 +15,7 @@ import (
 	"github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/testutil/rand"
 	"github.com/palomachain/paloma/testutil/sample"
+	"github.com/palomachain/paloma/util/slice"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -122,4 +123,39 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		require.NoError(t, err)
 	}
 
+}
+
+func TestOnSnapshotBuilt(t *testing.T) {
+	a := app.NewTestApp(t, false)
+	ctx := a.NewContext(false, tmproto.Header{
+		Height: 5,
+	})
+
+	validators := genValidators(t, 25, 25000)
+	for _, val := range validators {
+		a.StakingKeeper.SetValidator(ctx, val)
+	}
+
+	var supportedChainIDs []string
+	for _, c := range keeper.SupportedChainIDs {
+		supportedChainIDs = append(supportedChainIDs, c.ChainID())
+	}
+
+	require.Empty(t, slice.Filter(supportedChainIDs, func(chainID string) bool {
+		queue := consensustypes.Queue(keeper.ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chainID)
+		msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
+		require.NoError(t, err)
+		return len(msgs) > 0
+	}))
+
+	snapshot, err := a.ValsetKeeper.TriggerSnapshotBuild(ctx)
+	require.NoError(t, err)
+	a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
+
+	require.Len(t, slice.Filter(supportedChainIDs, func(chainID string) bool {
+		queue := consensustypes.Queue(keeper.ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chainID)
+		msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
+		require.NoError(t, err)
+		return len(msgs) > 0
+	}), 2)
 }

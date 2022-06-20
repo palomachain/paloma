@@ -141,14 +141,17 @@ func (k Keeper) RemoveExternalChainInfo(ctx sdk.Context) {}
 
 // TriggerSnapshotBuild creates the snapshot of currently active validators that are
 // active and registered as conductors.
-func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) {
+func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
 	snapshot, err := k.createSnapshot(ctx)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+
 	for _, listener := range k.SnapshotListeners {
 		listener.OnSnapshotBuilt(ctx, snapshot)
 	}
+
+	return snapshot, err
 }
 
 // createSnapshot builds a current snapshot of validators.
