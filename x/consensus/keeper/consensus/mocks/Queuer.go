@@ -16,13 +16,13 @@ type Queuer struct {
 	mock.Mock
 }
 
-// AddSignature provides a mock function with given fields: ctx, id, publickey, signData
-func (_m *Queuer) AddSignature(ctx types.Context, id uint64, publickey []byte, signData *consensustypes.SignData) error {
-	ret := _m.Called(ctx, id, publickey, signData)
+// AddSignature provides a mock function with given fields: ctx, id, signData
+func (_m *Queuer) AddSignature(ctx types.Context, id uint64, signData *consensustypes.SignData) error {
+	ret := _m.Called(ctx, id, signData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, uint64, []byte, *consensustypes.SignData) error); ok {
-		r0 = rf(ctx, id, publickey, signData)
+	if rf, ok := ret.Get(0).(func(types.Context, uint64, *consensustypes.SignData) error); ok {
+		r0 = rf(ctx, id, signData)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -82,9 +82,10 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	sig := &types.SignData{
 		ValAddress: sdk.ValAddress("bob"),
 		Signature:  []byte(`custom signature`),
+		PublicKey:  []byte("it does not matter"),
 	}
 
-	cq.AddSignature(ctx, msgs[0].GetId(), []byte("does not matter"), sig)
+	cq.AddSignature(ctx, msgs[0].GetId(), sig)
 
 	t.Run("getting all messages should still return one", func(t *testing.T) {
 		var err error

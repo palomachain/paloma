@@ -21,17 +21,13 @@ func (k msgServer) SubmitNewJob(goCtx context.Context, msg *types.MsgSubmitNewJo
 
 	err := k.AddSmartContractExecutionToConsensus(
 		ctx,
-		&types.Message{
-			ChainID:     msg.ChainID,
-			TurnstoneID: string(zero32Byte[:]),
-			Action: &types.Message_SubmitLogicCall{
-				SubmitLogicCall: &types.SubmitLogicCall{
-					HexContractAddress: msg.GetHexSmartContractAddress(),
-					Payload:            common.Hex2Bytes(msg.GetHexPayload()),
-					Abi:                []byte(msg.GetAbi()),
-					Deadline:           ctx.BlockTime().UTC().Add(5 * time.Minute).Unix(),
-				},
-			},
+		msg.GetChainID(),
+		string(zero32Byte[:]),
+		&types.SubmitLogicCall{
+			HexContractAddress: msg.GetHexSmartContractAddress(),
+			Payload:            common.Hex2Bytes(msg.GetHexPayload()),
+			Abi:                []byte(msg.GetAbi()),
+			Deadline:           ctx.BlockTime().UTC().Add(5 * time.Minute).Unix(),
 		},
 	)
 

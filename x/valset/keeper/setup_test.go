@@ -52,7 +52,6 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		memStoreKey,
 		paramsSubspace,
 		ms.StakingKeeper,
-		nil,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)

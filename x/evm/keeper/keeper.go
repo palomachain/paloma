@@ -18,6 +18,9 @@ import (
 )
 
 const (
+	maxPower = 1 << 32
+)
+const (
 	ConsensusArbitraryContractCall = consensustypes.ConsensusQueueType("evm-arbitrary-smart-contract-call")
 	ConsensusTurnstoneMessage      = consensustypes.ConsensusQueueType("evm-turnstone-message")
 	signaturePrefix                = "\x19Ethereum Signed Message:\n32"
@@ -72,16 +75,24 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) AddSmartContractExecutionToConsensus(
 	ctx sdk.Context,
-	msg *types.Message,
+	chainID,
+	turnstoneID string,
+	logicCall *types.SubmitLogicCall,
 ) error {
 	return k.ConsensusKeeper.PutMessageForSigning(
 		ctx,
 		consensustypes.Queue(
 			ConsensusTurnstoneMessage,
 			consensustypes.ChainTypeEVM,
-			msg.ChainID,
+			chainID,
 		),
-		msg,
+		&types.Message{
+			ChainID:     chainID,
+			TurnstoneID: turnstoneID,
+			Action: &types.Message_SubmitLogicCall{
+				SubmitLogicCall: logicCall,
+			},
+		},
 	)
 }
 
@@ -151,10 +162,6 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 	}
 
 }
-
-const (
-	maxPower = 1 << 32
-)
 
 func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
 	for _, chain := range supportedChainIDs {
