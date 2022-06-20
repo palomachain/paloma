@@ -44,7 +44,7 @@ N/A
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.2.1-prealpha/paloma_0.2.1-prealpha_Linux_x86_64v3.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.2.3-prealpha/paloma_0.2.3-prealpha_Linux_x86_64v3.tar.gz | \
 sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
@@ -115,7 +115,7 @@ palomad tx staking create-validator \
 Start it!
 
 ```shell
-MAIN_PEER_DESIGNATION=0f4411c257bfe7bf191c2c3fd32b385a363487cf@testnet.palomaswap.com:26656
+MAIN_PEER_DESIGNATION=175ccd9b448390664ea121427aab20138cc8fcec@testnet.palomaswap.com:26656
 palomad start --p2p.persistent_peers "$MAIN_PEER_DESIGNATION"
 ```
 
@@ -178,8 +178,8 @@ apt install jq
 Set up the chain validator.
 
 ```shell
-CHAIN_ID=<choose a chain id> \
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-chain-validator.sh)"
+CHAIN_ID=paloma-iona \
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-volume-testnet.sh)"
 ```
 
 We should now see an error free execution steadily increasing chain depth.
