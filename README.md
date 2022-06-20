@@ -91,7 +91,7 @@ palomad query bank balances --node tcp://testnet.palomaswap.com:26657 "$ADDRESS"
 Stake your funds and create our validator.
 ```shell
 MAIN_VALIDATOR_NODE="tcp://testnet.palomaswap.com:26657"
-CHAIN_ID="paloma"
+CHAIN_ID="paloma-testnet-4"
 DEFAULT_GAS_AMOUNT="10000000"
 VALIDATOR_STAKE_AMOUNT=100000grain
 PUBKEY="$(palomad tendermint show-validator)"
@@ -136,7 +136,7 @@ Restart=always
 RestartSec=5
 WorkingDirectory=~
 ExecStartPre=
-ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers 0f4411c257bfe7bf191c2c3fd32b385a363487cf@testnet.palomaswap.com:26656
+ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers 175ccd9b448390664ea121427aab20138cc8fcec@testnet.palomaswap.com:26656
 ExecReload=
 
 [Install]
