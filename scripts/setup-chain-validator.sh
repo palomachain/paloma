@@ -13,10 +13,10 @@ if ! which jq > /dev/null; then
   exit 1
 fi
 
-CHAIN_ID="paloma"
+CHAIN_ID="paloma-testnet-4"
 
 VALIDATOR_ACCOUNT_NAME="my_validator"
-VALIDATOR_STAKE_AMOUNT="1000000grain"
+VALIDATOR_STAKE_AMOUNT="1000000ugrain"
 
 PALOMA="${PALOMA_CMD:-go run ./cmd/palomad}"
 
@@ -39,6 +39,6 @@ fi
 
 validator_address="$($PALOMA keys show "$VALIDATOR_ACCOUNT_NAME" -a)"
 
-$PALOMA add-genesis-account "$validator_address" 100000000000000grain
+$PALOMA add-genesis-account "$validator_address" 100000000000000ugrain
 $PALOMA gentx "$VALIDATOR_ACCOUNT_NAME" "$VALIDATOR_STAKE_AMOUNT" --chain-id "$CHAIN_ID"
 $PALOMA collect-gentxs
