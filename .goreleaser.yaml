@@ -17,8 +17,6 @@ builds:
       - linux
     goarch:
       - amd64
-    goamd64:
-      - v3
 
 
 archives:
@@ -32,13 +30,12 @@ archives:
       - LICENSE
       - README.md
 
-release:
-  name_template: "paloma-{{.Os}-{{.Arch}}}-v{{.Version}}"
-
 checksum:
   name_template: 'checksums.txt'
+
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
+
 changelog:
   sort: asc
   filters:
