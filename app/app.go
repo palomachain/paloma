@@ -143,7 +143,7 @@ var (
 	// and genesis verification.
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
-		GenutilModule{},
+		genutil.AppModuleBasic{},
 		BankModule{},
 		capability.AppModuleBasic{},
 		StakingModule{},
@@ -152,7 +152,7 @@ var (
 		GovModule{gov.NewAppModuleBasic(getGovProposalHandlers()...)},
 		params.AppModuleBasic{},
 		CrisisModule{},
-		SlashingModule{},
+		slashing.AppModule{},
 		feegrantmodule.AppModuleBasic{},
 		ibc.AppModuleBasic{},
 		upgrade.AppModuleBasic{},

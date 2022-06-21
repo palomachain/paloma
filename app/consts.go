@@ -6,5 +6,5 @@ const (
 	BondDenom = "ugrain"
 
 	// DisplayDenom defines the name, symbol, and display value of the paloma token.
-	DisplayDenom = "GRAIN"
+	DisplayDenom = "grain"
 )

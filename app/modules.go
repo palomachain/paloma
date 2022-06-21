@@ -2,24 +2,18 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
-	"time"
+	"strings"
 
-	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -37,13 +31,12 @@ func (BankModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 		Base:        BondDenom,
 		Name:        DisplayDenom,
 		Display:     DisplayDenom,
-		Symbol:      DisplayDenom,
+		Symbol:      strings.ToUpper(DisplayDenom),
 		DenomUnits: []*banktypes.DenomUnit{
 			{
 				Denom:    BondDenom,
 				Exponent: 0,
 				Aliases: []string{
-					"ugrain",
 					"micrograin",
 				},
 			},
@@ -117,66 +110,4 @@ func (GovModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	genState.DepositParams.MinDeposit = minDeposit
 
 	return cdc.MustMarshalJSON(genState)
-}
-
-// SlashingModule defines a custom wrapper around the x/slashing module's
-// AppModuleBasic implementation to provide custom default genesis state.
-type SlashingModule struct {
-	slashing.AppModuleBasic
-}
-
-// DefaultGenesis returns custom Paloma x/slashing module genesis state.
-func (SlashingModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	genState := slashingtypes.DefaultGenesisState()
-	genState.Params.SignedBlocksWindow = 10000
-	genState.Params.DowntimeJailDuration = 24 * time.Hour
-
-	return cdc.MustMarshalJSON(genState)
-}
-
-// GenutilModule defines a custom wrapper around the x/genutil module's
-// AppModuleBasic implementation to provide custom genesis state validation.
-type GenutilModule struct {
-	genutil.AppModuleBasic
-}
-
-// ValidateGenesis validates the x/genutil genesis state.
-func (GenutilModule) ValidateGenesis(
-	cdc codec.JSONCodec,
-	encCfg client.TxEncodingConfig,
-	bz json.RawMessage,
-) error {
-	var genState genutiltypes.GenesisState
-	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %w", genutiltypes.ModuleName, err)
-	}
-
-	txJSONDecoder := encCfg.TxJSONDecoder()
-
-	for i, genTx := range genState.GenTxs {
-		var tx sdk.Tx
-
-		tx, err := txJSONDecoder(genTx)
-		if err != nil {
-			return err
-		}
-
-		msgs := tx.GetMsgs()
-		if n := len(msgs); n != 2 {
-			return fmt.Errorf(
-				"gentx %d contains invalid number of messages; expected: 2; got: %d",
-				i, n,
-			)
-		}
-
-		if _, ok := msgs[0].(*stakingtypes.MsgCreateValidator); !ok {
-			return fmt.Errorf(
-				"gentx %d contains invalid message at index 0; expected: %T; got: %T",
-				i, &stakingtypes.MsgCreateValidator{}, msgs[0],
-			)
-		}
-
-	}
-
-	return nil
 }
