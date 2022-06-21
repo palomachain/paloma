@@ -66,31 +66,39 @@ func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte
 	arguments := abi.Arguments{
 		// arguments
 		{Type: whoops.Must(abi.NewType("tuple", "", []abi.ArgumentMarshaling{
-			{Type: "address"},
-			{Type: "bytes"},
+			{Name: "address", Type: "address"},
+			{Name: "payload", Type: "bytes"},
 		}))},
 		// message id
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
 		// turnstone id
-		{Type: whoops.Must(abi.NewType("bytes", "", nil))},
+		{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
 		// deadline
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
 	}
+
 	method := abi.NewMethod("logic_call", "logic_call", abi.Function, "", false, false, arguments, abi.Arguments{})
+	var bytes32 [32]byte
+
+	copy(bytes32[:], orig.GetTurnstoneID())
 
 	bytes, err := arguments.Pack(
-		[]any{
+		struct {
+			Address common.Address
+			Payload []byte
+		}{
 			common.HexToAddress(m.GetHexContractAddress()),
 			m.GetPayload(),
 		},
-		new(big.Int).SetInt64(int64(nonce)).Bytes(),
-		orig.GetTurnstoneID(),
-		m.GetDeadline(),
+		new(big.Int).SetInt64(int64(nonce)),
+		bytes32,
+		big.NewInt(m.GetDeadline()),
 	)
 
 	if err != nil {
 		panic(err)
 	}
+
 	bytes = append(method.ID[:], bytes...)
 
 	return crypto.Keccak256(bytes)

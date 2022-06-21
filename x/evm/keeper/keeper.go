@@ -18,6 +18,9 @@ import (
 )
 
 const (
+	maxPower = 1 << 32
+)
+const (
 	ConsensusArbitraryContractCall = consensustypes.ConsensusQueueType("evm-arbitrary-smart-contract-call")
 	ConsensusTurnstoneMessage      = consensustypes.ConsensusQueueType("evm-turnstone-message")
 	signaturePrefix                = "\x19Ethereum Signed Message:\n32"
@@ -28,9 +31,13 @@ type evmChainTemp struct {
 	turnstoneID string
 }
 
+func (e evmChainTemp) ChainID() string {
+	return e.chainID
+}
+
 var zero32Byte [32]byte
 
-var supportedChainIDs = []evmChainTemp{
+var SupportedChainIDs = []evmChainTemp{
 	{"eth-main", string(zero32Byte[:])},
 	{"ropsten", string(zero32Byte[:])},
 }
@@ -72,16 +79,24 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) AddSmartContractExecutionToConsensus(
 	ctx sdk.Context,
-	msg *types.Message,
+	chainID,
+	turnstoneID string,
+	logicCall *types.SubmitLogicCall,
 ) error {
 	return k.ConsensusKeeper.PutMessageForSigning(
 		ctx,
 		consensustypes.Queue(
 			ConsensusTurnstoneMessage,
 			consensustypes.ChainTypeEVM,
-			msg.ChainID,
+			chainID,
 		),
-		msg,
+		&types.Message{
+			ChainID:     chainID,
+			TurnstoneID: turnstoneID,
+			Action: &types.Message_SubmitLogicCall{
+				SubmitLogicCall: logicCall,
+			},
+		},
 	)
 }
 
@@ -122,7 +137,7 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 		return receivedAddr.Hex() == recoveredAddr.Hex()
 	}
 
-	for _, chain := range supportedChainIDs {
+	for _, chain := range SupportedChainIDs {
 		adder.AddConcencusQueueType(
 			false,
 			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chain.chainID),
@@ -152,12 +167,8 @@ func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
 
 }
 
-const (
-	maxPower = 1 << 32
-)
-
 func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
-	for _, chain := range supportedChainIDs {
+	for _, chain := range SupportedChainIDs {
 		valset := transformSnapshotToTurnstoneValset(snapshot, chain.chainID)
 
 		k.ConsensusKeeper.PutMessageForSigning(
