@@ -64,8 +64,8 @@ palomad init "$MONIKER"
 Copy the configs of the testnet we wish to connect to
 
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-4/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-4/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-5/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-5/addrbook.json
 ```
 
 Next you can generate a new set of keys to the new machine, or reuse an existing key.
@@ -91,12 +91,12 @@ palomad query bank balances --node tcp://testnet.palomaswap.com:26657 "$ADDRESS"
 Stake your funds and create our validator.
 ```shell
 MAIN_VALIDATOR_NODE="tcp://164.90.134.139:26656"
-CHAIN_ID="paloma-testnet-4"
+CHAIN_ID="paloma-testnet-5"
 DEFAULT_GAS_AMOUNT="10000000"
-VALIDATOR_STAKE_AMOUNT=100000grain
+VALIDATOR_STAKE_AMOUNT=100000000000ugrain
 PUBKEY="$(palomad tendermint show-validator)"
 palomad tx staking create-validator \
-      --fees 10000grain \
+      --fees 10000000000ugrain \
       --from="$VALIDATOR" \
       --amount="$VALIDATOR_STAKE_AMOUNT" \
       --pubkey="$PUBKEY" \
@@ -162,7 +162,7 @@ service palomad status
 ```shell
 CONTRACT=<contract.wasm>
 VALIDATOR="$(palomad keys list --list-names | head -n1)"
-palomad tx wasm store "$CONTRACT" --from "$VALIDATOR" --broadcast-mode block -y --gas auto --fees 3000grain
+palomad tx wasm store "$CONTRACT" --from "$VALIDATOR" --broadcast-mode block -y --gas auto --fees 3000000000ugrain
 ```
 
 ## Setting up a new private testnet
