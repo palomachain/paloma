@@ -41,6 +41,13 @@ func (BankModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 				},
 			},
 			{
+				Denom:    MilliDenom,
+				Exponent: 3,
+				Aliases: []string{
+					"milligrain",
+				},
+			},
+			{
 				Denom:    DisplayDenom,
 				Exponent: 6,
 				Aliases:  []string{},
