@@ -44,7 +44,7 @@ N/A
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.2.3-prealpha/paloma_0.2.3-prealpha_Linux_x86_64v3.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.2.4-prealpha/paloma_0.2.4-prealpha_Linux_x86_64.tar.gz | \
 sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
@@ -90,7 +90,7 @@ palomad query bank balances --node tcp://testnet.palomaswap.com:26657 "$ADDRESS"
 
 Stake your funds and create our validator.
 ```shell
-MAIN_VALIDATOR_NODE="tcp://testnet.palomaswap.com:26657"
+MAIN_VALIDATOR_NODE="tcp://164.90.134.139:26656"
 CHAIN_ID="paloma-testnet-4"
 DEFAULT_GAS_AMOUNT="10000000"
 VALIDATOR_STAKE_AMOUNT=100000grain
@@ -115,7 +115,7 @@ palomad tx staking create-validator \
 Start it!
 
 ```shell
-MAIN_PEER_DESIGNATION=175ccd9b448390664ea121427aab20138cc8fcec@testnet.palomaswap.com:26656
+MAIN_PEER_DESIGNATION=e1efddf3b39f1953590f8264d30d71d1a1313061@164.90.134.139:26656
 palomad start --p2p.persistent_peers "$MAIN_PEER_DESIGNATION"
 ```
 
@@ -136,7 +136,7 @@ Restart=always
 RestartSec=5
 WorkingDirectory=~
 ExecStartPre=
-ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers 175ccd9b448390664ea121427aab20138cc8fcec@testnet.palomaswap.com:26656
+ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers e1efddf3b39f1953590f8264d30d71d1a1313061@164.90.134.139:26656
 ExecReload=
 
 [Install]
@@ -178,7 +178,8 @@ apt install jq
 Set up the chain validator.
 
 ```shell
-CHAIN_ID=paloma-iona \
+CHAIN_ID=paloma-testnet-5 \
+MNEMONIC="$(cat secrets.mn)"
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-volume-testnet.sh)"
 ```
 
