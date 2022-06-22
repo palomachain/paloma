@@ -90,7 +90,6 @@ palomad query bank balances --node tcp://testnet.palomaswap.com:26657 "$ADDRESS"
 
 Stake your funds and create our validator.
 ```shell
-MAIN_VALIDATOR_NODE="tcp://164.90.134.139:26656"
 CHAIN_ID="paloma-testnet-5"
 DEFAULT_GAS_AMOUNT="10000000"
 VALIDATOR_STAKE_AMOUNT=100000000000ugrain
@@ -107,7 +106,6 @@ palomad tx staking create-validator \
       --commission-max-change-rate="0.05" \
       --min-self-delegation="100" \
       --gas=$DEFAULT_GAS_AMOUNT \
-      --node "$MAIN_VALIDATOR_NODE" \
       --yes \
       -b block
 ```
@@ -115,8 +113,7 @@ palomad tx staking create-validator \
 Start it!
 
 ```shell
-MAIN_PEER_DESIGNATION=e1efddf3b39f1953590f8264d30d71d1a1313061@164.90.134.139:26656
-palomad start --p2p.persistent_peers "$MAIN_PEER_DESIGNATION"
+palomad start
 ```
 
 #### Running with `systemd`
@@ -132,18 +129,16 @@ ConditionPathExists=/usr/local/bin/palomad
 
 [Service]
 Type=simple
+LimitNOFILE=65535
 Restart=always
 RestartSec=5
 WorkingDirectory=~
 ExecStartPre=
-ExecStart=/usr/local/bin/palomad start --p2p.persistent_peers e1efddf3b39f1953590f8264d30d71d1a1313061@164.90.134.139:26656
+ExecStart=/usr/local/bin/palomad start
 ExecReload=
 
 [Install]
 WantedBy=multi-user.target
-
-[Service]
-LimitNOFILE=65535
 EOT
 ```
 
