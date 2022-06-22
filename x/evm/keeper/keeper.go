@@ -6,6 +6,7 @@ import (
 	"sort"
 	"time"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	wasmutil "github.com/palomachain/paloma/util/wasm"
@@ -120,6 +121,11 @@ type executeEVMFromCosmWasm struct {
 }
 
 func (e executeEVMFromCosmWasm) valid() bool {
+	zero := executeEVMFromCosmWasm{}
+	if e == zero {
+		return false
+	}
+	// todo: add more in the future
 	return true
 }
 
@@ -129,6 +135,9 @@ func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 		err := json.Unmarshal(msg.Custom, &executeMsg)
 		if err != nil {
 			return nil, nil, err
+		}
+		if !executeMsg.valid() {
+			return nil, nil, wasmtypes.ErrUnknownMsg
 		}
 
 		err = k.AddSmartContractExecutionToConsensus(ctx, executeMsg.TargetContractInfo.ChainID, executeMsg.TargetContractInfo.CompassID, &types.SubmitLogicCall{
