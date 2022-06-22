@@ -121,7 +121,6 @@ func (e executeEVMFromCosmWasm) valid() bool {
 
 func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 	return func(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, error) {
-		fmt.Println(string(msg.Custom))
 		var executeMsg executeEVMFromCosmWasm
 		err := json.Unmarshal(msg.Custom, &executeMsg)
 		if err != nil {
