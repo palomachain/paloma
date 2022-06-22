@@ -1,15 +1,19 @@
 package keeper
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	wasmutil "github.com/palomachain/paloma/util/wasm"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/tendermint/tendermint/libs/log"
 
+	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -98,6 +102,46 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 			},
 		},
 	)
+}
+
+type executeEVMFromCosmWasm struct {
+	SmartContractABI     string `json:"smart_contract_abi"`
+	SmartContractAddress string `json:"smart_contract_address"`
+
+	TargetChainID string `json:"target_chain_id"`
+	CompassID     string `json:"compass_id"`
+
+	Method  string `json:"method"`
+	Payload string `json:"payload"`
+}
+
+func (e executeEVMFromCosmWasm) valid() bool {
+	return true
+}
+
+func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
+	return func(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, error) {
+		fmt.Println(string(msg.Custom))
+		var executeMsg executeEVMFromCosmWasm
+		err := json.Unmarshal(msg.Custom, &executeMsg)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		err = k.AddSmartContractExecutionToConsensus(ctx, executeMsg.TargetChainID, executeMsg.CompassID, &types.SubmitLogicCall{
+			HexContractAddress: executeMsg.SmartContractAddress,
+			Payload:            []byte(executeMsg.Payload),
+			Deadline:           ctx.BlockTime().UTC().Add(5 * time.Minute).Unix(),
+			Abi:                []byte(executeMsg.SmartContractABI),
+		})
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return nil, nil, nil
+	}
+
 }
 
 // func (k Keeper) OnSchedulerMessageProcess(ctx sdk.Context, rawMsg any) (processed bool, err error) {
