@@ -53,12 +53,12 @@ func (k Keeper) getConsensusQueue(queueTypeName string) (consensus.Queuer, error
 func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg) error {
 	cq, err := k.getConsensusQueue(queueTypeName)
 	if err != nil {
-		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
+		k.Logger(ctx).Error("error while getting consensus queue", "error", err)
 		return err
 	}
 	err = cq.Put(ctx, msg)
 	if err != nil {
-		k.Logger(ctx).Error("error while putting message into queue: %s", err)
+		k.Logger(ctx).Error("error while putting message into queue", "error", err)
 		return err
 	}
 	return nil

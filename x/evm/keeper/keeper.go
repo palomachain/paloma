@@ -1,15 +1,20 @@
 package keeper
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
+	"time"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	wasmutil "github.com/palomachain/paloma/util/wasm"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/tendermint/tendermint/libs/log"
 
+	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -98,6 +103,57 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 			},
 		},
 	)
+}
+
+// {"target_contract_info":{"method":"foo","chain_id":"abc","compass_id":"abc","contract_address":"0xabc","smart_contract_abi":"abc"},"paloma_address":"paloma1sp6yeu2cdemlh0jpterpe3as9mvx36ck6ys0ce","eth_address":[0,0,0,0,0,0,0,0,0,0,0,0,22,248,182,92,183,148,210,0,134,193,229,48,158,88,192,76,57,198,237,233]}
+type executeEVMFromCosmWasm struct {
+	TargetContractInfo struct {
+		Method               string `json:"method"`
+		ChainID              string `json:"chain_id"`
+		SmartContractAddress string `json:"contract_address"`
+		SmartContractABI     string `json:"smart_contract_abi"`
+
+		CompassID string `json:"compass_id"`
+	} `json:"target_contract_info"`
+
+	// TODO: we need to have this as a payload
+	Payload string `json:"payload"`
+}
+
+func (e executeEVMFromCosmWasm) valid() bool {
+	zero := executeEVMFromCosmWasm{}
+	if e == zero {
+		return false
+	}
+	// todo: add more in the future
+	return true
+}
+
+func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
+	return func(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, error) {
+		var executeMsg executeEVMFromCosmWasm
+		err := json.Unmarshal(msg.Custom, &executeMsg)
+		if err != nil {
+			return nil, nil, err
+		}
+		if !executeMsg.valid() {
+			return nil, nil, wasmtypes.ErrUnknownMsg
+		}
+
+		err = k.AddSmartContractExecutionToConsensus(ctx, executeMsg.TargetContractInfo.ChainID, executeMsg.TargetContractInfo.CompassID, &types.SubmitLogicCall{
+			HexContractAddress: executeMsg.TargetContractInfo.SmartContractAddress,
+			Payload:            []byte(executeMsg.Payload),
+			Deadline:           ctx.BlockTime().UTC().Add(5 * time.Minute).Unix(),
+			Abi:                []byte(executeMsg.TargetContractInfo.SmartContractABI),
+		})
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return nil, nil, nil
+	}
+
 }
 
 // func (k Keeper) OnSchedulerMessageProcess(ctx sdk.Context, rawMsg any) (processed bool, err error) {
