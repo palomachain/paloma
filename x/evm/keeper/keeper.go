@@ -105,6 +105,27 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	)
 }
 
+func (k Keeper) addUploadSmartContractToConsensus(
+	ctx sdk.Context,
+	chainID string,
+	upload *types.UploadSmartContract,
+) error {
+	return k.ConsensusKeeper.PutMessageForSigning(
+		ctx,
+		consensustypes.Queue(
+			ConsensusTurnstoneMessage,
+			consensustypes.ChainTypeEVM,
+			chainID,
+		),
+		&types.Message{
+			ChainID: chainID,
+			Action: &types.Message_UploadSmartContract{
+				UploadSmartContract: upload,
+			},
+		},
+	)
+}
+
 // {"target_contract_info":{"method":"foo","chain_id":"abc","compass_id":"abc","contract_address":"0xabc","smart_contract_abi":"abc"},"paloma_address":"paloma1sp6yeu2cdemlh0jpterpe3as9mvx36ck6ys0ce","eth_address":[0,0,0,0,0,0,0,0,0,0,0,0,22,248,182,92,183,148,210,0,134,193,229,48,158,88,192,76,57,198,237,233]}
 type executeEVMFromCosmWasm struct {
 	TargetContractInfo struct {

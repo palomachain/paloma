@@ -26,6 +26,8 @@ message UpdateValset {
 
 message UploadSmartContract {
   bytes bytecode = 1;
+  bytes abi = 2;
+  bytes constructorInput = 3;
 }
 
 

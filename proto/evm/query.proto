@@ -18,7 +18,7 @@ service Query {
   }
   // Queries a list of GetValsetByID items.
 	rpc GetValsetByID(QueryGetValsetByIDRequest) returns (QueryGetValsetByIDResponse) {
-		option (google.api.http).get = "/palomachain/paloma/evm/get_valset_by_id/{valsettID}";
+		option (google.api.http).get = "/palomachain/paloma/evm/get_valset_by_id/{valsetID}";
 	}
 
 // this line is used by starport scaffolding # 2
