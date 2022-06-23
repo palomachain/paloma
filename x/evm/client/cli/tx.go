@@ -31,7 +31,8 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdSubmitNewJob())
-	// this line is used by starport scaffolding # 1
+	cmd.AddCommand(CmdUploadNewSmartContractTemp())
+// this line is used by starport scaffolding # 1
 
 	return cmd
 }
