@@ -12,6 +12,11 @@ if [[ -z "${CHAIN_ID:-}" ]]; then
   exit 1
 fi
 
+if [[ -z "${MNEMONIC:-}" ]]; then
+  echo 'MNEMONIC required'
+  exit 1
+fi
+
 VALIDATOR_STAKE_AMOUNT=100000000000000ugrain
 GENESIS_AMOUNT=2500000000000000ugrain
 FAUCET_AMOUNT=500000000000000ugrain
