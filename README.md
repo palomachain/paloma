@@ -77,19 +77,22 @@ palomad keys add "$VALIDATOR"
 palomad keys add "$VALIDATOR" --recover
 ```
 
-Get some funds!
-```shell
-ADDRESS="$(palomad keys show "$VALIDATOR" -a)"
-JSON=$(jq -n --arg addr "$ADDRESS" '{"denom":"ugrain","address":$addr}') && curl -X POST --header "Content-Type: application/json" --data "$JSON" https://backend.faucet.palomaswap.com/claim
-```
+Head over to https://faucet.palomaswap.com/ and get some funds!
 
 We can verify the new funds have been deposited.
 ```shell
 palomad query bank balances --node tcp://testnet.palomaswap.com:26657 "$ADDRESS"
 ```
 
-Stake your funds and create our validator.
+And start the node!
 ```shell
+palomad start
+```
+
+If desired we can stake our funds and create a validator.
+```shell
+MONIKER="$(hostname)"
+VALIDATOR="$(palomad keys list --list-names | head -n1)"
 CHAIN_ID="paloma-testnet-5"
 DEFAULT_GAS_AMOUNT="10000000"
 VALIDATOR_STAKE_AMOUNT=100000000000ugrain
@@ -108,12 +111,6 @@ palomad tx staking create-validator \
       --gas=$DEFAULT_GAS_AMOUNT \
       --yes \
       -b block
-```
-
-Start it!
-
-```shell
-palomad start
 ```
 
 #### Running with `systemd`
