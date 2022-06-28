@@ -17,10 +17,6 @@ if [[ -z "${MNEMONIC:-}" ]]; then
   exit 1
 fi
 
-VALIDATOR_STAKE_AMOUNT=100000000000000ugrain
-GENESIS_AMOUNT=2500000000000000ugrain
-FAUCET_AMOUNT=500000000000000ugrain
-
 jq-i() {
   edit="$1"
   f="$2"
@@ -37,12 +33,20 @@ sed -i 's/^laddr = ".*:26657"/laddr = "tcp:\/\/0.0.0.0:26657"/' config.toml
 jq-i ".chain_id = \"${CHAIN_ID}\"" genesis.json
 popd
 
+GR=000000ugrain
+MGR="000000${GR}"
+
+INIT_AMOUNT="5${MGR}"
+INIT_VALIDATION_AMOUNT="1${MGR}"
+GENESIS_AMOUNT="1${MGR}"
+FAUCET_AMOUNT="3${MGR}"
+
 name="chase"
 echo "$MNEMONIC" | palomad keys add "$name" --recover
 address="$(palomad keys show "$name" -a)"
 
-palomad add-genesis-account "$address" "$GENESIS_AMOUNT"
-palomad gentx "$name" "$VALIDATOR_STAKE_AMOUNT" --chain-id "$CHAIN_ID"
+palomad add-genesis-account "$address" "$INIT_AMOUNT"
+palomad gentx "$name" "$INIT_VALIDATION_AMOUNT" --chain-id "$CHAIN_ID"
 
 init() {
   name="$1"
