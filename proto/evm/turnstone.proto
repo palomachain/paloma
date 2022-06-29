@@ -41,4 +41,5 @@ message Message {
     UploadSmartContract uploadSmartContract = 5;
   }
 
+  string compassAddr = 6;
 }

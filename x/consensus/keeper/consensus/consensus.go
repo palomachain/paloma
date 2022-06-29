@@ -18,6 +18,7 @@ var _ Queuer = Queue{}
 type ConsensusMsg = types.ConsensusMsg
 
 type codecMarshaler interface {
+	types.AnyUnpacker
 	MarshalInterface(i proto.Message) ([]byte, error)
 	UnmarshalInterface(bz []byte, ptr interface{}) error
 	Unmarshal(bz []byte, ptr codec.ProtoMarshaler) error
@@ -29,7 +30,8 @@ type Queue struct {
 }
 
 type QueueOptions struct {
-	QueueTypeName         types.ConsensusQueueType
+	Batched               bool
+	QueueTypeName         string
 	Sg                    keeperutil.StoreGetter
 	Ider                  keeperutil.IDGenerator
 	Cdc                   codecMarshaler
@@ -37,12 +39,13 @@ type QueueOptions struct {
 	BytesToSignCalculator types.BytesToSignFunc
 	VerifySignature       types.VerifySignatureFunc
 	ChainType             types.ChainType
+	Attestator            types.Attestator
 	ChainID               string
 }
 
 type OptFnc func(*QueueOptions)
 
-func WithQueueTypeName(val types.ConsensusQueueType) OptFnc {
+func WithQueueTypeName(val string) OptFnc {
 	return func(opt *QueueOptions) {
 		opt.QueueTypeName = val
 	}
@@ -73,7 +76,32 @@ func WithChainInfo(chainType, chainID string) OptFnc {
 	}
 }
 
+func WithBatch(batch bool) OptFnc {
+	return func(opt *QueueOptions) {
+		opt.Batched = batch
+	}
+}
+
+func WithAttestator(att types.Attestator) OptFnc {
+	return func(opt *QueueOptions) {
+		opt.Attestator = att
+	}
+}
+
+func ApplyOpts(opts *QueueOptions, fncs ...OptFnc) *QueueOptions {
+	if opts == nil {
+		opts = &QueueOptions{}
+	}
+	for _, fnc := range fncs {
+		fnc(opts)
+	}
+	return opts
+}
+
 func NewQueue(qo QueueOptions) Queue {
+	if qo.TypeCheck == nil {
+		panic("TypeCheck can't be nil")
+	}
 	if qo.BytesToSignCalculator == nil {
 		panic("BytesToSignCalculator can't be nil")
 	}
@@ -154,15 +182,31 @@ func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignD
 	}
 
 	// check if the same public key already signed this message
-
 	for _, existingSigData := range msg.GetSignData() {
 		if bytes.Equal(existingSigData.PublicKey, signData.PublicKey) {
-			return fmt.Errorf("TODO: already signed with this key")
+			return ErrAlreadySignedWithKey.Format(msgID, c.qo.QueueTypeName, existingSigData.PublicKey)
 		}
 	}
 
 	if !c.qo.VerifySignature(append(msg.GetBytesToSign()[:], signData.GetExtraData()...), signData.Signature, signData.PublicKey) {
 		return ErrInvalidSignature
+	}
+
+	origMsg, err := msg.ConsensusMsg(c.qo.Cdc)
+	if err != nil {
+		return err
+	}
+
+	if task, ok := origMsg.(types.AttestTask); ok {
+		if c.qo.Attestator == nil {
+			return ErrAttestorNotSetForMessage.Format(task)
+		}
+		if err := c.qo.Attestator.ValidateEvidence(ctx, task, types.Evidence{
+			From: signData.ValAddress,
+			Data: signData.GetExtraData(),
+		}); err != nil {
+			return err
+		}
 	}
 
 	msg.AddSignData(signData)

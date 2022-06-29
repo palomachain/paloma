@@ -429,7 +429,6 @@ func New(
 
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
-	attestator := consensusmodulekeeper.NewAttestator()
 
 	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
 		appCodec,
@@ -439,15 +438,16 @@ func New(
 		stakingKeeper,
 	)
 
+	consensusRegistry := consensusmodulekeeper.NewRegistry()
+
 	app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
 		appCodec,
 		keys[consensusmoduletypes.StoreKey],
 		keys[consensusmoduletypes.MemStoreKey],
 		app.GetSubspace(consensusmoduletypes.ModuleName),
 		app.ValsetKeeper,
-		attestator,
+		consensusRegistry,
 	)
-	attestator.ConsensusKeeper = &app.ConsensusKeeper
 
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(appCodec, keys[evmmoduletypes.StoreKey], keys[evmmoduletypes.MemStoreKey], app.GetSubspace(evmmoduletypes.ModuleName))
 
@@ -508,7 +508,6 @@ func New(
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
-	consensusModule.CollectConsensusQueues(app.mm)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
@@ -645,6 +644,10 @@ func New(
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	app.scopedWasmKeeper = scopedWasmKeeper
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
+
+	consensusRegistry.Add(
+		app.EvmKeeper,
+	)
 
 	return app
 }

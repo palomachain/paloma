@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -9,6 +10,7 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	wasmutil "github.com/palomachain/paloma/util/wasm"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -16,6 +18,7 @@ import (
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -26,10 +29,21 @@ const (
 	maxPower = 1 << 32
 )
 const (
-	ConsensusArbitraryContractCall = consensustypes.ConsensusQueueType("evm-arbitrary-smart-contract-call")
-	ConsensusTurnstoneMessage      = consensustypes.ConsensusQueueType("evm-turnstone-message")
-	signaturePrefix                = "\x19Ethereum Signed Message:\n32"
+	ConsensusTurnstoneMessage = "evm-turnstone-message"
+	SignaturePrefix           = "\x19Ethereum Signed Message:\n32"
 )
+
+type supportedChainInfo struct {
+	batch   bool
+	msgType any
+}
+
+var SupportedConsensusQueues = map[string]supportedChainInfo{
+	ConsensusTurnstoneMessage: {
+		batch:   false,
+		msgType: &types.Message{},
+	},
+}
 
 type evmChainTemp struct {
 	chainID     string
@@ -41,11 +55,6 @@ func (e evmChainTemp) ChainID() string {
 }
 
 var zero32Byte [32]byte
-
-var SupportedChainIDs = []evmChainTemp{
-	{"eth-main", string(zero32Byte[:])},
-	{"ropsten", string(zero32Byte[:])},
-}
 
 var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
@@ -194,66 +203,104 @@ func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 // 	return
 // }
 
-func (k Keeper) RegisterConsensusQueues(adder consensus.RegistryAdder) {
-	ethVerifySig := func(bz []byte, sig []byte, address []byte) bool {
-		receivedAddr := common.BytesToAddress(address)
-
-		bytesToVerify := crypto.Keccak256(append(
-			[]byte(signaturePrefix),
-			bz...,
-		))
-		recoveredPk, err := crypto.Ecrecover(bytesToVerify, sig)
-		if err != nil {
-			return false
-		}
-		pk, err := crypto.UnmarshalPubkey(recoveredPk)
-		if err != nil {
-			return false
-		}
-		recoveredAddr := crypto.PubkeyToAddress(*pk)
-		return receivedAddr.Hex() == recoveredAddr.Hex()
+func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.QueueOptions, error) {
+	chains, err := k.getAllChainInfos(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	for _, chain := range SupportedChainIDs {
-		adder.AddConcencusQueueType(
-			false,
-			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chain.chainID),
-			consensus.WithQueueTypeName(ConsensusArbitraryContractCall),
-			consensus.WithStaticTypeCheck(&types.ArbitrarySmartContractCall{}),
-			consensus.WithBytesToSignCalc(
-				consensustypes.TypedBytesToSign(func(msg *types.ArbitrarySmartContractCall, salt consensustypes.Salt) []byte {
-					return msg.Keccak256(salt.Nonce)
-				}),
-			),
-			consensus.WithVerifySignature(ethVerifySig),
-		)
+	res := make(map[string]consensus.QueueOptions)
 
-		adder.AddConcencusQueueType(
-			false,
-			consensus.WithChainInfo(consensustypes.ChainTypeEVM, chain.chainID),
-			consensus.WithQueueTypeName(ConsensusTurnstoneMessage),
-			consensus.WithStaticTypeCheck(&types.Message{}),
-			consensus.WithBytesToSignCalc(
-				consensustypes.TypedBytesToSign(func(msg *types.Message, salt consensustypes.Salt) []byte {
-					return msg.Keccak256(salt.Nonce)
+	for _, chainInfo := range chains {
+		for subQueue, queueInfo := range SupportedConsensusQueues {
+
+			queue := fmt.Sprintf("EVM/%s/%s", chainInfo.ChainID, subQueue)
+			res[queue] = *consensus.ApplyOpts(nil,
+				consensus.WithChainInfo(consensustypes.ChainTypeEVM, chainInfo.ChainID),
+				consensus.WithQueueTypeName(queue),
+				consensus.WithStaticTypeCheck(queueInfo.msgType),
+				consensus.WithBytesToSignCalc(
+					consensustypes.BytesToSignFunc(func(msg consensustypes.ConsensusMsg, salt consensustypes.Salt) []byte {
+						k := msg.(interface {
+							Keccak256(uint64) []byte
+						})
+						return k.Keccak256(salt.Nonce)
+					}),
+				),
+				consensus.WithVerifySignature(func(bz []byte, sig []byte, address []byte) bool {
+					receivedAddr := common.BytesToAddress(address)
+
+					bytesToVerify := crypto.Keccak256(append(
+						[]byte(SignaturePrefix),
+						bz...,
+					))
+					recoveredPk, err := crypto.Ecrecover(bytesToVerify, sig)
+					if err != nil {
+						return false
+					}
+					pk, err := crypto.UnmarshalPubkey(recoveredPk)
+					if err != nil {
+						return false
+					}
+					recoveredAddr := crypto.PubkeyToAddress(*pk)
+					return receivedAddr.Hex() == recoveredAddr.Hex()
 				}),
-			),
-			consensus.WithVerifySignature(ethVerifySig),
-		)
+			)
+		}
 	}
 
+	return res, nil
+}
+
+func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ChainInfo, error) {
+	_, all, err := keeperutil.IterAll[*types.ChainInfo](k.chainInfoStore(ctx), k.cdc)
+	return all, err
+}
+
+func (k Keeper) getChainInfo(ctx sdk.Context, targetChainID string) (*types.ChainInfo, error) {
+	res, err := keeperutil.Load[*types.ChainInfo](k.chainInfoStore(ctx), k.cdc, []byte(targetChainID))
+	if errors.Is(err, keeperutil.ErrNotFound) {
+		return nil, nil
+	}
+	return res, nil
+}
+
+func (k Keeper) updateChainInfo(ctx sdk.Context, chainInfo *types.ChainInfo) error {
+	return keeperutil.Save(k.chainInfoStore(ctx), k.cdc, []byte(chainInfo.GetChainID()), chainInfo)
+}
+
+func (k Keeper) AddSupportForNewChain(ctx sdk.Context, chainInfo *types.ChainInfo) error {
+	existing, err := k.getChainInfo(ctx, chainInfo.GetChainID())
+	if err != nil {
+		return err
+	}
+	if existing != nil {
+		// TODO: test this
+		return fmt.Errorf("WHAAAAAAAAAAAT")
+	}
+	return k.updateChainInfo(ctx, chainInfo)
+}
+
+func (k Keeper) supportForNewEVM(ctx sdk.Context, targetChainID, turnstoneID string) {}
+
+func (k Keeper) chainInfoStore(ctx sdk.Context) sdk.KVStore {
+	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("chain-info"))
 }
 
 func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
-	for _, chain := range SupportedChainIDs {
-		valset := transformSnapshotToTurnstoneValset(snapshot, chain.chainID)
+	chainInfos, err := k.getAllChainInfos(ctx)
+	if err != nil {
+		panic(err)
+	}
+	for _, chain := range chainInfos {
+		valset := transformSnapshotToTurnstoneValset(snapshot, chain.GetChainID())
 
 		k.ConsensusKeeper.PutMessageForSigning(
 			ctx,
-			consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.chainID),
+			consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.GetChainID()),
 			&types.Message{
-				TurnstoneID: chain.turnstoneID,
-				ChainID:     chain.chainID,
+				TurnstoneID: chain.GetSmartContractID(),
+				ChainID:     chain.GetChainID(),
 				Action: &types.Message_UpdateValset{
 					UpdateValset: &types.UpdateValset{
 						Valset: &valset,

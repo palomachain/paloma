@@ -8,7 +8,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
+	consensustypemocks "github.com/palomachain/paloma/x/consensus/types/mocks"
 	"github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 )
@@ -33,13 +35,16 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
 	var msgType *types.SimpleMessage
+	mck := consensustypemocks.NewAttestator(t)
+	mck.On("ValidateEvidence", mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
 	cq := Queue{
 		qo: QueueOptions{
-			QueueTypeName:         types.ConsensusQueueType("simple-message"),
+			QueueTypeName:         "simple-message",
 			Sg:                    sg,
 			Ider:                  keeperutil.NewIDGenerator(sg, nil),
 			Cdc:                   types.ModuleCdc,
 			TypeCheck:             types.StaticTypeChecker(msgType),
+			Attestator:            mck,
 			BytesToSignCalculator: msgType.ConsensusSignBytes(),
 			VerifySignature: func([]byte, []byte, []byte) bool {
 				return true

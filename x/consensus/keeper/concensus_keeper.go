@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -13,45 +15,40 @@ const (
 	encodingDelimiter = byte('|')
 )
 
-func (k Keeper) AddConcencusQueueType(batch bool, opts ...consensus.OptFnc) {
-	qo := consensus.QueueOptions{
-		Sg:   k,
-		Ider: k.ider,
-		Cdc:  k.cdc,
-	}
-	for _, opt := range opts {
-		opt(&qo)
-	}
-	var cq consensus.Queuer
-	if batch {
-		cq = consensus.NewBatchQueue(qo)
-	} else {
-		cq = consensus.NewQueue(qo)
-	}
-
-	k.addConcencusQueueType(cq)
-}
-
-func (k Keeper) addConcencusQueueType(cq consensus.Queuer) {
-	_, ok := k.queueRegistry[cq.ConsensusQueue()]
-	if ok {
-		panic("concencus queue already registered")
-	}
-
-	k.queueRegistry[cq.ConsensusQueue()] = cq
-}
-
 // getConsensusQueue gets the consensus queue for the given type.
-func (k Keeper) getConsensusQueue(queueTypeName string) (consensus.Queuer, error) {
-	cq, ok := k.queueRegistry[queueTypeName]
-	if !ok {
-		return nil, ErrConsensusQueueNotImplemented.Format(queueTypeName)
+func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consensus.Queuer, error) {
+	for _, q := range *k.registry.slice {
+		supportedQueues, err := q.SupportedQueues(ctx)
+		if err != nil {
+			return nil, err
+		}
+		opts, ok := supportedQueues[queueTypeName]
+		if !ok {
+			continue
+		}
+
+		if opts.Ider.Zero() {
+			opts.Ider = k.ider
+		}
+
+		if opts.Sg == nil {
+			opts.Sg = k
+		}
+
+		if opts.Cdc == nil {
+			opts.Cdc = k.cdc
+		}
+
+		if opts.Batched {
+			return consensus.NewBatchQueue(opts), nil
+		}
+		return consensus.NewQueue(opts), nil
 	}
-	return cq, nil
+	return nil, ErrConsensusQueueNotImplemented.Format(queueTypeName)
 }
 
 func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg) error {
-	cq, err := k.getConsensusQueue(queueTypeName)
+	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue", "error", err)
 		return err
@@ -94,7 +91,7 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 	if n <= 0 {
 		return nil, ErrInvalidLimitValue.Format(n)
 	}
-	cq, err := k.getConsensusQueue(queueTypeName)
+	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
 		return nil, err
@@ -113,7 +110,7 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 }
 
 func (k Keeper) deleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
-	cq, err := k.getConsensusQueue(queueTypeName)
+	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
 		return err
@@ -128,7 +125,10 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 	var consensusReached []types.QueuedSignedMessageI
 
 	err := whoops.Try(func() {
-		cq := whoops.Must(k.getConsensusQueue(queueTypeName))
+		cq, err := k.getConsensusQueue(ctx, queueTypeName)
+		fmt.Println("AAAAAAAA", err, queueTypeName, cq)
+		whoops.Assert(err)
+
 		msgs := whoops.Must(cq.GetAll(ctx))
 		if len(msgs) == 0 {
 			return
@@ -186,7 +186,7 @@ func (k Keeper) AddMessageSignature(
 	return whoops.Try(func() {
 		for _, msg := range msgs {
 			cq := whoops.Must(
-				k.getConsensusQueue(msg.GetQueueTypeName()),
+				k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
 			)
 			chainType, chainID := cq.ChainInfo()
 
@@ -197,26 +197,6 @@ func (k Keeper) AddMessageSignature(
 				chainID,
 				msg.GetSignedByAddress(),
 			))
-			consensusMsg := whoops.Must(
-				cq.GetMsgByID(ctx, msg.Id),
-			)
-			rawMsg := whoops.Must(
-				consensusMsg.ConsensusMsg(k.cdc),
-			)
-
-			if task, ok := rawMsg.(types.AttestTask); ok {
-				whoops.Assert(
-					k.attestator.validateIncoming(
-						ctx.Context(),
-						msg.GetQueueTypeName(),
-						task,
-						types.Evidence{
-							From: valAddr,
-							Data: msg.GetExtraData(),
-						},
-					),
-				)
-			}
 
 			whoops.Assert(
 				cq.AddSignature(
