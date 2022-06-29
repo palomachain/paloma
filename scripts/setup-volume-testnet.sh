@@ -59,6 +59,6 @@ init() {
 init faucet paloma167rf0jmkkkqp9d4awa8rxw908muavqgghtw6tn "$FAUCET_AMOUNT"
 init jason paloma1mre80u0mmsdpf3l2shre9g4sh7kp9lxu5gtlql
 init taariq paloma1k4hfe8cqdzy6j0t7sppujhrplhp8k5tglf8v46
-init vera paloma1nvhryyg63e8vw9t5sx9ht8l77jzgjvrq6jcdnp
+init vera paloma132nvgqw2l2jfgwzvtxyt8fswhfwtw9dz76zxcy
 
 palomad collect-gentxs
