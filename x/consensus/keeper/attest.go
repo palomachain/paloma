@@ -4,7 +4,6 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 
 	"github.com/vizualni/whoops"
@@ -60,7 +59,7 @@ mainLoop:
 			// TODO: process result of processing evidence
 			_ = res
 
-			cq, err := k.getConsensusQueue(queue)
+			cq, err := k.getConsensusQueue(ctx, queue)
 			if err != nil {
 				gerr.Add(err)
 				continue mainLoop
@@ -90,16 +89,16 @@ type Attestator struct {
 }
 
 func (a *Attestator) RegisterAttestator(att types.Attestator) {
-	chainType, chainID := att.ChainInfo()
-	a.ConsensusKeeper.AddConcencusQueueType(
-		false,
-		consensus.WithQueueTypeName(att.ConsensusQueue()),
-		consensus.WithStaticTypeCheck(att.Type()),
-		consensus.WithBytesToSignCalc(att.BytesToSign()),
-		consensus.WithVerifySignature(att.VerifySignature()),
-		consensus.WithChainInfo(chainType, chainID),
-	)
-	a.registry[types.Queue(att.ConsensusQueue(), chainType, chainID)] = att
+	// chainType, chainID := att.ChainInfo()
+	// a.ConsensusKeeper.AddConcencusQueueType(
+	// 	false,
+	// 	consensus.WithQueueTypeName(att.ConsensusQueue()),
+	// 	consensus.WithStaticTypeCheck(att.Type()),
+	// 	consensus.WithBytesToSignCalc(att.BytesToSign()),
+	// 	consensus.WithVerifySignature(att.VerifySignature()),
+	// 	consensus.WithChainInfo(chainType, chainID),
+	// )
+	// a.registry[types.Queue(att.ConsensusQueue(), chainType, chainID)] = att
 }
 
 func (a *Attestator) validateIncoming(ctx context.Context, queueTypeName string, task types.AttestTask, evidence types.Evidence) error {

@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"math/big"
 	"strings"
 	"testing"
@@ -15,7 +16,6 @@ import (
 	"github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/testutil/rand"
 	"github.com/palomachain/paloma/testutil/sample"
-	"github.com/palomachain/paloma/util/slice"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -65,6 +65,13 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		Height: 5,
 	})
 
+	newChain := &types.ChainInfo{
+		ChainID:           "eth-main",
+		SmartContractID:   "bob1",
+		SmartContractAddr: "0x123",
+	}
+
+	a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 	validators := genValidators(t, 25, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
@@ -102,11 +109,17 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	queue := consensustypes.Queue(keeper.ConsensusArbitraryContractCall, chainType, chainID)
+	queue := consensustypes.Queue(keeper.ConsensusTurnstoneMessage, chainType, chainID)
 	msgs, err := a.ConsensusKeeper.GetMessagesForSigning(ctx, queue, validators[0].GetOperator())
 
 	for _, msg := range msgs {
-		sigbz, err := crypto.Sign(msg.GetBytesToSign(), private)
+		sigbz, err := crypto.Sign(
+			crypto.Keccak256(
+				[]byte(keeper.SignaturePrefix),
+				msg.GetBytesToSign(),
+			),
+			private,
+		)
 		require.NoError(t, err)
 		err = a.ConsensusKeeper.AddMessageSignature(
 			ctx,
@@ -131,31 +144,30 @@ func TestOnSnapshotBuilt(t *testing.T) {
 		Height: 5,
 	})
 
+	newChain := &types.ChainInfo{
+		ChainID:           "bob",
+		SmartContractID:   "bob1",
+		SmartContractAddr: "0x123",
+	}
+	a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+
 	validators := genValidators(t, 25, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
 	}
 
-	var supportedChainIDs []string
-	for _, c := range keeper.SupportedChainIDs {
-		supportedChainIDs = append(supportedChainIDs, c.ChainID())
-	}
+	queue := fmt.Sprintf("EVM/%s/%s", newChain.GetChainID(), keeper.ConsensusTurnstoneMessage)
 
-	require.Empty(t, slice.Filter(supportedChainIDs, func(chainID string) bool {
-		queue := consensustypes.Queue(keeper.ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chainID)
-		msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
-		require.NoError(t, err)
-		return len(msgs) > 0
-	}))
+	msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
+	require.NoError(t, err)
+	require.Empty(t, msgs)
 
 	snapshot, err := a.ValsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
 	a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
 
-	require.Len(t, slice.Filter(supportedChainIDs, func(chainID string) bool {
-		queue := consensustypes.Queue(keeper.ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chainID)
-		msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
-		require.NoError(t, err)
-		return len(msgs) > 0
-	}), 2)
+	msgs, err = a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
+	require.NoError(t, err)
+	require.Len(t, msgs, 1)
+
 }

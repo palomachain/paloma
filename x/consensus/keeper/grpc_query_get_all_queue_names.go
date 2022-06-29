@@ -14,9 +14,9 @@ func (k Keeper) GetAllQueueNames(goCtx context.Context, req *types.QueryGetAllQu
 	}
 	names := []string{}
 
-	for _, cq := range k.queueRegistry {
-		names = append(names, cq.ConsensusQueue())
-	}
+	// for _, cq := range k.queueRegistry {
+	// 	names = append(names, cq.ConsensusQueue())
+	// }
 
 	return &types.QueryGetAllQueueNamesResponse{
 		Queues: names,

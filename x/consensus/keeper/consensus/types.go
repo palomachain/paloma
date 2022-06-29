@@ -28,13 +28,7 @@ type QueueBatcher interface {
 	Queuer
 	ProcessBatches(ctx sdk.Context) error
 }
-type RegistryAdder interface {
-	AddConcencusQueueType(
-		batch bool,
-		opts ...OptFnc,
-	)
-}
 
 type SupportsConsensusQueue interface {
-	RegisterConsensusQueues(adder RegistryAdder)
+	SupportsQueue(ctx sdk.Context, queueTypeName string) (*QueueOptions, error)
 }

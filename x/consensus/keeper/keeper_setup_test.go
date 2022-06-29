@@ -63,6 +63,7 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		paramsSubspace,
 		ms.ValsetKeeper,
 		att,
+		NewRegistry(),
 	)
 	att.ConsensusKeeper = k
 

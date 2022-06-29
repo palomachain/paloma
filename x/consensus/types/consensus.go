@@ -73,5 +73,5 @@ func (b *Batch) GetSignBytes() []byte {
 }
 
 func Queue(queueTypeName ConsensusQueueType, chainType ChainType, chainID string) string {
-	return fmt.Sprintf("%s:%s:%s", chainType, chainID, queueTypeName)
+	return fmt.Sprintf("%s/%s/%s", chainType, chainID, queueTypeName)
 }

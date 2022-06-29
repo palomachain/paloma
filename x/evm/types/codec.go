@@ -11,7 +11,7 @@ import (
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgSubmitNewJob{}, "evm/SubmitNewJob", nil)
 	cdc.RegisterConcrete(&MsgUploadNewSmartContractTemp{}, "evm/UploadNewSmartContractTemp", nil)
-// this line is used by starport scaffolding # 2
+	// this line is used by starport scaffolding # 2
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -19,13 +19,12 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgSubmitNewJob{},
 	)
 	registry.RegisterImplementations((*consensustypes.ConsensusMsg)(nil),
-		&ArbitrarySmartContractCall{},
 		&Message{},
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
-	&MsgUploadNewSmartContractTemp{},
-)
-// this line is used by starport scaffolding # 3
+		&MsgUploadNewSmartContractTemp{},
+	)
+	// this line is used by starport scaffolding # 3
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

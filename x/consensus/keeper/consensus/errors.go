@@ -9,4 +9,5 @@ const (
 	ErrUnableToSaveMessageWithoutID = whoops.String("unable to save message without an ID")
 	ErrMessageDoesNotExist          = whoops.Errorf("message id %d does not exist")
 	ErrInvalidSignature             = whoops.String("signature is invalid")
+	ErrAlreadySignedWithKey         = whoops.Errorf("message %d (%s) already signed with the key: %s")
 )

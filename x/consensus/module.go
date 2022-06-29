@@ -19,7 +19,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/palomachain/paloma/x/consensus/client/cli"
 	"github.com/palomachain/paloma/x/consensus/keeper"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -175,17 +174,4 @@ func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return EndBlocker(ctx, am.keeper)
-}
-
-// CollectConsensusQueues takes all AppModules that are implementing consensus.SupportsConsensusQueue
-// and registers their respected consensus queues.
-func (am AppModule) CollectConsensusQueues(mm *module.Manager) {
-	for _, m := range mm.Modules {
-		reg, ok := m.(consensus.SupportsConsensusQueue)
-		if !ok {
-			continue
-		}
-
-		reg.RegisterConsensusQueues(am.keeper)
-	}
 }

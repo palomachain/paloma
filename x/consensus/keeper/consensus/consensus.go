@@ -29,6 +29,7 @@ type Queue struct {
 }
 
 type QueueOptions struct {
+	Batched               bool
 	QueueTypeName         types.ConsensusQueueType
 	Sg                    keeperutil.StoreGetter
 	Ider                  keeperutil.IDGenerator
@@ -72,8 +73,26 @@ func WithChainInfo(chainType, chainID string) OptFnc {
 		opt.ChainType = types.ChainType(chainType)
 	}
 }
+func WithBatch(batch bool) OptFnc {
+	return func(opt *QueueOptions) {
+		opt.Batched = batch
+	}
+}
+
+func ApplyOpts(opts *QueueOptions, fncs ...OptFnc) *QueueOptions {
+	if opts == nil {
+		opts = &QueueOptions{}
+	}
+	for _, fnc := range fncs {
+		fnc(opts)
+	}
+	return opts
+}
 
 func NewQueue(qo QueueOptions) Queue {
+	if qo.TypeCheck == nil {
+		panic("TypeCheck can't be nil")
+	}
 	if qo.BytesToSignCalculator == nil {
 		panic("BytesToSignCalculator can't be nil")
 	}
@@ -154,10 +173,9 @@ func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignD
 	}
 
 	// check if the same public key already signed this message
-
 	for _, existingSigData := range msg.GetSignData() {
 		if bytes.Equal(existingSigData.PublicKey, signData.PublicKey) {
-			return fmt.Errorf("TODO: already signed with this key")
+			return ErrAlreadySignedWithKey.Format(msgID, c.qo.QueueTypeName, existingSigData.PublicKey)
 		}
 	}
 

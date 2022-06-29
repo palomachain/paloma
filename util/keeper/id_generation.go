@@ -63,3 +63,5 @@ func Uint64ToByte(n uint64) []byte {
 func (i IDGenerator) nextKeyPrefix(key []byte) []byte {
 	return append(i.idKey[:], key...)
 }
+
+func (i IDGenerator) Zero() bool { return i.idKey == nil && i.sg == nil }

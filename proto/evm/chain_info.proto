@@ -1,0 +1,15 @@
+syntax = "proto3";
+import "gogoproto/gogo.proto";
+
+package palomachain.paloma.evm;
+
+option go_package = "github.com/palomachain/paloma/x/evm/types";
+
+message ChainInfo {
+  string chainID = 1;
+
+  string smartContractID = 2;
+
+  string smartContractAddr = 3;
+}
+

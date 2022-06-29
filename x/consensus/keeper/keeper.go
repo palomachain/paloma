@@ -9,7 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -20,11 +19,12 @@ type (
 		memKey     sdk.StoreKey
 		paramstore paramtypes.Subspace
 
-		ider          keeperutil.IDGenerator
-		queueRegistry map[string]consensus.Queuer
-		attestator    *Attestator
+		ider       keeperutil.IDGenerator
+		attestator *Attestator
 
 		valset types.ValsetKeeper
+
+		registry registry
 	}
 )
 
@@ -35,6 +35,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	valsetKeeper types.ValsetKeeper,
 	attestator *Attestator,
+	reg registry,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -42,13 +43,13 @@ func NewKeeper(
 	}
 
 	k := &Keeper{
-		cdc:           cdc,
-		storeKey:      storeKey,
-		memKey:        memKey,
-		paramstore:    ps,
-		valset:        valsetKeeper,
-		queueRegistry: make(map[string]consensus.Queuer),
-		attestator:    attestator,
+		cdc:        cdc,
+		storeKey:   storeKey,
+		memKey:     memKey,
+		paramstore: ps,
+		valset:     valsetKeeper,
+		attestator: attestator,
+		registry:   reg,
 	}
 	ider := keeperutil.NewIDGenerator(k, nil)
 	k.ider = ider
