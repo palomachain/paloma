@@ -35,7 +35,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	var msgType *types.SimpleMessage
 	cq := Queue{
 		qo: QueueOptions{
-			QueueTypeName:         types.ConsensusQueueType("simple-message"),
+			QueueTypeName:         "simple-message",
 			Sg:                    sg,
 			Ider:                  keeperutil.NewIDGenerator(sg, nil),
 			Cdc:                   types.ModuleCdc,

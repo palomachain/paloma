@@ -54,14 +54,14 @@ func (_m *Attestator) ChainInfo() (string, string) {
 }
 
 // ConsensusQueue provides a mock function with given fields:
-func (_m *Attestator) ConsensusQueue() types.ConsensusQueueType {
+func (_m *Attestator) ConsensusQueue() string {
 	ret := _m.Called()
 
-	var r0 types.ConsensusQueueType
-	if rf, ok := ret.Get(0).(func() types.ConsensusQueueType); ok {
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Get(0).(types.ConsensusQueueType)
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0

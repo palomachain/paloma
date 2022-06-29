@@ -23,7 +23,7 @@ type AttestResult struct {
 //go:generate mockery --name=Attestator
 type Attestator interface {
 	// ConsensusQueue tells in which ConsensusQueue to store the messages that require signatures.
-	ConsensusQueue() ConsensusQueueType
+	ConsensusQueue() string
 	// Type tells the type of allowed message types for the ConsensusQueue.
 	Type() any
 

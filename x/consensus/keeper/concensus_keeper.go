@@ -18,32 +18,31 @@ const (
 // getConsensusQueue gets the consensus queue for the given type.
 func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consensus.Queuer, error) {
 	for _, q := range *k.registry.slice {
-		gotOpts, err := q.SupportsQueue(ctx, queueTypeName)
-		fmt.Printf("%#v\n", q)
-		fmt.Println(q, gotOpts, err)
+		supportedQueues, err := q.SupportedQueues(ctx)
 		if err != nil {
 			return nil, err
 		}
-		if gotOpts != nil {
-			opts := *gotOpts
-
-			if opts.Ider.Zero() {
-				opts.Ider = k.ider
-			}
-
-			if opts.Sg == nil {
-				opts.Sg = k
-			}
-
-			if opts.Cdc == nil {
-				opts.Cdc = k.cdc
-			}
-
-			if opts.Batched {
-				return consensus.NewBatchQueue(opts), nil
-			}
-			return consensus.NewQueue(opts), nil
+		opts, ok := supportedQueues[queueTypeName]
+		if !ok {
+			continue
 		}
+
+		if opts.Ider.Zero() {
+			opts.Ider = k.ider
+		}
+
+		if opts.Sg == nil {
+			opts.Sg = k
+		}
+
+		if opts.Cdc == nil {
+			opts.Cdc = k.cdc
+		}
+
+		if opts.Batched {
+			return consensus.NewBatchQueue(opts), nil
+		}
+		return consensus.NewQueue(opts), nil
 	}
 	return nil, ErrConsensusQueueNotImplemented.Format(queueTypeName)
 }

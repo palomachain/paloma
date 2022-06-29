@@ -30,7 +30,7 @@ type Queue struct {
 
 type QueueOptions struct {
 	Batched               bool
-	QueueTypeName         types.ConsensusQueueType
+	QueueTypeName         string
 	Sg                    keeperutil.StoreGetter
 	Ider                  keeperutil.IDGenerator
 	Cdc                   codecMarshaler
@@ -43,7 +43,7 @@ type QueueOptions struct {
 
 type OptFnc func(*QueueOptions)
 
-func WithQueueTypeName(val types.ConsensusQueueType) OptFnc {
+func WithQueueTypeName(val string) OptFnc {
 	return func(opt *QueueOptions) {
 		opt.QueueTypeName = val
 	}

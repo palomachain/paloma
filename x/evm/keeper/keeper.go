@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -30,7 +29,7 @@ const (
 	maxPower = 1 << 32
 )
 const (
-	ConsensusTurnstoneMessage = consensustypes.ConsensusQueueType("evm-turnstone-message")
+	ConsensusTurnstoneMessage = "evm-turnstone-message"
 	SignaturePrefix           = "\x19Ethereum Signed Message:\n32"
 )
 
@@ -39,7 +38,7 @@ type supportedChainInfo struct {
 	msgType any
 }
 
-var SupportedConsensusQueues = map[consensustypes.ConsensusQueueType]supportedChainInfo{
+var SupportedConsensusQueues = map[string]supportedChainInfo{
 	ConsensusTurnstoneMessage: {
 		batch:   false,
 		msgType: &types.Message{},
@@ -204,80 +203,53 @@ func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 // 	return
 // }
 
-func (k Keeper) SupportsQueue(ctx sdk.Context, queueTypeName string) (*consensus.QueueOptions, error) {
-	// EVM:{chainID}:{queue name}
-	// e.g.:
-	// EVM/ropsten/arbitrary-contract-call
-
-	queueParts := strings.SplitN(queueTypeName, "/", 3)
-	if len(queueParts) != 3 {
-		return nil, nil
-	}
-
-	chainType, chainID, queueName := queueParts[0], queueParts[1], queueParts[2]
-
-	if chainType != "EVM" {
-		return nil, nil
-	}
-
-	chainInfo, err := k.getChainInfo(ctx, chainID)
-
+func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.QueueOptions, error) {
+	chains, err := k.getAllChainInfos(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if chainInfo == nil {
-		return nil, nil
-	}
+	res := make(map[string]consensus.QueueOptions)
 
-	found := false
-	var foundQ consensustypes.ConsensusQueueType
+	for _, chainInfo := range chains {
+		for subQueue, queueInfo := range SupportedConsensusQueues {
 
-	for q := range SupportedConsensusQueues {
-		if string(q) == queueName {
-			foundQ = q
-			found = true
-			break
+			queue := fmt.Sprintf("EVM/%s/%s", chainInfo.ChainID, subQueue)
+			res[queue] = *consensus.ApplyOpts(nil,
+				consensus.WithChainInfo(consensustypes.ChainTypeEVM, chainInfo.ChainID),
+				consensus.WithQueueTypeName(queue),
+				consensus.WithStaticTypeCheck(queueInfo.msgType),
+				consensus.WithBytesToSignCalc(
+					consensustypes.BytesToSignFunc(func(msg consensustypes.ConsensusMsg, salt consensustypes.Salt) []byte {
+						k := msg.(interface {
+							Keccak256(uint64) []byte
+						})
+						return k.Keccak256(salt.Nonce)
+					}),
+				),
+				consensus.WithVerifySignature(func(bz []byte, sig []byte, address []byte) bool {
+					receivedAddr := common.BytesToAddress(address)
+
+					bytesToVerify := crypto.Keccak256(append(
+						[]byte(SignaturePrefix),
+						bz...,
+					))
+					recoveredPk, err := crypto.Ecrecover(bytesToVerify, sig)
+					if err != nil {
+						return false
+					}
+					pk, err := crypto.UnmarshalPubkey(recoveredPk)
+					if err != nil {
+						return false
+					}
+					recoveredAddr := crypto.PubkeyToAddress(*pk)
+					return receivedAddr.Hex() == recoveredAddr.Hex()
+				}),
+			)
 		}
 	}
 
-	if !found {
-		return nil, nil
-	}
-
-	queueInfo := SupportedConsensusQueues[foundQ]
-
-	return consensus.ApplyOpts(nil,
-		consensus.WithChainInfo(consensustypes.ChainTypeEVM, chainInfo.ChainID),
-		consensus.WithQueueTypeName(foundQ),
-		consensus.WithStaticTypeCheck(queueInfo.msgType),
-		consensus.WithBytesToSignCalc(
-			consensustypes.BytesToSignFunc(func(msg consensustypes.ConsensusMsg, salt consensustypes.Salt) []byte {
-				k := msg.(interface {
-					Keccak256(uint64) []byte
-				})
-				return k.Keccak256(salt.Nonce)
-			}),
-		),
-		consensus.WithVerifySignature(func(bz []byte, sig []byte, address []byte) bool {
-			receivedAddr := common.BytesToAddress(address)
-
-			bytesToVerify := crypto.Keccak256(append(
-				[]byte(SignaturePrefix),
-				bz...,
-			))
-			recoveredPk, err := crypto.Ecrecover(bytesToVerify, sig)
-			if err != nil {
-				return false
-			}
-			pk, err := crypto.UnmarshalPubkey(recoveredPk)
-			if err != nil {
-				return false
-			}
-			recoveredAddr := crypto.PubkeyToAddress(*pk)
-			return receivedAddr.Hex() == recoveredAddr.Hex()
-		}),
-	), nil
+	return res, nil
 }
 
 func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ChainInfo, error) {

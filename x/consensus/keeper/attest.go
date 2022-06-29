@@ -56,7 +56,7 @@ mainLoop:
 				continue mainLoop
 			}
 
-			// TODO: process result of processing evidence
+			// TODO: process result of proc
 			_ = res
 
 			cq, err := k.getConsensusQueue(ctx, queue)

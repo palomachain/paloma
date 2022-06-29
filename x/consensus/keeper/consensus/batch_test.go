@@ -40,7 +40,7 @@ func TestBatching(t *testing.T) {
 	msgType := &types.SimpleMessage{}
 	cq := NewBatchQueue(
 		QueueOptions{
-			QueueTypeName: types.ConsensusQueueType("simple-message"),
+			QueueTypeName: "simple-message",
 			Sg:            sg,
 			Ider:          keeperutil.NewIDGenerator(sg, nil),
 			Cdc:           types.ModuleCdc,

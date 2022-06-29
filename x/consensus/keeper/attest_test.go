@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	simpleQueue = types.ConsensusQueueType("simple-message")
+	simpleQueue = "simple-message"
 )
 
 func TestAttesting(t *testing.T) {

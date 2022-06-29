@@ -14,13 +14,13 @@ import (
 )
 
 const (
-	simpleMessageQueue = types.ConsensusQueueType("simple-message")
-	chainType          = types.ChainTypeEVM
-	chainID            = "test"
+	chainType        = types.ChainTypeEVM
+	chainID          = "test"
+	defaultQueueName = "simple-message"
 )
 
 func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testing.T) {
-	queue := types.Queue(simpleMessageQueue, chainType, chainID)
+	queue := types.Queue(defaultQueueName, chainType, chainID)
 	keeper, _, ctx := newConsensusKeeper(t)
 
 	t.Run("it returns a message if type is not registered with the queue", func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 	keeper.registry.Add(
 		queueSupporter{
 			opt: consensus.ApplyOpts(nil,
-				consensus.WithQueueTypeName(simpleMessageQueue),
+				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
 				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 				consensus.WithChainInfo(chainType, chainID),
@@ -57,6 +57,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 		require.NoError(t, err)
 		require.Empty(t, msgs)
 	})
+
 	t.Run("it sucessfully puts message into the queue", func(t *testing.T) {
 		err := keeper.PutMessageForSigning(ctx, queue, &types.SimpleMessage{
 			Sender: "bob",
@@ -118,7 +119,6 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 		ctx    sdk.Context
 	}
 
-	defaultQueueName := "simple-message"
 	for _, tt := range []struct {
 		name          string
 		queueTypeName string
@@ -414,7 +414,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				queueSupporter{
 					opt: consensus.ApplyOpts(nil,
 						consensus.WithStaticTypeCheck(&types.SimpleMessage{}),
-						consensus.WithQueueTypeName(simpleMessageQueue),
+						consensus.WithQueueTypeName(defaultQueueName),
 						consensus.WithChainInfo(chainType, chainID),
 						consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte {
 							return []byte("sign-me")
@@ -443,7 +443,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 }
 
 func TestAddingSignatures(t *testing.T) {
-	queue := types.Queue(simpleMessageQueue, chainType, chainID)
+	queue := types.Queue(defaultQueueName, chainType, chainID)
 	keeper, ms, ctx := newConsensusKeeper(t)
 
 	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*types.ConsensusMsg)(nil), &types.SimpleMessage{})
@@ -453,7 +453,7 @@ func TestAddingSignatures(t *testing.T) {
 	keeper.registry.Add(
 		queueSupporter{
 			opt: consensus.ApplyOpts(nil,
-				consensus.WithQueueTypeName("simple-message"),
+				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
 				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 				consensus.WithChainInfo(chainType, chainID),
@@ -531,10 +531,9 @@ type queueSupporter struct {
 	opt *consensus.QueueOptions
 }
 
-func (q queueSupporter) SupportsQueue(ctx sdk.Context, queueName string) (*consensus.QueueOptions, error) {
-	if queueName == "nope" {
-		return nil, nil
-	}
-	return q.opt, nil
+func (q queueSupporter) SupportedQueues(ctx sdk.Context) (map[string]consensus.QueueOptions, error) {
+	return map[string]consensus.QueueOptions{
+		q.opt.QueueTypeName: *q.opt,
+	}, nil
 
 }

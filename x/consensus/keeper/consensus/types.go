@@ -30,5 +30,5 @@ type QueueBatcher interface {
 }
 
 type SupportsConsensusQueue interface {
-	SupportsQueue(ctx sdk.Context, queueTypeName string) (*QueueOptions, error)
+	SupportedQueues(ctx sdk.Context) (map[string]QueueOptions, error)
 }
