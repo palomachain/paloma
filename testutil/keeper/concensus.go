@@ -44,7 +44,6 @@ func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		memStoreKey,
 		paramsSubspace,
 		nil,
-		nil,
 		keeper.NewRegistry(),
 	)
 

@@ -197,26 +197,6 @@ func (k Keeper) AddMessageSignature(
 				chainID,
 				msg.GetSignedByAddress(),
 			))
-			consensusMsg := whoops.Must(
-				cq.GetMsgByID(ctx, msg.Id),
-			)
-			rawMsg := whoops.Must(
-				consensusMsg.ConsensusMsg(k.cdc),
-			)
-
-			if task, ok := rawMsg.(types.AttestTask); ok {
-				whoops.Assert(
-					k.attestator.validateIncoming(
-						ctx.Context(),
-						msg.GetQueueTypeName(),
-						task,
-						types.Evidence{
-							From: valAddr,
-							Data: msg.GetExtraData(),
-						},
-					),
-				)
-			}
 
 			whoops.Assert(
 				cq.AddSignature(

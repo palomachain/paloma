@@ -18,6 +18,7 @@ var _ Queuer = Queue{}
 type ConsensusMsg = types.ConsensusMsg
 
 type codecMarshaler interface {
+	types.AnyUnpacker
 	MarshalInterface(i proto.Message) ([]byte, error)
 	UnmarshalInterface(bz []byte, ptr interface{}) error
 	Unmarshal(bz []byte, ptr codec.ProtoMarshaler) error
@@ -38,6 +39,7 @@ type QueueOptions struct {
 	BytesToSignCalculator types.BytesToSignFunc
 	VerifySignature       types.VerifySignatureFunc
 	ChainType             types.ChainType
+	Attestator            types.Attestator
 	ChainID               string
 }
 
@@ -73,9 +75,16 @@ func WithChainInfo(chainType, chainID string) OptFnc {
 		opt.ChainType = types.ChainType(chainType)
 	}
 }
+
 func WithBatch(batch bool) OptFnc {
 	return func(opt *QueueOptions) {
 		opt.Batched = batch
+	}
+}
+
+func WithAttestator(att types.Attestator) OptFnc {
+	return func(opt *QueueOptions) {
+		opt.Attestator = att
 	}
 }
 
@@ -181,6 +190,23 @@ func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignD
 
 	if !c.qo.VerifySignature(append(msg.GetBytesToSign()[:], signData.GetExtraData()...), signData.Signature, signData.PublicKey) {
 		return ErrInvalidSignature
+	}
+
+	origMsg, err := msg.ConsensusMsg(c.qo.Cdc)
+	if err != nil {
+		return err
+	}
+
+	if task, ok := origMsg.(types.AttestTask); ok {
+		if c.qo.Attestator == nil {
+			return ErrAttestorNotSetForMessage.Format(task)
+		}
+		if err := c.qo.Attestator.ValidateEvidence(ctx, task, types.Evidence{
+			From: signData.ValAddress,
+			Data: signData.GetExtraData(),
+		}); err != nil {
+			return err
+		}
 	}
 
 	msg.AddSignData(signData)

@@ -429,7 +429,6 @@ func New(
 
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
-	attestator := consensusmodulekeeper.NewAttestator()
 
 	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
 		appCodec,
@@ -447,10 +446,8 @@ func New(
 		keys[consensusmoduletypes.MemStoreKey],
 		app.GetSubspace(consensusmoduletypes.ModuleName),
 		app.ValsetKeeper,
-		attestator,
 		consensusRegistry,
 	)
-	attestator.ConsensusKeeper = &app.ConsensusKeeper
 
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(appCodec, keys[evmmoduletypes.StoreKey], keys[evmmoduletypes.MemStoreKey], app.GetSubspace(evmmoduletypes.ModuleName))
 

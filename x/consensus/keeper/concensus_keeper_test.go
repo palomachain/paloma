@@ -7,6 +7,7 @@ import (
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensusmock "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	"github.com/palomachain/paloma/x/consensus/types"
+	consensustypemocks "github.com/palomachain/paloma/x/consensus/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -410,9 +411,12 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			keeper, ms, ctx := newConsensusKeeper(t)
 			cq := consensusmock.NewQueuer(t)
+			mck := consensustypemocks.NewAttestator(t)
+			mck.On("ValidateEvidence", mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
 			keeper.registry.Add(
 				queueSupporter{
 					opt: consensus.ApplyOpts(nil,
+						consensus.WithAttestator(mck),
 						consensus.WithStaticTypeCheck(&types.SimpleMessage{}),
 						consensus.WithQueueTypeName(defaultQueueName),
 						consensus.WithChainInfo(chainType, chainID),
@@ -450,9 +454,12 @@ func TestAddingSignatures(t *testing.T) {
 
 	var msgType *types.SimpleMessage
 
+	mck := consensustypemocks.NewAttestator(t)
+	mck.On("ValidateEvidence", mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
 	keeper.registry.Add(
 		queueSupporter{
 			opt: consensus.ApplyOpts(nil,
+				consensus.WithAttestator(mck),
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
 				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),

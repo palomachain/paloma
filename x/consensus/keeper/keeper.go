@@ -19,8 +19,7 @@ type (
 		memKey     sdk.StoreKey
 		paramstore paramtypes.Subspace
 
-		ider       keeperutil.IDGenerator
-		attestator *Attestator
+		ider keeperutil.IDGenerator
 
 		valset types.ValsetKeeper
 
@@ -34,7 +33,6 @@ func NewKeeper(
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
 	valsetKeeper types.ValsetKeeper,
-	attestator *Attestator,
 	reg registry,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -48,7 +46,6 @@ func NewKeeper(
 		memKey:     memKey,
 		paramstore: ps,
 		valset:     valsetKeeper,
-		attestator: attestator,
 		registry:   reg,
 	}
 	ider := keeperutil.NewIDGenerator(k, nil)
