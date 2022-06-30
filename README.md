@@ -44,7 +44,7 @@ N/A
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.2.4-prealpha/paloma_0.2.4-prealpha_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.2.5-prealpha/paloma_0.2.5-prealpha_Linux_x86_64.tar.gz | \
 sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
@@ -64,8 +64,8 @@ palomad init "$MONIKER"
 Copy the configs of the testnet we wish to connect to
 
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-5/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-5/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-6/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-6/addrbook.json
 ```
 
 Next you can generate a new set of keys to the new machine, or reuse an existing key.
@@ -93,25 +93,27 @@ If desired we can stake our funds and create a validator.
 ```shell
 MONIKER="$(hostname)"
 VALIDATOR="$(palomad keys list --list-names | head -n1)"
-CHAIN_ID="paloma-testnet-5"
-DEFAULT_GAS_AMOUNT="10000000"
-VALIDATOR_STAKE_AMOUNT=100000000000ugrain
+STAKE_AMOUNT=1000000ugrain
 PUBKEY="$(palomad tendermint show-validator)"
 palomad tx staking create-validator \
-      --fees 10000000000ugrain \
+      --fees=1000000ugrain \
       --from="$VALIDATOR" \
-      --amount="$VALIDATOR_STAKE_AMOUNT" \
+      --amount="$STAKE_AMOUNT" \
       --pubkey="$PUBKEY" \
       --moniker="$MONIKER" \
-      --chain-id="$CHAIN_ID" \
+      --website="https://www.example.com" \
+      --details="<enter a description>" \
+      --chain-id=paloma-testnet-6 \
       --commission-rate="0.1" \
       --commission-max-rate="0.2" \
       --commission-max-change-rate="0.05" \
       --min-self-delegation="100" \
-      --gas=$DEFAULT_GAS_AMOUNT \
       --yes \
-      -b block
+      --broadcast-mode=block
 ```
+
+You may receive an error `account sequence mismatch`, you will need to wait until your local paloma
+catches up with the rest of the chain.
 
 #### Running with `systemd`
 
@@ -142,11 +144,12 @@ EOT
 Then reload systemd configurations and start the service!
 
 ```shell
-systemctl daemon-reload
 service palomad start
 
-# Check that it started successfully.
+# Check that it's running successfully:
 service palomad status
+# Or watch the logs:
+journalctl -u palomad.service -f
 ```
 
 ### Uploading a local contract
@@ -170,8 +173,8 @@ apt install jq
 Set up the chain validator.
 
 ```shell
-CHAIN_ID=paloma-testnet-5 \
-MNEMONIC="$(cat secrets.mn)"
+CHAIN_ID=paloma-testnet-6 \
+MNEMONIC="$(cat secret.mn)" \
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-volume-testnet.sh)"
 ```
 
