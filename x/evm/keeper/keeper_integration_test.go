@@ -65,20 +65,27 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		Height: 5,
 	})
 
-	newChain := &types.ChainInfo{
+	newChain := &types.AddChainProposal{
 		ChainID:           "eth-main",
-		SmartContractID:   "bob1",
-		SmartContractAddr: "0x123",
+		Title:             "bla",
+		Description:       "bla",
+		BlockHeight:       uint64(123),
+		BlockHashAtHeight: "0x1234",
 	}
 
-	a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+	require.NoError(t, err)
+
+	err = a.EvmKeeper.ActivateChainID(ctx, newChain.ChainID, "addr", "id")
+	require.NoError(t, err)
+
 	validators := genValidators(t, 25, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
 	}
 
 	smartContractAddr := common.BytesToAddress(rand.Bytes(5))
-	err := a.EvmKeeper.AddSmartContractExecutionToConsensus(
+	err = a.EvmKeeper.AddSmartContractExecutionToConsensus(
 		ctx,
 		chainID,
 		"",
@@ -144,12 +151,17 @@ func TestOnSnapshotBuilt(t *testing.T) {
 		Height: 5,
 	})
 
-	newChain := &types.ChainInfo{
+	newChain := &types.AddChainProposal{
 		ChainID:           "bob",
-		SmartContractID:   "bob1",
-		SmartContractAddr: "0x123",
+		Title:             "bla",
+		Description:       "bla",
+		BlockHeight:       uint64(123),
+		BlockHashAtHeight: "0x1234",
 	}
-	a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+	require.NoError(t, err)
+	err = a.EvmKeeper.ActivateChainID(ctx, newChain.ChainID, "addr", "id")
+	require.NoError(t, err)
 
 	validators := genValidators(t, 25, 25000)
 	for _, val := range validators {

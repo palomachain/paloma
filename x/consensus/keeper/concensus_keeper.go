@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -17,7 +15,6 @@ const (
 
 // getConsensusQueue gets the consensus queue for the given type.
 func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consensus.Queuer, error) {
-	fmt.Println(k.registry)
 	for _, q := range k.registry.slice {
 		supportedQueues, err := q.SupportedQueues(ctx)
 		if err != nil {

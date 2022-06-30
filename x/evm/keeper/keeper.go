@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
@@ -118,14 +120,13 @@ func (k Keeper) DeployNewSmartContractFromProposal(
 	ctx sdk.Context,
 	proposal *types.DeployNewSmartContractProposal,
 ) error {
-
 	chainInfo, err := k.getChainInfo(ctx, proposal.GetChainID())
 	if err != nil {
-		// return err
+		return err
 	}
 
 	if chainInfo.GetStatus() != types.ChainInfo_ACTIVE {
-		// return ErrChainNotActive.Format(proposal.GetChainID())
+		return ErrChainNotActive.Format(proposal.GetChainID())
 	}
 
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
@@ -134,26 +135,24 @@ func (k Keeper) DeployNewSmartContractFromProposal(
 		return err
 	}
 
-	// contractABI, err := abi.JSON(strings.NewReader(proposal.GetAbiJSON()))
-	// if err != nil {
-	// 	return err
-	// }
+	contractABI, err := abi.JSON(strings.NewReader(proposal.GetAbiJSON()))
+	if err != nil {
+		return err
+	}
 
 	smartContractID := generateSmartContractID(ctx)
 	valset := transformSnapshotToTurnstoneValset(snapshot, proposal.GetChainID())
 
 	if len(valset.Validators) == 0 {
-		// return ErrNotEnoughValidatorsForGivenChainID
+		return ErrNotEnoughValidatorsForGivenChainID
 	}
 
-	fmt.Println(smartContractID, valset, snapshot)
-
 	// set the smart contract constructor arguments
-	// input, err := contractABI.Pack("", smartContractID, valset)
-	// if err != nil {
-	// 	return err
-	// }
-	input := []byte("INPUT")
+	input, err := contractABI.Pack("", smartContractID, valset)
+	if err != nil {
+		return err
+
+	}
 
 	// TODO: do this for every chainInfo
 	return k.ConsensusKeeper.PutMessageForSigning(
@@ -174,6 +173,7 @@ func (k Keeper) DeployNewSmartContractFromProposal(
 			},
 		},
 	)
+
 }
 
 // {"target_contract_info":{"method":"foo","chain_id":"abc","compass_id":"abc","contract_address":"0xabc","smart_contract_abi":"abc"},"paloma_address":"paloma1sp6yeu2cdemlh0jpterpe3as9mvx36ck6ys0ce","eth_address":[0,0,0,0,0,0,0,0,0,0,0,0,22,248,182,92,183,148,210,0,134,193,229,48,158,88,192,76,57,198,237,233]}
@@ -324,7 +324,19 @@ func (k Keeper) AddSupportForNewChain(ctx sdk.Context, addChain *types.AddChainP
 		ChainID:              addChain.GetChainID(),
 		ReferenceBlockHeight: addChain.GetBlockHeight(),
 		ReferenceBlockHash:   addChain.GetBlockHashAtHeight(),
+		Status:               types.ChainInfo_WAITING_FOR_EVIDENCE,
 	}
+	return k.updateChainInfo(ctx, chainInfo)
+}
+
+func (k Keeper) ActivateChainID(ctx sdk.Context, chainID, smartContractAddr, smartContractID string) error {
+	chainInfo, err := k.getChainInfo(ctx, chainID)
+	if err != nil {
+		return err
+	}
+	chainInfo.Status = types.ChainInfo_ACTIVE
+	chainInfo.SmartContractAddr = smartContractAddr
+	chainInfo.SmartContractID = smartContractID
 	return k.updateChainInfo(ctx, chainInfo)
 }
 
