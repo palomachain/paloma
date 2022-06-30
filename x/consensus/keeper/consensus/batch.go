@@ -126,7 +126,3 @@ func (c BatchQueue) GetAll(ctx sdk.Context) ([]types.QueuedSignedMessageI, error
 func (c BatchQueue) ChainInfo() (types.ChainType, string) {
 	return c.base.ChainInfo()
 }
-
-func (c BatchQueue) ConsensusQueue() string {
-	return c.base.ConsensusQueue()
-}

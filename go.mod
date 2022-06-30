@@ -12,7 +12,6 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/palomachain/utils v0.2.1-0.20220516151602-2ba1433ff8e2
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/spf13/cast v1.4.1
 	github.com/spf13/cobra v1.4.0

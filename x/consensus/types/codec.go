@@ -27,7 +27,6 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgAddMessagesSignatures{},
 	)
 	registry.RegisterImplementations((*ConsensusMsg)(nil),
-		&SignSmartContractExecute{},
 		&Batch{},
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),

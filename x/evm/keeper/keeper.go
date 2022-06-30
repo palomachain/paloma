@@ -114,22 +114,63 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	)
 }
 
-func (k Keeper) addUploadSmartContractToConsensus(
+func (k Keeper) DeployNewSmartContractFromProposal(
 	ctx sdk.Context,
-	chainID string,
-	upload *types.UploadSmartContract,
+	proposal *types.DeployNewSmartContractProposal,
 ) error {
+
+	chainInfo, err := k.getChainInfo(ctx, proposal.GetChainID())
+	if err != nil {
+		// return err
+	}
+
+	if chainInfo.GetStatus() != types.ChainInfo_ACTIVE {
+		// return ErrChainNotActive.Format(proposal.GetChainID())
+	}
+
+	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	// contractABI, err := abi.JSON(strings.NewReader(proposal.GetAbiJSON()))
+	// if err != nil {
+	// 	return err
+	// }
+
+	smartContractID := generateSmartContractID(ctx)
+	valset := transformSnapshotToTurnstoneValset(snapshot, proposal.GetChainID())
+
+	if len(valset.Validators) == 0 {
+		// return ErrNotEnoughValidatorsForGivenChainID
+	}
+
+	fmt.Println(smartContractID, valset, snapshot)
+
+	// set the smart contract constructor arguments
+	// input, err := contractABI.Pack("", smartContractID, valset)
+	// if err != nil {
+	// 	return err
+	// }
+	input := []byte("INPUT")
+
+	// TODO: do this for every chainInfo
 	return k.ConsensusKeeper.PutMessageForSigning(
 		ctx,
 		consensustypes.Queue(
 			ConsensusTurnstoneMessage,
 			consensustypes.ChainTypeEVM,
-			chainID,
+			proposal.GetChainID(),
 		),
 		&types.Message{
-			ChainID: chainID,
+			ChainID: proposal.GetChainID(),
 			Action: &types.Message_UploadSmartContract{
-				UploadSmartContract: upload,
+				UploadSmartContract: &types.UploadSmartContract{
+					Bytecode:         common.FromHex(proposal.GetBytecodeHex()),
+					Abi:              proposal.GetAbiJSON(),
+					ConstructorInput: input,
+				},
 			},
 		},
 	)
@@ -212,6 +253,9 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.QueueOpti
 	res := make(map[string]consensus.QueueOptions)
 
 	for _, chainInfo := range chains {
+		if !chainInfo.IsActive() {
+			continue
+		}
 		for subQueue, queueInfo := range SupportedConsensusQueues {
 
 			queue := fmt.Sprintf("EVM/%s/%s", chainInfo.ChainID, subQueue)
@@ -260,7 +304,7 @@ func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ChainInfo, error) {
 func (k Keeper) getChainInfo(ctx sdk.Context, targetChainID string) (*types.ChainInfo, error) {
 	res, err := keeperutil.Load[*types.ChainInfo](k.chainInfoStore(ctx), k.cdc, []byte(targetChainID))
 	if errors.Is(err, keeperutil.ErrNotFound) {
-		return nil, nil
+		return nil, ErrChainNotFound.Format(targetChainID)
 	}
 	return res, nil
 }
@@ -269,19 +313,36 @@ func (k Keeper) updateChainInfo(ctx sdk.Context, chainInfo *types.ChainInfo) err
 	return keeperutil.Save(k.chainInfoStore(ctx), k.cdc, []byte(chainInfo.GetChainID()), chainInfo)
 }
 
-func (k Keeper) AddSupportForNewChain(ctx sdk.Context, chainInfo *types.ChainInfo) error {
-	existing, err := k.getChainInfo(ctx, chainInfo.GetChainID())
+func (k Keeper) AddSupportForNewChain(ctx sdk.Context, addChain *types.AddChainProposal) error {
+	_, err := k.getChainInfo(ctx, addChain.GetChainID())
 	if err != nil {
-		return err
+		if !errors.Is(err, ErrChainNotFound) {
+			return err
+		}
 	}
-	if existing != nil {
-		// TODO: test this
-		return fmt.Errorf("WHAAAAAAAAAAAT")
+	chainInfo := &types.ChainInfo{
+		ChainID:              addChain.GetChainID(),
+		ReferenceBlockHeight: addChain.GetBlockHeight(),
+		ReferenceBlockHash:   addChain.GetBlockHashAtHeight(),
 	}
 	return k.updateChainInfo(ctx, chainInfo)
 }
 
-func (k Keeper) supportForNewEVM(ctx sdk.Context, targetChainID, turnstoneID string) {}
+func (k Keeper) RemoveSupportForChain(ctx sdk.Context, proposal *types.RemoveChainProposal) error {
+	_, err := k.getChainInfo(ctx, proposal.GetChainID())
+	if err != nil {
+		return err
+	}
+
+	k.chainInfoStore(ctx).Delete([]byte(proposal.GetChainID()))
+
+	for subQueue := range SupportedConsensusQueues {
+		queue := fmt.Sprintf("EVM/%s/%s", proposal.GetChainID(), subQueue)
+		k.ConsensusKeeper.RemoveConsensusQueue(ctx, queue)
+	}
+
+	return nil
+}
 
 func (k Keeper) chainInfoStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("chain-info"))
@@ -293,6 +354,9 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		panic(err)
 	}
 	for _, chain := range chainInfos {
+		if !chain.IsActive() {
+			continue
+		}
 		valset := transformSnapshotToTurnstoneValset(snapshot, chain.GetChainID())
 
 		k.ConsensusKeeper.PutMessageForSigning(
@@ -343,4 +407,10 @@ func transformSnapshotToTurnstoneValset(snapshot *valsettypes.Snapshot, chainID 
 	}
 
 	return valset
+}
+
+func generateSmartContractID(ctx sdk.Context) (res [32]byte) {
+	hs := ctx.HeaderHash()[:32].String()
+	copy(res[:], []byte(hs))
+	return
 }

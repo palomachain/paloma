@@ -20,8 +20,7 @@ type Queuer interface {
 	Remove(sdk.Context, uint64) error
 	GetAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
 	GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error)
-	ChainInfo() (chainType types.ChainType, chainID string)
-	ConsensusQueue() string
+	ChainInfo() (types.ChainType, string)
 }
 
 type QueueBatcher interface {

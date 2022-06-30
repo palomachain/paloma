@@ -242,14 +242,6 @@ func (c Queue) GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessage
 	return sm, nil
 }
 
-func (c Queue) ChainInfo() (types.ChainType, string) {
-	return c.qo.ChainType, c.qo.ChainID
-}
-
-func (c Queue) ConsensusQueue() string {
-	return types.Queue(c.qo.QueueTypeName, c.qo.ChainType, c.qo.ChainID)
-}
-
 // save saves the message into the queue
 func (c Queue) save(ctx sdk.Context, msg types.QueuedSignedMessageI) error {
 	if msg.GetId() == 0 {
@@ -274,5 +266,30 @@ func (c Queue) signingQueueKey() string {
 	if c.qo.QueueTypeName == "" {
 		panic("queueTypeName can't be empty")
 	}
-	return fmt.Sprintf("%s-%s", consensusQueueSigningKey, c.ConsensusQueue())
+	return fmt.Sprintf("%s-%s", consensusQueueSigningKey, c.qo.QueueTypeName)
+}
+
+func (c Queue) ChainInfo() (types.ChainType, string) {
+	return c.qo.ChainType, c.qo.ChainID
+}
+
+func RemoveQueueCompletely(ctx sdk.Context, cq Queuer) {
+	var store sdk.KVStore
+	switch typ := cq.(type) {
+	case Queue:
+		store = typ.queue(ctx)
+	case BatchQueue:
+		store = typ.batchQueue(ctx)
+	default:
+		panic("cq type is unknown!")
+	}
+	iterator := store.Iterator(nil, nil)
+	deleteKeys := [][]byte{}
+	for ; iterator.Valid(); iterator.Valid() {
+		deleteKeys = append(deleteKeys, iterator.Key())
+	}
+
+	for _, key := range deleteKeys {
+		store.Delete(key)
+	}
 }

@@ -23,7 +23,7 @@ type (
 
 		valset types.ValsetKeeper
 
-		registry registry
+		registry *registry
 	}
 )
 
@@ -33,7 +33,7 @@ func NewKeeper(
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
 	valsetKeeper types.ValsetKeeper,
-	reg registry,
+	reg *registry,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {

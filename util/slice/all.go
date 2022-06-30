@@ -5,4 +5,3 @@ func All[A any, B any](in []A, f func(A)) {
 		f(el)
 	}
 }
-
