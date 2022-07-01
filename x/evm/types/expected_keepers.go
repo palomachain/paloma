@@ -22,6 +22,7 @@ type BankKeeper interface {
 //go:generate mockery --name=ConsensusKeeper
 type ConsensusKeeper interface {
 	PutMessageForSigning(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg) error
+	RemoveConsensusQueue(ctx sdk.Context, queueTypeName string) error
 }
 
 type ValsetKeeper interface {

@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
@@ -15,6 +17,7 @@ import (
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/vizualni/whoops"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -26,7 +29,8 @@ import (
 )
 
 const (
-	maxPower = 1 << 32
+	maxPower                     = 1 << 32
+	thresholdForConsensus uint64 = 2_863_311_530
 )
 const (
 	ConsensusTurnstoneMessage = "evm-turnstone-message"
@@ -66,6 +70,7 @@ type Keeper struct {
 
 	ConsensusKeeper types.ConsensusKeeper
 	Valset          types.ValsetKeeper
+	ider            keeperutil.IDGenerator
 }
 
 func NewKeeper(
@@ -79,12 +84,16 @@ func NewKeeper(
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
-	return &Keeper{
+	k := &Keeper{
 		cdc:        cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
 		paramstore: ps,
 	}
+
+	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.smartContractsStore), []byte("id-key"))
+
+	return k
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
@@ -114,11 +123,41 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	)
 }
 
-func (k Keeper) addUploadSmartContractToConsensus(
-	ctx sdk.Context,
-	chainID string,
-	upload *types.UploadSmartContract,
-) error {
+func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainID, abiJSON string, bytecode []byte) error {
+	contractABI, err := abi.JSON(strings.NewReader(abiJSON))
+	if err != nil {
+		return err
+	}
+
+	chainInfo, err := k.GetChainInfo(ctx, chainID)
+	if err != nil {
+		return err
+	}
+
+	if chainInfo.GetStatus() == types.ChainInfo_IN_PROPOSAL {
+		k.Logger(ctx).Info("skipping chain as it's in proposal", "chain-id", chainID)
+		return nil
+	}
+
+	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
+	if err != nil {
+		return err
+	}
+	smartContractID := generateSmartContractID(ctx)
+	valset := transformSnapshotToTurnstoneValset(snapshot, chainID)
+
+	if !isEnoughToReachConsensus(valset) {
+		k.Logger(ctx).Info("skipping as there are not enough validators", "chain-id", chainInfo.GetChainID())
+		return nil
+	}
+
+	// set the smart contract constructor arguments
+	input, err := contractABI.Pack("", smartContractID, valset)
+	if err != nil {
+		return err
+
+	}
+
 	return k.ConsensusKeeper.PutMessageForSigning(
 		ctx,
 		consensustypes.Queue(
@@ -129,10 +168,70 @@ func (k Keeper) addUploadSmartContractToConsensus(
 		&types.Message{
 			ChainID: chainID,
 			Action: &types.Message_UploadSmartContract{
-				UploadSmartContract: upload,
+				UploadSmartContract: &types.UploadSmartContract{
+					Bytecode:         bytecode,
+					Abi:              abiJSON,
+					ConstructorInput: input,
+				},
 			},
 		},
 	)
+}
+
+func (k Keeper) UpdateWithSmartContract(ctx sdk.Context, abiJSON string, bytecode []byte) error {
+	ctx, write := ctx.CacheContext()
+
+	smartContract := &types.SmartContract{
+		Id:       k.ider.IncrementNextID(ctx, "smart-contract"),
+		AbiJSON:  abiJSON,
+		Bytecode: bytecode,
+	}
+
+	err := keeperutil.Save(k.lastSmartContractStore(ctx), k.cdc, lastSmartContractKey, smartContract)
+	if err != nil {
+		return err
+	}
+
+	err = keeperutil.Save(k.smartContractsStore(ctx), k.cdc, keeperutil.Uint64ToByte(smartContract.GetId()), smartContract)
+	if err != nil {
+		return err
+	}
+
+	err = k.tryDeployingSmartContract(ctx)
+	if err != nil {
+		return err
+	}
+
+	write()
+
+	return nil
+}
+
+func (k Keeper) tryDeployingSmartContract(ctx sdk.Context) error {
+	var g whoops.Group
+	chainInfos, err := k.getAllChainInfos(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	smartContract, err := k.getLastSmartContract(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, chainInfo := range chainInfos {
+		if chainInfo.SmartContractVersion != smartContract.GetId() {
+			g.Add(k.deploySmartContractToChain(ctx, chainInfo.GetChainID(), smartContract.GetAbiJSON(), smartContract.GetBytecode()))
+		}
+
+	}
+
+	if g.Err() {
+		return g
+	}
+
+	return nil
 }
 
 // {"target_contract_info":{"method":"foo","chain_id":"abc","compass_id":"abc","contract_address":"0xabc","smart_contract_abi":"abc"},"paloma_address":"paloma1sp6yeu2cdemlh0jpterpe3as9mvx36ck6ys0ce","eth_address":[0,0,0,0,0,0,0,0,0,0,0,0,22,248,182,92,183,148,210,0,134,193,229,48,158,88,192,76,57,198,237,233]}
@@ -212,6 +311,9 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.QueueOpti
 	res := make(map[string]consensus.QueueOptions)
 
 	for _, chainInfo := range chains {
+		if !chainInfo.IsActive() {
+			continue
+		}
 		for subQueue, queueInfo := range SupportedConsensusQueues {
 
 			queue := fmt.Sprintf("EVM/%s/%s", chainInfo.ChainID, subQueue)
@@ -257,10 +359,10 @@ func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ChainInfo, error) {
 	return all, err
 }
 
-func (k Keeper) getChainInfo(ctx sdk.Context, targetChainID string) (*types.ChainInfo, error) {
+func (k Keeper) GetChainInfo(ctx sdk.Context, targetChainID string) (*types.ChainInfo, error) {
 	res, err := keeperutil.Load[*types.ChainInfo](k.chainInfoStore(ctx), k.cdc, []byte(targetChainID))
 	if errors.Is(err, keeperutil.ErrNotFound) {
-		return nil, nil
+		return nil, ErrChainNotFound.Format(targetChainID)
 	}
 	return res, nil
 }
@@ -269,22 +371,71 @@ func (k Keeper) updateChainInfo(ctx sdk.Context, chainInfo *types.ChainInfo) err
 	return keeperutil.Save(k.chainInfoStore(ctx), k.cdc, []byte(chainInfo.GetChainID()), chainInfo)
 }
 
-func (k Keeper) AddSupportForNewChain(ctx sdk.Context, chainInfo *types.ChainInfo) error {
-	existing, err := k.getChainInfo(ctx, chainInfo.GetChainID())
-	if err != nil {
-		return err
+func (k Keeper) AddSupportForNewChain(ctx sdk.Context, addChain *types.AddChainProposal) error {
+	_, err := k.GetChainInfo(ctx, addChain.GetChainID())
+	if !errors.Is(err, ErrChainNotFound) {
+		// we want chain not to exist when adding a new one!
+		if err != nil {
+			err = whoops.String("expected chain not to exist")
+		}
+		return whoops.Wrap(ErrUnexpectedError, err)
 	}
-	if existing != nil {
-		// TODO: test this
-		return fmt.Errorf("WHAAAAAAAAAAAT")
+	chainInfo := &types.ChainInfo{
+		ChainID:              addChain.GetChainID(),
+		ReferenceBlockHeight: addChain.GetBlockHeight(),
+		ReferenceBlockHash:   addChain.GetBlockHashAtHeight(),
+		Status:               types.ChainInfo_WAITING_FOR_EVIDENCE,
 	}
 	return k.updateChainInfo(ctx, chainInfo)
 }
 
-func (k Keeper) supportForNewEVM(ctx sdk.Context, targetChainID, turnstoneID string) {}
+func (k Keeper) ActivateChainID(ctx sdk.Context, chainID, smartContractAddr, smartContractID string) error {
+	chainInfo, err := k.GetChainInfo(ctx, chainID)
+	if err != nil {
+		return err
+	}
+	chainInfo.Status = types.ChainInfo_ACTIVE
+	chainInfo.SmartContractAddr = smartContractAddr
+	chainInfo.SmartContractID = smartContractID
+	return k.updateChainInfo(ctx, chainInfo)
+}
+
+func (k Keeper) RemoveSupportForChain(ctx sdk.Context, proposal *types.RemoveChainProposal) error {
+	_, err := k.GetChainInfo(ctx, proposal.GetChainID())
+	if err != nil {
+		return err
+	}
+
+	k.chainInfoStore(ctx).Delete([]byte(proposal.GetChainID()))
+
+	for subQueue := range SupportedConsensusQueues {
+		queue := fmt.Sprintf("EVM/%s/%s", proposal.GetChainID(), subQueue)
+		k.ConsensusKeeper.RemoveConsensusQueue(ctx, queue)
+	}
+
+	return nil
+}
 
 func (k Keeper) chainInfoStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("chain-info"))
+}
+
+func (k Keeper) smartContractsStore(ctx sdk.Context) sdk.KVStore {
+	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("smart-contracts"))
+}
+
+var lastSmartContractKey = []byte{0x1}
+
+func (k Keeper) lastSmartContractStore(ctx sdk.Context) sdk.KVStore {
+	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("latest-smart-contract"))
+}
+
+func (k Keeper) getSmartContract(ctx sdk.Context, id uint64) (*types.SmartContract, error) {
+	return keeperutil.Load[*types.SmartContract](k.smartContractsStore(ctx), k.cdc, keeperutil.Uint64ToByte(id))
+}
+
+func (k Keeper) getLastSmartContract(ctx sdk.Context) (*types.SmartContract, error) {
+	return keeperutil.Load[*types.SmartContract](k.lastSmartContractStore(ctx), k.cdc, lastSmartContractKey)
 }
 
 func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
@@ -293,7 +444,14 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		panic(err)
 	}
 	for _, chain := range chainInfos {
+		if !chain.IsActive() {
+			continue
+		}
 		valset := transformSnapshotToTurnstoneValset(snapshot, chain.GetChainID())
+
+		if !isEnoughToReachConsensus(valset) {
+			continue
+		}
 
 		k.ConsensusKeeper.PutMessageForSigning(
 			ctx,
@@ -309,6 +467,20 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 			},
 		)
 	}
+
+	// given that valset was changes, there still might be a chainID that had
+	// zero validators in the valset. This tries to update the state for those
+	// smart contracts to get them up online.
+	k.tryDeployingSmartContract(ctx)
+}
+
+func isEnoughToReachConsensus(val types.Valset) bool {
+	var sum uint64
+	for _, power := range val.Powers {
+		sum += power
+	}
+
+	return sum >= thresholdForConsensus
 }
 
 func transformSnapshotToTurnstoneValset(snapshot *valsettypes.Snapshot, chainID string) types.Valset {
@@ -343,4 +515,10 @@ func transformSnapshotToTurnstoneValset(snapshot *valsettypes.Snapshot, chainID 
 	}
 
 	return valset
+}
+
+func generateSmartContractID(ctx sdk.Context) (res [32]byte) {
+	hs := ctx.HeaderHash()[:32].String()
+	copy(res[:], []byte(hs))
+	return
 }

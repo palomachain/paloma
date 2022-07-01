@@ -22,8 +22,7 @@ type BankKeeper interface {
 //go:generate mockery --srcpkg=github.com/cosmos/cosmos-sdk/x/staking/types --name=ValidatorI --structname=StakingValidatorI
 type StakingKeeper interface {
 	Validator(ctx sdk.Context, addr sdk.ValAddress) stakingtypes.ValidatorI
-	IterateBondedValidatorsByPower(ctx sdk.Context, fn func(index int64, validator stakingtypes.ValidatorI) (stop bool))
-	PowerReduction(ctx sdk.Context) sdk.Int
+	IterateValidators(ctx sdk.Context, fn func(index int64, validator stakingtypes.ValidatorI) (stop bool))
 }
 
 type OnSnapshotBuiltListener interface {

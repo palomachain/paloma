@@ -1,5 +1,4 @@
 syntax = "proto3";
-import "gogoproto/gogo.proto";
 
 package palomachain.paloma.evm;
 
@@ -11,5 +10,26 @@ message ChainInfo {
   string smartContractID = 2;
 
   string smartContractAddr = 3;
+
+  // used to verify by pigeons if they are at the correct chain
+  uint64 referenceBlockHeight = 4;
+  string referenceBlockHash = 5;
+
+  string abi = 6;
+  bytes bytecode = 7;
+  bytes constructorInput = 8;
+  enum Status {
+    IN_PROPOSAL = 0;
+    ACTIVE = 1;
+    WAITING_FOR_EVIDENCE = 2;
+  }
+  Status status = 9;
+
+  uint64 smartContractVersion = 10;
 }
 
+message SmartContract {
+  uint64 id = 1;
+  string abiJSON = 2;
+  bytes bytecode = 3;
+}

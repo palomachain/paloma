@@ -17,7 +17,7 @@ func (k Keeper) CheckAndProcessAttestedMessages(ctx sdk.Context) error {
 		return nil
 	}
 
-	for _, supportedConsensusQueue := range *k.registry.slice {
+	for _, supportedConsensusQueue := range k.registry.slice {
 		atts, err := supportedConsensusQueue.SupportedQueues(ctx)
 		if err != nil {
 			return err

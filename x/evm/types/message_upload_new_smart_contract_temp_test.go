@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/stretchr/testify/require"
 	"github.com/palomachain/paloma/testutil/sample"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMsgUploadNewSmartContractTemp_ValidateBasic(t *testing.T) {

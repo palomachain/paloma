@@ -51,20 +51,6 @@ func (_m *Queuer) ChainInfo() (string, string) {
 	return r0, r1
 }
 
-// ConsensusQueue provides a mock function with given fields:
-func (_m *Queuer) ConsensusQueue() string {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	return r0
-}
-
 // GetAll provides a mock function with given fields: _a0
 func (_m *Queuer) GetAll(_a0 types.Context) ([]consensustypes.QueuedSignedMessageI, error) {
 	ret := _m.Called(_a0)
