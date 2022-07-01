@@ -18,7 +18,7 @@ func CmdAddExternalChainInfoForValidator() *cobra.Command {
 		Short: "Broadcast message AddExternalChainInfoForValidator",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			argChainID := args[0]
+			argChainReferenceID := args[0]
 			argAddress := args[1]
 
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -29,7 +29,7 @@ func CmdAddExternalChainInfoForValidator() *cobra.Command {
 			msg := &types.MsgAddExternalChainInfoForValidator{
 				ChainInfos: []*types.ExternalChainInfo{
 					{
-						ChainID: argChainID,
+						ChainReferenceID: argChainReferenceID,
 						Address: argAddress,
 					},
 				},

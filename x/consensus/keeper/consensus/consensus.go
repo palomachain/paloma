@@ -40,7 +40,7 @@ type QueueOptions struct {
 	VerifySignature       types.VerifySignatureFunc
 	ChainType             types.ChainType
 	Attestator            types.Attestator
-	ChainID               string
+	ChainReferenceID               string
 }
 
 type OptFnc func(*QueueOptions)
@@ -69,9 +69,9 @@ func WithVerifySignature(val types.VerifySignatureFunc) OptFnc {
 	}
 }
 
-func WithChainInfo(chainType, chainID string) OptFnc {
+func WithChainInfo(chainType, chainReferenceID string) OptFnc {
 	return func(opt *QueueOptions) {
-		opt.ChainID = chainID
+		opt.ChainReferenceID = chainReferenceID
 		opt.ChainType = types.ChainType(chainType)
 	}
 }
@@ -113,7 +113,7 @@ func NewQueue(qo QueueOptions) Queue {
 		panic("chain type can't be empty")
 	}
 
-	if len(qo.ChainID) == 0 {
+	if len(qo.ChainReferenceID) == 0 {
 		panic("chain id can't be empty")
 	}
 
@@ -270,7 +270,7 @@ func (c Queue) signingQueueKey() string {
 }
 
 func (c Queue) ChainInfo() (types.ChainType, string) {
-	return c.qo.ChainType, c.qo.ChainID
+	return c.qo.ChainType, c.qo.ChainReferenceID
 }
 
 func RemoveQueueCompletely(ctx sdk.Context, cq Queuer) {

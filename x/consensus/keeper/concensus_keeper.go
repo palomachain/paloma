@@ -194,13 +194,13 @@ func (k Keeper) AddMessageSignature(
 			cq := whoops.Must(
 				k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
 			)
-			chainType, chainID := cq.ChainInfo()
+			chainType, chainReferenceID := cq.ChainInfo()
 
 			publicKey := whoops.Must(k.valset.GetSigningKey(
 				ctx,
 				valAddr,
 				chainType,
-				chainID,
+				chainReferenceID,
 				msg.GetSignedByAddress(),
 			))
 

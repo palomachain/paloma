@@ -32,7 +32,7 @@ message UploadSmartContract {
 
 message Message {
   string turnstoneID = 1;
-  string chainID = 2;
+  string chainReferenceID = 2;
 
   oneof action {
     SubmitLogicCall submitLogicCall = 3;

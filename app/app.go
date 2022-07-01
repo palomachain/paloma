@@ -452,7 +452,7 @@ func New(
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
-		AddRoute(evmmoduletypes.RouterKey, evm.NewChainIDProposalHandler(app.EvmKeeper))
+		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper))
 
 	app.GovKeeper = govkeeper.NewKeeper(
 		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,

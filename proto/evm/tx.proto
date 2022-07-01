@@ -21,7 +21,7 @@ message MsgSubmitNewJob {
   string method = 5;
 
   string chainType = 6;
-  string chainID = 7;
+  string chainReferenceID = 7;
 }
 
 message MsgSubmitNewJobResponse {
@@ -32,7 +32,7 @@ message MsgUploadNewSmartContractTemp {
   string abi = 2;
   string bytecode = 3;
   string constructorInput = 4;
-  string chainID = 5;
+  string chainReferenceID = 5;
 }
 
 message MsgUploadNewSmartContractTempResponse {

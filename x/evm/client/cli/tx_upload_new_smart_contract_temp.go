@@ -21,7 +21,7 @@ func CmdUploadNewSmartContractTemp() *cobra.Command {
 			argAbi := args[0]
 			argBytecode := args[1]
 			argConstructorInput := args[2]
-			argChainID := args[3]
+			argChainReferenceID := args[3]
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -33,7 +33,7 @@ func CmdUploadNewSmartContractTemp() *cobra.Command {
 				argAbi,
 				argBytecode,
 				argConstructorInput,
-				argChainID,
+				argChainReferenceID,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err

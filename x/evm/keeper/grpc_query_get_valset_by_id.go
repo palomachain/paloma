@@ -32,7 +32,7 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 		return nil, err
 	}
 
-	valset := transformSnapshotToTurnstoneValset(snapshot, req.GetChainID())
+	valset := transformSnapshotToTurnstoneValset(snapshot, req.GetChainReferenceID())
 
 	return &types.QueryGetValsetByIDResponse{
 		Valset: &valset,

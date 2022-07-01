@@ -99,7 +99,7 @@ func (k Keeper) AddExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, ne
 
 	eq := func(a, b *types.ExternalChainInfo) bool {
 		return a.Address == b.Address &&
-			a.ChainID == b.ChainID &&
+			a.ChainReferenceID == b.ChainReferenceID &&
 			a.ChainType == b.ChainType
 	}
 
@@ -115,7 +115,7 @@ func (k Keeper) AddExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, ne
 		for _, existingChainInfo := range existingVal.ExternalChainInfo {
 			for _, chain := range newChainInfo {
 				if eq(existingChainInfo, chain) {
-					return ErrExternalChainAlreadyRegistered.Format(chain.ChainID, chain.Address)
+					return ErrExternalChainAlreadyRegistered.Format(chain.ChainReferenceID, chain.Address)
 				}
 			}
 		}
@@ -245,19 +245,19 @@ func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ValidatorExternalAcc
 }
 
 // GetSigningKey returns a signing key used by the conductor to sign arbitrary messages.
-func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType, chainID, signedByAddress string) ([]byte, error) {
+func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType, chainReferenceID, signedByAddress string) ([]byte, error) {
 	externalAccounts, err := k.getValidatorChainInfos(ctx, valAddr)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, acc := range externalAccounts {
-		if acc.ChainID == chainID && acc.ChainType == chainType && acc.Address == signedByAddress {
+		if acc.ChainReferenceID == chainReferenceID && acc.ChainType == chainType && acc.Address == signedByAddress {
 			return acc.Pubkey, nil
 		}
 	}
 
-	return nil, ErrSigningKeyNotFound.Format(valAddr.String(), chainType, chainID)
+	return nil, ErrSigningKeyNotFound.Format(valAddr.String(), chainType, chainReferenceID)
 }
 
 func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {

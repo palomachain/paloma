@@ -59,14 +59,14 @@ func genValidators(t *testing.T, numValidators, totalConsPower int) []stakingtyp
 }
 
 func TestEndToEndForEvmArbitraryCall(t *testing.T) {
-	chainType, chainID := consensustypes.ChainTypeEVM, "eth-main"
+	chainType, chainReferenceID := consensustypes.ChainTypeEVM, "eth-main"
 	a := app.NewTestApp(t, false)
 	ctx := a.NewContext(false, tmproto.Header{
 		Height: 5,
 	})
 
 	newChain := &types.AddChainProposal{
-		ChainID:           "eth-main",
+		ChainReferenceID:           "eth-main",
 		Title:             "bla",
 		Description:       "bla",
 		BlockHeight:       uint64(123),
@@ -76,7 +76,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 	require.NoError(t, err)
 
-	err = a.EvmKeeper.ActivateChainID(ctx, newChain.ChainID, "addr", "id")
+	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, "addr", "id")
 	require.NoError(t, err)
 
 	validators := genValidators(t, 25, 25000)
@@ -87,7 +87,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	smartContractAddr := common.BytesToAddress(rand.Bytes(5))
 	err = a.EvmKeeper.AddSmartContractExecutionToConsensus(
 		ctx,
-		chainID,
+		chainReferenceID,
 		"",
 		&types.SubmitLogicCall{
 			Payload: func() []byte {
@@ -109,14 +109,14 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	err = a.ValsetKeeper.AddExternalChainInfo(ctx, validators[0].GetOperator(), []*valsettypes.ExternalChainInfo{
 		{
 			ChainType: chainType,
-			ChainID:   chainID,
+			ChainReferenceID:   chainReferenceID,
 			Address:   accAddr.Hex(),
 			Pubkey:    accAddr[:],
 		},
 	})
 
 	require.NoError(t, err)
-	queue := consensustypes.Queue(keeper.ConsensusTurnstoneMessage, chainType, chainID)
+	queue := consensustypes.Queue(keeper.ConsensusTurnstoneMessage, chainType, chainReferenceID)
 	msgs, err := a.ConsensusKeeper.GetMessagesForSigning(ctx, queue, validators[0].GetOperator())
 
 	for _, msg := range msgs {
@@ -152,7 +152,7 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	})
 
 	newChain := &types.AddChainProposal{
-		ChainID:           "bob",
+		ChainReferenceID:           "bob",
 		Title:             "bla",
 		Description:       "bla",
 		BlockHeight:       uint64(123),
@@ -160,7 +160,7 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	}
 	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 	require.NoError(t, err)
-	err = a.EvmKeeper.ActivateChainID(ctx, newChain.ChainID, "addr", "id")
+	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, "addr", "id")
 	require.NoError(t, err)
 
 	validators := genValidators(t, 25, 25000)
@@ -169,7 +169,7 @@ func TestOnSnapshotBuilt(t *testing.T) {
 		err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
 			{
 				ChainType: "EVM",
-				ChainID:   "bob",
+				ChainReferenceID:   "bob",
 				Address:   rand.ETHAddress().Hex(),
 				Pubkey:    []byte("pk"),
 			},
@@ -177,7 +177,7 @@ func TestOnSnapshotBuilt(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	queue := fmt.Sprintf("EVM/%s/%s", newChain.GetChainID(), keeper.ConsensusTurnstoneMessage)
+	queue := fmt.Sprintf("EVM/%s/%s", newChain.GetChainReferenceID(), keeper.ConsensusTurnstoneMessage)
 
 	msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
 	require.NoError(t, err)
@@ -200,7 +200,7 @@ func TestAddingSupportForNewChain(t *testing.T) {
 
 	t.Run("with happy path there are no errors", func(t *testing.T) {
 		newChain := &types.AddChainProposal{
-			ChainID:           "bob",
+			ChainReferenceID:           "bob",
 			Title:             "bla",
 			Description:       "bla",
 			BlockHeight:       uint64(123),
@@ -209,17 +209,17 @@ func TestAddingSupportForNewChain(t *testing.T) {
 		err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 		require.NoError(t, err)
 
-		gotChainInfo, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainID())
+		gotChainInfo, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
 		require.NoError(t, err)
 
-		require.Equal(t, newChain.GetChainID(), gotChainInfo.GetChainID())
+		require.Equal(t, newChain.GetChainReferenceID(), gotChainInfo.GetChainReferenceID())
 		require.Equal(t, newChain.GetBlockHashAtHeight(), gotChainInfo.GetReferenceBlockHash())
 		require.Equal(t, newChain.GetBlockHeight(), gotChainInfo.GetReferenceBlockHeight())
 	})
 
-	t.Run("when chainID already exists then it returns an error", func(t *testing.T) {
+	t.Run("when chainReferenceID already exists then it returns an error", func(t *testing.T) {
 		newChain := &types.AddChainProposal{
-			ChainID:           "bob",
+			ChainReferenceID:           "bob",
 			Title:             "bla",
 			Description:       "bla",
 			BlockHeight:       uint64(123),
@@ -231,11 +231,11 @@ func TestAddingSupportForNewChain(t *testing.T) {
 
 	t.Run("activiting chain", func(t *testing.T) {
 		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
-			err := a.EvmKeeper.ActivateChainID(ctx, "i dont exist", "bla", "bob")
+			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "i dont exist", "bla", "bob")
 			require.Error(t, err)
 		})
 		t.Run("works when chain exists", func(t *testing.T) {
-			err := a.EvmKeeper.ActivateChainID(ctx, "bob", "addr", "id")
+			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "bob", "addr", "id")
 			require.NoError(t, err)
 			gotChainInfo, err := a.EvmKeeper.GetChainInfo(ctx, "bob")
 			require.NoError(t, err)
@@ -248,13 +248,13 @@ func TestAddingSupportForNewChain(t *testing.T) {
 	t.Run("removing chain", func(t *testing.T) {
 		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
 			err := a.EvmKeeper.RemoveSupportForChain(ctx, &types.RemoveChainProposal{
-				ChainID: "i don't exist",
+				ChainReferenceID: "i don't exist",
 			})
 			require.Error(t, err)
 		})
 		t.Run("works when chain exists", func(t *testing.T) {
 			err := a.EvmKeeper.RemoveSupportForChain(ctx, &types.RemoveChainProposal{
-				ChainID: "bob",
+				ChainReferenceID: "bob",
 			})
 			require.NoError(t, err)
 			_, err = a.EvmKeeper.GetChainInfo(ctx, "bob")

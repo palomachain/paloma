@@ -7,5 +7,5 @@ message RemoveChainProposal {
   
   string title = 1; 
   string description = 2; 
-  string chainID = 3; 
+  string chainReferenceID = 3; 
 }

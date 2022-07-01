@@ -72,6 +72,6 @@ func (b *Batch) GetSignBytes() []byte {
 	return b.GetBytesToSign()
 }
 
-func Queue(queueTypeName string, chainType ChainType, chainID string) string {
-	return fmt.Sprintf("%s/%s/%s", chainType, chainID, queueTypeName)
+func Queue(queueTypeName string, chainType ChainType, chainReferenceID string) string {
+	return fmt.Sprintf("%s/%s/%s", chainType, chainReferenceID, queueTypeName)
 }

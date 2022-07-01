@@ -56,7 +56,7 @@ message Snapshot {
 
 message ExternalChainInfo {
   string chainType = 1;
-  string chainID = 2;
+  string chainReferenceID = 2;
   string address = 3;
   bytes pubkey = 4;
 }
