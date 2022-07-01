@@ -21,6 +21,11 @@ service Query {
 		option (google.api.http).get = "/palomachain/paloma/evm/get_valset_by_id/{valsetID}";
 	}
 
+// Queries a list of ChainsInfos items.
+	rpc ChainsInfos(QueryChainsInfosRequest) returns (QueryChainsInfosResponse) {
+		option (google.api.http).get = "/palomachain/paloma/evm/chains_infos";
+	}
+
 // this line is used by starport scaffolding # 2
 }
 
@@ -40,6 +45,12 @@ message QueryGetValsetByIDRequest {
 
 message QueryGetValsetByIDResponse {
   Valset valset = 1;
+}
+
+message QueryChainsInfosRequest {
+}
+
+message QueryChainsInfosResponse {
 }
 
 // this line is used by starport scaffolding # 3
