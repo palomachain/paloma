@@ -16,23 +16,9 @@ type StakingKeeper struct {
 	mock.Mock
 }
 
-// IterateBondedValidatorsByPower provides a mock function with given fields: ctx, fn
-func (_m *StakingKeeper) IterateBondedValidatorsByPower(ctx types.Context, fn func(int64, stakingtypes.ValidatorI) bool) {
+// IterateValidators provides a mock function with given fields: ctx, fn
+func (_m *StakingKeeper) IterateValidators(ctx types.Context, fn func(int64, stakingtypes.ValidatorI) bool) {
 	_m.Called(ctx, fn)
-}
-
-// PowerReduction provides a mock function with given fields: ctx
-func (_m *StakingKeeper) PowerReduction(ctx types.Context) types.Int {
-	ret := _m.Called(ctx)
-
-	var r0 types.Int
-	if rf, ok := ret.Get(0).(func(types.Context) types.Int); ok {
-		r0 = rf(ctx)
-	} else {
-		r0 = ret.Get(0).(types.Int)
-	}
-
-	return r0
 }
 
 // Validator provides a mock function with given fields: ctx, addr

@@ -360,7 +360,7 @@ func New(
 		keys[valsetmoduletypes.StoreKey],
 		keys[valsetmoduletypes.MemStoreKey],
 		app.GetSubspace(valsetmoduletypes.ModuleName),
-		stakingKeeper,
+		app.StakingKeeper,
 	)
 
 	consensusRegistry := consensusmodulekeeper.NewRegistry()

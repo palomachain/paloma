@@ -29,7 +29,8 @@ import (
 )
 
 const (
-	maxPower = 1 << 32
+	maxPower                     = 1 << 32
+	thresholdForConsensus uint64 = 2_863_311_530
 )
 const (
 	ConsensusTurnstoneMessage = "evm-turnstone-message"
@@ -145,7 +146,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainID, abiJSON str
 	smartContractID := generateSmartContractID(ctx)
 	valset := transformSnapshotToTurnstoneValset(snapshot, chainID)
 
-	if len(valset.Validators) == 0 {
+	if !isEnoughToReachConsensus(valset) {
 		k.Logger(ctx).Info("skipping as there are not enough validators", "chain-id", chainInfo.GetChainID())
 		return nil
 	}
@@ -448,6 +449,10 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		}
 		valset := transformSnapshotToTurnstoneValset(snapshot, chain.GetChainID())
 
+		if !isEnoughToReachConsensus(valset) {
+			continue
+		}
+
 		k.ConsensusKeeper.PutMessageForSigning(
 			ctx,
 			consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.GetChainID()),
@@ -463,10 +468,19 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		)
 	}
 
-	// given that valset was changes, there still might be a smart contract
-	// that had zero validators in the valset for the given chain ID. This
-	// tries to update the state for those smart contracts.
+	// given that valset was changes, there still might be a chainID that had
+	// zero validators in the valset. This tries to update the state for those
+	// smart contracts to get them up online.
 	k.tryDeployingSmartContract(ctx)
+}
+
+func isEnoughToReachConsensus(val types.Valset) bool {
+	var sum uint64
+	for _, power := range val.Powers {
+		sum += power
+	}
+
+	return sum >= thresholdForConsensus
 }
 
 func transformSnapshotToTurnstoneValset(snapshot *valsettypes.Snapshot, chainID string) types.Valset {

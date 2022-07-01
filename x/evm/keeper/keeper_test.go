@@ -166,6 +166,15 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	validators := genValidators(t, 25, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
+		err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+			{
+				ChainType: "EVM",
+				ChainID:   "bob",
+				Address:   rand.ETHAddress().Hex(),
+				Pubkey:    []byte("pk"),
+			},
+		})
+		require.NoError(t, err)
 	}
 
 	queue := fmt.Sprintf("EVM/%s/%s", newChain.GetChainID(), keeper.ConsensusTurnstoneMessage)
@@ -174,9 +183,8 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, msgs)
 
-	snapshot, err := a.ValsetKeeper.TriggerSnapshotBuild(ctx)
+	_, err = a.ValsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
-	a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
 
 	msgs, err = a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
 	require.NoError(t, err)
