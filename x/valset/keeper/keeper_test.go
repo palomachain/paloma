@@ -100,12 +100,15 @@ func TestCreatingSnapshots(t *testing.T) {
 	vali1.On("GetBondedTokens").Return(sdk.NewInt(888))
 	vali2.On("GetBondedTokens").Return(sdk.NewInt(222))
 
+	vali1.On("IsBonded").Return(true)
+	vali2.On("IsBonded").Return(true)
+
 	k, ms, ctx := newValsetKeeper(t)
 
 	ms.StakingKeeper.On("Validator", ctx, val1).Return(vali1)
 	ms.StakingKeeper.On("Validator", ctx, val2).Return(vali2)
 
-	ms.StakingKeeper.On("IterateBondedValidatorsByPower", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+	ms.StakingKeeper.On("IterateValidators", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
 		type fnc = func(int64, stakingtypes.ValidatorI) bool
 		f := args.Get(1).(fnc)
 		f(0, vali1)

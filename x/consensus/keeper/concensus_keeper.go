@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -17,7 +15,7 @@ const (
 
 // getConsensusQueue gets the consensus queue for the given type.
 func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consensus.Queuer, error) {
-	for _, q := range *k.registry.slice {
+	for _, q := range k.registry.slice {
 		supportedQueues, err := q.SupportedQueues(ctx)
 		if err != nil {
 			return nil, err
@@ -45,6 +43,15 @@ func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consen
 		return consensus.NewQueue(opts), nil
 	}
 	return nil, ErrConsensusQueueNotImplemented.Format(queueTypeName)
+}
+
+func (k Keeper) RemoveConsensusQueue(ctx sdk.Context, queueTypeName string) error {
+	cq, err := k.getConsensusQueue(ctx, queueTypeName)
+	if err != nil {
+		return err
+	}
+	consensus.RemoveQueueCompletely(ctx, cq)
+	return nil
 }
 
 func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg) error {
@@ -126,7 +133,6 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 
 	err := whoops.Try(func() {
 		cq, err := k.getConsensusQueue(ctx, queueTypeName)
-		fmt.Println("AAAAAAAA", err, queueTypeName, cq)
 		whoops.Assert(err)
 
 		msgs := whoops.Must(cq.GetAll(ctx))

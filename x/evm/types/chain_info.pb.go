@@ -5,7 +5,6 @@ package types
 
 import (
 	fmt "fmt"
-	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
@@ -23,10 +22,46 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+type ChainInfo_Status int32
+
+const (
+	ChainInfo_IN_PROPOSAL          ChainInfo_Status = 0
+	ChainInfo_ACTIVE               ChainInfo_Status = 1
+	ChainInfo_WAITING_FOR_EVIDENCE ChainInfo_Status = 2
+)
+
+var ChainInfo_Status_name = map[int32]string{
+	0: "IN_PROPOSAL",
+	1: "ACTIVE",
+	2: "WAITING_FOR_EVIDENCE",
+}
+
+var ChainInfo_Status_value = map[string]int32{
+	"IN_PROPOSAL":          0,
+	"ACTIVE":               1,
+	"WAITING_FOR_EVIDENCE": 2,
+}
+
+func (x ChainInfo_Status) String() string {
+	return proto.EnumName(ChainInfo_Status_name, int32(x))
+}
+
+func (ChainInfo_Status) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_439fc96864abe15f, []int{0, 0}
+}
+
 type ChainInfo struct {
 	ChainID           string `protobuf:"bytes,1,opt,name=chainID,proto3" json:"chainID,omitempty"`
 	SmartContractID   string `protobuf:"bytes,2,opt,name=smartContractID,proto3" json:"smartContractID,omitempty"`
 	SmartContractAddr string `protobuf:"bytes,3,opt,name=smartContractAddr,proto3" json:"smartContractAddr,omitempty"`
+	// used to verify by pigeons if they are at the correct chain
+	ReferenceBlockHeight uint64           `protobuf:"varint,4,opt,name=referenceBlockHeight,proto3" json:"referenceBlockHeight,omitempty"`
+	ReferenceBlockHash   string           `protobuf:"bytes,5,opt,name=referenceBlockHash,proto3" json:"referenceBlockHash,omitempty"`
+	Abi                  string           `protobuf:"bytes,6,opt,name=abi,proto3" json:"abi,omitempty"`
+	Bytecode             []byte           `protobuf:"bytes,7,opt,name=bytecode,proto3" json:"bytecode,omitempty"`
+	ConstructorInput     []byte           `protobuf:"bytes,8,opt,name=constructorInput,proto3" json:"constructorInput,omitempty"`
+	Status               ChainInfo_Status `protobuf:"varint,9,opt,name=status,proto3,enum=palomachain.paloma.evm.ChainInfo_Status" json:"status,omitempty"`
+	SmartContractVersion uint64           `protobuf:"varint,10,opt,name=smartContractVersion,proto3" json:"smartContractVersion,omitempty"`
 }
 
 func (m *ChainInfo) Reset()         { *m = ChainInfo{} }
@@ -83,27 +118,153 @@ func (m *ChainInfo) GetSmartContractAddr() string {
 	return ""
 }
 
+func (m *ChainInfo) GetReferenceBlockHeight() uint64 {
+	if m != nil {
+		return m.ReferenceBlockHeight
+	}
+	return 0
+}
+
+func (m *ChainInfo) GetReferenceBlockHash() string {
+	if m != nil {
+		return m.ReferenceBlockHash
+	}
+	return ""
+}
+
+func (m *ChainInfo) GetAbi() string {
+	if m != nil {
+		return m.Abi
+	}
+	return ""
+}
+
+func (m *ChainInfo) GetBytecode() []byte {
+	if m != nil {
+		return m.Bytecode
+	}
+	return nil
+}
+
+func (m *ChainInfo) GetConstructorInput() []byte {
+	if m != nil {
+		return m.ConstructorInput
+	}
+	return nil
+}
+
+func (m *ChainInfo) GetStatus() ChainInfo_Status {
+	if m != nil {
+		return m.Status
+	}
+	return ChainInfo_IN_PROPOSAL
+}
+
+func (m *ChainInfo) GetSmartContractVersion() uint64 {
+	if m != nil {
+		return m.SmartContractVersion
+	}
+	return 0
+}
+
+type SmartContract struct {
+	Id       uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	AbiJSON  string `protobuf:"bytes,2,opt,name=abiJSON,proto3" json:"abiJSON,omitempty"`
+	Bytecode []byte `protobuf:"bytes,3,opt,name=bytecode,proto3" json:"bytecode,omitempty"`
+}
+
+func (m *SmartContract) Reset()         { *m = SmartContract{} }
+func (m *SmartContract) String() string { return proto.CompactTextString(m) }
+func (*SmartContract) ProtoMessage()    {}
+func (*SmartContract) Descriptor() ([]byte, []int) {
+	return fileDescriptor_439fc96864abe15f, []int{1}
+}
+func (m *SmartContract) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *SmartContract) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SmartContract.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *SmartContract) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SmartContract.Merge(m, src)
+}
+func (m *SmartContract) XXX_Size() int {
+	return m.Size()
+}
+func (m *SmartContract) XXX_DiscardUnknown() {
+	xxx_messageInfo_SmartContract.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SmartContract proto.InternalMessageInfo
+
+func (m *SmartContract) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *SmartContract) GetAbiJSON() string {
+	if m != nil {
+		return m.AbiJSON
+	}
+	return ""
+}
+
+func (m *SmartContract) GetBytecode() []byte {
+	if m != nil {
+		return m.Bytecode
+	}
+	return nil
+}
+
 func init() {
+	proto.RegisterEnum("palomachain.paloma.evm.ChainInfo_Status", ChainInfo_Status_name, ChainInfo_Status_value)
 	proto.RegisterType((*ChainInfo)(nil), "palomachain.paloma.evm.ChainInfo")
+	proto.RegisterType((*SmartContract)(nil), "palomachain.paloma.evm.SmartContract")
 }
 
 func init() { proto.RegisterFile("evm/chain_info.proto", fileDescriptor_439fc96864abe15f) }
 
 var fileDescriptor_439fc96864abe15f = []byte{
-	// 204 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x49, 0x2d, 0xcb, 0xd5,
-	0x4f, 0xce, 0x48, 0xcc, 0xcc, 0x8b, 0xcf, 0xcc, 0x4b, 0xcb, 0xd7, 0x2b, 0x28, 0xca, 0x2f, 0xc9,
-	0x17, 0x12, 0x2b, 0x48, 0xcc, 0xc9, 0xcf, 0x4d, 0x04, 0x8b, 0xeb, 0x41, 0xd8, 0x7a, 0xa9, 0x65,
-	0xb9, 0x52, 0x22, 0xe9, 0xf9, 0xe9, 0xf9, 0x60, 0x25, 0xfa, 0x20, 0x16, 0x44, 0xb5, 0x52, 0x2d,
-	0x17, 0xa7, 0x33, 0x48, 0xa5, 0x67, 0x5e, 0x5a, 0xbe, 0x90, 0x04, 0x17, 0x3b, 0x58, 0x9b, 0xa7,
-	0x8b, 0x04, 0xa3, 0x02, 0xa3, 0x06, 0x67, 0x10, 0x8c, 0x2b, 0xa4, 0xc1, 0xc5, 0x5f, 0x9c, 0x9b,
-	0x58, 0x54, 0xe2, 0x9c, 0x9f, 0x57, 0x52, 0x94, 0x98, 0x5c, 0xe2, 0xe9, 0x22, 0xc1, 0x04, 0x56,
-	0x81, 0x2e, 0x2c, 0xa4, 0xc3, 0x25, 0x88, 0x22, 0xe4, 0x98, 0x92, 0x52, 0x24, 0xc1, 0x0c, 0x56,
-	0x8b, 0x29, 0xe1, 0xe4, 0x7c, 0xe2, 0x91, 0x1c, 0xe3, 0x85, 0x47, 0x72, 0x8c, 0x0f, 0x1e, 0xc9,
-	0x31, 0x4e, 0x78, 0x2c, 0xc7, 0x70, 0xe1, 0xb1, 0x1c, 0xc3, 0x8d, 0xc7, 0x72, 0x0c, 0x51, 0x9a,
-	0xe9, 0x99, 0x25, 0x19, 0xa5, 0x49, 0x7a, 0xc9, 0xf9, 0xb9, 0xfa, 0x48, 0x3e, 0x82, 0xb2, 0xf5,
-	0x2b, 0xf4, 0x41, 0x9e, 0x2f, 0xa9, 0x2c, 0x48, 0x2d, 0x4e, 0x62, 0x03, 0x7b, 0xc5, 0x18, 0x10,
-	0x00, 0x00, 0xff, 0xff, 0x44, 0x1b, 0xac, 0xff, 0x10, 0x01, 0x00, 0x00,
+	// 434 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x52, 0xd1, 0x6e, 0x12, 0x41,
+	0x14, 0x65, 0x00, 0xb7, 0xe5, 0xaa, 0xed, 0x3a, 0x21, 0x66, 0xe2, 0xc3, 0x86, 0xf0, 0xb4, 0x1a,
+	0xb3, 0x24, 0xf5, 0x03, 0x94, 0x2e, 0xa8, 0x63, 0x0c, 0x34, 0x4b, 0xc5, 0xc4, 0x17, 0x32, 0x3b,
+	0x3b, 0x94, 0x89, 0xdd, 0x19, 0x32, 0x3b, 0x34, 0xf6, 0x2f, 0xfc, 0x2c, 0x1f, 0xfb, 0xe8, 0xa3,
+	0x81, 0x3f, 0xf0, 0x0b, 0x9a, 0x1d, 0x68, 0x53, 0x0a, 0x6f, 0xf7, 0x9e, 0x73, 0xe6, 0x4e, 0xee,
+	0xb9, 0x07, 0x9a, 0xe2, 0x2a, 0xef, 0xf0, 0x19, 0x93, 0x6a, 0x22, 0xd5, 0x54, 0x47, 0x73, 0xa3,
+	0xad, 0xc6, 0x2f, 0xe7, 0xec, 0x52, 0xe7, 0xcc, 0xe1, 0xd1, 0xba, 0x8e, 0xc4, 0x55, 0xde, 0xfe,
+	0x5f, 0x83, 0x46, 0x5c, 0x82, 0x54, 0x4d, 0x35, 0x26, 0x70, 0xe0, 0x14, 0xb4, 0x47, 0x50, 0x0b,
+	0x85, 0x8d, 0xe4, 0xae, 0xc5, 0x21, 0x1c, 0x17, 0x39, 0x33, 0x36, 0xd6, 0xca, 0x1a, 0xc6, 0x2d,
+	0xed, 0x91, 0xaa, 0x53, 0x3c, 0x86, 0xf1, 0x5b, 0x78, 0xb1, 0x05, 0x75, 0xb3, 0xcc, 0x90, 0x9a,
+	0xd3, 0xee, 0x12, 0xf8, 0x04, 0x9a, 0x46, 0x4c, 0x85, 0x11, 0x8a, 0x8b, 0xd3, 0x4b, 0xcd, 0x7f,
+	0x7e, 0x16, 0xf2, 0x62, 0x66, 0x49, 0xbd, 0x85, 0xc2, 0x7a, 0xb2, 0x97, 0xc3, 0x11, 0xe0, 0x47,
+	0x38, 0x2b, 0x66, 0xe4, 0x89, 0xfb, 0x62, 0x0f, 0x83, 0x7d, 0xa8, 0xb1, 0x54, 0x12, 0xcf, 0x09,
+	0xca, 0x12, 0xbf, 0x82, 0xc3, 0xf4, 0xda, 0x0a, 0xae, 0x33, 0x41, 0x0e, 0x5a, 0x28, 0x7c, 0x96,
+	0xdc, 0xf7, 0xf8, 0x0d, 0xf8, 0x5c, 0xab, 0xc2, 0x9a, 0x05, 0xb7, 0xda, 0x50, 0x35, 0x5f, 0x58,
+	0x72, 0xe8, 0x34, 0x3b, 0x38, 0xfe, 0x00, 0x5e, 0x61, 0x99, 0x5d, 0x14, 0xa4, 0xd1, 0x42, 0xe1,
+	0xd1, 0x49, 0x18, 0xed, 0xb7, 0x39, 0xba, 0xb7, 0x38, 0x1a, 0x39, 0x7d, 0xb2, 0x79, 0x57, 0xee,
+	0xbf, 0x65, 0xca, 0x58, 0x98, 0x42, 0x6a, 0x45, 0x60, 0xbd, 0xff, 0x3e, 0xae, 0xfd, 0x1e, 0xbc,
+	0xf5, 0x14, 0x7c, 0x0c, 0x4f, 0xe9, 0x60, 0x72, 0x96, 0x0c, 0xcf, 0x86, 0xa3, 0xee, 0x57, 0xbf,
+	0x82, 0x01, 0xbc, 0x6e, 0x7c, 0x4e, 0xc7, 0x7d, 0x1f, 0x61, 0x02, 0xcd, 0xef, 0x5d, 0x7a, 0x4e,
+	0x07, 0x9f, 0x26, 0x1f, 0x87, 0xc9, 0xa4, 0x3f, 0xa6, 0xbd, 0xfe, 0x20, 0xee, 0xfb, 0xd5, 0xf6,
+	0x37, 0x78, 0x3e, 0x7a, 0x38, 0x18, 0x1f, 0x41, 0x55, 0x66, 0xee, 0xe4, 0xf5, 0xa4, 0x2a, 0xb3,
+	0x32, 0x07, 0x2c, 0x95, 0x5f, 0x46, 0xc3, 0xc1, 0xe6, 0xca, 0x77, 0xed, 0x96, 0x73, 0xb5, 0x6d,
+	0xe7, 0x4e, 0xe3, 0x3f, 0xcb, 0x00, 0xdd, 0x2c, 0x03, 0xf4, 0x6f, 0x19, 0xa0, 0xdf, 0xab, 0xa0,
+	0x72, 0xb3, 0x0a, 0x2a, 0x7f, 0x57, 0x41, 0xe5, 0xc7, 0xeb, 0x0b, 0x69, 0x67, 0x8b, 0x34, 0xe2,
+	0x3a, 0xef, 0x3c, 0x70, 0x68, 0x53, 0x77, 0x7e, 0x75, 0xca, 0xcc, 0xda, 0xeb, 0xb9, 0x28, 0x52,
+	0xcf, 0xe5, 0xf5, 0xdd, 0x6d, 0x00, 0x00, 0x00, 0xff, 0xff, 0x17, 0x0c, 0xd1, 0x40, 0xc7, 0x02,
+	0x00, 0x00,
 }
 
 func (m *ChainInfo) Marshal() (dAtA []byte, err error) {
@@ -126,6 +287,49 @@ func (m *ChainInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.SmartContractVersion != 0 {
+		i = encodeVarintChainInfo(dAtA, i, uint64(m.SmartContractVersion))
+		i--
+		dAtA[i] = 0x50
+	}
+	if m.Status != 0 {
+		i = encodeVarintChainInfo(dAtA, i, uint64(m.Status))
+		i--
+		dAtA[i] = 0x48
+	}
+	if len(m.ConstructorInput) > 0 {
+		i -= len(m.ConstructorInput)
+		copy(dAtA[i:], m.ConstructorInput)
+		i = encodeVarintChainInfo(dAtA, i, uint64(len(m.ConstructorInput)))
+		i--
+		dAtA[i] = 0x42
+	}
+	if len(m.Bytecode) > 0 {
+		i -= len(m.Bytecode)
+		copy(dAtA[i:], m.Bytecode)
+		i = encodeVarintChainInfo(dAtA, i, uint64(len(m.Bytecode)))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if len(m.Abi) > 0 {
+		i -= len(m.Abi)
+		copy(dAtA[i:], m.Abi)
+		i = encodeVarintChainInfo(dAtA, i, uint64(len(m.Abi)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if len(m.ReferenceBlockHash) > 0 {
+		i -= len(m.ReferenceBlockHash)
+		copy(dAtA[i:], m.ReferenceBlockHash)
+		i = encodeVarintChainInfo(dAtA, i, uint64(len(m.ReferenceBlockHash)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.ReferenceBlockHeight != 0 {
+		i = encodeVarintChainInfo(dAtA, i, uint64(m.ReferenceBlockHeight))
+		i--
+		dAtA[i] = 0x20
+	}
 	if len(m.SmartContractAddr) > 0 {
 		i -= len(m.SmartContractAddr)
 		copy(dAtA[i:], m.SmartContractAddr)
@@ -146,6 +350,48 @@ func (m *ChainInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintChainInfo(dAtA, i, uint64(len(m.ChainID)))
 		i--
 		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *SmartContract) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SmartContract) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SmartContract) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Bytecode) > 0 {
+		i -= len(m.Bytecode)
+		copy(dAtA[i:], m.Bytecode)
+		i = encodeVarintChainInfo(dAtA, i, uint64(len(m.Bytecode)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.AbiJSON) > 0 {
+		i -= len(m.AbiJSON)
+		copy(dAtA[i:], m.AbiJSON)
+		i = encodeVarintChainInfo(dAtA, i, uint64(len(m.AbiJSON)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Id != 0 {
+		i = encodeVarintChainInfo(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -176,6 +422,51 @@ func (m *ChainInfo) Size() (n int) {
 		n += 1 + l + sovChainInfo(uint64(l))
 	}
 	l = len(m.SmartContractAddr)
+	if l > 0 {
+		n += 1 + l + sovChainInfo(uint64(l))
+	}
+	if m.ReferenceBlockHeight != 0 {
+		n += 1 + sovChainInfo(uint64(m.ReferenceBlockHeight))
+	}
+	l = len(m.ReferenceBlockHash)
+	if l > 0 {
+		n += 1 + l + sovChainInfo(uint64(l))
+	}
+	l = len(m.Abi)
+	if l > 0 {
+		n += 1 + l + sovChainInfo(uint64(l))
+	}
+	l = len(m.Bytecode)
+	if l > 0 {
+		n += 1 + l + sovChainInfo(uint64(l))
+	}
+	l = len(m.ConstructorInput)
+	if l > 0 {
+		n += 1 + l + sovChainInfo(uint64(l))
+	}
+	if m.Status != 0 {
+		n += 1 + sovChainInfo(uint64(m.Status))
+	}
+	if m.SmartContractVersion != 0 {
+		n += 1 + sovChainInfo(uint64(m.SmartContractVersion))
+	}
+	return n
+}
+
+func (m *SmartContract) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Id != 0 {
+		n += 1 + sovChainInfo(uint64(m.Id))
+	}
+	l = len(m.AbiJSON)
+	if l > 0 {
+		n += 1 + l + sovChainInfo(uint64(l))
+	}
+	l = len(m.Bytecode)
 	if l > 0 {
 		n += 1 + l + sovChainInfo(uint64(l))
 	}
@@ -312,6 +603,330 @@ func (m *ChainInfo) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.SmartContractAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReferenceBlockHeight", wireType)
+			}
+			m.ReferenceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChainInfo
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ReferenceBlockHeight |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReferenceBlockHash", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChainInfo
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ReferenceBlockHash = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Abi", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChainInfo
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Abi = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Bytecode", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChainInfo
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Bytecode = append(m.Bytecode[:0], dAtA[iNdEx:postIndex]...)
+			if m.Bytecode == nil {
+				m.Bytecode = []byte{}
+			}
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConstructorInput", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChainInfo
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ConstructorInput = append(m.ConstructorInput[:0], dAtA[iNdEx:postIndex]...)
+			if m.ConstructorInput == nil {
+				m.ConstructorInput = []byte{}
+			}
+			iNdEx = postIndex
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			m.Status = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChainInfo
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Status |= ChainInfo_Status(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 10:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SmartContractVersion", wireType)
+			}
+			m.SmartContractVersion = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChainInfo
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.SmartContractVersion |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipChainInfo(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *SmartContract) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowChainInfo
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SmartContract: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SmartContract: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChainInfo
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AbiJSON", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChainInfo
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AbiJSON = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Bytecode", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChainInfo
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthChainInfo
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Bytecode = append(m.Bytecode[:0], dAtA[iNdEx:postIndex]...)
+			if m.Bytecode == nil {
+				m.Bytecode = []byte{}
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

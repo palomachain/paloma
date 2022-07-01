@@ -97,6 +97,7 @@ import (
 	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm"
+	evmclient "github.com/palomachain/paloma/x/evm/client"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
@@ -128,6 +129,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		upgradeclient.CancelProposalHandler,
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
+		evmclient.ProposalHandler,
 		// this line is used by starport scaffolding # stargate/app/govProposalHandler
 	)
 
@@ -353,19 +355,38 @@ func New(
 	)
 
 	// ... other modules keepers
+	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
+		appCodec,
+		keys[valsetmoduletypes.StoreKey],
+		keys[valsetmoduletypes.MemStoreKey],
+		app.GetSubspace(valsetmoduletypes.ModuleName),
+		app.StakingKeeper,
+	)
 
-	// Create IBC Keeper
+	consensusRegistry := consensusmodulekeeper.NewRegistry()
+
+	app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
+		appCodec,
+		keys[consensusmoduletypes.StoreKey],
+		keys[consensusmoduletypes.MemStoreKey],
+		app.GetSubspace(consensusmoduletypes.ModuleName),
+		app.ValsetKeeper,
+		consensusRegistry,
+	)
+
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
+	app.EvmKeeper = *evmmodulekeeper.NewKeeper(appCodec, keys[evmmoduletypes.StoreKey], keys[evmmoduletypes.MemStoreKey], app.GetSubspace(evmmoduletypes.ModuleName))
+
+	app.EvmKeeper.Valset = app.ValsetKeeper
+	app.EvmKeeper.ConsensusKeeper = app.ConsensusKeeper
+
+	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
+		app.EvmKeeper,
+	}
 
 	// register the proposal types
-	govRouter := govtypes.NewRouter()
-	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
-		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
-		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
@@ -412,11 +433,6 @@ func New(
 	// 	govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
 	// }
 
-	app.GovKeeper = govkeeper.NewKeeper(
-		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
-		&stakingKeeper, govRouter,
-	)
-
 	scopedSchedulerKeeper := app.CapabilityKeeper.ScopeToModule(schedulermoduletypes.ModuleName)
 	app.ScopedSchedulerKeeper = scopedSchedulerKeeper
 	app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
@@ -430,33 +446,18 @@ func New(
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
 
-	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
-		appCodec,
-		keys[valsetmoduletypes.StoreKey],
-		keys[valsetmoduletypes.MemStoreKey],
-		app.GetSubspace(valsetmoduletypes.ModuleName),
-		stakingKeeper,
+	govRouter := govtypes.NewRouter()
+	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
+		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
+		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
+		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
+		AddRoute(evmmoduletypes.RouterKey, evm.NewChainIDProposalHandler(app.EvmKeeper))
+
+	app.GovKeeper = govkeeper.NewKeeper(
+		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
+		&stakingKeeper, govRouter,
 	)
-
-	consensusRegistry := consensusmodulekeeper.NewRegistry()
-
-	app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
-		appCodec,
-		keys[consensusmoduletypes.StoreKey],
-		keys[consensusmoduletypes.MemStoreKey],
-		app.GetSubspace(consensusmoduletypes.ModuleName),
-		app.ValsetKeeper,
-		consensusRegistry,
-	)
-
-	app.EvmKeeper = *evmmodulekeeper.NewKeeper(appCodec, keys[evmmoduletypes.StoreKey], keys[evmmoduletypes.MemStoreKey], app.GetSubspace(evmmoduletypes.ModuleName))
-
-	app.EvmKeeper.Valset = app.ValsetKeeper
-	app.EvmKeeper.ConsensusKeeper = app.ConsensusKeeper
-
-	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
-		app.EvmKeeper,
-	}
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 

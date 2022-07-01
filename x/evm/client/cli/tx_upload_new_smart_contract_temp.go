@@ -1,13 +1,13 @@
 package cli
 
 import (
-    "strconv"
-	
-	"github.com/spf13/cobra"
-    "github.com/cosmos/cosmos-sdk/client"
+	"strconv"
+
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/spf13/cobra"
 )
 
 var _ = strconv.Itoa(0)
@@ -18,11 +18,11 @@ func CmdUploadNewSmartContractTemp() *cobra.Command {
 		Short: "Broadcast message UploadNewSmartContractTemp",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-      		 argAbi := args[0]
-             argBytecode := args[1]
-             argConstructorInput := args[2]
-             argChainID := args[3]
-            
+			argAbi := args[0]
+			argBytecode := args[1]
+			argConstructorInput := args[2]
+			argChainID := args[3]
+
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
@@ -34,7 +34,6 @@ func CmdUploadNewSmartContractTemp() *cobra.Command {
 				argBytecode,
 				argConstructorInput,
 				argChainID,
-				
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -45,5 +44,5 @@ func CmdUploadNewSmartContractTemp() *cobra.Command {
 
 	flags.AddTxFlagsToCmd(cmd)
 
-    return cmd
+	return cmd
 }
