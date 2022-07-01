@@ -2,6 +2,7 @@ package types
 
 import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/ethereum/go-ethereum/common"
 	proto "github.com/gogo/protobuf/proto"
 )
 
@@ -46,6 +47,9 @@ func (a *RemoveChainProposal) ValidateBasic() error {
 	return nil
 }
 
+func (a *DeployNewSmartContractProposal) Bytecode() []byte {
+	return common.FromHex(a.GetBytecodeHex())
+}
 func (a *DeployNewSmartContractProposal) ProposalRoute() string { return RouterKey }
 func (a *DeployNewSmartContractProposal) ProposalType() string  { return ProposalDeployNewSmartContract }
 func (a *DeployNewSmartContractProposal) ValidateBasic() error {

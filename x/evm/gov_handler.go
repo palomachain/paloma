@@ -16,7 +16,7 @@ func NewChainIDProposalHandler(k keeper.Keeper) govtypes.Handler {
 		case *types.RemoveChainProposal:
 			return k.RemoveSupportForChain(ctx, c)
 		case *types.DeployNewSmartContractProposal:
-			return k.DeployNewSmartContractFromProposal(ctx, c)
+			return k.UpdateWithSmartContract(ctx, c.GetAbiJSON(), c.Bytecode())
 		}
 		return sdkerrors.ErrUnknownRequest
 	}

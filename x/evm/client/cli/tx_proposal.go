@@ -106,7 +106,7 @@ func CmdEvmProposeNewChain() *cobra.Command {
 
 func CmdEvmProposalDeployNewSmartContract() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "propose-new-smart-contract [chain-id] [abi-json] [bytecode-hey]",
+		Use:   "propose-new-smart-contract [abi-json] [bytecode-hey]",
 		Short: "Proposal to add a new EVM chain",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -114,12 +114,11 @@ func CmdEvmProposalDeployNewSmartContract() *cobra.Command {
 				clientCtx, err := client.GetClientTxContext(cmd)
 				whoops.Assert(err)
 
-				chainID, abiJSON, bytecodeHex := args[0], args[1], args[2]
+				abiJSON, bytecodeHex := args[0], args[1]
 
 				deployNewSmartContractProposal := &types.DeployNewSmartContractProposal{
 					Title:       whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
 					Description: whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
-					ChainID:     chainID,
 					AbiJSON:     abiJSON,
 					BytecodeHex: bytecodeHex,
 				}

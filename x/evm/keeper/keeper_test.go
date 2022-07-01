@@ -183,3 +183,74 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	require.Len(t, msgs, 1)
 
 }
+
+func TestAddingSupportForNewChain(t *testing.T) {
+	a := app.NewTestApp(t, false)
+	ctx := a.NewContext(false, tmproto.Header{
+		Height: 5,
+	})
+
+	t.Run("with happy path there are no errors", func(t *testing.T) {
+		newChain := &types.AddChainProposal{
+			ChainID:           "bob",
+			Title:             "bla",
+			Description:       "bla",
+			BlockHeight:       uint64(123),
+			BlockHashAtHeight: "0x1234",
+		}
+		err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+		require.NoError(t, err)
+
+		gotChainInfo, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainID())
+		require.NoError(t, err)
+
+		require.Equal(t, newChain.GetChainID(), gotChainInfo.GetChainID())
+		require.Equal(t, newChain.GetBlockHashAtHeight(), gotChainInfo.GetReferenceBlockHash())
+		require.Equal(t, newChain.GetBlockHeight(), gotChainInfo.GetReferenceBlockHeight())
+	})
+
+	t.Run("when chainID already exists then it returns an error", func(t *testing.T) {
+		newChain := &types.AddChainProposal{
+			ChainID:           "bob",
+			Title:             "bla",
+			Description:       "bla",
+			BlockHeight:       uint64(123),
+			BlockHashAtHeight: "0x1234",
+		}
+		err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+		require.Error(t, err)
+	})
+
+	t.Run("activiting chain", func(t *testing.T) {
+		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
+			err := a.EvmKeeper.ActivateChainID(ctx, "i dont exist", "bla", "bob")
+			require.Error(t, err)
+		})
+		t.Run("works when chain exists", func(t *testing.T) {
+			err := a.EvmKeeper.ActivateChainID(ctx, "bob", "addr", "id")
+			require.NoError(t, err)
+			gotChainInfo, err := a.EvmKeeper.GetChainInfo(ctx, "bob")
+			require.NoError(t, err)
+
+			require.Equal(t, "addr", gotChainInfo.GetSmartContractAddr())
+			require.Equal(t, "id", gotChainInfo.GetSmartContractID())
+		})
+	})
+
+	t.Run("removing chain", func(t *testing.T) {
+		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
+			err := a.EvmKeeper.RemoveSupportForChain(ctx, &types.RemoveChainProposal{
+				ChainID: "i don't exist",
+			})
+			require.Error(t, err)
+		})
+		t.Run("works when chain exists", func(t *testing.T) {
+			err := a.EvmKeeper.RemoveSupportForChain(ctx, &types.RemoveChainProposal{
+				ChainID: "bob",
+			})
+			require.NoError(t, err)
+			_, err = a.EvmKeeper.GetChainInfo(ctx, "bob")
+			require.Error(t, keeper.ErrChainNotFound)
+		})
+	})
+}

@@ -1,5 +1,4 @@
 syntax = "proto3";
-import "gogoproto/gogo.proto";
 
 package palomachain.paloma.evm;
 
@@ -25,5 +24,12 @@ message ChainInfo {
     WAITING_FOR_EVIDENCE = 2;
   }
   Status status = 9;
+
+  uint64 smartContractVersion = 10;
 }
 
+message SmartContract {
+  uint64 id = 1;
+  string abiJSON = 2;
+  bytes bytecode = 3;
+}

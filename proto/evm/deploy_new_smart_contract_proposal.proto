@@ -7,7 +7,6 @@ message DeployNewSmartContractProposal {
   string title = 1;
   string description = 2;
   
-  string chainID = 3; 
-  string abiJSON = 4; 
-  string bytecodeHex = 5; 
+  string abiJSON = 3; 
+  string bytecodeHex = 4; 
 }
