@@ -52,7 +52,7 @@ func TestBatching(t *testing.T) {
 				return true
 			},
 			ChainType: types.ChainTypeCosmos,
-			ChainID:   "test",
+			ChainReferenceID:   "test",
 		})
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 

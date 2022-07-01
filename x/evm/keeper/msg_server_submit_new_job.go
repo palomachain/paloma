@@ -14,7 +14,7 @@ func (k msgServer) SubmitNewJob(goCtx context.Context, msg *types.MsgSubmitNewJo
 
 	err := k.AddSmartContractExecutionToConsensus(
 		ctx,
-		msg.GetChainID(),
+		msg.GetChainReferenceID(),
 		string(zero32Byte[:]),
 		&types.SubmitLogicCall{
 			HexContractAddress: msg.GetHexSmartContractAddress(),

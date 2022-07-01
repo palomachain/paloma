@@ -8,7 +8,7 @@ import (
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
-func NewChainIDProposalHandler(k keeper.Keeper) govtypes.Handler {
+func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govtypes.Handler {
 	return func(ctx sdk.Context, content govtypes.Content) error {
 		switch c := content.(type) {
 		case *types.AddChainProposal:

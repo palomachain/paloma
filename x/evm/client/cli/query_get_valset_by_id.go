@@ -19,7 +19,7 @@ func CmdGetValsetByID() *cobra.Command {
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			reqValsetID, err := cast.ToUint64E(args[0])
-			chainID := args[1]
+			chainReferenceID := args[1]
 			if err != nil {
 				return err
 			}
@@ -33,7 +33,7 @@ func CmdGetValsetByID() *cobra.Command {
 
 			params := &types.QueryGetValsetByIDRequest{
 				ValsetID: reqValsetID,
-				ChainID:  chainID,
+				ChainReferenceID:  chainReferenceID,
 			}
 
 			res, err := queryClient.GetValsetByID(cmd.Context(), params)

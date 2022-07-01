@@ -58,15 +58,15 @@ func isHex(str string) bool {
 
 func CmdEvmProposeNewChain() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "propose-new-chain [chain-id] [block-height] [block-hash-at-height]",
+		Use:   "propose-new-chain [chain-reference-id] [chain-id] [block-height] [block-hash-at-height]",
 		Short: "Proposal to add a new EVM chain",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			return whoops.Try(func() {
 				clientCtx, err := client.GetClientTxContext(cmd)
 				whoops.Assert(err)
 
-				chainID, blockHeightStr, blockHashAtHeight := args[0], args[1], args[2]
+				chainReferenceID, chainID, blockHeightStr, blockHashAtHeight := args[0], args[1], args[2], args[3]
 
 				blockHeight, err := strconv.ParseInt(blockHeightStr, 10, 64)
 				whoops.Assert(err)
@@ -76,9 +76,10 @@ func CmdEvmProposeNewChain() *cobra.Command {
 				}
 
 				addChainProposal := &types.AddChainProposal{
+					ChainReferenceID:  chainReferenceID,
+					ChainID:           chainID,
 					Title:             whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
 					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
-					ChainID:           chainID,
 					BlockHeight:       uint64(blockHeight),
 					BlockHashAtHeight: blockHashAtHeight,
 				}
@@ -146,7 +147,7 @@ func CmdEvmProposalDeployNewSmartContract() *cobra.Command {
 
 func CmdEvmProposeChainRemoval() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "propose-chain-removal [chain-id]",
+		Use:   "propose-chain-removal [chain-reference-id]",
 		Short: "Proposal to remove an existing EVM chain from Paloma",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -154,12 +155,12 @@ func CmdEvmProposeChainRemoval() *cobra.Command {
 				clientCtx, err := client.GetClientTxContext(cmd)
 				whoops.Assert(err)
 
-				chainID := args[0]
+				chainReferenceID := args[0]
 
 				addChainProposal := &types.RemoveChainProposal{
-					Title:       whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description: whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
-					ChainID:     chainID,
+					Title:            whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
+					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					ChainReferenceID: chainReferenceID,
 				}
 
 				from := clientCtx.GetFromAddress()

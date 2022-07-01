@@ -9,13 +9,13 @@ const TypeMsgUploadNewSmartContractTemp = "upload_new_smart_contract_temp"
 
 var _ sdk.Msg = &MsgUploadNewSmartContractTemp{}
 
-func NewMsgUploadNewSmartContractTemp(creator string, abi string, bytecode string, constructorInput string, chainID string) *MsgUploadNewSmartContractTemp {
+func NewMsgUploadNewSmartContractTemp(creator string, abi string, bytecode string, constructorInput string, chainReferenceID string) *MsgUploadNewSmartContractTemp {
 	return &MsgUploadNewSmartContractTemp{
 		Creator:          creator,
 		Abi:              abi,
 		Bytecode:         bytecode,
 		ConstructorInput: constructorInput,
-		ChainID:          chainID,
+		ChainReferenceID:          chainReferenceID,
 	}
 }
 

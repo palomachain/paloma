@@ -40,13 +40,13 @@ func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snap
 	return r0, r1
 }
 
-// GetSigningKey provides a mock function with given fields: ctx, valAddr, chainType, chainID, signedByAddress
-func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddress, chainType string, chainID string, signedByAddress string) ([]byte, error) {
-	ret := _m.Called(ctx, valAddr, chainType, chainID, signedByAddress)
+// GetSigningKey provides a mock function with given fields: ctx, valAddr, chainType, chainReferenceID, signedByAddress
+func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddress, chainType string, chainReferenceID string, signedByAddress string) ([]byte, error) {
+	ret := _m.Called(ctx, valAddr, chainType, chainReferenceID, signedByAddress)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress, string, string, string) []byte); ok {
-		r0 = rf(ctx, valAddr, chainType, chainID, signedByAddress)
+		r0 = rf(ctx, valAddr, chainType, chainReferenceID, signedByAddress)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -55,7 +55,7 @@ func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddres
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(types.Context, types.ValAddress, string, string, string) error); ok {
-		r1 = rf(ctx, valAddr, chainType, chainID, signedByAddress)
+		r1 = rf(ctx, valAddr, chainType, chainReferenceID, signedByAddress)
 	} else {
 		r1 = ret.Error(1)
 	}

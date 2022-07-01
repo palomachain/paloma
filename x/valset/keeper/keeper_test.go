@@ -36,7 +36,7 @@ func TestRegisterRunner(t *testing.T) {
 			val,
 			[]*types.ExternalChainInfo{
 				{
-					ChainID:   "chain-1",
+					ChainReferenceID:   "chain-1",
 					Address:   "addr1",
 					ChainType: "evm",
 				},
@@ -52,7 +52,7 @@ func TestRegisterRunner(t *testing.T) {
 			externalChainInfo,
 			[]*types.ExternalChainInfo{
 				{
-					ChainID:   "chain-1",
+					ChainReferenceID:   "chain-1",
 					Address:   "addr1",
 					ChainType: "evm",
 				},
@@ -66,7 +66,7 @@ func TestRegisterRunner(t *testing.T) {
 			val,
 			[]*types.ExternalChainInfo{
 				{
-					ChainID:   "chain-1",
+					ChainReferenceID:   "chain-1",
 					Address:   "addr1",
 					ChainType: "evm",
 				},
@@ -80,7 +80,7 @@ func TestRegisterRunner(t *testing.T) {
 			nonExistingVal,
 			[]*types.ExternalChainInfo{
 				{
-					ChainID: "chain-1",
+					ChainReferenceID: "chain-1",
 					Address: "addr1",
 				},
 			},
@@ -118,13 +118,13 @@ func TestCreatingSnapshots(t *testing.T) {
 	err := k.AddExternalChainInfo(ctx, val1, []*types.ExternalChainInfo{
 		{
 			ChainType: "evm",
-			ChainID:   "123",
+			ChainReferenceID:   "123",
 			Address:   val1.String(),
 			Pubkey:    []byte("123"),
 		},
 		{
 			ChainType: "evm",
-			ChainID:   "123",
+			ChainReferenceID:   "123",
 			Address:   val1.String(),
 			Pubkey:    []byte("456"),
 		},
@@ -133,7 +133,7 @@ func TestCreatingSnapshots(t *testing.T) {
 	err = k.AddExternalChainInfo(ctx, val2, []*types.ExternalChainInfo{
 		{
 			ChainType: "evm",
-			ChainID:   "567",
+			ChainReferenceID:   "567",
 			Address:   val2.String(),
 			Pubkey:    []byte("123"),
 		},
@@ -144,7 +144,7 @@ func TestCreatingSnapshots(t *testing.T) {
 		err = k.AddExternalChainInfo(ctx, val1, []*types.ExternalChainInfo{
 			{
 				ChainType: "evm",
-				ChainID:   "567",
+				ChainReferenceID:   "567",
 				Address:   val2.String(),
 				Pubkey:    []byte("123"),
 			},

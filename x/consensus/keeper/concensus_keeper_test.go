@@ -16,12 +16,12 @@ import (
 
 const (
 	chainType        = types.ChainTypeEVM
-	chainID          = "test"
+	chainReferenceID          = "test"
 	defaultQueueName = "simple-message"
 )
 
 func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testing.T) {
-	queue := types.Queue(defaultQueueName, chainType, chainID)
+	queue := types.Queue(defaultQueueName, chainType, chainReferenceID)
 	keeper, _, ctx := newConsensusKeeper(t)
 
 	t.Run("it returns a message if type is not registered with the queue", func(t *testing.T) {
@@ -41,7 +41,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
 				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
-				consensus.WithChainInfo(chainType, chainID),
+				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true
 				}),
@@ -419,7 +419,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 						consensus.WithAttestator(mck),
 						consensus.WithStaticTypeCheck(&types.SimpleMessage{}),
 						consensus.WithQueueTypeName(defaultQueueName),
-						consensus.WithChainInfo(chainType, chainID),
+						consensus.WithChainInfo(chainType, chainReferenceID),
 						consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte {
 							return []byte("sign-me")
 						}),
@@ -447,7 +447,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 }
 
 func TestAddingSignatures(t *testing.T) {
-	queue := types.Queue(defaultQueueName, chainType, chainID)
+	queue := types.Queue(defaultQueueName, chainType, chainReferenceID)
 	keeper, ms, ctx := newConsensusKeeper(t)
 
 	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*types.ConsensusMsg)(nil), &types.SimpleMessage{})
@@ -463,7 +463,7 @@ func TestAddingSignatures(t *testing.T) {
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
 				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
-				consensus.WithChainInfo(chainType, chainID),
+				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func(msg []byte, sig []byte, pk []byte) bool {
 					p := secp256k1.PubKey(pk)
 					return p.VerifySignature(msg, sig)
@@ -490,7 +490,7 @@ func TestAddingSignatures(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("with incorrect key it returns an error", func(t *testing.T) {
-		ms.ValsetKeeper.On("GetSigningKey", ctx, val1, chainType, chainID, "bob").Return(
+		ms.ValsetKeeper.On("GetSigningKey", ctx, val1, chainType, chainReferenceID, "bob").Return(
 			key2.PubKey().Bytes(),
 			nil,
 		).Once()
@@ -506,7 +506,7 @@ func TestAddingSignatures(t *testing.T) {
 	})
 
 	t.Run("with correct key it adds it to the store", func(t *testing.T) {
-		ms.ValsetKeeper.On("GetSigningKey", ctx, val1, chainType, chainID, "bob").Return(
+		ms.ValsetKeeper.On("GetSigningKey", ctx, val1, chainType, chainReferenceID, "bob").Return(
 			key1.PubKey().Bytes(),
 			nil,
 		).Once()

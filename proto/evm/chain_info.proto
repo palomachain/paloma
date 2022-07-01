@@ -5,27 +5,30 @@ package palomachain.paloma.evm;
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 message ChainInfo {
-  string chainID = 1;
+  string chainReferenceID = 1;
+  
+  string chainID = 2;
 
-  string smartContractID = 2;
+  string smartContractID = 3;
 
-  string smartContractAddr = 3;
+  string smartContractAddr = 4;
 
   // used to verify by pigeons if they are at the correct chain
-  uint64 referenceBlockHeight = 4;
-  string referenceBlockHash = 5;
+  uint64 referenceBlockHeight = 5;
+  string referenceBlockHash = 6;
 
-  string abi = 6;
-  bytes bytecode = 7;
-  bytes constructorInput = 8;
+  string abi = 7;
+  bytes bytecode = 8;
+  bytes constructorInput = 9;
   enum Status {
     IN_PROPOSAL = 0;
     ACTIVE = 1;
     WAITING_FOR_EVIDENCE = 2;
   }
-  Status status = 9;
+  Status status = 10;
 
-  uint64 smartContractVersion = 10;
+  uint64 smartContractVersion = 11;
+
 }
 
 message SmartContract {

@@ -9,7 +9,7 @@ import (
 func (k msgServer) UploadNewSmartContractTemp(goCtx context.Context, msg *types.MsgUploadNewSmartContractTemp) (*types.MsgUploadNewSmartContractTempResponse, error) {
 	// ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// err := k.DeployNewSmartContract(ctx, msg.GetChainID(), &types.UploadSmartContract{
+	// err := k.DeployNewSmartContract(ctx, msg.GetChainReferenceID(), &types.UploadSmartContract{
 	// 	Bytecode:         common.FromHex(msg.GetBytecode()),
 	// 	Abi:              []byte(msg.GetAbi()),
 	// 	ConstructorInput: common.FromHex(msg.GetConstructorInput()),

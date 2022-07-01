@@ -50,7 +50,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 				return true
 			},
 			ChainType: types.ChainTypeEVM,
-			ChainID:   "bla",
+			ChainReferenceID:   "bla",
 		},
 	}
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
