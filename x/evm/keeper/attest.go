@@ -55,7 +55,9 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			return err
 		}
 	case *types.SubmitLogicCall:
+		// nothing
 	case *types.UpdateValset:
+		// nothing
 	}
 
 	return nil
