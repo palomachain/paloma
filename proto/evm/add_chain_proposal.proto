@@ -7,7 +7,7 @@ message AddChainProposal {
   string title = 1;
   string description = 2;
   string chainReferenceID = 3; 
-  string chainID = 4;
+  uint64 chainID = 4;
   uint64 blockHeight = 5;
   string blockHashAtHeight = 6; 
 }

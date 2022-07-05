@@ -40,7 +40,7 @@ type QueueOptions struct {
 	VerifySignature       types.VerifySignatureFunc
 	ChainType             types.ChainType
 	Attestator            types.Attestator
-	ChainReferenceID               string
+	ChainReferenceID      string
 }
 
 type OptFnc func(*QueueOptions)
@@ -174,6 +174,36 @@ func (c Queue) GetAll(ctx sdk.Context) ([]types.QueuedSignedMessageI, error) {
 	return msgs, nil
 }
 
+func (c Queue) AddEvidence(ctx sdk.Context, msgID uint64, evidence *types.Evidence) error {
+	msg, err := c.GetMsgByID(ctx, msgID)
+	if err != nil {
+		return err
+	}
+
+	// check if the same public key already signed this message or of this
+	// validator has already signed this message
+	for _, existingSigData := range msg.GetSignData() {
+		if bytes.Equal(existingSigData.PublicKey, evidence.PublicKey) {
+			return ErrAlreadySignedWithKey.Format(msgID, c.qo.QueueTypeName, existingSigData.PublicKey)
+		}
+		if evidence.ValAddress.Equals(existingSigData.ValAddress) {
+			return ErrAlreadySignedWithKey.Format(msgID, c.qo.QueueTypeName, existingSigData.PublicKey)
+		}
+	}
+
+	if !c.qo.VerifySignature(
+		evidence.GetProof(),
+		evidence.GetSignature(),
+		evidence.GetPublicKey(),
+	) {
+		return ErrInvalidSignature
+	}
+
+	msg.AddEvidence(evidence)
+
+	return c.save(ctx, msg)
+}
+
 // AddSignature adds a signature to the message and checks if the signature is valid.
 func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignData) error {
 	msg, err := c.GetMsgByID(ctx, msgID)
@@ -181,32 +211,19 @@ func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignD
 		return err
 	}
 
-	// check if the same public key already signed this message
+	// check if the same public key already signed this message or of this
+	// validator has already signed this message
 	for _, existingSigData := range msg.GetSignData() {
 		if bytes.Equal(existingSigData.PublicKey, signData.PublicKey) {
+			return ErrAlreadySignedWithKey.Format(msgID, c.qo.QueueTypeName, existingSigData.PublicKey)
+		}
+		if signData.ValAddress.Equals(existingSigData.ValAddress) {
 			return ErrAlreadySignedWithKey.Format(msgID, c.qo.QueueTypeName, existingSigData.PublicKey)
 		}
 	}
 
 	if !c.qo.VerifySignature(append(msg.GetBytesToSign()[:], signData.GetExtraData()...), signData.Signature, signData.PublicKey) {
 		return ErrInvalidSignature
-	}
-
-	origMsg, err := msg.ConsensusMsg(c.qo.Cdc)
-	if err != nil {
-		return err
-	}
-
-	if task, ok := origMsg.(types.AttestTask); ok {
-		if c.qo.Attestator == nil {
-			return ErrAttestorNotSetForMessage.Format(task)
-		}
-		if err := c.qo.Attestator.ValidateEvidence(ctx, task, types.Evidence{
-			From: signData.ValAddress,
-			Data: signData.GetExtraData(),
-		}); err != nil {
-			return err
-		}
 	}
 
 	msg.AddSignData(signData)

@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -100,7 +102,7 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 	}
 	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
-		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
+		k.Logger(ctx).Error(fmt.Sprintf("error while getting consensus queue: %s", err))
 		return nil, err
 	}
 	msgs, err = cq.GetAll(ctx)

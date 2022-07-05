@@ -260,6 +260,11 @@ func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType
 	return nil, ErrSigningKeyNotFound.Format(valAddr.String(), chainType, chainReferenceID)
 }
 
+// IsJailed returns if the current validator is jailed or not.
+func (k Keeper) IsJailed(ctx sdk.Context, val sdk.ValAddress) bool {
+	return k.staking.Validator(ctx, val).IsJailed()
+}
+
 func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("validators"))
 }

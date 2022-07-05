@@ -12,6 +12,9 @@ message QueuedSignedMessage {
   google.protobuf.Any msg = 2;
   bytes bytesToSign = 3;
   repeated SignData signData = 4;
+  repeated Evidence evidence = 5;
+
+  bytes publicAccessData = 6;
 }
 
 message BatchOfConsensusMessages {
@@ -30,6 +33,17 @@ message SignData {
   bytes extraData = 3;
 
   string externalAccountAddress = 4;
+
+  bytes publicKey = 5;
+}
+
+message Evidence {
+  bytes valAddress = 1[ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+  string externalAccountAddress = 2;
+  bytes signature = 3;
+
+  bytes proof = 4;
 
   bytes publicKey = 5;
 }

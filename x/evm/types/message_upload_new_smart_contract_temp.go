@@ -15,7 +15,7 @@ func NewMsgUploadNewSmartContractTemp(creator string, abi string, bytecode strin
 		Abi:              abi,
 		Bytecode:         bytecode,
 		ConstructorInput: constructorInput,
-		ChainReferenceID:          chainReferenceID,
+		// ChainReferenceID:          chainReferenceID,
 	}
 }
 
