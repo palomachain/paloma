@@ -33,12 +33,19 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 		if err != nil {
 			return nil, err
 		}
+
+		var publicAccessData []byte
+
+		if msg.GetPublicAccessData() != nil {
+			publicAccessData = msg.GetPublicAccessData().GetData()
+		}
 		approvedMessage := &types.MessageWithSignatures{
-			Nonce:       msg.Nonce(),
-			Id:          msg.GetId(),
-			Msg:         anyMsg,
-			BytesToSign: msg.GetBytesToSign(),
-			SignData:    []*types.ValidatorSignature{},
+			Nonce:            msg.Nonce(),
+			Id:               msg.GetId(),
+			Msg:              anyMsg,
+			BytesToSign:      msg.GetBytesToSign(),
+			SignData:         []*types.ValidatorSignature{},
+			PublicAccessData: publicAccessData,
 		}
 		for _, signData := range msg.GetSignData() {
 			approvedMessage.SignData = append(approvedMessage.SignData, &types.ValidatorSignature{
