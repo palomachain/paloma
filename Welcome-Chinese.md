@@ -9,23 +9,22 @@
 
 快来加入最快的鸽群吧！
 
-＃＃ 目录
- - [Talk To Us](#talk-to-us) 
+## 目录
+- [Talk To Us](#talk-to-us)
 - [Releases](#releases)
- - [Active Networks](#active-networks) 
-- [Public](#public) 
-- [Private](#private) 
-- [Install](#install) 
+- [Active Networks](#active-networks)
+- [Public](#public)
+- [Private](#private)
+- [Install](#install)
 - [Contributing](CONTRIBUTING.md)
 
-##与我们交谈
-We have active, helpful communities on Twitter and Telegram. 
+## 与我们交谈
+我们在 Twitter 和 Telegram 上拥有活跃、乐于助人的社区.
 * [Twitter](https://twitter.com/paloma_chain) 
 * [Telegram](https://t.me/palomachain)
 
 ## 发布
-See [Release procedure](CONTRIBUTING.md#release-procedure) for more information about the release model.
+看 [Release procedure](CONTRIBUTING.md#release-procedure) 有关发布模型的更多信息.
 
 ##加入羊群！
-Come join the fastest flock of pigeons!
 快来加入最快的鸽群吧！

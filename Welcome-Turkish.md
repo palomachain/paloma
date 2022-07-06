@@ -8,22 +8,21 @@ Bu güvercinlere bir davet ve çağrıdır! Paloma doğrulayıcınızı ve düğ
 
 
 ## İçindekiler
-- [Talk To Us](#talk-to-us) 
-- [Releases](#releases) 
-- [Active Networks](#active-networks) 
+- [Talk To Us](#talk-to-us)
+- [Releases](#releases)
+- [Active Networks](#active-networks)
 - [Public](#public)
-- [Private](#private) 
-- [Install](#install) 
+- [Private](#private)
+- [Install](#install)
 - [Contributing](CONTRIBUTING.md)
 
 ## Bizimle konuş
 Twitter ve Telegram'da aktif, yardımcı topluluklarımız var.
-* [Twitter](https://twitter.com/paloma_chain) 
+* [Twitter](https://twitter.com/paloma_chain)
 * [Telegram](https://t.me/palomachain)
 
 ## Salıverme
-Sürüm modeli hakkında daha fazla bilgi.
-[Release procedure](CONTRIBUTING.md#release-procedure) 
+Sürüm modeli hakkında daha fazla bilgi için [Release procedure](CONTRIBUTING.md#release-procedure) bölümüne bakın. 
 
 ## Sürüye Katılın!
 Gelin, en hızlı güvercin sürüsüne katılın!
