@@ -189,7 +189,7 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 func (k Keeper) AddMessageSignature(
 	ctx sdk.Context,
 	valAddr sdk.ValAddress,
-	msgs []*types.MsgAddMessagesSignatures_MsgSignedMessage,
+	msgs []*types.ConsensusMessageSignature,
 ) error {
 	return whoops.Try(func() {
 		for _, msg := range msgs {
@@ -213,13 +213,58 @@ func (k Keeper) AddMessageSignature(
 					&types.SignData{
 						ValAddress:             valAddr,
 						Signature:              msg.GetSignature(),
-						ExtraData:              msg.GetExtraData(),
 						ExternalAccountAddress: msg.GetSignedByAddress(),
 						PublicKey:              publicKey,
 					},
 				),
 			)
 		}
+	})
+}
+
+func (k Keeper) AddMessageEvidence(
+	ctx sdk.Context,
+	valAddr sdk.ValAddress,
+	msg *types.MsgAddEvidence,
+) error {
+	return whoops.Try(func() {
+		cq := whoops.Must(
+			k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
+		)
+
+		whoops.Assert(
+			cq.AddEvidence(
+				ctx,
+				msg.GetMessageID(),
+				&types.Evidence{
+					ValAddress: valAddr,
+					Proof:      msg.GetProof(),
+				},
+			),
+		)
+	})
+}
+
+func (k Keeper) SetMessagePublicAccessData(
+	ctx sdk.Context,
+	valAddr sdk.ValAddress,
+	msg *types.MsgSetPublicAccessData,
+) error {
+	return whoops.Try(func() {
+		cq := whoops.Must(
+			k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
+		)
+
+		whoops.Assert(
+			cq.SetPublicAccessData(
+				ctx,
+				msg.GetMessageID(),
+				&types.PublicAccessData{
+					ValAddress: valAddr,
+					Data:       msg.GetData(),
+				},
+			),
+		)
 	})
 }
 

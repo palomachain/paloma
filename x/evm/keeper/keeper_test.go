@@ -66,7 +66,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	})
 
 	newChain := &types.AddChainProposal{
-		ChainReferenceID:           "eth-main",
+		ChainReferenceID:  "eth-main",
 		Title:             "bla",
 		Description:       "bla",
 		BlockHeight:       uint64(123),
@@ -108,10 +108,10 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	accAddr := crypto.PubkeyToAddress(private.PublicKey)
 	err = a.ValsetKeeper.AddExternalChainInfo(ctx, validators[0].GetOperator(), []*valsettypes.ExternalChainInfo{
 		{
-			ChainType: chainType,
-			ChainReferenceID:   chainReferenceID,
-			Address:   accAddr.Hex(),
-			Pubkey:    accAddr[:],
+			ChainType:        chainType,
+			ChainReferenceID: chainReferenceID,
+			Address:          accAddr.Hex(),
+			Pubkey:           accAddr[:],
 		},
 	})
 
@@ -131,7 +131,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		err = a.ConsensusKeeper.AddMessageSignature(
 			ctx,
 			validators[0].GetOperator(),
-			[]*consensustypes.MsgAddMessagesSignatures_MsgSignedMessage{
+			[]*consensustypes.ConsensusMessageSignature{
 				{
 					Id:              msg.GetId(),
 					QueueTypeName:   queue,
@@ -152,7 +152,7 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	})
 
 	newChain := &types.AddChainProposal{
-		ChainReferenceID:           "bob",
+		ChainReferenceID:  "bob",
 		Title:             "bla",
 		Description:       "bla",
 		BlockHeight:       uint64(123),
@@ -168,10 +168,10 @@ func TestOnSnapshotBuilt(t *testing.T) {
 		a.StakingKeeper.SetValidator(ctx, val)
 		err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
 			{
-				ChainType: "EVM",
-				ChainReferenceID:   "bob",
-				Address:   rand.ETHAddress().Hex(),
-				Pubkey:    []byte("pk"),
+				ChainType:        "EVM",
+				ChainReferenceID: "bob",
+				Address:          rand.ETHAddress().Hex(),
+				Pubkey:           []byte("pk"),
 			},
 		})
 		require.NoError(t, err)
@@ -200,7 +200,7 @@ func TestAddingSupportForNewChain(t *testing.T) {
 
 	t.Run("with happy path there are no errors", func(t *testing.T) {
 		newChain := &types.AddChainProposal{
-			ChainReferenceID:           "bob",
+			ChainReferenceID:  "bob",
 			Title:             "bla",
 			Description:       "bla",
 			BlockHeight:       uint64(123),
@@ -219,7 +219,7 @@ func TestAddingSupportForNewChain(t *testing.T) {
 
 	t.Run("when chainReferenceID already exists then it returns an error", func(t *testing.T) {
 		newChain := &types.AddChainProposal{
-			ChainReferenceID:           "bob",
+			ChainReferenceID:  "bob",
 			Title:             "bla",
 			Description:       "bla",
 			BlockHeight:       uint64(123),

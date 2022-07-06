@@ -18,7 +18,8 @@ type Queuer interface {
 	Put(sdk.Context, ...ConsensusMsg) error
 	AddSignature(ctx sdk.Context, id uint64, signData *types.SignData) error
 	AddEvidence(ctx sdk.Context, id uint64, evidence *types.Evidence) error
-	AddPublicAccessData(ctx sdk.Context, id uint64, data []byte) error
+	SetPublicAccessData(ctx sdk.Context, id uint64, data *types.PublicAccessData) error
+	GetPublicAccessData(ctx sdk.Context, id uint64) *types.PublicAccessData
 	Remove(sdk.Context, uint64) error
 	GetAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
 	GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error)

@@ -1,12 +1,12 @@
 package cli
 
 import (
-    "strconv"
-	
-	"github.com/spf13/cobra"
-    "github.com/cosmos/cosmos-sdk/client"
+	"strconv"
+
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/spf13/cobra"
 )
 
 var _ = strconv.Itoa(0)
@@ -17,7 +17,7 @@ func CmdChainsInfos() *cobra.Command {
 		Short: "Query ChainsInfos",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			
+
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
@@ -25,22 +25,18 @@ func CmdChainsInfos() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryChainsInfosRequest{
-				
-            }
-
-            
+			params := &types.QueryChainsInfosRequest{}
 
 			res, err := queryClient.ChainsInfos(cmd.Context(), params)
-            if err != nil {
-                return err
-            }
+			if err != nil {
+				return err
+			}
 
-            return clientCtx.PrintProto(res)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
 
-    return cmd
+	return cmd
 }

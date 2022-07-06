@@ -36,9 +36,9 @@ func TestRegisterRunner(t *testing.T) {
 			val,
 			[]*types.ExternalChainInfo{
 				{
-					ChainReferenceID:   "chain-1",
-					Address:   "addr1",
-					ChainType: "evm",
+					ChainReferenceID: "chain-1",
+					Address:          "addr1",
+					ChainType:        "evm",
 				},
 			},
 		)
@@ -52,9 +52,9 @@ func TestRegisterRunner(t *testing.T) {
 			externalChainInfo,
 			[]*types.ExternalChainInfo{
 				{
-					ChainReferenceID:   "chain-1",
-					Address:   "addr1",
-					ChainType: "evm",
+					ChainReferenceID: "chain-1",
+					Address:          "addr1",
+					ChainType:        "evm",
 				},
 			},
 		)
@@ -66,9 +66,9 @@ func TestRegisterRunner(t *testing.T) {
 			val,
 			[]*types.ExternalChainInfo{
 				{
-					ChainReferenceID:   "chain-1",
-					Address:   "addr1",
-					ChainType: "evm",
+					ChainReferenceID: "chain-1",
+					Address:          "addr1",
+					ChainType:        "evm",
 				},
 			},
 		)
@@ -81,7 +81,7 @@ func TestRegisterRunner(t *testing.T) {
 			[]*types.ExternalChainInfo{
 				{
 					ChainReferenceID: "chain-1",
-					Address: "addr1",
+					Address:          "addr1",
 				},
 			},
 		)
@@ -117,25 +117,25 @@ func TestCreatingSnapshots(t *testing.T) {
 
 	err := k.AddExternalChainInfo(ctx, val1, []*types.ExternalChainInfo{
 		{
-			ChainType: "evm",
-			ChainReferenceID:   "123",
-			Address:   val1.String(),
-			Pubkey:    []byte("123"),
+			ChainType:        "evm",
+			ChainReferenceID: "123",
+			Address:          val1.String(),
+			Pubkey:           []byte("123"),
 		},
 		{
-			ChainType: "evm",
-			ChainReferenceID:   "123",
-			Address:   val1.String(),
-			Pubkey:    []byte("456"),
+			ChainType:        "evm",
+			ChainReferenceID: "123",
+			Address:          val1.String(),
+			Pubkey:           []byte("456"),
 		},
 	})
 	require.NoError(t, err)
 	err = k.AddExternalChainInfo(ctx, val2, []*types.ExternalChainInfo{
 		{
-			ChainType: "evm",
-			ChainReferenceID:   "567",
-			Address:   val2.String(),
-			Pubkey:    []byte("123"),
+			ChainType:        "evm",
+			ChainReferenceID: "567",
+			Address:          val2.String(),
+			Pubkey:           []byte("123"),
 		},
 	})
 	require.NoError(t, err)
@@ -143,10 +143,10 @@ func TestCreatingSnapshots(t *testing.T) {
 	t.Run("adding address which already exists", func(t *testing.T) {
 		err = k.AddExternalChainInfo(ctx, val1, []*types.ExternalChainInfo{
 			{
-				ChainType: "evm",
-				ChainReferenceID:   "567",
-				Address:   val2.String(),
-				Pubkey:    []byte("123"),
+				ChainType:        "evm",
+				ChainReferenceID: "567",
+				Address:          val2.String(),
+				Pubkey:           []byte("123"),
 			},
 		})
 		require.ErrorIs(t, err, ErrExternalChainAlreadyRegistered)

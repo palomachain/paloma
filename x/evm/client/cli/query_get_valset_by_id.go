@@ -32,8 +32,8 @@ func CmdGetValsetByID() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			params := &types.QueryGetValsetByIDRequest{
-				ValsetID: reqValsetID,
-				ChainReferenceID:  chainReferenceID,
+				ValsetID:         reqValsetID,
+				ChainReferenceID: chainReferenceID,
 			}
 
 			res, err := queryClient.GetValsetByID(cmd.Context(), params)

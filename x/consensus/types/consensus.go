@@ -19,6 +19,8 @@ type QueuedSignedMessageI interface {
 	AddSignData(*SignData)
 	AddEvidence(*Evidence)
 	GetEvidence() []*Evidence
+	SetPublicAccessData(*types.PublicAccessData)
+	GetPublicAccessData() *types.PublicAccessData
 	AddPublicAccessData(data []byte)
 	GetBytesToSign() []byte
 }

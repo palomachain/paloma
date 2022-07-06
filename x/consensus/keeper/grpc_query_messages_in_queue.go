@@ -44,7 +44,6 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 			approvedMessage.SignData = append(approvedMessage.SignData, &types.ValidatorSignature{
 				ValAddress:             signData.GetValAddress(),
 				Signature:              signData.GetSignature(),
-				ExtraData:              signData.GetExtraData(),
 				ExternalAccountAddress: signData.GetExternalAccountAddress(),
 				PublicKey:              signData.GetPublicKey(),
 			})

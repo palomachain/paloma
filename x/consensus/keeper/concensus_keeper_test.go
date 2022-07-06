@@ -16,7 +16,7 @@ import (
 
 const (
 	chainType        = types.ChainTypeEVM
-	chainReferenceID          = "test"
+	chainReferenceID = "test"
 	defaultQueueName = "simple-message"
 )
 
