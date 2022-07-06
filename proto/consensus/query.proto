@@ -3,9 +3,7 @@ package volumefi.paloma.consensus;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "consensus/params.proto";
-import "consensus/consensus_queue.proto";
 import "google/protobuf/any.proto";
 // this line is used by starport scaffolding # 1
 

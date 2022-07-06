@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -35,7 +36,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return err
 	}
 
-	err = k.attestTransaction(ctx, msg.GetEvidence())
+	tx, err := k.attestTransaction(ctx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			return nil
@@ -49,7 +50,18 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 
 	switch origMsg := consensusMsg.(type) {
 	case *types.UploadSmartContract:
+		fmt.Println(tx)
+		// _, chainReferenceID := q.ChainInfo()
+		// chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
+		// if err != nil {
+		// 	return err
+		// }
+
 		smartContract, err := k.getSmartContract(ctx, origMsg.GetId())
+		// chainInfo.SmartContractAddr = tx.To().Hex()
+		// chainInfo.SmartContractID = smartContract.GetId()
+		panic("MAKE THIS WORK")
+
 		err = keeperutil.Save(k.lastSmartContractStore(ctx), k.cdc, lastSmartContractKey, smartContract)
 		if err != nil {
 			return err
@@ -67,7 +79,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 func (k Keeper) attestTransaction(
 	ctx sdk.Context,
 	evidences []*consensustypes.Evidence,
-) error {
+) (*ethtypes.Transaction, error) {
 	groups := make(map[string]struct {
 		tx         *ethtypes.Transaction
 		validators []sdk.ValAddress
@@ -100,7 +112,7 @@ func (k Keeper) attestTransaction(
 
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, group := range groups {
 
@@ -134,17 +146,17 @@ func (k Keeper) attestTransaction(
 		cmp := grInt.Cmp(totInt)
 		if cmp == 0 || cmp == 1 {
 			// consensus reached
-			return nil
+			return group.tx, nil
 		}
 
 		// TODO: punish other validators that are a part of different groups?
 	}
 
 	if g.Err() {
-		return g
+		return nil, g
 	}
 
-	return ErrConsensusNotAchieved
+	return nil, ErrConsensusNotAchieved
 }
 
 func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) sdk.KVStore {

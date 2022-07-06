@@ -19,9 +19,8 @@ type QueuedSignedMessageI interface {
 	AddSignData(*SignData)
 	AddEvidence(*Evidence)
 	GetEvidence() []*Evidence
-	SetPublicAccessData(*types.PublicAccessData)
-	GetPublicAccessData() *types.PublicAccessData
-	AddPublicAccessData(data []byte)
+	SetPublicAccessData(*PublicAccessData)
+	GetPublicAccessData() *PublicAccessData
 	GetBytesToSign() []byte
 }
 
@@ -68,7 +67,7 @@ func (q *QueuedSignedMessage) AddEvidence(data *Evidence) {
 	q.Evidence = append(q.Evidence, data)
 }
 
-func (q *QueuedSignedMessage) AddPublicAccessData(data []byte) {
+func (q *QueuedSignedMessage) SetPublicAccessData(data *PublicAccessData) {
 	q.PublicAccessData = data
 }
 

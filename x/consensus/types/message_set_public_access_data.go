@@ -9,15 +9,6 @@ const TypeMsgSetPublicAccessData = "set_public_access_data"
 
 var _ sdk.Msg = &MsgSetPublicAccessData{}
 
-func NewMsgSetPublicAccessData(creator string, messageID string, queueTypeName string, data string) *MsgSetPublicAccessData {
-	return &MsgSetPublicAccessData{
-		Creator:       creator,
-		MessageID:     messageID,
-		QueueTypeName: queueTypeName,
-		Data:          data,
-	}
-}
-
 func (msg *MsgSetPublicAccessData) Route() string {
 	return RouterKey
 }

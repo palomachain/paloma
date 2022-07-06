@@ -207,6 +207,15 @@ func (c Queue) SetPublicAccessData(ctx sdk.Context, msgID uint64, data *types.Pu
 	return c.save(ctx, msg)
 }
 
+func (c Queue) GetPublicAccessData(ctx sdk.Context, msgID uint64) (*types.PublicAccessData, error) {
+	msg, err := c.GetMsgByID(ctx, msgID)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg.GetPublicAccessData(), nil
+}
+
 // AddSignature adds a signature to the message and checks if the signature is valid.
 func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignData) error {
 	msg, err := c.GetMsgByID(ctx, msgID)

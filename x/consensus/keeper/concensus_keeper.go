@@ -40,9 +40,9 @@ func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consen
 		}
 
 		if opts.Batched {
-			return consensus.NewBatchQueue(opts), nil
+			return consensus.NewBatchQueue(opts.QueueOptions), nil
 		}
-		return consensus.NewQueue(opts), nil
+		return consensus.NewQueue(opts.QueueOptions), nil
 	}
 	return nil, ErrConsensusQueueNotImplemented.Format(queueTypeName)
 }

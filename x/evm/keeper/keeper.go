@@ -51,7 +51,7 @@ var SupportedConsensusQueues = map[string]supportedChainInfo{
 		batch:   false,
 		msgType: &types.Message{},
 		processFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
-			return k.attestRouter(ctx, q, msg)
+			return k.attestRouter
 		},
 	},
 }
@@ -195,7 +195,7 @@ func (k Keeper) UpdateWithSmartContract(ctx sdk.Context, abiJSON string, bytecod
 		Bytecode: bytecode,
 	}
 
-	err = keeperutil.Save(k.smartContractsStore(ctx), k.cdc, keeperutil.Uint64ToByte(smartContract.GetId()), smartContract)
+	err := keeperutil.Save(k.smartContractsStore(ctx), k.cdc, keeperutil.Uint64ToByte(smartContract.GetId()), smartContract)
 	if err != nil {
 		return err
 	}
@@ -306,7 +306,7 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsC
 		return nil, err
 	}
 
-	res := make(map[string]consensus.QueueOptions)
+	res := make(map[string]consensus.SupportsConsensusQueueAction)
 
 	for _, chainInfo := range chains {
 		// if !chainInfo.IsActive() {
@@ -472,10 +472,15 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		)
 	}
 
+	smartContract, err := k.getLastSmartContract(ctx)
+	if err != nil {
+		return
+	}
+
 	// given that valset was changes, there still might be a chainReferenceID that had
 	// zero validators in the valset. This tries to update the state for those
 	// smart contracts to get them up online.
-	k.tryDeployingSmartContract(ctx)
+	k.tryDeployingSmartContract(ctx, smartContract)
 }
 
 func isEnoughToReachConsensus(val types.Valset) bool {
