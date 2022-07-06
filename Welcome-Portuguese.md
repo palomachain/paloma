@@ -19,7 +19,7 @@ Temos comunidades ativas e úteis no Twitter e no Telegram.
 * [Telegram](https://t.me/palomachain)
 
 ## Lançamentos
-Consulte [Release Procedure](CONTRIBUTING.md#release-procedure) para obter mais informações sobre o modelo de lançamento.
+Consulte [Release procedure](CONTRIBUTING.md#release-procedure) para obter mais informações sobre o modelo de lançamento.
 
 ## Junte-se ao rebanho!
 Venha se juntar ao bando de pombos mais rápido!
