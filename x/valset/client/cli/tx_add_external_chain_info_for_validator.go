@@ -30,7 +30,7 @@ func CmdAddExternalChainInfoForValidator() *cobra.Command {
 				ChainInfos: []*types.ExternalChainInfo{
 					{
 						ChainReferenceID: argChainReferenceID,
-						Address: argAddress,
+						Address:          argAddress,
 					},
 				},
 			}

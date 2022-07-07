@@ -49,8 +49,8 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 			VerifySignature: func([]byte, []byte, []byte) bool {
 				return true
 			},
-			ChainType: types.ChainTypeEVM,
-			ChainReferenceID:   "bla",
+			ChainType:        types.ChainTypeEVM,
+			ChainReferenceID: "bla",
 		},
 	}
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)

@@ -16,7 +16,7 @@ import (
 
 const (
 	chainType        = types.ChainTypeEVM
-	chainReferenceID          = "test"
+	chainReferenceID = "test"
 	defaultQueueName = "simple-message"
 )
 
@@ -182,7 +182,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					},
 					nil,
 				)
-				err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val1"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+				err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val1"), []*types.ConsensusMessageSignature{
 					{
 						Id:              1,
 						QueueTypeName:   defaultQueueName,
@@ -217,7 +217,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					},
 					nil,
 				)
-				err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val3"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+				err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val3"), []*types.ConsensusMessageSignature{
 					{
 						Id:              1,
 						QueueTypeName:   defaultQueueName,
@@ -226,7 +226,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					},
 				})
 				require.NoError(t, err)
-				err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val4"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+				err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val4"), []*types.ConsensusMessageSignature{
 					{
 						Id:              1,
 						QueueTypeName:   defaultQueueName,
@@ -263,7 +263,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					nil,
 				)
 				t.Run("adding message signatures to first message which has enough signatures", func(t *testing.T) {
-					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val3"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val3"), []*types.ConsensusMessageSignature{
 						{
 							Id:              1,
 							QueueTypeName:   defaultQueueName,
@@ -272,7 +272,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 						},
 					})
 					require.NoError(t, err)
-					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val4"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val4"), []*types.ConsensusMessageSignature{
 						{
 							Id:              1,
 							QueueTypeName:   defaultQueueName,
@@ -283,7 +283,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					require.NoError(t, err)
 				})
 				t.Run("adding message signatures to a second message doesn't have enough signatures", func(t *testing.T) {
-					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val4"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val4"), []*types.ConsensusMessageSignature{
 						{
 							Id:              2,
 							QueueTypeName:   defaultQueueName,
@@ -327,7 +327,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					nil,
 				)
 				t.Run("adding message signatures to first message which has enough signatures", func(t *testing.T) {
-					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val2"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val2"), []*types.ConsensusMessageSignature{
 						{
 							Id:              1,
 							QueueTypeName:   defaultQueueName,
@@ -336,7 +336,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 						},
 					})
 					require.NoError(t, err)
-					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val3"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val3"), []*types.ConsensusMessageSignature{
 						{
 							Id:              1,
 							QueueTypeName:   defaultQueueName,
@@ -345,7 +345,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 						},
 					})
 					require.NoError(t, err)
-					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val4"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val4"), []*types.ConsensusMessageSignature{
 						{
 							Id:              1,
 							QueueTypeName:   defaultQueueName,
@@ -356,7 +356,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					require.NoError(t, err)
 				})
 				t.Run("adding message signatures to second message which has enough signatures", func(t *testing.T) {
-					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val3"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val3"), []*types.ConsensusMessageSignature{
 						{
 							Id:              2,
 							QueueTypeName:   defaultQueueName,
@@ -365,7 +365,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 						},
 					})
 					require.NoError(t, err)
-					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val4"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+					err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("val4"), []*types.ConsensusMessageSignature{
 						{
 							Id:              2,
 							QueueTypeName:   defaultQueueName,
@@ -396,7 +396,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					},
 					nil,
 				)
-				err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("404"), []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+				err = sd.keeper.AddMessageSignature(sd.ctx, sdk.ValAddress("404"), []*types.ConsensusMessageSignature{
 					{
 						Id:              1,
 						QueueTypeName:   defaultQueueName,
@@ -494,7 +494,7 @@ func TestAddingSignatures(t *testing.T) {
 			key2.PubKey().Bytes(),
 			nil,
 		).Once()
-		err = keeper.AddMessageSignature(ctx, val1, []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+		err = keeper.AddMessageSignature(ctx, val1, []*types.ConsensusMessageSignature{
 			{
 				Id:              msg.GetId(),
 				QueueTypeName:   queue,
@@ -510,7 +510,7 @@ func TestAddingSignatures(t *testing.T) {
 			key1.PubKey().Bytes(),
 			nil,
 		).Once()
-		err = keeper.AddMessageSignature(ctx, val1, []*types.MsgAddMessagesSignatures_MsgSignedMessage{
+		err = keeper.AddMessageSignature(ctx, val1, []*types.ConsensusMessageSignature{
 			{
 				Id:              msg.GetId(),
 				QueueTypeName:   queue,
@@ -535,12 +535,15 @@ func TestAddingSignatures(t *testing.T) {
 }
 
 type queueSupporter struct {
-	opt *consensus.QueueOptions
+	opt    *consensus.QueueOptions
+	action any
 }
 
-func (q queueSupporter) SupportedQueues(ctx sdk.Context) (map[string]consensus.QueueOptions, error) {
-	return map[string]consensus.QueueOptions{
-		q.opt.QueueTypeName: *q.opt,
+func (q queueSupporter) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsConsensusQueueAction, error) {
+	return map[string]consensus.SupportsConsensusQueueAction{
+		q.opt.QueueTypeName: {
+			QueueOptions: *q.opt,
+		},
 	}, nil
 
 }

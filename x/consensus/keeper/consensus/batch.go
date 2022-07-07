@@ -123,6 +123,18 @@ func (c BatchQueue) GetAll(ctx sdk.Context) ([]types.QueuedSignedMessageI, error
 	return c.base.GetAll(ctx)
 }
 
+func (c BatchQueue) AddEvidence(ctx sdk.Context, id uint64, evidence *types.Evidence) error {
+	return c.base.AddEvidence(ctx, id, evidence)
+}
+
+func (c BatchQueue) SetPublicAccessData(ctx sdk.Context, id uint64, data *types.PublicAccessData) error {
+	return c.base.SetPublicAccessData(ctx, id, data)
+}
+
+func (c BatchQueue) GetPublicAccessData(ctx sdk.Context, id uint64) (*types.PublicAccessData, error) {
+	return c.base.GetPublicAccessData(ctx, id)
+}
+
 func (c BatchQueue) ChainInfo() (types.ChainType, string) {
 	return c.base.ChainInfo()
 }

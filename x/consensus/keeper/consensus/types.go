@@ -17,6 +17,9 @@ const (
 type Queuer interface {
 	Put(sdk.Context, ...ConsensusMsg) error
 	AddSignature(ctx sdk.Context, id uint64, signData *types.SignData) error
+	AddEvidence(ctx sdk.Context, id uint64, evidence *types.Evidence) error
+	SetPublicAccessData(ctx sdk.Context, id uint64, data *types.PublicAccessData) error
+	GetPublicAccessData(ctx sdk.Context, id uint64) (*types.PublicAccessData, error)
 	Remove(sdk.Context, uint64) error
 	GetAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
 	GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error)
@@ -28,6 +31,12 @@ type QueueBatcher interface {
 	ProcessBatches(ctx sdk.Context) error
 }
 
+type SupportsConsensusQueueAction struct {
+	QueueOptions
+
+	Process func(ctx sdk.Context, q Queuer, msg types.QueuedSignedMessageI) error
+}
+
 type SupportsConsensusQueue interface {
-	SupportedQueues(ctx sdk.Context) (map[string]QueueOptions, error)
+	SupportedQueues(ctx sdk.Context) (map[string]SupportsConsensusQueueAction, error)
 }

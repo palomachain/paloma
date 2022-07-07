@@ -6,23 +6,17 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/palomachain/paloma/x/evm/types"
-	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 )
 
 var _ = strconv.Itoa(0)
 
-func CmdGetValsetByID() *cobra.Command {
+func CmdChainsInfos() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-valset-by-id [valset-id] [chain-id]",
-		Short: "Query GetValsetByID",
-		Args:  cobra.ExactArgs(2),
+		Use:   "chains-infos",
+		Short: "Query ChainsInfos",
+		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			reqValsetID, err := cast.ToUint64E(args[0])
-			chainReferenceID := args[1]
-			if err != nil {
-				return err
-			}
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -31,12 +25,9 @@ func CmdGetValsetByID() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryGetValsetByIDRequest{
-				ValsetID:         reqValsetID,
-				ChainReferenceID: chainReferenceID,
-			}
+			params := &types.QueryChainsInfosRequest{}
 
-			res, err := queryClient.GetValsetByID(cmd.Context(), params)
+			res, err := queryClient.ChainsInfos(cmd.Context(), params)
 			if err != nil {
 				return err
 			}

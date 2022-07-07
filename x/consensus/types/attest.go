@@ -9,10 +9,10 @@ type AttestTask interface {
 	Attest()
 }
 
-type Evidence struct {
-	From sdk.Address
-	Data []byte
-}
+// type Evidence struct {
+// 	From sdk.Address
+// 	Data []byte
+// }
 
 type AttestResult struct {
 	// TODO

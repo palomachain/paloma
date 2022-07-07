@@ -28,6 +28,8 @@ message UploadSmartContract {
   bytes bytecode = 1;
   string abi = 2;
   bytes constructorInput = 3;
+
+  uint64 id = 4;
 }
 
 message Message {

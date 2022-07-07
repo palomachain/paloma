@@ -7,7 +7,7 @@ option go_package = "github.com/palomachain/paloma/x/evm/types";
 message ChainInfo {
   string chainReferenceID = 1;
   
-  string chainID = 2;
+  uint64 chainID = 2;
 
   string smartContractID = 3;
 
