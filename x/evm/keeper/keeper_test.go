@@ -76,7 +76,10 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 	require.NoError(t, err)
 
-	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, "addr", "id")
+	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{
+		Id:      123,
+		Address: "addr",
+	})
 	require.NoError(t, err)
 
 	validators := genValidators(t, 25, 25000)
@@ -160,7 +163,11 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	}
 	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 	require.NoError(t, err)
-	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, "addr", "id")
+	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{
+		Id:       123,
+		Address:  "addr",
+		UniqueID: []byte("abc"),
+	})
 	require.NoError(t, err)
 
 	validators := genValidators(t, 25, 25000)
@@ -231,17 +238,21 @@ func TestAddingSupportForNewChain(t *testing.T) {
 
 	t.Run("activiting chain", func(t *testing.T) {
 		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
-			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "i dont exist", "bla", "bob")
+			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "i don't exist", &types.SmartContract{})
 			require.Error(t, err)
 		})
 		t.Run("works when chain exists", func(t *testing.T) {
-			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "bob", "addr", "id")
+			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "bob", &types.SmartContract{
+				Id:       123,
+				UniqueID: []byte("id"),
+				Address:  "addr",
+			})
 			require.NoError(t, err)
 			gotChainInfo, err := a.EvmKeeper.GetChainInfo(ctx, "bob")
 			require.NoError(t, err)
 
 			require.Equal(t, "addr", gotChainInfo.GetSmartContractAddr())
-			require.Equal(t, "id", gotChainInfo.GetSmartContractID())
+			require.Equal(t, []byte("id"), gotChainInfo.GetSmartContractUniqueID())
 		})
 	})
 
