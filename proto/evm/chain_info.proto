@@ -9,7 +9,7 @@ message ChainInfo {
   
   uint64 chainID = 2;
 
-  string smartContractID = 3;
+  bytes smartContractUniqueID = 3;
 
   string smartContractAddr = 4;
 
@@ -29,10 +29,15 @@ message ChainInfo {
 
   uint64 smartContractVersion = 11;
 
+  uint64 smartContractDeployingVersion = 12;
+
 }
 
 message SmartContract {
   uint64 id = 1;
   string abiJSON = 2;
   bytes bytecode = 3;
+  bytes uniqueID = 4;
+
+  string address = 5;
 }

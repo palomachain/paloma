@@ -4,13 +4,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -44,33 +43,39 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return err
 	}
 
-	defer func() {
-		q.Remove(ctx, msg.GetId())
-	}()
+	actionMsg := consensusMsg.(*types.Message).GetAction()
 
-	switch origMsg := consensusMsg.(type) {
-	case *types.UploadSmartContract:
-		fmt.Println(tx)
-		// _, chainReferenceID := q.ChainInfo()
-		// chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
-		// if err != nil {
-		// 	return err
-		// }
-
-		smartContract, err := k.getSmartContract(ctx, origMsg.GetId())
-		// chainInfo.SmartContractAddr = tx.To().Hex()
-		// chainInfo.SmartContractID = smartContract.GetId()
-		panic("MAKE THIS WORK")
-
-		err = keeperutil.Save(k.lastSmartContractStore(ctx), k.cdc, lastSmartContractKey, smartContract)
+	switch origMsg := actionMsg.(type) {
+	case *types.Message_UploadSmartContract:
+		_, chainReferenceID := q.ChainInfo()
+		chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
 		if err != nil {
 			return err
 		}
-	case *types.SubmitLogicCall:
+
+		smartContract, err := k.getSmartContract(ctx, origMsg.UploadSmartContract.GetId())
+		ethMsg, err := tx.AsMessage(ethtypes.NewEIP2930Signer(tx.ChainId()), big.NewInt(0))
+		if err != nil {
+			return err
+		}
+		smartContract.Address = crypto.CreateAddress(ethMsg.From(), tx.Nonce()).Hex()
+
+		err = k.updateChainInfo(ctx, chainInfo)
+		err = k.saveSmartContract(ctx, smartContract)
+		if err != nil {
+			return err
+		}
+		err = k.ActivateChainReferenceID(ctx, chainReferenceID, smartContract)
+		if err != nil {
+			return err
+		}
+	case *types.Message_UpdateValset:
 		// nothing
-	case *types.UpdateValset:
+	case *types.Message_SubmitLogicCall:
 		// nothing
 	}
+
+	q.Remove(ctx, msg.GetId())
 
 	return nil
 
@@ -137,8 +142,8 @@ func (k Keeper) attestTransaction(
 			not to lose precision, we can do this:
 			groupTotal * 3 >= total * 2
 		*/
-		var grInt *big.Int
-		var totInt *big.Int
+		grInt := big.NewInt(1)
+		totInt := big.NewInt(1)
 
 		grInt.Mul(groupTotal, big.NewInt(3))
 		totInt.Mul(snapshot.TotalShares.BigInt(), big.NewInt(2))

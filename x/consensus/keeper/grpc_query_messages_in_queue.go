@@ -23,7 +23,16 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 	}
 
 	res := &types.QueryMessagesInQueueResponse{}
+	skipIfValidatorSigned := req.GetSkipEvidenceProvidedByValAddress()
 	for _, msg := range msgs {
+		if skipIfValidatorSigned != nil {
+			for _, evidence := range msg.GetEvidence() {
+				if evidence.ValAddress.Equals(skipIfValidatorSigned) {
+					continue
+				}
+			}
+		}
+
 		origMsg, err := msg.ConsensusMsg(k.cdc)
 
 		if err != nil {

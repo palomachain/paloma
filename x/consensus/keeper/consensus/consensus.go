@@ -180,9 +180,9 @@ func (c Queue) AddEvidence(ctx sdk.Context, msgID uint64, evidence *types.Eviden
 		return err
 	}
 
-	for _, existingSigData := range msg.GetSignData() {
-		if evidence.ValAddress.Equals(existingSigData.ValAddress) {
-			return ErrAlreadySignedWithKey.Format(msgID, c.qo.QueueTypeName, existingSigData.PublicKey)
+	for _, existingEvidence := range msg.GetEvidence() {
+		if evidence.ValAddress.Equals(existingEvidence.ValAddress) {
+			return ErrValidatorAlreadySigned.Format(evidence.ValAddress)
 		}
 	}
 
@@ -191,7 +191,7 @@ func (c Queue) AddEvidence(ctx sdk.Context, msgID uint64, evidence *types.Eviden
 	return c.save(ctx, msg)
 }
 
-// AddSignature adds a signature to the message and checks if the signature is valid.
+// SetPublicAccessData sets data that should be visible publically so that other can provide proofs.
 func (c Queue) SetPublicAccessData(ctx sdk.Context, msgID uint64, data *types.PublicAccessData) error {
 	msg, err := c.GetMsgByID(ctx, msgID)
 	if err != nil {
@@ -230,7 +230,7 @@ func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignD
 			return ErrAlreadySignedWithKey.Format(msgID, c.qo.QueueTypeName, existingSigData.PublicKey)
 		}
 		if signData.ValAddress.Equals(existingSigData.ValAddress) {
-			return ErrAlreadySignedWithKey.Format(msgID, c.qo.QueueTypeName, existingSigData.PublicKey)
+			return ErrValidatorAlreadySigned.Format(signData.ValAddress)
 		}
 	}
 

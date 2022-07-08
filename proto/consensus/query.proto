@@ -80,6 +80,9 @@ message MessageWithSignatures {
 
 message QueryMessagesInQueueRequest {
   string queueTypeName = 1;
+  bytes skipEvidenceProvidedByValAddress = 2[ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+
 }
 
 message QueryMessagesInQueueResponse {
