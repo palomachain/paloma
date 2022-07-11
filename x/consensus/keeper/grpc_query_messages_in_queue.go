@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -26,10 +27,16 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 	skipIfValidatorSigned := req.GetSkipEvidenceProvidedByValAddress()
 	for _, msg := range msgs {
 		if skipIfValidatorSigned != nil {
+			shouldSkipThisMsg := false
 			for _, evidence := range msg.GetEvidence() {
 				if evidence.ValAddress.Equals(skipIfValidatorSigned) {
-					continue
+					shouldSkipThisMsg = true
+					break
 				}
+			}
+
+			if shouldSkipThisMsg {
+				continue
 			}
 		}
 
@@ -66,5 +73,6 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 		}
 		res.Messages = append(res.Messages, approvedMessage)
 	}
+	fmt.Println("DUZINA", len(res.Messages))
 	return res, nil
 }
