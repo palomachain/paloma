@@ -41,7 +41,7 @@ N/A
 
 ## Testnet Setup Instructions
 
-To get the latest `palomad` binary:
+### Get the latest `palomad` binary.
 
 ```shell
 wget -O - https://github.com/palomachain/paloma/releases/download/v0.2.5-prealpha/paloma_0.2.5-prealpha_Linux_x86_64.tar.gz | \
@@ -49,6 +49,12 @@ sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
 sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/api/libwasmvm.x86_64.so
+```
+
+We will use [jq](https://stedolan.github.io/jq/) for json manipulation.
+
+```shell
+apt install jq
 ```
 
 ### Connecting to an existing testnet.
@@ -92,7 +98,7 @@ palomad start
 If desired we can stake our funds and create a validator.
 ```shell
 MONIKER="$(hostname)"
-VALIDATOR="$(palomad keys list --list-names | head -n1)"
+VALIDATOR="$(palomad keys list --output json | jq -r '.[0].address')"
 STAKE_AMOUNT=1000000ugrain
 PUBKEY="$(palomad tendermint show-validator)"
 palomad tx staking create-validator \
@@ -156,19 +162,13 @@ journalctl -u palomad.service -f
 
 ```shell
 CONTRACT=<contract.wasm>
-VALIDATOR="$(palomad keys list --list-names | head -n1)"
+VALIDATOR="$(palomad keys list --output json | jq -r '.[0].address')"
 palomad tx wasm store "$CONTRACT" --from "$VALIDATOR" --broadcast-mode block -y --gas auto --fees 3000000000ugrain
 ```
 
 ## Setting up a new private testnet
 
-Download and install the latest release of palomad.
-
-Install `jq`, used by the setup script.
-
-```shell
-apt install jq
-```
+First you need to [download and install the latest release of palomad](./README.md#Get the latest `palomad` binary.).
 
 Set up the chain validator.
 
