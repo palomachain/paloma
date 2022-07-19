@@ -137,7 +137,13 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	}
 
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
-	if err != nil {
+	switch {
+	case err == nil:
+		// does nothing
+	case errors.Is(err, keeperutil.ErrNotFound):
+		// can't deploy as there is no consensus
+		return nil
+	default:
 		return err
 	}
 	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID())
@@ -181,7 +187,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	)
 }
 
-func (k Keeper) UpdateWithSmartContract(ctx sdk.Context, abiJSON string, bytecode []byte) error {
+func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode []byte) error {
 	ctx, write := ctx.CacheContext()
 	uniqueID := generateSmartContractID(ctx)
 
@@ -213,7 +219,7 @@ func (k Keeper) UpdateWithSmartContract(ctx sdk.Context, abiJSON string, bytecod
 	return nil
 }
 
-func (k Keeper) TryDeployingSmartContractToAllChains(ctx sdk.Context) {
+func (k Keeper) TryDeployingLastSmartContractToAllChains(ctx sdk.Context) {
 	smartContract, err := k.getLastSmartContract(ctx)
 	if err != nil {
 		return
@@ -231,11 +237,12 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 
 	for _, chainInfo := range chainInfos {
 		if chainInfo.SmartContractVersion == smartContract.GetId() {
-			// although this logic is not neccecary here, it's here for the
-			// reader to make sense what is happenig
+			// there is no need to deploy the same version again because this
+			// chain already is on that version.
 			continue
 		}
 		if chainInfo.SmartContractDeployingVersion == smartContract.GetId() {
+			// we are already deploying this version to this chain
 			continue
 		}
 		if chainInfo.SmartContractVersion < smartContract.GetId() {
@@ -394,11 +401,10 @@ func (k Keeper) updateChainInfo(ctx sdk.Context, chainInfo *types.ChainInfo) err
 
 func (k Keeper) AddSupportForNewChain(ctx sdk.Context, addChain *types.AddChainProposal) error {
 	_, err := k.GetChainInfo(ctx, addChain.GetChainReferenceID())
-	if !errors.Is(err, ErrChainNotFound) {
+	switch {
+	case errors.Is(err, ErrChainNotFound):
 		// we want chain not to exist when adding a new one!
-		if err != nil {
-			err = whoops.String("expected chain not to exist")
-		}
+	default:
 		return whoops.Wrap(ErrUnexpectedError, err)
 	}
 	chainInfo := &types.ChainInfo{
@@ -510,18 +516,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		)
 	}
 
-	smartContract, err := k.getLastSmartContract(ctx)
-	switch {
-	case errors.Is(err, keeperutil.ErrNotFound):
-		// does nothing
-	case err == nil:
-		// given that valset was changes, there still might be a chainReferenceID that had
-		// zero validators in the valset. This tries to update the state for those
-		// smart contracts to get them up online.
-		k.tryDeployingSmartContractToAllChains(ctx, smartContract)
-	default:
-		panic(err)
-	}
+	k.TryDeployingLastSmartContractToAllChains(ctx)
 }
 
 func isEnoughToReachConsensus(val types.Valset) bool {
