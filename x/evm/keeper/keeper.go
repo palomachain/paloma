@@ -234,8 +234,7 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 	}
 
 	for _, chainInfo := range chainInfos {
-		fmt.Println("PROVJERA", k.hasAnySmartContractDeployment(ctx, chainInfo.GetChainReferenceID()), chainInfo.GetActiveSmartContractID(), smartContract.GetId())
-		if k.hasAnySmartContractDeployment(ctx, chainInfo.GetChainReferenceID()) {
+		if k.HasAnySmartContractDeployment(ctx, chainInfo.GetChainReferenceID()) {
 			// we are already deploying to this chain. Lets wait it out.
 			continue
 		}
@@ -243,7 +242,6 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 			// the chain has the newer version of the chain, so skipping the "old" smart contract upgrade
 			continue
 		}
-		fmt.Println("DEPLOYING")
 		g.Add(k.deploySmartContractToChain(ctx, chainInfo, smartContract))
 	}
 
@@ -521,7 +519,7 @@ func (k Keeper) getSmartContractDeploying(ctx sdk.Context, smartContractID uint6
 	return
 }
 
-func (k Keeper) hasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID string) (found bool) {
+func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID string) (found bool) {
 	keeperutil.IterAllFnc(
 		k.smartContractDeploymentStore(ctx),
 		k.cdc,
