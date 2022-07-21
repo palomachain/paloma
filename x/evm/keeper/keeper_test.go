@@ -85,10 +85,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 	require.NoError(t, err)
 
-	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{
-		Id:      123,
-		Address: "addr",
-	})
+	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, "addr", []byte("abc"))
 	require.NoError(t, err)
 
 	validators := genValidators(25, 25000)
@@ -172,11 +169,15 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	}
 	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 	require.NoError(t, err)
-	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{
-		Id:       123,
-		Address:  "addr",
-		UniqueID: []byte("abc"),
-	})
+	err = a.EvmKeeper.ActivateChainReferenceID(
+		ctx,
+		newChain.ChainReferenceID,
+		&types.SmartContract{
+			Id: 123,
+		},
+		"addr",
+		[]byte("abc"),
+	)
 	require.NoError(t, err)
 
 	validators := genValidators(25, 25000)
@@ -247,21 +248,17 @@ func TestAddingSupportForNewChain(t *testing.T) {
 
 	t.Run("activiting chain", func(t *testing.T) {
 		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
-			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "i don't exist", &types.SmartContract{})
+			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "i don't exist", &types.SmartContract{}, "", []byte{})
 			require.Error(t, err)
 		})
 		t.Run("works when chain exists", func(t *testing.T) {
-			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "bob", &types.SmartContract{
-				Id:       123,
-				UniqueID: []byte("id"),
-				Address:  "addr",
-			})
+			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "bob", &types.SmartContract{Id: 123}, "addr", []byte("unique id"))
 			require.NoError(t, err)
 			gotChainInfo, err := a.EvmKeeper.GetChainInfo(ctx, "bob")
 			require.NoError(t, err)
 
 			require.Equal(t, "addr", gotChainInfo.GetSmartContractAddr())
-			require.Equal(t, []byte("id"), gotChainInfo.GetSmartContractUniqueID())
+			require.Equal(t, []byte("unique id"), gotChainInfo.GetSmartContractUniqueID())
 		})
 	})
 
@@ -304,8 +301,6 @@ var _ = Describe("building a snapshot", func() {
 	}
 	smartContract := &types.SmartContract{
 		Id:       123,
-		Address:  "addr",
-		UniqueID: []byte("abc"),
 		AbiJSON:  contractAbi,
 		Bytecode: common.FromHex(contractBytecodeStr),
 	}
@@ -314,6 +309,16 @@ var _ = Describe("building a snapshot", func() {
 		a = app.NewTestApp(GinkgoT(), false)
 		ctx = a.NewContext(false, tmproto.Header{
 			Height: 5,
+		})
+	})
+
+	Describe("trying to add support for the same chain twice", func() {
+		It("returns an error", func() {
+			err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+			Expect(err).To(BeNil())
+
+			err = a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+			Expect(err).To(MatchError(keeper.ErrCannotAddSupportForChainThatExists))
 		})
 	})
 
@@ -334,9 +339,11 @@ var _ = Describe("building a snapshot", func() {
 			BeforeEach(func() {
 				err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 				Expect(err).To(BeNil())
-				err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+
+				_, err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
 				Expect(err).To(BeNil())
-				err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract)
+
+				err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract, "addr", []byte("abc"))
 				Expect(err).To(BeNil())
 			})
 
@@ -400,10 +407,13 @@ var _ = Describe("building a snapshot", func() {
 					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/new-chain/evm-turnstone-message", 5)
 					Expect(err).To(BeNil())
 					Expect(len(msgs)).To(Equal(1))
+
 					con, err := msgs[0].ConsensusMsg(a.AppCodec())
 					Expect(err).To(BeNil())
+
 					evmMsg, ok := con.(*types.Message)
 					Expect(ok).To(BeTrue())
+
 					_, ok = evmMsg.GetAction().(*types.Message_UploadSmartContract)
 					Expect(ok).To(BeTrue())
 				})
@@ -428,9 +438,9 @@ var _ = Describe("building a snapshot", func() {
 			BeforeEach(func() {
 				err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 				Expect(err).To(BeNil())
-				err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+				_, err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
 				Expect(err).To(BeNil())
-				err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract)
+				err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract, "addr", []byte("abc"))
 				Expect(err).To(BeNil())
 			})
 			It("doesn't put any message into a queue", func() {

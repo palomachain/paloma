@@ -8,4 +8,6 @@ const (
 	ErrNotEnoughValidatorsForGivenChainReferenceID = whoops.String("not enough validators in the current snapshot to form a proper valset")
 	ErrUnexpectedError                             = whoops.String("unexpected error")
 	ErrConsensusNotAchieved                        = whoops.String("evm: consensus not achieved")
+	ErrCannotAddSupportForChainThatExists          = whoops.Errorf("chain info already exists: %s")
+	ErrCannotActiveSmartContractThatIsNotDeploying = whoops.String("trying to activate a smart contract that is not currently deploying")
 )
