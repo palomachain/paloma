@@ -1,26 +1,27 @@
 package keeper
 
 import (
-	"testing"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/evm/types/mocks"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 )
 
 type mockedServices struct {
 	ConsensusKeeper *mocks.ConsensusKeeper
+	ValsetKeeper    *mocks.ValsetKeeper
 }
 
-func newEvmKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
+func newEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
@@ -45,6 +46,7 @@ func newEvmKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 
 	ms := mockedServices{
 		ConsensusKeeper: mocks.NewConsensusKeeper(t),
+		ValsetKeeper:    mocks.NewValsetKeeper(t),
 	}
 	k := NewKeeper(
 		appCodec,
@@ -53,8 +55,9 @@ func newEvmKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		paramsSubspace,
 	)
 	k.ConsensusKeeper = ms.ConsensusKeeper
+	k.Valset = ms.ValsetKeeper
 
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
+	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())

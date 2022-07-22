@@ -172,6 +172,6 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	am.keeper.TryDeployingSmartContractToAllChains(ctx)
+	am.keeper.TryDeployingLastSmartContractToAllChains(ctx)
 	return []abci.ValidatorUpdate{}
 }

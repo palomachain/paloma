@@ -16,7 +16,8 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govtypes.Handl
 		case *types.RemoveChainProposal:
 			return k.RemoveSupportForChain(ctx, c)
 		case *types.DeployNewSmartContractProposal:
-			return k.UpdateWithSmartContract(ctx, c.GetAbiJSON(), c.Bytecode())
+			_, err := k.SaveNewSmartContract(ctx, c.GetAbiJSON(), c.Bytecode())
+			return err
 		}
 		return sdkerrors.ErrUnknownRequest
 	}

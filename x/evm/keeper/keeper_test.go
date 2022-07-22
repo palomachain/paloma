@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"strings"
 	"testing"
@@ -24,9 +25,17 @@ import (
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/vizualni/whoops"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func genValidators(t *testing.T, numValidators, totalConsPower int) []stakingtypes.Validator {
+var (
+	contractAbi         = string(whoops.Must(ioutil.ReadFile("testdata/sample-abi.json")))
+	contractBytecodeStr = string(whoops.Must(ioutil.ReadFile("testdata/sample-bytecode.out")))
+)
+
+func genValidators(numValidators, totalConsPower int) []stakingtypes.Validator {
 	validators := make([]stakingtypes.Validator, numValidators)
 
 	quotient, remainder := totalConsPower/numValidators, totalConsPower%numValidators
@@ -76,13 +85,10 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 	require.NoError(t, err)
 
-	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{
-		Id:      123,
-		Address: "addr",
-	})
+	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, "addr", []byte("abc"))
 	require.NoError(t, err)
 
-	validators := genValidators(t, 25, 25000)
+	validators := genValidators(25, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
 	}
@@ -163,14 +169,18 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	}
 	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
 	require.NoError(t, err)
-	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{
-		Id:       123,
-		Address:  "addr",
-		UniqueID: []byte("abc"),
-	})
+	err = a.EvmKeeper.ActivateChainReferenceID(
+		ctx,
+		newChain.ChainReferenceID,
+		&types.SmartContract{
+			Id: 123,
+		},
+		"addr",
+		[]byte("abc"),
+	)
 	require.NoError(t, err)
 
-	validators := genValidators(t, 25, 25000)
+	validators := genValidators(25, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
 		err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
@@ -238,21 +248,17 @@ func TestAddingSupportForNewChain(t *testing.T) {
 
 	t.Run("activiting chain", func(t *testing.T) {
 		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
-			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "i don't exist", &types.SmartContract{})
+			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "i don't exist", &types.SmartContract{}, "", []byte{})
 			require.Error(t, err)
 		})
 		t.Run("works when chain exists", func(t *testing.T) {
-			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "bob", &types.SmartContract{
-				Id:       123,
-				UniqueID: []byte("id"),
-				Address:  "addr",
-			})
+			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "bob", &types.SmartContract{Id: 123}, "addr", []byte("unique id"))
 			require.NoError(t, err)
 			gotChainInfo, err := a.EvmKeeper.GetChainInfo(ctx, "bob")
 			require.NoError(t, err)
 
 			require.Equal(t, "addr", gotChainInfo.GetSmartContractAddr())
-			require.Equal(t, []byte("id"), gotChainInfo.GetSmartContractUniqueID())
+			require.Equal(t, []byte("unique id"), gotChainInfo.GetSmartContractUniqueID())
 		})
 	})
 
@@ -273,3 +279,265 @@ func TestAddingSupportForNewChain(t *testing.T) {
 		})
 	})
 }
+
+func TestWithGinkgo(t *testing.T) {
+	RegisterFailHandler(Fail)
+
+	RunSpecs(t, "EVM keeper")
+}
+
+var _ = Describe("evm", func() {
+	// smartContractAddr := common.BytesToAddress(rand.Bytes(5))
+	// chainType, chainReferenceID := consensustypes.ChainTypeEVM, "eth-main"
+	var a app.TestApp
+	var ctx sdk.Context
+	var validators []stakingtypes.Validator
+	newChain := &types.AddChainProposal{
+		ChainReferenceID:  "eth-main",
+		Title:             "bla",
+		Description:       "bla",
+		BlockHeight:       uint64(123),
+		BlockHashAtHeight: "0x1234",
+	}
+	smartContract := &types.SmartContract{
+		Id:       123,
+		AbiJSON:  contractAbi,
+		Bytecode: common.FromHex(contractBytecodeStr),
+	}
+
+	BeforeEach(func() {
+		a = app.NewTestApp(GinkgoT(), false)
+		ctx = a.NewContext(false, tmproto.Header{
+			Height: 5,
+		})
+	})
+
+	Context("multiple chains and smart contracts", func() {
+		Describe("trying to add support for the same chain twice", func() {
+			It("returns an error", func() {
+				err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+				Expect(err).To(BeNil())
+
+				err = a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+				Expect(err).To(MatchError(keeper.ErrCannotAddSupportForChainThatExists))
+			})
+		})
+
+		Describe("ensuring that there can be two chains at the same time", func() {
+			chain1 := &types.AddChainProposal{
+				ChainReferenceID:  "chain1",
+				Title:             "bla",
+				Description:       "bla",
+				BlockHeight:       uint64(456),
+				BlockHashAtHeight: "0x1234",
+			}
+			chain2 := &types.AddChainProposal{
+				ChainReferenceID:  "chain2",
+				Title:             "bla",
+				Description:       "bla",
+				BlockHeight:       uint64(123),
+				BlockHashAtHeight: "0x5678",
+			}
+			BeforeEach(func() {
+				validators = genValidators(25, 25000)
+				for _, val := range validators {
+					a.StakingKeeper.SetValidator(ctx, val)
+				}
+			})
+
+			JustBeforeEach(func() {
+				for _, val := range validators {
+					private1, err := crypto.GenerateKey()
+					private2, err := crypto.GenerateKey()
+					Expect(err).To(BeNil())
+					accAddr1 := crypto.PubkeyToAddress(private1.PublicKey)
+					accAddr2 := crypto.PubkeyToAddress(private2.PublicKey)
+					err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+						{
+							ChainType:        "EVM",
+							ChainReferenceID: chain1.ChainReferenceID,
+							Address:          accAddr1.Hex(),
+							Pubkey:           []byte("pub key"),
+						},
+						{
+							ChainType:        "EVM",
+							ChainReferenceID: chain2.ChainReferenceID,
+							Address:          accAddr2.Hex(),
+							Pubkey:           []byte("pub key"),
+						},
+					})
+					Expect(err).To(BeNil())
+				}
+				_, err := a.ValsetKeeper.TriggerSnapshotBuild(ctx)
+				Expect(err).To(BeNil())
+			})
+
+			BeforeEach(func() {
+				By("adding chain1 works")
+				err := a.EvmKeeper.AddSupportForNewChain(ctx, chain1)
+				Expect(err).To(BeNil())
+
+				By("adding chain2 works")
+				err = a.EvmKeeper.AddSupportForNewChain(ctx, chain2)
+				Expect(err).To(BeNil())
+			})
+
+			Context("adding smart contract", func() {
+
+				It("adds a new smart contract deployment for both of the chains", func() {
+					Expect(
+						a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+					).To(BeFalse())
+					Expect(
+						a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+					).To(BeFalse())
+
+					_, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+					Expect(err).To(BeNil())
+
+					Expect(
+						a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+					).To(BeTrue())
+					Expect(
+						a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+					).To(BeTrue())
+				})
+
+			})
+		})
+	})
+
+	Describe("on snapshot build", func() {
+		When("validator set is valid", func() {
+			BeforeEach(func() {
+				validators = genValidators(25, 25000)
+				for _, val := range validators {
+					a.StakingKeeper.SetValidator(ctx, val)
+				}
+			})
+
+			JustBeforeEach(func() {
+				_, err := a.ValsetKeeper.TriggerSnapshotBuild(ctx)
+				Expect(err).To(BeNil())
+			})
+
+			When("evm chain and smart contract both exist", func() {
+				BeforeEach(func() {
+					err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+					Expect(err).To(BeNil())
+
+					_, err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+					Expect(err).To(BeNil())
+
+					err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract, "addr", []byte("abc"))
+					Expect(err).To(BeNil())
+				})
+
+				BeforeEach(func() {
+					for _, val := range validators {
+						private, err := crypto.GenerateKey()
+						Expect(err).To(BeNil())
+						accAddr := crypto.PubkeyToAddress(private.PublicKey)
+						err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+							{
+								ChainType:        "EVM",
+								ChainReferenceID: newChain.ChainReferenceID,
+								Address:          accAddr.Hex(),
+								Pubkey:           []byte("pub key"),
+							},
+						})
+						Expect(err).To(BeNil())
+					}
+				})
+
+				It("expects update valset message to exist", func() {
+					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/eth-main/evm-turnstone-message", 5)
+					Expect(err).To(BeNil())
+					Expect(len(msgs)).To(Equal(1))
+					con, err := msgs[0].ConsensusMsg(a.AppCodec())
+					Expect(err).To(BeNil())
+					evmMsg, ok := con.(*types.Message)
+					Expect(ok).To(BeTrue())
+					_, ok = evmMsg.GetAction().(*types.Message_UpdateValset)
+					Expect(ok).To(BeTrue())
+				})
+
+				When("adding another chain which is not yet active", func() {
+					BeforeEach(func() {
+						err := a.EvmKeeper.AddSupportForNewChain(ctx, &types.AddChainProposal{
+							ChainReferenceID:  "new-chain",
+							Title:             "bla",
+							Description:       "bla",
+							BlockHeight:       uint64(123),
+							BlockHashAtHeight: "0x1234",
+						})
+						Expect(err).To(BeNil())
+
+						for _, val := range validators {
+							private, err := crypto.GenerateKey()
+							Expect(err).To(BeNil())
+							accAddr := crypto.PubkeyToAddress(private.PublicKey)
+							err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+								{
+									ChainType:        "EVM",
+									ChainReferenceID: "new-chain",
+									Address:          accAddr.Hex(),
+									Pubkey:           []byte("pub key"),
+								},
+							})
+							Expect(err).To(BeNil())
+						}
+					})
+
+					It("tries to deploy a smart contract to it", func() {
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/new-chain/evm-turnstone-message", 5)
+						Expect(err).To(BeNil())
+						Expect(len(msgs)).To(Equal(1))
+
+						con, err := msgs[0].ConsensusMsg(a.AppCodec())
+						Expect(err).To(BeNil())
+
+						evmMsg, ok := con.(*types.Message)
+						Expect(ok).To(BeTrue())
+
+						_, ok = evmMsg.GetAction().(*types.Message_UploadSmartContract)
+						Expect(ok).To(BeTrue())
+					})
+				})
+
+			})
+		})
+
+		When("validator set is too tiny", func() {
+			BeforeEach(func() {
+				validators = genValidators(25, 25000)[:5]
+				for _, val := range validators {
+					a.StakingKeeper.SetValidator(ctx, val)
+				}
+			})
+
+			JustBeforeEach(func() {
+				_, err := a.ValsetKeeper.TriggerSnapshotBuild(ctx)
+				Expect(err).To(BeNil())
+			})
+			Context("evm chain and smart contract both exist", func() {
+				BeforeEach(func() {
+					err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+					Expect(err).To(BeNil())
+					_, err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+					Expect(err).To(BeNil())
+					err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract, "addr", []byte("abc"))
+					Expect(err).To(BeNil())
+				})
+
+				It("doesn't put any message into a queue", func() {
+
+					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/eth-main/evm-turnstone-message", 5)
+					Expect(err).To(BeNil())
+					Expect(msgs).To(BeZero())
+				})
+			})
+
+		})
+	})
+})
