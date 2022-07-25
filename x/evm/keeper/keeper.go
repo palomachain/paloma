@@ -218,7 +218,7 @@ func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode [
 }
 
 func (k Keeper) TryDeployingLastSmartContractToAllChains(ctx sdk.Context) {
-	smartContract, err := k.getLastSmartContract(ctx)
+	smartContract, err := k.GetLastSmartContract(ctx)
 	if err != nil {
 		return
 	}
@@ -227,7 +227,7 @@ func (k Keeper) TryDeployingLastSmartContractToAllChains(ctx sdk.Context) {
 
 func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContract *types.SmartContract) error {
 	var g whoops.Group
-	chainInfos, err := k.getAllChainInfos(ctx)
+	chainInfos, err := k.GetAllChainInfos(ctx)
 
 	if err != nil {
 		return err
@@ -321,7 +321,7 @@ func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 // }
 
 func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsConsensusQueueAction, error) {
-	chains, err := k.getAllChainInfos(ctx)
+	chains, err := k.GetAllChainInfos(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -377,7 +377,7 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsC
 	return res, nil
 }
 
-func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ChainInfo, error) {
+func (k Keeper) GetAllChainInfos(ctx sdk.Context) ([]*types.ChainInfo, error) {
 	_, all, err := keeperutil.IterAll[*types.ChainInfo](k.chainInfoStore(ctx), k.cdc)
 	return all, err
 }
@@ -394,21 +394,27 @@ func (k Keeper) updateChainInfo(ctx sdk.Context, chainInfo *types.ChainInfo) err
 	return keeperutil.Save(k.chainInfoStore(ctx), k.cdc, []byte(chainInfo.GetChainReferenceID()), chainInfo)
 }
 
-func (k Keeper) AddSupportForNewChain(ctx sdk.Context, addChain *types.AddChainProposal) error {
-	_, err := k.GetChainInfo(ctx, addChain.GetChainReferenceID())
+func (k Keeper) AddSupportForNewChain(
+	ctx sdk.Context,
+	chainReferenceID string,
+	chainID uint64,
+	blockHeight uint64,
+	blockHashAtHeight string,
+) error {
+	_, err := k.GetChainInfo(ctx, chainReferenceID)
 	switch {
 	case err == nil:
-		return ErrCannotAddSupportForChainThatExists.Format(addChain.GetChainReferenceID())
+		return ErrCannotAddSupportForChainThatExists.Format(chainReferenceID)
 	case errors.Is(err, ErrChainNotFound):
 		// we want chain not to exist when adding a new one!
 	default:
 		return whoops.Wrap(ErrUnexpectedError, err)
 	}
 	chainInfo := &types.ChainInfo{
-		ChainID:              addChain.GetChainID(),
-		ChainReferenceID:     addChain.GetChainReferenceID(),
-		ReferenceBlockHeight: addChain.GetBlockHeight(),
-		ReferenceBlockHash:   addChain.GetBlockHashAtHeight(),
+		ChainID:              chainID,
+		ChainReferenceID:     chainReferenceID,
+		ReferenceBlockHeight: blockHeight,
+		ReferenceBlockHash:   blockHashAtHeight,
 	}
 
 	err = k.updateChainInfo(ctx, chainInfo)
@@ -561,14 +567,14 @@ func (k Keeper) setAsLastSmartContract(ctx sdk.Context, smartContract *types.Sma
 	return nil
 }
 
-func (k Keeper) getLastSmartContract(ctx sdk.Context) (*types.SmartContract, error) {
+func (k Keeper) GetLastSmartContract(ctx sdk.Context) (*types.SmartContract, error) {
 	kv := k.lastSmartContractStore(ctx)
 	id := kv.Get(lastSmartContractKey)
 	return keeperutil.Load[*types.SmartContract](k.smartContractsStore(ctx), k.cdc, id)
 }
 
 func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
-	chainInfos, err := k.getAllChainInfos(ctx)
+	chainInfos, err := k.GetAllChainInfos(ctx)
 	if err != nil {
 		panic(err)
 	}

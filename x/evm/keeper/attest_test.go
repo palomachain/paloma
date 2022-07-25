@@ -151,7 +151,13 @@ var _ = g.Describe("attest router", func() {
 			setupChainSupport := func() {
 				consensukeeper.On("PutMessageForSigning", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-				err := k.AddSupportForNewChain(ctx, newChain)
+				err := k.AddSupportForNewChain(
+					ctx,
+					newChain.GetChainReferenceID(),
+					newChain.GetChainID(),
+					newChain.GetBlockHeight(),
+					newChain.GetBlockHashAtHeight(),
+				)
 				Expect(err).To(BeNil())
 
 				sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))

@@ -11,4 +11,22 @@ option go_package = "github.com/palomachain/paloma/x/evm/types";
 message GenesisState {
   Params params = 1 [(gogoproto.nullable) = false];
   // this line is used by starport scaffolding # genesis/proto/state
+
+  GenesisSmartContract smartContract = 2;
+
+  repeated GenesisChainInfo chains = 3;
+  
+}
+
+
+message GenesisChainInfo {
+  string chainReferenceID = 1;
+  uint64 chainID = 2;
+  uint64 blockHeight = 3;
+  string blockHashAtHeight = 4;
+}
+
+message GenesisSmartContract {
+  string abiJson = 1;
+  string bytecodeHex = 2;
 }
