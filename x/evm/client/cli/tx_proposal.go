@@ -66,9 +66,12 @@ func CmdEvmProposeNewChain() *cobra.Command {
 				clientCtx, err := client.GetClientTxContext(cmd)
 				whoops.Assert(err)
 
-				chainReferenceID, chainID, blockHeightStr, blockHashAtHeight := args[0], args[1], args[2], args[3]
+				chainReferenceID, chainIDStr, blockHeightStr, blockHashAtHeight := args[0], args[1], args[2], args[3]
 
 				blockHeight, err := strconv.ParseInt(blockHeightStr, 10, 64)
+				whoops.Assert(err)
+
+				chainID, err := strconv.ParseInt(chainIDStr, 10, 64)
 				whoops.Assert(err)
 
 				if len(blockHashAtHeight) <= len("0x") || !isHex(blockHashAtHeight[2:]) {
@@ -77,7 +80,7 @@ func CmdEvmProposeNewChain() *cobra.Command {
 
 				addChainProposal := &types.AddChainProposal{
 					ChainReferenceID:  chainReferenceID,
-					ChainID:           chainID,
+					ChainID:           uint64(chainID),
 					Title:             whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
 					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
 					BlockHeight:       uint64(blockHeight),
@@ -107,9 +110,9 @@ func CmdEvmProposeNewChain() *cobra.Command {
 
 func CmdEvmProposalDeployNewSmartContract() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "propose-new-smart-contract [abi-json] [bytecode-hey]",
+		Use:   "propose-new-smart-contract [abi-json] [bytecode-hex]",
 		Short: "Proposal to add a new EVM chain",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			return whoops.Try(func() {
 				clientCtx, err := client.GetClientTxContext(cmd)

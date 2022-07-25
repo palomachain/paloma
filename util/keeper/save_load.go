@@ -17,6 +17,9 @@ func Save(store sdk.KVStore, pm protoMarshaler, key []byte, val codec.ProtoMarsh
 
 func Load[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, key []byte) (T, error) {
 	var val T
+	if key == nil {
+		return val, ErrNotFound.Format(val, key)
+	}
 	// stupid reflection :(
 	va := reflect.ValueOf(&val).Elem()
 	v := reflect.New(va.Type().Elem())
@@ -24,7 +27,7 @@ func Load[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, key []
 	bytez := store.Get(key)
 
 	if len(bytez) == 0 {
-		return val, ErrNotFound
+		return val, ErrNotFound.Format(val, key)
 	}
 
 	err := pu.Unmarshal(bytez, val)

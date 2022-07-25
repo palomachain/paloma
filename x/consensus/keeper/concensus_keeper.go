@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -38,9 +40,9 @@ func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consen
 		}
 
 		if opts.Batched {
-			return consensus.NewBatchQueue(opts), nil
+			return consensus.NewBatchQueue(opts.QueueOptions), nil
 		}
-		return consensus.NewQueue(opts), nil
+		return consensus.NewQueue(opts.QueueOptions), nil
 	}
 	return nil, ErrConsensusQueueNotImplemented.Format(queueTypeName)
 }
@@ -100,7 +102,7 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 	}
 	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
-		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
+		k.Logger(ctx).Error(fmt.Sprintf("error while getting consensus queue: %s", err))
 		return nil, err
 	}
 	msgs, err = cq.GetAll(ctx)
@@ -187,7 +189,7 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 func (k Keeper) AddMessageSignature(
 	ctx sdk.Context,
 	valAddr sdk.ValAddress,
-	msgs []*types.MsgAddMessagesSignatures_MsgSignedMessage,
+	msgs []*types.ConsensusMessageSignature,
 ) error {
 	return whoops.Try(func() {
 		for _, msg := range msgs {
@@ -211,13 +213,58 @@ func (k Keeper) AddMessageSignature(
 					&types.SignData{
 						ValAddress:             valAddr,
 						Signature:              msg.GetSignature(),
-						ExtraData:              msg.GetExtraData(),
 						ExternalAccountAddress: msg.GetSignedByAddress(),
 						PublicKey:              publicKey,
 					},
 				),
 			)
 		}
+	})
+}
+
+func (k Keeper) AddMessageEvidence(
+	ctx sdk.Context,
+	valAddr sdk.ValAddress,
+	msg *types.MsgAddEvidence,
+) error {
+	return whoops.Try(func() {
+		cq := whoops.Must(
+			k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
+		)
+
+		whoops.Assert(
+			cq.AddEvidence(
+				ctx,
+				msg.GetMessageID(),
+				&types.Evidence{
+					ValAddress: valAddr,
+					Proof:      msg.GetProof(),
+				},
+			),
+		)
+	})
+}
+
+func (k Keeper) SetMessagePublicAccessData(
+	ctx sdk.Context,
+	valAddr sdk.ValAddress,
+	msg *types.MsgSetPublicAccessData,
+) error {
+	return whoops.Try(func() {
+		cq := whoops.Must(
+			k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
+		)
+
+		whoops.Assert(
+			cq.SetPublicAccessData(
+				ctx,
+				msg.GetMessageID(),
+				&types.PublicAccessData{
+					ValAddress: valAddr,
+					Data:       msg.GetData(),
+				},
+			),
+		)
 	})
 }
 

@@ -32,6 +32,14 @@ const (
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgDeleteJob int = 100
 
+	opWeightMsgAddEvidence = "op_weight_msg_add_evidence"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgAddEvidence int = 100
+
+	opWeightMsgSetPublicAccessData = "op_weight_msg_set_public_access_data"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgSetPublicAccessData int = 100
+
 	// this line is used by starport scaffolding # simapp/module/const
 )
 
@@ -85,6 +93,28 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	operations = append(operations, simulation.NewWeightedOperation(
 		weightMsgDeleteJob,
 		consensussimulation.SimulateMsgDeleteJob(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
+
+	var weightMsgAddEvidence int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgAddEvidence, &weightMsgAddEvidence, nil,
+		func(_ *rand.Rand) {
+			weightMsgAddEvidence = defaultWeightMsgAddEvidence
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgAddEvidence,
+		consensussimulation.SimulateMsgAddEvidence(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
+
+	var weightMsgSetPublicAccessData int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgSetPublicAccessData, &weightMsgSetPublicAccessData, nil,
+		func(_ *rand.Rand) {
+			weightMsgSetPublicAccessData = defaultWeightMsgSetPublicAccessData
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgSetPublicAccessData,
+		consensussimulation.SimulateMsgSetPublicAccessData(am.accountKeeper, am.bankKeeper, am.keeper),
 	))
 
 	// this line is used by starport scaffolding # simapp/module/operation

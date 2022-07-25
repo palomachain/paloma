@@ -51,8 +51,8 @@ func TestBatching(t *testing.T) {
 			VerifySignature: func([]byte, []byte, []byte) bool {
 				return true
 			},
-			ChainType: types.ChainTypeCosmos,
-			ChainReferenceID:   "test",
+			ChainType:        types.ChainTypeCosmos,
+			ChainReferenceID: "test",
 		})
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 

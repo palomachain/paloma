@@ -5,11 +5,13 @@ package palomachain.paloma.evm;
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 message ChainInfo {
+  uint64 id = 9999;
+
   string chainReferenceID = 1;
   
-  string chainID = 2;
+  uint64 chainID = 2;
 
-  string smartContractID = 3;
+  bytes smartContractUniqueID = 3;
 
   string smartContractAddr = 4;
 
@@ -27,7 +29,7 @@ message ChainInfo {
   }
   Status status = 10;
 
-  uint64 smartContractVersion = 11;
+  uint64 activeSmartContractID = 11;
 
 }
 
@@ -35,4 +37,20 @@ message SmartContract {
   uint64 id = 1;
   string abiJSON = 2;
   bytes bytecode = 3;
+}
+
+message SmartContractDeployment {
+  // which smart contract is getting deployed
+  uint64 smartContractID = 1;
+
+  // to which chain info the smart contract is getting deployed to
+  string chainReferenceID = 2;
+
+  // application level ID which uniquely identifies a deployed smart contract.
+  // It's used if we have multiple smart contracts deployed on a same EVM so that
+  // the contract can figure out if the message was actually sent for them.
+  // (message includes the unique id and smart contract has simple logic to
+  // disallow those that to not match)
+  bytes uniqueID = 3;
+
 }

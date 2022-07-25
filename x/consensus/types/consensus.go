@@ -17,6 +17,10 @@ type QueuedSignedMessageI interface {
 	ConsensusMsg(AnyUnpacker) (ConsensusMsg, error)
 	GetSignData() []*SignData
 	AddSignData(*SignData)
+	AddEvidence(*Evidence)
+	GetEvidence() []*Evidence
+	SetPublicAccessData(*PublicAccessData)
+	GetPublicAccessData() *PublicAccessData
 	GetBytesToSign() []byte
 }
 
@@ -54,6 +58,17 @@ func (q *QueuedSignedMessage) AddSignData(data *SignData) {
 		q.SignData = []*SignData{}
 	}
 	q.SignData = append(q.SignData, data)
+}
+
+func (q *QueuedSignedMessage) AddEvidence(data *Evidence) {
+	if q.Evidence == nil {
+		q.Evidence = []*Evidence{}
+	}
+	q.Evidence = append(q.Evidence, data)
+}
+
+func (q *QueuedSignedMessage) SetPublicAccessData(data *PublicAccessData) {
+	q.PublicAccessData = data
 }
 
 func (q *QueuedSignedMessage) Nonce() []byte {

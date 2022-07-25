@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"testing"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
@@ -15,7 +14,11 @@ type TestApp struct {
 	App
 }
 
-func NewTestApp(t testing.TB, isCheckTx bool) TestApp {
+type testing interface {
+	TempDir() string
+}
+
+func NewTestApp(t testing, isCheckTx bool) TestApp {
 	db := dbm.NewMemDB()
 	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
 

@@ -5,5 +5,5 @@ import (
 )
 
 const (
-	ErrNotFound = whoops.String("item not found in store")
+	ErrNotFound = whoops.Errorf("item (%T) not found in store: %s")
 )

@@ -71,7 +71,7 @@ type StakingModule struct {
 func (StakingModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	params := stakingtypes.DefaultParams()
 	params.BondDenom = BondDenom
-	params.MaxValidators = 125
+	params.MaxValidators = 175
 
 	return cdc.MustMarshalJSON(&stakingtypes.GenesisState{
 		Params: params,

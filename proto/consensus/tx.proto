@@ -9,22 +9,22 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 service Msg {
   rpc AddMessagesSignatures(MsgAddMessagesSignatures) returns (MsgAddMessagesSignaturesResponse);
   rpc DeleteJob(MsgDeleteJob) returns (MsgDeleteJobResponse);
+  rpc AddEvidence(MsgAddEvidence) returns (MsgAddEvidenceResponse);
+  rpc SetPublicAccessData(MsgSetPublicAccessData) returns (MsgSetPublicAccessDataResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
 message MsgAddMessagesSignatures {
   string creator = 1;
-  repeated MsgSignedMessage signedMessages = 2;
+  repeated ConsensusMessageSignature signedMessages = 2;
+}
 
-  message MsgSignedMessage {
+message ConsensusMessageSignature {
     uint64 id = 1;
     string queueTypeName = 2;
     bytes signature = 3;
-    bytes extraData = 4;
     string signedByAddress = 5;
-  }
 }
-
 
 message MsgAddMessagesSignaturesResponse {
 }
@@ -37,6 +37,26 @@ message MsgDeleteJob {
 }
 
 message MsgDeleteJobResponse {
+}
+
+message MsgAddEvidence {
+  string creator = 1;
+  bytes proof = 2;
+  uint64 messageID = 3;
+  string queueTypeName = 4; 
+}
+
+message MsgAddEvidenceResponse {
+}
+
+message MsgSetPublicAccessData {
+  string creator = 1;
+  uint64 messageID = 2;
+  string queueTypeName = 3;
+  bytes data = 4;
+}
+
+message MsgSetPublicAccessDataResponse {
 }
 
 // this line is used by starport scaffolding # proto/tx/message
