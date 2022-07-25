@@ -9,7 +9,7 @@
 > A Golang implementation of Paloma Chain, a decentralized, automation network for smart contracts
 > deployed in the Cosmos, EVM, Solana, and Polkadot networks.
 
-For Crosschain Software engineers that want simultaneous control of mulitiple smart contracts, on any blockchain, Paloma is decentralized and consensus-driven message delivery, fast state awareness, low cost state computation, and powerful attestation system that enables scaleable, crosschain, smart contract execution with any data source.
+For Crosschain Software engineers that want simultaneous control of multiple smart contracts, on any blockchain, Paloma is decentralized and consensus-driven message delivery, fast state awareness, low cost state computation, and powerful attestation system that enables scaleable, crosschain, smart contract execution with any data source.
 
 
 ## Table of Contents
