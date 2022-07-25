@@ -16,7 +16,7 @@ import (
 )
 
 func TestSubmittingNewMessageIsPuttingANewMessageToTheQueue(t *testing.T) {
-	keeper, ms, ctx := newEvmKeeper(t)
+	keeper, ms, ctx := NewEvmKeeper(t)
 	msgSvr := NewMsgServerImpl(*keeper)
 	msg := &types.MsgSubmitNewJob{
 		Creator:                 sdk.AccAddress("bla").String(),

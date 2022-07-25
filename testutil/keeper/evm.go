@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"testing"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -17,7 +15,7 @@ import (
 	tmdb "github.com/tendermint/tm-db"
 )
 
-func EvmKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func EvmKeeper(t require.TestingT) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 

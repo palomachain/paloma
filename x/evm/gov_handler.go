@@ -12,7 +12,13 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govtypes.Handl
 	return func(ctx sdk.Context, content govtypes.Content) error {
 		switch c := content.(type) {
 		case *types.AddChainProposal:
-			return k.AddSupportForNewChain(ctx, c)
+			return k.AddSupportForNewChain(
+				ctx,
+				c.GetChainReferenceID(),
+				c.GetChainID(),
+				c.GetBlockHeight(),
+				c.GetBlockHashAtHeight(),
+			)
 		case *types.RemoveChainProposal:
 			return k.RemoveSupportForChain(ctx, c)
 		case *types.DeployNewSmartContractProposal:

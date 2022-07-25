@@ -16,7 +16,7 @@ func (k Keeper) ChainsInfos(goCtx context.Context, req *types.QueryChainsInfosRe
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	chainsInfos, err := k.getAllChainInfos(ctx)
+	chainsInfos, err := k.GetAllChainInfos(ctx)
 	if err != nil {
 		return nil, err
 	}

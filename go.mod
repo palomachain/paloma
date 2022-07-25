@@ -21,7 +21,7 @@ require (
 	github.com/tendermint/starport v0.19.2
 	github.com/tendermint/tendermint v0.34.19
 	github.com/tendermint/tm-db v0.6.7
-	github.com/vizualni/whoops v0.2.0
+	github.com/vizualni/whoops v0.6.0
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd
 	google.golang.org/grpc v1.46.2
 	google.golang.org/protobuf v1.28.0

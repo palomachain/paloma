@@ -82,7 +82,13 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		BlockHashAtHeight: "0x1234",
 	}
 
-	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+	err := a.EvmKeeper.AddSupportForNewChain(
+		ctx,
+		newChain.GetChainReferenceID(),
+		newChain.GetChainID(),
+		newChain.GetBlockHeight(),
+		newChain.GetBlockHashAtHeight(),
+	)
 	require.NoError(t, err)
 
 	err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, "addr", []byte("abc"))
@@ -167,7 +173,13 @@ func TestOnSnapshotBuilt(t *testing.T) {
 		BlockHeight:       uint64(123),
 		BlockHashAtHeight: "0x1234",
 	}
-	err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+	err := a.EvmKeeper.AddSupportForNewChain(
+		ctx,
+		newChain.GetChainReferenceID(),
+		newChain.GetChainID(),
+		newChain.GetBlockHeight(),
+		newChain.GetBlockHashAtHeight(),
+	)
 	require.NoError(t, err)
 	err = a.EvmKeeper.ActivateChainReferenceID(
 		ctx,
@@ -223,7 +235,13 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			BlockHeight:       uint64(123),
 			BlockHashAtHeight: "0x1234",
 		}
-		err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+		err := a.EvmKeeper.AddSupportForNewChain(
+			ctx,
+			newChain.GetChainReferenceID(),
+			newChain.GetChainID(),
+			newChain.GetBlockHeight(),
+			newChain.GetBlockHashAtHeight(),
+		)
 		require.NoError(t, err)
 
 		gotChainInfo, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
@@ -242,7 +260,13 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			BlockHeight:       uint64(123),
 			BlockHashAtHeight: "0x1234",
 		}
-		err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+		err := a.EvmKeeper.AddSupportForNewChain(
+			ctx,
+			newChain.GetChainReferenceID(),
+			newChain.GetChainID(),
+			newChain.GetBlockHeight(),
+			newChain.GetBlockHashAtHeight(),
+		)
 		require.Error(t, err)
 	})
 
@@ -315,10 +339,22 @@ var _ = Describe("evm", func() {
 	Context("multiple chains and smart contracts", func() {
 		Describe("trying to add support for the same chain twice", func() {
 			It("returns an error", func() {
-				err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+				err := a.EvmKeeper.AddSupportForNewChain(
+					ctx,
+					newChain.GetChainReferenceID(),
+					newChain.GetChainID(),
+					newChain.GetBlockHeight(),
+					newChain.GetBlockHashAtHeight(),
+				)
 				Expect(err).To(BeNil())
 
-				err = a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+				err = a.EvmKeeper.AddSupportForNewChain(
+					ctx,
+					newChain.GetChainReferenceID(),
+					newChain.GetChainID(),
+					newChain.GetBlockHeight(),
+					newChain.GetBlockHashAtHeight(),
+				)
 				Expect(err).To(MatchError(keeper.ErrCannotAddSupportForChainThatExists))
 			})
 		})
@@ -374,11 +410,23 @@ var _ = Describe("evm", func() {
 
 			BeforeEach(func() {
 				By("adding chain1 works")
-				err := a.EvmKeeper.AddSupportForNewChain(ctx, chain1)
+				err := a.EvmKeeper.AddSupportForNewChain(
+					ctx,
+					chain1.GetChainReferenceID(),
+					chain1.GetChainID(),
+					chain1.GetBlockHeight(),
+					chain1.GetBlockHashAtHeight(),
+				)
 				Expect(err).To(BeNil())
 
 				By("adding chain2 works")
-				err = a.EvmKeeper.AddSupportForNewChain(ctx, chain2)
+				err = a.EvmKeeper.AddSupportForNewChain(
+					ctx,
+					chain2.GetChainReferenceID(),
+					chain2.GetChainID(),
+					chain2.GetBlockHeight(),
+					chain2.GetBlockHashAtHeight(),
+				)
 				Expect(err).To(BeNil())
 			})
 
@@ -423,7 +471,13 @@ var _ = Describe("evm", func() {
 
 			When("evm chain and smart contract both exist", func() {
 				BeforeEach(func() {
-					err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+					err := a.EvmKeeper.AddSupportForNewChain(
+						ctx,
+						newChain.GetChainReferenceID(),
+						newChain.GetChainID(),
+						newChain.GetBlockHeight(),
+						newChain.GetBlockHashAtHeight(),
+					)
 					Expect(err).To(BeNil())
 
 					_, err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
@@ -464,13 +518,13 @@ var _ = Describe("evm", func() {
 
 				When("adding another chain which is not yet active", func() {
 					BeforeEach(func() {
-						err := a.EvmKeeper.AddSupportForNewChain(ctx, &types.AddChainProposal{
-							ChainReferenceID:  "new-chain",
-							Title:             "bla",
-							Description:       "bla",
-							BlockHeight:       uint64(123),
-							BlockHashAtHeight: "0x1234",
-						})
+						err := a.EvmKeeper.AddSupportForNewChain(
+							ctx,
+							"new-chain",
+							123,
+							uint64(123),
+							"0x1234",
+						)
 						Expect(err).To(BeNil())
 
 						for _, val := range validators {
@@ -522,7 +576,13 @@ var _ = Describe("evm", func() {
 			})
 			Context("evm chain and smart contract both exist", func() {
 				BeforeEach(func() {
-					err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain)
+					err := a.EvmKeeper.AddSupportForNewChain(
+						ctx,
+						newChain.GetChainReferenceID(),
+						newChain.GetChainID(),
+						newChain.GetBlockHeight(),
+						newChain.GetBlockHashAtHeight(),
+					)
 					Expect(err).To(BeNil())
 					_, err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
 					Expect(err).To(BeNil())
