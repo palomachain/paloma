@@ -45,7 +45,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetParams(ctx)
 
-	genesisChainInfos := []*types.GenesisChainInfo{}
+	var genesisChainInfos []*types.GenesisChainInfo
 
 	for _, chainInfo := range whoops.Must(k.GetAllChainInfos(ctx)) {
 		if !chainInfo.IsActive() {
@@ -65,7 +65,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	case err == nil:
 		genesis.SmartContract = &types.GenesisSmartContract{
 			AbiJson:     sc.GetAbiJSON(),
-			BytecodeHex: common.Bytes2Hex(sc.GetBytecode()),
+			BytecodeHex: "0x" + common.Bytes2Hex(sc.GetBytecode()),
 		}
 	case errors.Is(err, keeperutil.ErrNotFound):
 		// do nothing

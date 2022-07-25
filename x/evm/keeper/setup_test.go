@@ -21,7 +21,7 @@ type mockedServices struct {
 	ValsetKeeper    *mocks.ValsetKeeper
 }
 
-func newEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
+func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)

@@ -61,7 +61,7 @@ var _ = g.Describe("attest router", func() {
 
 	g.BeforeEach(func() {
 		t := g.GinkgoT()
-		kpr, ms, _ctx := newEvmKeeper(t)
+		kpr, ms, _ctx := NewEvmKeeper(t)
 		ctx = _ctx
 		k = *kpr
 		v = ms.ValsetKeeper
