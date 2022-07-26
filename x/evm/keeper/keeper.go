@@ -161,11 +161,6 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		return err
 	}
 
-	if err != nil {
-		return err
-
-	}
-
 	return k.ConsensusKeeper.PutMessageForSigning(
 		ctx,
 		consensustypes.Queue(
@@ -667,7 +662,7 @@ func transformValsetToABIValset(val types.Valset) any {
 }
 
 func generateSmartContractID(ctx sdk.Context) (res [32]byte) {
-	heightstr := fmt.Sprintf("%d", ctx.BlockHeight())
-	copy(res[:], []byte(heightstr))
+	b := []byte(fmt.Sprintf("%d", ctx.BlockHeight()))
+	copy(res[:], b)
 	return
 }
