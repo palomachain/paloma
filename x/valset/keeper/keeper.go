@@ -181,7 +181,7 @@ func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
 func (k Keeper) createSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	validators := []stakingtypes.ValidatorI{}
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
-		if val.IsBonded() {
+		if val.IsBonded() && !val.IsJailed() {
 			validators = append(validators, val)
 		}
 		return false
