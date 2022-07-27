@@ -200,7 +200,7 @@ func TestOnSnapshotBuilt(t *testing.T) {
 				ChainType:        "EVM",
 				ChainReferenceID: "bob",
 				Address:          rand.ETHAddress().Hex(),
-				Pubkey:           []byte("pk"),
+				Pubkey:           []byte("pk" + rand.ETHAddress().Hex()),
 			},
 		})
 		require.NoError(t, err)
@@ -393,13 +393,13 @@ var _ = Describe("evm", func() {
 							ChainType:        "EVM",
 							ChainReferenceID: chain1.ChainReferenceID,
 							Address:          accAddr1.Hex(),
-							Pubkey:           []byte("pub key"),
+							Pubkey:           []byte("pub key 1" + accAddr1.Hex()),
 						},
 						{
 							ChainType:        "EVM",
 							ChainReferenceID: chain2.ChainReferenceID,
 							Address:          accAddr2.Hex(),
-							Pubkey:           []byte("pub key"),
+							Pubkey:           []byte("pub key 2" + accAddr2.Hex()),
 						},
 					})
 					Expect(err).To(BeNil())
@@ -497,7 +497,7 @@ var _ = Describe("evm", func() {
 								ChainType:        "EVM",
 								ChainReferenceID: newChain.ChainReferenceID,
 								Address:          accAddr.Hex(),
-								Pubkey:           []byte("pub key"),
+								Pubkey:           []byte("pub key" + accAddr.Hex()),
 							},
 						})
 						Expect(err).To(BeNil())
@@ -536,7 +536,7 @@ var _ = Describe("evm", func() {
 									ChainType:        "EVM",
 									ChainReferenceID: "new-chain",
 									Address:          accAddr.Hex(),
-									Pubkey:           []byte("pub key"),
+									Pubkey:           []byte("pub key" + accAddr.Hex()),
 								},
 							})
 							Expect(err).To(BeNil())

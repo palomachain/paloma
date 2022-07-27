@@ -20,7 +20,7 @@ var (
 	pk2   = priv2.PubKey()
 )
 
-func TestRegisterRunner(t *testing.T) {
+func TestIfValidatorCanBeAccepted(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
 	val := sdk.ValAddress("validator")
 	nonExistingVal := sdk.ValAddress("i dont exist")
@@ -28,6 +28,47 @@ func TestRegisterRunner(t *testing.T) {
 	vali := mocks.NewStakingValidatorI(t)
 
 	ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
+	ms.StakingKeeper.On("Validator", mock.Anything, nonExistingVal).Return(nil)
+
+	t.Run("when validator is jailed it returns an error", func(t *testing.T) {
+		vali.On("IsJailed").Return(true).Once()
+		err := k.CanAcceptValidator(ctx, val)
+		require.ErrorIs(t, err, ErrValidatorCannotBePigeon)
+	})
+
+	t.Run("when validator is not bonded it returns an error", func(t *testing.T) {
+		vali.On("IsJailed").Return(false)
+		vali.On("IsBonded").Return(false)
+		err := k.CanAcceptValidator(ctx, val)
+		require.ErrorIs(t, err, ErrValidatorCannotBePigeon)
+	})
+
+	t.Run("when validator is jailed it returns an error", func(t *testing.T) {
+		err := k.CanAcceptValidator(ctx, val)
+		require.ErrorIs(t, err, ErrValidatorCannotBePigeon)
+	})
+
+	t.Run("when validator does not exist it return an error", func(t *testing.T) {
+		err := k.CanAcceptValidator(ctx, nonExistingVal)
+		require.ErrorIs(t, err, ErrValidatorWithAddrNotFound)
+	})
+}
+func TestRegisterRunner(t *testing.T) {
+	k, ms, ctx := newValsetKeeper(t)
+	val := sdk.ValAddress("validator")
+	val2 := sdk.ValAddress("validator2")
+	nonExistingVal := sdk.ValAddress("i dont exist")
+
+	vali := mocks.NewStakingValidatorI(t)
+	vali.On("IsJailed").Return(false)
+	vali.On("IsBonded").Return(true)
+
+	vali2 := mocks.NewStakingValidatorI(t)
+	vali2.On("IsJailed").Return(false)
+	vali2.On("IsBonded").Return(true)
+
+	ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
+	ms.StakingKeeper.On("Validator", mock.Anything, val2).Return(vali2)
 	ms.StakingKeeper.On("Validator", mock.Anything, nonExistingVal).Return(nil)
 
 	t.Run("it adds a new chain info to the validator", func(t *testing.T) {
@@ -60,17 +101,27 @@ func TestRegisterRunner(t *testing.T) {
 		)
 	})
 
-	t.Run("it returns an error if chain info already exists", func(t *testing.T) {
+	stateForVal1 := []*types.ExternalChainInfo{
+		{
+			ChainReferenceID: "chain-1",
+			Address:          "addr1",
+			ChainType:        "evm",
+		},
+	}
+	t.Run("it overrides the state if we are writing new data for existing validator", func(t *testing.T) {
 		err := k.AddExternalChainInfo(
 			ctx,
 			val,
-			[]*types.ExternalChainInfo{
-				{
-					ChainReferenceID: "chain-1",
-					Address:          "addr1",
-					ChainType:        "evm",
-				},
-			},
+			stateForVal1,
+		)
+		require.ErrorIs(t, err, nil)
+	})
+
+	t.Run("it returns an error if we try to add chain info that other validator already has", func(t *testing.T) {
+		err := k.AddExternalChainInfo(
+			ctx,
+			val2,
+			stateForVal1,
 		)
 		require.ErrorIs(t, err, ErrExternalChainAlreadyRegistered)
 	})
@@ -85,7 +136,7 @@ func TestRegisterRunner(t *testing.T) {
 				},
 			},
 		)
-		require.Error(t, err)
+		require.ErrorIs(t, err, ErrValidatorWithAddrNotFound)
 	})
 
 }
@@ -96,6 +147,9 @@ func TestCreatingSnapshots(t *testing.T) {
 
 	vali1.On("GetOperator").Return(val1)
 	vali2.On("GetOperator").Return(val2)
+
+	vali1.On("IsJailed").Return(false)
+	vali2.On("IsJailed").Return(false)
 
 	vali1.On("GetBondedTokens").Return(sdk.NewInt(888))
 	vali2.On("GetBondedTokens").Return(sdk.NewInt(222))
@@ -115,7 +169,22 @@ func TestCreatingSnapshots(t *testing.T) {
 		f(1, vali2)
 	})
 
-	err := k.AddExternalChainInfo(ctx, val1, []*types.ExternalChainInfo{
+	state1 := []*types.ExternalChainInfo{
+		{
+			ChainType:        "evm",
+			ChainReferenceID: "123",
+			Address:          val1.String(),
+			Pubkey:           []byte("whoop"),
+		},
+	}
+	err := k.AddExternalChainInfo(ctx, val1, state1)
+	require.NoError(t, err)
+
+	gotState1, err := k.getValidatorChainInfos(ctx, val1)
+	require.NoError(t, err)
+	require.Equal(t, state1, gotState1)
+
+	state2 := []*types.ExternalChainInfo{
 		{
 			ChainType:        "evm",
 			ChainReferenceID: "123",
@@ -128,28 +197,39 @@ func TestCreatingSnapshots(t *testing.T) {
 			Address:          val1.String(),
 			Pubkey:           []byte("456"),
 		},
-	})
+	}
+
+	err = k.AddExternalChainInfo(ctx, val1, state2)
 	require.NoError(t, err)
+
+	gotState2, err := k.getValidatorChainInfos(ctx, val1)
+	require.NoError(t, err)
+	require.Equal(t, state2, gotState2)
+
 	err = k.AddExternalChainInfo(ctx, val2, []*types.ExternalChainInfo{
 		{
 			ChainType:        "evm",
 			ChainReferenceID: "567",
 			Address:          val2.String(),
-			Pubkey:           []byte("123"),
+			Pubkey:           []byte("6666"),
 		},
 	})
 	require.NoError(t, err)
 
-	t.Run("adding address which already exists", func(t *testing.T) {
-		err = k.AddExternalChainInfo(ctx, val1, []*types.ExternalChainInfo{
+	t.Run("adding address which already exists simply overrides the state", func(t *testing.T) {
+		state := []*types.ExternalChainInfo{
 			{
 				ChainType:        "evm",
-				ChainReferenceID: "567",
+				ChainReferenceID: "56799",
 				Address:          val2.String(),
-				Pubkey:           []byte("123"),
+				Pubkey:           []byte("6666777"),
 			},
-		})
-		require.ErrorIs(t, err, ErrExternalChainAlreadyRegistered)
+		}
+		err = k.AddExternalChainInfo(ctx, val2, state)
+		require.ErrorIs(t, err, nil)
+		gotState, err := k.getValidatorChainInfos(ctx, val2)
+		require.NoError(t, err)
+		require.Equal(t, state, gotState)
 	})
 
 	k.TriggerSnapshotBuild(ctx)

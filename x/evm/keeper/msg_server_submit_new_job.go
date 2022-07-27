@@ -11,6 +11,8 @@ import (
 
 func (k msgServer) SubmitNewJob(goCtx context.Context, msg *types.MsgSubmitNewJob) (*types.MsgSubmitNewJobResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	// TODO: remove this
+	panic("do not use this")
 
 	err := k.AddSmartContractExecutionToConsensus(
 		ctx,

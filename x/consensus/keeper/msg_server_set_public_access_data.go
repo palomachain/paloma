@@ -12,7 +12,13 @@ func (k msgServer) SetPublicAccessData(goCtx context.Context, msg *types.MsgSetP
 
 	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
 
-	err := k.Keeper.SetMessagePublicAccessData(ctx, sdk.ValAddress(creator.Bytes()), msg)
+	valAddr := sdk.ValAddress(creator.Bytes())
+
+	if err := k.Keeper.valset.CanAcceptValidator(ctx, valAddr); err != nil {
+		return nil, err
+	}
+
+	err := k.Keeper.SetMessagePublicAccessData(ctx, valAddr, msg)
 	if err != nil {
 		return nil, err
 	}
