@@ -2,7 +2,9 @@ package keeper
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"sort"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -12,6 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/vizualni/whoops"
 )
@@ -165,7 +168,22 @@ func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddres
 // TriggerSnapshotBuild creates the snapshot of currently active validators that are
 // active and registered as conductors.
 func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
-	snapshot, err := k.createSnapshot(ctx)
+	snapshot, err := k.createNewSnapshot(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	current, err := k.GetCurrentSnapshot(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	worthy := k.isNewSnapshotWorthy(current, snapshot)
+	if !worthy {
+		return nil, nil
+	}
+
+	err = k.setSnapshotAsCurrent(ctx, snapshot)
 	if err != nil {
 		return nil, err
 	}
@@ -177,8 +195,72 @@ func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
 	return snapshot, err
 }
 
-// createSnapshot builds a current snapshot of validators.
-func (k Keeper) createSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
+func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot) bool {
+	// if there is no current snapshot, that this new one is worthy
+	if currentSnapshot == nil {
+		return true
+	}
+
+	// if there is a different in sizes of validators in snapshots, then we
+	// need to build it
+	if len(currentSnapshot.GetValidators()) != len(newSnapshot.GetValidators()) {
+		return true
+	}
+
+	// now that those sets are of the same size, we need to check if all new
+	// validators are existing in the new current valset
+
+	mapKeyFn := func(val types.Validator) string { return val.GetAddress().String() }
+	currentMap := slice.MakeMapKeys(currentSnapshot.GetValidators(), mapKeyFn)
+
+	// given that they are the same length we can only verify if one exists in another.
+	// We don't need to check if A exists in B and if B exists in A.
+	for _, val := range newSnapshot.GetValidators() {
+		if _, ok := currentMap[val.GetAddress().String()]; !ok {
+			return true
+		}
+	}
+
+	// given that both sets contains the same validators, we need to check if
+	// their relative powers are still the same. To do that, we can simply
+	// order them by their powers and if they are in the same order then
+	// this new set is not worthy.
+	returnSortedValidators := func(val []types.Validator) []types.Validator {
+		ret := make([]types.Validator, len(val))
+		copy(ret, val)
+		sort.SliceStable(ret, func(i, j int) bool {
+			return ret[i].ShareCount.LT(ret[j].ShareCount)
+		})
+		return ret
+	}
+
+	sortedCurrent, sortedNew := returnSortedValidators(currentSnapshot.GetValidators()), returnSortedValidators(newSnapshot.GetValidators())
+
+	for i := 0; i < len(sortedCurrent); i++ {
+		if !sortedCurrent[i].GetAddress().Equals(sortedNew[i].GetAddress()) {
+			return true
+		}
+	}
+
+	// and for the final check we want to see if their absolute powers were
+	// changed by more than 1%.  What could happen is that the validator that
+	// was previously the biggest one and owned les say 20% of the network, now
+	// could own 60% of the network. And all other validators stayed the
+	// (relatively) same.
+	for i := 0; i < len(sortedCurrent); i++ {
+		percentageCurrent := currentSnapshot.TotalShares.ToDec().QuoInt(sortedCurrent[i].ShareCount)
+		percentageNow := newSnapshot.TotalShares.ToDec().QuoInt(sortedNew[i].ShareCount)
+
+		if percentageCurrent.Sub(percentageNow).Abs().MustFloat64() >= 0.01 {
+			return true
+		}
+	}
+
+	return false
+}
+
+// createNewSnapshot builds a current snapshot of validators.
+func (k Keeper) createNewSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	validators := []stakingtypes.ValidatorI{}
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		if val.IsBonded() && !val.IsJailed() {
@@ -207,11 +289,6 @@ func (k Keeper) createSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 		})
 	}
 
-	err := k.setSnapshotAsCurrent(ctx, snapshot)
-	if err != nil {
-		return nil, err
-	}
-
 	return snapshot, nil
 }
 
@@ -226,7 +303,11 @@ func (k Keeper) setSnapshotAsCurrent(ctx sdk.Context, snapshot *types.Snapshot) 
 func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	snapStore := k.snapshotStore(ctx)
 	lastID := k.ider.GetLastID(ctx, snapshotIDKey)
-	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(lastID))
+	snapshot, err := keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(lastID))
+	if errors.Is(err, keeperutil.ErrNotFound) {
+		return nil, nil
+	}
+	return snapshot, err
 }
 
 func (k Keeper) FindSnapshotByID(ctx sdk.Context, id uint64) (*types.Snapshot, error) {

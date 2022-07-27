@@ -243,3 +243,110 @@ func TestCreatingSnapshots(t *testing.T) {
 	})
 
 }
+
+func TestIsNewSnapshotWorthy(t *testing.T) {
+	testcases := []struct {
+		name   string
+		curr   *types.Snapshot
+		neww   *types.Snapshot
+		expRes bool
+	}{
+		{
+			expRes: true,
+			name:   "current snapshot is nil",
+		},
+		{
+			expRes: true,
+			name:   "two snapshots have different validator sizes",
+			curr: &types.Snapshot{
+				Validators: []types.Validator{
+					{},
+				},
+			},
+			neww: &types.Snapshot{
+				Validators: []types.Validator{
+					{}, {},
+				},
+			},
+		},
+		{
+			expRes: true,
+			name:   "two snapshots are the same length but have different validators",
+			curr: &types.Snapshot{
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123")},
+					{Address: sdk.ValAddress("456")},
+				},
+			},
+			neww: &types.Snapshot{
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("abc")},
+					{Address: sdk.ValAddress("def")},
+				},
+			},
+		},
+		{
+			expRes: true,
+			name:   "two snapshots have same validators but different power orders",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(20)},
+				},
+			},
+		},
+		{
+			expRes: true,
+			name:   "two snapshots have same validators and same relative power orders, but differ in their absolute power more than 1 percent",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(30)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+		},
+		{
+			expRes: false,
+			name:   "two snapshots have same validators and same relative power orders",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(1000),
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(200)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+				},
+			},
+		},
+	}
+
+	for _, tt := range testcases {
+		t.Run(tt.name, func(t *testing.T) {
+			var k Keeper
+			res := k.isNewSnapshotWorthy(tt.curr, tt.neww)
+
+			require.Equal(t, tt.expRes, res)
+		})
+	}
+}
