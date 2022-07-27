@@ -14,6 +14,20 @@ type ValsetKeeper struct {
 	mock.Mock
 }
 
+// CanAcceptValidator provides a mock function with given fields: ctx, valAddr
+func (_m *ValsetKeeper) CanAcceptValidator(ctx types.Context, valAddr types.ValAddress) error {
+	ret := _m.Called(ctx, valAddr)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) error); ok {
+		r0 = rf(ctx, valAddr)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetCurrentSnapshot provides a mock function with given fields: ctx
 func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snapshot, error) {
 	ret := _m.Called(ctx)

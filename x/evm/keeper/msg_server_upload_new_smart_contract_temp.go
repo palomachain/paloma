@@ -19,5 +19,6 @@ func (k msgServer) UploadNewSmartContractTemp(goCtx context.Context, msg *types.
 	// 	return nil, err
 	// }
 
+	// TODO: remove this
 	return &types.MsgUploadNewSmartContractTempResponse{}, nil
 }

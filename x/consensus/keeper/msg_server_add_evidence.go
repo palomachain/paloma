@@ -11,8 +11,13 @@ func (k msgServer) AddEvidence(goCtx context.Context, msg *types.MsgAddEvidence)
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
+	valAddr := sdk.ValAddress(creator.Bytes())
 
-	err := k.Keeper.AddMessageEvidence(ctx, sdk.ValAddress(creator.Bytes()), msg)
+	if err := k.Keeper.valset.CanAcceptValidator(ctx, valAddr); err != nil {
+		return nil, err
+	}
+
+	err := k.Keeper.AddMessageEvidence(ctx, valAddr, msg)
 
 	if err != nil {
 		return nil, err

@@ -23,9 +23,15 @@ func (k msgServer) AddMessagesSignatures(goCtx context.Context, msg *types.MsgAd
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
+	valAddr := sdk.ValAddress(creator.Bytes())
+
+	if err := k.Keeper.valset.CanAcceptValidator(ctx, valAddr); err != nil {
+		return nil, err
+	}
+
 	if err := k.AddMessageSignature(
 		ctx,
-		sdk.ValAddress(creator.Bytes()),
+		valAddr,
 		msg.SignedMessages,
 	); err != nil {
 		return nil, err

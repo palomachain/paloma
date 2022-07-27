@@ -9,6 +9,7 @@ import (
 
 func (k msgServer) DeleteJob(goCtx context.Context, msg *types.MsgDeleteJob) (*types.MsgDeleteJobResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	panic("do not use this!")
 
 	if err := k.deleteJob(ctx, msg.GetQueueTypeName(), msg.GetMessageID()); err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -71,36 +72,37 @@ func (k Keeper) Heartbeat(ctx sdk.Context) {}
 // addExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
 // we can attribute rewards for running the jobs.
 func (k Keeper) AddExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, newChainInfo []*types.ExternalChainInfo) error {
-	// verify that the acc that actually sent the message is a validator
+	return k.SetExternalChainInfoState(ctx, valAddr, newChainInfo)
+}
 
-	if len(newChainInfo) > maxNumOfAllowedExternalAccounts {
-		return ErrMaxNumberOfExternalAccounts.Format(
-			len(newChainInfo),
-			maxNumOfAllowedExternalAccounts,
-		)
-	}
-
-	// TODO: do some logic on the stakingVal's status
+func (k Keeper) CanAcceptValidator(ctx sdk.Context, valAddr sdk.ValAddress) error {
 	stakingVal := k.staking.Validator(ctx, valAddr)
 
 	if stakingVal == nil {
 		return ErrValidatorWithAddrNotFound.Format(valAddr.String())
 	}
 
-	store := k.externalChainInfoStore(ctx, valAddr)
+	if stakingVal.IsJailed() {
+		return ErrValidatorCannotBePigeon.Format(valAddr.String()).WrapS("validator is jailed")
+	}
 
-	externalAccounts, err := k.getValidatorChainInfos(ctx, valAddr)
-	if err != nil {
+	if !stakingVal.IsBonded() {
+		return ErrValidatorCannotBePigeon.Format(valAddr.String()).WrapS("validator is not bonded")
+	}
+
+	return nil
+}
+
+func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*types.ExternalChainInfo) error {
+	if len(chainInfos) > maxNumOfAllowedExternalAccounts {
+		return ErrMaxNumberOfExternalAccounts.Format(
+			len(chainInfos),
+			maxNumOfAllowedExternalAccounts,
+		)
+	}
+
+	if err := k.CanAcceptValidator(ctx, valAddr); err != nil {
 		return err
-	}
-	if externalAccounts == nil {
-		externalAccounts = []*types.ExternalChainInfo{}
-	}
-
-	eq := func(a, b *types.ExternalChainInfo) bool {
-		return a.Address == b.Address &&
-			a.ChainReferenceID == b.ChainReferenceID &&
-			a.ChainType == b.ChainType
 	}
 
 	allExistingChainAccounts, err := k.getAllChainInfos(ctx)
@@ -108,36 +110,57 @@ func (k Keeper) AddExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, ne
 		return err
 	}
 
-	// TODO: limit the number of external chain accounts (per chain or globally?)
+	var collisionErrors whoops.Group
 	// O(n^2) to find if new one is already registered
-
 	for _, existingVal := range allExistingChainAccounts {
+		// we don't want to compare current validator's existing account
+		// because it would most likely come up with a collision detection
+		// error because most of the time this will be a noop, thus we skip
+		// them
+		if existingVal.Address.Equals(valAddr) {
+			continue
+		}
 		for _, existingChainInfo := range existingVal.ExternalChainInfo {
-			for _, chain := range newChainInfo {
-				if eq(existingChainInfo, chain) {
-					return ErrExternalChainAlreadyRegistered.Format(chain.ChainReferenceID, chain.Address)
+
+			for _, newChainInfo := range chainInfos {
+				if newChainInfo.GetChainType() != existingChainInfo.GetChainType() {
+					continue
+				}
+				// this implies that pigeon can have only one(!) account per chain info.
+				// this is an issue for compass-evm because compass-evm can't work with
+				// multiple accounts existing for a single validator.
+				if newChainInfo.GetChainReferenceID() != existingChainInfo.GetChainReferenceID() {
+					continue
+				}
+
+				if newChainInfo.GetAddress() == existingChainInfo.GetAddress() || bytes.Equal(newChainInfo.GetPubkey(), existingChainInfo.GetPubkey()) {
+					collisionErrors.Add(
+						ErrExternalChainAlreadyRegistered.Format(
+							newChainInfo.GetChainType(),
+							newChainInfo.GetChainReferenceID(),
+							newChainInfo.GetAddress(),
+							existingVal.GetAddress().String(),
+							valAddr.String(),
+						),
+					)
 				}
 			}
+
 		}
 	}
 
-	externalAccounts = append(externalAccounts, newChainInfo...)
-
-	if len(externalAccounts) > maxNumOfAllowedExternalAccounts {
-		return ErrMaxNumberOfExternalAccounts.Format(
-			len(externalAccounts),
-			maxNumOfAllowedExternalAccounts,
-		)
+	if collisionErrors.Err() {
+		return collisionErrors
 	}
+
+	store := k.externalChainInfoStore(ctx, valAddr)
 
 	return keeperutil.Save(store, k.cdc, []byte(valAddr.String()), &types.ValidatorExternalAccounts{
 		Address:           valAddr,
-		ExternalChainInfo: externalAccounts,
+		ExternalChainInfo: chainInfos,
 	})
-}
 
-// TODO: this is not required for the private alpha
-func (k Keeper) RemoveExternalChainInfo(ctx sdk.Context) {}
+}
 
 // TriggerSnapshotBuild creates the snapshot of currently active validators that are
 // active and registered as conductors.
