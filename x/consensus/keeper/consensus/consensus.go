@@ -139,9 +139,11 @@ func (c Queue) Put(ctx sdk.Context, msgs ...ConsensusMsg) error {
 			return err
 		}
 		queuedMsg := &types.QueuedSignedMessage{
-			Id:       newID,
-			Msg:      anyMsg,
-			SignData: []*types.SignData{},
+			Id:                 newID,
+			Msg:                anyMsg,
+			SignData:           []*types.SignData{},
+			AddedAtBlockHeight: ctx.BlockHeight(),
+			AddedAt:            ctx.BlockTime(),
 			BytesToSign: c.qo.BytesToSignCalculator(msg, types.Salt{
 				Nonce: nonce,
 			}),

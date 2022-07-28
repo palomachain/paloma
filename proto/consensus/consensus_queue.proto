@@ -1,6 +1,7 @@
 syntax = "proto3";
 import "google/protobuf/any.proto";
 import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
 
 package volumefi.paloma.consensus;
 
@@ -9,12 +10,20 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 // message for storing the queued signed message in the internal queue
 message QueuedSignedMessage {
   uint64 id = 1;
-  google.protobuf.Any msg = 2;
-  bytes bytesToSign = 3;
-  repeated SignData signData = 4;
-  repeated Evidence evidence = 5;
 
-  PublicAccessData publicAccessData = 6;
+  int64 addedAtBlockHeight = 2;
+  google.protobuf.Timestamp addedAt = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+
+  google.protobuf.Any msg = 4;
+  bytes bytesToSign = 5;
+
+  repeated SignData signData = 6;
+  repeated Evidence evidence = 7;
+
+  PublicAccessData publicAccessData = 8;
 }
 
 message BatchOfConsensusMessages {

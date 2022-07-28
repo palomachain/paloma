@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"time"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,7 +13,8 @@ import (
 )
 
 const (
-	encodingDelimiter = byte('|')
+	encodingDelimiter      = byte('|')
+	deleteJobAfterDuration = 30 * time.Minute
 )
 
 // getConsensusQueue gets the consensus queue for the given type.
@@ -287,4 +289,36 @@ func (k Keeper) queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *ty
 		BytesToSign: msg.GetBytesToSign(),
 		Msg:         anyMsg,
 	}
+}
+
+func (k Keeper) RemoveUnexecutedJobs(ctx sdk.Context) error {
+	now := ctx.BlockTime()
+
+	for _, supported := range k.registry.slice {
+		queuesMap, err := supported.SupportedQueues(ctx)
+		if err != nil {
+			return err
+		}
+		for _, queueName := range consensus.SortedQueueNames(ctx, queuesMap) {
+			cq, err := k.getConsensusQueue(ctx, queueName)
+			if err != nil {
+				return err
+			}
+
+			jobs, err := cq.GetAll(ctx)
+			if err != nil {
+				return err
+			}
+
+			for _, job := range jobs {
+				if now.Sub(job.GetAddedAt()) >= deleteJobAfterDuration {
+					if err := cq.Remove(ctx, job.GetId()); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+
+	return nil
 }
