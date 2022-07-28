@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -73,6 +72,5 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 		}
 		res.Messages = append(res.Messages, approvedMessage)
 	}
-	fmt.Println("DUZINA", len(res.Messages))
 	return res, nil
 }
