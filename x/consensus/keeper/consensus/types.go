@@ -1,7 +1,10 @@
 package consensus
 
 import (
+	"sort"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -39,4 +42,10 @@ type SupportsConsensusQueueAction struct {
 
 type SupportsConsensusQueue interface {
 	SupportedQueues(ctx sdk.Context) (map[string]SupportsConsensusQueueAction, error)
+}
+
+func SortedQueueNames(ctx sdk.Context, queuesMap map[string]SupportsConsensusQueueAction) []string {
+	queueNames := slice.FromMapKeys(queuesMap)
+	sort.Strings(queueNames)
+	return queueNames
 }

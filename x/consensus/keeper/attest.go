@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 )
 
 // CheckAndProcessAttestedMessages is supposed to be used within the
@@ -18,7 +19,8 @@ func (k Keeper) CheckAndProcessAttestedMessages(ctx sdk.Context) error {
 		if err != nil {
 			return err
 		}
-		for _, opt := range opts {
+		for _, queueName := range consensus.SortedQueueNames(ctx, opts) {
+			opt := opts[queueName]
 			msgs, err := k.GetMessagesFromQueue(ctx, opt.QueueTypeName, 9999)
 			if err != nil {
 				continue

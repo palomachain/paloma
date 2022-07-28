@@ -5,6 +5,7 @@ import (
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	proto "github.com/gogo/protobuf/proto"
+	"time"
 )
 
 type ConsensusQueueType string
@@ -14,6 +15,8 @@ type QueuedSignedMessageI interface {
 	proto.Message
 	GetId() uint64
 	Nonce() []byte
+	GetAddedAtBlockHeight() int64
+	GetAddedAt() time.Time
 	ConsensusMsg(AnyUnpacker) (ConsensusMsg, error)
 	GetSignData() []*SignData
 	AddSignData(*SignData)
