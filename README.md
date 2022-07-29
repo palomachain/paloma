@@ -53,9 +53,9 @@ sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/api/libwasmvm.
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
 
-**If you're upgrading from v0.3.0 to v0.4.1 do the following:**
+**If you're upgrading from an older version to v0.4.1 do the following:**
 
-1. Stop paloma 0.3.0 and get 0.4.1
+1. Stop your paloma version and get 0.4.1
 ```
 service palomad stop 
 wget -O - https://github.com/palomachain/paloma/releases/download/v0.4.1-alpha/paloma_0.4.1-alpha_Linux_x86_64.tar.gz | tar -C /usr/local/bin -xvzf - palomad
