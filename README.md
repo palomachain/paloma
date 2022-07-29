@@ -44,7 +44,7 @@ N/A
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.4.0-alpha/paloma_0.4.0-alpha_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.4.1-alpha/paloma_0.4.1-alpha_Linux_x86_64.tar.gz | \
 sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
