@@ -322,19 +322,91 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			},
 		},
 		{
+			expRes: true,
+			name:   "two snapshots are same, but they have removed one of their accounts",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(20),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{}, {},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(20),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+		},
+		{
+			expRes: true,
+			name:   "two snapshots are same, but they have different external chain infos",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(20),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc"}, {Address: "def"},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(20),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc"}, {Address: "123"},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+		},
+		{
 			expRes: false,
 			name:   "two snapshots have same validators and same relative power orders",
 			curr: &types.Snapshot{
 				TotalShares: sdk.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(20),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc"}, {Address: "def"},
+						},
+					},
 					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
 				TotalShares: sdk.NewInt(1000),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(200)},
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(200),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc"}, {Address: "def"},
+						},
+					},
 					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
 				},
 			},

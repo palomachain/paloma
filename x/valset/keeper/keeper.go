@@ -256,6 +256,28 @@ func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot
 		}
 	}
 
+	// we also need to see if validators added or removed any external chain info.
+	// If they did, then this change is also considered to be worthy.
+	for i := 0; i < len(sortedCurrent); i++ {
+		currentVal, newVal := sortedCurrent[i], sortedNew[i]
+		if len(currentVal.ExternalChainInfos) != len(newVal.ExternalChainInfos) {
+			return true
+		}
+
+		keyFnc := func(acc *types.ExternalChainInfo) string {
+			return fmt.Sprintf("%s-%s-%s", acc.GetChainReferenceID(), acc.GetChainType(), acc.GetAddress())
+		}
+
+		currentMap := slice.MakeMapKeys(currentVal.ExternalChainInfos, keyFnc)
+		newMap := slice.MakeMapKeys(newVal.ExternalChainInfos, keyFnc)
+
+		for _, acc := range currentMap {
+			if _, ok := newMap[keyFnc(acc)]; !ok {
+				return true
+			}
+		}
+	}
+
 	return false
 }
 
