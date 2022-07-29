@@ -53,6 +53,20 @@ sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/api/libwasmvm.
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
 
+**If you're upgrading from v0.3.0 to v0.4.0 do the following:**
+
+```
+service palomad stop 
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.4.0-alpha/paloma_0.4.0-alpha_Linux_x86_64.tar.gz | tar -C /usr/local/bin -xvzf - palomad
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-6/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-6/addrbook.json
+
+#delete the old database
+palomad tendermint unsafe-reset-all --home $HOME/.paloma
+service palomad start
+```
+
+
 ### Connecting to an existing testnet.
 
 Download and install the latest release of palomad.
