@@ -50,7 +50,7 @@ message Evidence {
   bytes valAddress = 1[ (gogoproto.casttype) =
                          "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
 
-  bytes proof = 2;
+  google.protobuf.Any proof = 2;
 }
 
 message PublicAccessData {

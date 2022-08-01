@@ -44,3 +44,6 @@ message Message {
 
   string compassAddr = 6;
 }
+
+
+message ProofBla {}
