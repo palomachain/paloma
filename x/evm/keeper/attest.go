@@ -4,12 +4,14 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -71,7 +73,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return err
 	}
 
-	tx, err := k.attestTransaction(ctx, msg.GetEvidence())
+	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			return nil
@@ -79,67 +81,156 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return err
 	}
 
+	defer func() {
+		// given that there was enough evidence for a proof, regardless of the outcome,
+		// we should remove this from the queue as there isn't much that we can do about it.
+		q.Remove(ctx, msg.GetId())
+	}()
+
+	defer func() {
+		// if the input type is a TX, then regardles, we want to set it as already processed
+		switch winner := evidence.(type) {
+		case *types.TxExecutedProof:
+			tx, err := winner.GetTX()
+			if err == nil {
+				k.setTxAsAlreadyProcessed(ctx, tx)
+			}
+
+		}
+	}()
 	// If we got up to here it means that the enough evidence was provided
 	actionMsg := consensusMsg.(*types.Message).GetAction()
+	_, chainReferenceID := q.ChainInfo()
 
 	switch origMsg := actionMsg.(type) {
 	case *types.Message_UploadSmartContract:
-		_, chainReferenceID := q.ChainInfo()
-		if err != nil {
-			return err
+		defer func() {
+			// regardless of the outcome, this upload/deployment should be removed
+			k.removeSmartContractDeployment(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
+		}()
+		switch winner := evidence.(type) {
+		case *types.TxExecutedProof:
+			tx, err := winner.GetTX()
+			if err != nil {
+				return err
+			}
+			if k.isTxProcessed(ctx, tx) {
+				// somebody submitted the old transaction that was already processed?
+				// punish those validators!!
+				return ErrUnexpectedError.WrapS("transaction %s is already processed", tx.Hash())
+			}
+			err = origMsg.UploadSmartContract.VerifyAgainstTX(tx)
+			if err != nil {
+				// passed in transaction doesn't seem to be created from this smart contract
+				return err
+			}
+			if err != nil {
+				return err
+			}
+
+			smartContract, err := k.getSmartContract(ctx, origMsg.UploadSmartContract.GetId())
+
+			if err != nil {
+				return err
+			}
+
+			ethMsg, err := tx.AsMessage(ethtypes.NewEIP2930Signer(tx.ChainId()), big.NewInt(0))
+			if err != nil {
+				return err
+			}
+
+			smartContractAddr := crypto.CreateAddress(ethMsg.From(), tx.Nonce()).Hex()
+
+			if err != nil {
+				return err
+			}
+
+			deployingSmartContract, _ := k.getSmartContractDeploying(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
+			if deployingSmartContract == nil {
+				return ErrCannotActiveSmartContractThatIsNotDeploying
+			}
+
+			err = k.ActivateChainReferenceID(
+				ctx,
+				chainReferenceID,
+				smartContract,
+				smartContractAddr,
+				deployingSmartContract.GetUniqueID(),
+			)
+
+			if err != nil {
+				return err
+			}
+
+		case *types.SmartContractExecutionErrorProof:
+			keeperutil.EmitEvent(k, ctx, types.SmartContractExecutionFailedKey,
+				types.SmartContractExecutionFailedMessageID.With(fmt.Sprintf("%d", msg.GetId())),
+				types.SmartContractExecutionFailedChainReferenceID.With(chainReferenceID),
+				types.SmartContractExecutionFailedError.With(winner.GetErrorMessage()),
+				types.SmartContractExecutionMessageType.With(fmt.Sprintf("%T", origMsg)),
+			)
+		default:
+			return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
 		}
 
-		smartContract, err := k.getSmartContract(ctx, origMsg.UploadSmartContract.GetId())
-
-		if err != nil {
-			return err
-		}
-
-		ethMsg, err := tx.AsMessage(ethtypes.NewEIP2930Signer(tx.ChainId()), big.NewInt(0))
-		if err != nil {
-			return err
-		}
-
-		smartContractAddr := crypto.CreateAddress(ethMsg.From(), tx.Nonce()).Hex()
-
-		if err != nil {
-			return err
-		}
-
-		deployingSmartContract, _ := k.getSmartContractDeploying(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
-		if deployingSmartContract == nil {
-			return ErrCannotActiveSmartContractThatIsNotDeploying
-		}
-
-		err = k.ActivateChainReferenceID(
-			ctx,
-			chainReferenceID,
-			smartContract,
-			smartContractAddr,
-			deployingSmartContract.GetUniqueID(),
-		)
-
-		if err != nil {
-			return err
-		}
-
-		k.removeSmartContractDeployment(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
 	case *types.Message_UpdateValset:
-		// nothing
-	case *types.Message_SubmitLogicCall:
-		// nothing
-	}
+		switch winner := evidence.(type) {
+		case *types.TxExecutedProof:
+		// check if the correct valset was updated
+		case *types.SmartContractExecutionErrorProof:
+			keeperutil.EmitEvent(k, ctx, types.SmartContractExecutionFailedKey,
+				types.SmartContractExecutionFailedMessageID.With(fmt.Sprintf("%d", msg.GetId())),
+				types.SmartContractExecutionFailedChainReferenceID.With(chainReferenceID),
+				types.SmartContractExecutionFailedError.With(winner.GetErrorMessage()),
+				types.SmartContractExecutionMessageType.With(fmt.Sprintf("%T", origMsg)),
+			)
+		default:
+			return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
+		}
 
-	q.Remove(ctx, msg.GetId())
+		// now remove all older update valsets given that new one was uploaded.
+		// if there are any, that is.
+		keeperutil.EmitEvent(k, ctx, types.AttestingUpdateValsetRemoveOldMessagesKey)
+		msgs, err := q.GetAll(ctx)
+		if err != nil {
+			return err
+		}
+		for _, oldMessage := range msgs {
+
+			actionMsg, err := oldMessage.ConsensusMsg(k.cdc)
+			if err != nil {
+				return err
+			}
+			if _, ok := (actionMsg.(*types.Message).GetAction()).(*types.Message_UpdateValset); ok {
+				if oldMessage.GetId() < msg.GetId() {
+					q.Remove(ctx, oldMessage.GetId())
+				}
+			}
+		}
+	case *types.Message_SubmitLogicCall:
+		switch winner := evidence.(type) {
+		case *types.TxExecutedProof:
+		// check if correct thing was called
+		case *types.SmartContractExecutionErrorProof:
+			keeperutil.EmitEvent(k, ctx, types.SmartContractExecutionFailedKey,
+				types.SmartContractExecutionFailedMessageID.With(fmt.Sprintf("%d", msg.GetId())),
+				types.SmartContractExecutionFailedChainReferenceID.With(chainReferenceID),
+				types.SmartContractExecutionFailedError.With(winner.GetErrorMessage()),
+				types.SmartContractExecutionMessageType.With(fmt.Sprintf("%T", origMsg)),
+			)
+		default:
+			return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
+		}
+	}
 
 	return nil
 
 }
 
-func (k Keeper) attestTransaction(
+func (k Keeper) findEvidenceThatWon(
 	ctx sdk.Context,
 	evidences []*consensustypes.Evidence,
-) (*ethtypes.Transaction, error) {
+) (any, error) {
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
 	if err != nil {
 		return nil, err
@@ -162,26 +253,27 @@ func (k Keeper) attestTransaction(
 	}
 
 	groups := make(map[string]struct {
-		tx         *ethtypes.Transaction
+		evidence   types.Hashable
 		validators []sdk.ValAddress
 	})
 
 	var g whoops.Group
 	for _, evidence := range evidences {
-		proof := evidence.GetProof()
-		tx := &ethtypes.Transaction{}
-
-		// is rlp deterministic?
-		err := tx.UnmarshalBinary(proof)
-		g.Add(err)
+		rawProof := evidence.GetProof()
+		var hashable types.Hashable
+		err := k.cdc.UnpackAny(rawProof, &hashable)
 		if err != nil {
-			continue
+			return nil, err
 		}
 
-		hash := hex.EncodeToString(hashSha256(proof))
+		bytesToHash, err := hashable.BytesToHash()
+		if err != nil {
+			return nil, err
+		}
+		hash := hex.EncodeToString(hashSha256(bytesToHash))
 		val := groups[hash]
-		if val.tx == nil {
-			val.tx = tx
+		if val.evidence == nil {
+			val.evidence = hashable
 		}
 		val.validators = append(val.validators, evidence.ValAddress)
 		groups[hash] = val
@@ -192,11 +284,6 @@ func (k Keeper) attestTransaction(
 	// TODO: check for every tx if it seems genuine
 
 	for _, group := range groups {
-
-		if k.isTxProcessed(ctx, group.tx) {
-			// TODO: punish those validators??
-			continue
-		}
 
 		var cp consensusPower
 		cp.setTotal(snapshot.TotalShares)
@@ -212,8 +299,7 @@ func (k Keeper) attestTransaction(
 
 		if cp.consensus() {
 			// consensus reached
-			k.setTxAsAlreadyProcessed(ctx, group.tx)
-			return group.tx, nil
+			return group.evidence, nil
 		}
 
 		// TODO: punish other validators that are a part of different groups?

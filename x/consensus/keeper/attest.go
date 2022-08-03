@@ -9,11 +9,6 @@ import (
 // EndBlocker. It will get messages for the attestators that have reached a
 // consensus and process them.
 func (k Keeper) CheckAndProcessAttestedMessages(ctx sdk.Context) error {
-
-	if ctx.BlockHeight()%10 != 0 {
-		return nil
-	}
-
 	for _, supportedConsensusQueue := range k.registry.slice {
 		opts, err := supportedConsensusQueue.SupportedQueues(ctx)
 		if err != nil {
@@ -23,7 +18,7 @@ func (k Keeper) CheckAndProcessAttestedMessages(ctx sdk.Context) error {
 			opt := opts[queueName]
 			msgs, err := k.GetMessagesFromQueue(ctx, opt.QueueTypeName, 9999)
 			if err != nil {
-				continue
+				return err
 			}
 
 			for _, msg := range msgs {
@@ -31,7 +26,7 @@ func (k Keeper) CheckAndProcessAttestedMessages(ctx sdk.Context) error {
 				if err != nil {
 					return err
 				}
-				if err := opt.Process(ctx, cq, msg); err != nil {
+				if err := opt.ProcessMessageForAttestation(ctx, cq, msg); err != nil {
 					return err
 				}
 			}

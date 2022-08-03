@@ -48,6 +48,7 @@ func (_m *Message_UpdateValset) keccak256(orig *Message, _ uint64) []byte {
 
 	return crypto.Keccak256(bytes)
 }
+
 func uint64ToByte(n uint64) []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, n)
@@ -113,4 +114,21 @@ func (m *Message) Keccak256(nonce uint64) []byte {
 		panic("message's action is not hashable")
 	}
 	return k.keccak256(m, nonce)
+}
+
+func TransformValsetToABIValset(val Valset) any {
+	return struct {
+		Validators []common.Address
+		Powers     []*big.Int
+		ValsetId   *big.Int
+	}{
+		Validators: slice.Map(val.GetValidators(), func(s string) common.Address {
+			return common.HexToAddress(s)
+		}),
+		Powers: slice.Map(val.GetPowers(), func(p uint64) *big.Int {
+			return big.NewInt(int64(p))
+		}),
+		ValsetId: big.NewInt(int64(val.GetValsetID())),
+	}
+
 }

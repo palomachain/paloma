@@ -176,5 +176,8 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	if ctx.BlockHeight()%10 == 9 {
 		am.keeper.RemoveUnexecutedJobs(ctx)
 	}
-	return EndBlocker(ctx, am.keeper)
+	if err := am.keeper.CheckAndProcessAttestedMessages(ctx); err != nil {
+		am.keeper.Logger(ctx).Error("error while attesting to messages", "err", err)
+	}
+	return []abci.ValidatorUpdate{}
 }

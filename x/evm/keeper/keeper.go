@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
 	"sort"
 	"strings"
 	"time"
@@ -14,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/slice"
 	wasmutil "github.com/palomachain/paloma/util/wasm"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -63,8 +61,6 @@ type evmChainTemp struct {
 func (e evmChainTemp) ChainReferenceID() string {
 	return e.chainReferenceID
 }
-
-var zero32Byte [32]byte
 
 var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
@@ -156,7 +152,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	k.setSmartContractAsDeploying(ctx, smartContract, chainInfo, uniqueID[:])
 
 	// set the smart contract constructor arguments
-	input, err := contractABI.Pack("", uniqueID, transformValsetToABIValset(valset))
+	input, err := contractABI.Pack("", uniqueID, types.TransformValsetToABIValset(valset))
 	if err != nil {
 		return err
 	}
@@ -363,8 +359,8 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsC
 			)
 
 			res[queue] = consensus.SupportsConsensusQueueAction{
-				QueueOptions: opts,
-				Process:      queueInfo.processFunc(k),
+				QueueOptions:                 opts,
+				ProcessMessageForAttestation: queueInfo.processFunc(k),
 			}
 		}
 	}
@@ -644,22 +640,7 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 	return valset
 }
 
-func transformValsetToABIValset(val types.Valset) any {
-	return struct {
-		Validators []common.Address
-		Powers     []*big.Int
-		ValsetId   *big.Int
-	}{
-		Validators: slice.Map(val.GetValidators(), func(s string) common.Address {
-			return common.HexToAddress(s)
-		}),
-		Powers: slice.Map(val.GetPowers(), func(p uint64) *big.Int {
-			return big.NewInt(int64(p))
-		}),
-		ValsetId: big.NewInt(int64(val.GetValsetID())),
-	}
-
-}
+func (k Keeper) ModuleName() string { return types.ModuleName }
 
 func generateSmartContractID(ctx sdk.Context) (res [32]byte) {
 	b := []byte(fmt.Sprintf("%d", ctx.BlockHeight()))

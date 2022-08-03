@@ -182,13 +182,7 @@ func (c Queue) AddEvidence(ctx sdk.Context, msgID uint64, evidence *types.Eviden
 		return err
 	}
 
-	for _, existingEvidence := range msg.GetEvidence() {
-		if evidence.ValAddress.Equals(existingEvidence.ValAddress) {
-			return ErrValidatorAlreadySigned.Format(evidence.ValAddress)
-		}
-	}
-
-	msg.AddEvidence(evidence)
+	msg.AddEvidence(*evidence)
 
 	return c.save(ctx, msg)
 }
@@ -253,6 +247,11 @@ func (c Queue) Remove(ctx sdk.Context, msgID uint64) error {
 	}
 	queue := c.queue(ctx)
 	queue.Delete(sdk.Uint64ToBigEndian(msgID))
+
+	keeperutil.EmitEvent(keeperutil.ModuleNameFunc(types.ModuleName), ctx, types.ItemRemovedEventKey,
+		types.ItemRemovedEventID.With(fmt.Sprintf("%d", msgID)),
+		types.ItemRemovedChainReferenceID.With(c.qo.ChainReferenceID),
+	)
 	return nil
 }
 

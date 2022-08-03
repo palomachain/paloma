@@ -28,6 +28,10 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*consensustypes.ConsensusMsg)(nil),
 		&Message{},
 	)
+	registry.RegisterImplementations((*Hashable)(nil),
+		&TxExecutedProof{},
+		&SmartContractExecutionErrorProof{},
+	)
 	// this line is used by starport scaffolding # 3
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
