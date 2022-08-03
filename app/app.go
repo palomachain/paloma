@@ -104,6 +104,7 @@ import (
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -430,6 +431,12 @@ func New(
 		wasmDir,
 		wasmConfig,
 		"iterator,staking,stargate,paloma",
+		wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
+			return wasmkeeper.NewMessageHandlerChain(
+				old,
+				app.EvmKeeper.WasmMessengerHandler(),
+			)
+		}),
 	)
 	// register wasm gov proposal types
 	// enabledProposals := GetEnabledProposals()
