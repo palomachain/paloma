@@ -411,6 +411,38 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 				},
 			},
 		},
+		{
+			expRes: false,
+			name:   "if the powers are still the same then it's not worthy",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+				},
+			},
+		},
+		{
+			expRes: false,
+			name:   "if the powers have change for less than 1%, then it's not worthy",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(1000),
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(1000),
+				Validators: []types.Validator{
+					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(21)},
+				},
+			},
+		},
 	}
 
 	for _, tt := range testcases {

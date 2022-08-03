@@ -248,8 +248,8 @@ func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot
 	// could own 60% of the network. And all other validators stayed the
 	// (relatively) same.
 	for i := 0; i < len(sortedCurrent); i++ {
-		percentageCurrent := currentSnapshot.TotalShares.ToDec().QuoInt(sortedCurrent[i].ShareCount)
-		percentageNow := newSnapshot.TotalShares.ToDec().QuoInt(sortedNew[i].ShareCount)
+		percentageCurrent := sortedCurrent[i].ShareCount.ToDec().QuoInt(currentSnapshot.TotalShares)
+		percentageNow := sortedNew[i].ShareCount.ToDec().QuoInt(newSnapshot.TotalShares)
 
 		if percentageCurrent.Sub(percentageNow).Abs().MustFloat64() >= 0.01 {
 			return true
