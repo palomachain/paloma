@@ -1,4 +1,6 @@
 syntax = "proto3";
+
+import "google/protobuf/any.proto";
 package volumefi.paloma.consensus;
 
 // this line is used by starport scaffolding # proto/tx/import
@@ -41,7 +43,7 @@ message MsgDeleteJobResponse {
 
 message MsgAddEvidence {
   string creator = 1;
-  bytes proof = 2;
+  google.protobuf.Any proof = 2;
   uint64 messageID = 3;
   string queueTypeName = 4; 
 }

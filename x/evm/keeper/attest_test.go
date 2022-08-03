@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"io/ioutil"
+	"sync"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -81,12 +82,21 @@ var _ = g.Describe("attest router", func() {
 		}
 	})
 
-	subject := func() error {
-		return k.attestRouter(ctx, q, msg)
-	}
+	var subject func() error
+	var subjectOnce sync.Once
+	var subjectErr error
+	g.BeforeEach(func() {
+		subjectOnce = sync.Once{}
+		subject = func() error {
+			subjectOnce.Do(func() {
+				subjectErr = k.attestRouter(ctx, q, msg)
+			})
+			return subjectErr
+		}
+	})
 
 	g.When("snapshot returns an error", func() {
-		retErr := whoops.String("err")
+		retErr := whoops.String("random error")
 		g.BeforeEach(func() {
 			v.On("GetCurrentSnapshot", mock.Anything).Return(
 				nil,
@@ -96,10 +106,10 @@ var _ = g.Describe("attest router", func() {
 		g.BeforeEach(func() {
 			evidence = []*consensustypes.Evidence{
 				{
-					Proof: []byte("does not matter because it is getting ignored"),
+					Proof: whoops.Must(codectypes.NewAnyWithValue(&types.SmartContractExecutionErrorProof{ErrorMessage: "doesn't matter"})),
 				},
 				{
-					Proof: []byte("just need something to exist"),
+					Proof: whoops.Must(codectypes.NewAnyWithValue(&types.SmartContractExecutionErrorProof{ErrorMessage: "just need something to exist"})),
 				},
 			}
 		})
@@ -109,7 +119,7 @@ var _ = g.Describe("attest router", func() {
 		})
 	})
 
-	g.Context("snapshot returns an actual snapshot", func() {
+	g.When("snapshot returns an actual snapshot", func() {
 
 		g.JustBeforeEach(func() {
 			v.On("GetCurrentSnapshot", mock.Anything).Return(
@@ -215,19 +225,20 @@ var _ = g.Describe("attest router", func() {
 					evidence = []*consensustypes.Evidence{
 						{
 							ValAddress: sdk.ValAddress("123"),
-							Proof:      whoops.Must(sampleTx1.MarshalBinary()),
+							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{whoops.Must(sampleTx1.MarshalBinary())})),
 						},
 						{
 							ValAddress: sdk.ValAddress("456"),
-							Proof:      whoops.Must(sampleTx1.MarshalBinary()),
+							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{whoops.Must(sampleTx1.MarshalBinary())})),
 						},
 						{
 							ValAddress: sdk.ValAddress("789"),
-							Proof:      whoops.Must(sampleTx1.MarshalBinary()),
+							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{whoops.Must(sampleTx1.MarshalBinary())})),
 						},
 					}
 				})
 				g.BeforeEach(func() {
+					q.On("ChainInfo").Return("", "eth-main")
 					q.On("Remove", mock.Anything, uint64(123)).Return(nil)
 				})
 
@@ -257,12 +268,15 @@ var _ = g.Describe("attest router", func() {
 							UpdateValset: &types.UpdateValset{},
 						}
 					})
+
+					g.BeforeEach(func() {
+						q.On("GetAll", mock.Anything).Return(nil, nil)
+					})
 					successfulProcess()
 				})
 
 				g.When("message is UploadSmartContract", func() {
 					g.BeforeEach(func() {
-						q.On("ChainInfo").Return("", "eth-main")
 						consensusMsg.Action = &types.Message_UploadSmartContract{
 							UploadSmartContract: &types.UploadSmartContract{
 								Id: 1,

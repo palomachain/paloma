@@ -172,7 +172,8 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	if ctx.BlockHeight()%50 == 0 || ctx.BlockHeight() == 1 {
+	// DO NOT MERGE WITH THIS
+	if ctx.BlockHeight()%10 == 0 || ctx.BlockHeight() == 1 {
 		am.keeper.TriggerSnapshotBuild(ctx)
 	}
 	return []abci.ValidatorUpdate{}

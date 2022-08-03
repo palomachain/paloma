@@ -20,7 +20,7 @@ type QueuedSignedMessageI interface {
 	ConsensusMsg(AnyUnpacker) (ConsensusMsg, error)
 	GetSignData() []*SignData
 	AddSignData(*SignData)
-	AddEvidence(*Evidence)
+	AddEvidence(Evidence)
 	GetEvidence() []*Evidence
 	SetPublicAccessData(*PublicAccessData)
 	GetPublicAccessData() *PublicAccessData
@@ -63,11 +63,20 @@ func (q *QueuedSignedMessage) AddSignData(data *SignData) {
 	q.SignData = append(q.SignData, data)
 }
 
-func (q *QueuedSignedMessage) AddEvidence(data *Evidence) {
+func (q *QueuedSignedMessage) AddEvidence(data Evidence) {
 	if q.Evidence == nil {
 		q.Evidence = []*Evidence{}
 	}
-	q.Evidence = append(q.Evidence, data)
+
+	for i := range q.Evidence {
+		if q.Evidence[i].ValAddress.Equals(data.ValAddress) {
+			q.Evidence[i].Proof = data.Proof
+			return
+		}
+	}
+
+	// if validator didn't provide evidence already, then add it here for the first time
+	q.Evidence = append(q.Evidence, &data)
 }
 
 func (q *QueuedSignedMessage) SetPublicAccessData(data *PublicAccessData) {

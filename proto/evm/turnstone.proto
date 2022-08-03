@@ -45,5 +45,12 @@ message Message {
   string compassAddr = 6;
 }
 
+message TxExecutedProof {
+  bytes serializedTX = 1;
+}
 
-message ProofBla {}
+message SmartContractExecutionErrorProof {
+  string errorMessage = 1;
+}
+
+
