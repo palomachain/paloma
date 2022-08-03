@@ -44,8 +44,8 @@ N/A
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.5.0/paloma_0.5.0_Linux_x86_64.tar.gz | \
-sudo tar -C /usr/local/bin -xvzf - palomad
+wget -O - https://github.com/palomachain/paloma/releases/latest/download/paloma_Linux_x86_64.tar.gz | \
+  sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
 sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/api/libwasmvm.x86_64.so
@@ -57,8 +57,9 @@ If you're upgrading to the most recent version, you will need to stop `palomad` 
 
 1. Stop your paloma version and get 0.5.0
 ```
-service palomad stop 
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.5.0/paloma_0.5.0_Linux_x86_64.tar.gz | tar -C /usr/local/bin -xvzf - palomad
+service palomad stop
+wget -O - https://github.com/palomachain/paloma/releases/latest/download/paloma_Linux_x86_64.tar.gz | \
+  tar -C /usr/local/bin -xvzf - palomad
 ```
 
 2. Delete the old database and get the snapshot genesis and the updated addrbook. Start paloma 0.5.0
