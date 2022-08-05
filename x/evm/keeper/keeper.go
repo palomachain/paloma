@@ -33,22 +33,30 @@ const (
 	thresholdForConsensus uint64 = 2_863_311_530
 )
 const (
-	ConsensusTurnstoneMessage = "evm-turnstone-message"
-	SignaturePrefix           = "\x19Ethereum Signed Message:\n32"
+	ConsensusTurnstoneMessage     = "evm-turnstone-message"
+	ConsensusGetValidatorBalances = "validators-balances"
+	SignaturePrefix               = "\x19Ethereum Signed Message:\n32"
 )
 
 type supportedChainInfo struct {
-	batch       bool
-	msgType     any
-	processFunc func(Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error
+	batch                 bool
+	msgType               any
+	processAttesationFunc func(Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error
 }
 
 var SupportedConsensusQueues = map[string]supportedChainInfo{
 	ConsensusTurnstoneMessage: {
 		batch:   false,
 		msgType: &types.Message{},
-		processFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
+		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestRouter
+		},
+	},
+	ConsensusGetValidatorBalances: {
+		batch:   false,
+		msgType: &types.ValidatorBalancesAttestation{},
+		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
+			return k.attestValidatorBalances
 		},
 	},
 }
@@ -396,7 +404,7 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsC
 
 			res[queue] = consensus.SupportsConsensusQueueAction{
 				QueueOptions:                 opts,
-				ProcessMessageForAttestation: queueInfo.processFunc(k),
+				ProcessMessageForAttestation: queueInfo.processAttesationFunc(k),
 			}
 		}
 	}

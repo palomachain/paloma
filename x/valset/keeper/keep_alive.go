@@ -98,12 +98,11 @@ func (k Keeper) JailInactiveValidators(ctx sdk.Context) error {
 			continue
 		}
 		store.Delete(valAddr)
-		consAddr, err := k.staking.Validator(ctx, valAddr).GetConsAddr()
+		err = k.Jail(ctx, valAddr, types.JailReasonValidatorInactive)
 		if err != nil {
 			g.Add(err)
 			continue
 		}
-		k.staking.Jail(ctx, consAddr)
 
 	}
 	return g.Return()

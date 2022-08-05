@@ -170,6 +170,12 @@ func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
 		return nil, err
 	}
 
+	// remove jail reasons for all active validators.
+	// given that a validator is in snapshot, they can't be jailed.
+	for _, val := range snapshot.GetValidators() {
+		k.jailReasonStore(ctx).Delete(val.GetAddress())
+	}
+
 	for _, listener := range k.SnapshotListeners {
 		listener.OnSnapshotBuilt(ctx, snapshot)
 	}
@@ -371,6 +377,21 @@ func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType
 // IsJailed returns if the current validator is jailed or not.
 func (k Keeper) IsJailed(ctx sdk.Context, val sdk.ValAddress) bool {
 	return k.staking.Validator(ctx, val).IsJailed()
+}
+
+func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error {
+	val := k.staking.Validator(ctx, valAddr)
+	cons, err := val.GetConsAddr()
+	if err != nil {
+		return err
+	}
+	k.staking.Jail(ctx, cons)
+	k.jailReasonStore(ctx).Set(valAddr, []byte(reason))
+	return nil
+}
+
+func (k Keeper) jailReasonStore(ctx sdk.Context) sdk.KVStore {
+	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("jail-reasons"))
 }
 
 func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {
