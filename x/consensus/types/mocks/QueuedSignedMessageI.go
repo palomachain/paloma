@@ -6,6 +6,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	mock "github.com/stretchr/testify/mock"
 
+	time "time"
+
 	types "github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -15,7 +17,7 @@ type QueuedSignedMessageI struct {
 }
 
 // AddEvidence provides a mock function with given fields: _a0
-func (_m *QueuedSignedMessageI) AddEvidence(_a0 *types.Evidence) {
+func (_m *QueuedSignedMessageI) AddEvidence(_a0 types.Evidence) {
 	_m.Called(_a0)
 }
 
@@ -45,6 +47,34 @@ func (_m *QueuedSignedMessageI) ConsensusMsg(_a0 codectypes.AnyUnpacker) (types.
 	}
 
 	return r0, r1
+}
+
+// GetAddedAt provides a mock function with given fields:
+func (_m *QueuedSignedMessageI) GetAddedAt() time.Time {
+	ret := _m.Called()
+
+	var r0 time.Time
+	if rf, ok := ret.Get(0).(func() time.Time); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(time.Time)
+	}
+
+	return r0
+}
+
+// GetAddedAtBlockHeight provides a mock function with given fields:
+func (_m *QueuedSignedMessageI) GetAddedAtBlockHeight() int64 {
+	ret := _m.Called()
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func() int64); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	return r0
 }
 
 // GetBytesToSign provides a mock function with given fields:

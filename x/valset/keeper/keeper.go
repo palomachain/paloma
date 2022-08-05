@@ -78,24 +78,6 @@ func (k Keeper) AddExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, ne
 	return k.SetExternalChainInfoState(ctx, valAddr, newChainInfo)
 }
 
-func (k Keeper) CanAcceptValidator(ctx sdk.Context, valAddr sdk.ValAddress) error {
-	stakingVal := k.staking.Validator(ctx, valAddr)
-
-	if stakingVal == nil {
-		return ErrValidatorWithAddrNotFound.Format(valAddr.String())
-	}
-
-	if stakingVal.IsJailed() {
-		return ErrValidatorCannotBePigeon.Format(valAddr.String()).WrapS("validator is jailed")
-	}
-
-	if !stakingVal.IsBonded() {
-		return ErrValidatorCannotBePigeon.Format(valAddr.String()).WrapS("validator is not bonded")
-	}
-
-	return nil
-}
-
 func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*types.ExternalChainInfo) error {
 	if len(chainInfos) > maxNumOfAllowedExternalAccounts {
 		return ErrMaxNumberOfExternalAccounts.Format(

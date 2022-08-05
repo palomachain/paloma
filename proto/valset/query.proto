@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "valset/params.proto";
 import "valset/snapshot.proto";
+import "google/protobuf/timestamp.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/palomachain/paloma/x/valset/types";
@@ -24,6 +25,11 @@ service Query {
 // Queries a list of GetSnapshotByID items.
 	rpc GetSnapshotByID(QueryGetSnapshotByIDRequest) returns (QueryGetSnapshotByIDResponse) {
 		option (google.api.http).get = "/palomachain/paloma/valset/get_snapshot_by_id/{snapshotId}";
+	}
+
+// Queries a list of GetValidatorAliveUntil items.
+	rpc GetValidatorAliveUntil(QueryGetValidatorAliveUntilRequest) returns (QueryGetValidatorAliveUntilResponse) {
+		option (google.api.http).get = "/palomachain/paloma/valset/get_validator_alive_until";
 	}
 
 // this line is used by starport scaffolding # 2
@@ -52,6 +58,18 @@ message QueryGetSnapshotByIDRequest {
 
 message QueryGetSnapshotByIDResponse {
   Snapshot snapshot = 1;
+}
+
+message QueryGetValidatorAliveUntilRequest {
+  bytes valAddress = 1[ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+}
+
+message QueryGetValidatorAliveUntilResponse {
+  google.protobuf.Timestamp aliveUntil = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
 }
 
 // this line is used by starport scaffolding # 3

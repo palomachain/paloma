@@ -19,6 +19,11 @@ func (_m *StakingKeeper) IterateValidators(ctx types.Context, fn func(int64, sta
 	_m.Called(ctx, fn)
 }
 
+// Jail provides a mock function with given fields: ctx, consAddr
+func (_m *StakingKeeper) Jail(ctx types.Context, consAddr types.ConsAddress) {
+	_m.Called(ctx, consAddr)
+}
+
 // Validator provides a mock function with given fields: ctx, addr
 func (_m *StakingKeeper) Validator(ctx types.Context, addr types.ValAddress) stakingtypes.ValidatorI {
 	ret := _m.Called(ctx, addr)

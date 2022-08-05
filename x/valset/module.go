@@ -175,5 +175,11 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	if ctx.BlockHeight()%50 == 0 || ctx.BlockHeight() == 1 {
 		am.keeper.TriggerSnapshotBuild(ctx)
 	}
+
+	if ctx.BlockHeight()%5 == 0 {
+		if err := am.keeper.JailInactiveValidators(ctx); err != nil {
+			am.keeper.Logger(ctx).Error("error while jailing inactive validators", "error", err)
+		}
+	}
 	return []abci.ValidatorUpdate{}
 }

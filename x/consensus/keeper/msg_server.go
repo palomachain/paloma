@@ -36,6 +36,10 @@ func (k msgServer) AddMessagesSignatures(goCtx context.Context, msg *types.MsgAd
 	); err != nil {
 		return nil, err
 	}
+	err := k.Keeper.valset.KeepValidatorAlive(ctx, valAddr)
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.MsgAddMessagesSignaturesResponse{}, nil
 }

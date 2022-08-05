@@ -10,6 +10,7 @@ option go_package = "github.com/palomachain/paloma/x/valset/types";
 // Msg defines the Msg service.
 service Msg {
   rpc AddExternalChainInfoForValidator(MsgAddExternalChainInfoForValidator) returns (MsgAddExternalChainInfoForValidatorResponse);
+  rpc KeepAlive(MsgKeepAlive) returns (MsgKeepAliveResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
@@ -19,6 +20,13 @@ message MsgAddExternalChainInfoForValidator {
 }
 
 message MsgAddExternalChainInfoForValidatorResponse {
+}
+
+message MsgKeepAlive {
+  string creator = 1;
+}
+
+message MsgKeepAliveResponse {
 }
 
 // this line is used by starport scaffolding # proto/tx/message

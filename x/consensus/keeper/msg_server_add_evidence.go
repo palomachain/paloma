@@ -23,5 +23,10 @@ func (k msgServer) AddEvidence(goCtx context.Context, msg *types.MsgAddEvidence)
 		return nil, err
 	}
 
+	err = k.Keeper.valset.KeepValidatorAlive(ctx, valAddr)
+	if err != nil {
+		return nil, err
+	}
+
 	return &types.MsgAddEvidenceResponse{}, nil
 }

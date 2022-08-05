@@ -60,6 +60,20 @@ func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snap
 	return r0, r1
 }
 
+// KeepValidatorAlive provides a mock function with given fields: ctx, valAddr
+func (_m *ValsetKeeper) KeepValidatorAlive(ctx types.Context, valAddr types.ValAddress) error {
+	ret := _m.Called(ctx, valAddr)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) error); ok {
+		r0 = rf(ctx, valAddr)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 type mockConstructorTestingTNewValsetKeeper interface {
 	mock.TestingT
 	Cleanup(func())
