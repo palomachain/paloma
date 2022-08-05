@@ -22,6 +22,10 @@ func (k msgServer) SetPublicAccessData(goCtx context.Context, msg *types.MsgSetP
 	if err != nil {
 		return nil, err
 	}
+	err = k.Keeper.valset.KeepValidatorAlive(ctx, valAddr)
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.MsgSetPublicAccessDataResponse{}, nil
 }

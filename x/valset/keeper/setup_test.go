@@ -21,7 +21,6 @@ type mockedServices struct {
 }
 
 func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
-
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -55,6 +54,7 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
+	ctx = ctx.WithMultiStore(stateStore).WithGasMeter(sdk.NewInfiniteGasMeter())
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())

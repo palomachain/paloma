@@ -23,6 +23,7 @@ type BankKeeper interface {
 type StakingKeeper interface {
 	Validator(ctx sdk.Context, addr sdk.ValAddress) stakingtypes.ValidatorI
 	IterateValidators(ctx sdk.Context, fn func(index int64, validator stakingtypes.ValidatorI) (stop bool))
+	Jail(ctx sdk.Context, consAddr sdk.ConsAddress)
 }
 
 type OnSnapshotBuiltListener interface {

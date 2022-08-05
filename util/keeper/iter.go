@@ -20,6 +20,16 @@ func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler) ([]
 	return keys, res, nil
 }
 
+func IterAllRaw(store sdk.KVStore, pu protoUnmarshaler) (keys [][]byte, values [][]byte, _err error) {
+	iterator := store.Iterator(nil, nil)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		keys = append(keys, iterator.Key())
+		values = append(values, iterator.Value())
+	}
+	return
+}
+
 func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, fnc func([]byte, T) bool) error {
 	res := []T{}
 	iterator := store.Iterator(nil, nil)

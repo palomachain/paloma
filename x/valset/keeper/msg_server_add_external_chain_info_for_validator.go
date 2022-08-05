@@ -22,5 +22,9 @@ func (k msgServer) AddExternalChainInfoForValidator(goCtx context.Context, msg *
 		return nil, err
 	}
 
+	err = k.Keeper.KeepValidatorAlive(ctx, valAddr)
+	if err != nil {
+		return nil, err
+	}
 	return &types.MsgAddExternalChainInfoForValidatorResponse{}, nil
 }

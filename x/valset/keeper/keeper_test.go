@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"testing"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -53,8 +54,10 @@ func TestIfValidatorCanBeAccepted(t *testing.T) {
 		require.ErrorIs(t, err, ErrValidatorWithAddrNotFound)
 	})
 }
-func TestRegisterRunner(t *testing.T) {
+
+func TestRegisteringPigeon(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
+	ctx = ctx.WithBlockTime(time.Unix(999999999, 0))
 	val := sdk.ValAddress("validator")
 	val2 := sdk.ValAddress("validator2")
 	nonExistingVal := sdk.ValAddress("i dont exist")
@@ -70,6 +73,21 @@ func TestRegisterRunner(t *testing.T) {
 	ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
 	ms.StakingKeeper.On("Validator", mock.Anything, val2).Return(vali2)
 	ms.StakingKeeper.On("Validator", mock.Anything, nonExistingVal).Return(nil)
+
+	t.Run("if validator has been alive before, but it's not now, then it returns an error", func(t *testing.T) {
+		err := k.KeepValidatorAlive(ctx.WithBlockTime(time.Unix(555, 0)), val)
+		require.NoError(t, err)
+		alive, err := k.IsValidatorAlive(ctx, val)
+		require.NoError(t, err)
+		require.False(t, alive)
+	})
+
+	t.Run("setting the validator to current ctx's block time", func(t *testing.T) {
+		err := k.KeepValidatorAlive(ctx, val)
+		require.NoError(t, err)
+		err = k.KeepValidatorAlive(ctx, val2)
+		require.NoError(t, err)
+	})
 
 	t.Run("it adds a new chain info to the validator", func(t *testing.T) {
 		err := k.AddExternalChainInfo(
