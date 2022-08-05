@@ -18,12 +18,16 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	k.SetParams(ctx, genState.Params)
 
 	for _, chainInfo := range genState.GetChains() {
+		if chainInfo.GetMinOnChainBalance() == "" {
+			panic("minimum on-chain balance is not a valid number")
+		}
 		err := k.AddSupportForNewChain(
 			ctx,
 			chainInfo.GetChainReferenceID(),
 			chainInfo.GetChainID(),
 			chainInfo.GetBlockHeight(),
 			chainInfo.GetBlockHashAtHeight(),
+			chainInfo.GetMinOnChainBalance(),
 		)
 		if err != nil {
 			panic(err)
@@ -56,6 +60,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 			ChainID:           chainInfo.GetChainID(),
 			BlockHeight:       chainInfo.GetReferenceBlockHeight(),
 			BlockHashAtHeight: chainInfo.GetReferenceBlockHash(),
+			MinOnChainBalance: chainInfo.GetMinOnChainBalance(),
 		})
 	}
 	genesis.Chains = genesisChainInfos

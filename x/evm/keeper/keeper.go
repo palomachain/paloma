@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"sort"
 	"strings"
 	"time"
@@ -435,6 +436,7 @@ func (k Keeper) AddSupportForNewChain(
 	chainID uint64,
 	blockHeight uint64,
 	blockHashAtHeight string,
+	minimumOnChainBalance *big.Int,
 ) error {
 	_, err := k.GetChainInfo(ctx, chainReferenceID)
 	switch {
@@ -450,6 +452,7 @@ func (k Keeper) AddSupportForNewChain(
 		ChainReferenceID:     chainReferenceID,
 		ReferenceBlockHeight: blockHeight,
 		ReferenceBlockHash:   blockHashAtHeight,
+		MinOnChainBalance:    minimumOnChainBalance.Text(10),
 	}
 
 	err = k.updateChainInfo(ctx, chainInfo)

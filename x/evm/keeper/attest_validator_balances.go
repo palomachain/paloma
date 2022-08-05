@@ -44,16 +44,23 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 		// we should remove this from the queue as there isn't much that we can do about it.
 		q.Remove(ctx, msg.GetId())
 	}()
-	minCoinsThreshold := k.params("minCoinsThreshold")
+
+	_, chainReferenceID := q.ChainInfo()
+	ci, err := k.GetChainInfo(ctx, chainReferenceID)
+	if err != nil {
+		return err
+	}
+
+	ci.GetMinOnChainBalance()
 
 	switch winner := evidence.(type) {
 	case *types.ValidatorBalancesAttestationRes:
 		for i := range request.GetHexAddresses() {
 			valAddr := request.ValAddresses[i]
-			hexAddr, balanceStr, accountExists := common.AddressFromHex(winner.HexAddresses[i]), winner.Balances[i], winner.AccountExists[i]
-			balance := new(big.Int).SetString(balanceStr, 10)
-			if !accountExists {
-				// todo
+			hexAddr, balanceStr := common.AddressFromHex(winner.HexAddresses[i]), winner.Balances[i]
+			balance, ok := new(big.Int).SetString(balanceStr, 10)
+			if !ok {
+				// shit
 			}
 
 			k.setValidatorBalance(ctx, valAddr, hexAddrchainReferenceID, balance)

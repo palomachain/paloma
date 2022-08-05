@@ -10,4 +10,5 @@ message AddChainProposal {
   uint64 chainID = 4;
   uint64 blockHeight = 5;
   string blockHashAtHeight = 6; 
+  string minOnChainBalance = 7;
 }

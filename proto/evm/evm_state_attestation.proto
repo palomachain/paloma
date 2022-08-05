@@ -21,5 +21,4 @@ message ValidatorBalancesAttestation {
 message ValidatorBalancesAttestationRes {
   uint64 blockHeight = 1;
   repeated string balances = 2;
-  repeated bool accountExists = 3;
 }
