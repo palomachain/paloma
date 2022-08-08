@@ -437,7 +437,7 @@ var _ = Describe("evm", func() {
 
 			Context("adding smart contract", func() {
 
-				FIt("adds a new smart contract deployment", func() {
+				It("adds a new smart contract deployment", func() {
 					By("simple assertion that two smart contracts share different ids", func() {
 						Expect(smartContract.GetId()).NotTo(Equal(smartContract2.GetId()))
 					})
