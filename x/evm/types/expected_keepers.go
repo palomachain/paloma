@@ -30,4 +30,5 @@ type ValsetKeeper interface {
 	FindSnapshotByID(ctx sdk.Context, id uint64) (*valsettypes.Snapshot, error)
 	GetCurrentSnapshot(ctx sdk.Context) (*valsettypes.Snapshot, error)
 	KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress) error
+	Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error
 }

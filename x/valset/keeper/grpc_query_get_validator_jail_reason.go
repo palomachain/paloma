@@ -16,8 +16,14 @@ func (k Keeper) GetValidatorJailReason(goCtx context.Context, req *types.QueryGe
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// TODO: Process the query
-	_ = ctx
+	if k.IsJailed(ctx, req.GetValAddr()) {
+		return k.
+	}
+
+	reason := k.jailReasonStore(ctx).Get([]byte(req.GetValAddr()))
+	if reason == "" {
+
+	}
 
 	return &types.QueryGetValidatorJailReasonResponse{}, nil
 }

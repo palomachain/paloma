@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/vizualni/whoops"
 )
 
@@ -98,7 +99,7 @@ func (k Keeper) JailInactiveValidators(ctx sdk.Context) error {
 			continue
 		}
 		store.Delete(valAddr)
-		err = k.Jail(ctx, valAddr, types.JailReasonValidatorInactive)
+		err = k.Jail(ctx, valAddr, types.JailReasonPigeonInactive)
 		if err != nil {
 			g.Add(err)
 			continue
