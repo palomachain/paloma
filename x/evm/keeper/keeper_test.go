@@ -324,7 +324,12 @@ var _ = Describe("evm", func() {
 		BlockHashAtHeight: "0x1234",
 	}
 	smartContract := &types.SmartContract{
-		Id:       123,
+		Id:       1,
+		AbiJSON:  contractAbi,
+		Bytecode: common.FromHex(contractBytecodeStr),
+	}
+	smartContract2 := &types.SmartContract{
+		Id:       2,
 		AbiJSON:  contractAbi,
 		Bytecode: common.FromHex(contractBytecodeStr),
 	}
@@ -432,25 +437,78 @@ var _ = Describe("evm", func() {
 
 			Context("adding smart contract", func() {
 
-				It("adds a new smart contract deployment for both of the chains", func() {
-					Expect(
-						a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
-					).To(BeFalse())
-					Expect(
-						a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
-					).To(BeFalse())
+				It("adds a new smart contract deployment", func() {
+					By("simple assertion that two smart contracts share different ids", func() {
+						Expect(smartContract.GetId()).NotTo(Equal(smartContract2.GetId()))
+					})
+					By("saving a new smart contract", func() {
+						Expect(
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+						).To(BeFalse())
+						Expect(
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+						).To(BeFalse())
 
-					_, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
-					Expect(err).To(BeNil())
+						_, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+						Expect(err).To(BeNil())
 
-					Expect(
-						a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
-					).To(BeTrue())
-					Expect(
-						a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
-					).To(BeTrue())
+						Expect(
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+						).To(BeTrue())
+						Expect(
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+						).To(BeTrue())
+					})
+
+					By("removing a smart deployment for chain1 - it means that it was successfuly uploaded", func() {
+						a.EvmKeeper.RemoveSmartContractDeployment(ctx, smartContract.GetId(), chain1.GetChainReferenceID())
+						Expect(
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+						).To(BeFalse())
+						Expect(
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+						).To(BeTrue())
+
+					})
+
+					By("activating a new smart contract it removes a deployment for chain1 but it doesn't for chain2", func() {
+						err := a.EvmKeeper.ActivateChainReferenceID(ctx, chain1.GetChainReferenceID(), smartContract, "addr1", []byte("id1"))
+						Expect(err).To(BeNil())
+						Expect(
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+						).To(BeFalse())
+						Expect(
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+						).To(BeTrue())
+
+						By("verify that the chain's smart contract id has been deployed", func() {
+							ci, err := a.EvmKeeper.GetChainInfo(ctx, chain1.GetChainReferenceID())
+							Expect(err).To(BeNil())
+							Expect(ci.GetActiveSmartContractID()).To(Equal(smartContract.GetId()))
+						})
+					})
+
+					By("adding a new smart contract deployment deploys it to chain1 only", func() {
+						_, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract2.GetAbiJSON(), smartContract2.GetBytecode())
+						Expect(err).To(BeNil())
+						Expect(
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+						).To(BeTrue())
+					})
+
+					By("activating a new-new smart contract it deploys it to chain 1", func() {
+						err := a.EvmKeeper.ActivateChainReferenceID(ctx, chain1.GetChainReferenceID(), smartContract2, "addr2", []byte("id2"))
+						Expect(err).To(BeNil())
+						Expect(
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+						).To(BeTrue())
+						By("verify that the chain's smart contract id has been deployed", func() {
+							ci, err := a.EvmKeeper.GetChainInfo(ctx, chain1.GetChainReferenceID())
+							Expect(err).To(BeNil())
+							Expect(ci.GetActiveSmartContractID()).To(Equal(smartContract2.GetId()))
+						})
+					})
 				})
-
 			})
 		})
 	})
