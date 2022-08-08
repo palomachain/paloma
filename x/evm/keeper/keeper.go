@@ -144,7 +144,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID())
 
 	if !isEnoughToReachConsensus(valset) {
-		k.Logger(ctx).Info("skipping as there are not enough validators to form a consensus", "chain-id", chainInfo.GetChainReferenceID())
+		k.Logger(ctx).Info("skipping deployment as there are not enough validators to form a consensus", "chain-id", chainInfo.GetChainReferenceID(), "smart-contract-id", smartContract.GetId())
 		return nil
 	}
 	uniqueID := generateSmartContractID(ctx)
