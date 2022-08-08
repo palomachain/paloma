@@ -179,8 +179,6 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 }
 
 func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode []byte) (*types.SmartContract, error) {
-	ctx, write := ctx.CacheContext()
-
 	smartContract := &types.SmartContract{
 		Id:       k.ider.IncrementNextID(ctx, "smart-contract"),
 		AbiJSON:  abiJSON,
@@ -192,18 +190,17 @@ func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode [
 		return nil, err
 	}
 
+	k.Logger(ctx).Info("saving new smart contract", "id", smartContract.GetId())
 	err = k.setAsLastSmartContract(ctx, smartContract)
-
 	if err != nil {
 		return nil, err
 	}
+	k.Logger(ctx).Info("setting smart contract as the latest one", "id", smartContract.GetId())
 
 	err = k.tryDeployingSmartContractToAllChains(ctx, smartContract)
 	if err != nil {
 		return nil, err
 	}
-
-	write()
 
 	return smartContract, nil
 }
@@ -225,6 +222,7 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 	}
 
 	for _, chainInfo := range chainInfos {
+		k.Logger(ctx).Info("trying to deploy smart contract to EVM chain", "smart-contract-id", smartContract.GetId(), "chain-reference-id", chainInfo.GetChainReferenceID())
 		if k.HasAnySmartContractDeployment(ctx, chainInfo.GetChainReferenceID()) {
 			// we are already deploying to this chain. Lets wait it out.
 			continue
@@ -498,6 +496,8 @@ func (k Keeper) setSmartContractAsDeploying(
 		item,
 	)
 
+	k.Logger(ctx).Info("setting smart contract in deployment state", "smart-contract-id", smartContract.GetId(), "chain-reference-id", chainInfo.GetChainReferenceID())
+
 	return item
 }
 
@@ -530,7 +530,7 @@ func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID 
 	return
 }
 
-func (k Keeper) removeSmartContractDeployment(ctx sdk.Context, smartContractID uint64, chainReferenceID string) {
+func (k Keeper) RemoveSmartContractDeployment(ctx sdk.Context, smartContractID uint64, chainReferenceID string) {
 	_, key := k.getSmartContractDeploying(ctx, smartContractID, chainReferenceID)
 	if key == nil {
 		return
