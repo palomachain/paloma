@@ -16,14 +16,16 @@ func (k Keeper) GetValidatorJailReason(goCtx context.Context, req *types.QueryGe
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if k.IsJailed(ctx, req.GetValAddr()) {
-		return k.
+	if !k.IsJailed(ctx, req.GetValAddress()) {
+		return nil, nil
 	}
 
-	reason := k.jailReasonStore(ctx).Get([]byte(req.GetValAddr()))
+	reason := string(k.jailReasonStore(ctx).Get([]byte(req.GetValAddress())))
 	if reason == "" {
-
+		reason = "validator was offline"
 	}
 
-	return &types.QueryGetValidatorJailReasonResponse{}, nil
+	return &types.QueryGetValidatorJailReasonResponse{
+		Reason: reason,
+	}, nil
 }

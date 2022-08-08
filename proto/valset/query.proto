@@ -78,10 +78,12 @@ message QueryGetValidatorAliveUntilResponse {
 }
 
 message QueryGetValidatorJailReasonRequest {
-  string valAddrString = 1;
+  bytes valAddress = 1[ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
 }
 
 message QueryGetValidatorJailReasonResponse {
+  string reason = 1;
 }
 
 // this line is used by starport scaffolding # 3
