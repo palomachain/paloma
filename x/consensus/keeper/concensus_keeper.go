@@ -1,9 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-	"time"
-
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -13,8 +10,7 @@ import (
 )
 
 const (
-	encodingDelimiter      = byte('|')
-	deleteJobAfterDuration = 30 * time.Minute
+	encodingDelimiter = byte('|')
 )
 
 // getConsensusQueue gets the consensus queue for the given type.
@@ -69,12 +65,16 @@ func (k Keeper) PutMessageForSigning(ctx sdk.Context, queueTypeName string, msg 
 		k.Logger(ctx).Error("error while putting message into queue", "error", err)
 		return err
 	}
+	k.Logger(ctx).Info(
+		"put message into consensus queue",
+		"queue-type-name", queueTypeName,
+	)
 	return nil
 }
 
 // GetMessagesForSigning returns messages for a single validator that needs to be signed.
 func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	all, err := k.GetMessagesFromQueue(ctx, queueTypeName, 100)
+	all, err := k.GetMessagesFromQueue(ctx, queueTypeName, 1000)
 	if err != nil {
 		return nil, err
 	}
@@ -104,12 +104,12 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 	}
 	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
-		k.Logger(ctx).Error(fmt.Sprintf("error while getting consensus queue: %s", err))
+		k.Logger(ctx).Error("error while getting consensus queue", "err", err)
 		return nil, err
 	}
 	msgs, err = cq.GetAll(ctx)
 	if err != nil {
-		k.Logger(ctx).Error("error while getting all messages from queue: %s", err)
+		k.Logger(ctx).Error("error while getting all messages from queue", "err", err)
 		return nil, err
 	}
 
@@ -120,10 +120,10 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 	return
 }
 
-func (k Keeper) deleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
+func (k Keeper) DeleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
 	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
-		k.Logger(ctx).Error("error while getting consensus queue: %s", err)
+		k.Logger(ctx).Error("error while getting consensus queue", "err", err)
 		return err
 	}
 	return cq.Remove(ctx, id)
@@ -193,7 +193,7 @@ func (k Keeper) AddMessageSignature(
 	valAddr sdk.ValAddress,
 	msgs []*types.ConsensusMessageSignature,
 ) error {
-	return whoops.Try(func() {
+	err := whoops.Try(func() {
 		for _, msg := range msgs {
 			cq := whoops.Must(
 				k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
@@ -220,8 +220,24 @@ func (k Keeper) AddMessageSignature(
 					},
 				),
 			)
+
+			k.Logger(ctx).Info("added message signature",
+				"message-id", msg.GetId(),
+				"queue-type-name", msg.GetQueueTypeName(),
+				"signed-by-address", msg.GetSignedByAddress(),
+				"chain-type", chainType,
+				"chain-reference-id", chainReferenceID,
+			)
 		}
 	})
+
+	if err != nil {
+		k.Logger(ctx).Error("error while adding messages signatures",
+			"err", err,
+		)
+	}
+
+	return err
 }
 
 func (k Keeper) AddMessageEvidence(
@@ -229,7 +245,7 @@ func (k Keeper) AddMessageEvidence(
 	valAddr sdk.ValAddress,
 	msg *types.MsgAddEvidence,
 ) error {
-	return whoops.Try(func() {
+	err := whoops.Try(func() {
 		cq := whoops.Must(
 			k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
 		)
@@ -244,7 +260,21 @@ func (k Keeper) AddMessageEvidence(
 				},
 			),
 		)
+		chainType, chainReferenceID := cq.ChainInfo()
+		k.Logger(ctx).Info("added message evidence",
+			"message-id", msg.GetMessageID(),
+			"queue-type-name", msg.GetQueueTypeName(),
+			"chain-type", chainType,
+			"chain-reference-id", chainReferenceID,
+		)
 	})
+	if err != nil {
+		k.Logger(ctx).Error("error while adding message evidence",
+			"err", err,
+		)
+	}
+
+	return err
 }
 
 func (k Keeper) SetMessagePublicAccessData(
@@ -252,7 +282,7 @@ func (k Keeper) SetMessagePublicAccessData(
 	valAddr sdk.ValAddress,
 	msg *types.MsgSetPublicAccessData,
 ) error {
-	return whoops.Try(func() {
+	err := whoops.Try(func() {
 		cq := whoops.Must(
 			k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
 		)
@@ -267,7 +297,21 @@ func (k Keeper) SetMessagePublicAccessData(
 				},
 			),
 		)
+		chainType, chainReferenceID := cq.ChainInfo()
+		k.Logger(ctx).Info("added message public access data",
+			"message-id", msg.GetMessageID(),
+			"queue-type-name", msg.GetQueueTypeName(),
+			"chain-type", chainType,
+			"chain-reference-id", chainReferenceID,
+		)
 	})
+	if err != nil {
+		k.Logger(ctx).Error("error while adding message public access data",
+			"err", err,
+		)
+	}
+
+	return err
 }
 
 func nonceFromID(id uint64) []byte {
@@ -289,36 +333,4 @@ func (k Keeper) queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *ty
 		BytesToSign: msg.GetBytesToSign(),
 		Msg:         anyMsg,
 	}
-}
-
-func (k Keeper) RemoveUnexecutedJobs(ctx sdk.Context) error {
-	now := ctx.BlockTime()
-
-	for _, supported := range k.registry.slice {
-		queuesMap, err := supported.SupportedQueues(ctx)
-		if err != nil {
-			return err
-		}
-		for _, queueName := range consensus.SortedQueueNames(ctx, queuesMap) {
-			cq, err := k.getConsensusQueue(ctx, queueName)
-			if err != nil {
-				return err
-			}
-
-			jobs, err := cq.GetAll(ctx)
-			if err != nil {
-				return err
-			}
-
-			for _, job := range jobs {
-				if now.Sub(job.GetAddedAt()) >= deleteJobAfterDuration {
-					if err := cq.Remove(ctx, job.GetId()); err != nil {
-						return err
-					}
-				}
-			}
-		}
-	}
-
-	return nil
 }

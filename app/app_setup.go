@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"os"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
@@ -23,7 +24,7 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
 
 	app := New(
-		log.NewNopLogger(),
+		log.NewTMJSONLogger(os.Stdout),
 		db,
 		nil,
 		true,

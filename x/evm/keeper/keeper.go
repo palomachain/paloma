@@ -125,7 +125,22 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	)
 }
 
-func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) error {
+func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) (retErr error) {
+	defer func() {
+		args := []any{
+			"chain-reference-id", chainInfo.GetChainReferenceID(),
+			"smart-contract-id", smartContract.GetId(),
+		}
+		if retErr != nil {
+			args = append(args, "err", retErr)
+		}
+
+		if retErr != nil {
+			k.Logger(ctx).Error("error while deploying smart contract to chain", args...)
+		} else {
+			k.Logger(ctx).Info("added a new smart contract deployment to queue", args...)
+		}
+	}()
 	contractABI, err := abi.JSON(strings.NewReader(smartContract.GetAbiJSON()))
 	if err != nil {
 		return err
@@ -145,7 +160,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 
 	if !isEnoughToReachConsensus(valset) {
 		k.Logger(ctx).Info("skipping deployment as there are not enough validators to form a consensus", "chain-id", chainInfo.GetChainReferenceID(), "smart-contract-id", smartContract.GetId())
-		return nil
+		return whoops.WrapS(ErrConsensusNotAchieved, "cannot build a valset. valset id: %d", valset.GetValsetID())
 	}
 	uniqueID := generateSmartContractID(ctx)
 
@@ -190,16 +205,19 @@ func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode [
 		return nil, err
 	}
 
-	k.Logger(ctx).Info("saving new smart contract", "id", smartContract.GetId())
+	k.Logger(ctx).Info("saving new smart contract", "smart-contract-id", smartContract.GetId())
 	err = k.setAsLastSmartContract(ctx, smartContract)
 	if err != nil {
 		return nil, err
 	}
-	k.Logger(ctx).Info("setting smart contract as the latest one", "id", smartContract.GetId())
+	k.Logger(ctx).Info("setting smart contract as the latest one", "smart-contract-id", smartContract.GetId())
 
 	err = k.tryDeployingSmartContractToAllChains(ctx, smartContract)
 	if err != nil {
-		return nil, err
+		// that's ok. it will try to deploy it on every end blocker
+		if !errors.Is(err, ErrConsensusNotAchieved) {
+			return nil, err
+		}
 	}
 
 	return smartContract, nil
@@ -208,9 +226,20 @@ func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode [
 func (k Keeper) TryDeployingLastSmartContractToAllChains(ctx sdk.Context) {
 	smartContract, err := k.GetLastSmartContract(ctx)
 	if err != nil {
+		k.Logger(ctx).Error("error while getting latest smart contract", "err", err)
 		return
 	}
-	k.tryDeployingSmartContractToAllChains(ctx, smartContract)
+	err = k.tryDeployingSmartContractToAllChains(ctx, smartContract)
+	if err != nil {
+		k.Logger(ctx).Error("error while trying to deploy smart contract to all chains",
+			"err", err,
+			"smart-contract-id", smartContract.GetId(),
+		)
+		return
+	}
+	k.Logger(ctx).Info("trying to deploy smart contract to all chains",
+		"smart-contract-id", smartContract.GetId(),
+	)
 }
 
 func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContract *types.SmartContract) error {
@@ -421,7 +450,24 @@ func (k Keeper) ActivateChainReferenceID(
 	smartContract *types.SmartContract,
 	smartContractAddr string,
 	smartContractUniqueID []byte,
-) error {
+) (retErr error) {
+	defer func() {
+		args := []any{
+			"chain-reference-id", chainReferenceID,
+			"smart-contract-id", smartContract.GetId(),
+			"smart-contract-addr", smartContractAddr,
+			"smart-contract-unique-id", smartContractUniqueID,
+		}
+		if retErr != nil {
+			args = append(args, "err", retErr)
+		}
+
+		if retErr != nil {
+			k.Logger(ctx).Error("error while activating chain with a new smart contract", args...)
+		} else {
+			k.Logger(ctx).Info("activated chain with a new smart contract", args...)
+		}
+	}()
 	chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
 	if err != nil {
 		return err
@@ -437,6 +483,8 @@ func (k Keeper) ActivateChainReferenceID(
 
 	chainInfo.SmartContractAddr = smartContractAddr
 	chainInfo.SmartContractUniqueID = smartContractUniqueID
+
+	k.RemoveSmartContractDeployment(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID())
 
 	return k.updateChainInfo(ctx, chainInfo)
 }
@@ -477,7 +525,11 @@ func (k Keeper) setSmartContractAsDeploying(
 ) *types.SmartContractDeployment {
 
 	if foundItem, _ := k.getSmartContractDeploying(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID()); foundItem != nil {
-		k.Logger(ctx).Error("smart contract is already deploying")
+		k.Logger(ctx).Error(
+			"smart contract is already deploying",
+			"smart-contract-id", smartContract.GetId(),
+			"chain-reference-id", chainInfo.GetChainReferenceID(),
+		)
 		return foundItem
 	}
 
@@ -535,6 +587,7 @@ func (k Keeper) RemoveSmartContractDeployment(ctx sdk.Context, smartContractID u
 	if key == nil {
 		return
 	}
+	k.Logger(ctx).Info("removing a smart contract deployment", "smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID)
 	k.smartContractDeploymentStore(ctx).Delete(key)
 }
 
@@ -579,6 +632,10 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 			continue
 		}
 
+		k.Logger(ctx).Info("snapshot was built and a new update valset message is being sent over",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"valset-id", valset.GetValsetID(),
+		)
 		k.ConsensusKeeper.PutMessageForSigning(
 			ctx,
 			consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.GetChainReferenceID()),
