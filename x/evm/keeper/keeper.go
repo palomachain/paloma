@@ -136,7 +136,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		}
 
 		if retErr != nil {
-			k.Logger(ctx).Error("error while deploying smart contract to chain", args...)
+			k.Logger(ctx).Error("error adding a message to deploy smart contract to chain", args...)
 		} else {
 			k.Logger(ctx).Info("added a new smart contract deployment to queue", args...)
 		}
@@ -159,8 +159,17 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID())
 
 	if !isEnoughToReachConsensus(valset) {
-		k.Logger(ctx).Info("skipping deployment as there are not enough validators to form a consensus", "chain-id", chainInfo.GetChainReferenceID(), "smart-contract-id", smartContract.GetId())
-		return whoops.WrapS(ErrConsensusNotAchieved, "cannot build a valset. valset id: %d", valset.GetValsetID())
+		k.Logger(ctx).Info(
+			"skipping deployment as there are not enough validators to form a consensus",
+			"chain-id", chainInfo.GetChainReferenceID(),
+			"smart-contract-id", smartContract.GetId(),
+			"valset-id", valset.GetValsetID(),
+		)
+		return whoops.WrapS(
+			ErrConsensusNotAchieved,
+			"cannot build a valset. valset-id: %d, chain-reference-id: %s, smart-contract-id: %d",
+			valset.GetValsetID(), chainInfo.GetChainReferenceID(), smartContract.GetId(),
+		)
 	}
 	uniqueID := generateSmartContractID(ctx)
 
@@ -566,6 +575,14 @@ func (k Keeper) getSmartContractDeploying(ctx sdk.Context, smartContractID uint6
 			return true
 		})
 	return
+}
+
+func (k Keeper) AllSmartContractsDeployments(ctx sdk.Context) ([]*types.SmartContractDeployment, error) {
+	_, res, err := keeperutil.IterAll[*types.SmartContractDeployment](
+		k.smartContractDeploymentStore(ctx),
+		k.cdc,
+	)
+	return res, err
 }
 
 func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID string) (found bool) {

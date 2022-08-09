@@ -27,6 +27,16 @@ service Query {
 		option (google.api.http).get = "/palomachain/paloma/evm/chains_infos";
 	}
 
+// Queries a list of QueryGetSmartContract items.
+	rpc QueryGetSmartContract(QueryGetSmartContractRequest) returns (QueryGetSmartContractResponse) {
+		option (google.api.http).get = "/palomachain/paloma/evm/query_get_smart_contract/{smartContractID}";
+	}
+
+// Queries a list of QueryGetSmartContractDeployments items.
+	rpc QueryGetSmartContractDeployments(QueryGetSmartContractDeploymentsRequest) returns (QueryGetSmartContractDeploymentsResponse) {
+		option (google.api.http).get = "/palomachain/paloma/evm/query_get_smart_contract_deployments";
+	}
+
 // this line is used by starport scaffolding # 2
 }
 
@@ -53,6 +63,23 @@ message QueryChainsInfosRequest {
 
 message QueryChainsInfosResponse {
   repeated ChainInfo chainsInfos = 1;
+}
+
+message QueryGetSmartContractRequest {
+  uint64 smartContractID = 1;
+}
+
+message QueryGetSmartContractResponse {
+  uint64 ID = 1;
+  string abi = 2;
+  bytes bytecode = 3;
+}
+
+message QueryGetSmartContractDeploymentsRequest {
+}
+
+message QueryGetSmartContractDeploymentsResponse {
+  repeated SmartContractDeployment deployments = 1;
 }
 
 // this line is used by starport scaffolding # 3
