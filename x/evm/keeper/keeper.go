@@ -160,7 +160,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 
 	if !isEnoughToReachConsensus(valset) {
 		k.Logger(ctx).Info("skipping deployment as there are not enough validators to form a consensus", "chain-id", chainInfo.GetChainReferenceID(), "smart-contract-id", smartContract.GetId())
-		return ErrConsensusNotAchieved
+		return whoops.WrapS(ErrConsensusNotAchieved, "cannot build a valset. valset id: %d", valset.GetValsetID())
 	}
 	uniqueID := generateSmartContractID(ctx)
 
@@ -214,7 +214,10 @@ func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode [
 
 	err = k.tryDeployingSmartContractToAllChains(ctx, smartContract)
 	if err != nil {
-		return nil, err
+		// that's ok. it will try to deploy it on every end blocker
+		if !errors.Is(err, ErrConsensusNotAchieved) {
+			return nil, err
+		}
 	}
 
 	return smartContract, nil
@@ -480,6 +483,8 @@ func (k Keeper) ActivateChainReferenceID(
 
 	chainInfo.SmartContractAddr = smartContractAddr
 	chainInfo.SmartContractUniqueID = smartContractUniqueID
+
+	k.RemoveSmartContractDeployment(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID())
 
 	return k.updateChainInfo(ctx, chainInfo)
 }

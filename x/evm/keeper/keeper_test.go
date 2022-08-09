@@ -514,6 +514,8 @@ var _ = Describe("evm", func() {
 	})
 
 	Describe("on snapshot build", func() {
+
+		var snapshot *valsettypes.Snapshot
 		When("validator set is valid", func() {
 			BeforeEach(func() {
 				validators = genValidators(25, 25000)
@@ -522,12 +524,33 @@ var _ = Describe("evm", func() {
 				}
 			})
 
-			JustBeforeEach(func() {
-				_, err := a.ValsetKeeper.TriggerSnapshotBuild(ctx)
-				Expect(err).To(BeNil())
-			})
-
 			When("evm chain and smart contract both exist", func() {
+				BeforeEach(func() {
+					for _, val := range validators {
+						private, err := crypto.GenerateKey()
+						Expect(err).To(BeNil())
+						accAddr := crypto.PubkeyToAddress(private.PublicKey)
+						err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+							{
+								ChainType:        "EVM",
+								ChainReferenceID: newChain.ChainReferenceID,
+								Address:          accAddr.Hex(),
+								Pubkey:           []byte("pub key" + accAddr.Hex()),
+							},
+							{
+								ChainType:        "EVM",
+								ChainReferenceID: "new-chain",
+								Address:          accAddr.Hex(),
+								Pubkey:           []byte("pub key" + accAddr.Hex()),
+							},
+						})
+						Expect(err).To(BeNil())
+					}
+					var err error
+					snapshot, err = a.ValsetKeeper.TriggerSnapshotBuild(ctx)
+					Expect(err).To(BeNil())
+				})
+
 				BeforeEach(func() {
 					err := a.EvmKeeper.AddSupportForNewChain(
 						ctx,
@@ -543,33 +566,42 @@ var _ = Describe("evm", func() {
 
 					err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract, "addr", []byte("abc"))
 					Expect(err).To(BeNil())
+
+					By("it should have upload smart contract message", func() {
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/eth-main/evm-turnstone-message", 5)
+
+						Expect(err).To(BeNil())
+						Expect(len(msgs)).To(Equal(1))
+
+						con, err := msgs[0].ConsensusMsg(a.AppCodec())
+						Expect(err).To(BeNil())
+
+						evmMsg, ok := con.(*types.Message)
+						Expect(ok).To(BeTrue())
+
+						_, ok = evmMsg.GetAction().(*types.Message_UploadSmartContract)
+						Expect(ok).To(BeTrue())
+
+						a.ConsensusKeeper.DeleteJob(ctx, "EVM/eth-main/evm-turnstone-message", msgs[0].GetId())
+					})
 				})
 
-				BeforeEach(func() {
-					for _, val := range validators {
-						private, err := crypto.GenerateKey()
-						Expect(err).To(BeNil())
-						accAddr := crypto.PubkeyToAddress(private.PublicKey)
-						err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
-							{
-								ChainType:        "EVM",
-								ChainReferenceID: newChain.ChainReferenceID,
-								Address:          accAddr.Hex(),
-								Pubkey:           []byte("pub key" + accAddr.Hex()),
-							},
-						})
-						Expect(err).To(BeNil())
-					}
+				JustBeforeEach(func() {
+					a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
 				})
 
 				It("expects update valset message to exist", func() {
 					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/eth-main/evm-turnstone-message", 5)
+
 					Expect(err).To(BeNil())
 					Expect(len(msgs)).To(Equal(1))
+
 					con, err := msgs[0].ConsensusMsg(a.AppCodec())
 					Expect(err).To(BeNil())
+
 					evmMsg, ok := con.(*types.Message)
 					Expect(ok).To(BeTrue())
+
 					_, ok = evmMsg.GetAction().(*types.Message_UpdateValset)
 					Expect(ok).To(BeTrue())
 				})
@@ -584,21 +616,6 @@ var _ = Describe("evm", func() {
 							"0x1234",
 						)
 						Expect(err).To(BeNil())
-
-						for _, val := range validators {
-							private, err := crypto.GenerateKey()
-							Expect(err).To(BeNil())
-							accAddr := crypto.PubkeyToAddress(private.PublicKey)
-							err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
-								{
-									ChainType:        "EVM",
-									ChainReferenceID: "new-chain",
-									Address:          accAddr.Hex(),
-									Pubkey:           []byte("pub key" + accAddr.Hex()),
-								},
-							})
-							Expect(err).To(BeNil())
-						}
 					})
 
 					It("tries to deploy a smart contract to it", func() {
@@ -626,12 +643,10 @@ var _ = Describe("evm", func() {
 				for _, val := range validators {
 					a.StakingKeeper.SetValidator(ctx, val)
 				}
-			})
-
-			JustBeforeEach(func() {
 				_, err := a.ValsetKeeper.TriggerSnapshotBuild(ctx)
 				Expect(err).To(BeNil())
 			})
+
 			Context("evm chain and smart contract both exist", func() {
 				BeforeEach(func() {
 					err := a.EvmKeeper.AddSupportForNewChain(
@@ -644,12 +659,9 @@ var _ = Describe("evm", func() {
 					Expect(err).To(BeNil())
 					_, err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
 					Expect(err).To(BeNil())
-					err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract, "addr", []byte("abc"))
-					Expect(err).To(BeNil())
 				})
 
 				It("doesn't put any message into a queue", func() {
-
 					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/eth-main/evm-turnstone-message", 5)
 					Expect(err).To(BeNil())
 					Expect(msgs).To(BeZero())

@@ -120,7 +120,7 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 	return
 }
 
-func (k Keeper) deleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
+func (k Keeper) DeleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
 	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue", "err", err)
