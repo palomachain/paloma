@@ -11,13 +11,12 @@ import (
 
 var _ = strconv.Itoa(0)
 
-func CmdQueryGetSmartContract() *cobra.Command {
+func CmdQueryGetSmartContractDeployments() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-smart-contract [smart-contract-id]",
-		Short: "Query QueryGetSmartContract",
-		Args:  cobra.ExactArgs(1),
+		Use:   "smart-contract-deployments",
+		Short: "Query QueryGetSmartContractDeployments",
+		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			reqSmartContractID := args[0]
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -25,16 +24,10 @@ func CmdQueryGetSmartContract() *cobra.Command {
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
-			id, err := strconv.ParseInt(reqSmartContractID, 10, 64)
-			if err != nil {
-				return err
-			}
 
-			params := &types.QueryQueryGetSmartContractRequest{
-				SmartContractID: uint64(id),
-			}
+			params := &types.QueryGetSmartContractDeploymentsRequest{}
 
-			res, err := queryClient.QueryGetSmartContract(cmd.Context(), params)
+			res, err := queryClient.QueryGetSmartContractDeployments(cmd.Context(), params)
 			if err != nil {
 				return err
 			}

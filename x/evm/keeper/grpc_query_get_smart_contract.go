@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) QueryGetSmartContract(goCtx context.Context, req *types.QueryQueryGetSmartContractRequest) (*types.QueryQueryGetSmartContractResponse, error) {
+func (k Keeper) QueryGetSmartContract(goCtx context.Context, req *types.QueryGetSmartContractRequest) (*types.QueryGetSmartContractResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -29,7 +29,7 @@ func (k Keeper) QueryGetSmartContract(goCtx context.Context, req *types.QueryQue
 		return nil, err
 	}
 
-	return &types.QueryQueryGetSmartContractResponse{
+	return &types.QueryGetSmartContractResponse{
 		ID:       smartContract.GetId(),
 		Abi:      smartContract.GetAbiJSON(),
 		Bytecode: smartContract.GetBytecode(),

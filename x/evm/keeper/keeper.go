@@ -136,7 +136,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		}
 
 		if retErr != nil {
-			k.Logger(ctx).Error("error while deploying smart contract to chain", args...)
+			k.Logger(ctx).Error("error adding a message to deploy smart contract to chain", args...)
 		} else {
 			k.Logger(ctx).Info("added a new smart contract deployment to queue", args...)
 		}
@@ -575,6 +575,14 @@ func (k Keeper) getSmartContractDeploying(ctx sdk.Context, smartContractID uint6
 			return true
 		})
 	return
+}
+
+func (k Keeper) AllSmartContractsDeployments(ctx sdk.Context) ([]*types.SmartContractDeployment, error) {
+	_, res, err := keeperutil.IterAll[*types.SmartContractDeployment](
+		k.smartContractDeploymentStore(ctx),
+		k.cdc,
+	)
+	return res, err
 }
 
 func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID string) (found bool) {
