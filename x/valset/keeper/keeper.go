@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math/big"
 	"sort"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -76,6 +77,26 @@ func (k Keeper) Heartbeat(ctx sdk.Context) {}
 // we can attribute rewards for running the jobs.
 func (k Keeper) AddExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, newChainInfo []*types.ExternalChainInfo) error {
 	return k.SetExternalChainInfoState(ctx, valAddr, newChainInfo)
+}
+
+func (k Keeper) SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error {
+	chainInfos, err := k.getValidatorChainInfos(ctx, valAddr)
+	if err != nil {
+		return err
+	}
+	found := false
+	for _, ci := range chainInfos {
+		if ci.GetChainReferenceID() == chainReferenceID && ci.GetChainType() == chainType && ci.GetAddress() == externalAddress {
+			ci.Balance = balance.Text(10)
+			found = true
+			break
+		}
+	}
+	if !found {
+		return ErrValidatorWithAddrNotFound.Format(chainType, chainReferenceID, externalAddress, valAddr)
+	}
+
+	return k.SetExternalChainInfoState(ctx, valAddr, chainInfos)
 }
 
 func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*types.ExternalChainInfo) error {

@@ -63,12 +63,21 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 			hexAddr, balanceStr := common.HexToAddress(request.HexAddresses[i]), winner.Balances[i]
 			balance, ok := new(big.Int).SetString(balanceStr, 10)
 			if !ok {
-				// shit
+				k.Logger(ctx).Error(
+					"invalid balance string when attesting to EVM balance",
+					"balance", balanceStr,
+					"val-addr", valAddr,
+					"eth-addr", hexAddr,
+				)
+				// WHAT TO DO NOW?!?!?! jail the poor fellow that has invalid balance format??
+				// blame the flock for reporting this??!?
+				continue
 			}
 
-			k.setValidatorBalance(ctx, valAddr, hexAddr, chainReferenceID, balance)
-			if balance.Cmp(minBalance) == -1 {
-				k.Valset.Jail(valAddr, fmt.Sprintf(types.JailReasonNotEnoughFunds, chainReferenceID, balanceStr, minBalance))
+			k.Valset.SetValidatorBalance(ctx, valAddr, "EVM", chainReferenceID, hexAddr.String(), balance)
+			if balance.Cmp(minBalance) <= 0 {
+				k.Valset.Jail(ctx, valAddr, fmt.Sprintf(types.JailReasonNotEnoughFunds, chainReferenceID, balanceStr, minBalance))
+				continue
 			}
 		}
 	default:

@@ -12,4 +12,5 @@ const (
 
 	ErrSigningKeyNotFound             = whoops.Errorf("signing key for valAddr %s, chainType %s and chainReferenceID %s not found")
 	ErrExternalChainAlreadyRegistered = whoops.Errorf("external account already registered: %s, %s, %s. Existing owner: %s, New owner: %s")
+	ErrExternalAddressNotFound        = whoops.Errorf("external address (%s, %s, %s) for validator %s was not founds")
 )

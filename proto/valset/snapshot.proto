@@ -59,6 +59,8 @@ message ExternalChainInfo {
   string chainReferenceID = 2;
   string address = 3;
   bytes pubkey = 4;
+
+  string balance = 5;
 }
 
 enum ValidatorState {
