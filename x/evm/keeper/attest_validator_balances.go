@@ -56,6 +56,16 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 		return err
 	}
 
+	return k.processValidatorBalanceProof(ctx, request, evidence, chainReferenceID, minBalance)
+}
+
+func (k Keeper) processValidatorBalanceProof(
+	ctx sdk.Context,
+	request *types.ValidatorBalancesAttestation,
+	evidence any,
+	chainReferenceID string,
+	minBalance *big.Int,
+) error {
 	switch winner := evidence.(type) {
 	case *types.ValidatorBalancesAttestationRes:
 		for i := range request.GetHexAddresses() {

@@ -125,7 +125,6 @@ var _ = g.Describe("genesis", func() {
 	})
 
 	g.Context("invalid minOnChainBalance", func() {
-
 		g.It("panics if the balance is invalid", func() {
 			genesisState.Chains = []*types.GenesisChainInfo{
 				{
@@ -139,7 +138,6 @@ var _ = g.Describe("genesis", func() {
 			Expect(func() {
 				evm.InitGenesis(ctx, *k, genesisState)
 			}).Should(Panic())
-
 		})
 	})
 
