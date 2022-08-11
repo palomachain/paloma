@@ -23,12 +23,12 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 	}
 
 	res := &types.QueryMessagesInQueueResponse{}
-	skipIfValidatorSigned := req.GetSkipEvidenceProvidedByValAddress()
+	skipIfValidatorProvidedEvidence := req.GetSkipEvidenceProvidedByValAddress()
 	for _, msg := range msgs {
-		if skipIfValidatorSigned != nil {
+		if skipIfValidatorProvidedEvidence != nil {
 			shouldSkipThisMsg := false
 			for _, evidence := range msg.GetEvidence() {
-				if evidence.ValAddress.Equals(skipIfValidatorSigned) {
+				if evidence.ValAddress.Equals(skipIfValidatorProvidedEvidence) {
 					shouldSkipThisMsg = true
 					break
 				}

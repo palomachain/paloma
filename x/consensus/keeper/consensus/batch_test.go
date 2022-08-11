@@ -56,17 +56,15 @@ func TestBatching(t *testing.T) {
 		})
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 
-	var consensusMsgs []ConsensusMsg
-
-	for i := 0; i < 666; i++ {
-		consensusMsgs = append(consensusMsgs, &types.SimpleMessage{
-			Sender: fmt.Sprintf("sender_%d", i),
-		})
-	}
-
 	t.Run("putting messages in", func(t *testing.T) {
-		err := cq.Put(ctx, consensusMsgs...)
-		assert.NoError(t, err)
+		for i := 0; i < 666; i++ {
+			consensusMsg := &types.SimpleMessage{
+				Sender: fmt.Sprintf("sender_%d", i),
+			}
+
+			err := cq.Put(ctx, consensusMsg, nil)
+			assert.NoError(t, err)
+		}
 	})
 
 	t.Run("without calling ProcessBatch", func(t *testing.T) {

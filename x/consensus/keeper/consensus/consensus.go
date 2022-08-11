@@ -126,31 +126,42 @@ func NewQueue(qo QueueOptions) Queue {
 }
 
 // Put puts raw message into a signing queue.
-func (c Queue) Put(ctx sdk.Context, msgs ...ConsensusMsg) error {
-	for _, msg := range msgs {
-		if !c.qo.TypeCheck(msg) {
-			return ErrIncorrectMessageType.Format(msg)
+func (c Queue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) error {
+	requireSignatures := true
+	var publicAccessData *types.PublicAccessData
+
+	if opts != nil {
+		requireSignatures = opts.RequireSignatures
+		publicAccessData = &types.PublicAccessData{
+			ValAddress: nil,
+			Data:       opts.PublicAccessData,
 		}
-		newID := c.qo.Ider.IncrementNextID(ctx, consensusQueueIDCounterKey)
-		// just so it's clear that nonce is an actual ID
-		nonce := newID
-		anyMsg, err := codectypes.NewAnyWithValue(msg)
-		if err != nil {
-			return err
-		}
-		queuedMsg := &types.QueuedSignedMessage{
-			Id:                 newID,
-			Msg:                anyMsg,
-			SignData:           []*types.SignData{},
-			AddedAtBlockHeight: ctx.BlockHeight(),
-			AddedAt:            ctx.BlockTime(),
-			BytesToSign: c.qo.BytesToSignCalculator(msg, types.Salt{
-				Nonce: nonce,
-			}),
-		}
-		if err := c.save(ctx, queuedMsg); err != nil {
-			return err
-		}
+	}
+
+	if !c.qo.TypeCheck(msg) {
+		return ErrIncorrectMessageType.Format(msg)
+	}
+	newID := c.qo.Ider.IncrementNextID(ctx, consensusQueueIDCounterKey)
+	// just so it's clear that nonce is an actual ID
+	nonce := newID
+	anyMsg, err := codectypes.NewAnyWithValue(msg)
+	if err != nil {
+		return err
+	}
+	queuedMsg := &types.QueuedSignedMessage{
+		Id:                 newID,
+		Msg:                anyMsg,
+		SignData:           []*types.SignData{},
+		AddedAtBlockHeight: ctx.BlockHeight(),
+		AddedAt:            ctx.BlockTime(),
+		RequireSignatures:  requireSignatures,
+		PublicAccessData:   publicAccessData,
+		BytesToSign: c.qo.BytesToSignCalculator(msg, types.Salt{
+			Nonce: nonce,
+		}),
+	}
+	if err := c.save(ctx, queuedMsg); err != nil {
+		return err
 	}
 	return nil
 }

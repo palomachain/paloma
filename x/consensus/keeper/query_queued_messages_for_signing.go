@@ -22,7 +22,9 @@ func (k Keeper) QueuedMessagesForSigning(goCtx context.Context, req *types.Query
 
 	var res []*types.MessageToSign
 	for _, msg := range msgs {
-		res = append(res, k.queuedMessageToMessageToSign(msg))
+		if msg.GetRequireSignatures() {
+			res = append(res, k.queuedMessageToMessageToSign(msg))
+		}
 	}
 
 	return &types.QueryQueuedMessagesForSigningResponse{

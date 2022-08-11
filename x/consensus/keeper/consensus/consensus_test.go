@@ -64,7 +64,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	var msgs []types.QueuedSignedMessageI
 
 	t.Run("putting message", func(t *testing.T) {
-		err := cq.Put(ctx, msg)
+		err := cq.Put(ctx, msg, nil)
 		assert.NoError(t, err)
 	})
 
@@ -119,7 +119,12 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 			cq.Put(
 				ctx,
 				&types.SimpleMessage{},
+				nil,
+			)
+			cq.Put(
+				ctx,
 				&types.SimpleMessage{},
+				nil,
 			)
 			msgs, err = cq.GetAll(ctx)
 			assert.NoError(t, err)
@@ -131,7 +136,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 		msgOfWrongType := &types.EvenSimplerMessage{
 			Boo: "boo",
 		}
-		err := cq.Put(ctx, msgOfWrongType)
+		err := cq.Put(ctx, msgOfWrongType, nil)
 		assert.ErrorIs(t, err, ErrIncorrectMessageType)
 	})
 

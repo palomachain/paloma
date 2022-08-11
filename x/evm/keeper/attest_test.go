@@ -160,7 +160,7 @@ var _ = g.Describe("attest router", func() {
 
 		g.When("there is enough power to reach a consensus", func() {
 			setupChainSupport := func() {
-				consensukeeper.On("PutMessageForSigning", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 				err := k.AddSupportForNewChain(
 					ctx,

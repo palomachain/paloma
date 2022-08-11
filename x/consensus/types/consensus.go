@@ -25,6 +25,7 @@ type QueuedSignedMessageI interface {
 	SetPublicAccessData(*PublicAccessData)
 	GetPublicAccessData() *PublicAccessData
 	GetBytesToSign() []byte
+	GetRequireSignatures() bool
 }
 
 type Salt struct {
