@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -17,12 +18,18 @@ type TestApp struct {
 
 type testing interface {
 	TempDir() string
+	Cleanup(func())
 }
 
 func NewTestApp(t testing, isCheckTx bool) TestApp {
 	db := dbm.NewMemDB()
 	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
 
+	oldVersion := version.Version
+	version.Version = "v0.0.1"
+	t.Cleanup(func() {
+		version.Version = oldVersion
+	})
 	app := New(
 		log.NewTMJSONLogger(os.Stdout),
 		db,
