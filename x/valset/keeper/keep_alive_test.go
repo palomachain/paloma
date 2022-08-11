@@ -6,6 +6,7 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,7 @@ func TestJailingInactiveValidators(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
 	ctx = ctx.WithBlockTime(time.Unix(1000000000, 0))
 
-	valBuild := func(id int, alive bool) sdk.ValAddress {
+	valBuild := func(id int, alive bool) *mocks.StakingValidatorI {
 		val := sdk.ValAddress(fmt.Sprintf("validator_%d", id))
 		vali := mocks.NewStakingValidatorI(t)
 		ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
@@ -32,12 +33,21 @@ func TestJailingInactiveValidators(t *testing.T) {
 			err := k.KeepValidatorAlive(ctx.WithBlockTime(ctx.BlockTime().Add(-defaultKeepAliveDuration/2)), val)
 			require.NoError(t, err)
 		}
-		return val
+		return vali
 	}
-	valBuild(1, false)
-	valBuild(2, false)
-	valBuild(3, true)
-	valBuild(4, true)
+
+	v1 := valBuild(1, false)
+	v2 := valBuild(2, false)
+	v3 := valBuild(3, true)
+	v4 := valBuild(4, true)
+
+	ms.StakingKeeper.On("IterateValidators", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		callback := args.Get(1).(func(int64, stakingtypes.ValidatorI) bool)
+		callback(0, v1)
+		callback(0, v2)
+		callback(0, v3)
+		callback(0, v4)
+	}).Return(false)
 
 	err := k.JailInactiveValidators(ctx)
 	require.NoError(t, err)

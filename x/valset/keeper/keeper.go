@@ -402,6 +402,16 @@ func (k Keeper) IsJailed(ctx sdk.Context, val sdk.ValAddress) bool {
 
 func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error {
 	val := k.staking.Validator(ctx, valAddr)
+	count := 0
+	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
+		if val.IsBonded() && !val.IsJailed() {
+			count++
+		}
+		return false
+	})
+	if count == 1 {
+		return ErrCannotJailValidator.Format(valAddr).WrapS("number of active validators would be zero then")
+	}
 	cons, err := val.GetConsAddr()
 	if err != nil {
 		return err
