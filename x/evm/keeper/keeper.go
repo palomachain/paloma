@@ -323,6 +323,15 @@ func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 			return nil, nil, wasmtypes.ErrUnknownMsg
 		}
 
+		ci, err := k.GetChainInfo(ctx, executeMsg.TargetContractInfo.ChainReferenceID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if !ci.IsActive() {
+			return nil, nil, ErrChainNotActive.Format(ci.GetChainReferenceID())
+		}
+
 		err = k.AddSmartContractExecutionToConsensus(ctx, executeMsg.TargetContractInfo.ChainReferenceID, executeMsg.TargetContractInfo.CompassID, &types.SubmitLogicCall{
 			HexContractAddress: executeMsg.TargetContractInfo.SmartContractAddress,
 			Payload:            []byte(executeMsg.Payload),
