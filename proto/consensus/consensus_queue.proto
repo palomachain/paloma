@@ -24,6 +24,7 @@ message QueuedSignedMessage {
   repeated Evidence evidence = 7;
 
   PublicAccessData publicAccessData = 8;
+  bool requireSignatures = 9;
 }
 
 message BatchOfConsensusMessages {

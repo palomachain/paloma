@@ -117,7 +117,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	turnstoneID string,
 	logicCall *types.SubmitLogicCall,
 ) error {
-	return k.ConsensusKeeper.PutMessageForSigning(
+	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
 			ConsensusTurnstoneMessage,
@@ -130,8 +130,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 			Action: &types.Message_SubmitLogicCall{
 				SubmitLogicCall: logicCall,
 			},
-		},
-	)
+		}, nil)
 }
 
 func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) (retErr error) {
@@ -190,7 +189,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		return err
 	}
 
-	return k.ConsensusKeeper.PutMessageForSigning(
+	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
 			ConsensusTurnstoneMessage,
@@ -207,8 +206,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 					ConstructorInput: input,
 				},
 			},
-		},
-	)
+		}, nil)
 }
 
 func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode []byte) (*types.SmartContract, error) {
@@ -672,7 +670,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 			"chain-reference-id", chain.GetChainReferenceID(),
 			"valset-id", valset.GetValsetID(),
 		)
-		k.ConsensusKeeper.PutMessageForSigning(
+		k.ConsensusKeeper.PutMessageInQueue(
 			ctx,
 			consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.GetChainReferenceID()),
 			&types.Message{
@@ -683,8 +681,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 						Valset: &valset,
 					},
 				},
-			},
-		)
+			}, nil)
 	}
 
 	k.TryDeployingLastSmartContractToAllChains(ctx)
@@ -711,10 +708,14 @@ func (k Keeper) CheckExternalBalancesForChain(ctx sdk.Context, chainReferenceID 
 	if len(msg.ValAddresses) == 0 {
 		return nil
 	}
-	return k.ConsensusKeeper.PutMessageForSigning(
+	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(ConsensusGetValidatorBalances, consensustypes.ChainTypeEVM, chainReferenceID),
 		&msg,
+		&consensus.PutOptions{
+			RequireSignatures: false,
+			PublicAccessData:  []byte{1}, // anything because pigeon cares if public access data exists to be able to provide evidence
+		},
 	)
 }
 

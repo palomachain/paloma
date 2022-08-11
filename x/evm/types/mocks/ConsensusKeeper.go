@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	consensus "github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 
 	mock "github.com/stretchr/testify/mock"
@@ -15,13 +16,13 @@ type ConsensusKeeper struct {
 	mock.Mock
 }
 
-// PutMessageForSigning provides a mock function with given fields: ctx, queueTypeName, msg
-func (_m *ConsensusKeeper) PutMessageForSigning(ctx types.Context, queueTypeName string, msg consensustypes.ConsensusMsg) error {
-	ret := _m.Called(ctx, queueTypeName, msg)
+// PutMessageInQueue provides a mock function with given fields: ctx, queueTypeName, msg, opts
+func (_m *ConsensusKeeper) PutMessageInQueue(ctx types.Context, queueTypeName string, msg consensustypes.ConsensusMsg, opts *consensus.PutOptions) error {
+	ret := _m.Called(ctx, queueTypeName, msg, opts)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, string, consensustypes.ConsensusMsg) error); ok {
-		r0 = rf(ctx, queueTypeName, msg)
+	if rf, ok := ret.Get(0).(func(types.Context, string, consensustypes.ConsensusMsg, *consensus.PutOptions) error); ok {
+		r0 = rf(ctx, queueTypeName, msg, opts)
 	} else {
 		r0 = ret.Error(0)
 	}
