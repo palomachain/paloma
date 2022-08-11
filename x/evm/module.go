@@ -173,5 +173,21 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	am.keeper.TryDeployingLastSmartContractToAllChains(ctx)
+
+	if ctx.BlockHeight()%300 == 0 {
+		func() {
+			cis, err := am.keeper.GetAllChainInfos(ctx)
+			if err != nil {
+				am.keeper.Logger(ctx).Error("error while trying to get all chain infos to check external balances", "error", err)
+				return
+			}
+			for _, ci := range cis {
+				err := am.keeper.CheckExternalBalancesForChain(ctx, ci.GetChainReferenceID())
+				if err != nil {
+					am.keeper.Logger(ctx).Error("error while adding request to get the external chain balance for chain", "error", err, "chain-reference-id", ci.GetChainReferenceID())
+				}
+			}
+		}()
+	}
 	return []abci.ValidatorUpdate{}
 }

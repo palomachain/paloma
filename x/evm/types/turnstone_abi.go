@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/binary"
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -114,6 +115,20 @@ func (m *Message) Keccak256(nonce uint64) []byte {
 		panic("message's action is not hashable")
 	}
 	return k.keccak256(m, nonce)
+}
+
+func (m *ValidatorBalancesAttestation) Keccak256(nonce uint64) []byte {
+	var sb strings.Builder
+	sb.WriteString(m.FromBlockTime.String())
+	sb.WriteRune('\n')
+	for i := range m.ValAddresses {
+		sb.WriteString(m.ValAddresses[i].String())
+		sb.WriteRune('\t')
+		sb.WriteString(m.HexAddresses[i])
+		sb.WriteRune('\n')
+	}
+
+	return crypto.Keccak256([]byte(sb.String()))
 }
 
 func TransformValsetToABIValset(val Valset) any {
