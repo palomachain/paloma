@@ -1,9 +1,11 @@
 package app
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -86,6 +88,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
+	"golang.org/x/mod/semver"
 
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 
@@ -347,10 +350,23 @@ func New(
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
 	upgradeK := upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
 
-	// upgrade handler palomad is for testnet-6 only and should be deleted! we should use the semvers for upgrade names.
-	upgradeK.SetUpgradeHandler("palomad", func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-		return app.mm.RunMigrations(ctx, app.configurator, fromVM)
-	})
+	semverVersion := app.Version()
+	if !strings.HasPrefix(semverVersion, "v") {
+		semverVersion = fmt.Sprintf("v%s", semverVersion)
+	}
+
+	upgradeName := semver.MajorMinor(semverVersion)
+	if upgradeName == "" {
+		panic(fmt.Errorf("invalid app version '%s'", app.Version()))
+	}
+
+	upgradeK.SetUpgradeHandler(
+		upgradeName,
+		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
+		},
+	)
+
 	app.UpgradeKeeper = upgradeK
 
 	// register the staking hooks
