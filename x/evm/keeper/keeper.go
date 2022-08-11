@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"sort"
 	"strings"
 	"time"
@@ -33,22 +34,30 @@ const (
 	thresholdForConsensus uint64 = 2_863_311_530
 )
 const (
-	ConsensusTurnstoneMessage = "evm-turnstone-message"
-	SignaturePrefix           = "\x19Ethereum Signed Message:\n32"
+	ConsensusTurnstoneMessage     = "evm-turnstone-message"
+	ConsensusGetValidatorBalances = "validators-balances"
+	SignaturePrefix               = "\x19Ethereum Signed Message:\n32"
 )
 
 type supportedChainInfo struct {
-	batch       bool
-	msgType     any
-	processFunc func(Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error
+	batch                 bool
+	msgType               any
+	processAttesationFunc func(Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error
 }
 
 var SupportedConsensusQueues = map[string]supportedChainInfo{
 	ConsensusTurnstoneMessage: {
 		batch:   false,
 		msgType: &types.Message{},
-		processFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
+		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestRouter
+		},
+	},
+	ConsensusGetValidatorBalances: {
+		batch:   false,
+		msgType: &types.ValidatorBalancesAttestation{},
+		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
+			return k.attestValidatorBalances
 		},
 	},
 }
@@ -360,7 +369,6 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsC
 		// 	continue
 		// }
 		for subQueue, queueInfo := range SupportedConsensusQueues {
-
 			queue := fmt.Sprintf("EVM/%s/%s", chainInfo.ChainReferenceID, subQueue)
 			opts := *consensus.ApplyOpts(nil,
 				consensus.WithChainInfo(consensustypes.ChainTypeEVM, chainInfo.ChainReferenceID),
@@ -396,7 +404,7 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsC
 
 			res[queue] = consensus.SupportsConsensusQueueAction{
 				QueueOptions:                 opts,
-				ProcessMessageForAttestation: queueInfo.processFunc(k),
+				ProcessMessageForAttestation: queueInfo.processAttesationFunc(k),
 			}
 		}
 	}
@@ -427,6 +435,7 @@ func (k Keeper) AddSupportForNewChain(
 	chainID uint64,
 	blockHeight uint64,
 	blockHashAtHeight string,
+	minimumOnChainBalance *big.Int,
 ) error {
 	_, err := k.GetChainInfo(ctx, chainReferenceID)
 	switch {
@@ -442,6 +451,7 @@ func (k Keeper) AddSupportForNewChain(
 		ChainReferenceID:     chainReferenceID,
 		ReferenceBlockHeight: blockHeight,
 		ReferenceBlockHash:   blockHashAtHeight,
+		MinOnChainBalance:    minimumOnChainBalance.Text(10),
 	}
 
 	err = k.updateChainInfo(ctx, chainInfo)
@@ -671,6 +681,34 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 	k.TryDeployingLastSmartContractToAllChains(ctx)
 }
 
+func (k Keeper) CheckExternalBalancesForChain(ctx sdk.Context, chainReferenceID string) error {
+	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
+	if err != nil {
+		return err
+	}
+
+	var msg types.ValidatorBalancesAttestation
+	msg.FromBlockTime = ctx.BlockTime().UTC()
+
+	for _, val := range snapshot.GetValidators() {
+		for _, ext := range val.GetExternalChainInfos() {
+			if ext.GetChainReferenceID() == chainReferenceID && ext.GetChainType() == "EVM" {
+				msg.ValAddresses = append(msg.ValAddresses, val.GetAddress())
+				msg.HexAddresses = append(msg.HexAddresses, ext.GetAddress())
+			}
+		}
+	}
+
+	if len(msg.ValAddresses) == 0 {
+		return nil
+	}
+	return k.ConsensusKeeper.PutMessageForSigning(
+		ctx,
+		consensustypes.Queue(ConsensusGetValidatorBalances, consensustypes.ChainTypeEVM, chainReferenceID),
+		&msg,
+	)
+}
+
 func isEnoughToReachConsensus(val types.Valset) bool {
 	var sum uint64
 	for _, power := range val.Powers {
@@ -702,7 +740,7 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 
 	for _, val := range validators {
 		for _, ext := range val.GetExternalChainInfos() {
-			if ext.GetChainReferenceID() == chainReferenceID {
+			if ext.GetChainType() == "EVM" && ext.GetChainReferenceID() == chainReferenceID {
 				power := maxPower * (float64(val.ShareCount.Int64()) / float64(totalPower))
 
 				valset.Validators = append(valset.Validators, ext.Address)

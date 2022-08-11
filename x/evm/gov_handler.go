@@ -1,6 +1,8 @@
 package evm
 
 import (
+	"math/big"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -12,12 +14,18 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govtypes.Handl
 	return func(ctx sdk.Context, content govtypes.Content) error {
 		switch c := content.(type) {
 		case *types.AddChainProposal:
+			balance, ok := new(big.Int).SetString(c.GetMinOnChainBalance(), 10)
+			if !ok {
+				panic("cannot parse balance " + c.GetMinOnChainBalance())
+			}
+
 			return k.AddSupportForNewChain(
 				ctx,
 				c.GetChainReferenceID(),
 				c.GetChainID(),
 				c.GetBlockHeight(),
 				c.GetBlockHashAtHeight(),
+				balance,
 			)
 		case *types.RemoveChainProposal:
 			return k.RemoveSupportForChain(ctx, c)

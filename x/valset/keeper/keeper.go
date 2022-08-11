@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math/big"
 	"sort"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -76,6 +77,26 @@ func (k Keeper) Heartbeat(ctx sdk.Context) {}
 // we can attribute rewards for running the jobs.
 func (k Keeper) AddExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, newChainInfo []*types.ExternalChainInfo) error {
 	return k.SetExternalChainInfoState(ctx, valAddr, newChainInfo)
+}
+
+func (k Keeper) SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error {
+	chainInfos, err := k.getValidatorChainInfos(ctx, valAddr)
+	if err != nil {
+		return err
+	}
+	found := false
+	for _, ci := range chainInfos {
+		if ci.GetChainReferenceID() == chainReferenceID && ci.GetChainType() == chainType && ci.GetAddress() == externalAddress {
+			ci.Balance = balance.Text(10)
+			found = true
+			break
+		}
+	}
+	if !found {
+		return ErrValidatorWithAddrNotFound.Format(chainType, chainReferenceID, externalAddress, valAddr)
+	}
+
+	return k.SetExternalChainInfoState(ctx, valAddr, chainInfos)
 }
 
 func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*types.ExternalChainInfo) error {
@@ -168,6 +189,12 @@ func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
 	err = k.setSnapshotAsCurrent(ctx, snapshot)
 	if err != nil {
 		return nil, err
+	}
+
+	// remove jail reasons for all active validators.
+	// given that a validator is in snapshot, they can't be jailed.
+	for _, val := range snapshot.GetValidators() {
+		k.jailReasonStore(ctx).Delete(val.GetAddress())
 	}
 
 	for _, listener := range k.SnapshotListeners {
@@ -371,6 +398,21 @@ func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType
 // IsJailed returns if the current validator is jailed or not.
 func (k Keeper) IsJailed(ctx sdk.Context, val sdk.ValAddress) bool {
 	return k.staking.Validator(ctx, val).IsJailed()
+}
+
+func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error {
+	val := k.staking.Validator(ctx, valAddr)
+	cons, err := val.GetConsAddr()
+	if err != nil {
+		return err
+	}
+	k.staking.Jail(ctx, cons)
+	k.jailReasonStore(ctx).Set(valAddr, []byte(reason))
+	return nil
+}
+
+func (k Keeper) jailReasonStore(ctx sdk.Context) sdk.KVStore {
+	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("jail-reasons"))
 }
 
 func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {

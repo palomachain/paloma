@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"math/big"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -58,15 +59,15 @@ func isHex(str string) bool {
 
 func CmdEvmProposeNewChain() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "propose-new-chain [chain-reference-id] [chain-id] [block-height] [block-hash-at-height]",
+		Use:   "propose-new-chain [chain-reference-id] [chain-id] [min-on-chain-balance] [block-height] [block-hash-at-height]",
 		Short: "Proposal to add a new EVM chain",
-		Args:  cobra.ExactArgs(4),
+		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			return whoops.Try(func() {
 				clientCtx, err := client.GetClientTxContext(cmd)
 				whoops.Assert(err)
 
-				chainReferenceID, chainIDStr, blockHeightStr, blockHashAtHeight := args[0], args[1], args[2], args[3]
+				chainReferenceID, chainIDStr, minOnChainBalance, blockHeightStr, blockHashAtHeight := args[0], args[1], args[2], args[3], args[4]
 
 				blockHeight, err := strconv.ParseInt(blockHeightStr, 10, 64)
 				whoops.Assert(err)
@@ -78,6 +79,11 @@ func CmdEvmProposeNewChain() *cobra.Command {
 					whoops.Assert(whoops.String("invalid block hash"))
 				}
 
+				_, ok := new(big.Int).SetString(minOnChainBalance, 10)
+				if !ok {
+					whoops.Assert(whoops.String("minimum on change balance is incorret"))
+				}
+
 				addChainProposal := &types.AddChainProposal{
 					ChainReferenceID:  chainReferenceID,
 					ChainID:           uint64(chainID),
@@ -85,6 +91,7 @@ func CmdEvmProposeNewChain() *cobra.Command {
 					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
 					BlockHeight:       uint64(blockHeight),
 					BlockHashAtHeight: blockHashAtHeight,
+					MinOnChainBalance: minOnChainBalance,
 				}
 
 				from := clientCtx.GetFromAddress()

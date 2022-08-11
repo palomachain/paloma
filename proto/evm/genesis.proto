@@ -24,6 +24,7 @@ message GenesisChainInfo {
   uint64 chainID = 2;
   uint64 blockHeight = 3;
   string blockHashAtHeight = 4;
+  string minOnChainBalance = 5;
 }
 
 message GenesisSmartContract {

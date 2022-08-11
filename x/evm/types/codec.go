@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
+	proto "github.com/gogo/protobuf/proto"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -27,10 +28,16 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	)
 	registry.RegisterImplementations((*consensustypes.ConsensusMsg)(nil),
 		&Message{},
+		&ValidatorBalancesAttestation{},
 	)
 	registry.RegisterImplementations((*Hashable)(nil),
 		&TxExecutedProof{},
 		&SmartContractExecutionErrorProof{},
+		&ValidatorBalancesAttestationRes{},
+	)
+	// any arbitrary message
+	registry.RegisterImplementations((*proto.Message)(nil),
+		&ValidatorBalancesAttestationRes{},
 	)
 	// this line is used by starport scaffolding # 3
 

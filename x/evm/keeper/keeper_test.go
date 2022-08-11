@@ -88,6 +88,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		newChain.GetChainID(),
 		newChain.GetBlockHeight(),
 		newChain.GetBlockHashAtHeight(),
+		big.NewInt(55),
 	)
 	require.NoError(t, err)
 
@@ -179,6 +180,7 @@ func TestOnSnapshotBuilt(t *testing.T) {
 		newChain.GetChainID(),
 		newChain.GetBlockHeight(),
 		newChain.GetBlockHashAtHeight(),
+		big.NewInt(55),
 	)
 	require.NoError(t, err)
 	err = a.EvmKeeper.ActivateChainReferenceID(
@@ -241,6 +243,7 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			newChain.GetChainID(),
 			newChain.GetBlockHeight(),
 			newChain.GetBlockHashAtHeight(),
+			big.NewInt(55),
 		)
 		require.NoError(t, err)
 
@@ -266,6 +269,8 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			newChain.GetChainID(),
 			newChain.GetBlockHeight(),
 			newChain.GetBlockHashAtHeight(),
+
+			big.NewInt(55),
 		)
 		require.Error(t, err)
 	})
@@ -350,6 +355,7 @@ var _ = Describe("evm", func() {
 					newChain.GetChainID(),
 					newChain.GetBlockHeight(),
 					newChain.GetBlockHashAtHeight(),
+					big.NewInt(55),
 				)
 				Expect(err).To(BeNil())
 
@@ -359,6 +365,7 @@ var _ = Describe("evm", func() {
 					newChain.GetChainID(),
 					newChain.GetBlockHeight(),
 					newChain.GetBlockHashAtHeight(),
+					big.NewInt(55),
 				)
 				Expect(err).To(MatchError(keeper.ErrCannotAddSupportForChainThatExists))
 			})
@@ -421,6 +428,7 @@ var _ = Describe("evm", func() {
 					chain1.GetChainID(),
 					chain1.GetBlockHeight(),
 					chain1.GetBlockHashAtHeight(),
+					big.NewInt(55),
 				)
 				Expect(err).To(BeNil())
 
@@ -431,6 +439,7 @@ var _ = Describe("evm", func() {
 					chain2.GetChainID(),
 					chain2.GetBlockHeight(),
 					chain2.GetBlockHashAtHeight(),
+					big.NewInt(55),
 				)
 				Expect(err).To(BeNil())
 			})
@@ -558,6 +567,7 @@ var _ = Describe("evm", func() {
 						newChain.GetChainID(),
 						newChain.GetBlockHeight(),
 						newChain.GetBlockHashAtHeight(),
+						big.NewInt(55),
 					)
 					Expect(err).To(BeNil())
 
@@ -614,6 +624,7 @@ var _ = Describe("evm", func() {
 							123,
 							uint64(123),
 							"0x1234",
+							big.NewInt(55),
 						)
 						Expect(err).To(BeNil())
 					})
@@ -655,6 +666,7 @@ var _ = Describe("evm", func() {
 						newChain.GetChainID(),
 						newChain.GetBlockHeight(),
 						newChain.GetBlockHashAtHeight(),
+						big.NewInt(55),
 					)
 					Expect(err).To(BeNil())
 					_, err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())

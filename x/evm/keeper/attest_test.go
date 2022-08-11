@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"io/ioutil"
+	"math/big"
 	"sync"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -167,6 +168,7 @@ var _ = g.Describe("attest router", func() {
 					newChain.GetChainID(),
 					newChain.GetBlockHeight(),
 					newChain.GetBlockHashAtHeight(),
+					big.NewInt(55),
 				)
 				Expect(err).To(BeNil())
 

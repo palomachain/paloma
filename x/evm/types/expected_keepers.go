@@ -1,6 +1,8 @@
 package types
 
 import (
+	"math/big"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -30,4 +32,6 @@ type ValsetKeeper interface {
 	FindSnapshotByID(ctx sdk.Context, id uint64) (*valsettypes.Snapshot, error)
 	GetCurrentSnapshot(ctx sdk.Context) (*valsettypes.Snapshot, error)
 	KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress) error
+	Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error
+	SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error
 }

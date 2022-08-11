@@ -3,8 +3,11 @@
 package mocks
 
 import (
-	types "github.com/cosmos/cosmos-sdk/types"
+	big "math/big"
+
 	mock "github.com/stretchr/testify/mock"
+
+	types "github.com/cosmos/cosmos-sdk/types"
 
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
@@ -60,6 +63,20 @@ func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snap
 	return r0, r1
 }
 
+// Jail provides a mock function with given fields: ctx, valAddr, reason
+func (_m *ValsetKeeper) Jail(ctx types.Context, valAddr types.ValAddress, reason string) error {
+	ret := _m.Called(ctx, valAddr, reason)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress, string) error); ok {
+		r0 = rf(ctx, valAddr, reason)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // KeepValidatorAlive provides a mock function with given fields: ctx, valAddr
 func (_m *ValsetKeeper) KeepValidatorAlive(ctx types.Context, valAddr types.ValAddress) error {
 	ret := _m.Called(ctx, valAddr)
@@ -67,6 +84,20 @@ func (_m *ValsetKeeper) KeepValidatorAlive(ctx types.Context, valAddr types.ValA
 	var r0 error
 	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) error); ok {
 		r0 = rf(ctx, valAddr)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SetValidatorBalance provides a mock function with given fields: ctx, valAddr, chainType, chainReferenceID, externalAddress, balance
+func (_m *ValsetKeeper) SetValidatorBalance(ctx types.Context, valAddr types.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error {
+	ret := _m.Called(ctx, valAddr, chainType, chainReferenceID, externalAddress, balance)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress, string, string, string, *big.Int) error); ok {
+		r0 = rf(ctx, valAddr, chainType, chainReferenceID, externalAddress, balance)
 	} else {
 		r0 = ret.Error(0)
 	}

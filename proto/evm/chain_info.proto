@@ -31,6 +31,8 @@ message ChainInfo {
 
   uint64 activeSmartContractID = 11;
 
+  string minOnChainBalance = 12;
+
 }
 
 message SmartContract {

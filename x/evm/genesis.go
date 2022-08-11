@@ -2,6 +2,7 @@ package evm
 
 import (
 	"errors"
+	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,12 +19,20 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	k.SetParams(ctx, genState.Params)
 
 	for _, chainInfo := range genState.GetChains() {
+		if chainInfo.GetMinOnChainBalance() == "" {
+			panic("minimum on-chain balance is not a valid number")
+		}
+		balance, ok := new(big.Int).SetString(chainInfo.GetMinOnChainBalance(), 10)
+		if !ok {
+			panic("cannot parse balance " + chainInfo.GetMinOnChainBalance())
+		}
 		err := k.AddSupportForNewChain(
 			ctx,
 			chainInfo.GetChainReferenceID(),
 			chainInfo.GetChainID(),
 			chainInfo.GetBlockHeight(),
 			chainInfo.GetBlockHashAtHeight(),
+			balance,
 		)
 		if err != nil {
 			panic(err)
@@ -56,6 +65,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 			ChainID:           chainInfo.GetChainID(),
 			BlockHeight:       chainInfo.GetReferenceBlockHeight(),
 			BlockHashAtHeight: chainInfo.GetReferenceBlockHash(),
+			MinOnChainBalance: whoops.Must(chainInfo.GetMinOnChainBalanceBigInt()).Text(10),
 		})
 	}
 	genesis.Chains = genesisChainInfos

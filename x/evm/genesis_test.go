@@ -106,12 +106,14 @@ var _ = g.Describe("genesis", func() {
 						ChainID:           1,
 						BlockHeight:       123,
 						BlockHashAtHeight: "0x1234",
+						MinOnChainBalance: "555",
 					},
 					{
 						ChainReferenceID:  "ropsten",
 						ChainID:           3,
 						BlockHeight:       124,
 						BlockHashAtHeight: "0x5555",
+						MinOnChainBalance: "555",
 					},
 				},
 				&types.GenesisSmartContract{
@@ -122,6 +124,23 @@ var _ = g.Describe("genesis", func() {
 		)
 	})
 
+	g.Context("invalid minOnChainBalance", func() {
+		g.It("panics if the balance is invalid", func() {
+			genesisState.Chains = []*types.GenesisChainInfo{
+				{
+					ChainReferenceID:  "eth-main",
+					ChainID:           1,
+					BlockHeight:       123,
+					BlockHashAtHeight: "0x1234",
+					MinOnChainBalance: "123invalid",
+				},
+			}
+			Expect(func() {
+				evm.InitGenesis(ctx, *k, genesisState)
+			}).Should(Panic())
+		})
+	})
+
 	g.When("chain is not active", func() {
 		g.It("does not include it the export", func() {
 			genesisState.Chains = []*types.GenesisChainInfo{
@@ -130,6 +149,7 @@ var _ = g.Describe("genesis", func() {
 					ChainID:           1,
 					BlockHeight:       123,
 					BlockHashAtHeight: "0x1234",
+					MinOnChainBalance: "555",
 				},
 			}
 

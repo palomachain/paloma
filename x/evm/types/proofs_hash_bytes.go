@@ -1,6 +1,8 @@
 package types
 
 import (
+	fmt "fmt"
+
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -34,4 +36,13 @@ func (h *TxExecutedProof) GetTX() (*ethtypes.Transaction, error) {
 
 func (h *SmartContractExecutionErrorProof) BytesToHash() ([]byte, error) {
 	return []byte(h.ErrorMessage), nil
+}
+
+func (h *ValidatorBalancesAttestationRes) BytesToHash() ([]byte, error) {
+	var res []byte
+	res = append(res, []byte(fmt.Sprintf("%d", h.BlockHeight))...)
+	for _, val := range h.Balances {
+		res = append(res, []byte("\n"+val)...)
+	}
+	return res, nil
 }

@@ -32,6 +32,11 @@ service Query {
 		option (google.api.http).get = "/palomachain/paloma/valset/get_validator_alive_until";
 	}
 
+// Queries a list of GetValidatorJailReason items.
+	rpc GetValidatorJailReason(QueryGetValidatorJailReasonRequest) returns (QueryGetValidatorJailReasonResponse) {
+		option (google.api.http).get = "/palomachain/paloma/valset/get_validator_jail_reason/{valAddrString}";
+	}
+
 // this line is used by starport scaffolding # 2
 }
 
@@ -70,6 +75,15 @@ message QueryGetValidatorAliveUntilResponse {
     (gogoproto.nullable) = false,
     (gogoproto.stdtime) = true
   ];
+}
+
+message QueryGetValidatorJailReasonRequest {
+  bytes valAddress = 1[ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+}
+
+message QueryGetValidatorJailReasonResponse {
+  string reason = 1;
 }
 
 // this line is used by starport scaffolding # 3
