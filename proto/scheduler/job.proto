@@ -1,0 +1,29 @@
+syntax = "proto3";
+package palomachain.paloma.scheduler;
+
+option go_package = "github.com/palomachain/paloma/x/scheduler/types";
+
+message Job {
+  // chosen by the owner
+  string ID = 1;
+
+  AccAddress owner = 2;
+
+  string chainType = 2; // evm, bitcoin, cosmos,...
+  string chainReferenceID = 3; // paloma, terra, bitcoin, ropsten,...
+
+  payload 
+}
+
+message Crontab {
+  string crontab = 1;
+}
+
+message Once {
+  time when = 1;
+  bool asap = 2;
+}
+
+message OnEvent {
+  string eventName = 1;
+}
