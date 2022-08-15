@@ -367,6 +367,14 @@ func New(
 		},
 	)
 
+	// TODO: this is bug. Upgrade names should be as vMAJOR.MINOR like above.
+	upgradeK.SetUpgradeHandler(
+		semverVersion,
+		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
+		},
+	)
+
 	app.UpgradeKeeper = upgradeK
 
 	// register the staking hooks
