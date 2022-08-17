@@ -35,7 +35,7 @@ func onceFunc[V any](fn func() V) func() V {
 
 var PigeonHTTPClient = onceFunc(func() *http.Client {
 	return &http.Client{
-		Timeout: time.Second * 30,
+		Timeout: time.Second * 5,
 		Transport: &http.Transport{
 			Dial: (&net.Dialer{
 				Timeout: 5 * time.Second,
@@ -68,7 +68,7 @@ func GetPigonListenPort() int {
 func CheckPigeonRunningLooper(ctx context.Context, client httpClienter) {
 	PigeonMustRun(ctx, client)
 
-	t := time.NewTimer(5 * time.Second)
+	t := time.NewTicker(5 * time.Second)
 	for range t.C {
 		if err := ctx.Err(); err != nil {
 			return
@@ -95,11 +95,11 @@ func PigeonMustRun(ctx context.Context, client httpClienter) {
 
 	var hc pigeonHealthCheck
 	if err := json.NewDecoder(res.Body).Decode(&hc); err != nil {
-		log.Fatal("error encoding pigeon's response: %v", err)
+		log.Fatalf("error encoding pigeon's response: %v", err)
 	}
 
 	if err := checkPid(hc.Pid); err != nil {
-		log.Fatal("error verifying the pid: %v", err)
+		log.Fatalf("error verifying the pid: %v", err)
 	}
 }
 
