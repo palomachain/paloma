@@ -41,6 +41,11 @@ func main() {
 						}
 					}
 				}()
+
+				// check if pigeon is running
+				go func() {
+					app.CheckPigeonRunningLooper(cmd.Context(), app.PigeonHTTPClient())
+				}()
 				if oldPreRunE != nil {
 					return oldPreRunE(cmd, args)
 				}
@@ -49,7 +54,32 @@ func main() {
 		}),
 		// this line is used by starport scaffolding # root/arguments
 	)
+
+	stakingCmd := findCommand(rootCmd, "palomad", "tx", "staking")
+
+	oldStakingPreRun := stakingCmd.PersistentPreRunE
+
+	stakingCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if len(args) > 0 {
+			// the process will die if pigeon is not running
+			app.PigeonMustRun(cmd.Context(), app.PigeonHTTPClient())
+		}
+
+		if oldStakingPreRun != nil {
+			return oldStakingPreRun(cmd, args)
+		}
+		return nil
+	}
+
 	if err := svrcmd.Execute(rootCmd, app.DefaultNodeHome); err != nil {
 		os.Exit(1)
 	}
+}
+
+func findCommand(root *cobra.Command, path ...string) *cobra.Command {
+	cmd, _, err := root.Traverse(path)
+	if err != nil {
+		panic(err)
+	}
+	return cmd
 }
