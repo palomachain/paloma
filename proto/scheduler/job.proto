@@ -9,21 +9,11 @@ message Job {
 
   AccAddress owner = 2;
 
-  string chainType = 2; // evm, bitcoin, cosmos,...
-  string chainReferenceID = 3; // paloma, terra, bitcoin, ropsten,...
+  // routing information
+  string chainType = 3; // evm, bitcoin, cosmos,...
+  string chainReferenceID = 4; // paloma, terra, bitcoin, ropsten,...
 
-  payload 
+  // anything?
+  Any payload = 5;
 }
 
-message Crontab {
-  string crontab = 1;
-}
-
-message Once {
-  time when = 1;
-  bool asap = 2;
-}
-
-message OnEvent {
-  string eventName = 1;
-}
