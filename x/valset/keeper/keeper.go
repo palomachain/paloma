@@ -418,7 +418,6 @@ func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) err
 	if count == 1 {
 		return ErrCannotJailValidator.Format(valAddr).WrapS("number of active validators would be zero then")
 	}
-	fmt.Println("EVO MEEEEEEEE", val)
 	cons, err := val.GetConsAddr()
 	if err != nil {
 		return err
@@ -443,7 +442,6 @@ func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) err
 		return
 	}()
 
-	fmt.Println("EVOO", err)
 	if err != nil {
 		return err
 	}
