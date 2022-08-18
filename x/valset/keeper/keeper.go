@@ -403,8 +403,7 @@ func (k Keeper) IsJailed(ctx sdk.Context, val sdk.ValAddress) bool {
 func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error {
 	val := k.staking.Validator(ctx, valAddr)
 	if val.IsJailed() {
-		// does nothing as validator is already jailed
-		return nil
+		return ErrValidatorAlreadyJailed.Format(valAddr.String())
 	}
 	count := 0
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
