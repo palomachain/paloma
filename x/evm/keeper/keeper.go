@@ -117,6 +117,9 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	turnstoneID string,
 	logicCall *types.SubmitLogicCall,
 ) error {
+	k.Logger(ctx).Info("wanting to add smart contract execution to chain. skipping for now as it's not yet supported officially")
+	return nil
+
 	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
