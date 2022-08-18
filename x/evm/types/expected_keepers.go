@@ -33,5 +33,6 @@ type ValsetKeeper interface {
 	GetCurrentSnapshot(ctx sdk.Context) (*valsettypes.Snapshot, error)
 	KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress) error
 	Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error
+	IsJailed(ctx sdk.Context, val sdk.ValAddress) bool
 	SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error
 }

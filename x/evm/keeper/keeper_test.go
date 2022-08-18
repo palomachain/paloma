@@ -7,14 +7,13 @@ import (
 	"strings"
 	"testing"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/palomachain/paloma/app"
+	testutil "github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/testutil/rand"
 	"github.com/palomachain/paloma/testutil/sample"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -22,7 +21,6 @@ import (
 	"github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/vizualni/whoops"
 
@@ -36,35 +34,7 @@ var (
 )
 
 func genValidators(numValidators, totalConsPower int) []stakingtypes.Validator {
-	validators := make([]stakingtypes.Validator, numValidators)
-
-	quotient, remainder := totalConsPower/numValidators, totalConsPower%numValidators
-
-	for i := 0; i < numValidators; i++ {
-		power := quotient
-		if i == 0 {
-			power += remainder
-		}
-
-		protoPK, err := cryptocodec.FromTmPubKeyInterface(ed25519.GenPrivKey().PubKey())
-		if err != nil {
-			panic(err)
-		}
-
-		pk, err := codectypes.NewAnyWithValue(protoPK)
-		if err != nil {
-			panic(err)
-		}
-
-		validators[i] = stakingtypes.Validator{
-			OperatorAddress: rand.ValAddress().String(),
-			Tokens:          sdk.TokensFromConsensusPower(int64(power), sdk.DefaultPowerReduction),
-			Status:          stakingtypes.Bonded,
-			ConsensusPubkey: pk,
-		}
-	}
-
-	return validators
+	return testutil.GenValidators(numValidators, totalConsPower)
 }
 
 func TestEndToEndForEvmArbitraryCall(t *testing.T) {

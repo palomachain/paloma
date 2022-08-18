@@ -402,6 +402,12 @@ func (k Keeper) IsJailed(ctx sdk.Context, val sdk.ValAddress) bool {
 
 func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error {
 	val := k.staking.Validator(ctx, valAddr)
+	if val == nil {
+		return ErrValidatorWithAddrNotFound.Format(valAddr)
+	}
+	if val.IsJailed() {
+		return ErrValidatorAlreadyJailed.Format(valAddr.String())
+	}
 	count := 0
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		if val.IsBonded() && !val.IsJailed() {
@@ -416,7 +422,31 @@ func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) err
 	if err != nil {
 		return err
 	}
-	k.staking.Jail(ctx, cons)
+
+	err = func() (jailingErr error) {
+		defer func() {
+			r := recover()
+			if r == nil {
+				return
+			}
+			switch t := r.(type) {
+			case error:
+				jailingErr = t
+			case string:
+				jailingErr = whoops.String(t)
+			default:
+				panic(r)
+			}
+		}()
+		k.staking.Jail(ctx, cons)
+		return
+	}()
+
+	if err != nil {
+		return err
+	}
+
+	k.Logger(ctx).Info("jailing a validator", "val-addr", valAddr, "reason", reason)
 	k.jailReasonStore(ctx).Set(valAddr, []byte(reason))
 	return nil
 }

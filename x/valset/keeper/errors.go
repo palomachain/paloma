@@ -15,4 +15,6 @@ const (
 	ErrExternalAddressNotFound        = whoops.Errorf("external address (%s, %s, %s) for validator %s was not founds")
 
 	ErrCannotJailValidator = whoops.Errorf("cannot jail validator: %s")
+
+	ErrValidatorAlreadyJailed = whoops.Errorf("validator already jailed: %s")
 )
