@@ -419,7 +419,31 @@ func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) err
 	if err != nil {
 		return err
 	}
-	k.staking.Jail(ctx, cons)
+
+	err = func() (jailingErr error) {
+		defer func() {
+			r := recover()
+			if r == nil {
+				return
+			}
+			switch t := r.(type) {
+			case error:
+				jailingErr = t
+			case string:
+				jailingErr = whoops.String(t)
+			default:
+				panic(r)
+			}
+		}()
+		k.staking.Jail(ctx, cons)
+		return
+	}()
+
+	if err != nil {
+		return err
+	}
+
+	k.Logger(ctx).Info("jailing a validator", "val-addr", valAddr, "reason", reason)
 	k.jailReasonStore(ctx).Set(valAddr, []byte(reason))
 	return nil
 }

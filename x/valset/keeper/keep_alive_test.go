@@ -16,14 +16,14 @@ func TestJailingInactiveValidators(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
 	ctx = ctx.WithBlockTime(time.Unix(1000000000, 0))
 
-	valBuild := func(id int, alive bool) *mocks.StakingValidatorI {
+	valBuild := func(id int, toBeJailed bool) *mocks.StakingValidatorI {
 		val := sdk.ValAddress(fmt.Sprintf("validator_%d", id))
 		vali := mocks.NewStakingValidatorI(t)
 		ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
 		vali.On("IsJailed").Return(false)
 		vali.On("IsBonded").Return(true)
 		consAddr := sdk.ConsAddress(val)
-		if alive {
+		if toBeJailed {
 			err := k.KeepValidatorAlive(ctx.WithBlockTime(time.Unix(1000, 0)), val)
 			require.NoError(t, err)
 

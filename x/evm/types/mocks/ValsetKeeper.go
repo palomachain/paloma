@@ -63,6 +63,20 @@ func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snap
 	return r0, r1
 }
 
+// IsJailed provides a mock function with given fields: ctx, val
+func (_m *ValsetKeeper) IsJailed(ctx types.Context, val types.ValAddress) bool {
+	ret := _m.Called(ctx, val)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) bool); ok {
+		r0 = rf(ctx, val)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // Jail provides a mock function with given fields: ctx, valAddr, reason
 func (_m *ValsetKeeper) Jail(ctx types.Context, valAddr types.ValAddress, reason string) error {
 	ret := _m.Called(ctx, valAddr, reason)

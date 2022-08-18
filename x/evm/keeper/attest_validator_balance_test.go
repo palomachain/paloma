@@ -63,6 +63,10 @@ var _ = g.Describe("attest validator balance", func() {
 				Balances:    validatorBalances,
 			}
 
+			for _, val := range req.ValAddresses {
+				v.On("IsJailed", mock.Anything, val).Return(false).Maybe()
+			}
+
 			v.On("Jail", mock.Anything, req.ValAddresses[2], mock.Anything).Return(nil)
 			v.On("Jail", mock.Anything, req.ValAddresses[3], mock.Anything).Return(nil)
 			v.On("Jail", mock.Anything, req.ValAddresses[4], mock.Anything).Return(nil)

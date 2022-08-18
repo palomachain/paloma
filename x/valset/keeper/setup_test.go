@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"os"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -12,6 +13,7 @@ import (
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 )
@@ -55,6 +57,8 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 	ctx = ctx.WithMultiStore(stateStore).WithGasMeter(sdk.NewInfiniteGasMeter())
+
+	ctx = ctx.WithLogger(log.NewTMJSONLogger(os.Stdout))
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())

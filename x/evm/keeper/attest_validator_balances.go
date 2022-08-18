@@ -86,8 +86,9 @@ func (k Keeper) processValidatorBalanceProof(
 
 			k.Valset.SetValidatorBalance(ctx, valAddr, "EVM", chainReferenceID, hexAddr.String(), balance)
 			if balance.Cmp(minBalance) <= 0 {
-				k.Valset.Jail(ctx, valAddr, fmt.Sprintf(types.JailReasonNotEnoughFunds, chainReferenceID, balanceStr, minBalance))
-				continue
+				if !k.Valset.IsJailed(ctx, valAddr) {
+					k.Valset.Jail(ctx, valAddr, fmt.Sprintf(types.JailReasonNotEnoughFunds, chainReferenceID, balanceStr, minBalance))
+				}
 			}
 		}
 	default:

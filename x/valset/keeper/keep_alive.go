@@ -99,10 +99,10 @@ func (k Keeper) JailInactiveValidators(ctx sdk.Context) error {
 			continue
 		}
 		store.Delete(valAddr)
-		err = k.Jail(ctx, valAddr, types.JailReasonPigeonInactive)
-		if err != nil {
-			g.Add(err)
-			continue
+		if !k.IsJailed(ctx, valAddr) {
+			g.Add(
+				k.Jail(ctx, valAddr, types.JailReasonPigeonInactive),
+			)
 		}
 
 	}
