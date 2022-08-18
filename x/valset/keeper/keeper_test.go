@@ -472,3 +472,46 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 		})
 	}
 }
+
+func TestJailingAValidator(t *testing.T) {
+
+	k, ms, ctx := newValsetKeeper(t)
+	ctx = ctx.WithBlockTime(time.Unix(1000000000, 0))
+
+	valBuild := func(t *testing.T, id int, jailed bool) *mocks.StakingValidatorI {
+		val := sdk.ValAddress(fmt.Sprintf("validator_%d", id))
+		vali := mocks.NewStakingValidatorI(t)
+		ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
+		vali.On("IsJailed").Return(jailed)
+		vali.On("IsBonded").Return(true)
+		consAddr := sdk.ConsAddress(val)
+		if jailed {
+			err := k.KeepValidatorAlive(ctx.WithBlockTime(time.Unix(1000, 0)), val)
+			require.NoError(t, err)
+
+			vali.On("GetConsAddr").Return(consAddr, nil)
+			ms.StakingKeeper.On("Jail", mock.Anything, consAddr)
+		} else {
+			err := k.KeepValidatorAlive(ctx.WithBlockTime(ctx.BlockTime().Add(-defaultKeepAliveDuration/2)), val)
+			require.NoError(t, err)
+		}
+		return vali
+	}
+
+	v1 := valBuild(t, 1, false)
+	v2 := valBuild(t, 2, false)
+	v3 := valBuild(t, 3, true)
+	v4 := valBuild(t, 4, true)
+
+	ms.StakingKeeper.On("IterateValidators", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		callback := args.Get(1).(func(int64, stakingtypes.ValidatorI) bool)
+		callback(0, v1)
+		callback(0, v2)
+		callback(0, v3)
+		callback(0, v4)
+	}).Return(false)
+
+	err := k.JailInactiveValidators(ctx)
+	require.NoError(t, err)
+}
+}
