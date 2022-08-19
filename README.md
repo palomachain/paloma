@@ -44,7 +44,7 @@ N/A
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.6.1/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.7.0/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
@@ -53,25 +53,25 @@ sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/api/libwasmvm.
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
 
-**If you're upgrading from an older version to v0.6.1 do the following:**
+**If you're upgrading from an older version to v0.7.0 do the following:**
 
-1. Stop your paloma version and get 0.6.1
+1. Stop your paloma version and get 0.7.0
 ```
 service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.6.1/paloma_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.7.0/paloma_Linux_x86_64.tar.gz | \
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
-2. Replace palomad 0.5.0 with latest binary and start paloma 0.6.1
+2. Replace your palomad version with latest binary and start paloma 0.7.0
 ```
 service palomad start
 ```
 
-### Upgrading from `paloma-testnet-6` to `paloma-testnet-7`
-1. Stop your paloma version and get 0.6.1
+### Upgrading from `paloma-testnet-7` to `paloma-testnet-8`
+1. Stop your paloma version and get 0.7.0
 ```
 service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.6.1/paloma_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.7.0/paloma_Linux_x86_64.tar.gz | \
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
@@ -82,11 +82,11 @@ palomad tendermint unsafe-reset-all --home $HOME/.paloma
 
 3. Copy the latest genesis and addrbook
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-7/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-7/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/addrbook.json
 ```
 
-4. Ensure that the [latest pigeon](https://github.com/palomachain/pigeon#install) is up & running and that you have at least 0.01 ETH on eth mainnet target chain. Make sure to change the `chain-id: paloma-testnet-6` to `chain-id: paloma-testnet-7` in your pigeon config yaml file ([example](https://github.com/palomachain/pigeon/pull/51/files#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5R85)).
+4. Ensure that the [latest pigeon](https://github.com/palomachain/pigeon#install) is up & running and that you have at least 0.1 ETH on eth mainnet target chain. Make sure to change the `chain-id: paloma-testnet-7` to `chain-id: paloma-testnet-8` in your pigeon config yaml file ([example](https://github.com/palomachain/pigeon/pull/51/files#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5R85)).
 
 5. Start the palomad
 
@@ -103,8 +103,8 @@ palomad init "$MONIKER"
 Copy the configs of the testnet we wish to connect to
 
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-7/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-7/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/addrbook.json
 ```
 
 Next you can generate a new set of keys to the new machine, or reuse an existing key.
