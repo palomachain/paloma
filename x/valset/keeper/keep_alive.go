@@ -9,6 +9,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/vizualni/whoops"
+
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 const (
@@ -87,9 +89,17 @@ func (k Keeper) JailInactiveValidators(ctx sdk.Context) error {
 	store := k.validatorStore(ctx)
 	var g whoops.Group
 	for _, val := range k.unjailedValidators(ctx) {
+		if !(val.GetStatus() == stakingtypes.Bonded || val.GetStatus() == stakingtypes.Unbonding) {
+			continue
+		}
 		valAddr := val.GetOperator()
 		alive, err := k.IsValidatorAlive(ctx, valAddr)
-		if err != nil {
+		switch {
+		case err == nil:
+			// does nothing
+		case errors.Is(err, ErrValidatorNotInKeepAlive):
+			// well...sucks to be you
+		default:
 			g.Add(err)
 			continue
 		}
