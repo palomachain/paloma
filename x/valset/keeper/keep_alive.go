@@ -7,9 +7,10 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/vizualni/whoops"
+
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 const (
@@ -85,13 +86,20 @@ func (k Keeper) CanAcceptValidator(ctx sdk.Context, valAddr sdk.ValAddress) erro
 }
 
 func (k Keeper) JailInactiveValidators(ctx sdk.Context) error {
-	store := k.keepAliveStore(ctx)
-	keys, _, _ := keeperutil.IterAllRaw(store, k.cdc)
+	store := k.validatorStore(ctx)
 	var g whoops.Group
-	for _, bz := range keys {
-		valAddr := sdk.ValAddress(bz)
+	for _, val := range k.unjailedValidators(ctx) {
+		if !(val.GetStatus() == stakingtypes.Bonded || val.GetStatus() == stakingtypes.Unbonding) {
+			continue
+		}
+		valAddr := val.GetOperator()
 		alive, err := k.IsValidatorAlive(ctx, valAddr)
-		if err != nil {
+		switch {
+		case err == nil:
+			// does nothing
+		case errors.Is(err, ErrValidatorNotInKeepAlive):
+			// well...sucks to be you
+		default:
 			g.Add(err)
 			continue
 		}
@@ -104,7 +112,6 @@ func (k Keeper) JailInactiveValidators(ctx sdk.Context) error {
 				k.Jail(ctx, valAddr, types.JailReasonPigeonInactive),
 			)
 		}
-
 	}
 	return g.Return()
 }

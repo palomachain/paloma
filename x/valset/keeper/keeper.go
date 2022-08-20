@@ -290,6 +290,18 @@ func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot
 	return false
 }
 
+func (k Keeper) unjailedValidators(ctx sdk.Context) []stakingtypes.ValidatorI {
+	validators := []stakingtypes.ValidatorI{}
+	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
+		if !val.IsJailed() {
+			validators = append(validators, val)
+		}
+		return false
+	})
+
+	return validators
+}
+
 // createNewSnapshot builds a current snapshot of validators.
 func (k Keeper) createNewSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	validators := []stakingtypes.ValidatorI{}
