@@ -22,6 +22,7 @@ func TestJailingInactiveValidators(t *testing.T) {
 		ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
 		vali.On("IsJailed").Return(false)
 		vali.On("IsBonded").Return(true)
+		vali.On("GetOperator").Return(val)
 		consAddr := sdk.ConsAddress(val)
 		if toBeJailed {
 			err := k.KeepValidatorAlive(ctx.WithBlockTime(time.Unix(1000, 0)), val)
