@@ -68,10 +68,10 @@ service palomad start
 ```
 
 ### Upgrading from `paloma-testnet-7` to `paloma-testnet-8`
-1. Stop your paloma version and get 0.7.0
+1. Stop your paloma version and get 0.8.0
 ```
 service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.7.0/paloma_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.8.0/paloma_Linux_x86_64.tar.gz | \
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
