@@ -1,5 +1,5 @@
 syntax = "proto3";
-package volumefi.paloma.consensus;
+package palomachain.paloma.consensus;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -13,11 +13,11 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/volumefi/paloma/consensus/params";
+    option (google.api.http).get = "/palomachain/paloma/consensus/params";
   }
   // Queries a list of QueuedMessagesForSigning items.
 	rpc QueuedMessagesForSigning(QueryQueuedMessagesForSigningRequest) returns (QueryQueuedMessagesForSigningResponse) {
-		option (google.api.http).get = "/volumefi/paloma/consensus/queued_messages_for_signing";
+		option (google.api.http).get = "/palomachain/paloma/consensus/queued_messages_for_signing";
 	}
 
 // Queries a list of MessagesInQueue items.

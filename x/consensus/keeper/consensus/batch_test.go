@@ -26,7 +26,7 @@ func TestBatching(t *testing.T) {
 
 	registry := types.ModuleCdc.InterfaceRegistry()
 	registry.RegisterInterface(
-		"volumefi.tests.SimpleMessage",
+		"palomachain.tests.SimpleMessage",
 		(*types.ConsensusMsg)(nil),
 		&types.SimpleMessage{},
 	)

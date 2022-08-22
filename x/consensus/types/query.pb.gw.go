@@ -400,9 +400,9 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"volumefi", "paloma", "consensus", "params"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"palomachain", "paloma", "consensus", "params"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueuedMessagesForSigning_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"volumefi", "paloma", "consensus", "queued_messages_for_signing"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_QueuedMessagesForSigning_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"palomachain", "paloma", "consensus", "queued_messages_for_signing"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_Query_MessagesInQueue_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"palomachain", "paloma", "consensus", "messages_in_queue", "queueTypeName"}, "", runtime.AssumeColonVerbOpt(true)))
 

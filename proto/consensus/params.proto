@@ -1,5 +1,5 @@
 syntax = "proto3";
-package volumefi.paloma.consensus;
+package palomachain.paloma.consensus;
 
 import "gogoproto/gogo.proto";
 

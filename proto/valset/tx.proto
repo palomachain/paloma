@@ -1,5 +1,5 @@
 syntax = "proto3";
-package volumefi.paloma.valset;
+package palomachain.paloma.valset;
 
 import "valset/snapshot.proto";
 
