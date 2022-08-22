@@ -19,7 +19,7 @@ func (k Keeper) GetAlivePigeons(goCtx context.Context, req *types.QueryGetAliveP
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	vals := k.unjailedValidators(ctx)
+	vals := k.UnjailedValidators(ctx)
 
 	now := time.Now().UTC()
 	res := slice.Map(vals, func(val stakingtypes.ValidatorI) *types.QueryGetAlivePigeonsResponse_ValidatorAlive {
