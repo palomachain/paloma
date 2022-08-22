@@ -14,9 +14,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/slice"
 	wasmutil "github.com/palomachain/paloma/util/wasm"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	ptypes "github.com/palomachain/paloma/x/paloma/types"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/vizualni/whoops"
 
@@ -38,6 +40,8 @@ const (
 	ConsensusGetValidatorBalances = "validators-balances"
 	SignaturePrefix               = "\x19Ethereum Signed Message:\n32"
 )
+
+var _ ptypes.ExternalChainSupporterKeeper = Keeper{}
 
 type supportedChainInfo struct {
 	batch                 bool
@@ -771,4 +775,19 @@ func generateSmartContractID(ctx sdk.Context) (res [32]byte) {
 	b := []byte(fmt.Sprintf("%d", ctx.BlockHeight()))
 	copy(res[:], b)
 	return
+}
+
+func (k Keeper) ChainType(_ sdk.Context) string {
+	return "EVM"
+}
+
+func (k Keeper) ChainReferenceIDs(ctx sdk.Context) []string {
+	chainInfos, err := k.GetAllChainInfos(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	return slice.Map(chainInfos, func(ci *types.ChainInfo) string {
+		return ci.GetChainReferenceID()
+	})
 }
