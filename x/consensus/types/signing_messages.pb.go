@@ -68,7 +68,7 @@ func (m *SignSmartContractExecute) GetId() uint64 {
 }
 
 func init() {
-	proto.RegisterType((*SignSmartContractExecute)(nil), "volumefi.paloma.consensus.SignSmartContractExecute")
+	proto.RegisterType((*SignSmartContractExecute)(nil), "palomachain.paloma.consensus.SignSmartContractExecute")
 }
 
 func init() { proto.RegisterFile("consensus/signing_messages.proto", fileDescriptor_384c7bbe5bfdb2e1) }
