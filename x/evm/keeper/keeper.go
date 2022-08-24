@@ -674,6 +674,38 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 			"chain-reference-id", chain.GetChainReferenceID(),
 			"valset-id", valset.GetValsetID(),
 		)
+
+		// clear all previous instances of the update valset from the queue
+		k.Logger(ctx).Debug("clearing previous instances of the update valset from the queue")
+		queueName := consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.GetChainReferenceID())
+		messages, err := k.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 999)
+		if err != nil {
+			k.Logger(ctx).Error("unable to get messages from queue", "err", err)
+			continue
+		}
+
+		for _, msg := range messages {
+			cmsg, err := msg.ConsensusMsg(k.cdc)
+			if err != nil {
+				k.Logger(ctx).Error("unable to unpack message", "err", err)
+				continue
+			}
+
+			mmsg := cmsg.(*types.Message)
+			act := mmsg.GetAction()
+			if mmsg.GetTurnstoneID() != string(chain.GetSmartContractUniqueID()) {
+				continue
+			}
+			if _, ok := act.(*types.Message_UpdateValset); ok {
+				err := k.ConsensusKeeper.DeleteJob(ctx, queueName, msg.GetId())
+				if err != nil {
+					k.Logger(ctx).Error("unable to delete message", "err", err)
+					continue
+				}
+			}
+		}
+
+		// put update valset message into the queue
 		k.ConsensusKeeper.PutMessageInQueue(
 			ctx,
 			consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.GetChainReferenceID()),

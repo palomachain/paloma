@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -25,6 +26,8 @@ type BankKeeper interface {
 type ConsensusKeeper interface {
 	PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg, opts *consensus.PutOptions) error
 	RemoveConsensusQueue(ctx sdk.Context, queueTypeName string) error
+	GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n int) (msgs []consensustypes.QueuedSignedMessageI, err error)
+	DeleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error)
 }
 
 //go:generate mockery --name=ValsetKeeper

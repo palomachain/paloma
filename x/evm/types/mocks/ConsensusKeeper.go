@@ -16,6 +16,43 @@ type ConsensusKeeper struct {
 	mock.Mock
 }
 
+// DeleteJob provides a mock function with given fields: ctx, queueTypeName, id
+func (_m *ConsensusKeeper) DeleteJob(ctx types.Context, queueTypeName string, id uint64) error {
+	ret := _m.Called(ctx, queueTypeName, id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(types.Context, string, uint64) error); ok {
+		r0 = rf(ctx, queueTypeName, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// GetMessagesFromQueue provides a mock function with given fields: ctx, queueTypeName, n
+func (_m *ConsensusKeeper) GetMessagesFromQueue(ctx types.Context, queueTypeName string, n int) ([]consensustypes.QueuedSignedMessageI, error) {
+	ret := _m.Called(ctx, queueTypeName, n)
+
+	var r0 []consensustypes.QueuedSignedMessageI
+	if rf, ok := ret.Get(0).(func(types.Context, string, int) []consensustypes.QueuedSignedMessageI); ok {
+		r0 = rf(ctx, queueTypeName, n)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]consensustypes.QueuedSignedMessageI)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Context, string, int) error); ok {
+		r1 = rf(ctx, queueTypeName, n)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // PutMessageInQueue provides a mock function with given fields: ctx, queueTypeName, msg, opts
 func (_m *ConsensusKeeper) PutMessageInQueue(ctx types.Context, queueTypeName string, msg consensustypes.ConsensusMsg, opts *consensus.PutOptions) error {
 	ret := _m.Called(ctx, queueTypeName, msg, opts)

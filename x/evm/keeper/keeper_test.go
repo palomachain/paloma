@@ -566,11 +566,8 @@ var _ = Describe("evm", func() {
 					})
 				})
 
-				JustBeforeEach(func() {
-					a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
-				})
-
 				It("expects update valset message to exist", func() {
+					a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
 					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/eth-main/evm-turnstone-message", 5)
 
 					Expect(err).To(BeNil())
@@ -600,6 +597,7 @@ var _ = Describe("evm", func() {
 					})
 
 					It("tries to deploy a smart contract to it", func() {
+						a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
 						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/new-chain/evm-turnstone-message", 5)
 						Expect(err).To(BeNil())
 						Expect(len(msgs)).To(Equal(1))
@@ -613,6 +611,73 @@ var _ = Describe("evm", func() {
 						_, ok = evmMsg.GetAction().(*types.Message_UploadSmartContract)
 						Expect(ok).To(BeTrue())
 					})
+				})
+
+				When("there is another upload valset already in", func() {
+					BeforeEach(func() {
+						err := a.EvmKeeper.AddSupportForNewChain(
+							ctx,
+							"new-chain",
+							123,
+							uint64(123),
+							"0x1234",
+							big.NewInt(55),
+						)
+						Expect(err).To(BeNil())
+						err = a.EvmKeeper.ActivateChainReferenceID(ctx, "new-chain", &types.SmartContract{Id: 123}, "addr", []byte("abc"))
+						Expect(err).To(BeNil())
+						for _, val := range validators {
+							private, err := crypto.GenerateKey()
+							Expect(err).To(BeNil())
+							accAddr := crypto.PubkeyToAddress(private.PublicKey)
+							err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+								{
+									ChainType:        "EVM",
+									ChainReferenceID: "new-chain",
+									Address:          accAddr.Hex(),
+									Pubkey:           []byte("pub key" + accAddr.Hex()),
+								},
+							})
+							Expect(err).To(BeNil())
+						}
+					})
+					BeforeEach(func() {
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/new-chain/evm-turnstone-message", 5)
+						Expect(err).To(BeNil())
+						for _, msg := range msgs {
+							// we are now clearing the deploy smart contract from the queue as we don't need it
+							a.ConsensusKeeper.DeleteJob(ctx, "EVM/new-chain/evm-turnstone-message", msg.GetId())
+						}
+						a.ConsensusKeeper.PutMessageInQueue(ctx, "EVM/new-chain/evm-turnstone-message", &types.Message{
+							TurnstoneID:      "abc",
+							ChainReferenceID: "new-chain",
+							Action: &types.Message_UpdateValset{
+								UpdateValset: &types.UpdateValset{
+									Valset: &types.Valset{
+										ValsetID: 777,
+									},
+								},
+							},
+						}, nil)
+					})
+					It("deletes the old smart deployment", func() {
+						a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/new-chain/evm-turnstone-message", 5)
+						Expect(err).To(BeNil())
+						Expect(len(msgs)).To(Equal(1))
+
+						con, err := msgs[0].ConsensusMsg(a.AppCodec())
+						Expect(err).To(BeNil())
+
+						evmMsg, ok := con.(*types.Message)
+						Expect(ok).To(BeTrue())
+
+						vset, ok := evmMsg.GetAction().(*types.Message_UpdateValset)
+						Expect(ok).To(BeTrue())
+						Expect(vset.UpdateValset.GetValset().GetValsetID()).NotTo(Equal(uint64(777)))
+						Expect(len(vset.UpdateValset.GetValset().GetValidators())).NotTo(BeZero())
+					})
+
 				})
 
 			})
