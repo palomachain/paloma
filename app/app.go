@@ -584,6 +584,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		valsetmoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
 	)
@@ -602,6 +603,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		valsetmoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
 	)
@@ -633,6 +635,7 @@ func New(
 		schedulermoduletypes.ModuleName,
 		consensusmoduletypes.ModuleName,
 		valsetmoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis

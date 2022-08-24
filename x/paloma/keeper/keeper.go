@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/vizualni/whoops"
@@ -10,8 +11,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/paloma/types"
-
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 type (
@@ -51,13 +50,11 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) JailValidatorsWithInvalidExternalChainInfos(ctx sdk.Context) error {
+func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx sdk.Context) error {
 	k.Logger(ctx).Info("start jailing validators with invalid external chain infos")
 	vals := k.Valset.UnjailedValidators(ctx)
-	jail := func(val stakingtypes.ValidatorI, reason string) {
-		k.Valset.Jail(ctx, val.GetOperator(), reason)
-	}
 
+	// making a map of chain types and their external chains
 	type mapkey [2]string
 	mmap := make(map[mapkey]struct{})
 	for _, supported := range k.ExternalChains {
@@ -73,24 +70,22 @@ func (k Keeper) JailValidatorsWithInvalidExternalChainInfos(ctx sdk.Context) err
 			g.Add(err)
 			continue
 		}
-		if exts == nil {
-			jail(val, "not supporting any external chain")
-			continue
+		valmap := make(map[mapkey]struct{})
+		for _, ext := range exts {
+			key := mapkey{ext.GetChainType(), ext.GetChainReferenceID()}
+			valmap[key] = struct{}{}
 		}
 
 		notSupported := []string{}
-
-		for _, ext := range exts {
-			key := mapkey{ext.GetChainType(), ext.GetChainReferenceID()}
-			_, ok := mmap[key]
-			if !ok {
+		for mustExistKey := range mmap {
+			if _, ok := valmap[mustExistKey]; !ok {
 				// well well well
-				notSupported = append(notSupported, fmt.Sprintf("[%s, %s]", ext.GetChainType(), ext.GetChainReferenceID()))
+				notSupported = append(notSupported, fmt.Sprintf("[%s, %s]", mustExistKey[0], mustExistKey[1]))
 			}
 		}
 
 		if len(notSupported) > 0 {
-			jail(val, fmt.Sprintf("not supporthing these external chains: %s", notSupported))
+			g.Add(k.Valset.Jail(ctx, val.GetOperator(), fmt.Sprintf(types.JailReasonNotSupportingTheseExternalChains, strings.Join(notSupported, ", "))))
 		}
 	}
 
