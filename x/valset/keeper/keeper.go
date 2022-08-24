@@ -80,7 +80,7 @@ func (k Keeper) AddExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, ne
 }
 
 func (k Keeper) SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error {
-	chainInfos, err := k.getValidatorChainInfos(ctx, valAddr)
+	chainInfos, err := k.GetValidatorChainInfos(ctx, valAddr)
 	if err != nil {
 		return err
 	}
@@ -290,7 +290,7 @@ func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot
 	return false
 }
 
-func (k Keeper) unjailedValidators(ctx sdk.Context) []stakingtypes.ValidatorI {
+func (k Keeper) UnjailedValidators(ctx sdk.Context) []stakingtypes.ValidatorI {
 	validators := []stakingtypes.ValidatorI{}
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		if !val.IsJailed() {
@@ -319,7 +319,7 @@ func (k Keeper) createNewSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	}
 
 	for _, val := range validators {
-		chainInfo, err := k.getValidatorChainInfos(ctx, val.GetOperator())
+		chainInfo, err := k.GetValidatorChainInfos(ctx, val.GetOperator())
 		if err != nil {
 			return nil, err
 		}
@@ -358,7 +358,7 @@ func (k Keeper) FindSnapshotByID(ctx sdk.Context, id uint64) (*types.Snapshot, e
 	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(id))
 }
 
-func (k Keeper) getValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) ([]*types.ExternalChainInfo, error) {
+func (k Keeper) GetValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) ([]*types.ExternalChainInfo, error) {
 	info, err := keeperutil.Load[*types.ValidatorExternalAccounts](
 		k.externalChainInfoStore(ctx, valAddr),
 		k.cdc,
@@ -393,7 +393,7 @@ func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ValidatorExternalAcc
 
 // GetSigningKey returns a signing key used by the conductor to sign arbitrary messages.
 func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType, chainReferenceID, signedByAddress string) ([]byte, error) {
-	externalAccounts, err := k.getValidatorChainInfos(ctx, valAddr)
+	externalAccounts, err := k.GetValidatorChainInfos(ctx, valAddr)
 	if err != nil {
 		return nil, err
 	}

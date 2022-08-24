@@ -99,6 +99,9 @@ import (
 	evmclient "github.com/palomachain/paloma/x/evm/client"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	palomamodule "github.com/palomachain/paloma/x/paloma"
+	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
+	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
 	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
@@ -167,6 +170,7 @@ var (
 		valsetmodule.AppModuleBasic{},
 		wasm.AppModuleBasic{},
 		evm.AppModuleBasic{},
+		palomamodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -244,6 +248,8 @@ type App struct {
 	ConsensusKeeper       consensusmodulekeeper.Keeper
 
 	ValsetKeeper valsetmodulekeeper.Keeper
+
+	PalomaKeeper palomamodulekeeper.Keeper
 
 	EvmKeeper evmmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
@@ -415,6 +421,18 @@ func New(
 		app.EvmKeeper,
 	}
 
+	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
+		appCodec,
+		keys[palomamoduletypes.StoreKey],
+		keys[palomamoduletypes.MemStoreKey],
+		app.GetSubspace(palomamoduletypes.ModuleName),
+		app.ValsetKeeper,
+	)
+
+	app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
+		app.EvmKeeper,
+	}
+
 	// register the proposal types
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
@@ -516,6 +534,7 @@ func New(
 	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
+	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	app.mm = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
@@ -541,6 +560,7 @@ func New(
 		consensusModule,
 		valsetModule,
 		evmModule,
+		palomaModule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
@@ -564,6 +584,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		valsetmoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
 	)
@@ -582,6 +603,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		valsetmoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
 	)
@@ -613,6 +635,7 @@ func New(
 		schedulermoduletypes.ModuleName,
 		consensusmoduletypes.ModuleName,
 		valsetmoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
@@ -641,6 +664,7 @@ func New(
 		schedulerModule,
 		consensusModule,
 		valsetModule,
+		palomaModule,
 		evmModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)

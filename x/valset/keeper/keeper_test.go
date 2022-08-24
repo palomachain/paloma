@@ -103,7 +103,7 @@ func TestRegisteringPigeon(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		externalChainInfo, err := k.getValidatorChainInfos(ctx, val)
+		externalChainInfo, err := k.GetValidatorChainInfos(ctx, val)
 		require.NoError(t, err)
 
 		require.Equal(
@@ -198,7 +198,7 @@ func TestCreatingSnapshots(t *testing.T) {
 	err := k.AddExternalChainInfo(ctx, val1, state1)
 	require.NoError(t, err)
 
-	gotState1, err := k.getValidatorChainInfos(ctx, val1)
+	gotState1, err := k.GetValidatorChainInfos(ctx, val1)
 	require.NoError(t, err)
 	require.Equal(t, state1, gotState1)
 
@@ -220,7 +220,7 @@ func TestCreatingSnapshots(t *testing.T) {
 	err = k.AddExternalChainInfo(ctx, val1, state2)
 	require.NoError(t, err)
 
-	gotState2, err := k.getValidatorChainInfos(ctx, val1)
+	gotState2, err := k.GetValidatorChainInfos(ctx, val1)
 	require.NoError(t, err)
 	require.Equal(t, state2, gotState2)
 
@@ -245,7 +245,7 @@ func TestCreatingSnapshots(t *testing.T) {
 		}
 		err = k.AddExternalChainInfo(ctx, val2, state)
 		require.ErrorIs(t, err, nil)
-		gotState, err := k.getValidatorChainInfos(ctx, val2)
+		gotState, err := k.GetValidatorChainInfos(ctx, val2)
 		require.NoError(t, err)
 		require.Equal(t, state, gotState)
 	})

@@ -88,7 +88,7 @@ func (k Keeper) CanAcceptValidator(ctx sdk.Context, valAddr sdk.ValAddress) erro
 func (k Keeper) JailInactiveValidators(ctx sdk.Context) error {
 	store := k.validatorStore(ctx)
 	var g whoops.Group
-	for _, val := range k.unjailedValidators(ctx) {
+	for _, val := range k.UnjailedValidators(ctx) {
 		if !(val.GetStatus() == stakingtypes.Bonded || val.GetStatus() == stakingtypes.Unbonding) {
 			continue
 		}
