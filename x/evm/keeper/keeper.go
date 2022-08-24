@@ -213,6 +213,15 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		}, nil)
 }
 
+func (k Keeper) ChangeMinOnChainBalance(ctx sdk.Context, chainReferenceID string, balance *big.Int) error {
+	ci, err := k.GetChainInfo(ctx, chainReferenceID)
+	if err != nil {
+		return err
+	}
+	ci.MinOnChainBalance = balance.Text(10)
+	return k.updateChainInfo(ctx, ci)
+}
+
 func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode []byte) (*types.SmartContract, error) {
 	smartContract := &types.SmartContract{
 		Id:       k.ider.IncrementNextID(ctx, "smart-contract"),

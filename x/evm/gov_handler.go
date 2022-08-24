@@ -32,6 +32,10 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govtypes.Handl
 		case *types.DeployNewSmartContractProposal:
 			_, err := k.SaveNewSmartContract(ctx, c.GetAbiJSON(), c.Bytecode())
 			return err
+		case *types.ChangeMinOnChainBalanceProposal:
+			balance, _ := new(big.Int).SetString(c.GetMinOnChainBalance(), 10)
+			err := k.ChangeMinOnChainBalance(ctx, c.GetChainReferenceID(), balance)
+			return err
 		}
 		return sdkerrors.ErrUnknownRequest
 	}

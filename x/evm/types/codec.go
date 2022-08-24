@@ -25,6 +25,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&AddChainProposal{},
 		&RemoveChainProposal{},
 		&DeployNewSmartContractProposal{},
+		&ChangeMinOnChainBalanceProposal{},
 	)
 	registry.RegisterImplementations((*consensustypes.ConsensusMsg)(nil),
 		&Message{},

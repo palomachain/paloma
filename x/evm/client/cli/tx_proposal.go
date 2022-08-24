@@ -35,6 +35,7 @@ func CmdEvmChainProposalHandler() *cobra.Command {
 	cmd.AddCommand(CmdEvmProposeNewChain())
 	cmd.AddCommand(CmdEvmProposeChainRemoval())
 	cmd.AddCommand(CmdEvmProposalDeployNewSmartContract())
+	cmd.AddCommand(CmdEvmProposalChangeMinOnChainBalance())
 
 	return cmd
 }
@@ -143,6 +144,52 @@ func CmdEvmProposalDeployNewSmartContract() *cobra.Command {
 				whoops.Assert(err)
 
 				msg, err := gov.NewMsgSubmitProposal(deployNewSmartContractProposal, deposit, from)
+				whoops.Assert(err)
+
+				err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+				whoops.Assert(err)
+			})
+		},
+	}
+	applyFlags(cmd)
+
+	return cmd
+}
+
+func CmdEvmProposalChangeMinOnChainBalance() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "change-min-on-chain-balance [chain-reference-id] [balance]",
+		Short:   "Changes the min on chain balance for a given EVM chain referenced by the chain-reference-id",
+		Example: "change-min-on-chain-balance eth-main 50000000",
+		Args:    cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			return whoops.Try(func() {
+				clientCtx, err := client.GetClientTxContext(cmd)
+				whoops.Assert(err)
+
+				chainReferenceID, balance := args[0], args[1]
+
+				_, ok := new(big.Int).SetString(balance, 10)
+				if !ok {
+					whoops.Assert(whoops.String("invalid provided balance"))
+				}
+
+				proposal := &types.ChangeMinOnChainBalanceProposal{
+					Title:             whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
+					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					ChainReferenceID:  chainReferenceID,
+					MinOnChainBalance: balance,
+				}
+
+				from := clientCtx.GetFromAddress()
+
+				depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+				whoops.Assert(err)
+
+				deposit, err := sdk.ParseCoinsNormalized(depositStr)
+				whoops.Assert(err)
+
+				msg, err := gov.NewMsgSubmitProposal(proposal, deposit, from)
 				whoops.Assert(err)
 
 				err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)

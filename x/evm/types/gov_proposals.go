@@ -1,15 +1,19 @@
 package types
 
 import (
+	"math/big"
+
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/ethereum/go-ethereum/common"
 	proto "github.com/gogo/protobuf/proto"
+	"github.com/vizualni/whoops"
 )
 
 const (
-	ProposalTypeAddChain           = "EVMAddChainProposal"
-	ProposalTypeRemoveChain        = "EVMRemoveChainProposal"
-	ProposalDeployNewSmartContract = "EVMDeployNewSmartContract"
+	ProposalTypeAddChain                = "EVMAddChainProposal"
+	ProposalTypeRemoveChain             = "EVMRemoveChainProposal"
+	ProposalDeployNewSmartContract      = "EVMDeployNewSmartContract"
+	ProposalTypeChangeMinOnChainBalance = "EVMProposalChangeMinOnChainBalance"
 )
 
 var _ govtypes.Content = &AddChainProposal{}
@@ -25,6 +29,9 @@ func init() {
 
 	govtypes.RegisterProposalType(ProposalDeployNewSmartContract)
 	govtypes.RegisterProposalTypeCodec(&DeployNewSmartContractProposal{}, proto.MessageName(&DeployNewSmartContractProposal{}))
+
+	govtypes.RegisterProposalType(ProposalTypeChangeMinOnChainBalance)
+	govtypes.RegisterProposalTypeCodec(&ChangeMinOnChainBalanceProposal{}, proto.MessageName(&ChangeMinOnChainBalanceProposal{}))
 }
 
 func (a *AddChainProposal) ProposalRoute() string { return RouterKey }
@@ -55,6 +62,22 @@ func (a *DeployNewSmartContractProposal) ProposalType() string  { return Proposa
 func (a *DeployNewSmartContractProposal) ValidateBasic() error {
 	if err := govtypes.ValidateAbstract(a); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (a *ChangeMinOnChainBalanceProposal) ProposalRoute() string { return RouterKey }
+func (a *ChangeMinOnChainBalanceProposal) ProposalType() string {
+	return ProposalTypeChangeMinOnChainBalance
+}
+func (a *ChangeMinOnChainBalanceProposal) ValidateBasic() error {
+	if err := govtypes.ValidateAbstract(a); err != nil {
+		return err
+	}
+	_, ok := new(big.Int).SetString(a.GetMinOnChainBalance(), 10)
+	if !ok {
+		return whoops.String("invalid balance")
 	}
 
 	return nil
