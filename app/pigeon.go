@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	PigeonListenPortENVName = "PIGEON_LISTEN_PORT"
+	PigeonHealthCheckPort = "PIGEON_HEALTHCHECK_PORT"
 )
 
 type pigeonHealthCheck struct {
@@ -50,7 +50,7 @@ type httpClienter interface {
 }
 
 func GetPigonListenPort() int {
-	listenPort, ok := os.LookupEnv(PigeonListenPortENVName)
+	listenPort, ok := os.LookupEnv(PigeonHealthCheckPort)
 
 	if !ok || listenPort == "" {
 		log.Fatal("pigeon listen port environment variable is not set")

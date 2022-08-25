@@ -46,6 +46,7 @@ func main() {
 				go func() {
 					app.CheckPigeonRunningLooper(cmd.Context(), app.PigeonHTTPClient())
 				}()
+
 				if oldPreRunE != nil {
 					return oldPreRunE(cmd, args)
 				}
@@ -55,7 +56,7 @@ func main() {
 		// this line is used by starport scaffolding # root/arguments
 	)
 
-	stakingCmd := findCommand(rootCmd, "palomad", "tx", "staking")
+	stakingCmd := findCommand(rootCmd, "tx", "staking")
 
 	oldStakingPreRun := stakingCmd.PersistentPreRunE
 
