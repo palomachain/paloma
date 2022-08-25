@@ -71,16 +71,23 @@ sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/api/libwasmvm.
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
 
-**If you're upgrading from an older version to v0.7.0 do the following:**
+### Upgrading from `paloma-testnet-8` to `paloma-testnet-9`
 
-1. Stop your paloma version and get 0.7.0
+**This new version requires `pigeon` to run on the same machine as paloma, so please follow these instructions carefully!**
+
+1. Stop your paloma version and get 0.8.0
 ```
 service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.7.0/paloma_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.8.0/paloma_Linux_x86_64.tar.gz | \
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
-2. Replace your palomad version with latest binary and start paloma 0.7.0
+2. Setup your pigeon by following [the instructions](https://github.com/palomachain/pigeon#install) and then come back here.
+
+3. Modify your `palomad` start up script to include the `PIGEON_HEALTHCHECK_PORT=5757` environment variable. You can check the example systemd configuration file in this readme.
+
+4. Start paloma.
+
 ```
 service palomad start
 ```
