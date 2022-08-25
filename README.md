@@ -15,6 +15,7 @@ Paloma is the fastest, secure crosschain communications blockchain. For Crosscha
 ## Table of Contents
 
 - [Talk To Us](#talk-to-us)
+- [International Community](#international-community)
 - [Releases](#releases)
 - [Active Networks](#active-networks)
 - [Public](#public)
@@ -28,6 +29,23 @@ We have active, helpful communities on Twitter and Telegram.
 
 * [Twitter](https://twitter.com/paloma_chain)
 * [Telegram](https://t.me/palomachain)
+
+## International Community
+
+- [Bengali README](docs/Welcome-Bengali.md)
+- [Chinese README](docs/Welcome-Chinese.md)
+- [Indonesian README](docs/Welcome-Indonesian.md)
+- [Japanese README](docs/Welcome-Japanese.md)
+- [Persian README](docs/Welcome-Persian.md)
+- [Polish README](docs/Welcome-Polish.md)
+- [Portuguese README](docs/Welcome-Portuguese.md)
+- [Romanian README](docs/Welcome-Romanian.md)
+- [Russian README](docs/Welcome-Russian.md)
+- [Spanish README](docs/Welcome-Spanish.md)
+- [Thai README](docs/Welcome-Thai.md)
+- [Turkish README](docs/Welcome-Turkish.md)
+- [Ukrainian README](docs/Welcome-Ukrainian.md)
+- [Vietnamese README](docs/Welcome-Vietnamese.md)
 
 ## Releases
 
@@ -142,7 +160,7 @@ palomad tx staking create-validator \
       --moniker="$MONIKER" \
       --website="https://www.example.com" \
       --details="<enter a description>" \
-      --chain-id=paloma-testnet-7 \
+      --chain-id=paloma-testnet-8 \
       --commission-rate="0.1" \
       --commission-max-rate="0.2" \
       --commission-max-change-rate="0.05" \
