@@ -181,7 +181,7 @@ func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
 		return nil, err
 	}
 
-	worthy := k.isNewSnapshotWorthy(current, snapshot)
+	worthy := k.isNewSnapshotWorthy(ctx, current, snapshot)
 	if !worthy {
 		return nil, nil
 	}
@@ -204,15 +204,20 @@ func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
 	return snapshot, err
 }
 
-func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot) bool {
+func (k Keeper) isNewSnapshotWorthy(ctx sdk.Context, currentSnapshot, newSnapshot *types.Snapshot) bool {
+	log := func(reason string) {
+		k.Logger(ctx).Info("new snapshot is worthy", "reason", reason)
+	}
 	// if there is no current snapshot, that this new one is worthy
 	if currentSnapshot == nil {
+		log("this is the first snapshot")
 		return true
 	}
 
 	// if there is a different in sizes of validators in snapshots, then we
 	// need to build it
 	if len(currentSnapshot.GetValidators()) != len(newSnapshot.GetValidators()) {
+		log("number of validators in old and new snapshots differ")
 		return true
 	}
 
@@ -226,6 +231,7 @@ func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot
 	// We don't need to check if A exists in B and if B exists in A.
 	for _, val := range newSnapshot.GetValidators() {
 		if _, ok := currentMap[val.GetAddress().String()]; !ok {
+			log("snapshots differ in validators they hold")
 			return true
 		}
 	}
@@ -247,6 +253,7 @@ func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot
 
 	for i := 0; i < len(sortedCurrent); i++ {
 		if !sortedCurrent[i].GetAddress().Equals(sortedNew[i].GetAddress()) {
+			log("their relative powers are different")
 			return true
 		}
 	}
@@ -261,6 +268,7 @@ func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot
 		percentageNow := sortedNew[i].ShareCount.ToDec().QuoInt(newSnapshot.TotalShares)
 
 		if percentageCurrent.Sub(percentageNow).Abs().MustFloat64() >= 0.01 {
+			log("validator's power was increased for more than 1%")
 			return true
 		}
 	}
@@ -270,6 +278,7 @@ func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot
 	for i := 0; i < len(sortedCurrent); i++ {
 		currentVal, newVal := sortedCurrent[i], sortedNew[i]
 		if len(currentVal.ExternalChainInfos) != len(newVal.ExternalChainInfos) {
+			log("validator's external chain info sets have changed")
 			return true
 		}
 
@@ -282,6 +291,7 @@ func (k Keeper) isNewSnapshotWorthy(currentSnapshot, newSnapshot *types.Snapshot
 
 		for _, acc := range currentMap {
 			if _, ok := newMap[keyFnc(acc)]; !ok {
+				log("validator changed some of the external address")
 				return true
 			}
 		}

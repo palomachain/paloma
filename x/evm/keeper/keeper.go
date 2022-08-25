@@ -670,12 +670,20 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		panic(err)
 	}
 	for _, chain := range chainInfos {
+		valset := transformSnapshotToCompass(snapshot, chain.GetChainReferenceID())
 		if !chain.IsActive() {
+			k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
+				"chain-reference-id", chain.GetChainReferenceID(),
+				"valset-id", valset.GetValsetID(),
+			)
 			continue
 		}
-		valset := transformSnapshotToCompass(snapshot, chain.GetChainReferenceID())
 
 		if !isEnoughToReachConsensus(valset) {
+			k.Logger(ctx).Info("ignoring valset for chain as there isn't enough validators to form a consensus for this chain",
+				"chain-reference-id", chain.GetChainReferenceID(),
+				"valset-id", valset.GetValsetID(),
+			)
 			continue
 		}
 

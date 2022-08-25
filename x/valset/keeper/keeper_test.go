@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
+	"github.com/tendermint/tendermint/libs/log"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 var (
@@ -466,7 +468,8 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 	for _, tt := range testcases {
 		t.Run(tt.name, func(t *testing.T) {
 			var k Keeper
-			res := k.isNewSnapshotWorthy(tt.curr, tt.neww)
+			ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+			res := k.isNewSnapshotWorthy(ctx, tt.curr, tt.neww)
 
 			require.Equal(t, tt.expRes, res)
 		})
