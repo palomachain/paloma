@@ -86,7 +86,19 @@ wget -O - https://github.com/palomachain/paloma/releases/download/v0.8.0/paloma_
 
 3. Modify your `palomad` start up script to include the `PIGEON_HEALTHCHECK_PORT=5757` environment variable. You can check the example systemd configuration file in this readme.
 
-4. Start paloma.
+
+4. Reset your local chain state:
+```bash
+palomad tendermint unsafe-reset-all --home $HOME/.paloma
+```
+
+5. Copy the latest genesis and addrbook
+```shell
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/addrbook.json
+```
+
+6. Start paloma.
 
 ```
 service palomad start
@@ -107,8 +119,8 @@ palomad tendermint unsafe-reset-all --home $HOME/.paloma
 
 3. Copy the latest genesis and addrbook
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/addrbook.json
 ```
 
 4. Ensure that the [latest pigeon](https://github.com/palomachain/pigeon#install) is up & running and that you have at least 0.1 ETH on eth mainnet target chain. Make sure to change the `chain-id: paloma-testnet-7` to `chain-id: paloma-testnet-8` in your pigeon config yaml file ([example](https://github.com/palomachain/pigeon/pull/51/files#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5R85)).
