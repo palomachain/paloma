@@ -107,8 +107,8 @@ palomad tendermint unsafe-reset-all --home $HOME/.paloma
 
 3. Copy the latest genesis and addrbook
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/addrbook.json
 ```
 
 4. Ensure that the [latest pigeon](https://github.com/palomachain/pigeon#install) is up & running and that you have at least 0.1 ETH on eth mainnet target chain. Make sure to change the `chain-id: paloma-testnet-7` to `chain-id: paloma-testnet-8` in your pigeon config yaml file ([example](https://github.com/palomachain/pigeon/pull/51/files#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5R85)).
@@ -128,8 +128,8 @@ palomad init "$MONIKER"
 Copy the configs of the testnet we wish to connect to
 
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/addrbook.json
 ```
 
 Next you can generate a new set of keys to the new machine, or reuse an existing key.
