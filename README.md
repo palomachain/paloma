@@ -210,7 +210,7 @@ RestartSec=5
 WorkingDirectory=~
 ExecStartPre=
 ExecStart=/usr/local/bin/palomad start
-Environment=PIGEON_LISTEN_PORT=5757
+Environment=PIGEON_HEALTHCHECK_PORT=5757
 ExecReload=
 
 [Install]
