@@ -1,0 +1,11 @@
+syntax = "proto3";
+package palomachain.paloma.evm;
+
+option go_package = "github.com/palomachain/paloma/x/evm/types";
+
+message ChangeMinOnChainBalanceProposal {
+  string title = 1;
+  string description = 2;
+  string chainReferenceID = 3; 
+  string minOnChainBalance = 4;
+}

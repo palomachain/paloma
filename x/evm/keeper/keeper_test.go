@@ -718,3 +718,57 @@ var _ = Describe("evm", func() {
 		})
 	})
 })
+
+var _ = Describe("change min on chain balance", func() {
+
+	var a app.TestApp
+	var ctx sdk.Context
+	newChain := &types.AddChainProposal{
+		ChainReferenceID:  "eth-main",
+		Title:             "bla",
+		Description:       "bla",
+		BlockHeight:       uint64(123),
+		BlockHashAtHeight: "0x1234",
+	}
+
+	BeforeEach(func() {
+		a = app.NewTestApp(GinkgoT(), false)
+		ctx = a.NewContext(false, tmproto.Header{
+			Height: 5,
+		})
+	})
+
+	When("chain info exists", func() {
+		BeforeEach(func() {
+			err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain.GetChainReferenceID(), newChain.GetChainID(), 1, "a", big.NewInt(55))
+			Expect(err).To(BeNil())
+		})
+
+		BeforeEach(func() {
+			ci, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
+			Expect(err).To(BeNil())
+			balance, err := ci.GetMinOnChainBalanceBigInt()
+			Expect(err).To(BeNil())
+			Expect(balance.Text(10)).To(Equal(big.NewInt(55).Text(10)))
+		})
+
+		It("changes the on chain balance", func() {
+			err := a.EvmKeeper.ChangeMinOnChainBalance(ctx, newChain.GetChainReferenceID(), big.NewInt(888))
+			Expect(err).To(BeNil())
+
+			ci, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
+			Expect(err).To(BeNil())
+			balance, err := ci.GetMinOnChainBalanceBigInt()
+			Expect(err).To(BeNil())
+			Expect(balance.Text(10)).To(Equal(big.NewInt(888).Text(10)))
+		})
+	})
+
+	When("chain info does not exists", func() {
+		It("returns an error", func() {
+			err := a.EvmKeeper.ChangeMinOnChainBalance(ctx, newChain.GetChainReferenceID(), big.NewInt(888))
+			Expect(err).To(MatchError(keeper.ErrChainNotFound))
+		})
+	})
+
+})
