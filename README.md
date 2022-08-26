@@ -156,7 +156,7 @@ palomad tx staking create-validator \
       --moniker="$MONIKER" \
       --website="https://www.example.com" \
       --details="<enter a description>" \
-      --chain-id=paloma-testnet-8 \
+      --chain-id=paloma-testnet-9 \
       --commission-rate="0.1" \
       --commission-max-rate="0.2" \
       --commission-max-change-rate="0.05" \
