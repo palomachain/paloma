@@ -52,8 +52,7 @@ We have active, helpful communities on Twitter and Telegram.
 See [Release procedure](CONTRIBUTING.md#release-procedure) for more information about the release model.
 
 ## Active Networks
-### Testnet: Paloma-Testnet-9
-### Mainnet: N/A 
+* Paloma Testnet 9 (Aug 25, 2022)
 
 
 ## Testnet Setup Instructions
@@ -81,7 +80,7 @@ wget -O - https://github.com/palomachain/paloma/releases/download/v0.8.0/paloma_
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
-2. Setup your pigeon relayer by following [the instructions](https://github.com/palomachain/pigeon#install) and then come back here.
+2. [Setup your pigeon relayer by following the instructions](https://github.com/palomachain/pigeon#install) and then come back here.
 
 3. Modify your `palomad` start up script to include the `PIGEON_HEALTHCHECK_PORT=5757` environment variable. You can check the example systemd configuration file in this readme.
 
