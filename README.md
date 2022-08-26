@@ -102,7 +102,7 @@ wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomac
 service palomad start
 ```
 
-7. If you are planning to be a **VALIDATOR with stake**, ensure that your pigeon relayer is up & running and that you have at least 0.1 ETH on eth mainnet target chain address that is in your pigeon configuration file.
+7. If you are planning to be a **VALIDATOR with stake**, ensure that your pigeon relayer is up & running and that you have at least 0.05 ETH on eth mainnet target chain address that is in your pigeon configuration file.
 
 ### Connecting to an existing testnet.
 
