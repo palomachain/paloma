@@ -227,7 +227,7 @@ apt install jq
 Set up the chain validator.
 
 ```shell
-CHAIN_ID=paloma-testnet-7 \
+CHAIN_ID=paloma-testnet-9 \
 MNEMONIC="$(cat secret.mn)" \
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-volume-testnet.sh)"
 ```
