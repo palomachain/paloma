@@ -52,10 +52,8 @@ We have active, helpful communities on Twitter and Telegram.
 See [Release procedure](CONTRIBUTING.md#release-procedure) for more information about the release model.
 
 ## Active Networks
+* Paloma Testnet 9 (Aug 25, 2022)
 
-### Mainnet
-
-N/A
 
 ## Testnet Setup Instructions
 
@@ -73,7 +71,7 @@ If you're upgrading to the most recent version, you will need to stop `palomad` 
 
 ### Upgrading from `paloma-testnet-8` to `paloma-testnet-9`
 
-**This new version requires `pigeon` to run on the same machine as paloma, so please follow these instructions carefully!**
+**ALERT: This new version requires `pigeon` relayer to run on the same machine as paloma, so please follow these instructions carefully!**
 
 1. Stop your paloma version and get 0.8.0
 ```
@@ -82,7 +80,7 @@ wget -O - https://github.com/palomachain/paloma/releases/download/v0.8.0/paloma_
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
-2. Setup your pigeon by following [the instructions](https://github.com/palomachain/pigeon#install) and then come back here.
+2. [Setup your pigeon relayer by following the instructions](https://github.com/palomachain/pigeon#install) and then come back here.
 
 3. Modify your `palomad` start up script to include the `PIGEON_HEALTHCHECK_PORT=5757` environment variable. You can check the example systemd configuration file in this readme.
 
@@ -104,28 +102,7 @@ wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomac
 service palomad start
 ```
 
-### Upgrading from `paloma-testnet-7` to `paloma-testnet-8`
-1. Stop your paloma version and get 0.7.0
-```
-service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.7.0/paloma_Linux_x86_64.tar.gz | \
-  tar -C /usr/local/bin -xvzf - palomad
-```
-
-2. Reset your local chain state:
-```bash
-palomad tendermint unsafe-reset-all --home $HOME/.paloma
-```
-
-3. Copy the latest genesis and addrbook
-```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-8/addrbook.json
-```
-
-4. Ensure that the [latest pigeon](https://github.com/palomachain/pigeon#install) is up & running and that you have at least 0.1 ETH on eth mainnet target chain. Make sure to change the `chain-id: paloma-testnet-7` to `chain-id: paloma-testnet-8` in your pigeon config yaml file ([example](https://github.com/palomachain/pigeon/pull/51/files#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5R85)).
-
-5. Start the palomad
+7. If you are planning to be a **VALIDATOR with stake**, ensure that your pigeon relayer is up & running and that you have at least 0.1 ETH on eth mainnet target chain address that is in your pigeon configuration file.
 
 ### Connecting to an existing testnet.
 
