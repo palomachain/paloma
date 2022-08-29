@@ -58,18 +58,20 @@ func main() {
 
 	stakingCmd := findCommand(rootCmd, "tx", "staking")
 
-	oldStakingPreRun := stakingCmd.PersistentPreRunE
+	// all children of tx staking command must check if the pigeon is running
+	for _, child := range stakingCmd.Commands() {
+		oldPreRun := child.PreRunE
+		child.PreRunE = func(cmd *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				// the process will die if pigeon is not running
+				app.PigeonMustRun(cmd.Context(), app.PigeonHTTPClient())
+			}
 
-	stakingCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		if len(args) > 0 {
-			// the process will die if pigeon is not running
-			app.PigeonMustRun(cmd.Context(), app.PigeonHTTPClient())
+			if oldPreRun != nil {
+				return oldPreRun(cmd, args)
+			}
+			return nil
 		}
-
-		if oldStakingPreRun != nil {
-			return oldStakingPreRun(cmd, args)
-		}
-		return nil
 	}
 
 	if err := svrcmd.Execute(rootCmd, app.DefaultNodeHome); err != nil {
