@@ -52,7 +52,7 @@ We have active, helpful communities on Twitter and Telegram.
 See [Release procedure](CONTRIBUTING.md#release-procedure) for more information about the release model.
 
 ## Active Networks
-* Paloma Testnet 9 (Aug 25, 2022)
+* Paloma Testnet 10 (Aug 29, 2022)
 
 
 ## Testnet Setup Instructions
@@ -60,7 +60,7 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.7.0/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.8.1/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
@@ -69,14 +69,14 @@ sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/api/libwasmvm.
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
 
-### Upgrading from `paloma-testnet-8` to `paloma-testnet-9`
+### Upgrading from a prior testnet to `paloma-testnet-10`
 
-**ALERT: This new version requires `pigeon` relayer to run on the same machine as paloma, so please follow these instructions carefully!**
+**ALERT: You will need to update your pigeon config.yaml file to reference this new chain-ID!**
 
-1. Stop your paloma version and get 0.8.0
+1. Stop your paloma version and get 0.8.1
 ```
 service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.8.0/paloma_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.8.1/paloma_Linux_x86_64.tar.gz | \
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
@@ -92,8 +92,8 @@ palomad tendermint unsafe-reset-all --home $HOME/.paloma
 
 5. Copy the latest genesis and addrbook
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-10/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-10/addrbook.json
 ```
 
 6. Start paloma.
@@ -117,8 +117,8 @@ palomad init "$MONIKER"
 Copy the configs of the testnet we wish to connect to
 
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-9/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-10/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-10/addrbook.json
 ```
 
 Next you can generate a new set of keys to the new machine, or reuse an existing key.
@@ -156,7 +156,7 @@ palomad tx staking create-validator \
       --moniker="$MONIKER" \
       --website="https://www.example.com" \
       --details="<enter a description>" \
-      --chain-id=paloma-testnet-9 \
+      --chain-id=paloma-testnet-10 \
       --commission-rate="0.1" \
       --commission-max-rate="0.2" \
       --commission-max-change-rate="0.05" \
@@ -227,7 +227,7 @@ apt install jq
 Set up the chain validator.
 
 ```shell
-CHAIN_ID=paloma-testnet-9 \
+CHAIN_ID=paloma-testnet-10 \
 MNEMONIC="$(cat secret.mn)" \
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-volume-testnet.sh)"
 ```
