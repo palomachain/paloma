@@ -64,7 +64,7 @@ wget -O - https://github.com/palomachain/paloma/releases/download/v0.8.1/paloma_
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
-sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/api/libwasmvm.x86_64.so
+sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/internal/api/libwasmvm.x86_64.so
 ```
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
