@@ -310,13 +310,15 @@ type executeEVMFromCosmWasm struct {
 		CompassID string `json:"compass_id"`
 	} `json:"target_contract_info"`
 
-	// TODO: we need to have this as a payload
-	Payload string `json:"payload"`
+	Payload []byte `json:"payload"`
 }
 
 func (e executeEVMFromCosmWasm) valid() bool {
 	zero := executeEVMFromCosmWasm{}
-	if e == zero {
+	if e.TargetContractInfo == zero.TargetContractInfo {
+		return false
+	}
+	if len(e.Payload) == 0 {
 		return false
 	}
 	// todo: add more in the future
@@ -343,12 +345,17 @@ func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 			return nil, nil, ErrChainNotActive.Format(ci.GetChainReferenceID())
 		}
 
-		err = k.AddSmartContractExecutionToConsensus(ctx, executeMsg.TargetContractInfo.ChainReferenceID, executeMsg.TargetContractInfo.CompassID, &types.SubmitLogicCall{
-			HexContractAddress: executeMsg.TargetContractInfo.SmartContractAddress,
-			Payload:            []byte(executeMsg.Payload),
-			Deadline:           ctx.BlockTime().UTC().Add(5 * time.Minute).Unix(),
-			Abi:                []byte(executeMsg.TargetContractInfo.SmartContractABI),
-		})
+		err = k.AddSmartContractExecutionToConsensus(
+			ctx,
+			executeMsg.TargetContractInfo.ChainReferenceID,
+			executeMsg.TargetContractInfo.CompassID,
+			&types.SubmitLogicCall{
+				HexContractAddress: executeMsg.TargetContractInfo.SmartContractAddress,
+				Payload:            executeMsg.Payload,
+				Deadline:           ctx.BlockTime().UTC().Add(10 * time.Minute).Unix(),
+				Abi:                []byte(executeMsg.TargetContractInfo.SmartContractABI),
+			},
+		)
 
 		if err != nil {
 			return nil, nil, err
