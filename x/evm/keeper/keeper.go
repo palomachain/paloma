@@ -299,7 +299,7 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 	return nil
 }
 
-type executeEVMFromCosmWasm struct {
+type ExecuteEVMFromCosmWasm struct {
 	TargetContractInfo struct {
 		ChainReferenceID     string `json:"chain_id"`
 		SmartContractAddress string `json:"contract_address"`
@@ -311,8 +311,8 @@ type executeEVMFromCosmWasm struct {
 	Payload []byte `json:"payload"`
 }
 
-func (e executeEVMFromCosmWasm) valid() bool {
-	zero := executeEVMFromCosmWasm{}
+func (e ExecuteEVMFromCosmWasm) valid() bool {
+	zero := ExecuteEVMFromCosmWasm{}
 	if e.TargetContractInfo == zero.TargetContractInfo {
 		return false
 	}
@@ -325,10 +325,10 @@ func (e executeEVMFromCosmWasm) valid() bool {
 
 func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 	return func(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, error) {
-		var executeMsg executeEVMFromCosmWasm
+		var executeMsg ExecuteEVMFromCosmWasm
 		err := json.Unmarshal(msg.Custom, &executeMsg)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, whoops.Wrap(err, wasmtypes.ErrUnknownMsg)
 		}
 		if !executeMsg.valid() {
 			return nil, nil, wasmtypes.ErrUnknownMsg
