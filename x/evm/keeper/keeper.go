@@ -299,10 +299,8 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 	return nil
 }
 
-// {"target_contract_info":{"method":"foo","chain_id":"abc","compass_id":"abc","contract_address":"0xabc","smart_contract_abi":"abc"},"paloma_address":"paloma1sp6yeu2cdemlh0jpterpe3as9mvx36ck6ys0ce","eth_address":[0,0,0,0,0,0,0,0,0,0,0,0,22,248,182,92,183,148,210,0,134,193,229,48,158,88,192,76,57,198,237,233]}
-type executeEVMFromCosmWasm struct {
+type ExecuteEVMFromCosmWasm struct {
 	TargetContractInfo struct {
-		Method               string `json:"method"`
 		ChainReferenceID     string `json:"chain_id"`
 		SmartContractAddress string `json:"contract_address"`
 		SmartContractABI     string `json:"smart_contract_abi"`
@@ -310,13 +308,15 @@ type executeEVMFromCosmWasm struct {
 		CompassID string `json:"compass_id"`
 	} `json:"target_contract_info"`
 
-	// TODO: we need to have this as a payload
-	Payload string `json:"payload"`
+	Payload []byte `json:"payload"`
 }
 
-func (e executeEVMFromCosmWasm) valid() bool {
-	zero := executeEVMFromCosmWasm{}
-	if e == zero {
+func (e ExecuteEVMFromCosmWasm) valid() bool {
+	zero := ExecuteEVMFromCosmWasm{}
+	if e.TargetContractInfo == zero.TargetContractInfo {
+		return false
+	}
+	if len(e.Payload) == 0 {
 		return false
 	}
 	// todo: add more in the future
@@ -325,10 +325,10 @@ func (e executeEVMFromCosmWasm) valid() bool {
 
 func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 	return func(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, error) {
-		var executeMsg executeEVMFromCosmWasm
+		var executeMsg ExecuteEVMFromCosmWasm
 		err := json.Unmarshal(msg.Custom, &executeMsg)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, whoops.Wrap(err, wasmtypes.ErrUnknownMsg)
 		}
 		if !executeMsg.valid() {
 			return nil, nil, wasmtypes.ErrUnknownMsg
@@ -343,12 +343,17 @@ func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 			return nil, nil, ErrChainNotActive.Format(ci.GetChainReferenceID())
 		}
 
-		err = k.AddSmartContractExecutionToConsensus(ctx, executeMsg.TargetContractInfo.ChainReferenceID, executeMsg.TargetContractInfo.CompassID, &types.SubmitLogicCall{
-			HexContractAddress: executeMsg.TargetContractInfo.SmartContractAddress,
-			Payload:            []byte(executeMsg.Payload),
-			Deadline:           ctx.BlockTime().UTC().Add(5 * time.Minute).Unix(),
-			Abi:                []byte(executeMsg.TargetContractInfo.SmartContractABI),
-		})
+		err = k.AddSmartContractExecutionToConsensus(
+			ctx,
+			executeMsg.TargetContractInfo.ChainReferenceID,
+			executeMsg.TargetContractInfo.CompassID,
+			&types.SubmitLogicCall{
+				HexContractAddress: executeMsg.TargetContractInfo.SmartContractAddress,
+				Payload:            executeMsg.Payload,
+				Deadline:           ctx.BlockTime().UTC().Add(10 * time.Minute).Unix(),
+				Abi:                []byte(executeMsg.TargetContractInfo.SmartContractABI),
+			},
+		)
 
 		if err != nil {
 			return nil, nil, err
