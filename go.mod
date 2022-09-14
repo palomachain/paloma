@@ -3,10 +3,10 @@ module github.com/palomachain/paloma
 go 1.18
 
 require (
-	github.com/CosmWasm/wasmd v0.27.0
+	github.com/CosmWasm/wasmd v0.28.0
 	github.com/CosmWasm/wasmvm v1.0.0
-	github.com/cosmos/cosmos-sdk v0.45.4
-	github.com/cosmos/ibc-go/v3 v3.0.0
+	github.com/cosmos/cosmos-sdk v0.46.1
+	github.com/cosmos/ibc-go/v4 v4.0.0
 	github.com/ethereum/go-ethereum v1.10.18
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
@@ -136,5 +136,4 @@ require (
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/keybase/go-keychain => github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
-	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
