@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -311,16 +310,16 @@ type ExecuteEVMFromCosmWasm struct {
 	Payload []byte `json:"payload"`
 }
 
-func (e ExecuteEVMFromCosmWasm) valid() bool {
+func (e ExecuteEVMFromCosmWasm) valid() error {
 	zero := ExecuteEVMFromCosmWasm{}
 	if e.TargetContractInfo == zero.TargetContractInfo {
-		return false
+		return whoops.String("target contract info is empty")
 	}
 	if len(e.Payload) == 0 {
-		return false
+		return whoops.String("payload bytes is empty")
 	}
 	// todo: add more in the future
-	return true
+	return nil
 }
 
 func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
@@ -328,10 +327,10 @@ func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 		var executeMsg ExecuteEVMFromCosmWasm
 		err := json.Unmarshal(msg.Custom, &executeMsg)
 		if err != nil {
-			return nil, nil, whoops.Wrap(err, wasmtypes.ErrUnknownMsg)
+			return nil, nil, err
 		}
-		if !executeMsg.valid() {
-			return nil, nil, wasmtypes.ErrUnknownMsg
+		if err = executeMsg.valid(); err != nil {
+			return nil, nil, whoops.Wrap(err, ErrWasmExecuteMessageNotValid)
 		}
 
 		ci, err := k.GetChainInfo(ctx, executeMsg.TargetContractInfo.ChainReferenceID)

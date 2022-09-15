@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -811,7 +810,7 @@ var _ = Describe("wasm message handler", func() {
 	Context("invalid message", func() {
 		When("message is empty", func() {
 			It("returns an error", func() {
-				Expect(subject()).To(MatchError(wasmtypes.ErrUnknownMsg))
+				Expect(subject()).To(MatchError(keeper.ErrWasmExecuteMessageNotValid))
 			})
 		})
 	})
