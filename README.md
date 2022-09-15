@@ -29,6 +29,8 @@ We have active, helpful communities on Twitter and Telegram.
 
 * [Twitter](https://twitter.com/paloma_chain)
 * [Telegram](https://t.me/palomachain)
+* [Discord](https://discord.gg/HtUvgxvh5N)
+* [Forum](https://forum.palomachain.com/)
 
 ## International Community
 
