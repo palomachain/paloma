@@ -66,9 +66,3 @@ func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
 func (k Keeper) jobsStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(k.Store(ctx), types.KeyPrefix("jobs"))
 }
-
-func (k Keeper) AddJob(ctx sdk.Context) {
-
-}
-
-func (k Keeper) Bla(ctx sdk.Context) {}

@@ -1,19 +1,59 @@
 syntax = "proto3";
 package palomachain.paloma.scheduler;
 
+import "gogoproto/gogo.proto";
+import "google/protobuf/any.proto";
+
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
 message Job {
   // chosen by the owner
   string ID = 1;
 
-  AccAddress owner = 2;
+  bytes owner = 2[ (gogoproto.casttype) =
+                         "github.com/cosmos/cosmos-sdk/types.AccAddress" ];
 
   // routing information
-  string chainType = 3; // evm, bitcoin, cosmos,...
-  string chainReferenceID = 4; // paloma, terra, bitcoin, ropsten,...
+  string chainType = 3; // evm, bitcoin?, cosmos,...
+  string chainReferenceID = 4; // terra, bitcoin, ropsten, eth-main, binance,...
 
-  // anything?
-  Any payload = 5;
+  string gasDenom = 5;
+
+  google.protobuf.Any definition = 6;
+
+  bool isPayloadModifiable = 7;
+
+  Permissions permissions = 8;
 }
 
+message Permissions {
+  repeated JobRunnerActor canRun = 1; 
+
+  repeated JobRunnerActor canNotRun = 2; 
+}
+
+// JobRunnerActor defines an actor that runs the job. It can be a smart contract from any other
+// external chain, a direct user on paloma, a smart contract in paloma, etc,...
+message JobRunnerActor {
+  string chainType = 1;
+  string chainReferenceID = 2;
+
+  bytes address = 3;
+}
+
+
+// TODO
+// ----------------
+/* message Coin { */
+/*   string denom = 1; */
+/*   string amount = 2; */
+/* } */
+
+/* message JobWallet { */
+/*   string JobID = 1; */
+ 
+/*   repeated Coin coins = 2; */
+  
+/*   string chainType = 3; */
+/*   string chainReferenceID = 4; */
+/* } */
