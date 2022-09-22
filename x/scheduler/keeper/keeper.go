@@ -87,7 +87,7 @@ func (k Keeper) addNewJob(ctx sdk.Context, job *types.Job) error {
 		return err
 	}
 
-	return keeperutil.Save(ctx, k.cdc, job.GetID(), job)
+	return keeperutil.Save(k.jobsStore(ctx), k.cdc, []byte(job.GetID()), job)
 }
 
 func (k Keeper) JobIDExists(ctx sdk.Context, jobID string) bool {
