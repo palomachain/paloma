@@ -1,5 +1,9 @@
 package slice
 
+import (
+	"fmt"
+)
+
 func FromMapValues[K comparable, V any](mm map[K]V) []V {
 	res := make([]V, 0, len(mm))
 	for _, v := range mm {
@@ -23,6 +27,21 @@ func MakeMapKeys[K comparable, V any](slice []V, getKey func(V) K) map[K]V {
 	m := make(map[K]V, len(slice))
 	for _, item := range slice {
 		key := getKey(item)
+		m[key] = item
+	}
+	return m
+}
+
+// MakeMapKeys makes a map of provided slice and a function which
+// returns a key value for a map given an item from a slice.
+// If key already exists, it panics.
+func MustMakeMapKeys[K comparable, V any](slice []V, getKey func(V) K) map[K]V {
+	m := make(map[K]V, len(slice))
+	for _, item := range slice {
+		key := getKey(item)
+		if _, ok := m[key]; ok {
+			panic(fmt.Sprintf("key %s already exists", key))
+		}
 		m[key] = item
 	}
 	return m

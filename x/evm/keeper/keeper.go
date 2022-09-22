@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/slice"
 	wasmutil "github.com/palomachain/paloma/util/wasm"
@@ -196,7 +197,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		ctx,
 		consensustypes.Queue(
 			ConsensusTurnstoneMessage,
-			consensustypes.ChainTypeEVM,
+			xchainType,
 			chainInfo.GetChainReferenceID(),
 		),
 		&types.Message{
@@ -393,7 +394,7 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsC
 		// 	continue
 		// }
 		for subQueue, queueInfo := range SupportedConsensusQueues {
-			queue := fmt.Sprintf("EVM/%s/%s", chainInfo.ChainReferenceID, subQueue)
+			queue := consensustypes.Queue(subQueue, xchainType, xchain.ReferenceID(chainInfo.ChainReferenceID))
 			opts := *consensus.ApplyOpts(nil,
 				consensus.WithChainInfo(consensustypes.ChainTypeEVM, chainInfo.ChainReferenceID),
 				consensus.WithQueueTypeName(queue),
@@ -541,7 +542,7 @@ func (k Keeper) RemoveSupportForChain(ctx sdk.Context, proposal *types.RemoveCha
 	k.chainInfoStore(ctx).Delete([]byte(proposal.GetChainReferenceID()))
 
 	for subQueue := range SupportedConsensusQueues {
-		queue := fmt.Sprintf("EVM/%s/%s", proposal.GetChainReferenceID(), subQueue)
+		queue := consensustypes.Queue(subQueue, xchainType, xchain.ReferenceID(proposal.GetChainReferenceID()))
 		k.ConsensusKeeper.RemoveConsensusQueue(ctx, queue)
 	}
 
@@ -698,7 +699,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 
 		// clear all previous instances of the update valset from the queue
 		k.Logger(ctx).Debug("clearing previous instances of the update valset from the queue")
-		queueName := consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.GetChainReferenceID())
+		queueName := consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chain.GetChainReferenceID()))
 		messages, err := k.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 999)
 		if err != nil {
 			k.Logger(ctx).Error("unable to get messages from queue", "err", err)
@@ -729,7 +730,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		// put update valset message into the queue
 		k.ConsensusKeeper.PutMessageInQueue(
 			ctx,
-			consensustypes.Queue(ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, chain.GetChainReferenceID()),
+			consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chain.GetChainReferenceID())),
 			&types.Message{
 				TurnstoneID:      string(chain.GetSmartContractUniqueID()),
 				ChainReferenceID: chain.GetChainReferenceID(),
@@ -820,6 +821,10 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 }
 
 func (k Keeper) ModuleName() string { return types.ModuleName }
+
+func queueName(ref xchain.ReferenceID, subqueue string) string {
+	return fmt.Sprintf("%s/%s/%s", xchainType, ref, subqueue)
+}
 
 func generateSmartContractID(ctx sdk.Context) (res [32]byte) {
 	b := []byte(fmt.Sprintf("%d", ctx.BlockHeight()))
