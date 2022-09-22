@@ -1,5 +1,6 @@
 syntax = "proto3";
 package palomachain.paloma.scheduler;
+import "scheduler/job.proto";
 
 // this line is used by starport scaffolding # 1
 
@@ -9,8 +10,17 @@ option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
 // Msg defines the Msg service.
 service Msg {
+  rpc CreateJob(MsgCreateJob) returns (MsgCreateJobResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
+
+message MsgCreateJob {
+  string creator = 1;
+  Job job = 2;
+}
+
+message MsgCreateJobResponse {
+}
 
 // this line is used by starport scaffolding # proto/tx/message

@@ -3,8 +3,10 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/vizualni/whoops"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -77,6 +79,12 @@ func (k Keeper) addNewJob(ctx sdk.Context, job *types.Job) error {
 		return types.ErrJobWithIDAlreadyExists.Wrap(job.GetID())
 	}
 
+	if job.GetOwner().Empty() {
+		return types.ErrInvalid.Wrap("owner can't be empty when adding a new job")
+	}
+
+	job.ID = strings.ToLower(job.ID)
+
 	router := job.GetRouting()
 
 	chain := k.chains[router.GetChainType()]
@@ -84,7 +92,7 @@ func (k Keeper) addNewJob(ctx sdk.Context, job *types.Job) error {
 	// unmarshaling now to test if the payload is correct
 	_, err := chain.UnmarshalJob(job.GetDefinition(), job.GetPayload())
 	if err != nil {
-		return err
+		return whoops.Wrap(err, types.ErrInvalid)
 	}
 
 	return keeperutil.Save(k.jobsStore(ctx), k.cdc, []byte(job.GetID()), job)

@@ -5,7 +5,6 @@ package types
 
 import (
 	fmt "fmt"
-	_ "github.com/cosmos/cosmos-sdk/codec/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
@@ -29,14 +28,15 @@ type Job struct {
 	// chosen by the owner
 	ID       string                                        `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	Owner    github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,2,opt,name=owner,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"owner,omitempty"`
-	Routing  *Routing                                      `protobuf:"bytes,3,opt,name=routing,proto3" json:"routing,omitempty"`
+	Routing  Routing                                       `protobuf:"bytes,3,opt,name=routing,proto3" json:"routing"`
 	GasDenom string                                        `protobuf:"bytes,4,opt,name=gasDenom,proto3" json:"gasDenom,omitempty"`
 	// this is the job definition. It is something arbitrary as it's different for every chain.
 	Definition []byte `protobuf:"bytes,5,opt,name=definition,proto3" json:"definition,omitempty"`
 	// this is the payload for the job
-	Payload             []byte       `protobuf:"bytes,6,opt,name=payload,proto3" json:"payload,omitempty"`
-	IsPayloadModifiable bool         `protobuf:"varint,7,opt,name=isPayloadModifiable,proto3" json:"isPayloadModifiable,omitempty"`
-	Permissions         *Permissions `protobuf:"bytes,8,opt,name=permissions,proto3" json:"permissions,omitempty"`
+	Payload             []byte      `protobuf:"bytes,6,opt,name=payload,proto3" json:"payload,omitempty"`
+	IsPayloadModifiable bool        `protobuf:"varint,7,opt,name=isPayloadModifiable,proto3" json:"isPayloadModifiable,omitempty"`
+	Permissions         Permissions `protobuf:"bytes,8,opt,name=permissions,proto3" json:"permissions"`
+	Triggers            []*Trigger  `protobuf:"bytes,9,rep,name=triggers,proto3" json:"triggers,omitempty"`
 }
 
 func (m *Job) Reset()         { *m = Job{} }
@@ -86,11 +86,11 @@ func (m *Job) GetOwner() github_com_cosmos_cosmos_sdk_types.AccAddress {
 	return nil
 }
 
-func (m *Job) GetRouting() *Routing {
+func (m *Job) GetRouting() Routing {
 	if m != nil {
 		return m.Routing
 	}
-	return nil
+	return Routing{}
 }
 
 func (m *Job) GetGasDenom() string {
@@ -121,12 +121,176 @@ func (m *Job) GetIsPayloadModifiable() bool {
 	return false
 }
 
-func (m *Job) GetPermissions() *Permissions {
+func (m *Job) GetPermissions() Permissions {
 	if m != nil {
 		return m.Permissions
 	}
+	return Permissions{}
+}
+
+func (m *Job) GetTriggers() []*Trigger {
+	if m != nil {
+		return m.Triggers
+	}
 	return nil
 }
+
+type Trigger struct {
+	// Types that are valid to be assigned to Trigger:
+	//	*Trigger_Schedule
+	//	*Trigger_Event
+	Trigger isTrigger_Trigger `protobuf_oneof:"trigger"`
+}
+
+func (m *Trigger) Reset()         { *m = Trigger{} }
+func (m *Trigger) String() string { return proto.CompactTextString(m) }
+func (*Trigger) ProtoMessage()    {}
+func (*Trigger) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83fdf22a9a416f8a, []int{1}
+}
+func (m *Trigger) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Trigger) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Trigger.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Trigger) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Trigger.Merge(m, src)
+}
+func (m *Trigger) XXX_Size() int {
+	return m.Size()
+}
+func (m *Trigger) XXX_DiscardUnknown() {
+	xxx_messageInfo_Trigger.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Trigger proto.InternalMessageInfo
+
+type isTrigger_Trigger interface {
+	isTrigger_Trigger()
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type Trigger_Schedule struct {
+	Schedule *ScheduleTrigger `protobuf:"bytes,1,opt,name=schedule,proto3,oneof" json:"schedule,omitempty"`
+}
+type Trigger_Event struct {
+	Event *EventTrigger `protobuf:"bytes,2,opt,name=event,proto3,oneof" json:"event,omitempty"`
+}
+
+func (*Trigger_Schedule) isTrigger_Trigger() {}
+func (*Trigger_Event) isTrigger_Trigger()    {}
+
+func (m *Trigger) GetTrigger() isTrigger_Trigger {
+	if m != nil {
+		return m.Trigger
+	}
+	return nil
+}
+
+func (m *Trigger) GetSchedule() *ScheduleTrigger {
+	if x, ok := m.GetTrigger().(*Trigger_Schedule); ok {
+		return x.Schedule
+	}
+	return nil
+}
+
+func (m *Trigger) GetEvent() *EventTrigger {
+	if x, ok := m.GetTrigger().(*Trigger_Event); ok {
+		return x.Event
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Trigger) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*Trigger_Schedule)(nil),
+		(*Trigger_Event)(nil),
+	}
+}
+
+type ScheduleTrigger struct {
+}
+
+func (m *ScheduleTrigger) Reset()         { *m = ScheduleTrigger{} }
+func (m *ScheduleTrigger) String() string { return proto.CompactTextString(m) }
+func (*ScheduleTrigger) ProtoMessage()    {}
+func (*ScheduleTrigger) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83fdf22a9a416f8a, []int{2}
+}
+func (m *ScheduleTrigger) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ScheduleTrigger) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ScheduleTrigger.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ScheduleTrigger) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ScheduleTrigger.Merge(m, src)
+}
+func (m *ScheduleTrigger) XXX_Size() int {
+	return m.Size()
+}
+func (m *ScheduleTrigger) XXX_DiscardUnknown() {
+	xxx_messageInfo_ScheduleTrigger.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ScheduleTrigger proto.InternalMessageInfo
+
+type EventTrigger struct {
+}
+
+func (m *EventTrigger) Reset()         { *m = EventTrigger{} }
+func (m *EventTrigger) String() string { return proto.CompactTextString(m) }
+func (*EventTrigger) ProtoMessage()    {}
+func (*EventTrigger) Descriptor() ([]byte, []int) {
+	return fileDescriptor_83fdf22a9a416f8a, []int{3}
+}
+func (m *EventTrigger) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTrigger) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTrigger.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTrigger) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTrigger.Merge(m, src)
+}
+func (m *EventTrigger) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTrigger) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTrigger.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTrigger proto.InternalMessageInfo
 
 type Permissions struct {
 	Whitelist []*Runner `protobuf:"bytes,1,rep,name=whitelist,proto3" json:"whitelist,omitempty"`
@@ -137,7 +301,7 @@ func (m *Permissions) Reset()         { *m = Permissions{} }
 func (m *Permissions) String() string { return proto.CompactTextString(m) }
 func (*Permissions) ProtoMessage()    {}
 func (*Permissions) Descriptor() ([]byte, []int) {
-	return fileDescriptor_83fdf22a9a416f8a, []int{1}
+	return fileDescriptor_83fdf22a9a416f8a, []int{4}
 }
 func (m *Permissions) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -192,7 +356,7 @@ func (m *Runner) Reset()         { *m = Runner{} }
 func (m *Runner) String() string { return proto.CompactTextString(m) }
 func (*Runner) ProtoMessage()    {}
 func (*Runner) Descriptor() ([]byte, []int) {
-	return fileDescriptor_83fdf22a9a416f8a, []int{2}
+	return fileDescriptor_83fdf22a9a416f8a, []int{5}
 }
 func (m *Runner) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -252,7 +416,7 @@ func (m *Routing) Reset()         { *m = Routing{} }
 func (m *Routing) String() string { return proto.CompactTextString(m) }
 func (*Routing) ProtoMessage()    {}
 func (*Routing) Descriptor() ([]byte, []int) {
-	return fileDescriptor_83fdf22a9a416f8a, []int{3}
+	return fileDescriptor_83fdf22a9a416f8a, []int{6}
 }
 func (m *Routing) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -297,6 +461,9 @@ func (m *Routing) GetChainReferenceID() string {
 
 func init() {
 	proto.RegisterType((*Job)(nil), "palomachain.paloma.scheduler.Job")
+	proto.RegisterType((*Trigger)(nil), "palomachain.paloma.scheduler.Trigger")
+	proto.RegisterType((*ScheduleTrigger)(nil), "palomachain.paloma.scheduler.ScheduleTrigger")
+	proto.RegisterType((*EventTrigger)(nil), "palomachain.paloma.scheduler.EventTrigger")
 	proto.RegisterType((*Permissions)(nil), "palomachain.paloma.scheduler.Permissions")
 	proto.RegisterType((*Runner)(nil), "palomachain.paloma.scheduler.Runner")
 	proto.RegisterType((*Routing)(nil), "palomachain.paloma.scheduler.Routing")
@@ -305,37 +472,42 @@ func init() {
 func init() { proto.RegisterFile("scheduler/job.proto", fileDescriptor_83fdf22a9a416f8a) }
 
 var fileDescriptor_83fdf22a9a416f8a = []byte{
-	// 470 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x53, 0xcd, 0x8e, 0xd3, 0x30,
-	0x10, 0xae, 0x53, 0xb6, 0x3f, 0xee, 0x0a, 0x21, 0x2f, 0x07, 0x53, 0xad, 0x42, 0x54, 0x81, 0x14,
-	0x90, 0x36, 0x86, 0xe5, 0x01, 0xd0, 0x56, 0x95, 0x50, 0x41, 0x48, 0x2b, 0xc3, 0x89, 0x9b, 0x93,
-	0xb8, 0xa9, 0xd9, 0xc4, 0x13, 0xc5, 0x89, 0x96, 0xbe, 0x05, 0x17, 0xde, 0x89, 0xe3, 0x1e, 0x39,
-	0x21, 0xd4, 0xbe, 0x02, 0x27, 0x4e, 0xa8, 0x4e, 0x7f, 0x22, 0x81, 0x8a, 0x90, 0xf6, 0x94, 0xf9,
-	0xe6, 0x9b, 0x6f, 0xe2, 0xb1, 0xbf, 0xc1, 0x27, 0x26, 0x9a, 0xcb, 0xb8, 0x4a, 0x65, 0xc1, 0x3e,
-	0x42, 0x18, 0xe4, 0x05, 0x94, 0x40, 0x4e, 0x73, 0x91, 0x42, 0x26, 0xa2, 0xb9, 0x50, 0x3a, 0xa8,
-	0xe3, 0x60, 0x57, 0x37, 0xbc, 0x9f, 0x40, 0x02, 0xb6, 0x90, 0xad, 0xa3, 0x5a, 0x33, 0x7c, 0x90,
-	0x00, 0x24, 0xa9, 0x64, 0x16, 0x85, 0xd5, 0x8c, 0x09, 0xbd, 0xa8, 0xa9, 0xd1, 0x4f, 0x07, 0xb7,
-	0x5f, 0x43, 0x48, 0xee, 0x62, 0x67, 0x3a, 0xa1, 0xc8, 0x43, 0x7e, 0x9f, 0x3b, 0xd3, 0x09, 0x79,
-	0x85, 0x8f, 0xe0, 0x5a, 0xcb, 0x82, 0x3a, 0x1e, 0xf2, 0x8f, 0xc7, 0xcf, 0x7f, 0x7d, 0x7f, 0x78,
-	0x96, 0xa8, 0x72, 0x5e, 0x85, 0x41, 0x04, 0x19, 0x8b, 0xc0, 0x64, 0x60, 0x36, 0x9f, 0x33, 0x13,
-	0x5f, 0xb1, 0x72, 0x91, 0x4b, 0x13, 0x5c, 0x44, 0xd1, 0x45, 0x1c, 0x17, 0xd2, 0x18, 0x5e, 0xeb,
-	0xc9, 0x4b, 0xdc, 0x2d, 0xa0, 0x2a, 0x95, 0x4e, 0x68, 0xdb, 0x43, 0xfe, 0xe0, 0xfc, 0x71, 0x70,
-	0x68, 0x82, 0x80, 0xd7, 0xc5, 0x7c, 0xab, 0x22, 0x43, 0xdc, 0x4b, 0x84, 0x99, 0x48, 0x0d, 0x19,
-	0xbd, 0x63, 0xcf, 0xb7, 0xc3, 0xc4, 0xc5, 0x38, 0x96, 0x33, 0xa5, 0x55, 0xa9, 0x40, 0xd3, 0xa3,
-	0xf5, 0x51, 0x79, 0x23, 0x43, 0x28, 0xee, 0xe6, 0x62, 0x91, 0x82, 0x88, 0x69, 0xc7, 0x92, 0x5b,
-	0x48, 0x9e, 0xe1, 0x13, 0x65, 0x2e, 0x6b, 0xf0, 0x16, 0x62, 0x35, 0x53, 0x22, 0x4c, 0x25, 0xed,
-	0x7a, 0xc8, 0xef, 0xf1, 0xbf, 0x51, 0xe4, 0x0d, 0x1e, 0xe4, 0xb2, 0xc8, 0x94, 0x31, 0x0a, 0xb4,
-	0xa1, 0x3d, 0x3b, 0xcc, 0x93, 0xc3, 0xc3, 0x5c, 0xee, 0x05, 0xbc, 0xa9, 0x1e, 0x7d, 0x41, 0x78,
-	0xd0, 0x20, 0xc9, 0x18, 0xf7, 0xaf, 0xe7, 0xaa, 0x94, 0xa9, 0x32, 0x25, 0x45, 0x5e, 0xdb, 0x1f,
-	0x9c, 0x3f, 0xfa, 0xc7, 0x3d, 0x55, 0x5a, 0xcb, 0x82, 0xef, 0x65, 0xeb, 0x1e, 0x61, 0x2a, 0xa2,
-	0x2b, 0xdb, 0xc3, 0xf9, 0x9f, 0x1e, 0x3b, 0xd9, 0x28, 0xc5, 0x9d, 0x3a, 0x49, 0x4e, 0x71, 0xdf,
-	0xaa, 0xde, 0x2f, 0x72, 0xb9, 0xf1, 0xc5, 0x3e, 0x41, 0x9e, 0xe2, 0x7b, 0x16, 0x70, 0x39, 0x93,
-	0x85, 0xd4, 0x91, 0x9c, 0x4e, 0xac, 0x53, 0xfa, 0xfc, 0x8f, 0xfc, 0xfa, 0x11, 0x44, 0xed, 0x09,
-	0xeb, 0x80, 0x63, 0xbe, 0x85, 0xa3, 0x77, 0xb8, 0xbb, 0x79, 0xee, 0xdb, 0xfb, 0xdd, 0x78, 0xfa,
-	0x75, 0xe9, 0xa2, 0x9b, 0xa5, 0x8b, 0x7e, 0x2c, 0x5d, 0xf4, 0x79, 0xe5, 0xb6, 0x6e, 0x56, 0x6e,
-	0xeb, 0xdb, 0xca, 0x6d, 0x7d, 0x60, 0x0d, 0x03, 0x37, 0xee, 0x65, 0x13, 0xb3, 0x4f, 0x6c, 0xbf,
-	0x6f, 0xd6, 0xcd, 0x61, 0xc7, 0xee, 0xc8, 0x8b, 0xdf, 0x01, 0x00, 0x00, 0xff, 0xff, 0xbf, 0x54,
-	0x2b, 0x02, 0x89, 0x03, 0x00, 0x00,
+	// 546 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0x8e, 0x93, 0x26, 0x8e, 0x27, 0x51, 0x81, 0x2d, 0x87, 0x55, 0x55, 0xb9, 0x91, 0x05, 0x52,
+	0xa8, 0x14, 0x1b, 0xc2, 0x13, 0xc4, 0x4a, 0x05, 0x01, 0x21, 0x95, 0x6d, 0x4f, 0xdc, 0xfc, 0xb3,
+	0x71, 0x96, 0x3a, 0xbb, 0x96, 0xd7, 0xa1, 0xe4, 0x2d, 0xb8, 0xf0, 0x08, 0x3c, 0x09, 0x97, 0x1e,
+	0x7b, 0xe4, 0x54, 0xa1, 0xe4, 0x2d, 0x38, 0xa1, 0xac, 0x9d, 0xc4, 0x02, 0x94, 0x0a, 0xa9, 0x27,
+	0xcf, 0xcc, 0x7e, 0xdf, 0xb7, 0xb3, 0xe3, 0xfd, 0x16, 0x0e, 0x64, 0x30, 0xa1, 0xe1, 0x2c, 0xa6,
+	0xa9, 0xf3, 0x51, 0xf8, 0x76, 0x92, 0x8a, 0x4c, 0xa0, 0xa3, 0xc4, 0x8b, 0xc5, 0xd4, 0x0b, 0x26,
+	0x1e, 0xe3, 0x76, 0x1e, 0xdb, 0x1b, 0xdc, 0xe1, 0xe3, 0x48, 0x44, 0x42, 0x01, 0x9d, 0x55, 0x94,
+	0x73, 0xac, 0xef, 0x35, 0xa8, 0xbd, 0x11, 0x3e, 0xda, 0x87, 0xea, 0x68, 0x88, 0xb5, 0x8e, 0xd6,
+	0x35, 0x48, 0x75, 0x34, 0x44, 0xaf, 0xa0, 0x2e, 0xae, 0x38, 0x4d, 0x71, 0xb5, 0xa3, 0x75, 0xdb,
+	0xee, 0x8b, 0x5f, 0xb7, 0xc7, 0xbd, 0x88, 0x65, 0x93, 0x99, 0x6f, 0x07, 0x62, 0xea, 0x04, 0x42,
+	0x4e, 0x85, 0x2c, 0x3e, 0x3d, 0x19, 0x5e, 0x3a, 0xd9, 0x3c, 0xa1, 0xd2, 0x1e, 0x04, 0xc1, 0x20,
+	0x0c, 0x53, 0x2a, 0x25, 0xc9, 0xf9, 0xe8, 0x14, 0xf4, 0x54, 0xcc, 0x32, 0xc6, 0x23, 0x5c, 0xeb,
+	0x68, 0xdd, 0x56, 0xff, 0xa9, 0xbd, 0xab, 0x4d, 0x9b, 0xe4, 0x60, 0x77, 0xef, 0xfa, 0xf6, 0xb8,
+	0x42, 0xd6, 0x5c, 0x74, 0x08, 0xcd, 0xc8, 0x93, 0x43, 0xca, 0xc5, 0x14, 0xef, 0xa9, 0x2e, 0x37,
+	0x39, 0x32, 0x01, 0x42, 0x3a, 0x66, 0x9c, 0x65, 0x4c, 0x70, 0x5c, 0x5f, 0x35, 0x4c, 0x4a, 0x15,
+	0x84, 0x41, 0x4f, 0xbc, 0x79, 0x2c, 0xbc, 0x10, 0x37, 0xd4, 0xe2, 0x3a, 0x45, 0xcf, 0xe1, 0x80,
+	0xc9, 0xb3, 0x3c, 0x79, 0x27, 0x42, 0x36, 0x66, 0x9e, 0x1f, 0x53, 0xac, 0x77, 0xb4, 0x6e, 0x93,
+	0xfc, 0x6b, 0x09, 0xbd, 0x87, 0x56, 0x42, 0xd3, 0x29, 0x93, 0x92, 0x09, 0x2e, 0x71, 0x53, 0x1d,
+	0xe9, 0xd9, 0xee, 0x23, 0x9d, 0x6d, 0x09, 0xc5, 0xb1, 0xca, 0x1a, 0x68, 0x00, 0xcd, 0x2c, 0x65,
+	0x51, 0x44, 0x53, 0x89, 0x8d, 0x4e, 0xed, 0xee, 0x11, 0x5d, 0xe4, 0x68, 0xb2, 0xa1, 0x59, 0xdf,
+	0x34, 0xd0, 0x8b, 0x2a, 0x7a, 0x0b, 0xcd, 0x35, 0x54, 0xfd, 0xcf, 0x56, 0xbf, 0xb7, 0x5b, 0xee,
+	0xbc, 0x88, 0x0a, 0x81, 0xd7, 0x15, 0xb2, 0x11, 0x40, 0x2e, 0xd4, 0xe9, 0x27, 0xca, 0x33, 0x75,
+	0x0d, 0x5a, 0xfd, 0x93, 0xdd, 0x4a, 0xa7, 0x2b, 0xe8, 0x56, 0x26, 0xa7, 0xba, 0x06, 0xe8, 0x45,
+	0xa3, 0xd6, 0x23, 0x78, 0xf0, 0xc7, 0x6e, 0xd6, 0x3e, 0xb4, 0xcb, 0x34, 0xeb, 0xab, 0x06, 0xad,
+	0xd2, 0xc0, 0x90, 0x0b, 0xc6, 0xd5, 0x84, 0x65, 0x34, 0x66, 0x32, 0xc3, 0x9a, 0x1a, 0xcf, 0x93,
+	0x3b, 0x6e, 0xd0, 0x8c, 0x73, 0x9a, 0x92, 0x2d, 0x6d, 0xa5, 0xe1, 0xc7, 0x5e, 0x70, 0xa9, 0x34,
+	0xaa, 0xff, 0xa3, 0xb1, 0xa1, 0x59, 0x31, 0x34, 0xf2, 0x22, 0x3a, 0x02, 0x43, 0xb1, 0x2e, 0xe6,
+	0x09, 0x2d, 0x1c, 0xb3, 0x2d, 0xa0, 0x13, 0x78, 0xa8, 0x12, 0x42, 0xc7, 0x34, 0xa5, 0x3c, 0xa0,
+	0xa3, 0xa1, 0x1a, 0x9e, 0x41, 0xfe, 0xaa, 0xaf, 0x2e, 0xa6, 0x97, 0xbb, 0x45, 0x79, 0xa3, 0x4d,
+	0xd6, 0xa9, 0x75, 0x0e, 0x7a, 0x61, 0x84, 0xfb, 0xdb, 0xce, 0x1d, 0x5d, 0x2f, 0x4c, 0xed, 0x66,
+	0x61, 0x6a, 0x3f, 0x17, 0xa6, 0xf6, 0x65, 0x69, 0x56, 0x6e, 0x96, 0x66, 0xe5, 0xc7, 0xd2, 0xac,
+	0x7c, 0x70, 0x4a, 0xd6, 0x2e, 0xcd, 0xa5, 0x88, 0x9d, 0xcf, 0xce, 0xf6, 0xb9, 0x51, 0x3e, 0xf7,
+	0x1b, 0xea, 0xf5, 0x78, 0xf9, 0x3b, 0x00, 0x00, 0xff, 0xff, 0x93, 0x1d, 0xfd, 0x6a, 0x88, 0x04,
+	0x00, 0x00,
 }
 
 func (m *Job) Marshal() (dAtA []byte, err error) {
@@ -358,18 +530,30 @@ func (m *Job) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.Permissions != nil {
-		{
-			size, err := m.Permissions.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
+	if len(m.Triggers) > 0 {
+		for iNdEx := len(m.Triggers) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Triggers[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintJob(dAtA, i, uint64(size))
 			}
-			i -= size
-			i = encodeVarintJob(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x4a
 		}
-		i--
-		dAtA[i] = 0x42
 	}
+	{
+		size, err := m.Permissions.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintJob(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x42
 	if m.IsPayloadModifiable {
 		i--
 		if m.IsPayloadModifiable {
@@ -401,18 +585,16 @@ func (m *Job) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x22
 	}
-	if m.Routing != nil {
-		{
-			size, err := m.Routing.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintJob(dAtA, i, uint64(size))
+	{
+		size, err := m.Routing.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
-		i--
-		dAtA[i] = 0x1a
+		i -= size
+		i = encodeVarintJob(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0x1a
 	if len(m.Owner) > 0 {
 		i -= len(m.Owner)
 		copy(dAtA[i:], m.Owner)
@@ -427,6 +609,126 @@ func (m *Job) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xa
 	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Trigger) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Trigger) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Trigger) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Trigger != nil {
+		{
+			size := m.Trigger.Size()
+			i -= size
+			if _, err := m.Trigger.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Trigger_Schedule) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Trigger_Schedule) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Schedule != nil {
+		{
+			size, err := m.Schedule.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintJob(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+func (m *Trigger_Event) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Trigger_Event) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Event != nil {
+		{
+			size, err := m.Event.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintJob(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
+func (m *ScheduleTrigger) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ScheduleTrigger) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ScheduleTrigger) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTrigger) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTrigger) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTrigger) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
 	return len(dAtA) - i, nil
 }
 
@@ -587,10 +889,8 @@ func (m *Job) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovJob(uint64(l))
 	}
-	if m.Routing != nil {
-		l = m.Routing.Size()
-		n += 1 + l + sovJob(uint64(l))
-	}
+	l = m.Routing.Size()
+	n += 1 + l + sovJob(uint64(l))
 	l = len(m.GasDenom)
 	if l > 0 {
 		n += 1 + l + sovJob(uint64(l))
@@ -606,10 +906,68 @@ func (m *Job) Size() (n int) {
 	if m.IsPayloadModifiable {
 		n += 2
 	}
-	if m.Permissions != nil {
-		l = m.Permissions.Size()
+	l = m.Permissions.Size()
+	n += 1 + l + sovJob(uint64(l))
+	if len(m.Triggers) > 0 {
+		for _, e := range m.Triggers {
+			l = e.Size()
+			n += 1 + l + sovJob(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *Trigger) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Trigger != nil {
+		n += m.Trigger.Size()
+	}
+	return n
+}
+
+func (m *Trigger_Schedule) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Schedule != nil {
+		l = m.Schedule.Size()
 		n += 1 + l + sovJob(uint64(l))
 	}
+	return n
+}
+func (m *Trigger_Event) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Event != nil {
+		l = m.Event.Size()
+		n += 1 + l + sovJob(uint64(l))
+	}
+	return n
+}
+func (m *ScheduleTrigger) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *EventTrigger) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
 	return n
 }
 
@@ -802,9 +1160,6 @@ func (m *Job) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Routing == nil {
-				m.Routing = &Routing{}
-			}
 			if err := m.Routing.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -958,13 +1313,264 @@ func (m *Job) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Permissions == nil {
-				m.Permissions = &Permissions{}
-			}
 			if err := m.Permissions.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Triggers", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJob
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthJob
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthJob
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Triggers = append(m.Triggers, &Trigger{})
+			if err := m.Triggers[len(m.Triggers)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipJob(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthJob
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Trigger) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowJob
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Trigger: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Trigger: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Schedule", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJob
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthJob
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthJob
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &ScheduleTrigger{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Trigger = &Trigger_Schedule{v}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Event", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJob
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthJob
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthJob
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &EventTrigger{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Trigger = &Trigger_Event{v}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipJob(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthJob
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ScheduleTrigger) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowJob
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ScheduleTrigger: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ScheduleTrigger: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipJob(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthJob
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTrigger) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowJob
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTrigger: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTrigger: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skipJob(dAtA[iNdEx:])

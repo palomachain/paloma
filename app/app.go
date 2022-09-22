@@ -493,7 +493,7 @@ func New(
 		keys[schedulermoduletypes.StoreKey],
 		keys[schedulermoduletypes.MemStoreKey],
 		app.GetSubspace(schedulermoduletypes.ModuleName),
-		app.BankKeeper,
+		nil,
 	)
 
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)

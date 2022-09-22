@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-    "github.com/palomachain/paloma/x/paloma/types"
-    "github.com/palomachain/paloma/x/paloma/keeper"
-    keepertest "github.com/palomachain/paloma/testutil/keeper"
+	keepertest "github.com/palomachain/paloma/testutil/keeper"
+	"github.com/palomachain/paloma/x/paloma/keeper"
+	"github.com/palomachain/paloma/x/paloma/types"
 )
 
 func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {

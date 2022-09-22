@@ -2,7 +2,6 @@ syntax = "proto3";
 package palomachain.paloma.scheduler;
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/any.proto";
 
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
@@ -15,9 +14,7 @@ message Job {
     (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"
   ];
 
-  Routing routing = 3;
-
-  string gasDenom = 4;
+  Routing routing = 3 [(gogoproto.nullable) = false];
 
   // this is the job definition. It is something arbitrary as it's different for every chain.
   bytes definition = 5;
@@ -27,7 +24,24 @@ message Job {
 
   bool isPayloadModifiable = 7;
 
-  Permissions permissions = 8;
+  Permissions permissions = 8 [(gogoproto.nullable) = false];
+
+  repeated Trigger triggers = 9;
+}
+
+message Trigger {
+  oneof trigger {
+    ScheduleTrigger schedule = 1;
+    EventTrigger event = 2;
+  };
+}
+
+message ScheduleTrigger {
+
+}
+
+message EventTrigger {
+
 }
 
 message Permissions {
