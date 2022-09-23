@@ -1,15 +1,18 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/vizualni/whoops"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkbankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/scheduler/types"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -21,9 +24,10 @@ type (
 		storeKey   sdk.StoreKey
 		memKey     sdk.StoreKey
 		paramstore paramtypes.Subspace
-		bankKeeper sdkbankkeeper.Keeper
 
 		ider keeperutil.IDGenerator
+
+		Chains map[xchain.Type]xchain.Bridge
 	}
 )
 
@@ -32,21 +36,23 @@ func NewKeeper(
 	storeKey,
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
-	// todo(mm): use expected keepers for bankKeeper
-	bankKeeper sdkbankkeeper.Keeper,
-
+	chains []xchain.Bridge,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
+	cm := slice.MustMakeMapKeys(chains, func(c xchain.Bridge) xchain.Type {
+		return c.XChainType()
+	})
+
 	k := &Keeper{
 		cdc:        cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
 		paramstore: ps,
-		bankKeeper: bankKeeper,
+		Chains:     cm,
 	}
 
 	k.ider = keeperutil.NewIDGenerator(k, nil)
@@ -66,3 +72,74 @@ func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
 func (k Keeper) jobsStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(k.Store(ctx), types.KeyPrefix("jobs"))
 }
+
+func (k Keeper) AddNewJob(ctx sdk.Context, job *types.Job) error {
+	if k.JobIDExists(ctx, job.GetID()) {
+		return types.ErrJobWithIDAlreadyExists.Wrap(job.GetID())
+	}
+
+	return k.saveJob(ctx, job)
+}
+
+func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
+	if job.GetOwner().Empty() {
+		return types.ErrInvalid.Wrap("owner can't be empty when adding a new job")
+	}
+
+	if err := job.ValidateBasic(); err != nil {
+		return err
+	}
+
+	router := job.GetRouting()
+
+	chain := k.Chains[router.GetChainType()]
+
+	// unmarshaling now to test if the payload is correct
+	_, err := chain.UnmarshalJob(job.GetDefinition(), job.GetPayload(), router.GetChainReferenceID())
+	if err != nil {
+		return whoops.Wrap(err, types.ErrInvalid)
+	}
+
+	return keeperutil.Save(k.jobsStore(ctx), k.cdc, []byte(job.GetID()), job)
+}
+
+func (k Keeper) JobIDExists(ctx sdk.Context, jobID string) bool {
+	return k.jobsStore(ctx).Has([]byte(jobID))
+}
+
+func (k Keeper) getJob(ctx sdk.Context, jobID string) (*types.Job, error) {
+	job, err := keeperutil.Load[*types.Job](k.jobsStore(ctx), k.cdc, []byte(jobID))
+	if errors.Is(err, keeperutil.ErrNotFound) {
+		return nil, types.ErrJobNotFound.Wrap("job id: " + jobID)
+	}
+
+	return job, nil
+}
+
+// func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, payloadIn []byte) error {
+// 	job := k.getJob(ctx, jobID)
+
+// 	router := job.GetRouting()
+
+// 	chain := k.Chains[router.GetChainType()]
+
+// 	payload := job.GetPayload()
+
+// 	if job.GetIsPayloadModifiable() {
+// 		payload = payloadIn
+// 	}
+
+// 	jobInfo, err = chain.UnmarshalJob(job.GetDefinition(), payload)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	jobInfo, err := chain.UnmarshalJob(job.GetDefinition())
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return k.Consensus.PutMessageInQueue(ctx, jobInfo.Queue, jobInfo.Msg, &consensus.PutOptions{
+// 		RequireSignatures: true,
+// 	})
+// }

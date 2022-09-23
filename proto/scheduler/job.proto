@@ -2,7 +2,6 @@ syntax = "proto3";
 package palomachain.paloma.scheduler;
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/any.proto";
 
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
@@ -15,29 +14,44 @@ message Job {
     (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"
   ];
 
-  Routing routing = 3;
-
-  string gasDenom = 4;
+  Routing routing = 3 [(gogoproto.nullable) = false];
 
   // this is the job definition. It is something arbitrary as it's different for every chain.
-  google.protobuf.Any definition = 5;
+  bytes definition = 5;
 
   // this is the payload for the job
-  google.protobuf.Any payload = 6;
+  bytes payload = 6;
 
   bool isPayloadModifiable = 7;
 
-  Permissions permissions = 8;
+  Permissions permissions = 8 [(gogoproto.nullable) = false];
+
+  repeated Trigger triggers = 9;
+}
+
+message Trigger {
+  oneof trigger {
+    ScheduleTrigger schedule = 1;
+    EventTrigger event = 2;
+  };
+}
+
+message ScheduleTrigger {
+
+}
+
+message EventTrigger {
+
 }
 
 message Permissions {
-  repeated JobRunnerActor whitelist = 1; 
-  repeated JobRunnerActor blacklist = 2; 
+  repeated Runner whitelist = 1; 
+  repeated Runner blacklist = 2; 
 }
 
-// JobRunnerActor defines an actor that runs the job. It can be a smart contract from any other
+// Runner defines an actor that runs the job. It can be a smart contract from any other
 // external chain, a direct user on paloma, a smart contract in paloma, etc,...
-message JobRunnerActor {
+message Runner {
   string chainType = 1;
   string chainReferenceID = 2;
 

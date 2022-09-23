@@ -2,10 +2,12 @@ package types
 
 import (
 	"fmt"
+	"time"
+
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	proto "github.com/gogo/protobuf/proto"
-	"time"
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 )
 
 type ConsensusQueueType string
@@ -100,6 +102,6 @@ func (b *Batch) GetSignBytes() []byte {
 	return b.GetBytesToSign()
 }
 
-func Queue(queueTypeName string, chainType ChainType, chainReferenceID string) string {
-	return fmt.Sprintf("%s/%s/%s", chainType, chainReferenceID, queueTypeName)
+func Queue(queueTypeName string, typ xchain.Type, refID xchain.ReferenceID) string {
+	return fmt.Sprintf("%s/%s/%s", typ, refID, queueTypeName)
 }

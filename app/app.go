@@ -92,6 +92,7 @@ import (
 
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 	consensusmodule "github.com/palomachain/paloma/x/consensus"
 	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
@@ -493,7 +494,9 @@ func New(
 		keys[schedulermoduletypes.StoreKey],
 		keys[schedulermoduletypes.MemStoreKey],
 		app.GetSubspace(schedulermoduletypes.ModuleName),
-		app.BankKeeper,
+		[]xchain.Bridge{
+			app.EvmKeeper,
+		},
 	)
 
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)

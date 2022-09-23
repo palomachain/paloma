@@ -5,6 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "scheduler/params.proto";
+import "scheduler/job.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
@@ -15,7 +16,12 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/palomachain/paloma/scheduler/params";
   }
-  // this line is used by starport scaffolding # 2
+  // Queries a list of GetJobByID items.
+	rpc QueryGetJobByID(QueryGetJobByIDRequest) returns (QueryGetJobByIDResponse) {
+		option (google.api.http).get = "/palomachain/paloma/scheduler/get_job_by_id";
+	}
+
+// this line is used by starport scaffolding # 2
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -25,6 +31,14 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryGetJobByIDRequest {
+  string jobID = 1;
+}
+
+message QueryGetJobByIDResponse {
+  Job job = 1;
 }
 
 // this line is used by starport scaffolding # 3

@@ -58,8 +58,9 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx sdk.Context) err
 	type mapkey [2]string
 	mmap := make(map[mapkey]struct{})
 	for _, supported := range k.ExternalChains {
-		for _, cri := range supported.ChainReferenceIDs(ctx) {
-			mmap[mapkey{supported.ChainType(ctx), cri}] = struct{}{}
+		chainType := supported.XChainType()
+		for _, cri := range supported.XChainReferenceIDs(ctx) {
+			mmap[mapkey{string(chainType), string(cri)}] = struct{}{}
 		}
 	}
 

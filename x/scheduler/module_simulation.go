@@ -44,6 +44,10 @@ const (
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgSigningQueueMessage int = 100
 
+	opWeightMsgCreateJob = "op_weight_msg_create_job"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgCreateJob int = 100
+
 	// this line is used by starport scaffolding # simapp/module/const
 )
 
@@ -111,6 +115,17 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 			weightMsgSigningQueueMessage = defaultWeightMsgSigningQueueMessage
 		},
 	)
+
+	var weightMsgCreateJob int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgCreateJob, &weightMsgCreateJob, nil,
+		func(_ *rand.Rand) {
+			weightMsgCreateJob = defaultWeightMsgCreateJob
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgCreateJob,
+		schedulersimulation.SimulateMsgCreateJob(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
 
 	// this line is used by starport scaffolding # simapp/module/operation
 
