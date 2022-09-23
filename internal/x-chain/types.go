@@ -34,13 +34,14 @@ type JobInfo struct {
 }
 
 type JobMarshaller interface {
-	UnmarshalJob(definition []byte, payload []byte) (jobWithPayload JobInfo, err error)
+	// TODO: rename to job verifier
+	UnmarshalJob(definition []byte, payload []byte, refID ReferenceID) (jobWithPayload JobInfo, err error)
 }
 
 type WalletUpdater interface {
 	// every chain that we support should implement this. Using this, we can
 	// ask all chains to send wallet updates to paloma.
-	TriggerWalletUpdate(sdk.Context) error
+	// TriggerWalletUpdate(sdk.Context) error
 }
 
 // errors

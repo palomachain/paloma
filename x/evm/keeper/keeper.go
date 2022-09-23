@@ -14,7 +14,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/slice"
 	wasmutil "github.com/palomachain/paloma/util/wasm"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -830,19 +829,4 @@ func generateSmartContractID(ctx sdk.Context) (res [32]byte) {
 	b := []byte(fmt.Sprintf("%d", ctx.BlockHeight()))
 	copy(res[:], b)
 	return
-}
-
-func (k Keeper) ChainType(_ sdk.Context) string {
-	return "EVM"
-}
-
-func (k Keeper) ChainReferenceIDs(ctx sdk.Context) []string {
-	chainInfos, err := k.GetAllChainInfos(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	return slice.Map(chainInfos, func(ci *types.ChainInfo) string {
-		return ci.GetChainReferenceID()
-	})
 }

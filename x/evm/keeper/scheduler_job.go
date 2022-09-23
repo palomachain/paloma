@@ -3,8 +3,9 @@ package keeper
 import (
 	"encoding/json"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
@@ -16,23 +17,34 @@ func (k Keeper) XChainType() xchain.Type {
 	return xchainType
 }
 
-func (k Keeper) UnmarshalJob(raw string, chainReferenceID xchain.ReferenceID) (xchain.JobInfo, error) {
+func (k Keeper) XChainReferenceIDs(ctx sdk.Context) []xchain.ReferenceID {
+	chainInfos, err := k.GetAllChainInfos(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	return slice.Map(chainInfos, func(ci *types.ChainInfo) xchain.ReferenceID {
+		return xchain.ReferenceID(ci.GetChainReferenceID())
+	})
+}
+
+func (k Keeper) UnmarshalJob(definition, payload []byte, chainReferenceID xchain.ReferenceID) (xchain.JobInfo, error) {
 	ji := xchain.JobInfo{}
 
-	// for now we only support execution type of messages
+	var jobDefinition types.JobDefinition
+	var jobPayload types.JobPayload
 
-	msg := types.SubmitLogicCall{}
-	err := json.Unmarshal([]byte(raw), &msg)
+	err := json.Unmarshal(definition, &jobDefinition)
 	if err != nil {
 		return ji, err
 	}
-	ji.Definition = &msg
-	ji.Queue = consensustypes.Queue(
-		ConsensusTurnstoneMessage,
-		xchainType,
-		chainReferenceID,
-	)
+	err = json.Unmarshal(payload, &jobPayload)
+	if err != nil {
+		return ji, err
+	}
+	// does nothing anymore
 
+	// TODO: this should only verify
 	return ji, nil
 }
 

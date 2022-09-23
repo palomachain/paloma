@@ -6,6 +6,7 @@ import (
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -28,6 +29,5 @@ type ValsetKeeper interface {
 }
 
 type ExternalChainSupporterKeeper interface {
-	ChainType(sdk.Context) string
-	ChainReferenceIDs(sdk.Context) []string
+	xchain.Info
 }

@@ -3,7 +3,6 @@ package keeper
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/vizualni/whoops"
@@ -79,18 +78,20 @@ func (k Keeper) addNewJob(ctx sdk.Context, job *types.Job) error {
 		return types.ErrJobWithIDAlreadyExists.Wrap(job.GetID())
 	}
 
+	return k.saveJob(ctx, job)
+}
+
+func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
 	if job.GetOwner().Empty() {
 		return types.ErrInvalid.Wrap("owner can't be empty when adding a new job")
 	}
-
-	job.ID = strings.ToLower(job.ID)
 
 	router := job.GetRouting()
 
 	chain := k.chains[router.GetChainType()]
 
 	// unmarshaling now to test if the payload is correct
-	_, err := chain.UnmarshalJob(job.GetDefinition(), job.GetPayload())
+	_, err := chain.UnmarshalJob(job.GetDefinition(), job.GetPayload(), router.GetChainReferenceID())
 	if err != nil {
 		return whoops.Wrap(err, types.ErrInvalid)
 	}

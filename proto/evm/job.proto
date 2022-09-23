@@ -1,0 +1,15 @@
+syntax = "proto3";
+package palomachain.paloma.evm;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/evm/types";
+
+message JobDefinition {
+  string address = 1; 
+  string ABI = 2;
+}
+
+message JobPayload {
+  string hexPayload = 1;
+}
