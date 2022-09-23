@@ -33,7 +33,7 @@ func (j *Job) ValidateBasic() error {
 			}
 		}
 		if !found {
-			return ErrInvalid.Wrapf("job ID contains an invalid character: %s. allowed characters: %s", l, allowedJobIDCharacters)
+			return ErrInvalid.Wrapf("job ID contains an invalid character: %s. allowed characters: %s", string(l), allowedJobIDCharacters)
 		}
 	}
 

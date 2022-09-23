@@ -40,7 +40,7 @@ func MustMakeMapKeys[K comparable, V any](slice []V, getKey func(V) K) map[K]V {
 	for _, item := range slice {
 		key := getKey(item)
 		if _, ok := m[key]; ok {
-			panic(fmt.Sprintf("key %s already exists", key))
+			panic(fmt.Sprintf("key %s already exists", any(key)))
 		}
 		m[key] = item
 	}
