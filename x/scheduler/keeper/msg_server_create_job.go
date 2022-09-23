@@ -18,7 +18,7 @@ func (k msgServer) CreateJob(goCtx context.Context, msg *types.MsgCreateJob) (*t
 		return nil, err
 	}
 
-	err = k.addNewJob(ctx, job)
+	err = k.AddNewJob(ctx, job)
 	if err != nil {
 		return nil, err
 	}

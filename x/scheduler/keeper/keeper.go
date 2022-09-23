@@ -27,7 +27,7 @@ type (
 
 		ider keeperutil.IDGenerator
 
-		chains map[xchain.Type]xchain.Bridge
+		Chains map[xchain.Type]xchain.Bridge
 	}
 )
 
@@ -52,7 +52,7 @@ func NewKeeper(
 		storeKey:   storeKey,
 		memKey:     memKey,
 		paramstore: ps,
-		chains:     cm,
+		Chains:     cm,
 	}
 
 	k.ider = keeperutil.NewIDGenerator(k, nil)
@@ -73,7 +73,7 @@ func (k Keeper) jobsStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(k.Store(ctx), types.KeyPrefix("jobs"))
 }
 
-func (k Keeper) addNewJob(ctx sdk.Context, job *types.Job) error {
+func (k Keeper) AddNewJob(ctx sdk.Context, job *types.Job) error {
 	if k.JobIDExists(ctx, job.GetID()) {
 		return types.ErrJobWithIDAlreadyExists.Wrap(job.GetID())
 	}
@@ -86,9 +86,13 @@ func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
 		return types.ErrInvalid.Wrap("owner can't be empty when adding a new job")
 	}
 
+	if err := job.ValidateBasic(); err != nil {
+		return err
+	}
+
 	router := job.GetRouting()
 
-	chain := k.chains[router.GetChainType()]
+	chain := k.Chains[router.GetChainType()]
 
 	// unmarshaling now to test if the payload is correct
 	_, err := chain.UnmarshalJob(job.GetDefinition(), job.GetPayload(), router.GetChainReferenceID())
@@ -117,7 +121,7 @@ func (k Keeper) getJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 
 // 	router := job.GetRouting()
 
-// 	chain := k.chains[router.GetChainType()]
+// 	chain := k.Chains[router.GetChainType()]
 
 // 	payload := job.GetPayload()
 

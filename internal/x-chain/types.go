@@ -11,6 +11,7 @@ type (
 	ReferenceID = string
 )
 
+//go:generate mockery --name=Bridge
 type Bridge interface {
 	Info
 	JobMarshaller
