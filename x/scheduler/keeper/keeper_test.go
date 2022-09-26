@@ -222,7 +222,7 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			BeforeEach(func() {
 				bm = xchainmocks.NewBridge(GinkgoT())
 				typ := xchain.Type("abc")
-				bm.On("UnmarshalJob", mock.Anything, mock.Anything, xchain.ReferenceID("def")).Return(xchain.JobInfo{}, nil)
+				bm.On("VerifyJob", mock.Anything, mock.Anything, mock.Anything, xchain.ReferenceID("def")).Return(nil)
 				k.Chains[typ] = bm
 			})
 			BeforeEach(func() {

@@ -95,7 +95,7 @@ func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
 	chain := k.Chains[router.GetChainType()]
 
 	// unmarshaling now to test if the payload is correct
-	_, err := chain.UnmarshalJob(job.GetDefinition(), job.GetPayload(), router.GetChainReferenceID())
+	err := chain.VerifyJob(ctx, job.GetDefinition(), job.GetPayload(), router.GetChainReferenceID())
 	if err != nil {
 		return whoops.Wrap(err, types.ErrInvalid)
 	}
