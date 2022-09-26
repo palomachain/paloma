@@ -21,7 +21,7 @@ func TestScheduler(t *testing.T) {
 	RunSpecs(t, "Scheduler")
 }
 
-var _ = Describe("jailing validators with missing external chain infos", func() {
+var _ = Describe("jobs!", func() {
 
 	var k *keeper.Keeper
 	var ctx sdk.Context
@@ -245,6 +245,56 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 				Expect(k.JobIDExists(ctx, job.ID)).To(BeTrue())
 				By("calling save again returns an error that job already exists")
 				Expect(subject()).To(MatchError(types.ErrJobWithIDAlreadyExists))
+			})
+
+			When("scheduling a job", func() {
+				var jobPayloadModifiable types.Job
+
+				BeforeEach(func() {
+					job = types.Job{
+						ID:    "job1",
+						Owner: sdk.AccAddress("bla"),
+						Routing: types.Routing{
+							ChainType:        "abc",
+							ChainReferenceID: "def",
+						},
+						Definition: []byte("definition"),
+						Payload:    []byte("payload"),
+					}
+					jobPayloadModifiable = types.Job{
+						ID:    "job2",
+						Owner: sdk.AccAddress("bla"),
+						Routing: types.Routing{
+							ChainType:        "abc",
+							ChainReferenceID: "def",
+						},
+						Definition:          []byte("definition"),
+						Payload:             []byte("payload"),
+						IsPayloadModifiable: true,
+					}
+				})
+
+				BeforeEach(func() {
+					Expect(k.AddNewJob(ctx, &job)).To(BeNil())
+					Expect(k.AddNewJob(ctx, &jobPayloadModifiable)).To(BeNil())
+				})
+
+				It("schedules both jobs with the default payload", func() {
+					bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+					Expect(k.ScheduleNow(ctx, job.GetID(), nil)).To(BeNil())
+					Expect(k.ScheduleNow(ctx, jobPayloadModifiable.GetID(), nil)).To(BeNil())
+				})
+
+				Context("modifying payload", func() {
+					It("returns an error", func() {
+						Expect(k.ScheduleNow(ctx, job.GetID(), []byte("new payload"))).To(MatchError(types.ErrCannotModifyJobPayload))
+					})
+					It("doesn't return an error", func() {
+						bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+						Expect(k.ScheduleNow(ctx, jobPayloadModifiable.GetID(), []byte("new payload"))).To(BeNil())
+					})
+				})
+
 			})
 		})
 	})
