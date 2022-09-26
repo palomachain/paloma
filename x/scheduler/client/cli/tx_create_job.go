@@ -39,7 +39,7 @@ func CmdCreateJob() *cobra.Command {
 				ID: ff.id,
 				Routing: types.Routing{
 					ChainType:        ff.chType,
-					ChainReferenceID: ff.chType,
+					ChainReferenceID: ff.chRefId,
 				},
 				IsPayloadModifiable: ff.payloadModifiable,
 			}

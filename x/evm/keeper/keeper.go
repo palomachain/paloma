@@ -124,7 +124,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 		ctx,
 		consensustypes.Queue(
 			ConsensusTurnstoneMessage,
-			consensustypes.ChainTypeEVM,
+			xchainType,
 			chainReferenceID,
 		),
 		&types.Message{
@@ -395,7 +395,7 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsC
 		for subQueue, queueInfo := range SupportedConsensusQueues {
 			queue := consensustypes.Queue(subQueue, xchainType, xchain.ReferenceID(chainInfo.ChainReferenceID))
 			opts := *consensus.ApplyOpts(nil,
-				consensus.WithChainInfo(consensustypes.ChainTypeEVM, chainInfo.ChainReferenceID),
+				consensus.WithChainInfo(xchainType, chainInfo.ChainReferenceID),
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(queueInfo.msgType),
 				consensus.WithBytesToSignCalc(
@@ -767,7 +767,7 @@ func (k Keeper) CheckExternalBalancesForChain(ctx sdk.Context, chainReferenceID 
 	}
 	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
-		consensustypes.Queue(ConsensusGetValidatorBalances, consensustypes.ChainTypeEVM, chainReferenceID),
+		consensustypes.Queue(ConsensusGetValidatorBalances, xchainType, chainReferenceID),
 		&msg,
 		&consensus.PutOptions{
 			RequireSignatures: false,
@@ -807,7 +807,7 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 
 	for _, val := range validators {
 		for _, ext := range val.GetExternalChainInfos() {
-			if ext.GetChainType() == "EVM" && ext.GetChainReferenceID() == chainReferenceID {
+			if strings.ToLower(ext.GetChainType()) == xchainType && ext.GetChainReferenceID() == chainReferenceID {
 				power := maxPower * (float64(val.ShareCount.Int64()) / float64(totalPower))
 
 				valset.Validators = append(valset.Validators, ext.Address)

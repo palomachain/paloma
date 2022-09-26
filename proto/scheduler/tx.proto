@@ -11,6 +11,7 @@ option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 // Msg defines the Msg service.
 service Msg {
   rpc CreateJob(MsgCreateJob) returns (MsgCreateJobResponse);
+  rpc ExecuteJob(MsgExecuteJob) returns (MsgExecuteJobResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
@@ -21,6 +22,15 @@ message MsgCreateJob {
 }
 
 message MsgCreateJobResponse {
+}
+
+message MsgExecuteJob {
+  string creator = 1;
+  string jobID = 2;
+  bytes payload = 3;
+}
+
+message MsgExecuteJobResponse {
 }
 
 // this line is used by starport scaffolding # proto/tx/message

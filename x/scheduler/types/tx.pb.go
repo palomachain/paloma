@@ -115,15 +115,113 @@ func (m *MsgCreateJobResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCreateJobResponse proto.InternalMessageInfo
 
+type MsgExecuteJob struct {
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	JobID   string `protobuf:"bytes,2,opt,name=jobID,proto3" json:"jobID,omitempty"`
+	Payload []byte `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"`
+}
+
+func (m *MsgExecuteJob) Reset()         { *m = MsgExecuteJob{} }
+func (m *MsgExecuteJob) String() string { return proto.CompactTextString(m) }
+func (*MsgExecuteJob) ProtoMessage()    {}
+func (*MsgExecuteJob) Descriptor() ([]byte, []int) {
+	return fileDescriptor_173d5f20e9e1161a, []int{2}
+}
+func (m *MsgExecuteJob) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgExecuteJob) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgExecuteJob.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgExecuteJob) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgExecuteJob.Merge(m, src)
+}
+func (m *MsgExecuteJob) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgExecuteJob) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgExecuteJob.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgExecuteJob proto.InternalMessageInfo
+
+func (m *MsgExecuteJob) GetCreator() string {
+	if m != nil {
+		return m.Creator
+	}
+	return ""
+}
+
+func (m *MsgExecuteJob) GetJobID() string {
+	if m != nil {
+		return m.JobID
+	}
+	return ""
+}
+
+func (m *MsgExecuteJob) GetPayload() []byte {
+	if m != nil {
+		return m.Payload
+	}
+	return nil
+}
+
+type MsgExecuteJobResponse struct {
+}
+
+func (m *MsgExecuteJobResponse) Reset()         { *m = MsgExecuteJobResponse{} }
+func (m *MsgExecuteJobResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgExecuteJobResponse) ProtoMessage()    {}
+func (*MsgExecuteJobResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_173d5f20e9e1161a, []int{3}
+}
+func (m *MsgExecuteJobResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgExecuteJobResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgExecuteJobResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgExecuteJobResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgExecuteJobResponse.Merge(m, src)
+}
+func (m *MsgExecuteJobResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgExecuteJobResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgExecuteJobResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgExecuteJobResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgCreateJob)(nil), "palomachain.paloma.scheduler.MsgCreateJob")
 	proto.RegisterType((*MsgCreateJobResponse)(nil), "palomachain.paloma.scheduler.MsgCreateJobResponse")
+	proto.RegisterType((*MsgExecuteJob)(nil), "palomachain.paloma.scheduler.MsgExecuteJob")
+	proto.RegisterType((*MsgExecuteJobResponse)(nil), "palomachain.paloma.scheduler.MsgExecuteJobResponse")
 }
 
 func init() { proto.RegisterFile("scheduler/tx.proto", fileDescriptor_173d5f20e9e1161a) }
 
 var fileDescriptor_173d5f20e9e1161a = []byte{
-	// 230 bytes of a gzipped FileDescriptorProto
+	// 304 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x2a, 0x4e, 0xce, 0x48,
 	0x4d, 0x29, 0xcd, 0x49, 0x2d, 0xd2, 0x2f, 0xa9, 0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x92,
 	0x29, 0x48, 0xcc, 0xc9, 0xcf, 0x4d, 0x4c, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x83, 0xb0, 0xf5, 0xe0,
@@ -132,13 +230,17 @@ var fileDescriptor_173d5f20e9e1161a = []byte{
 	0x9c, 0xfc, 0x22, 0x09, 0x46, 0x05, 0x46, 0x0d, 0xce, 0x20, 0x18, 0x57, 0xc8, 0x98, 0x8b, 0x39,
 	0x2b, 0x3f, 0x49, 0x82, 0x49, 0x81, 0x51, 0x83, 0xdb, 0x48, 0x51, 0x0f, 0x9f, 0x55, 0x7a, 0x5e,
 	0xf9, 0x49, 0x41, 0x20, 0xd5, 0x4a, 0x62, 0x5c, 0x22, 0xc8, 0xc6, 0x07, 0xa5, 0x16, 0x17, 0xe4,
-	0xe7, 0x15, 0xa7, 0x1a, 0x15, 0x71, 0x31, 0xfb, 0x16, 0xa7, 0x0b, 0x65, 0x73, 0x71, 0x22, 0xac,
-	0xd6, 0xc2, 0x6f, 0x26, 0xb2, 0x39, 0x52, 0x46, 0xc4, 0xab, 0x85, 0xd9, 0xe9, 0xe4, 0x79, 0xe2,
-	0x91, 0x1c, 0xe3, 0x85, 0x47, 0x72, 0x8c, 0x0f, 0x1e, 0xc9, 0x31, 0x4e, 0x78, 0x2c, 0xc7, 0x70,
-	0xe1, 0xb1, 0x1c, 0xc3, 0x8d, 0xc7, 0x72, 0x0c, 0x51, 0xfa, 0xe9, 0x99, 0x25, 0x19, 0xa5, 0x49,
-	0x7a, 0xc9, 0xf9, 0xb9, 0xfa, 0x48, 0xe6, 0x42, 0xd9, 0xfa, 0x15, 0xfa, 0x48, 0x61, 0x5d, 0x59,
-	0x90, 0x5a, 0x9c, 0xc4, 0x06, 0x0e, 0x3c, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x4b, 0x26,
-	0xe3, 0x11, 0x85, 0x01, 0x00, 0x00,
+	0xe7, 0x15, 0xa7, 0x2a, 0x45, 0x72, 0xf1, 0xfa, 0x16, 0xa7, 0xbb, 0x56, 0xa4, 0x26, 0x97, 0x12,
+	0xb2, 0x57, 0x84, 0x8b, 0x35, 0x2b, 0x3f, 0xc9, 0xd3, 0x05, 0x6c, 0x33, 0x67, 0x10, 0x84, 0x03,
+	0x52, 0x5f, 0x90, 0x58, 0x99, 0x93, 0x9f, 0x98, 0x22, 0xc1, 0xac, 0xc0, 0xa8, 0xc1, 0x13, 0x04,
+	0xe3, 0x2a, 0x89, 0x73, 0x89, 0xa2, 0x18, 0x0d, 0xb3, 0xd3, 0xe8, 0x11, 0x23, 0x17, 0xb3, 0x6f,
+	0x71, 0xba, 0x50, 0x36, 0x17, 0x27, 0xc2, 0xbf, 0x5a, 0xf8, 0x3d, 0x82, 0xec, 0x78, 0x29, 0x23,
+	0xe2, 0xd5, 0xc2, 0x2c, 0x15, 0xca, 0xe3, 0xe2, 0x42, 0xf2, 0xa5, 0x36, 0x41, 0x13, 0x10, 0x8a,
+	0xa5, 0x8c, 0x49, 0x50, 0x0c, 0xb3, 0xcf, 0xc9, 0xf3, 0xc4, 0x23, 0x39, 0xc6, 0x0b, 0x8f, 0xe4,
+	0x18, 0x1f, 0x3c, 0x92, 0x63, 0x9c, 0xf0, 0x58, 0x8e, 0xe1, 0xc2, 0x63, 0x39, 0x86, 0x1b, 0x8f,
+	0xe5, 0x18, 0xa2, 0xf4, 0xd3, 0x33, 0x4b, 0x32, 0x4a, 0x93, 0xf4, 0x92, 0xf3, 0x73, 0xf5, 0x91,
+	0x0c, 0x86, 0xb2, 0xf5, 0x2b, 0xf4, 0x91, 0x12, 0x54, 0x65, 0x41, 0x6a, 0x71, 0x12, 0x1b, 0x38,
+	0x85, 0x18, 0x03, 0x02, 0x00, 0x00, 0xff, 0xff, 0x08, 0x8e, 0x1e, 0x34, 0x6a, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -154,6 +256,7 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
 	CreateJob(ctx context.Context, in *MsgCreateJob, opts ...grpc.CallOption) (*MsgCreateJobResponse, error)
+	ExecuteJob(ctx context.Context, in *MsgExecuteJob, opts ...grpc.CallOption) (*MsgExecuteJobResponse, error)
 }
 
 type msgClient struct {
@@ -173,9 +276,19 @@ func (c *msgClient) CreateJob(ctx context.Context, in *MsgCreateJob, opts ...grp
 	return out, nil
 }
 
+func (c *msgClient) ExecuteJob(ctx context.Context, in *MsgExecuteJob, opts ...grpc.CallOption) (*MsgExecuteJobResponse, error) {
+	out := new(MsgExecuteJobResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.scheduler.Msg/ExecuteJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	CreateJob(context.Context, *MsgCreateJob) (*MsgCreateJobResponse, error)
+	ExecuteJob(context.Context, *MsgExecuteJob) (*MsgExecuteJobResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -184,6 +297,9 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) CreateJob(ctx context.Context, req *MsgCreateJob) (*MsgCreateJobResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateJob not implemented")
+}
+func (*UnimplementedMsgServer) ExecuteJob(ctx context.Context, req *MsgExecuteJob) (*MsgExecuteJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteJob not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -208,6 +324,24 @@ func _Msg_CreateJob_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_ExecuteJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgExecuteJob)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ExecuteJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/palomachain.paloma.scheduler.Msg/ExecuteJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ExecuteJob(ctx, req.(*MsgExecuteJob))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "palomachain.paloma.scheduler.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -215,6 +349,10 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateJob",
 			Handler:    _Msg_CreateJob_Handler,
+		},
+		{
+			MethodName: "ExecuteJob",
+			Handler:    _Msg_ExecuteJob_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -286,6 +424,73 @@ func (m *MsgCreateJobResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgExecuteJob) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgExecuteJob) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgExecuteJob) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Payload) > 0 {
+		i -= len(m.Payload)
+		copy(dAtA[i:], m.Payload)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Payload)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.JobID) > 0 {
+		i -= len(m.JobID)
+		copy(dAtA[i:], m.JobID)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.JobID)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgExecuteJobResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgExecuteJobResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgExecuteJobResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -315,6 +520,36 @@ func (m *MsgCreateJob) Size() (n int) {
 }
 
 func (m *MsgCreateJobResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgExecuteJob) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.JobID)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Payload)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgExecuteJobResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -474,6 +709,204 @@ func (m *MsgCreateJobResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgCreateJobResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgExecuteJob) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgExecuteJob: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgExecuteJob: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field JobID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.JobID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Payload", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Payload = append(m.Payload[:0], dAtA[iNdEx:postIndex]...)
+			if m.Payload == nil {
+				m.Payload = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgExecuteJobResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgExecuteJobResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgExecuteJobResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

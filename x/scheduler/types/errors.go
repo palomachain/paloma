@@ -15,4 +15,6 @@ var (
 	ErrJobWithIDAlreadyExists = sdkerrors.Register(ModuleName, 1200, "job with id already exists")
 	ErrJobNotFound            = sdkerrors.Register(ModuleName, 1201, "job not found")
 	ErrInvalid                = sdkerrors.Register(ModuleName, 1202, "invalid")
+
+	ErrCannotModifyJobPayload = sdkerrors.Register(ModuleName, 1203, "cannot modify job's payload")
 )

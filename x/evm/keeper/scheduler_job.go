@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,7 +12,7 @@ import (
 )
 
 var (
-	xchainType = xchain.Type("EVM")
+	xchainType = xchain.Type("evm")
 )
 
 var _ xchain.Bridge = Keeper{}
@@ -69,7 +68,7 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, chainRef
 	return k.AddSmartContractExecutionToConsensus(
 		ctx,
 		chainReferenceID,
-		fmt.Sprintf("%d", ci.GetActiveSmartContractID()),
+		string(ci.GetSmartContractUniqueID()),
 		&types.SubmitLogicCall{
 			HexContractAddress: def.GetAddress(),
 
