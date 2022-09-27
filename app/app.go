@@ -496,6 +496,7 @@ func New(
 		keys[schedulermoduletypes.StoreKey],
 		keys[schedulermoduletypes.MemStoreKey],
 		app.GetSubspace(schedulermoduletypes.ModuleName),
+		app.AccountKeeper,
 		[]xchain.Bridge{
 			app.EvmKeeper,
 		},

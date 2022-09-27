@@ -27,6 +27,11 @@ message Job {
   Permissions permissions = 8 [(gogoproto.nullable) = false];
 
   repeated Trigger triggers = 9;
+
+  bytes address = 10 [
+    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"
+  ];
+  
 }
 
 message Trigger {

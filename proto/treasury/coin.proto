@@ -1,0 +1,15 @@
+syntax = "proto3";
+package palomachain.paloma.treasury;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/treasury/types";
+
+message Coin {
+  bytes amount = 1 [(gogoproto.casttype)="math/big.Int"];
+  string denom = 2;
+  
+  string chainType = 3;
+  string chainReferenceID = 4;
+}
+

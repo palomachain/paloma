@@ -1,0 +1,46 @@
+syntax = "proto3";
+package palomachain.paloma.treasury;
+
+import "gogoproto/gogo.proto";
+import "treasury/coin.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/palomachain/paloma/x/treasury/types";
+
+
+message LedgerData {
+  uint64 ID = 1;
+  
+  uint64 blockHeight = 2;
+  google.protobuf.Timestamp blockTime = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+
+
+  User from = 4 [ (gogoproto.nullable) = false ];
+  User to = 5 [ (gogoproto.nullable) = false ];
+  Coin amount = 6 [ (gogoproto.nullable) = false ];
+
+  google.protobuf.Any origin = 7;
+}
+
+message User {
+  oneof type {
+    string job = 1;
+
+    bytes accAddress = 2 [
+      (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"
+    ];
+
+    ExternalAddress externalAddress = 3;
+  }
+}
+
+message ExternalAddress {
+  bytes address = 1;
+
+  string chainType = 2;
+  string chainReferenceID = 3;
+}
