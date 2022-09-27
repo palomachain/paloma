@@ -162,23 +162,23 @@ var _ = Describe("jobs!", func() {
 				Permissions: types.Permissions{
 					Whitelist: []*types.Runner{
 						{
-							ChainType:        "EVM",
+							ChainType:        "evm",
 							ChainReferenceID: "bla",
 						},
 						{
 							Address:          []byte("bla"),
-							ChainType:        "EVM",
+							ChainType:        "evm",
 							ChainReferenceID: "bla",
 						},
 					},
 					Blacklist: []*types.Runner{
 						{
-							ChainType:        "EVM",
+							ChainType:        "evm",
 							ChainReferenceID: "bla",
 						},
 						{
 							Address:          []byte("bla"),
-							ChainType:        "EVM",
+							ChainType:        "evm",
 							ChainReferenceID: "bla",
 						},
 					},

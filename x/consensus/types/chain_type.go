@@ -3,6 +3,6 @@ package types
 type ChainType = string
 
 const (
-	ChainTypeEVM    = ChainType("EVM")
+	ChainTypeEVM    = ChainType("evm")
 	ChainTypeCosmos = ChainType("cosmos")
 )

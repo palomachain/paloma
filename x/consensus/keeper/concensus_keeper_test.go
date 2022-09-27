@@ -171,7 +171,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				msg := &types.SimpleMessage{}
 				err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
-				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val1"), "EVM", "test", "bob").Return(
+				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val1"), "evm", "test", "bob").Return(
 					[]byte("signing-key"),
 					nil,
 				)
@@ -201,12 +201,12 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
 
-				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val3"), "EVM", "test", "bob3").Return(
+				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val3"), "evm", "test", "bob3").Return(
 					[]byte("signing-key-1"),
 					nil,
 				)
 
-				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val4"), "EVM", "test", "bob4").Return(
+				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val4"), "evm", "test", "bob4").Return(
 					[]byte("signing-key-2"),
 					nil,
 				)
@@ -246,12 +246,12 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				err = sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
 
-				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val3"), "EVM", "test", "bob3").Return(
+				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val3"), "evm", "test", "bob3").Return(
 					[]byte("signing-key-1"),
 					nil,
 				)
 
-				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val4"), "EVM", "test", "bob4").Return(
+				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val4"), "evm", "test", "bob4").Return(
 					[]byte("signing-key-2"),
 					nil,
 				)
@@ -305,17 +305,17 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				err = sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
 
-				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val2"), "EVM", "test", "bob2").Return(
+				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val2"), "evm", "test", "bob2").Return(
 					[]byte("signing-key-2"),
 					nil,
 				)
 
-				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val3"), "EVM", "test", "bob3").Return(
+				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val3"), "evm", "test", "bob3").Return(
 					[]byte("signing-key-3"),
 					nil,
 				)
 
-				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val4"), "EVM", "test", "bob4").Return(
+				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val4"), "evm", "test", "bob4").Return(
 					[]byte("signing-key-4"),
 					nil,
 				)
@@ -384,7 +384,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
 
-				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("404"), "EVM", "test", "404").Return(
+				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("404"), "evm", "test", "404").Return(
 					[]byte("signing-key-1"),
 					nil,
 				)
