@@ -2,16 +2,20 @@ package keeper
 
 import (
 	"encoding/json"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
 var (
-	xchainType = xchain.Type("EVM")
+	xchainType = xchain.Type("evm")
 )
+
+var _ xchain.Bridge = Keeper{}
 
 func (k Keeper) XChainType() xchain.Type {
 	return xchainType
@@ -28,33 +32,49 @@ func (k Keeper) XChainReferenceIDs(ctx sdk.Context) []xchain.ReferenceID {
 	})
 }
 
-func (k Keeper) UnmarshalJob(definition, payload []byte, chainReferenceID xchain.ReferenceID) (xchain.JobInfo, error) {
-	ji := xchain.JobInfo{}
-
+func (k Keeper) unmarshalJob(definition, payload []byte, chainReferenceID xchain.ReferenceID) (resdef types.JobDefinition, respay types.JobPayload, reserr error) {
 	var jobDefinition types.JobDefinition
 	var jobPayload types.JobPayload
 
 	err := json.Unmarshal(definition, &jobDefinition)
 	if err != nil {
-		return ji, err
+		reserr = err
+		return
 	}
 	err = json.Unmarshal(payload, &jobPayload)
 	if err != nil {
-		return ji, err
+		reserr = err
+		return
 	}
-	// does nothing anymore
 
-	// TODO: this should only verify
-	return ji, nil
+	return jobDefinition, jobPayload, nil
 }
 
-func (k Keeper) JobWithPayload(job any, payload any) (any, error) {
-	slc, ok := job.(*types.SubmitLogicCall)
-	if !ok {
-		return nil, xchain.ErrIncorrectJobType.Format(job, &types.SubmitLogicCall{})
-	}
+func (k Keeper) VerifyJob(ctx sdk.Context, definition, payload []byte, chainReferenceID xchain.ReferenceID) error {
+	_, _, err := k.unmarshalJob(definition, payload, chainReferenceID)
+	return err
+}
 
-	// verify payload
-	slc.Payload = payload.([]byte)
-	return slc, nil
+// ExecuteJob schedules the definition and payload for execution via consensus queue
+func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, chainReferenceID xchain.ReferenceID) error {
+	def, load, err := k.unmarshalJob(definition, payload, chainReferenceID)
+	if err != nil {
+		return err
+	}
+	ci, err := k.GetChainInfo(ctx, chainReferenceID)
+	if err != nil {
+		return err
+	}
+	return k.AddSmartContractExecutionToConsensus(
+		ctx,
+		chainReferenceID,
+		string(ci.GetSmartContractUniqueID()),
+		&types.SubmitLogicCall{
+			HexContractAddress: def.GetAddress(),
+
+			Abi:      common.FromHex(def.GetABI()),
+			Payload:  common.FromHex(load.GetHexPayload()),
+			Deadline: ctx.BlockTime().Add(10 * time.Minute).Unix(),
+		},
+	)
 }

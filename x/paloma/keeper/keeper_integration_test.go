@@ -55,13 +55,13 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			// val[2] doesn't have anything
 			err := a.ValsetKeeper.AddExternalChainInfo(ctx, vals[0].GetOperator(), []*valsettypes.ExternalChainInfo{
 				{
-					ChainType:        "EVM",
+					ChainType:        "evm",
 					ChainReferenceID: "c1",
 					Address:          "abc",
 					Pubkey:           []byte("abc"),
 				},
 				{
-					ChainType:        "EVM",
+					ChainType:        "evm",
 					ChainReferenceID: "c2",
 					Address:          "abc1",
 					Pubkey:           []byte("abc2"),
@@ -70,7 +70,7 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			Expect(err).To(BeNil())
 			err = a.ValsetKeeper.AddExternalChainInfo(ctx, vals[1].GetOperator(), []*valsettypes.ExternalChainInfo{
 				{
-					ChainType:        "EVM",
+					ChainType:        "evm",
 					ChainReferenceID: "c1",
 					Address:          "aaa",
 					Pubkey:           []byte("ccc"),

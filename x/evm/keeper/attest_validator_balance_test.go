@@ -76,7 +76,7 @@ var _ = g.Describe("attest validator balance", func() {
 					"SetValidatorBalance",
 					mock.Anything,
 					req.ValAddresses[i],
-					"EVM",
+					"evm",
 					"chain-id",
 					req.HexAddresses[i],
 					n,

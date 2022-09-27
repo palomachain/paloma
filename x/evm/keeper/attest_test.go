@@ -187,7 +187,7 @@ var _ = g.Describe("attest router", func() {
 						power:   5,
 						externalChain: []*valsettypes.ExternalChainInfo{
 							{
-								ChainType:        "EVM",
+								ChainType:        "evm",
 								ChainReferenceID: newChain.GetChainReferenceID(),
 								Address:          "addr1",
 								Pubkey:           []byte("1"),
@@ -199,7 +199,7 @@ var _ = g.Describe("attest router", func() {
 						power:   5,
 						externalChain: []*valsettypes.ExternalChainInfo{
 							{
-								ChainType:        "EVM",
+								ChainType:        "evm",
 								ChainReferenceID: newChain.GetChainReferenceID(),
 								Address:          "addr2",
 								Pubkey:           []byte("2"),
@@ -211,7 +211,7 @@ var _ = g.Describe("attest router", func() {
 						power:   5,
 						externalChain: []*valsettypes.ExternalChainInfo{
 							{
-								ChainType:        "EVM",
+								ChainType:        "evm",
 								ChainReferenceID: newChain.GetChainReferenceID(),
 								Address:          "addr3",
 								Pubkey:           []byte("3"),

@@ -171,7 +171,7 @@ func TestOnSnapshotBuilt(t *testing.T) {
 		a.StakingKeeper.SetValidator(ctx, val)
 		err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
 			{
-				ChainType:        "EVM",
+				ChainType:        "evm",
 				ChainReferenceID: "bob",
 				Address:          rand.ETHAddress().Hex(),
 				Pubkey:           []byte("pk" + rand.ETHAddress().Hex()),
@@ -180,7 +180,7 @@ func TestOnSnapshotBuilt(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	queue := fmt.Sprintf("EVM/%s/%s", newChain.GetChainReferenceID(), keeper.ConsensusTurnstoneMessage)
+	queue := fmt.Sprintf("evm/%s/%s", newChain.GetChainReferenceID(), keeper.ConsensusTurnstoneMessage)
 
 	msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
 	require.NoError(t, err)
@@ -374,13 +374,13 @@ var _ = Describe("evm", func() {
 					accAddr2 := crypto.PubkeyToAddress(private2.PublicKey)
 					err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
 						{
-							ChainType:        "EVM",
+							ChainType:        "evm",
 							ChainReferenceID: chain1.ChainReferenceID,
 							Address:          accAddr1.Hex(),
 							Pubkey:           []byte("pub key 1" + accAddr1.Hex()),
 						},
 						{
-							ChainType:        "EVM",
+							ChainType:        "evm",
 							ChainReferenceID: chain2.ChainReferenceID,
 							Address:          accAddr2.Hex(),
 							Pubkey:           []byte("pub key 2" + accAddr2.Hex()),
@@ -513,13 +513,13 @@ var _ = Describe("evm", func() {
 						accAddr := crypto.PubkeyToAddress(private.PublicKey)
 						err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
 							{
-								ChainType:        "EVM",
+								ChainType:        "evm",
 								ChainReferenceID: newChain.ChainReferenceID,
 								Address:          accAddr.Hex(),
 								Pubkey:           []byte("pub key" + accAddr.Hex()),
 							},
 							{
-								ChainType:        "EVM",
+								ChainType:        "evm",
 								ChainReferenceID: "new-chain",
 								Address:          accAddr.Hex(),
 								Pubkey:           []byte("pub key" + accAddr.Hex()),
@@ -550,7 +550,7 @@ var _ = Describe("evm", func() {
 					Expect(err).To(BeNil())
 
 					By("it should have upload smart contract message", func() {
-						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/eth-main/evm-turnstone-message", 5)
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/eth-main/evm-turnstone-message", 5)
 
 						Expect(err).To(BeNil())
 						Expect(len(msgs)).To(Equal(1))
@@ -564,13 +564,13 @@ var _ = Describe("evm", func() {
 						_, ok = evmMsg.GetAction().(*types.Message_UploadSmartContract)
 						Expect(ok).To(BeTrue())
 
-						a.ConsensusKeeper.DeleteJob(ctx, "EVM/eth-main/evm-turnstone-message", msgs[0].GetId())
+						a.ConsensusKeeper.DeleteJob(ctx, "evm/eth-main/evm-turnstone-message", msgs[0].GetId())
 					})
 				})
 
 				It("expects update valset message to exist", func() {
 					a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
-					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/eth-main/evm-turnstone-message", 5)
+					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/eth-main/evm-turnstone-message", 5)
 
 					Expect(err).To(BeNil())
 					Expect(len(msgs)).To(Equal(1))
@@ -600,7 +600,7 @@ var _ = Describe("evm", func() {
 
 					It("tries to deploy a smart contract to it", func() {
 						a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
-						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/new-chain/evm-turnstone-message", 5)
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/new-chain/evm-turnstone-message", 5)
 						Expect(err).To(BeNil())
 						Expect(len(msgs)).To(Equal(1))
 
@@ -634,7 +634,7 @@ var _ = Describe("evm", func() {
 							accAddr := crypto.PubkeyToAddress(private.PublicKey)
 							err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
 								{
-									ChainType:        "EVM",
+									ChainType:        "evm",
 									ChainReferenceID: "new-chain",
 									Address:          accAddr.Hex(),
 									Pubkey:           []byte("pub key" + accAddr.Hex()),
@@ -644,13 +644,13 @@ var _ = Describe("evm", func() {
 						}
 					})
 					BeforeEach(func() {
-						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/new-chain/evm-turnstone-message", 5)
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/new-chain/evm-turnstone-message", 5)
 						Expect(err).To(BeNil())
 						for _, msg := range msgs {
 							// we are now clearing the deploy smart contract from the queue as we don't need it
-							a.ConsensusKeeper.DeleteJob(ctx, "EVM/new-chain/evm-turnstone-message", msg.GetId())
+							a.ConsensusKeeper.DeleteJob(ctx, "evm/new-chain/evm-turnstone-message", msg.GetId())
 						}
-						a.ConsensusKeeper.PutMessageInQueue(ctx, "EVM/new-chain/evm-turnstone-message", &types.Message{
+						a.ConsensusKeeper.PutMessageInQueue(ctx, "evm/new-chain/evm-turnstone-message", &types.Message{
 							TurnstoneID:      "abc",
 							ChainReferenceID: "new-chain",
 							Action: &types.Message_UpdateValset{
@@ -664,7 +664,7 @@ var _ = Describe("evm", func() {
 					})
 					It("deletes the old smart deployment", func() {
 						a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
-						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/new-chain/evm-turnstone-message", 5)
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/new-chain/evm-turnstone-message", 5)
 						Expect(err).To(BeNil())
 						Expect(len(msgs)).To(Equal(1))
 
@@ -711,7 +711,7 @@ var _ = Describe("evm", func() {
 				})
 
 				It("doesn't put any message into a queue", func() {
-					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "EVM/eth-main/evm-turnstone-message", 5)
+					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/eth-main/evm-turnstone-message", 5)
 					Expect(err).To(BeNil())
 					Expect(msgs).To(BeZero())
 				})

@@ -92,10 +92,19 @@ func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
 
 	router := job.GetRouting()
 
-	chain := k.Chains[router.GetChainType()]
+	chain, ok := k.Chains[router.GetChainType()]
+	if !ok {
+		supportedChains := slice.FromMapKeys(k.Chains)
+		return types.ErrInvalid.Wrapf("chain type %s is not supported. supported chains: %s", router.GetChainType(), supportedChains)
+	}
 
 	// unmarshaling now to test if the payload is correct
-	_, err := chain.UnmarshalJob(job.GetDefinition(), job.GetPayload(), router.GetChainReferenceID())
+	err := chain.VerifyJob(
+		ctx,
+		job.GetDefinition(),
+		job.GetPayload(),
+		router.GetChainReferenceID(),
+	)
 	if err != nil {
 		return whoops.Wrap(err, types.ErrInvalid)
 	}
@@ -116,30 +125,25 @@ func (k Keeper) getJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 	return job, nil
 }
 
-// func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, payloadIn []byte) error {
-// 	job := k.getJob(ctx, jobID)
+func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte) error {
+	job, err := k.getJob(ctx, jobID)
+	if err != nil {
+		return err
+	}
 
-// 	router := job.GetRouting()
+	router := job.GetRouting()
 
-// 	chain := k.Chains[router.GetChainType()]
+	chain := k.Chains[router.GetChainType()]
 
-// 	payload := job.GetPayload()
+	payload := job.GetPayload()
 
-// 	if job.GetIsPayloadModifiable() {
-// 		payload = payloadIn
-// 	}
+	if len(in) > 0 && !job.GetIsPayloadModifiable() {
+		return types.ErrCannotModifyJobPayload.Wrapf("jobID: %s", jobID)
+	}
 
-// 	jobInfo, err = chain.UnmarshalJob(job.GetDefinition(), payload)
-// 	if err != nil {
-// 		return err
-// 	}
+	if job.GetIsPayloadModifiable() && in != nil {
+		payload = in
+	}
 
-// 	jobInfo, err := chain.UnmarshalJob(job.GetDefinition())
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return k.Consensus.PutMessageInQueue(ctx, jobInfo.Queue, jobInfo.Msg, &consensus.PutOptions{
-// 		RequireSignatures: true,
-// 	})
-// }
+	return chain.ExecuteJob(ctx, job.GetDefinition(), payload, router.GetChainReferenceID())
+}

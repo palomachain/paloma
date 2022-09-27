@@ -14,7 +14,7 @@ type (
 //go:generate mockery --name=Bridge
 type Bridge interface {
 	Info
-	JobMarshaller
+	Jobber
 	WalletUpdater
 }
 
@@ -29,14 +29,9 @@ type CobraTXJobAdder interface {
 	Parse(*cobra.Command, []string) (any, error)
 }
 
-type JobInfo struct {
-	Queue      string
-	Definition any
-}
-
-type JobMarshaller interface {
-	// TODO: rename to job verifier
-	UnmarshalJob(definition []byte, payload []byte, refID ReferenceID) (jobWithPayload JobInfo, err error)
+type Jobber interface {
+	VerifyJob(ctx sdk.Context, definition []byte, payload []byte, refID ReferenceID) (err error)
+	ExecuteJob(ctx sdk.Context, definition []byte, payload []byte, refID ReferenceID) (err error)
 }
 
 type WalletUpdater interface {
