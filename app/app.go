@@ -701,7 +701,7 @@ func New(
 	if mngr := app.SnapshotManager(); mngr != nil {
 		err := mngr.RegisterExtensions(wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.wasmKeeper))
 		if err != nil {
-			panic(fmt.Errorf("faiuled to register snapshot extension: %w", err))
+			panic(fmt.Errorf("failed to register snapshot extension: %w", err))
 		}
 	}
 
