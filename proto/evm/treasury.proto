@@ -1,0 +1,19 @@
+syntax = "proto3";
+import "gogoproto/gogo.proto";
+
+package palomachain.paloma.evm;
+
+option go_package = "github.com/palomachain/paloma/x/evm/types";
+
+
+message FundCollectedEvent {
+  string jobID = 1;
+  bytes amount = 2 [ (gogoproto.casttype) = "math/big.Int" ];
+  string denom = 3;
+  uint64 blockHeight = 4;
+}
+
+message CollectFunds {
+  uint64 fromBlockHeight = 1;
+  uint64 toBlockHeight = 2;
+}

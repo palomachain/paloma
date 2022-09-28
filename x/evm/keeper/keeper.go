@@ -37,6 +37,7 @@ const (
 const (
 	ConsensusTurnstoneMessage     = "evm-turnstone-message"
 	ConsensusGetValidatorBalances = "validators-balances"
+	ConsensusCollectFundEvents    = "collect-fund-events"
 	SignaturePrefix               = "\x19Ethereum Signed Message:\n32"
 )
 
@@ -61,6 +62,13 @@ var SupportedConsensusQueues = map[string]supportedChainInfo{
 		msgType: &types.ValidatorBalancesAttestation{},
 		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestValidatorBalances
+		},
+	},
+	ConsensusCollectFundEvents: {
+		batch:   false,
+		msgType: &types.CollectFunds{},
+		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
+			return k.attestCollectedFunds
 		},
 	},
 }

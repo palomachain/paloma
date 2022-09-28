@@ -68,6 +68,17 @@ func (k Keeper) PayForRunningAJob(
 	return nil
 }
 
+func (k Keeper) KeepingTheNetworkAlive(
+	ctx sdk.Context,
+	valAddr sdk.ValAddress,
+	chainType xchain.Type,
+	chainRefID xchain.ReferenceID,
+	amount sdk.Int,
+	reason string, //e.g. valset update
+) error {
+	return nil
+}
+
 func (k Keeper) AddFunds(
 	ctx sdk.Context,
 	chainType xchain.Type,
