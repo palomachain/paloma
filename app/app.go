@@ -698,6 +698,13 @@ func New(
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
 
+	if mngr := app.SnapshotManager(); mngr != nil {
+		err := mngr.RegisterExtensions(wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.wasmKeeper))
+		if err != nil {
+			panic(fmt.Errorf("failed to register snapshot extension: %w", err))
+		}
+	}
+
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
 			tmos.Exit(err.Error())
