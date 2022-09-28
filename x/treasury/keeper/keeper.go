@@ -20,6 +20,7 @@ type (
 		paramstore paramtypes.Subspace
 		bank       types.BankKeeper
 		account    types.AccountKeeper
+		Chains     []xchain.FundCollecter
 	}
 )
 
@@ -95,4 +96,10 @@ func (k Keeper) AddFunds(
 
 	writeCtx()
 	return nil
+}
+
+func (k Keeper) TriggerFundEvents(ctx sdk.Context) {
+	for _, c := range k.Chains {
+		k.CollectJobFundEvents(ctx)
+	}
 }

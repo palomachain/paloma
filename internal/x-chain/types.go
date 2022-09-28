@@ -11,6 +11,10 @@ type (
 	ReferenceID = string
 )
 
+type RequiredInterfaceToSupport interface {
+	Bridge
+}
+
 //go:generate mockery --name=Bridge
 type Bridge interface {
 	Info
@@ -32,6 +36,10 @@ type CobraTXJobAdder interface {
 type Jobber interface {
 	VerifyJob(ctx sdk.Context, definition []byte, payload []byte, refID ReferenceID) (err error)
 	ExecuteJob(ctx sdk.Context, definition []byte, payload []byte, refID ReferenceID) (err error)
+}
+
+type FundCollecter interface {
+	CollectJobFundEvents(ctx sdk.Context)
 }
 
 type WalletUpdater interface {
