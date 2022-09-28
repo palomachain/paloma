@@ -10,11 +10,21 @@ assignees: ''
 # What is happening?
 <details>
   <summary>Section description</summary>
-<i>Provide as much context as you can. Provide relevant software versions, screenshots, copy & paste error messages and so on.
-Give as much context as you can to make it easier for the developers to figure what is happening.</i>
+<i>Provide as much context as you can. Give as much context as you can to make it easier for the developers to figure what is happening.</i>
 </details>
 
 {WRITE YOUR ANSWER HERE}
+
+# Paloma and pigeon versions and logs
+<details>
+  <summary>Section description</summary>
+<i>Write down paloma version.</i>
+<i>Write down pigeon version.</i>
+<i>Copy and paste pigeon config file as well as relevant ENV variables.</i>
+</details>
+
+{WRITE YOUR ANSWER HERE}
+
 
 # How to reproduce?
 <details>
