@@ -755,7 +755,7 @@ func (k Keeper) CheckExternalBalancesForChain(ctx sdk.Context, chainReferenceID 
 
 	for _, val := range snapshot.GetValidators() {
 		for _, ext := range val.GetExternalChainInfos() {
-			if ext.GetChainReferenceID() == chainReferenceID && ext.GetChainType() == "EVM" {
+			if ext.GetChainReferenceID() == chainReferenceID && ext.GetChainType() == "evm" {
 				msg.ValAddresses = append(msg.ValAddresses, val.GetAddress())
 				msg.HexAddresses = append(msg.HexAddresses, ext.GetAddress())
 			}
