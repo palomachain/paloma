@@ -470,6 +470,17 @@ func (k Keeper) AddSupportForNewChain(
 	default:
 		return whoops.Wrap(ErrUnexpectedError, err)
 	}
+	all, err := k.GetAllChainInfos(ctx)
+	if err != nil {
+		return err
+	}
+	for _, existing := range all {
+		if existing.GetChainID() == chainID {
+			return ErrCannotAddSupportForChainThatExists.Format(chainReferenceID).
+				WrapS("chain with chainID %d already exists", chainID)
+		}
+	}
+
 	chainInfo := &types.ChainInfo{
 		ChainID:              chainID,
 		ChainReferenceID:     chainReferenceID,

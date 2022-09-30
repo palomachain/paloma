@@ -82,7 +82,7 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 		BeforeEach(func() {
 			err := a.EvmKeeper.AddSupportForNewChain(ctx, "c1", 1, 123, "abc", big.NewInt(555))
 			Expect(err).To(BeNil())
-			err = a.EvmKeeper.AddSupportForNewChain(ctx, "c2", 1, 123, "abc", big.NewInt(555))
+			err = a.EvmKeeper.AddSupportForNewChain(ctx, "c2", 2, 123, "abc", big.NewInt(555))
 			Expect(err).To(BeNil())
 		})
 
