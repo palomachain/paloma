@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/vizualni/whoops"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -110,7 +111,11 @@ func (k Keeper) AddFunds(
 }
 
 func (k Keeper) TriggerFundEvents(ctx sdk.Context) {
+	var g whoops.Group
 	for _, c := range k.Chains {
-		k.CollectJobFundEvents(ctx)
+		g.Add(c.CollectJobFundEvents(ctx))
+	}
+	if g.Err() {
+		k.Logger(ctx).With("err", g).Error("error triggering fund events")
 	}
 }

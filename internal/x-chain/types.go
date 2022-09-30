@@ -39,7 +39,7 @@ type Jobber interface {
 }
 
 type FundCollecter interface {
-	CollectJobFundEvents(ctx sdk.Context)
+	CollectJobFundEvents(ctx sdk.Context) error
 }
 
 type WalletUpdater interface {
