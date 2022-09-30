@@ -225,6 +225,18 @@ func TestAddingSupportForNewChain(t *testing.T) {
 		require.Equal(t, newChain.GetChainReferenceID(), gotChainInfo.GetChainReferenceID())
 		require.Equal(t, newChain.GetBlockHashAtHeight(), gotChainInfo.GetReferenceBlockHash())
 		require.Equal(t, newChain.GetBlockHeight(), gotChainInfo.GetReferenceBlockHeight())
+		t.Run("it returns an error if we try to add a chian whose chainID already exists", func(t *testing.T) {
+			newChain.ChainReferenceID = "something_new"
+			err := a.EvmKeeper.AddSupportForNewChain(
+				ctx,
+				newChain.GetChainReferenceID(),
+				newChain.GetChainID(),
+				newChain.GetBlockHeight(),
+				newChain.GetBlockHashAtHeight(),
+				big.NewInt(55),
+			)
+			require.ErrorIs(t, err, keeper.ErrCannotAddSupportForChainThatExists)
+		})
 	})
 
 	t.Run("when chainReferenceID already exists then it returns an error", func(t *testing.T) {
@@ -350,6 +362,7 @@ var _ = Describe("evm", func() {
 				Description:       "bla",
 				BlockHeight:       uint64(456),
 				BlockHashAtHeight: "0x1234",
+				ChainID:           1,
 			}
 			chain2 := &types.AddChainProposal{
 				ChainReferenceID:  "chain2",
@@ -357,6 +370,7 @@ var _ = Describe("evm", func() {
 				Description:       "bla",
 				BlockHeight:       uint64(123),
 				BlockHashAtHeight: "0x5678",
+				ChainID:           2,
 			}
 			BeforeEach(func() {
 				validators = genValidators(25, 25000)
