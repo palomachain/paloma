@@ -1,7 +1,8 @@
 syntax = "proto3";
 package palomachain.paloma.scheduler;
-import "scheduler/job.proto";
 
+import "scheduler/job.proto";
+import "gogoproto/gogo.proto";
 // this line is used by starport scaffolding # 1
 
 // this line is used by starport scaffolding # proto/tx/import
@@ -22,6 +23,9 @@ message MsgCreateJob {
 }
 
 message MsgCreateJobResponse {
+  bytes jobAddress = 1 [
+    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"
+  ];
 }
 
 message MsgExecuteJob {

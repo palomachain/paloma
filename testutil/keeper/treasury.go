@@ -9,17 +9,15 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/palomachain/paloma/x/scheduler/keeper"
-	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/palomachain/paloma/x/treasury/keeper"
+	"github.com/palomachain/paloma/x/treasury/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 )
 
-func SchedulerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
-	logger := log.NewNopLogger()
-
+func TreasuryKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -30,24 +28,25 @@ func SchedulerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	require.NoError(t, stateStore.LoadLatestVersion())
 
 	registry := codectypes.NewInterfaceRegistry()
-	appCodec := codec.NewProtoCodec(registry)
+	cdc := codec.NewProtoCodec(registry)
 
-	paramsSubspace := typesparams.NewSubspace(appCodec,
+	paramsSubspace := typesparams.NewSubspace(cdc,
 		types.Amino,
 		storeKey,
 		memStoreKey,
-		"SchedulerParams",
+		"TreasuryParams",
 	)
 	k := keeper.NewKeeper(
-		appCodec,
+		cdc,
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
 		nil,
 		nil,
+		nil,
 	)
 
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
+	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())

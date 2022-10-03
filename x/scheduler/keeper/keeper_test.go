@@ -200,7 +200,8 @@ var _ = Describe("jobs!", func() {
 	Context("adding a new job", func() {
 		var job types.Job
 		subject := func() error {
-			return k.AddNewJob(ctx, &job)
+			_, err := k.AddNewJob(ctx, &job)
+			return err
 		}
 		Context("job is invalid", func() {
 			When("owner is nil", func() {
@@ -275,8 +276,11 @@ var _ = Describe("jobs!", func() {
 				})
 
 				BeforeEach(func() {
-					Expect(k.AddNewJob(ctx, &job)).To(BeNil())
-					Expect(k.AddNewJob(ctx, &jobPayloadModifiable)).To(BeNil())
+					var err error
+					_, err = k.AddNewJob(ctx, &job)
+					Expect(err).To(BeNil())
+					_, err = k.AddNewJob(ctx, &jobPayloadModifiable)
+					Expect(err).To(BeNil())
 				})
 
 				It("schedules both jobs with the default payload", func() {

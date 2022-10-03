@@ -25,6 +25,8 @@ type (
 		memKey     sdk.StoreKey
 		paramstore paramtypes.Subspace
 
+		account types.AccountKeeper
+
 		ider keeperutil.IDGenerator
 
 		Chains map[xchain.Type]xchain.Bridge
@@ -36,6 +38,7 @@ func NewKeeper(
 	storeKey,
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
+	account types.AccountKeeper,
 	chains []xchain.Bridge,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -52,6 +55,7 @@ func NewKeeper(
 		storeKey:   storeKey,
 		memKey:     memKey,
 		paramstore: ps,
+		account:    account,
 		Chains:     cm,
 	}
 
@@ -64,6 +68,10 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+func (k Keeper) ModuleName() string {
+	return types.ModuleName
+}
+
 // store returns default store for this keeper!
 func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
 	return ctx.KVStore(k.storeKey)
@@ -73,17 +81,44 @@ func (k Keeper) jobsStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(k.Store(ctx), types.KeyPrefix("jobs"))
 }
 
-func (k Keeper) AddNewJob(ctx sdk.Context, job *types.Job) error {
+func (k Keeper) AddNewJob(ctx sdk.Context, job *types.Job) (sdk.AccAddress, error) {
 	if k.JobIDExists(ctx, job.GetID()) {
-		return types.ErrJobWithIDAlreadyExists.Wrap(job.GetID())
+		return nil, types.ErrJobWithIDAlreadyExists.Wrap(job.GetID())
 	}
 
-	return k.saveJob(ctx, job)
+	job.Address = BuildAddress(uint64(ctx.BlockHeight()), job.GetID())
+
+	if k.account.HasAccount(ctx, job.GetAddress()) {
+		return nil, whoops.Errorf("account for a new job (%s) %s already exists").Format(job.GetID(), job.GetAddress())
+	}
+	oldCtx := ctx
+
+	ctx, writeCtx := ctx.CacheContext()
+
+	err := k.saveJob(ctx, job)
+	if err != nil {
+		return nil, err
+	}
+
+	acc := k.account.NewAccountWithAddress(ctx, job.GetAddress())
+	k.account.SetAccount(ctx, acc)
+
+	writeCtx()
+
+	keeperutil.EmitEvent(k, oldCtx, "JobAdded",
+		sdk.NewAttribute("id", job.GetID()),
+		sdk.NewAttribute("address", job.GetAddress().String()),
+	)
+
+	return job.GetAddress(), nil
 }
 
 func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
 	if job.GetOwner().Empty() {
 		return types.ErrInvalid.Wrap("owner can't be empty when adding a new job")
+	}
+	if job.GetAddress().Empty() {
+		return types.ErrInvalid.Wrap("job's address can't be empty")
 	}
 
 	if err := job.ValidateBasic(); err != nil {
@@ -116,7 +151,7 @@ func (k Keeper) JobIDExists(ctx sdk.Context, jobID string) bool {
 	return k.jobsStore(ctx).Has([]byte(jobID))
 }
 
-func (k Keeper) getJob(ctx sdk.Context, jobID string) (*types.Job, error) {
+func (k Keeper) GetJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 	job, err := keeperutil.Load[*types.Job](k.jobsStore(ctx), k.cdc, []byte(jobID))
 	if errors.Is(err, keeperutil.ErrNotFound) {
 		return nil, types.ErrJobNotFound.Wrap("job id: " + jobID)
@@ -126,7 +161,7 @@ func (k Keeper) getJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 }
 
 func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte) error {
-	job, err := k.getJob(ctx, jobID)
+	job, err := k.GetJob(ctx, jobID)
 	if err != nil {
 		return err
 	}

@@ -46,6 +46,7 @@ func newSchedulerKeeper(t testing.TB) (*Keeper, sdk.Context) {
 		memStoreKey,
 		paramsSubspace,
 		nil,
+		nil,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
