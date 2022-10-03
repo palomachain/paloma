@@ -26,7 +26,7 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
 
 	oldVersion := version.Version
-	version.Version = "v0.0.1"
+	version.Version = "v5.1.6"
 	t.Cleanup(func() {
 		version.Version = oldVersion
 	})

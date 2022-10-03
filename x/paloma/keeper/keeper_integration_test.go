@@ -12,6 +12,7 @@ import (
 	"github.com/palomachain/paloma/x/paloma/keeper"
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
@@ -101,5 +102,59 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			Expect(a.ValsetKeeper.IsJailed(ctx, vals[1].GetOperator())).To(BeTrue())
 			Expect(a.ValsetKeeper.IsJailed(ctx, vals[2].GetOperator())).To(BeTrue())
 		})
+	})
+})
+
+var _ = Describe("checking the chain version", func() {
+
+	var k *keeper.Keeper
+	var ctx sdk.Context
+	var a app.TestApp
+
+	BeforeEach(func() {
+		t := GinkgoT()
+		a = app.NewTestApp(t, false)
+		ctx = a.NewContext(false, tmproto.Header{
+			Height: 5,
+		})
+		k = &a.PalomaKeeper
+	})
+
+	Context("without any previous chain version", func() {
+		It("does nothing", func() {
+			Expect(func() {
+				k.CheckChainVersion(ctx)
+			}).NotTo(Panic())
+		})
+	})
+
+	Context("with a proposed chain version", func() {
+
+		DescribeTable("it checks the version",
+			func(appVersion string, panics bool) {
+				k.AppVersion = appVersion
+				a.UpgradeKeeper.ApplyUpgrade(ctx, upgradetypes.Plan{
+					Name:   "v5.1.6",
+					Height: 123,
+				})
+				exp := Expect(func() {
+					k.CheckChainVersion(ctx)
+				})
+				if panics {
+					exp.To(Panic())
+				} else {
+					exp.NotTo(Panic())
+				}
+			},
+			Entry("an exact version", "v5.1.6", false),
+			Entry("higher patch version", "v5.1.7", false),
+
+			Entry("lower patch version", "v5.1.4", true),
+			Entry("lower minor version", "v5.0.10", true),
+			Entry("lower major version", "v4.10.10", true),
+
+			Entry("higher major version", "v7.1.6", true),
+			Entry("higher minor version", "v5.2.6", true),
+		)
 	})
 })

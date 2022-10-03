@@ -427,7 +427,9 @@ func New(
 		keys[palomamoduletypes.StoreKey],
 		keys[palomamoduletypes.MemStoreKey],
 		app.GetSubspace(palomamoduletypes.ModuleName),
+		semverVersion,
 		app.ValsetKeeper,
+		app.UpgradeKeeper,
 	)
 
 	app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
