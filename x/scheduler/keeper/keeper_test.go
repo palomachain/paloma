@@ -276,8 +276,11 @@ var _ = Describe("jobs!", func() {
 				})
 
 				BeforeEach(func() {
-					Expect(k.AddNewJob(ctx, &job)).To(BeNil())
-					Expect(k.AddNewJob(ctx, &jobPayloadModifiable)).To(BeNil())
+					var err error
+					_, err = k.AddNewJob(ctx, &job)
+					Expect(err).To(BeNil())
+					_, err = k.AddNewJob(ctx, &jobPayloadModifiable)
+					Expect(err).To(BeNil())
 				})
 
 				It("schedules both jobs with the default payload", func() {
