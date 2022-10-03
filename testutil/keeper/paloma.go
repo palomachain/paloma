@@ -42,7 +42,9 @@ func PalomaKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
+		"v0.0.1", // do not use this PalomaKeeper function!
 		valsetkeeper.Keeper{},
+		nil,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

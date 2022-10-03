@@ -31,3 +31,7 @@ type ValsetKeeper interface {
 type ExternalChainSupporterKeeper interface {
 	xchain.Info
 }
+
+type UpgradeKeeper interface {
+	GetLastCompletedUpgrade(ctx sdk.Context) (string, int64)
+}

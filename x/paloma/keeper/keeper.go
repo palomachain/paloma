@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"golang.org/x/mod/semver"
+
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/vizualni/whoops"
 
@@ -20,6 +22,8 @@ type (
 		memKey     sdk.StoreKey
 		paramstore paramtypes.Subspace
 		Valset     types.ValsetKeeper
+		Upgrade    types.UpgradeKeeper
+		AppVersion string
 
 		ExternalChains []types.ExternalChainSupporterKeeper
 	}
@@ -30,11 +34,20 @@ func NewKeeper(
 	storeKey,
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
+	appVersion string,
 	valset types.ValsetKeeper,
+	upgrade types.UpgradeKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
+	}
+	if !strings.HasPrefix(appVersion, "v") {
+		appVersion = fmt.Sprintf("v%s", appVersion)
+	}
+
+	if !semver.IsValid(appVersion) {
+		panic(fmt.Sprintf("provided app version: '%s' it not a valid semver", appVersion))
 	}
 
 	return &Keeper{
@@ -43,6 +56,9 @@ func NewKeeper(
 		memKey:     memKey,
 		paramstore: ps,
 		Valset:     valset,
+		Upgrade:    upgrade,
+
+		AppVersion: appVersion,
 	}
 }
 
@@ -91,4 +107,47 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx sdk.Context) err
 	}
 
 	return g.Return()
+}
+
+// CheckChainVersion will exit if the app version and the government proposed
+// versions do not match.
+func (k Keeper) CheckChainVersion(ctx sdk.Context) {
+	// app needs to be in the [major].[minor] space,
+	// but needs to be running at least [major].[minor].[patch]
+	govVer, govHeight := k.Upgrade.GetLastCompletedUpgrade(ctx)
+
+	if len(govVer) == 0 || govHeight == 0 {
+		return
+	}
+
+	if !strings.HasPrefix(govVer, "v") {
+		govVer = fmt.Sprintf("v%s", govVer)
+	}
+
+	abandon := func() {
+		panic(fmt.Sprintf("needs to be running at least %s palomad version, but is running with %s", govVer, k.AppVersion))
+	}
+
+	switch semver.Compare(semver.MajorMinor(k.AppVersion), semver.MajorMinor(govVer)) {
+	case 0:
+		// good!
+		// still needs to check for the patch versions
+	default:
+		// if the app's [major].[minor] is too big or too smal, then we need to exit
+		abandon()
+	}
+
+	// [major].[minor] are the same up until this point
+
+	// let us now compare the patches
+	switch semver.Compare(k.AppVersion, govVer) {
+	case 0, 1: // appVersion == govVer or appVersion > govVer
+		// good!
+		return
+	case -1: // appVersion < govVer
+		// not good :(
+		panic("OH NO")
+		abandon()
+		return
+	}
 }
