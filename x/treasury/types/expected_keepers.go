@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -25,4 +26,8 @@ type BankKeeper interface {
 
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
+}
+
+type Scheduler interface {
+	GetJob(ctx sdk.Context, jobID string) (*schedulertypes.Job, error)
 }

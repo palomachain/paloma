@@ -10,9 +10,10 @@ import (
 
 const sizeofInt = 8
 
-func BuildAddress(jobID string) sdk.AccAddress {
-	addrbz := make([]byte, sizeofInt+types.JobIDMaxLen)
+func BuildAddress(blockHeight uint64, jobID string) sdk.AccAddress {
+	addrbz := make([]byte, sizeofInt+sizeofInt+types.JobIDMaxLen)
 	binary.BigEndian.PutUint64(addrbz[:8], uint64(len(jobID)))
-	copy(addrbz[8:], []byte(jobID))
+	binary.BigEndian.PutUint64(addrbz[8:16], blockHeight)
+	copy(addrbz[16:], []byte(jobID))
 	return address.Module(types.ModuleName, addrbz)[:types.JobAddressLength]
 }

@@ -86,6 +86,8 @@ func (k Keeper) AddNewJob(ctx sdk.Context, job *types.Job) (sdk.AccAddress, erro
 		return nil, types.ErrJobWithIDAlreadyExists.Wrap(job.GetID())
 	}
 
+	job.Address = BuildAddress(uint64(ctx.BlockHeight()), job.GetID())
+
 	if k.account.HasAccount(ctx, job.GetAddress()) {
 		return nil, whoops.Errorf("account for a new job (%s) %s already exists").Format(job.GetID(), job.GetAddress())
 	}
@@ -115,6 +117,9 @@ func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
 	if job.GetOwner().Empty() {
 		return types.ErrInvalid.Wrap("owner can't be empty when adding a new job")
 	}
+	if job.GetAddress().Empty() {
+		return types.ErrInvalid.Wrap("job's address can't be empty")
+	}
 
 	if err := job.ValidateBasic(); err != nil {
 		return err
@@ -138,8 +143,6 @@ func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
 	if err != nil {
 		return whoops.Wrap(err, types.ErrInvalid)
 	}
-	addr := BuildAddress(job.GetID())
-	job.Address = addr
 
 	return keeperutil.Save(k.jobsStore(ctx), k.cdc, []byte(job.GetID()), job)
 }
@@ -148,7 +151,7 @@ func (k Keeper) JobIDExists(ctx sdk.Context, jobID string) bool {
 	return k.jobsStore(ctx).Has([]byte(jobID))
 }
 
-func (k Keeper) getJob(ctx sdk.Context, jobID string) (*types.Job, error) {
+func (k Keeper) GetJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 	job, err := keeperutil.Load[*types.Job](k.jobsStore(ctx), k.cdc, []byte(jobID))
 	if errors.Is(err, keeperutil.ErrNotFound) {
 		return nil, types.ErrJobNotFound.Wrap("job id: " + jobID)
@@ -158,7 +161,7 @@ func (k Keeper) getJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 }
 
 func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte) error {
-	job, err := k.getJob(ctx, jobID)
+	job, err := k.GetJob(ctx, jobID)
 	if err != nil {
 		return err
 	}

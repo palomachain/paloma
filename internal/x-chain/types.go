@@ -38,6 +38,7 @@ type Jobber interface {
 	ExecuteJob(ctx sdk.Context, definition []byte, payload []byte, refID ReferenceID) (err error)
 }
 
+//go:generate mockery --name=FundCollecter
 type FundCollecter interface {
 	CollectJobFundEvents(ctx sdk.Context) error
 }

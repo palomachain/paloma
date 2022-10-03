@@ -16,7 +16,7 @@ func (k Keeper) QueryGetJobByID(goCtx context.Context, req *types.QueryGetJobByI
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	job, err := k.getJob(ctx, req.GetJobID())
+	job, err := k.GetJob(ctx, req.GetJobID())
 	if err != nil {
 		return nil, err
 	}

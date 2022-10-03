@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/vizualni/whoops"
@@ -22,9 +23,9 @@ func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
 						ci.GetChainReferenceID(),
 					),
 					&types.CollectFunds{
-						ChainReferenceID: ci.GetChainReferenceID(),
-						FromBlockTime:    ci.GetBlockHeight(),
-						ToBlockTime:      ci.GetBlockHeight(),
+						// ChainReferenceID: ci.GetChainReferenceID(),
+						// FromBlockTime:    ci.GetBlockHeight(),
+						// ToBlockTime:      ci.GetBlockHeight(),
 					},
 					nil,
 				),
@@ -34,6 +35,6 @@ func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
 	})
 }
 
-func (k Keeper) attestCollectedFunds(ctx sdk.Context) error {
-
+func (k Keeper) attestCollectedFunds(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
+	return nil
 }

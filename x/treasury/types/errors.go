@@ -8,5 +8,6 @@ import (
 
 // x/treasury module sentinel errors
 var (
-	ErrSample = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrCannotAddZeroFunds     = sdkerrors.Register(ModuleName, 1100, "cannot add zero funds")
+	ErrCannotAddNegativeFunds = sdkerrors.Register(ModuleName, 1101, "cannot add negative funds")
 )

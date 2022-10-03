@@ -8,7 +8,7 @@ option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 message FundCollectedEvent {
   string jobID = 1;
-  bytes amount = 2 [ (gogoproto.casttype) = "math/big.Int" ];
+  string amount = 2;
   string denom = 3;
   uint64 blockHeight = 4;
 }

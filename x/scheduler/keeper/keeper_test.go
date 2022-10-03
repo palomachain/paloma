@@ -200,7 +200,8 @@ var _ = Describe("jobs!", func() {
 	Context("adding a new job", func() {
 		var job types.Job
 		subject := func() error {
-			return k.AddNewJob(ctx, &job)
+			_, err := k.AddNewJob(ctx, &job)
+			return err
 		}
 		Context("job is invalid", func() {
 			When("owner is nil", func() {
