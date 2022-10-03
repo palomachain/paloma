@@ -38,3 +38,7 @@ func Load[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, key []
 
 	return val, nil
 }
+
+func StoreInt() {
+
+}

@@ -60,6 +60,11 @@ func Uint64ToByte(n uint64) []byte {
 	return b
 }
 
+func BytesToUint64(bz []byte) uint64 {
+	bz = bz[:8]
+	return binary.BigEndian.Uint64(bz)
+}
+
 func (i IDGenerator) nextKeyPrefix(key []byte) []byte {
 	return append(i.idKey[:], key...)
 }
