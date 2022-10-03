@@ -146,8 +146,6 @@ func (k Keeper) CheckChainVersion(ctx sdk.Context) {
 		return
 	case -1: // appVersion < govVer
 		// not good :(
-		panic("OH NO")
-		abandon()
 		return
 	}
 }
