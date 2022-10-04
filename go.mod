@@ -3,7 +3,7 @@ module github.com/palomachain/paloma
 go 1.18
 
 require (
-	github.com/CosmWasm/wasmd v0.29.0-rc1
+	github.com/CosmWasm/wasmd v0.29.0-rc2
 	github.com/CosmWasm/wasmvm v1.1.1
 	github.com/cosmos/cosmos-sdk v0.45.8
 	github.com/cosmos/ibc-go/v3 v3.3.0
