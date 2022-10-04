@@ -100,7 +100,7 @@ var _ = Describe("wasm message handler", func() {
 				subjectMsg.JobID = "i don't exist"
 			})
 
-			It("schedules the job", func() {
+			It("returns an error when trying to schedule a job", func() {
 				Expect(subject()).To(MatchError(types.ErrJobNotFound))
 			})
 		})
