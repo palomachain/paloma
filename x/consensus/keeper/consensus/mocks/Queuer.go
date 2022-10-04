@@ -135,17 +135,24 @@ func (_m *Queuer) GetPublicAccessData(ctx types.Context, id uint64) (*consensust
 }
 
 // Put provides a mock function with given fields: _a0, _a1, _a2
-func (_m *Queuer) Put(_a0 types.Context, _a1 consensustypes.ConsensusMsg, _a2 *consensus.PutOptions) error {
+func (_m *Queuer) Put(_a0 types.Context, _a1 consensustypes.ConsensusMsg, _a2 *consensus.PutOptions) (uint64, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, consensustypes.ConsensusMsg, *consensus.PutOptions) error); ok {
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(types.Context, consensustypes.ConsensusMsg, *consensus.PutOptions) uint64); ok {
 		r0 = rf(_a0, _a1, _a2)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(uint64)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Context, consensustypes.ConsensusMsg, *consensus.PutOptions) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Remove provides a mock function with given fields: _a0, _a1

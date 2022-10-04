@@ -62,7 +62,7 @@ func TestBatching(t *testing.T) {
 				Sender: fmt.Sprintf("sender_%d", i),
 			}
 
-			err := cq.Put(ctx, consensusMsg, nil)
+			_, err := cq.Put(ctx, consensusMsg, nil)
 			assert.NoError(t, err)
 		}
 	})
