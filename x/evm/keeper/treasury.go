@@ -97,6 +97,7 @@ func (k Keeper) attestCollectedFunds(ctx sdk.Context, q consensus.Queuer, msg co
 
 	return k.processFundCollectedEvidence(ctx, request, chainReferenceID, evidence)
 }
+
 func (k Keeper) processFundCollectedEvidence(
 	ctx sdk.Context,
 	request *types.CollectFunds,
