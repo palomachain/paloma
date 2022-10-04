@@ -1,27 +1,23 @@
 package keeper
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	wasmutil "github.com/palomachain/paloma/util/wasm"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/vizualni/whoops"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -105,6 +101,7 @@ type Keeper struct {
 	paramstore paramtypes.Subspace
 
 	ConsensusKeeper types.ConsensusKeeper
+	Scheduler       types.JobScheduler
 	Valset          types.ValsetKeeper
 	ider            keeperutil.IDGenerator
 }
@@ -319,88 +316,6 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 
 	return nil
 }
-
-type ExecuteEVMFromCosmWasm struct {
-	TargetContractInfo struct {
-		ChainReferenceID     string `json:"chain_id"`
-		SmartContractAddress string `json:"contract_address"`
-		SmartContractABI     string `json:"smart_contract_abi"`
-
-		CompassID string `json:"compass_id"`
-	} `json:"target_contract_info"`
-
-	Payload []byte `json:"payload"`
-}
-
-func (e ExecuteEVMFromCosmWasm) valid() error {
-	zero := ExecuteEVMFromCosmWasm{}
-	if e.TargetContractInfo == zero.TargetContractInfo {
-		return whoops.String("target contract info is empty")
-	}
-	if len(e.Payload) == 0 {
-		return whoops.String("payload bytes is empty")
-	}
-	// todo: add more in the future
-	return nil
-}
-
-func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
-	return func(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, error) {
-		var executeMsg ExecuteEVMFromCosmWasm
-		err := json.Unmarshal(msg.Custom, &executeMsg)
-		if err != nil {
-			return nil, nil, err
-		}
-		if err = executeMsg.valid(); err != nil {
-			return nil, nil, whoops.Wrap(err, ErrWasmExecuteMessageNotValid)
-		}
-
-		ci, err := k.GetChainInfo(ctx, executeMsg.TargetContractInfo.ChainReferenceID)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if !ci.IsActive() {
-			return nil, nil, ErrChainNotActive.Format(ci.GetChainReferenceID())
-		}
-
-		err = k.AddSmartContractExecutionToConsensus(
-			ctx,
-			executeMsg.TargetContractInfo.ChainReferenceID,
-			executeMsg.TargetContractInfo.CompassID,
-			&types.SubmitLogicCall{
-				HexContractAddress: executeMsg.TargetContractInfo.SmartContractAddress,
-				Payload:            executeMsg.Payload,
-				Deadline:           ctx.BlockTime().UTC().Add(10 * time.Minute).Unix(),
-				Abi:                []byte(executeMsg.TargetContractInfo.SmartContractABI),
-			},
-		)
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		return nil, nil, nil
-	}
-
-}
-
-// func (k Keeper) OnSchedulerMessageProcess(ctx sdk.Context, rawMsg any) (processed bool, err error) {
-// 	// when scheduler ticks then this gets executed
-
-// 	processed = true
-// 	switch msg := rawMsg.(type) {
-// 	case *types.ArbitrarySmartContractCall:
-// 		err = k.AddSmartContractExecutionToConsensus(
-// 			ctx,
-// 			msg,
-// 		)
-// 	default:
-// 		processed = false
-// 	}
-
-// 	return
-// }
 
 func (k Keeper) SupportedQueues(ctx sdk.Context) ([]consensus.SupportsConsensusQueueAction, error) {
 	chains, err := k.GetAllChainInfos(ctx)

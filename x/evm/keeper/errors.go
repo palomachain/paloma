@@ -10,6 +10,4 @@ const (
 	ErrConsensusNotAchieved                        = whoops.String("evm: consensus not achieved")
 	ErrCannotAddSupportForChainThatExists          = whoops.Errorf("chain info already exists: %s")
 	ErrCannotActiveSmartContractThatIsNotDeploying = whoops.String("trying to activate a smart contract that is not currently deploying")
-
-	ErrWasmExecuteMessageNotValid = whoops.String("message is not valid")
 )

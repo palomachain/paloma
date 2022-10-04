@@ -460,43 +460,6 @@ func New(
 	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
-	wasmDir := filepath.Join(homePath, "data")
-
-	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
-	if err != nil {
-		panic("error while reading wasm config: " + err.Error())
-	}
-
-	app.wasmKeeper = wasm.NewKeeper(
-		appCodec,
-		keys[wasm.StoreKey],
-		app.GetSubspace(wasm.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.StakingKeeper,
-		app.DistrKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		scopedWasmKeeper,
-		app.TransferKeeper,
-		app.MsgServiceRouter(),
-		app.GRPCQueryRouter(),
-		wasmDir,
-		wasmConfig,
-		"iterator,staking,stargate,paloma",
-		wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
-			return wasmkeeper.NewMessageHandlerChain(
-				old,
-				app.EvmKeeper.WasmMessengerHandler(),
-			)
-		}),
-	)
-	// register wasm gov proposal types
-	// enabledProposals := GetEnabledProposals()
-	// if len(enabledProposals) != 0 {
-	// 	govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
-	// }
-
 	scopedSchedulerKeeper := app.CapabilityKeeper.ScopeToModule(schedulermoduletypes.ModuleName)
 	app.ScopedSchedulerKeeper = scopedSchedulerKeeper
 	app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
@@ -535,6 +498,43 @@ func New(
 		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
 		&stakingKeeper, govRouter,
 	)
+
+	wasmDir := filepath.Join(homePath, "data")
+
+	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
+	if err != nil {
+		panic("error while reading wasm config: " + err.Error())
+	}
+
+	app.wasmKeeper = wasm.NewKeeper(
+		appCodec,
+		keys[wasm.StoreKey],
+		app.GetSubspace(wasm.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.StakingKeeper,
+		app.DistrKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		scopedWasmKeeper,
+		app.TransferKeeper,
+		app.MsgServiceRouter(),
+		app.GRPCQueryRouter(),
+		wasmDir,
+		wasmConfig,
+		"iterator,staking,stargate,paloma",
+		wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
+			return wasmkeeper.NewMessageHandlerChain(
+				old,
+				app.SchedulerKeeper.ExecuteWasmJobEventListener(),
+			)
+		}),
+	)
+	// register wasm gov proposal types
+	// enabledProposals := GetEnabledProposals()
+	// if len(enabledProposals) != 0 {
+	// 	govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
+	// }
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 

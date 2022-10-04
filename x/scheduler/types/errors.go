@@ -16,5 +16,6 @@ var (
 	ErrJobNotFound            = sdkerrors.Register(ModuleName, 1201, "job not found")
 	ErrInvalid                = sdkerrors.Register(ModuleName, 1202, "invalid")
 
-	ErrCannotModifyJobPayload = sdkerrors.Register(ModuleName, 1203, "cannot modify job's payload")
+	ErrCannotModifyJobPayload     = sdkerrors.Register(ModuleName, 1203, "cannot modify job's payload")
+	ErrWasmExecuteMessageNotValid = sdkerrors.Register(ModuleName, 1204, "wasm message is not valid")
 )

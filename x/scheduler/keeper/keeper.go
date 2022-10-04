@@ -163,6 +163,7 @@ func (k Keeper) GetJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte) error {
 	job, err := k.GetJob(ctx, jobID)
 	if err != nil {
+		k.Logger(ctx).Error("couldn't schedule a job", "job_id", jobID, "err", err)
 		return err
 	}
 
@@ -172,7 +173,19 @@ func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte) error {
 
 	payload := job.GetPayload()
 
+	k.Logger(ctx).Info(
+		"scheduling a job",
+		"job_id", jobID,
+		"chain_type", router.GetChainType(),
+		"chain_reference_id", router.GetChainReferenceID(),
+	)
+
 	if len(in) > 0 && !job.GetIsPayloadModifiable() {
+		k.Logger(ctx).Error(
+			"couldn't modify a job's payload as the payload is not modifiable for the job",
+			"job_id", jobID,
+			"err", err,
+		)
 		return types.ErrCannotModifyJobPayload.Wrapf("jobID: %s", jobID)
 	}
 
