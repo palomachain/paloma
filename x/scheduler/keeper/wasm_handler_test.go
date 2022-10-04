@@ -63,7 +63,6 @@ var _ = Describe("wasm message handler", func() {
 		BeforeEach(func() {
 			bm = xchainmocks.NewBridge(GinkgoT())
 			a.SchedulerKeeper.Chains[typ] = bm
-
 		})
 
 		BeforeEach(func() {
