@@ -87,19 +87,19 @@ wget -O - https://github.com/palomachain/paloma/releases/download/v0.10.2/paloma
 palomad tendermint unsafe-reset-all --home $HOME/.paloma
 ```
 
-5. Copy the latest genesis and addrbook
+4. Copy the latest genesis and addrbook
 ```shell
 wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-11/genesis.json
 wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-11/addrbook.json
 ```
 
-6. Start paloma.
+5. Start paloma.
 
 ```
 service palomad start
 ```
 
-7. If you are planning to be a **VALIDATOR with stake**, ensure that your pigeon relayer is up & running and that you have at least 0.05 ETH on eth mainnet target chain and 0.05 BNB on bnb mainnet target chain addresses is in your pigeon configuration file.
+6. If you are planning to be a **VALIDATOR with stake**, ensure that your pigeon relayer is up & running and that you have at least 0.05 ETH on eth mainnet target chain and 0.05 BNB on bnb mainnet target chain addresses is in your pigeon configuration file.
 
 ### Connecting to an existing testnet.
 
