@@ -92,8 +92,8 @@ func (m *FundCollectedEvent) GetBlockHeight() uint64 {
 }
 
 type CollectFunds struct {
-	FromBlockHeight uint64 `protobuf:"varint,1,opt,name=fromBlockHeight,proto3" json:"fromBlockHeight,omitempty"`
-	ToBlockHeight   uint64 `protobuf:"varint,2,opt,name=toBlockHeight,proto3" json:"toBlockHeight,omitempty"`
+	FromBlockTime uint64 `protobuf:"varint,1,opt,name=fromBlockTime,proto3" json:"fromBlockTime,omitempty"`
+	ToBlockTime   uint64 `protobuf:"varint,2,opt,name=toBlockTime,proto3" json:"toBlockTime,omitempty"`
 }
 
 func (m *CollectFunds) Reset()         { *m = CollectFunds{} }
@@ -129,16 +129,128 @@ func (m *CollectFunds) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_CollectFunds proto.InternalMessageInfo
 
-func (m *CollectFunds) GetFromBlockHeight() uint64 {
+func (m *CollectFunds) GetFromBlockTime() uint64 {
 	if m != nil {
-		return m.FromBlockHeight
+		return m.FromBlockTime
 	}
 	return 0
 }
 
-func (m *CollectFunds) GetToBlockHeight() uint64 {
+func (m *CollectFunds) GetToBlockTime() uint64 {
 	if m != nil {
-		return m.ToBlockHeight
+		return m.ToBlockTime
+	}
+	return 0
+}
+
+type FundCollectedEvidence struct {
+	Evidence []*FundCollectedEvidence_Data `protobuf:"bytes,1,rep,name=evidence,proto3" json:"evidence,omitempty"`
+}
+
+func (m *FundCollectedEvidence) Reset()         { *m = FundCollectedEvidence{} }
+func (m *FundCollectedEvidence) String() string { return proto.CompactTextString(m) }
+func (*FundCollectedEvidence) ProtoMessage()    {}
+func (*FundCollectedEvidence) Descriptor() ([]byte, []int) {
+	return fileDescriptor_30eac93b35d65e1b, []int{2}
+}
+func (m *FundCollectedEvidence) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *FundCollectedEvidence) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_FundCollectedEvidence.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *FundCollectedEvidence) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FundCollectedEvidence.Merge(m, src)
+}
+func (m *FundCollectedEvidence) XXX_Size() int {
+	return m.Size()
+}
+func (m *FundCollectedEvidence) XXX_DiscardUnknown() {
+	xxx_messageInfo_FundCollectedEvidence.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FundCollectedEvidence proto.InternalMessageInfo
+
+func (m *FundCollectedEvidence) GetEvidence() []*FundCollectedEvidence_Data {
+	if m != nil {
+		return m.Evidence
+	}
+	return nil
+}
+
+type FundCollectedEvidence_Data struct {
+	From          string `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
+	Amount        string `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	JobID         string `protobuf:"bytes,3,opt,name=jobID,proto3" json:"jobID,omitempty"`
+	AtBlockHeight uint64 `protobuf:"varint,4,opt,name=atBlockHeight,proto3" json:"atBlockHeight,omitempty"`
+}
+
+func (m *FundCollectedEvidence_Data) Reset()         { *m = FundCollectedEvidence_Data{} }
+func (m *FundCollectedEvidence_Data) String() string { return proto.CompactTextString(m) }
+func (*FundCollectedEvidence_Data) ProtoMessage()    {}
+func (*FundCollectedEvidence_Data) Descriptor() ([]byte, []int) {
+	return fileDescriptor_30eac93b35d65e1b, []int{2, 0}
+}
+func (m *FundCollectedEvidence_Data) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *FundCollectedEvidence_Data) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_FundCollectedEvidence_Data.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *FundCollectedEvidence_Data) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FundCollectedEvidence_Data.Merge(m, src)
+}
+func (m *FundCollectedEvidence_Data) XXX_Size() int {
+	return m.Size()
+}
+func (m *FundCollectedEvidence_Data) XXX_DiscardUnknown() {
+	xxx_messageInfo_FundCollectedEvidence_Data.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FundCollectedEvidence_Data proto.InternalMessageInfo
+
+func (m *FundCollectedEvidence_Data) GetFrom() string {
+	if m != nil {
+		return m.From
+	}
+	return ""
+}
+
+func (m *FundCollectedEvidence_Data) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+func (m *FundCollectedEvidence_Data) GetJobID() string {
+	if m != nil {
+		return m.JobID
+	}
+	return ""
+}
+
+func (m *FundCollectedEvidence_Data) GetAtBlockHeight() uint64 {
+	if m != nil {
+		return m.AtBlockHeight
 	}
 	return 0
 }
@@ -146,29 +258,36 @@ func (m *CollectFunds) GetToBlockHeight() uint64 {
 func init() {
 	proto.RegisterType((*FundCollectedEvent)(nil), "palomachain.paloma.evm.FundCollectedEvent")
 	proto.RegisterType((*CollectFunds)(nil), "palomachain.paloma.evm.CollectFunds")
+	proto.RegisterType((*FundCollectedEvidence)(nil), "palomachain.paloma.evm.FundCollectedEvidence")
+	proto.RegisterType((*FundCollectedEvidence_Data)(nil), "palomachain.paloma.evm.FundCollectedEvidence.Data")
 }
 
 func init() { proto.RegisterFile("evm/treasury.proto", fileDescriptor_30eac93b35d65e1b) }
 
 var fileDescriptor_30eac93b35d65e1b = []byte{
-	// 265 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x5c, 0x90, 0x31, 0x4f, 0x84, 0x30,
-	0x18, 0x86, 0xe9, 0x79, 0x5e, 0x62, 0xd5, 0x98, 0x34, 0x97, 0x0b, 0x71, 0x68, 0xc8, 0xc5, 0x01,
-	0x17, 0x3a, 0xf8, 0x0f, 0xee, 0xd4, 0xe8, 0x7a, 0xa3, 0x83, 0x49, 0x81, 0x4f, 0x40, 0x69, 0x3f,
-	0x02, 0x85, 0x78, 0xfe, 0x0a, 0x7f, 0x96, 0xe3, 0x8d, 0x8e, 0x06, 0xfe, 0x88, 0xa1, 0x30, 0xa0,
-	0xdb, 0xfb, 0x3e, 0x79, 0xbe, 0xb4, 0x79, 0x29, 0x83, 0x46, 0x09, 0x53, 0x82, 0xac, 0xea, 0x72,
-	0x1f, 0x14, 0x25, 0x1a, 0x64, 0xab, 0x42, 0xe6, 0xa8, 0x64, 0x94, 0xca, 0x4c, 0x07, 0x43, 0x0e,
-	0xa0, 0x51, 0x97, 0xcb, 0x04, 0x13, 0xb4, 0x8a, 0xe8, 0xd3, 0x60, 0xaf, 0x3f, 0x28, 0xbb, 0xaf,
-	0x75, 0xbc, 0xc5, 0x3c, 0x87, 0xc8, 0x40, 0x7c, 0xd7, 0x80, 0x36, 0x6c, 0x49, 0x8f, 0x5f, 0x31,
-	0x7c, 0xbc, 0x75, 0x89, 0x47, 0xfc, 0x93, 0xdd, 0x50, 0xd8, 0x8a, 0x2e, 0xa4, 0xc2, 0x5a, 0x1b,
-	0x77, 0x66, 0xf1, 0xd8, 0x7a, 0x3b, 0x06, 0x8d, 0xca, 0x3d, 0x1a, 0x6c, 0x5b, 0x98, 0x47, 0x4f,
-	0xc3, 0x1c, 0xa3, 0xb7, 0x07, 0xc8, 0x92, 0xd4, 0xb8, 0x73, 0x8f, 0xf8, 0xf3, 0xdd, 0x14, 0xad,
-	0x9f, 0xe9, 0xd9, 0xf8, 0x6e, 0xff, 0x85, 0x8a, 0xf9, 0xf4, 0xe2, 0xa5, 0x44, 0xb5, 0x99, 0x5c,
-	0x11, 0x7b, 0xf5, 0x1f, 0xb3, 0x2b, 0x7a, 0x6e, 0x70, 0xea, 0xcd, 0xac, 0xf7, 0x17, 0x6e, 0xb6,
-	0x5f, 0x2d, 0x27, 0x87, 0x96, 0x93, 0x9f, 0x96, 0x93, 0xcf, 0x8e, 0x3b, 0x87, 0x8e, 0x3b, 0xdf,
-	0x1d, 0x77, 0x9e, 0xae, 0x93, 0xcc, 0xa4, 0x75, 0x18, 0x44, 0xa8, 0xc4, 0x64, 0xae, 0x31, 0x8b,
-	0x77, 0x61, 0x77, 0xdd, 0x17, 0x50, 0x85, 0x0b, 0xbb, 0xd3, 0xcd, 0x6f, 0x00, 0x00, 0x00, 0xff,
-	0xff, 0xc6, 0x0e, 0x3f, 0x92, 0x6b, 0x01, 0x00, 0x00,
+	// 338 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x52, 0xc1, 0x4e, 0xf2, 0x40,
+	0x18, 0x64, 0xa1, 0x3f, 0xf9, 0x5d, 0xe4, 0xb2, 0x41, 0xd2, 0x70, 0x68, 0x1a, 0xc2, 0x01, 0x2f,
+	0xdb, 0x04, 0xdf, 0x00, 0xd0, 0xe8, 0xc5, 0x43, 0x63, 0x3c, 0x78, 0xdb, 0xb6, 0x6b, 0xa9, 0x76,
+	0xf7, 0x23, 0x65, 0x4b, 0xc4, 0xa7, 0xf0, 0xb1, 0x3c, 0x72, 0xd3, 0xa3, 0xa1, 0x2f, 0x62, 0x76,
+	0xdb, 0x68, 0x51, 0xe2, 0x6d, 0x66, 0x32, 0x99, 0xef, 0xfb, 0x66, 0x17, 0x13, 0xbe, 0x16, 0x9e,
+	0xca, 0x38, 0x5b, 0xe5, 0xd9, 0x86, 0x2e, 0x33, 0x50, 0x40, 0xfa, 0x4b, 0x96, 0x82, 0x60, 0xe1,
+	0x82, 0x25, 0x92, 0x96, 0x98, 0xf2, 0xb5, 0x18, 0xf4, 0x62, 0x88, 0xc1, 0x58, 0x3c, 0x8d, 0x4a,
+	0xf7, 0xf0, 0x19, 0x93, 0x8b, 0x5c, 0x46, 0x33, 0x48, 0x53, 0x1e, 0x2a, 0x1e, 0x9d, 0xaf, 0xb9,
+	0x54, 0xa4, 0x87, 0xff, 0x3d, 0x40, 0x70, 0x35, 0xb7, 0x91, 0x8b, 0xc6, 0x47, 0x7e, 0x49, 0x48,
+	0x1f, 0xb7, 0x99, 0x80, 0x5c, 0x2a, 0xbb, 0x69, 0xe4, 0x8a, 0x69, 0x77, 0xc4, 0x25, 0x08, 0xbb,
+	0x55, 0xba, 0x0d, 0x21, 0x2e, 0xee, 0x04, 0x29, 0x84, 0x8f, 0x97, 0x3c, 0x89, 0x17, 0xca, 0xb6,
+	0x5c, 0x34, 0xb6, 0xfc, 0xba, 0x34, 0xbc, 0xc5, 0xc7, 0xd5, 0x5c, 0xbd, 0xc2, 0x8a, 0x8c, 0x70,
+	0xf7, 0x3e, 0x03, 0x31, 0xd5, 0x96, 0x9b, 0x44, 0x70, 0x33, 0xdd, 0xf2, 0xf7, 0x45, 0x9d, 0xab,
+	0xe0, 0xdb, 0xd3, 0x2c, 0x73, 0x6b, 0xd2, 0xf0, 0x0d, 0xe1, 0x93, 0x1f, 0x47, 0x25, 0x11, 0x97,
+	0x21, 0x27, 0xd7, 0xf8, 0x3f, 0xaf, 0xb0, 0x8d, 0xdc, 0xd6, 0xb8, 0x33, 0x99, 0xd0, 0xc3, 0x75,
+	0xd1, 0x83, 0x01, 0x74, 0xce, 0x14, 0xf3, 0xbf, 0x32, 0x06, 0x12, 0x5b, 0x5a, 0x21, 0x04, 0x5b,
+	0x7a, 0xc9, 0xaa, 0x2e, 0x83, 0xff, 0x6a, 0xab, 0xec, 0xb6, 0x55, 0xef, 0x76, 0x84, 0xbb, 0x4c,
+	0x4d, 0x7f, 0xf5, 0xb5, 0x2f, 0x4e, 0x67, 0xaf, 0x3b, 0x07, 0x6d, 0x77, 0x0e, 0xfa, 0xd8, 0x39,
+	0xe8, 0xa5, 0x70, 0x1a, 0xdb, 0xc2, 0x69, 0xbc, 0x17, 0x4e, 0xe3, 0xee, 0x34, 0x4e, 0xd4, 0x22,
+	0x0f, 0x68, 0x08, 0xc2, 0xab, 0x5d, 0x54, 0x61, 0xef, 0xc9, 0x33, 0x3f, 0x65, 0xb3, 0xe4, 0xab,
+	0xa0, 0x6d, 0x5e, 0xfe, 0xec, 0x33, 0x00, 0x00, 0xff, 0xff, 0xf2, 0xa4, 0x90, 0xb1, 0x3d, 0x02,
+	0x00, 0x00,
 }
 
 func (m *FundCollectedEvent) Marshal() (dAtA []byte, err error) {
@@ -240,15 +359,101 @@ func (m *CollectFunds) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.ToBlockHeight != 0 {
-		i = encodeVarintTreasury(dAtA, i, uint64(m.ToBlockHeight))
+	if m.ToBlockTime != 0 {
+		i = encodeVarintTreasury(dAtA, i, uint64(m.ToBlockTime))
 		i--
 		dAtA[i] = 0x10
 	}
-	if m.FromBlockHeight != 0 {
-		i = encodeVarintTreasury(dAtA, i, uint64(m.FromBlockHeight))
+	if m.FromBlockTime != 0 {
+		i = encodeVarintTreasury(dAtA, i, uint64(m.FromBlockTime))
 		i--
 		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *FundCollectedEvidence) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *FundCollectedEvidence) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *FundCollectedEvidence) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Evidence) > 0 {
+		for iNdEx := len(m.Evidence) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Evidence[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintTreasury(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *FundCollectedEvidence_Data) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *FundCollectedEvidence_Data) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *FundCollectedEvidence_Data) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.AtBlockHeight != 0 {
+		i = encodeVarintTreasury(dAtA, i, uint64(m.AtBlockHeight))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.JobID) > 0 {
+		i -= len(m.JobID)
+		copy(dAtA[i:], m.JobID)
+		i = encodeVarintTreasury(dAtA, i, uint64(len(m.JobID)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Amount) > 0 {
+		i -= len(m.Amount)
+		copy(dAtA[i:], m.Amount)
+		i = encodeVarintTreasury(dAtA, i, uint64(len(m.Amount)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.From) > 0 {
+		i -= len(m.From)
+		copy(dAtA[i:], m.From)
+		i = encodeVarintTreasury(dAtA, i, uint64(len(m.From)))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -294,11 +499,50 @@ func (m *CollectFunds) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.FromBlockHeight != 0 {
-		n += 1 + sovTreasury(uint64(m.FromBlockHeight))
+	if m.FromBlockTime != 0 {
+		n += 1 + sovTreasury(uint64(m.FromBlockTime))
 	}
-	if m.ToBlockHeight != 0 {
-		n += 1 + sovTreasury(uint64(m.ToBlockHeight))
+	if m.ToBlockTime != 0 {
+		n += 1 + sovTreasury(uint64(m.ToBlockTime))
+	}
+	return n
+}
+
+func (m *FundCollectedEvidence) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Evidence) > 0 {
+		for _, e := range m.Evidence {
+			l = e.Size()
+			n += 1 + l + sovTreasury(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *FundCollectedEvidence_Data) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.From)
+	if l > 0 {
+		n += 1 + l + sovTreasury(uint64(l))
+	}
+	l = len(m.Amount)
+	if l > 0 {
+		n += 1 + l + sovTreasury(uint64(l))
+	}
+	l = len(m.JobID)
+	if l > 0 {
+		n += 1 + l + sovTreasury(uint64(l))
+	}
+	if m.AtBlockHeight != 0 {
+		n += 1 + sovTreasury(uint64(m.AtBlockHeight))
 	}
 	return n
 }
@@ -505,9 +749,9 @@ func (m *CollectFunds) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field FromBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field FromBlockTime", wireType)
 			}
-			m.FromBlockHeight = 0
+			m.FromBlockTime = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTreasury
@@ -517,16 +761,16 @@ func (m *CollectFunds) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.FromBlockHeight |= uint64(b&0x7F) << shift
+				m.FromBlockTime |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ToBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ToBlockTime", wireType)
 			}
-			m.ToBlockHeight = 0
+			m.ToBlockTime = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTreasury
@@ -536,7 +780,256 @@ func (m *CollectFunds) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.ToBlockHeight |= uint64(b&0x7F) << shift
+				m.ToBlockTime |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTreasury(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTreasury
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *FundCollectedEvidence) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTreasury
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: FundCollectedEvidence: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: FundCollectedEvidence: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Evidence", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTreasury
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTreasury
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTreasury
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Evidence = append(m.Evidence, &FundCollectedEvidence_Data{})
+			if err := m.Evidence[len(m.Evidence)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTreasury(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTreasury
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *FundCollectedEvidence_Data) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTreasury
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Data: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Data: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field From", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTreasury
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTreasury
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTreasury
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.From = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTreasury
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTreasury
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTreasury
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Amount = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field JobID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTreasury
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTreasury
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTreasury
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.JobID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AtBlockHeight", wireType)
+			}
+			m.AtBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTreasury
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.AtBlockHeight |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

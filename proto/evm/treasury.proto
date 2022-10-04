@@ -14,6 +14,18 @@ message FundCollectedEvent {
 }
 
 message CollectFunds {
-  uint64 fromBlockHeight = 1;
+  uint64 fromBlockTime = 1;
   uint64 toBlockTime = 2;
+}
+
+message FundCollectedEvidence {
+  message Data {
+    string from = 1;
+    string amount = 2;
+    string jobID = 3;
+
+    uint64 atBlockHeight = 4;
+  }
+
+  repeated Data evidence = 1;
 }

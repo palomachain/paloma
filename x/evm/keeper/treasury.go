@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -60,5 +61,59 @@ func (k Keeper) collectFundEventsBlockHeightStore(ctx sdk.Context) sdk.KVStore {
 }
 
 func (k Keeper) attestCollectedFunds(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
+	if len(msg.GetEvidence()) == 0 {
+		return nil
+	}
+
+	ctx, writeCache := ctx.CacheContext()
+	defer func() {
+		if retErr == nil {
+			writeCache()
+		}
+	}()
+
+	consensusMsg, err := msg.ConsensusMsg(k.cdc)
+	if err != nil {
+		return err
+	}
+
+	request := consensusMsg.(*types.CollectFunds)
+
+	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
+	if err != nil {
+		if errors.Is(err, ErrConsensusNotAchieved) {
+			return nil
+		}
+		return err
+	}
+
+	defer func() {
+		// given that there was enough evidence for a proof, regardless of the outcome,
+		// we should remove this from the queue as there isn't much that we can do about it.
+		q.Remove(ctx, msg.GetId())
+	}()
+
+	_, chainReferenceID := q.ChainInfo()
+
+	return k.processFundCollectedEvidence(ctx, request, chainReferenceID, evidence)
+}
+func (k Keeper) processFundCollectedEvidence(
+	ctx sdk.Context,
+	request *types.CollectFunds,
+	refID xchain.ReferenceID,
+	anyEvidence any,
+) error {
+	switch evidence := anyEvidence.(type) {
+	case *types.FundCollectedEvidence:
+		var g whoops.Group
+
+		for _, e := range evidence.GetEvidence() {
+			g.Add(k.Treasury.AddFunds(ctx, chainType, refID, e.GetJobID()))
+		}
+
+		return g.Return()
+	}
+
 	return nil
+
 }
