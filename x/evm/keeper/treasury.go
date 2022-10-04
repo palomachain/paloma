@@ -1,23 +1,24 @@
 package keeper
 
 import (
+	"time"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/vizualni/whoops"
 )
 
-const collectFundsBlockRange = 5000
+const collectFundsMinutesRange = 10 * time.Minute
 
 func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
 	return whoops.Try(func() {
 		var g whoops.Group
 		for _, ci := range whoops.Must(k.GetAllChainInfos(ctx)) {
-			height := k.calculatNextHeightForCollectingFunds(ctx, xchain.ReferenceID(ci.GetChainReferenceID()))
+			tt := k.calculatNextTimeForCollectingFunds(ctx, xchain.ReferenceID(ci.GetChainReferenceID()))
 			g.Add(
 				k.ConsensusKeeper.PutMessageInQueue(
 					ctx,
@@ -27,8 +28,8 @@ func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
 						ci.GetChainReferenceID(),
 					),
 					&types.CollectFunds{
-						FromBlockHeight: height,
-						ToBlockHeight:   height + collectFundsBlockRange,
+						FromBlockTime: tt,
+						ToBlockTime:   ctx.BlockTime(),
 					},
 					nil,
 				),
@@ -38,23 +39,20 @@ func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
 	})
 }
 
-func (k Keeper) calculatNextHeightForCollectingFunds(ctx sdk.Context, refID xchain.ReferenceID) uint64 {
+func (k Keeper) calculatNextTimeForCollectingFunds(ctx sdk.Context, refID xchain.ReferenceID) time.Time {
 	s := k.collectFundEventsBlockHeightStore(ctx)
 	key := []byte(refID)
-	var height uint64
 	if !s.Has(key) {
-		ci, err := k.GetChainInfo(ctx, refID)
-		if err != nil {
-			panic(err)
-		}
-		height = ci.GetReferenceBlockHeight()
-		s.Set(key, keeperutil.Uint64ToByte(height))
-	} else {
-		val := s.Get(key)
-		height = keeperutil.BytesToUint64(val) + 1
+		return time.Date(2022, 9, 30, 0, 0, 0, 0, time.UTC)
+	}
+	val := s.Get(key)
+	var t time.Time
+	err := (&t).UnmarshalBinary(val)
+	if err != nil {
+		panic(err)
 	}
 
-	return height
+	return t
 }
 
 func (k Keeper) collectFundEventsBlockHeightStore(ctx sdk.Context) sdk.KVStore {

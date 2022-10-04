@@ -40,5 +40,5 @@ func Load[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, key []
 }
 
 func StoreInt() {
-
+	Uint64ToByte
 }
