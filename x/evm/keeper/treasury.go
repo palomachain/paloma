@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"errors"
+	"sort"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -13,6 +14,43 @@ import (
 	"github.com/vizualni/whoops"
 )
 
+type Distance int
+
+const (
+	RightNear Distance = iota + 1
+	LeftNear  Distance
+	RightFar  Distance
+	LeftFar   Distance
+)
+
+
+type RangedEvent[T any] interface {
+	Merge(T) (T, bool)
+	Less(T) bool
+}
+
+func SimplifyRangeEvents[T any](events []RangedEvent[T]) []any {
+	slice := events[:]
+	sort.Slice(slice, func(i, j int) bool { return events[i].Less[events[j]] })
+	events = slice
+
+	newEvents := make([]any)
+	newEvents = append(newEvents, events[i])
+	for i:=1; i<len(events); i++ {
+		evt := newEvents[len(newEvents)-1]	
+
+		newEvt, ok := evt.Merge(events[i])
+		if !ok {
+			newEvents = append(newEvents, events[i])
+			continue
+		}
+
+		newEvents[len(newEvents) - 1]=newEvt
+	}
+
+	return newEvents
+}
+
 const collectFundsMinutesRange = 10 * time.Minute
 
 func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
@@ -20,6 +58,9 @@ func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
 		var g whoops.Group
 		for _, ci := range whoops.Must(k.GetAllChainInfos(ctx)) {
 			tt := k.calculatNextTimeForCollectingFunds(ctx, xchain.ReferenceID(ci.GetChainReferenceID()))
+
+			// check if the same
+
 			g.Add(
 				k.ConsensusKeeper.PutMessageInQueue(
 					ctx,
