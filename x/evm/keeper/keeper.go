@@ -44,33 +44,47 @@ const (
 var _ ptypes.ExternalChainSupporterKeeper = Keeper{}
 
 type supportedChainInfo struct {
+	subqueue              string
 	batch                 bool
 	msgType               any
 	processAttesationFunc func(Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error
 }
 
-var SupportedConsensusQueues = map[string]supportedChainInfo{
-	ConsensusTurnstoneMessage: {
-		batch:   false,
-		msgType: &types.Message{},
+var SupportedConsensusQueues = []supportedChainInfo{
+	{
+		subqueue: ConsensusTurnstoneMessage,
+		batch:    false,
+		msgType:  &types.Message{},
 		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestRouter
 		},
-	},
-	ConsensusGetValidatorBalances: {
-		batch:   false,
-		msgType: &types.ValidatorBalancesAttestation{},
+	}, {
+		subqueue: ConsensusGetValidatorBalances,
+		batch:    false,
+		msgType:  &types.ValidatorBalancesAttestation{},
 		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestValidatorBalances
 		},
 	},
-	ConsensusCollectFundEvents: {
-		batch:   false,
-		msgType: &types.CollectFunds{},
+	{
+		batch:    false,
+		subqueue: ConsensusCollectFundEvents,
+		msgType:  &types.CollectFunds{},
 		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestCollectedFunds
 		},
 	},
+}
+
+func init() {
+	// just a check to ensure that there are no duplicates in the supported chain infos
+	visited := make(map[string]struct{})
+	for _, c := range SupportedConsensusQueues {
+		if _, ok := visited[c.subqueue]; ok {
+			panic(fmt.Sprintf("cannot have two queues with the same subqueue: %s", c.subqueue))
+		}
+		visited[c.subqueue] = struct{}{}
+	}
 }
 
 type evmChainTemp struct {
@@ -388,20 +402,20 @@ func (k Keeper) WasmMessengerHandler() wasmutil.MessengerFnc {
 // 	return
 // }
 
-func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsConsensusQueueAction, error) {
+func (k Keeper) SupportedQueues(ctx sdk.Context) ([]consensus.SupportsConsensusQueueAction, error) {
 	chains, err := k.GetAllChainInfos(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	res := make(map[string]consensus.SupportsConsensusQueueAction)
+	res := []consensus.SupportsConsensusQueueAction{}
 
 	for _, chainInfo := range chains {
 		// if !chainInfo.IsActive() {
 		// 	continue
 		// }
-		for subQueue, queueInfo := range SupportedConsensusQueues {
-			queue := consensustypes.Queue(subQueue, xchainType, xchain.ReferenceID(chainInfo.ChainReferenceID))
+		for _, queueInfo := range SupportedConsensusQueues {
+			queue := consensustypes.Queue(queueInfo.subqueue, xchainType, xchain.ReferenceID(chainInfo.ChainReferenceID))
 			opts := *consensus.ApplyOpts(nil,
 				consensus.WithChainInfo(xchainType, chainInfo.ChainReferenceID),
 				consensus.WithQueueTypeName(queue),
@@ -434,10 +448,10 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsC
 				}),
 			)
 
-			res[queue] = consensus.SupportsConsensusQueueAction{
+			res = append(res, consensus.SupportsConsensusQueueAction{
 				QueueOptions:                 opts,
 				ProcessMessageForAttestation: queueInfo.processAttesationFunc(k),
-			}
+			})
 		}
 	}
 
@@ -559,8 +573,8 @@ func (k Keeper) RemoveSupportForChain(ctx sdk.Context, proposal *types.RemoveCha
 
 	k.chainInfoStore(ctx).Delete([]byte(proposal.GetChainReferenceID()))
 
-	for subQueue := range SupportedConsensusQueues {
-		queue := consensustypes.Queue(subQueue, xchainType, xchain.ReferenceID(proposal.GetChainReferenceID()))
+	for _, q := range SupportedConsensusQueues {
+		queue := consensustypes.Queue(q.subqueue, xchainType, xchain.ReferenceID(proposal.GetChainReferenceID()))
 		k.ConsensusKeeper.RemoveConsensusQueue(ctx, queue)
 	}
 

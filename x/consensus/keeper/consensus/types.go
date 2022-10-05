@@ -1,10 +1,7 @@
 package consensus
 
 import (
-	"sort"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -41,16 +38,9 @@ type QueueBatcher interface {
 
 type SupportsConsensusQueueAction struct {
 	QueueOptions
-
 	ProcessMessageForAttestation func(ctx sdk.Context, q Queuer, msg types.QueuedSignedMessageI) error
 }
 
 type SupportsConsensusQueue interface {
-	SupportedQueues(ctx sdk.Context) (map[string]SupportsConsensusQueueAction, error)
-}
-
-func SortedQueueNames(ctx sdk.Context, queuesMap map[string]SupportsConsensusQueueAction) []string {
-	queueNames := slice.FromMapKeys(queuesMap)
-	sort.Strings(queueNames)
-	return queueNames
+	SupportedQueues(ctx sdk.Context) ([]SupportsConsensusQueueAction, error)
 }
