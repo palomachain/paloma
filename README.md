@@ -60,7 +60,7 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.10.2/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.10.3/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
@@ -69,14 +69,14 @@ sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/internal/api/l
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
 
-### Upgrading from a prior testnet to `paloma-testnet-11`
+### Steps for upgrading from a prior testnet to `paloma-testnet-11` OR rejoining the network after the chain halt on testnet-11
 
 **ALERT: You will need to update your pigeon config.yaml file to reference this new chain-ID!**
 
-1. Stop your paloma version and get 0.10.2
+1. Stop your paloma version and get 0.10.3
 ```
 service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.10.2/paloma_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.10.3/paloma_Linux_x86_64.tar.gz | \
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
