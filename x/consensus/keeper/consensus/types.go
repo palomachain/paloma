@@ -38,7 +38,6 @@ type QueueBatcher interface {
 
 type SupportsConsensusQueueAction struct {
 	QueueOptions
-
 	ProcessMessageForAttestation func(ctx sdk.Context, q Queuer, msg types.QueuedSignedMessageI) error
 }
 
