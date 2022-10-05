@@ -20,8 +20,15 @@ func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consen
 		if err != nil {
 			return nil, err
 		}
-		opts, ok := supportedQueues[queueTypeName]
-		if !ok {
+		opts := func() *consensus.SupportsConsensusQueueAction {
+			for _, q := range supportedQueues {
+				if q.QueueTypeName == queueTypeName {
+					return &q
+				}
+			}
+			return nil
+		}()
+		if opts == nil {
 			continue
 		}
 

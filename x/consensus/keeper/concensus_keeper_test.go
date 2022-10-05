@@ -539,9 +539,9 @@ type queueSupporter struct {
 	action any
 }
 
-func (q queueSupporter) SupportedQueues(ctx sdk.Context) (map[string]consensus.SupportsConsensusQueueAction, error) {
-	return map[string]consensus.SupportsConsensusQueueAction{
-		q.opt.QueueTypeName: {
+func (q queueSupporter) SupportedQueues(ctx sdk.Context) ([]consensus.SupportsConsensusQueueAction, error) {
+	return []consensus.SupportsConsensusQueueAction{
+		{
 			QueueOptions: *q.opt,
 		},
 	}, nil

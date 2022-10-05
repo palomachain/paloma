@@ -4,7 +4,6 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/vizualni/whoops"
 	"google.golang.org/grpc/codes"
@@ -20,8 +19,10 @@ func (k Keeper) GetAllQueueNames(goCtx context.Context, req *types.QueryGetAllQu
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	for _, supported := range k.registry.slice {
-		queuesMap := whoops.Must(supported.SupportedQueues(ctx))
-		names = append(names, consensus.SortedQueueNames(ctx, queuesMap)...)
+		queues := whoops.Must(supported.SupportedQueues(ctx))
+		for _, q := range queues {
+			names = append(names, q.QueueTypeName)
+		}
 	}
 
 	return &types.QueryGetAllQueueNamesResponse{
