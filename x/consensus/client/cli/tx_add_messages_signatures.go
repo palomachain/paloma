@@ -3,10 +3,7 @@ package cli
 import (
 	"strconv"
 
-	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/spf13/cobra"
 )
 
@@ -21,18 +18,18 @@ func CmdAddMessagesSignatures() *cobra.Command {
 			// TODO: we don't need to have this from the CLI
 			panic("don't use from cli")
 
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
+			//clientCtx, err := client.GetClientTxContext(cmd)
+			//if err != nil {
+			//	return err
+			//}
 
-			msg := types.NewMsgAddMessagesSignatures(
-				clientCtx.GetFromAddress().String(),
-			)
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+			//msg := types.NewMsgAddMessagesSignatures(
+			//	clientCtx.GetFromAddress().String(),
+			//)
+			//if err := msg.ValidateBasic(); err != nil {
+			//	return err
+			//}
+			//return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
 

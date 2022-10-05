@@ -32,7 +32,7 @@ func MakeMapKeys[K comparable, V any](slice []V, getKey func(V) K) map[K]V {
 	return m
 }
 
-// MakeMapKeys makes a map of provided slice and a function which
+// MustMakeMapKeys makes a map of provided slice and a function which
 // returns a key value for a map given an item from a slice.
 // If key already exists, it panics.
 func MustMakeMapKeys[K comparable, V any](slice []V, getKey func(V) K) map[K]V {

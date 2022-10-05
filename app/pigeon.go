@@ -56,7 +56,7 @@ func GetPigonListenPort() int {
 		log.Fatal("pigeon listen port environment variable is not set")
 	}
 
-	port, err := strconv.ParseInt(listenPort, 10, 64)
+	port, err := strconv.ParseInt(listenPort, 10, 32)
 
 	if err != nil {
 		log.Fatalf("pigeon's port %s is invalid: %v", listenPort, err)
