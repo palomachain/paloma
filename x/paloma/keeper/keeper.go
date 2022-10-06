@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"golang.org/x/mod/semver"
@@ -100,6 +101,8 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx sdk.Context) err
 				notSupported = append(notSupported, fmt.Sprintf("[%s, %s]", mustExistKey[0], mustExistKey[1]))
 			}
 		}
+
+		sort.Strings(notSupported)
 
 		if len(notSupported) > 0 {
 			g.Add(k.Valset.Jail(ctx, val.GetOperator(), fmt.Sprintf(types.JailReasonNotSupportingTheseExternalChains, strings.Join(notSupported, ", "))))
