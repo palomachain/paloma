@@ -60,7 +60,7 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.10.3/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.10.4/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
@@ -73,10 +73,10 @@ If you're upgrading to the most recent version, you will need to stop `palomad` 
 
 **ALERT: You will need to update your pigeon config.yaml file to reference this new chain-ID!**
 
-1. Stop your paloma version and get 0.10.3
+1. Stop your paloma version and get 0.10.4
 ```
 service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.10.3/paloma_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.10.4/paloma_Linux_x86_64.tar.gz | \
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
