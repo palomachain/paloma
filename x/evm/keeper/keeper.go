@@ -66,14 +66,14 @@ var SupportedConsensusQueues = []supportedChainInfo{
 			return k.attestValidatorBalances
 		},
 	},
-	{
-		batch:    false,
-		subqueue: ConsensusCollectFundEvents,
-		msgType:  &types.CollectFunds{},
-		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
-			return k.attestCollectedFunds
-		},
-	},
+	// {
+	// 	batch:    false,
+	// 	subqueue: ConsensusCollectFundEvents,
+	// 	msgType:  &types.CollectFunds{},
+	// 	processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
+	// 		return k.attestCollectedFunds
+	// 	},
+	// },
 }
 
 func init() {

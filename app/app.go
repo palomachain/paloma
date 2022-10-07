@@ -106,9 +106,6 @@ import (
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
 	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
-	treasurymodule "github.com/palomachain/paloma/x/treasury"
-	treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
-	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	valsetmodule "github.com/palomachain/paloma/x/valset"
 	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
@@ -175,7 +172,7 @@ var (
 		wasm.AppModuleBasic{},
 		evm.AppModuleBasic{},
 		palomamodule.AppModuleBasic{},
-		treasurymodule.AppModuleBasic{},
+		// treasurymodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -189,7 +186,7 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		wasm.ModuleName:                {authtypes.Burner},
-		treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
+		// treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 )
@@ -257,7 +254,7 @@ type App struct {
 
 	PalomaKeeper palomamodulekeeper.Keeper
 
-	TreasuryKeeper treasurymodulekeeper.Keeper
+	// TreasuryKeeper treasurymodulekeeper.Keeper
 
 	EvmKeeper evmmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
@@ -304,7 +301,7 @@ func New(
 		schedulermoduletypes.StoreKey,
 		consensusmoduletypes.StoreKey,
 		valsetmoduletypes.StoreKey,
-		treasurymoduletypes.StoreKey,
+		// treasurymoduletypes.StoreKey,
 		wasm.StoreKey,
 		evmmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
@@ -510,15 +507,15 @@ func New(
 		},
 	)
 
-	app.TreasuryKeeper = *treasurymodulekeeper.NewKeeper(
-		appCodec,
-		keys[schedulermoduletypes.StoreKey],
-		keys[schedulermoduletypes.MemStoreKey],
-		app.GetSubspace(schedulermoduletypes.ModuleName),
-		app.BankKeeper,
-		app.AccountKeeper,
-		app.SchedulerKeeper,
-	)
+	// app.TreasuryKeeper = *treasurymodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[schedulermoduletypes.StoreKey],
+	// 	keys[schedulermoduletypes.MemStoreKey],
+	// 	app.GetSubspace(schedulermoduletypes.ModuleName),
+	// 	app.BankKeeper,
+	// 	app.AccountKeeper,
+	// 	app.SchedulerKeeper,
+	// )
 
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
@@ -559,7 +556,7 @@ func New(
 	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
-	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
+	// treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	app.mm = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
@@ -586,7 +583,7 @@ func New(
 		valsetModule,
 		evmModule,
 		palomaModule,
-		treasuryModule,
+		// treasuryModule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
@@ -613,7 +610,7 @@ func New(
 		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
-		treasurymoduletypes.ModuleName,
+		// treasurymoduletypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -633,7 +630,7 @@ func New(
 		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
-		treasurymoduletypes.ModuleName,
+		// treasurymoduletypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -666,7 +663,7 @@ func New(
 		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
-		treasurymoduletypes.ModuleName,
+		// treasurymoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -694,7 +691,7 @@ func New(
 		consensusModule,
 		valsetModule,
 		palomaModule,
-		treasuryModule,
+		// treasuryModule,
 		evmModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
