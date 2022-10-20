@@ -20,7 +20,7 @@ type PutOptions struct {
 
 //go:generate mockery --name=Queuer
 type Queuer interface {
-	Put(sdk.Context, ConsensusMsg, *PutOptions) error
+	Put(sdk.Context, ConsensusMsg, *PutOptions) (uint64, error)
 	AddSignature(ctx sdk.Context, id uint64, signData *types.SignData) error
 	AddEvidence(ctx sdk.Context, id uint64, evidence *types.Evidence) error
 	SetPublicAccessData(ctx sdk.Context, id uint64, data *types.PublicAccessData) error

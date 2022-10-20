@@ -67,7 +67,7 @@ func (k Keeper) PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg con
 		k.Logger(ctx).Error("error while getting consensus queue", "error", err)
 		return err
 	}
-	err = cq.Put(ctx, msg, opts)
+	msgID, err := cq.Put(ctx, msg, opts)
 	if err != nil {
 		k.Logger(ctx).Error("error while putting message into queue", "error", err)
 		return err
@@ -75,6 +75,7 @@ func (k Keeper) PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg con
 	k.Logger(ctx).Info(
 		"put message into consensus queue",
 		"queue-type-name", queueTypeName,
+		"message-id", msgID,
 	)
 	return nil
 }

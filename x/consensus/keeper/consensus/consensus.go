@@ -126,7 +126,7 @@ func NewQueue(qo QueueOptions) Queue {
 }
 
 // Put puts raw message into a signing queue.
-func (c Queue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) error {
+func (c Queue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
 	requireSignatures := true
 	var publicAccessData *types.PublicAccessData
 
@@ -139,14 +139,14 @@ func (c Queue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) error {
 	}
 
 	if !c.qo.TypeCheck(msg) {
-		return ErrIncorrectMessageType.Format(msg)
+		return 0, ErrIncorrectMessageType.Format(msg)
 	}
 	newID := c.qo.Ider.IncrementNextID(ctx, consensusQueueIDCounterKey)
 	// just so it's clear that nonce is an actual ID
 	nonce := newID
 	anyMsg, err := codectypes.NewAnyWithValue(msg)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	queuedMsg := &types.QueuedSignedMessage{
 		Id:                 newID,
@@ -161,9 +161,9 @@ func (c Queue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) error {
 		}),
 	}
 	if err := c.save(ctx, queuedMsg); err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return newID, nil
 }
 
 // getAll returns all messages from a signing queu

@@ -27,16 +27,16 @@ func NewBatchQueue(qo QueueOptions) BatchQueue {
 	}
 }
 
-func (c BatchQueue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) error {
+func (c BatchQueue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
 	if !c.batchedTypeChecker(msg) {
-		return ErrIncorrectMessageType.Format(msg)
+		return 0, ErrIncorrectMessageType.Format(msg)
 	}
 
 	newID := c.base.qo.Ider.IncrementNextID(ctx, consensusBatchQueueIDCounterKey)
 
 	anyMsg, err := codectypes.NewAnyWithValue(msg)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	var batchedMsg types.MessageQueuedForBatchingI = &batchOfConsensusMessages{
@@ -45,10 +45,10 @@ func (c BatchQueue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) err
 
 	data, err := c.base.qo.Cdc.MarshalInterface(batchedMsg)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	c.batchQueue(ctx).Set(sdk.Uint64ToBigEndian(newID), data)
-	return nil
+	return newID, nil
 }
 
 func (c BatchQueue) ProcessBatches(ctx sdk.Context) error {
@@ -90,7 +90,7 @@ func (c BatchQueue) ProcessBatches(ctx sdk.Context) error {
 	}
 
 	for _, batch := range batches {
-		err := c.base.Put(ctx, batch, nil)
+		_, err := c.base.Put(ctx, batch, nil)
 		if err != nil {
 			return err
 		}

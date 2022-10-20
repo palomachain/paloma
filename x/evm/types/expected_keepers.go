@@ -39,3 +39,7 @@ type ValsetKeeper interface {
 	IsJailed(ctx sdk.Context, val sdk.ValAddress) bool
 	SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error
 }
+
+type JobScheduler interface {
+	ScheduleNow(ctx sdk.Context, jobID string, in []byte) error
+}

@@ -1,14 +1,12 @@
 package keeper_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/big"
 	"strings"
 	"testing"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -787,84 +785,4 @@ var _ = Describe("change min on chain balance", func() {
 		})
 	})
 
-})
-
-var _ = Describe("wasm message handler", func() {
-	var a app.TestApp
-	var ctx sdk.Context
-	newChain := &types.AddChainProposal{
-		ChainReferenceID:  "eth-main",
-		Title:             "bla",
-		Description:       "bla",
-		BlockHeight:       uint64(123),
-		BlockHashAtHeight: "0x1234",
-	}
-
-	BeforeEach(func() {
-		a = app.NewTestApp(GinkgoT(), false)
-		ctx = a.NewContext(false, tmproto.Header{
-			Height: 5,
-		})
-	})
-
-	var subjectMsg keeper.ExecuteEVMFromCosmWasm
-	var serializedSubjectMessage []byte
-
-	subject := func() error {
-		_, _, err := a.EvmKeeper.WasmMessengerHandler()(ctx, sdk.AccAddress("contract-addr"), "ibc-port", wasmvmtypes.CosmosMsg{
-			Custom: serializedSubjectMessage,
-		})
-		return err
-	}
-
-	JustBeforeEach(func() {
-		serializedSubjectMessage, _ = json.Marshal(subjectMsg)
-	})
-
-	Context("invalid message", func() {
-		When("message is empty", func() {
-			It("returns an error", func() {
-				Expect(subject()).To(MatchError(keeper.ErrWasmExecuteMessageNotValid))
-			})
-		})
-	})
-
-	Context("valid message", func() {
-		BeforeEach(func() {
-			subjectMsg.Payload = []byte("hello")
-			subjectMsg.TargetContractInfo.ChainReferenceID = newChain.GetChainReferenceID()
-		})
-		When("chain info doesn't exist", func() {
-			It("returns an error", func() {
-				Expect(subject()).To(MatchError(keeper.ErrChainNotFound))
-			})
-		})
-
-		Context("chain info exists", func() {
-			JustBeforeEach(func() {
-				err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain.GetChainReferenceID(), newChain.GetChainID(), 1, "a", big.NewInt(55))
-				Expect(err).To(BeNil())
-			})
-			When("chain is not active", func() {
-				It("returns an error", func() {
-					Expect(subject()).To(MatchError(keeper.ErrChainNotActive))
-				})
-			})
-			When("chain is active", func() {
-				JustBeforeEach(func() {
-					err := a.EvmKeeper.ActivateChainReferenceID(
-						ctx,
-						newChain.GetChainReferenceID(),
-						&types.SmartContract{Id: 123},
-						"0x1234",
-						[]byte("unique"),
-					)
-					Expect(err).To(BeNil())
-				})
-				It("adds smart contract execution message", func() {
-					Expect(subject()).To(BeNil())
-				})
-			})
-		})
-	})
 })
