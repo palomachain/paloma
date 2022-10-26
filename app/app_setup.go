@@ -80,5 +80,5 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 		)
 	}
 
-	return TestApp{*app.(*App)}
+	return TestApp{*app}
 }
