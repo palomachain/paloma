@@ -41,7 +41,8 @@ func NewRootCmd() *cobra.Command {
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastBlock).
-		WithHomeDir(palomaapp.DefaultNodeHome)
+		WithHomeDir(palomaapp.DefaultNodeHome).
+		WithViper("PALOMA")
 
 	rootCmd := &cobra.Command{
 		Use:     palomaapp.Name + "d",
