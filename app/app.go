@@ -115,10 +115,7 @@ import (
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 )
 
-const (
-	AccountAddressPrefix = "paloma"
-	Name                 = "paloma"
-)
+const Name = "paloma"
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	var govProposalHandlers []govclient.ProposalHandler
