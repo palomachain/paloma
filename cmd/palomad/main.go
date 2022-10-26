@@ -53,7 +53,6 @@ func main() {
 				return nil
 			}
 		}),
-		// this line is used by starport scaffolding # root/arguments
 	)
 
 	stakingCmd := findCommand(rootCmd, "tx", "staking")

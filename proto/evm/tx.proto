@@ -1,41 +1,35 @@
 syntax = "proto3";
 package palomachain.paloma.evm;
 
-// this line is used by starport scaffolding # proto/tx/import
-
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 // Msg defines the Msg service.
 service Msg {
   rpc SubmitNewJob(MsgSubmitNewJob) returns (MsgSubmitNewJobResponse);
-  rpc UploadNewSmartContractTemp(MsgUploadNewSmartContractTemp) returns (MsgUploadNewSmartContractTempResponse);
-// this line is used by starport scaffolding # proto/tx/rpc
+  rpc UploadNewSmartContractTemp(MsgUploadNewSmartContractTemp)
+      returns (MsgUploadNewSmartContractTempResponse);
 }
 
 message MsgSubmitNewJob {
-  string creator = 1;
+  string creator                 = 1;
   string hexSmartContractAddress = 2;
-  string hexPayload = 3;
+  string hexPayload              = 3;
 
-  string abi = 4;
+  string abi    = 4;
   string method = 5;
 
-  string chainType = 6;
+  string chainType        = 6;
   string chainReferenceID = 7;
 }
 
-message MsgSubmitNewJobResponse {
-}
+message MsgSubmitNewJobResponse {}
 
 message MsgUploadNewSmartContractTemp {
-  string creator = 1;
-  string abi = 2;
-  string bytecode = 3;
+  string creator          = 1;
+  string abi              = 2;
+  string bytecode         = 3;
   string constructorInput = 4;
   string chainReferenceID = 5;
 }
 
-message MsgUploadNewSmartContractTempResponse {
-}
-
-// this line is used by starport scaffolding # proto/tx/message
+message MsgUploadNewSmartContractTempResponse {}

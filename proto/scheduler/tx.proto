@@ -3,9 +3,6 @@ package palomachain.paloma.scheduler;
 
 import "scheduler/job.proto";
 import "gogoproto/gogo.proto";
-// this line is used by starport scaffolding # 1
-
-// this line is used by starport scaffolding # proto/tx/import
 
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
@@ -13,28 +10,22 @@ option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 service Msg {
   rpc CreateJob(MsgCreateJob) returns (MsgCreateJobResponse);
   rpc ExecuteJob(MsgExecuteJob) returns (MsgExecuteJobResponse);
-// this line is used by starport scaffolding # proto/tx/rpc
 }
-
 
 message MsgCreateJob {
   string creator = 1;
-  Job job = 2;
+  Job    job     = 2;
 }
 
 message MsgCreateJobResponse {
-  bytes jobAddress = 1 [
-    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"
-  ];
+  bytes jobAddress = 1
+      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
 }
 
 message MsgExecuteJob {
   string creator = 1;
-  string jobID = 2;
-  bytes payload = 3;
+  string jobID   = 2;
+  bytes  payload = 3;
 }
 
-message MsgExecuteJobResponse {
-}
-
-// this line is used by starport scaffolding # proto/tx/message
+message MsgExecuteJobResponse {}

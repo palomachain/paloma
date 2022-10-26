@@ -7,7 +7,6 @@ import "cosmos/base/query/v1beta1/pagination.proto";
 import "evm/params.proto";
 import "evm/turnstone.proto";
 import "evm/chain_info.proto";
-// this line is used by starport scaffolding # 1
 
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
@@ -18,26 +17,30 @@ service Query {
     option (google.api.http).get = "/palomachain/paloma/evm/params";
   }
   // Queries a list of GetValsetByID items.
-	rpc GetValsetByID(QueryGetValsetByIDRequest) returns (QueryGetValsetByIDResponse) {
-		option (google.api.http).get = "/palomachain/paloma/evm/get_valset_by_id/{valsetID}";
-	}
+  rpc GetValsetByID(QueryGetValsetByIDRequest)
+      returns (QueryGetValsetByIDResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/evm/get_valset_by_id/{valsetID}";
+  }
 
-// Queries a list of ChainsInfos items.
-	rpc ChainsInfos(QueryChainsInfosRequest) returns (QueryChainsInfosResponse) {
-		option (google.api.http).get = "/palomachain/paloma/evm/chains_infos";
-	}
+  // Queries a list of ChainsInfos items.
+  rpc ChainsInfos(QueryChainsInfosRequest) returns (QueryChainsInfosResponse) {
+    option (google.api.http).get = "/palomachain/paloma/evm/chains_infos";
+  }
 
-// Queries a list of QueryGetSmartContract items.
-	rpc QueryGetSmartContract(QueryGetSmartContractRequest) returns (QueryGetSmartContractResponse) {
-		option (google.api.http).get = "/palomachain/paloma/evm/query_get_smart_contract/{smartContractID}";
-	}
+  // Queries a list of QueryGetSmartContract items.
+  rpc QueryGetSmartContract(QueryGetSmartContractRequest)
+      returns (QueryGetSmartContractResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/evm/query_get_smart_contract/{smartContractID}";
+  }
 
-// Queries a list of QueryGetSmartContractDeployments items.
-	rpc QueryGetSmartContractDeployments(QueryGetSmartContractDeploymentsRequest) returns (QueryGetSmartContractDeploymentsResponse) {
-		option (google.api.http).get = "/palomachain/paloma/evm/query_get_smart_contract_deployments";
-	}
-
-// this line is used by starport scaffolding # 2
+  // Queries a list of QueryGetSmartContractDeployments items.
+  rpc QueryGetSmartContractDeployments(QueryGetSmartContractDeploymentsRequest)
+      returns (QueryGetSmartContractDeploymentsResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/evm/query_get_smart_contract_deployments";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -50,7 +53,7 @@ message QueryParamsResponse {
 }
 
 message QueryGetValsetByIDRequest {
-  uint64 valsetID = 1;
+  uint64 valsetID         = 1;
   string chainReferenceID = 2;
 }
 
@@ -58,8 +61,7 @@ message QueryGetValsetByIDResponse {
   Valset valset = 1;
 }
 
-message QueryChainsInfosRequest {
-}
+message QueryChainsInfosRequest {}
 
 message QueryChainsInfosResponse {
   repeated ChainInfo chainsInfos = 1;
@@ -70,16 +72,13 @@ message QueryGetSmartContractRequest {
 }
 
 message QueryGetSmartContractResponse {
-  uint64 ID = 1;
-  string abi = 2;
-  bytes bytecode = 3;
+  uint64 ID       = 1;
+  string abi      = 2;
+  bytes  bytecode = 3;
 }
 
-message QueryGetSmartContractDeploymentsRequest {
-}
+message QueryGetSmartContractDeploymentsRequest {}
 
 message QueryGetSmartContractDeploymentsResponse {
   repeated SmartContractDeployment deployments = 1;
 }
-
-// this line is used by starport scaffolding # 3

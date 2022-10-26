@@ -115,7 +115,6 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
 const (
@@ -123,11 +122,8 @@ const (
 	Name                 = "paloma"
 )
 
-// this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
-
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	var govProposalHandlers []govclient.ProposalHandler
-	// this line is used by starport scaffolding # stargate/app/govProposalHandlers
 
 	govProposalHandlers = append(govProposalHandlers,
 		paramsclient.ProposalHandler,
@@ -137,7 +133,6 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
 		evmclient.ProposalHandler,
-		// this line is used by starport scaffolding # stargate/app/govProposalHandler
 	)
 
 	return govProposalHandlers
@@ -176,7 +171,6 @@ var (
 		evm.AppModuleBasic{},
 		palomamodule.AppModuleBasic{},
 		treasurymodule.AppModuleBasic{},
-		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
 	// module account permissions
@@ -190,7 +184,6 @@ var (
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		wasm.ModuleName:                {authtypes.Burner},
 		treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
-		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 )
 
@@ -260,7 +253,6 @@ type App struct {
 	TreasuryKeeper treasurymodulekeeper.Keeper
 
 	EvmKeeper evmmodulekeeper.Keeper
-	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	wasmKeeper       wasm.Keeper
 	scopedWasmKeeper capabilitykeeper.ScopedKeeper
@@ -307,7 +299,6 @@ func New(
 		treasurymoduletypes.StoreKey,
 		wasm.StoreKey,
 		evmmoduletypes.StoreKey,
-		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -334,7 +325,7 @@ func New(
 	// grant capabilities for the ibc and ibc-transfer modules
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	// this line is used by starport scaffolding # stargate/app/scopedKeeper
+
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
 
 	// add keepers
@@ -536,13 +527,11 @@ func New(
 	// 	govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
 	// }
 
-	// this line is used by starport scaffolding # stargate/app/keeperDefinition
-
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
 	// TODO: this should be enabled later
 	// ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferModule)
-	// this line is used by starport scaffolding # ibc/app/router
+
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	/****  Module Options ****/
@@ -588,7 +577,6 @@ func New(
 		palomaModule,
 		treasuryModule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -667,7 +655,6 @@ func New(
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
 		treasurymoduletypes.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -696,7 +683,6 @@ func New(
 		palomaModule,
 		treasuryModule,
 		evmModule,
-		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 	app.sm.RegisterStoreDecoders()
 
@@ -741,7 +727,6 @@ func New(
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	app.scopedWasmKeeper = scopedWasmKeeper
-	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
 
 	consensusRegistry.Add(
 		app.EvmKeeper,
@@ -897,7 +882,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(wasm.ModuleName)
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
-	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper
 }

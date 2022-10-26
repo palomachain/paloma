@@ -10,7 +10,7 @@ import (
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgAddExternalChainInfoForValidator{}, "valset/AddExternalChainInfoForValidator", nil)
 	cdc.RegisterConcrete(&MsgKeepAlive{}, "valset/KeepAlive", nil)
-	// this line is used by starport scaffolding # 2
+
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -20,7 +20,6 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgKeepAlive{},
 	)
-	// this line is used by starport scaffolding # 3
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

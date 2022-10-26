@@ -6,7 +6,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -23,7 +22,7 @@ type testing interface {
 
 func NewTestApp(t testing, isCheckTx bool) TestApp {
 	db := dbm.NewMemDB()
-	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
+	encCfg := MakeEncodingConfig()
 
 	oldVersion := version.Version
 	version.Version = "v5.1.6"
@@ -43,7 +42,7 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 	)
 
 	if !isCheckTx {
-		genesisState := NewDefaultGenesisState(encCfg.Marshaler)
+		genesisState := NewDefaultGenesisState(encCfg.Codec)
 		stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 
 		if err != nil {

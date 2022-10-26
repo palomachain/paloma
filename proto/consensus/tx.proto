@@ -3,62 +3,54 @@ syntax = "proto3";
 import "google/protobuf/any.proto";
 package palomachain.paloma.consensus;
 
-// this line is used by starport scaffolding # proto/tx/import
-
 option go_package = "github.com/palomachain/paloma/x/consensus/types";
 
 // Msg defines the Msg service.
 service Msg {
-  rpc AddMessagesSignatures(MsgAddMessagesSignatures) returns (MsgAddMessagesSignaturesResponse);
+  rpc AddMessagesSignatures(MsgAddMessagesSignatures)
+      returns (MsgAddMessagesSignaturesResponse);
   rpc DeleteJob(MsgDeleteJob) returns (MsgDeleteJobResponse);
   rpc AddEvidence(MsgAddEvidence) returns (MsgAddEvidenceResponse);
-  rpc SetPublicAccessData(MsgSetPublicAccessData) returns (MsgSetPublicAccessDataResponse);
-// this line is used by starport scaffolding # proto/tx/rpc
+  rpc SetPublicAccessData(MsgSetPublicAccessData)
+      returns (MsgSetPublicAccessDataResponse);
 }
 
 message MsgAddMessagesSignatures {
-  string creator = 1;
+  string                             creator        = 1;
   repeated ConsensusMessageSignature signedMessages = 2;
 }
 
 message ConsensusMessageSignature {
-    uint64 id = 1;
-    string queueTypeName = 2;
-    bytes signature = 3;
-    string signedByAddress = 5;
+  uint64 id              = 1;
+  string queueTypeName   = 2;
+  bytes  signature       = 3;
+  string signedByAddress = 5;
 }
 
-message MsgAddMessagesSignaturesResponse {
-}
-
+message MsgAddMessagesSignaturesResponse {}
 
 message MsgDeleteJob {
-  string creator = 1;
+  string creator       = 1;
   string queueTypeName = 2;
-  uint64 messageID = 3;
+  uint64 messageID     = 3;
 }
 
-message MsgDeleteJobResponse {
-}
+message MsgDeleteJobResponse {}
 
 message MsgAddEvidence {
-  string creator = 1;
-  google.protobuf.Any proof = 2;
-  uint64 messageID = 3;
-  string queueTypeName = 4; 
+  string              creator       = 1;
+  google.protobuf.Any proof         = 2;
+  uint64              messageID     = 3;
+  string              queueTypeName = 4;
 }
 
-message MsgAddEvidenceResponse {
-}
+message MsgAddEvidenceResponse {}
 
 message MsgSetPublicAccessData {
-  string creator = 1;
-  uint64 messageID = 2;
+  string creator       = 1;
+  uint64 messageID     = 2;
   string queueTypeName = 3;
-  bytes data = 4;
+  bytes  data          = 4;
 }
 
-message MsgSetPublicAccessDataResponse {
-}
-
-// this line is used by starport scaffolding # proto/tx/message
+message MsgSetPublicAccessDataResponse {}
