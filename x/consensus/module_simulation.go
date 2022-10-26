@@ -39,8 +39,6 @@ const (
 	opWeightMsgSetPublicAccessData = "op_weight_msg_set_public_access_data"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgSetPublicAccessData int = 100
-
-	// this line is used by starport scaffolding # simapp/module/const
 )
 
 // GenerateGenesisState creates a randomized GenState of the module
@@ -49,9 +47,7 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	for i, acc := range simState.Accounts {
 		accs[i] = acc.Address.String()
 	}
-	consensusGenesis := types.GenesisState{
-		// this line is used by starport scaffolding # simapp/module/genesisState
-	}
+	consensusGenesis := types.GenesisState{}
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&consensusGenesis)
 }
 
@@ -116,8 +112,6 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 		weightMsgSetPublicAccessData,
 		consensussimulation.SimulateMsgSetPublicAccessData(am.accountKeeper, am.bankKeeper, am.keeper),
 	))
-
-	// this line is used by starport scaffolding # simapp/module/operation
 
 	return operations
 }

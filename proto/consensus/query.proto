@@ -5,7 +5,6 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "consensus/params.proto";
 import "google/protobuf/any.proto";
-// this line is used by starport scaffolding # 1
 
 option go_package = "github.com/palomachain/paloma/x/consensus/types";
 
@@ -16,21 +15,25 @@ service Query {
     option (google.api.http).get = "/palomachain/paloma/consensus/params";
   }
   // Queries a list of QueuedMessagesForSigning items.
-	rpc QueuedMessagesForSigning(QueryQueuedMessagesForSigningRequest) returns (QueryQueuedMessagesForSigningResponse) {
-		option (google.api.http).get = "/palomachain/paloma/consensus/queued_messages_for_signing";
-	}
+  rpc QueuedMessagesForSigning(QueryQueuedMessagesForSigningRequest)
+      returns (QueryQueuedMessagesForSigningResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/consensus/queued_messages_for_signing";
+  }
 
-// Queries a list of MessagesInQueue items.
-	rpc MessagesInQueue(QueryMessagesInQueueRequest) returns (QueryMessagesInQueueResponse) {
-		option (google.api.http).get = "/palomachain/paloma/consensus/messages_in_queue/{queueTypeName}";
-	}
+  // Queries a list of MessagesInQueue items.
+  rpc MessagesInQueue(QueryMessagesInQueueRequest)
+      returns (QueryMessagesInQueueResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/consensus/messages_in_queue/{queueTypeName}";
+  }
 
-// Queries a list of GetAllQueueNames items.
-	rpc GetAllQueueNames(QueryGetAllQueueNamesRequest) returns (QueryGetAllQueueNamesResponse) {
-		option (google.api.http).get = "/palomachain/paloma/consensus/get_all_queue_names";
-	}
-
-// this line is used by starport scaffolding # 2
+  // Queries a list of GetAllQueueNames items.
+  rpc GetAllQueueNames(QueryGetAllQueueNamesRequest)
+      returns (QueryGetAllQueueNamesResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/consensus/get_all_queue_names";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -43,8 +46,8 @@ message QueryParamsResponse {
 }
 
 message QueryQueuedMessagesForSigningRequest {
-  bytes valAddress = 1 [ (gogoproto.casttype) =
-                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+  bytes valAddress = 1
+      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
   string queueTypeName = 2;
 }
 
@@ -53,47 +56,43 @@ message QueryQueuedMessagesForSigningResponse {
 }
 
 message MessageToSign {
-  bytes nonce = 1;
-  uint64 id = 2;
-  bytes bytesToSign = 3;
-  google.protobuf.Any msg = 4;
+  bytes               nonce       = 1;
+  uint64              id          = 2;
+  bytes               bytesToSign = 3;
+  google.protobuf.Any msg         = 4;
 }
 
 message ValidatorSignature {
-  bytes valAddress = 1[ (gogoproto.casttype) =
-                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+  bytes valAddress = 1
+      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
   bytes signature = 2;
   bytes extraData = 3;
 
   string externalAccountAddress = 4;
-  bytes publicKey = 5;
+  bytes  publicKey              = 5;
 }
 
 message MessageWithSignatures {
-  bytes nonce = 1;
-  uint64 id = 2;
-  google.protobuf.Any msg = 3;
-  repeated ValidatorSignature signData = 4;
-  bytes bytesToSign = 5;
-  bytes publicAccessData = 6;
+  bytes                       nonce            = 1;
+  uint64                      id               = 2;
+  google.protobuf.Any         msg              = 3;
+  repeated ValidatorSignature signData         = 4;
+  bytes                       bytesToSign      = 5;
+  bytes                       publicAccessData = 6;
 }
 
 message QueryMessagesInQueueRequest {
-  string queueTypeName = 1;
-  bytes skipEvidenceProvidedByValAddress = 2[ (gogoproto.casttype) =
-                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
-
+  string queueTypeName                    = 1;
+  bytes  skipEvidenceProvidedByValAddress = 2
+      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
 }
 
 message QueryMessagesInQueueResponse {
   repeated MessageWithSignatures messages = 1;
 }
 
-message QueryGetAllQueueNamesRequest {
-}
+message QueryGetAllQueueNamesRequest {}
 
 message QueryGetAllQueueNamesResponse {
   repeated string queues = 1;
 }
-
-// this line is used by starport scaffolding # 3

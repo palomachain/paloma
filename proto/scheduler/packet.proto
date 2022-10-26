@@ -1,19 +1,12 @@
 syntax = "proto3";
 package palomachain.paloma.scheduler;
-// this line is used by starport scaffolding # 1
-
-// this line is used by starport scaffolding # proto/packet/import
 
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
 message SchedulerPacketData {
-    oneof packet {
-        NoData noData = 1;
-        // this line is used by starport scaffolding # ibc/packet/proto/field
-    }
+  oneof packet {
+    NoData noData = 1;
+  }
 }
 
-message NoData {
-}
-
-// this line is used by starport scaffolding # ibc/packet/proto/message
+message NoData {}

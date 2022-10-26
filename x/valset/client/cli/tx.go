@@ -32,7 +32,6 @@ func GetTxCmd() *cobra.Command {
 
 	cmd.AddCommand(CmdAddExternalChainInfoForValidator())
 	cmd.AddCommand(CmdKeepAlive())
-	// this line is used by starport scaffolding # 1
 
 	return cmd
 }

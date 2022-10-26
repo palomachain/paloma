@@ -2,12 +2,10 @@ syntax = "proto3";
 package palomachain.paloma.scheduler;
 
 import "gogoproto/gogo.proto";
-// this line is used by starport scaffolding # 1
 
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
 // Params defines the parameters for the module.
 message Params {
   option (gogoproto.goproto_stringer) = false;
-  
 }
