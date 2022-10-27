@@ -69,7 +69,7 @@ sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/internal/api/l
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
 
-### Steps for upgrading from a prior testnet to `paloma-testnet-13`
+### Steps for upgrading from a prior testnet to `paloma-testnet-13` (These need to be done in the order listed)
 
 **ALERT: You will need to update your pigeon config.yaml file to reference this new chain-ID!**
 
@@ -82,24 +82,28 @@ wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.3/paloma
 
 2. [Setup your pigeon relayer by following the instructions](https://github.com/palomachain/pigeon#install) and then come back here.
 
-3. Reset your local chain state:
+3. Copy the latest genesis file
+```shell
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-13/genesis.json
+```
+
+4. Reset your local chain state:
 ```bash
 palomad tendermint unsafe-reset-all --home $HOME/.paloma
 ```
 
-4. Copy the latest genesis and addrbook
+5. Copy the latest addrbook
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-13/genesis.json
 wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-13/addrbook.json
 ```
 
-5. Start paloma.
+6. Start paloma.
 
 ```
 service palomad start
 ```
 
-6. If you are planning to be a **VALIDATOR with stake**, ensure that your pigeon relayer is up & running and that you have at least 0.05 ETH on eth mainnet target chain and 0.05 BNB on bnb mainnet target chain addresses is in your pigeon configuration file.
+7. If you are planning to be a **VALIDATOR with stake**, ensure that your pigeon relayer is up & running and that you have at least 0.05 ETH on eth mainnet target chain and 0.05 BNB on bnb mainnet target chain addresses is in your pigeon configuration file.
 
 ### Connecting to an existing testnet.
 
