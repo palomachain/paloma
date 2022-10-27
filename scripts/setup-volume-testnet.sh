@@ -24,7 +24,7 @@ jq-i() {
   mv "${f}.tmp" "$f"
 }
 
-palomad init my_validator --chain-id "$CHAIN_ID"
+palomad init birdlady --chain-id "$CHAIN_ID"
 
 pushd ~/.paloma/config/
 sed -i 's/^keyring-backend = ".*"/keyring-backend = "test"/' client.toml
@@ -34,14 +34,15 @@ jq-i ".chain_id = \"${CHAIN_ID}\"" genesis.json
 popd
 
 GR=000000ugrain
+KGR="000${GR}"
 MGR="000000${GR}"
 
 INIT_AMOUNT="5${MGR}"
-INIT_VALIDATION_AMOUNT="1${MGR}"
+INIT_VALIDATION_AMOUNT="10${KGR}"
 GENESIS_AMOUNT="1${MGR}"
 FAUCET_AMOUNT="3${MGR}"
 
-name="chase"
+name="splat"
 echo "$MNEMONIC" | palomad keys add "$name" --recover
 address="$(palomad keys show "$name" -a)"
 
@@ -57,9 +58,8 @@ init() {
 }
 
 init faucet paloma167rf0jmkkkqp9d4awa8rxw908muavqgghtw6tn "$FAUCET_AMOUNT"
+init chase paloma1nty4gn8k2nrewy26fm62v03322fxgpq0hxssn6
 init jason paloma1mre80u0mmsdpf3l2shre9g4sh7kp9lxu5gtlql
-init matija paloma1auhjn3rd6edsv90h72xuqnh7xwhlcayjselctn
 init taariq paloma1k4hfe8cqdzy6j0t7sppujhrplhp8k5tglf8v46
-init vera paloma132nvgqw2l2jfgwzvtxyt8fswhfwtw9dz76zxcy
 
 palomad collect-gentxs
