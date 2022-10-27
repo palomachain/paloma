@@ -2,21 +2,24 @@ package slice
 
 import (
 	"fmt"
+	"golang.org/x/exp/constraints"
+	"sort"
 )
 
-func FromMapValues[K comparable, V any](mm map[K]V) []V {
+func FromMapValues[K constraints.Ordered, V any](mm map[K]V) []V {
 	res := make([]V, 0, len(mm))
-	for _, v := range mm {
-		res = append(res, v)
+	for _, v := range FromMapKeys(mm) {
+		res = append(res, mm[v])
 	}
 	return res
 }
 
-func FromMapKeys[K comparable, V any](mm map[K]V) []K {
+func FromMapKeys[K constraints.Ordered, V any](mm map[K]V) []K {
 	res := make([]K, 0, len(mm))
 	for k := range mm {
 		res = append(res, k)
 	}
+	sort.Slice(res, func(i, j int) bool { return res[i] < res[j] })
 	return res
 }
 

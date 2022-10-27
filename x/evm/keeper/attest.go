@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/palomachain/paloma/util/slice"
 	"math/big"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -283,7 +284,7 @@ func (k Keeper) findEvidenceThatWon(
 	// TODO: punishing validators who misbehave
 	// TODO: check for every tx if it seems genuine
 
-	for _, group := range groups {
+	for _, group := range slice.FromMapValues(groups) {
 
 		var cp consensusPower
 		cp.setTotal(snapshot.TotalShares)
