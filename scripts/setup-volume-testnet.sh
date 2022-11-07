@@ -61,6 +61,9 @@ init faucet paloma167rf0jmkkkqp9d4awa8rxw908muavqgghtw6tn "$FAUCET_AMOUNT"
 init chase paloma1nty4gn8k2nrewy26fm62v03322fxgpq0hxssn6
 init jason paloma1mre80u0mmsdpf3l2shre9g4sh7kp9lxu5gtlql
 init taariq paloma1k4hfe8cqdzy6j0t7sppujhrplhp8k5tglf8v46
+init steven paloma1arwskydtxc8w6jw0pa227yslmzrwllspxrlaga
+init zhibai paloma1fv2t7yf0dvlc4yz888qfamyys35l0rf0xdwwfl
+init william paloma17esj9dnjhnpezfqmpwdwg2yldnc3udrdv5e76w
 
 init  1 paloma1hj4lxqp05ntjl6ezu3qn9eyedp5p4fpdwu8gxj "$INIT_VALIDATION_AMOUNT"
 init  2 paloma1d3v3jh6l2r23y9kgzdrahx0ev8ez0g8qapsfxs "$INIT_VALIDATION_AMOUNT"
