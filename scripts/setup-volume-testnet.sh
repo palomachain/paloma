@@ -27,7 +27,6 @@ jq-i() {
 palomad init birdlady --chain-id "$CHAIN_ID"
 
 pushd ~/.paloma/config/
-sed -i 's/^keyring-backend = ".*"/keyring-backend = "test"/' client.toml
 sed -i 's/^minimum-gas-prices = ".*"/minimum-gas-prices = "0.001ugrain"/' app.toml
 sed -i 's/^laddr = ".*:26657"/laddr = "tcp:\/\/0.0.0.0:26657"/' config.toml
 jq-i ".chain_id = \"${CHAIN_ID}\"" genesis.json
