@@ -734,6 +734,14 @@ func isEnoughToReachConsensus(val types.Valset) bool {
 }
 
 func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID string) types.Valset {
+	logger := log.NewNopLogger().With("module", "x/evm/keeper/keeper")
+	logger.Debug("transformSnapshotToCompass",
+		"snapshot-id", snapshot.Id,
+		"snapshot-height", snapshot.Height,
+		"snapshot-total-shares", snapshot.TotalShares,
+		"snapshot-validators-length", len(snapshot.Validators),
+	)
+
 	validators := make([]valsettypes.Validator, len(snapshot.GetValidators()))
 	copy(validators, snapshot.GetValidators())
 
@@ -752,6 +760,11 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 	valset := types.Valset{
 		ValsetID: snapshot.GetId(),
 	}
+
+	logger.Debug("transformSnapshotToCompass",
+		"total-power", totalPower,
+		"valset-id", valset.ValsetID,
+	)
 
 	for _, val := range validators {
 		for _, ext := range val.GetExternalChainInfos() {

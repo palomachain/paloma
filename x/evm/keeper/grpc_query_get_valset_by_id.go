@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
-	log "github.com/sirupsen/logrus"
+	"github.com/tendermint/tendermint/libs/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -17,10 +17,11 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
-	log.WithFields(log.Fields{
-		"chain-reference-id": req.GetChainReferenceID(),
-		"valset-id":          req.GetValsetID(),
-	}).Debug("request info")
+	logger := log.NewNopLogger().With("module", "x/evm/keeper/grpc_query_get_valset_by_id")
+	logger.Debug("request info",
+		"chain-reference-id", req.GetChainReferenceID(),
+		"valset-id", req.GetValsetID(),
+	)
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -38,10 +39,10 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 	}
 
 	valset := transformSnapshotToCompass(snapshot, req.GetChainReferenceID())
-	log.WithFields(log.Fields{
-		"chain-reference-id": len(valset.Validators),
-		"valset-id":          len(valset.Powers),
-	}).Debug("request info")
+	logger.Debug("request info",
+		"chain-reference-id", req.GetChainReferenceID(),
+		"valset-id", req.GetValsetID(),
+	)
 
 	return &types.QueryGetValsetByIDResponse{
 		Valset: &valset,
