@@ -37,7 +37,9 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 	if err != nil {
 		return nil, err
 	}
-
+	if err == nil {
+		return nil, status.Error(codes.Unknown, "did not reach here")
+	}
 	valset := transformSnapshotToCompass(snapshot, req.GetChainReferenceID())
 	logger.Debug("request info",
 		"chain-reference-id", req.GetChainReferenceID(),
