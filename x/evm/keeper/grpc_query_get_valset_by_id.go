@@ -18,7 +18,7 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	logger := log.NewNopLogger().With("module", "x/evm/keeper/grpc_query_get_valset_by_id")
-	logger.Debug("request info",
+	logger.Info("request info",
 		"chain-reference-id", req.GetChainReferenceID(),
 		"valset-id", req.GetValsetID(),
 	)
@@ -38,7 +38,7 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 		return nil, err
 	}
 	valset := transformSnapshotToCompass(snapshot, req.GetChainReferenceID())
-	logger.Debug("request info",
+	logger.Info("request info",
 		"chain-reference-id", req.GetChainReferenceID(),
 		"valset-id", req.GetValsetID(),
 	)

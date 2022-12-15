@@ -645,7 +645,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		)
 
 		// clear all previous instances of the update valset from the queue
-		k.Logger(ctx).Debug("clearing previous instances of the update valset from the queue")
+		k.Logger(ctx).Info("clearing previous instances of the update valset from the queue")
 		queueName := consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chain.GetChainReferenceID()))
 		messages, err := k.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 999)
 		if err != nil {
@@ -735,7 +735,7 @@ func isEnoughToReachConsensus(val types.Valset) bool {
 
 func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID string) types.Valset {
 	logger := log.NewNopLogger().With("module", "x/evm/keeper/keeper")
-	logger.Debug("transformSnapshotToCompass",
+	logger.Info("transformSnapshotToCompass",
 		"snapshot-id", snapshot.Id,
 		"snapshot-height", snapshot.Height,
 		"snapshot-total-shares", snapshot.TotalShares,
@@ -761,7 +761,7 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 		ValsetID: snapshot.GetId(),
 	}
 
-	logger.Debug("transformSnapshotToCompass",
+	logger.Info("transformSnapshotToCompass",
 		"total-power", totalPower,
 		"valset-id", valset.ValsetID,
 	)
