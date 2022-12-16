@@ -188,7 +188,11 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	}
 	logger := k.Logger(ctx)
 	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID(), logger)
-
+	logger.Info("returning valset info for deploy smart contract to chain",
+		"valset-id", valset.ValsetID,
+		"valset-validator-size", len(valset.Validators),
+		"valset-power-size", len(valset.Powers),
+	)
 	if !isEnoughToReachConsensus(valset) {
 		k.Logger(ctx).Info(
 			"skipping deployment as there are not enough validators to form a consensus",
