@@ -355,9 +355,9 @@ func New(
 	}
 
 	upgradeName := semver.MajorMinor(semverVersion)
-	//if upgradeName == "" {
-		//panic(fmt.Errorf("invalid app version '%s'", app.Version()))
-	//}
+	if upgradeName == "" {
+		panic(fmt.Errorf("invalid app version '%s'", app.Version()))
+	}
 
 	upgradeK.SetUpgradeHandler(
 		upgradeName,
