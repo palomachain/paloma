@@ -186,7 +186,8 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	default:
 		return err
 	}
-	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID())
+	logger := k.Logger(ctx)
+	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID(), logger)
 
 	if !isEnoughToReachConsensus(valset) {
 		k.Logger(ctx).Info(
@@ -621,8 +622,9 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 	if err != nil {
 		panic(err)
 	}
+	logger := k.Logger(ctx)
 	for _, chain := range chainInfos {
-		valset := transformSnapshotToCompass(snapshot, chain.GetChainReferenceID())
+		valset := transformSnapshotToCompass(snapshot, chain.GetChainReferenceID(), logger)
 		if !chain.IsActive() {
 			k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
 				"chain-reference-id", chain.GetChainReferenceID(),
@@ -733,15 +735,13 @@ func isEnoughToReachConsensus(val types.Valset) bool {
 	return sum >= thresholdForConsensus
 }
 
-func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID string) types.Valset {
-	logger := log.NewNopLogger().With("module", "x/evm/keeper/keeper")
+func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID string, logger log.Logger) types.Valset {
 	logger.Info("transformSnapshotToCompass",
 		"snapshot-id", snapshot.Id,
 		"snapshot-height", snapshot.Height,
 		"snapshot-total-shares", snapshot.TotalShares,
 		"snapshot-validators-length", len(snapshot.Validators),
 	)
-
 	validators := make([]valsettypes.Validator, len(snapshot.GetValidators()))
 	copy(validators, snapshot.GetValidators())
 
