@@ -38,9 +38,10 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 		return nil, err
 	}
 	valset := transformSnapshotToCompass(snapshot, req.GetChainReferenceID(), logger)
-	logger.Info("request info",
-		"chain-reference-id", req.GetChainReferenceID(),
-		"valset-id", req.GetValsetID(),
+	logger.Info("returning valset info",
+		"valset-id", valset.ValsetID,
+		"valset-validator-size", len(valset.Validators),
+		"valset-power-size", len(valset.Powers),
 	)
 
 	return &types.QueryGetValsetByIDResponse{
