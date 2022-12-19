@@ -19,6 +19,12 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	logger := k.Logger(ctx)
+	logger.Info("request info",
+		"chain-reference-id", req.GetChainReferenceID(),
+		"valset-id", req.GetValsetID(),
+	)
+
 	var snapshot *valsettypes.Snapshot
 	var err error
 
@@ -31,8 +37,12 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 	if err != nil {
 		return nil, err
 	}
-
-	valset := transformSnapshotToCompass(snapshot, req.GetChainReferenceID())
+	valset := transformSnapshotToCompass(snapshot, req.GetChainReferenceID(), logger)
+	logger.Info("returning valset info",
+		"valset-id", valset.ValsetID,
+		"valset-validator-size", len(valset.Validators),
+		"valset-power-size", len(valset.Powers),
+	)
 
 	return &types.QueryGetValsetByIDResponse{
 		Valset: &valset,

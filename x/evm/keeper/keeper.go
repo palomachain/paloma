@@ -186,8 +186,13 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	default:
 		return err
 	}
-	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID())
-
+	logger := k.Logger(ctx)
+	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID(), logger)
+	logger.Info("returning valset info for deploy smart contract to chain",
+		"valset-id", valset.ValsetID,
+		"valset-validator-size", len(valset.Validators),
+		"valset-power-size", len(valset.Powers),
+	)
 	if !isEnoughToReachConsensus(valset) {
 		k.Logger(ctx).Info(
 			"skipping deployment as there are not enough validators to form a consensus",
@@ -621,8 +626,9 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 	if err != nil {
 		panic(err)
 	}
+	logger := k.Logger(ctx)
 	for _, chain := range chainInfos {
-		valset := transformSnapshotToCompass(snapshot, chain.GetChainReferenceID())
+		valset := transformSnapshotToCompass(snapshot, chain.GetChainReferenceID(), logger)
 		if !chain.IsActive() {
 			k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
 				"chain-reference-id", chain.GetChainReferenceID(),
@@ -645,7 +651,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		)
 
 		// clear all previous instances of the update valset from the queue
-		k.Logger(ctx).Debug("clearing previous instances of the update valset from the queue")
+		k.Logger(ctx).Info("clearing previous instances of the update valset from the queue")
 		queueName := consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chain.GetChainReferenceID()))
 		messages, err := k.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 999)
 		if err != nil {
@@ -733,7 +739,13 @@ func isEnoughToReachConsensus(val types.Valset) bool {
 	return sum >= thresholdForConsensus
 }
 
-func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID string) types.Valset {
+func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID string, logger log.Logger) types.Valset {
+	logger.Info("transformSnapshotToCompass",
+		"snapshot-id", snapshot.Id,
+		"snapshot-height", snapshot.Height,
+		"snapshot-total-shares", snapshot.TotalShares,
+		"snapshot-validators-length", len(snapshot.Validators),
+	)
 	validators := make([]valsettypes.Validator, len(snapshot.GetValidators()))
 	copy(validators, snapshot.GetValidators())
 
@@ -752,6 +764,11 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 	valset := types.Valset{
 		ValsetID: snapshot.GetId(),
 	}
+
+	logger.Info("transformSnapshotToCompass",
+		"total-power", totalPower,
+		"valset-id", valset.ValsetID,
+	)
 
 	for _, val := range validators {
 		for _, ext := range val.GetExternalChainInfos() {
