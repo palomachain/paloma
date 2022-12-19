@@ -1,7 +1,7 @@
 package types
 
 import (
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 )
 
 // DefaultIndex is the default capability global index
@@ -11,7 +11,6 @@ const DefaultIndex uint64 = 1
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		PortId: PortID,
-
 		Params: DefaultParams(),
 	}
 }

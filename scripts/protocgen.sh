@@ -42,4 +42,4 @@ done
 cp -r ./github.com/palomachain/paloma/* ./
 rm -rf ./github.com
 
-# go mod tidy -compat=1.18
+go mod tidy
