@@ -176,28 +176,28 @@ func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
 		return nil, err
 	}
 
-	k.Logger(ctx).Info("create new snapshot")
+	k.Logger(ctx).Info("create new snapshot", "snapshot-id", snapshot.GetId())
 
 	current, err := k.GetCurrentSnapshot(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	k.Logger(ctx).Info("get current snapshot", "id", current.GetId(), "validator-length", len(current.GetValidators()))
+	k.Logger(ctx).Info("get current triggered snapshot", "id", current.GetId(), "validator-length", len(current.GetValidators()))
 
 	worthy := k.isNewSnapshotWorthy(ctx, current, snapshot)
 	if !worthy {
 		return nil, nil
 	}
 
-	k.Logger(ctx).Info("is worthy")
+	k.Logger(ctx).Info("is worthy", "snapshot-id", current.GetId())
 
 	err = k.setSnapshotAsCurrent(ctx, snapshot)
 	if err != nil {
 		return nil, err
 	}
 
-	k.Logger(ctx).Info("set snapshot as current")
+	k.Logger(ctx).Info("set snapshot as current", "snapshot-id", snapshot.GetId())
 
 	// remove jail reasons for all active validators.
 	// given that a validator is in snapshot, they can't be jailed.

@@ -171,12 +171,24 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 			k.Logger(ctx).Info("added a new smart contract deployment to queue", args...)
 		}
 	}()
+	logger := k.Logger(ctx)
 	contractABI, err := abi.JSON(strings.NewReader(smartContract.GetAbiJSON()))
 	if err != nil {
 		return err
 	}
 
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
+	var totalShares sdk.Int
+	if snapshot != nil {
+		totalShares = snapshot.TotalShares
+	}
+	logger.Info(
+		"get current snapshot",
+		"snapshot-id", snapshot.GetId(),
+		"validators-size", len(snapshot.GetValidators()),
+		"total-shares", totalShares,
+	)
+
 	switch {
 	case err == nil:
 		// does nothing
@@ -186,7 +198,6 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	default:
 		return err
 	}
-	logger := k.Logger(ctx)
 	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID(), logger)
 	logger.Info("returning valset info for deploy smart contract to chain",
 		"valset-id", valset.ValsetID,
@@ -212,6 +223,12 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 
 	// set the smart contract constructor arguments
 	input, err := contractABI.Pack("", uniqueID, types.TransformValsetToABIValset(valset))
+	logger.Info(
+		"transform valset to abi valset",
+		"valset-id", valset.GetValsetID(),
+		"validators-size", len(valset.GetValidators()),
+		"power-size", len(valset.GetPowers()),
+	)
 	if err != nil {
 		return err
 	}
