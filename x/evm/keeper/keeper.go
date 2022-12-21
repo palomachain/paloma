@@ -232,7 +232,12 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	if err != nil {
 		return err
 	}
-
+	logger.Info(
+		"smart contract deployment constructor input",
+		"x-chain-type", xchainType,
+		"chain-reference-id", chainInfo.GetChainReferenceID(),
+		"constructor-input", input,
+	)
 	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
