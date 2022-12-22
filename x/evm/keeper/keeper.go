@@ -223,6 +223,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 
 	// set the smart contract constructor arguments
 	input, err := contractABI.Pack("", uniqueID, types.TransformValsetToABIValset(valset))
+
 	logger.Info(
 		"transform valset to abi valset",
 		"valset-id", valset.GetValsetID(),
@@ -232,6 +233,14 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	if err != nil {
 		return err
 	}
+
+	vals, err := contractABI.Constructor.Inputs.Unpack(input)
+	fmt.Printf("[deploySmartContractToChain] UNPACK ERR: %v\n", err)
+	fmt.Printf("[deploySmartContractToChain] UNPACK ARGS: %+v\n", vals)
+	if err != nil {
+		return err
+	}
+
 	logger.Info(
 		"smart contract deployment constructor input",
 		"x-chain-type", xchainType,
@@ -334,6 +343,9 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 			// the chain has the newer version of the chain, so skipping the "old" smart contract upgrade
 			continue
 		}
+		k.Logger(ctx).Info("deploying smart contracts actually",
+			"smart-contract-id", smartContract.GetId(),
+			"chain-reference-id", chainInfo.GetChainReferenceID())
 		g.Add(k.deploySmartContractToChain(ctx, chainInfo, smartContract))
 	}
 
