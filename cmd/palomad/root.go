@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
@@ -80,7 +81,7 @@ func NewRootCmd() *cobra.Command {
 
 	overwriteFlagDefaults(rootCmd, map[string]string{
 		flags.FlagChainID:        palomaapp.Name,
-		flags.FlagKeyringBackend: "test",
+		flags.FlagKeyringBackend: keyring.BackendOS,
 	})
 
 	stakingCmd := findCommand(rootCmd, "tx", "staking")
