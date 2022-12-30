@@ -171,6 +171,7 @@ func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	am.keeper.Logger(ctx).Info("abci-validator-size", abci.ValidatorUpdates{}.Len())
 	if err := am.keeper.CheckAndProcessAttestedMessages(ctx); err != nil {
 		am.keeper.Logger(ctx).Error("error while attesting to messages", "err", err)
 	}
