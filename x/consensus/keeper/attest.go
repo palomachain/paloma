@@ -20,7 +20,12 @@ func (k Keeper) CheckAndProcessAttestedMessages(ctx sdk.Context) error {
 			}
 
 			for _, msg := range msgs {
-				k.Logger(ctx).Info("check-and-process-attested-messages-queue", "id", msg.GetId(), "nonce", msg.Nonce(), "string", msg.String())
+				k.Logger(ctx).Info
+				("check-and-process-attested-messages-queue",
+				"id", msg.GetId(),
+				"nonce", msg.Nonce(),
+				"string", fmt.Sprintf("+%v", msg),
+			)
 				cq, err := k.getConsensusQueue(ctx, opt.QueueTypeName)
 				if err != nil {
 					return err
