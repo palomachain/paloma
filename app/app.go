@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"io"
 	"os"
 	"path/filepath"
@@ -98,6 +99,7 @@ import (
 	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm"
+
 	evmclient "github.com/palomachain/paloma/x/evm/client"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
@@ -193,6 +195,12 @@ func init() {
 	}
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
+
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName("PalomaD"),
+		newrelic.ConfigLicense("43ff6997fca05660bcc8d6e49dcade2fe817NRAL"),
+		newrelic.ConfigAppLogForwardingEnabled(true),
+	)
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
