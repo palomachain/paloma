@@ -116,6 +116,11 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 		return nil, err
 	}
 	msgs, err = cq.GetAll(ctx)
+
+	for n, msg := range msgs {
+		k.Logger(ctx).Info("all msgs from GetMessagesFromQueue", n, msg.String())
+	}
+
 	if err != nil {
 		k.Logger(ctx).Error("error while getting all messages from queue", "err", err)
 		return nil, err
