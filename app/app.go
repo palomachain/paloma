@@ -196,7 +196,7 @@ func init() {
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
 
-	app, err := newrelic.NewApplication(
+	newrelic.NewApplication(
 		newrelic.ConfigAppName("PalomaD"),
 		newrelic.ConfigLicense("43ff6997fca05660bcc8d6e49dcade2fe817NRAL"),
 		newrelic.ConfigAppLogForwardingEnabled(true),
