@@ -1,19 +1,11 @@
 package types_test
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/stretchr/testify/require"
 )
-
-func TestFoo(t *testing.T) {
-	var v types.QueuedSignedMessageI
-	v = &types.QueuedSignedMessage{}
-	fmt.Println(v.String())
-}
 
 func TestGenesisState_Validate(t *testing.T) {
 	for _, tc := range []struct {
