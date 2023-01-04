@@ -5,8 +5,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/palomachain/paloma/util/slice"
 	"math/big"
+
+	"github.com/palomachain/paloma/util/slice"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -135,7 +136,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				return err
 			}
 
-			ethMsg, err := tx.AsMessage(ethtypes.NewEIP2930Signer(tx.ChainId()), big.NewInt(0))
+			ethMsg, err := tx.AsMessage(ethtypes.NewLondonSigner(tx.ChainId()), big.NewInt(0))
 			if err != nil {
 				return err
 			}
