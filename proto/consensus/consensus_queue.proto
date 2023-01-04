@@ -9,22 +9,18 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 
 // message for storing the queued signed message in the internal queue
 message QueuedSignedMessage {
-  uint64 id = 1;
+  option (gogoproto.goproto_stringer) = false;
 
-  int64 addedAtBlockHeight = 2;
-  google.protobuf.Timestamp addedAt = 3 [
-    (gogoproto.nullable) = false,
-    (gogoproto.stdtime) = true
-  ];
-
-  google.protobuf.Any msg = 4;
-  bytes bytesToSign = 5;
-
-  repeated SignData signData = 6;
-  repeated Evidence evidence = 7;
-
-  PublicAccessData publicAccessData = 8;
-  bool requireSignatures = 9;
+  uint64                    id                 = 1;
+  int64                     addedAtBlockHeight = 2;
+  google.protobuf.Timestamp addedAt            = 3
+      [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+  google.protobuf.Any msg               = 4;
+  bytes               bytesToSign       = 5;
+  repeated SignData   signData          = 6;
+  repeated Evidence   evidence          = 7;
+  PublicAccessData    publicAccessData  = 8;
+  bool                requireSignatures = 9;
 }
 
 message BatchOfConsensusMessages {
@@ -32,13 +28,13 @@ message BatchOfConsensusMessages {
 }
 
 message Batch {
-  repeated google.protobuf.Any msgs = 1;
-  bytes bytesToSign = 2;
+  repeated google.protobuf.Any msgs        = 1;
+  bytes                        bytesToSign = 2;
 }
 
 message SignData {
-  bytes valAddress = 1[ (gogoproto.casttype) =
-                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+  bytes valAddress = 1
+      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
   bytes signature = 2;
   bytes extraData = 3;
 
@@ -48,14 +44,14 @@ message SignData {
 }
 
 message Evidence {
-  bytes valAddress = 1[ (gogoproto.casttype) =
-                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+  bytes valAddress = 1
+      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
 
   google.protobuf.Any proof = 2;
 }
 
 message PublicAccessData {
-  bytes valAddress = 1[ (gogoproto.casttype) =
-                         "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+  bytes valAddress = 1
+      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
   bytes data = 2;
 }
