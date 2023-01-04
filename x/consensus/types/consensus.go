@@ -7,6 +7,8 @@ import (
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	proto "github.com/gogo/protobuf/proto"
+	"gopkg.in/yaml.v2"
+
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 )
 
@@ -58,6 +60,11 @@ type MessageQueuedForBatchingI interface {
 }
 
 var _ MessageQueuedForBatchingI = &BatchOfConsensusMessages{}
+
+func (q *QueuedSignedMessage) String() string {
+	out, _ := yaml.Marshal(q)
+	return string(out)
+}
 
 func (q *QueuedSignedMessage) AddSignData(data *SignData) {
 	if q.SignData == nil {
