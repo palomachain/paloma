@@ -1,0 +1,26 @@
+queue_rules:
+  - name: default
+    conditions:
+      - "#approved-reviews-by>1"
+
+pull_request_rules:
+  - name: "Auto-merge to master branch with label 'A:automerge' and branch protection passing"
+    conditions:
+      - "#approved-reviews-by>1"
+      - base=master
+      - label=A:automerge
+    actions:
+      queue:
+        name: default
+        method: squash
+        commit_message_template: |
+          {{ title }} (#{{ number }})
+          {{ body }}
+  - name: Backport patches to v0.11.x branch
+    conditions:
+      - base=master
+      - label=backport/0.11.x
+    actions:
+      backport:
+        branches:
+          - release/v0.11.x
