@@ -22,7 +22,7 @@ func (k Keeper) CheckAndProcessAttestedMessages(ctx sdk.Context) error {
 			}
 
 			for _, msg := range msgs {
-				k.Logger(ctx).Info(
+				k.Logger(ctx).Debug(
 					"check-and-process-attested-messages-queue",
 					"id", msg.GetId(),
 					"nonce", msg.Nonce(),

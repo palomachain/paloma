@@ -406,7 +406,7 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) ([]consensus.SupportsConsensusQ
 				QueueOptions:                 opts,
 				ProcessMessageForAttestation: queueInfo.processAttesationFunc(k),
 			})
-			k.Logger(ctx).Info("supported-queues", "chain-id", chainInfo.ChainReferenceID, "queue", queue)
+			k.Logger(ctx).Debug("supported-queues", "chain-id", chainInfo.ChainReferenceID, "queue", queue)
 		}
 	}
 
