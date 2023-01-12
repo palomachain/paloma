@@ -60,7 +60,7 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 To get the latest `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.4/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.5/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 # Required until we figure out cgo
@@ -73,10 +73,10 @@ If you're upgrading to the most recent version, you will need to stop `palomad` 
 
 **ALERT: You will need to update your pigeon config.yaml file to reference this new chain-ID!**
 
-1. Stop your paloma version and get 0.11.3
+1. Stop your paloma version and get 0.11.5
 ```
 service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.4/paloma_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.5/paloma_Linux_x86_64.tar.gz | \
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
@@ -118,8 +118,8 @@ palomad init "$MONIKER"
 Copy the configs of the testnet we wish to connect to
 
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-12/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-12/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-13/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-13/addrbook.json
 ```
 
 Next you can generate a new set of keys to the new machine, or reuse an existing key.
