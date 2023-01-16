@@ -508,6 +508,6 @@ func (k Keeper) _externalChainInfoStore(ctx sdk.Context) sdk.KVStore {
 }
 
 func (k Keeper) snapshotStore(ctx sdk.Context) sdk.KVStore {
-	k.Logger(ctx).Info("snapshot store", "store-key-name", k.storeKey.Name(), "store-key-string", k.storeKey.String())
+	k.Logger(ctx).Debug("snapshot store", "store-key-name", k.storeKey.Name(), "store-key-string", k.storeKey.String())
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("snapshot"))
 }
