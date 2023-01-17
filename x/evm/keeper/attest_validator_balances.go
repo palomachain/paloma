@@ -13,6 +13,7 @@ import (
 )
 
 func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
+	k.Logger(ctx).Debug("attest-validator-balances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
 	if len(msg.GetEvidence()) == 0 {
 		return nil
 	}
