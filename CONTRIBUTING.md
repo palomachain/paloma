@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for considering making contributions to Paloma. We welcome all messenger birds! 
+Thank you for considering making contributions to Paloma. We welcome all messenger birds!
 
 Contributing to this repo can mean many things such as participating in
 discussions or proposing new features, improvements or bug fixes. To ensure a
@@ -41,7 +41,7 @@ contributing has been established:
 
 We follow the Cosmos SDK [Coding Guidelines](https://github.com/cosmos/cosmos-sdk/blob/main/CODING_GUIDELINES.md). Specifically:
 
-- API & Design SHOULD be proposed and reviewed before the main implementaion.
+- API & Design SHOULD be proposed and reviewed before the main implementation.
 - Minimize code duplication
 - Define [Acceptance tests](https://github.com/cosmos/cosmos-sdk/blob/main/CODING_GUIDELINES.md#acceptance-tests) or while implementing new features.
   - Prefer use of acceptance test framework, like [gocuke](https://github.com/regen-network/gocuke/)
@@ -68,17 +68,16 @@ model and utilizes [semantic versioning](https://semver.org/).
 
 ### PR Targeting
 
-Ensure that you base and target your PR against the `main` branch.
+Ensure that you base and target your PR against the `master` branch.
 
-All feature additions should be targeted against `main`. Bug fixes for an
+All feature additions should be targeted against `master`. Bug fixes for an
 outstanding release candidate should be targeted against the release candidate
 branch.
 
 ### PR & Merge Procedure
 
-- Ensure the PR branch is rebased on `main`.
+- Ensure the PR branch is rebased on `master`.
 - Ensure you provided unit tests and integration tests.
-- Run `make test-unit test-e2e` to ensure that all tests pass.
 - Merge the PR!
 
 ## Release procedure
@@ -89,6 +88,42 @@ We follow semver (from v3.0.0):
 - minor version update (eg 2.1.x -> 2.2.0) has no API nor state machine breaking changes. It can provide new functionality or bug fixes.
 - patch version update (eg 2.1.0 -> 2.1.1) has no API nor state machine breaking changes nor new features. It only contains hot fixes.
 
+Note, when the major version is 0, we adopt a 0-based versioning scheme:
+
+- major version update (eg 0.12.x -> 0.13.x) has API breaking changes or signals major feature update
+- minor version update (eg 0.12.1 -> 0.12.2) has no API nor state machine breaking changes. It can provide new functionality or bug fixes.
+
 ### Major Release Procedure
 
-All major changes related to major version update are first released for testnet. We use `-betaX` (eg `2.0.0-beta1`, `2.0.0-beta2` ...) releases for testnet. Once the code is stabilized we create a release candidate (eg `2.0.0-rc1`). If no issues are found the latest release candidate become the major release.
+All major changes related to major version update are first released for testnet.
+We use `-betaX` (eg `2.0.0-beta1`, `2.0.0-beta2` ...) releases for testnet.
+Once the code is stabilized we create a release candidate (eg `2.0.0-rc1`).
+If no issues are found the latest release candidate become the major release.
+
+When a major release is ready to be made, perform the following:
+
+1. Create a `release/vX.*.*` release.
+branch off of the desired commit on `master`, e.g. `release/v0.12.x` or `release/v1.x.x`.
+2. Create a `RELEASE_NOTES.md` template.
+3. Ensure correct branch protection rules are enabled. This can be done generally
+   using a regex such as `release/v*`.
+4. Create a branch off of the release branch that prepares the `RELEASE_NOTES.md`
+   based on the changelog.
+5. Review and merge the release notes PR.
+6. Cut a release off of the release branch! Note, goreleaser should automatically
+   create the release artifacts once the tag is pushed.
+7. Ensure changelog entries are updated on `master`, i.e. have the release date,
+   version, and link to the release.
+
+### Minor Release Procedure
+
+All changes should be merged into `master`, unless a change is needed against a
+specific release only.
+
+When a change is needed in a current release, add the appropriate `backport/*` label
+to the PR and Mergify will automatically create a backport PR against the release
+branch. If a PR is already merged, you can comment on the PR for Mergify to create
+the backport PR via `@Mergifyio backport release/vX.*.*` (use the relevant release branch name).
+
+When you are ready to cut a point release, perform steps 4-7 from the Major
+Release Procedure.

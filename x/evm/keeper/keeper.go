@@ -747,6 +747,13 @@ func (k Keeper) CheckExternalBalancesForChain(ctx sdk.Context, chainReferenceID 
 			if ext.GetChainReferenceID() == chainReferenceID && ext.GetChainType() == "evm" {
 				msg.ValAddresses = append(msg.ValAddresses, val.GetAddress())
 				msg.HexAddresses = append(msg.HexAddresses, ext.GetAddress())
+				k.Logger(ctx).Debug("check-external-balances-for-chain",
+					"chain-reference-id", chainReferenceID,
+					"msg-val-address", val.GetAddress(),
+					"msg-hex-address", ext.GetAddress(),
+					"val-share-count", val.ShareCount,
+					"ext-chain-balance", ext.Balance,
+				)
 			}
 		}
 	}

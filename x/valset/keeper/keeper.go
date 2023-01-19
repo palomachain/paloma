@@ -365,7 +365,7 @@ func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	snapStore := k.snapshotStore(ctx)
 	lastID := k.ider.GetLastID(ctx, snapshotIDKey)
 	snapshot, err := keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(lastID))
-	k.Logger(ctx).Info("get current snapshot", "last-id", lastID, "snapshot-validator-size", len(snapshot.Validators))
+	k.Logger(ctx).Debug("get current snapshot", "last-id", lastID, "snapshot-validator-size", len(snapshot.Validators))
 	if errors.Is(err, keeperutil.ErrNotFound) {
 		return nil, nil
 	}
@@ -508,6 +508,6 @@ func (k Keeper) _externalChainInfoStore(ctx sdk.Context) sdk.KVStore {
 }
 
 func (k Keeper) snapshotStore(ctx sdk.Context) sdk.KVStore {
-	k.Logger(ctx).Info("snapshot store", "store-key-name", k.storeKey.Name(), "store-key-string", k.storeKey.String())
+	k.Logger(ctx).Debug("snapshot store", "store-key-name", k.storeKey.Name(), "store-key-string", k.storeKey.String())
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("snapshot"))
 }

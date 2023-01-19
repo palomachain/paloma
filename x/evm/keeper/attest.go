@@ -59,6 +59,7 @@ func (c *consensusPower) consensus() bool {
 }
 
 func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
+	k.Logger(ctx).Debug("attest-router", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
 	if len(msg.GetEvidence()) == 0 {
 		return nil
 	}
