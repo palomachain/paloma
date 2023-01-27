@@ -16,11 +16,14 @@ pull_request_rules:
         commit_message_template: |
           {{ title }} (#{{ number }})
           {{ body }}
-  - name: Backport patches to v0.11.x branch
+  - name: Backport patches to v1.x.x branch
     conditions:
       - base=master
-      - label=backport/0.11.x
+      - label=backport/1.x.x
     actions:
       backport:
         branches:
-          - release/v0.11.x
+          - release/v1.x.x
+
+
+
