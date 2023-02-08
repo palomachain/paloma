@@ -15,7 +15,7 @@ HTTPS_GIT      := https://github.com/palomachain/paloma.git
 ###############################################################################
 
 ifeq (,$(VERSION))
-  VERSION := $(shell git describe --exact-match 2>/dev/null)
+  VERSION := $(shell git describe --exact-match --tags 2>/dev/null | sed 's/^v//')
   # if VERSION is empty, then populate it with branch's name and raw commit hash
   ifeq (,$(VERSION))
     VERSION := $(BRANCH)-$(COMMIT)
