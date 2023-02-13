@@ -1,6 +1,9 @@
 package types
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 const allowedJobIDCharacters = "abcdefghijklmnopqrstuvwxyz0123456789-_."
 
@@ -9,6 +12,7 @@ const JobIDMaxLen = 32
 const JobAddressLength = 32
 
 func (j *Job) ValidateBasic() error {
+	fmt.Printf("[msgcreatejob_job] UNPACK ARGS: %+v\n", j)
 	if len(j.ID) == 0 {
 		return ErrInvalid.Wrap("job id can't be empty")
 	}
