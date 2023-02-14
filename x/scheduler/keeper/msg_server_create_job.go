@@ -12,7 +12,7 @@ func (k msgServer) CreateJob(goCtx context.Context, msg *types.MsgCreateJob) (*t
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	var err error
-	fmt.Printf("[msgcreatejob_msg] UNPACK ARGS: %+v\n", msg)
+	fmt.Printf("[MsgCreateJob][CreateJob][msg] UNPACK ARGS: %+v\n", msg)
 	job := msg.Job
 	job.Owner, err = sdk.AccAddressFromBech32(msg.GetCreator())
 	if err != nil {
