@@ -1,14 +1,15 @@
 #!/usr/bin/make -f
 
-BRANCH         := $(shell git rev-parse --abbrev-ref HEAD)
-COMMIT         := $(shell git log -1 --format='%H')
-BUILD_DIR      ?= $(CURDIR)/build
-DIST_DIR       ?= $(CURDIR)/dist
-LEDGER_ENABLED ?= true
-TM_VERSION     := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
-DOCKER         := $(shell which docker)
-PROJECT_NAME   := paloma
-HTTPS_GIT      := https://github.com/palomachain/paloma.git
+BRANCH               := $(shell git rev-parse --abbrev-ref HEAD)
+COMMIT               := $(shell git log -1 --format='%H')
+BUILD_DIR            ?= $(CURDIR)/build
+DIST_DIR             ?= $(CURDIR)/dist
+LEDGER_ENABLED       ?= true
+TM_VERSION           := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
+DOCKER               := $(shell which docker)
+PROJECT_NAME         := paloma
+HTTPS_GIT            := https://github.com/palomachain/paloma.git
+GOLANGCILINT_VERSION := 1.51.2
 
 ###############################################################################
 ##                                  Version                                  ##
@@ -72,6 +73,10 @@ build: go.sum
 	@echo "--> Building..."
 	go build -mod=readonly $(BUILD_FLAGS) -o $(BUILD_DIR)/ ./...
 
+build-docker:
+	@echo "--> Building Docker image..."
+	$(DOCKER) build -t paloma-local-image .
+
 install: go.sum
 	@echo "--> Installing..."
 	go install -mod=readonly $(BUILD_FLAGS) ./...
@@ -93,6 +98,17 @@ go-mod-tidy:
 clean:
 	@echo "--> Cleaning..."
 	@rm -rf $(BUILD_DIR)/**  $(DIST_DIR)/**
+
+test:
+	@echo "--> Testing..."
+	@go test ./...
+
+install-linter:
+	@bash -c "source "scripts/golangci-lint.sh" && install_golangci_lint '$(GOLANGCILINT_VERSION)'"
+
+lint: install-linter
+	@echo "--> Linting..."
+	@third_party/golangci-lint run --concurrency 16 ./...
 
 .PHONY: install build build-linux clean
 
