@@ -1,7 +1,7 @@
 ###########################
 ####     Base image    ####
 ###########################
-FROM golang:1.19-stretch AS base
+FROM golang:1.20-buster AS base
 
 # TODO add non-root user
 
