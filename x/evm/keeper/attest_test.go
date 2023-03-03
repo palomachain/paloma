@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"sync"
 
+	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,7 +19,6 @@ import (
 	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/mock"
-	"github.com/vizualni/whoops"
 )
 
 var (

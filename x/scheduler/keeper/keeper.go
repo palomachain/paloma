@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,7 +14,6 @@ import (
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/scheduler/types"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/vizualni/whoops"
 )
 
 type (
