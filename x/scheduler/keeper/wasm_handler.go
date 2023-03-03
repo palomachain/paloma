@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
+	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	wasmutil "github.com/palomachain/paloma/util/wasm"
 	"github.com/palomachain/paloma/x/scheduler/types"
-	"github.com/vizualni/whoops"
 )
 
 type ExecuteJobWasmEvent struct {

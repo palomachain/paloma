@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -22,7 +23,6 @@ import (
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	"github.com/vizualni/whoops"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

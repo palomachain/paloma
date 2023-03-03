@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/VolumeFi/whoops"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -16,7 +17,6 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/vizualni/whoops"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
