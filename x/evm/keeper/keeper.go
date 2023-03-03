@@ -7,6 +7,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -14,22 +18,18 @@ import (
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/evm/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/vizualni/whoops"
-
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/palomachain/paloma/x/evm/types"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 const (
 	maxPower                     = 1 << 32
 	thresholdForConsensus uint64 = 2_863_311_530
 )
+
 const (
 	ConsensusTurnstoneMessage     = "evm-turnstone-message"
 	ConsensusGetValidatorBalances = "validators-balances"
@@ -54,7 +54,8 @@ var SupportedConsensusQueues = []supportedChainInfo{
 		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestRouter
 		},
-	}, {
+	},
+	{
 		subqueue: ConsensusGetValidatorBalances,
 		batch:    false,
 		msgType:  &types.ValidatorBalancesAttestation{},
@@ -328,7 +329,6 @@ func (k Keeper) TryDeployingLastSmartContractToAllChains(ctx sdk.Context) {
 func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContract *types.SmartContract) error {
 	var g whoops.Group
 	chainInfos, err := k.GetAllChainInfos(ctx)
-
 	if err != nil {
 		return err
 	}
@@ -530,7 +530,9 @@ func (k Keeper) RemoveSupportForChain(ctx sdk.Context, proposal *types.RemoveCha
 
 	for _, q := range SupportedConsensusQueues {
 		queue := consensustypes.Queue(q.subqueue, xchainType, xchain.ReferenceID(proposal.GetChainReferenceID()))
-		k.ConsensusKeeper.RemoveConsensusQueue(ctx, queue)
+		if e := k.ConsensusKeeper.RemoveConsensusQueue(ctx, queue); e != nil {
+			k.Logger(ctx).Error("error removing consensus queue", "err", err, "referenceID", proposal.GetChainReferenceID())
+		}
 	}
 
 	return nil
@@ -554,7 +556,6 @@ func (k Keeper) setSmartContractAsDeploying(
 	chainInfo *types.ChainInfo,
 	uniqueID []byte,
 ) *types.SmartContractDeployment {
-
 	if foundItem, _ := k.getSmartContractDeploying(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID()); foundItem != nil {
 		k.Logger(ctx).Error(
 			"smart contract is already deploying",
@@ -587,7 +588,7 @@ func (k Keeper) setSmartContractAsDeploying(
 }
 
 func (k Keeper) getSmartContractDeploying(ctx sdk.Context, smartContractID uint64, chainReferenceID string) (res *types.SmartContractDeployment, key []byte) {
-	keeperutil.IterAllFnc(
+	if err := keeperutil.IterAllFnc(
 		k.smartContractDeploymentStore(ctx),
 		k.cdc,
 		func(keyArg []byte, item *types.SmartContractDeployment) bool {
@@ -597,7 +598,15 @@ func (k Keeper) getSmartContractDeploying(ctx sdk.Context, smartContractID uint6
 				return false
 			}
 			return true
-		})
+		},
+	); err != nil {
+		k.Logger(ctx).Error(
+			"error getting smart contract from deployment store by contractID, chainRef",
+			"err", err,
+			"smartContractID", smartContractID,
+			"chainReferenceID", chainReferenceID,
+		)
+	}
 	return
 }
 
@@ -610,7 +619,7 @@ func (k Keeper) AllSmartContractsDeployments(ctx sdk.Context) ([]*types.SmartCon
 }
 
 func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID string) (found bool) {
-	keeperutil.IterAllFnc(
+	if err := keeperutil.IterAllFnc(
 		k.smartContractDeploymentStore(ctx),
 		k.cdc,
 		func(keyArg []byte, item *types.SmartContractDeployment) bool {
@@ -619,7 +628,14 @@ func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID 
 				return false
 			}
 			return true
-		})
+		},
+	); err != nil {
+		k.Logger(ctx).Error(
+			"error getting smart contract from deployment store by chain Ref",
+			"err", err,
+			"chainReferenceID", chainReferenceID,
+		)
+	}
 	return
 }
 
@@ -836,10 +852,6 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 }
 
 func (k Keeper) ModuleName() string { return types.ModuleName }
-
-func queueName(ref xchain.ReferenceID, subqueue string) string {
-	return fmt.Sprintf("%s/%s/%s", xchainType, ref, subqueue)
-}
 
 func generateSmartContractID(ctx sdk.Context) (res [32]byte) {
 	b := []byte(fmt.Sprintf("%d", ctx.BlockHeight()))

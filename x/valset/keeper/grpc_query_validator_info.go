@@ -17,7 +17,6 @@ func (k Keeper) ValidatorInfo(goCtx context.Context, req *types.QueryValidatorIn
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	valAddr, err := sdk.ValAddressFromBech32(req.ValAddr)
-
 	if err != nil {
 		return nil, err
 	}

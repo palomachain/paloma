@@ -25,6 +25,9 @@ linters:
   fast: false
 
 issues:
+  # Restricts maximum count of issues to display with the same text, and show all instead.
+  max-same-issues: 0
+  max-issues-per-linter: 0
   exclude-rules:
   # disabling some linters for test files
     - path: _test\.go
@@ -34,4 +37,5 @@ issues:
   # disabling some linting rules
   exclude:
     # gosec
+    - G101 # Potential hardcoded credentials
     - G114 # Use of net/http serve function that has no support for setting timeouts

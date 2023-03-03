@@ -443,7 +443,6 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 			require.Len(t, msgs, tt.expMsgsLen)
 		})
 	}
-
 }
 
 func TestAddingSignatures(t *testing.T) {
@@ -530,7 +529,6 @@ func TestAddingSignatures(t *testing.T) {
 			require.NoError(t, err)
 			require.Len(t, msgs, 1)
 		})
-
 	})
 }
 
@@ -545,5 +543,4 @@ func (q queueSupporter) SupportedQueues(ctx sdk.Context) ([]consensus.SupportsCo
 			QueueOptions: *q.opt,
 		},
 	}, nil
-
 }

@@ -24,12 +24,10 @@ var (
 )
 
 const (
-	//nolint:gosec
 	opWeightMsgSubmitRecurringJob = "op_weight_msg_create_chain"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgSubmitRecurringJob int = 100
 
-	//nolint:gosec
 	opWeightMsgHello = "op_weight_msg_create_chain"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgHello int = 100
@@ -72,7 +70,6 @@ func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedP
 
 // RandomizedParams creates randomized  param changes for the simulator
 func (am AppModule) RandomizedParams(_ *rand.Rand) []simtypes.ParamChange {
-
 	return []simtypes.ParamChange{}
 }
 

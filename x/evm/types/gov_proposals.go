@@ -16,9 +16,11 @@ const (
 	ProposalTypeChangeMinOnChainBalance = "EVMProposalChangeMinOnChainBalance"
 )
 
-var _ govtypes.Content = &AddChainProposal{}
-var _ govtypes.Content = &RemoveChainProposal{}
-var _ govtypes.Content = &DeployNewSmartContractProposal{}
+var (
+	_ govtypes.Content = &AddChainProposal{}
+	_ govtypes.Content = &RemoveChainProposal{}
+	_ govtypes.Content = &DeployNewSmartContractProposal{}
+)
 
 func init() {
 	govtypes.RegisterProposalType(ProposalTypeAddChain)
@@ -71,6 +73,7 @@ func (a *ChangeMinOnChainBalanceProposal) ProposalRoute() string { return Router
 func (a *ChangeMinOnChainBalanceProposal) ProposalType() string {
 	return ProposalTypeChangeMinOnChainBalance
 }
+
 func (a *ChangeMinOnChainBalanceProposal) ValidateBasic() error {
 	if err := govtypes.ValidateAbstract(a); err != nil {
 		return err

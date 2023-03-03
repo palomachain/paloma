@@ -110,5 +110,4 @@ func TestBatching(t *testing.T) {
 			require.Empty(t, msgs)
 		})
 	})
-
 }

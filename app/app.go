@@ -84,14 +84,6 @@ import (
 	ibcporttypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
-	"github.com/spf13/cast"
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmjson "github.com/tendermint/tendermint/libs/json"
-	"github.com/tendermint/tendermint/libs/log"
-	tmos "github.com/tendermint/tendermint/libs/os"
-	dbm "github.com/tendermint/tm-db"
-	"golang.org/x/mod/semver"
-
 	appparams "github.com/palomachain/paloma/app/params"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	consensusmodule "github.com/palomachain/paloma/x/consensus"
@@ -113,6 +105,13 @@ import (
 	valsetmodule "github.com/palomachain/paloma/x/valset"
 	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/spf13/cast"
+	abci "github.com/tendermint/tendermint/abci/types"
+	tmjson "github.com/tendermint/tendermint/libs/json"
+	"github.com/tendermint/tendermint/libs/log"
+	tmos "github.com/tendermint/tendermint/libs/os"
+	dbm "github.com/tendermint/tm-db"
+	"golang.org/x/mod/semver"
 )
 
 const Name = "paloma"

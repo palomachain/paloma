@@ -25,7 +25,6 @@ func CmdGetValidatorJailReason() *cobra.Command {
 				return err
 			}
 			valAddr, err := sdk.ValAddressFromBech32(reqValAddrString)
-
 			if err != nil {
 				return err
 			}

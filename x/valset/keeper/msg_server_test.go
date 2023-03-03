@@ -10,6 +10,7 @@ import (
 	"github.com/palomachain/paloma/x/valset/types"
 )
 
+//nolint:deadcode
 func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {
 	k, ctx := keepertest.ValsetKeeper(t)
 	return keeper.NewMsgServerImpl(*k), sdk.WrapSDKContext(ctx)

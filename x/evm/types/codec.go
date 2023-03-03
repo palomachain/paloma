@@ -13,7 +13,6 @@ import (
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgSubmitNewJob{}, "evm/SubmitNewJob", nil)
 	cdc.RegisterConcrete(&MsgUploadNewSmartContractTemp{}, "evm/UploadNewSmartContractTemp", nil)
-
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

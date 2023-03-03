@@ -4,20 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gorilla/mux"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
-
-	abci "github.com/tendermint/tendermint/abci/types"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/palomachain/paloma/x/scheduler/client/cli"
 	"github.com/palomachain/paloma/x/scheduler/keeper"
 	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/spf13/cobra"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 var (
@@ -76,7 +74,6 @@ func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Rout
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-
 }
 
 // GetTxCmd returns the capability module's root tx command.
@@ -167,7 +164,6 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It

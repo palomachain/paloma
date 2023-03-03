@@ -12,6 +12,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/testutil/rand"
@@ -23,9 +25,6 @@ import (
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/vizualni/whoops"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 var (

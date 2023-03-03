@@ -8,8 +8,6 @@ import (
 	"github.com/vizualni/whoops"
 )
 
-const collectFundsBlockRange = 100
-
 func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
 	return whoops.Try(func() {
 		var g whoops.Group

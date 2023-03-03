@@ -12,8 +12,10 @@ import (
 
 var _ = strconv.Itoa(0)
 
+//nolint:deadcode
 type submitNewJobPayloadJson struct{}
 
+//nolint:deadcode
 func CmdSubmitNewJob() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "submit-new-job [smart contract address] [smart contract payload]",

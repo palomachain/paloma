@@ -30,10 +30,8 @@ const (
 	CronchainDenom = "grain"
 )
 
-var (
-	// PortKey defines the key to store the port ID in store
-	PortKey = KeyPrefix("scheduler-port-")
-)
+// PortKey defines the key to store the port ID in store
+var PortKey = KeyPrefix("scheduler-port-")
 
 func KeyPrefix(p string) []byte {
 	return []byte(p)

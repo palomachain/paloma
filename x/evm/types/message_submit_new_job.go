@@ -1,9 +1,8 @@
 package types
 
 import (
-	"strings"
-
 	"encoding/hex"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -66,7 +65,6 @@ func (msg *MsgSubmitNewJob) ValidateBasic() error {
 	}
 
 	bz, err := hex.DecodeString(msg.HexPayload)
-
 	if err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid hex payload (%s)", err)
 	}

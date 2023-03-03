@@ -4,13 +4,12 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/x/valset/keeper"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 func TestGenesisGinkgo(t *testing.T) {

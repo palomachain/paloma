@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"sync"
 
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethcoretypes "github.com/ethereum/go-ethereum/core/types"
@@ -13,13 +14,11 @@ import (
 	"github.com/palomachain/paloma/util/slice"
 	consensusmocks "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/evm/types"
+	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/mock"
 	"github.com/vizualni/whoops"
-
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/palomachain/paloma/x/evm/types"
-	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
 )
 
 var (
@@ -121,7 +120,6 @@ var _ = g.Describe("attest router", func() {
 	})
 
 	g.When("snapshot returns an actual snapshot", func() {
-
 		g.JustBeforeEach(func() {
 			v.On("GetCurrentSnapshot", mock.Anything).Return(
 				&valsettypes.Snapshot{
@@ -222,7 +220,6 @@ var _ = g.Describe("attest router", func() {
 			})
 
 			g.Context("with a valid evidence", func() {
-
 				g.BeforeEach(func() {
 					evidence = []*consensustypes.Evidence{
 						{
@@ -299,11 +296,7 @@ var _ = g.Describe("attest router", func() {
 				g.JustAfterEach(func() {
 					Expect(k.isTxProcessed(ctx, sampleTx1)).To(BeTrue())
 				})
-
 			})
-
 		})
-
 	})
-
 })

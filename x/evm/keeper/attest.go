@@ -7,13 +7,12 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/palomachain/paloma/util/slice"
-
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -87,7 +86,9 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	defer func() {
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
-		q.Remove(ctx, msg.GetId())
+		if err := q.Remove(ctx, msg.GetId()); err != nil {
+			k.Logger(ctx).Error("error removing message, attestRouter", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+		}
 	}()
 
 	defer func() {
@@ -98,7 +99,6 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			if err == nil {
 				k.setTxAsAlreadyProcessed(ctx, tx)
 			}
-
 		}
 	}()
 	// If we got up to here it means that the enough evidence was provided
@@ -132,7 +132,6 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			}
 
 			smartContract, err := k.getSmartContract(ctx, origMsg.UploadSmartContract.GetId())
-
 			if err != nil {
 				return err
 			}
@@ -206,7 +205,9 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			}
 			if _, ok := (actionMsg.(*types.Message).GetAction()).(*types.Message_UpdateValset); ok {
 				if oldMessage.GetId() < msg.GetId() {
-					q.Remove(ctx, oldMessage.GetId())
+					if err := q.Remove(ctx, oldMessage.GetId()); err != nil {
+						k.Logger(ctx).Error("error removing old message, attestRouter", "msg-id", oldMessage.GetId(), "msg-nonce", oldMessage.Nonce())
+					}
 				}
 			}
 		}
@@ -227,7 +228,6 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	}
 
 	return nil
-
 }
 
 func (k Keeper) findEvidenceThatWon(

@@ -10,7 +10,6 @@ import (
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgCreateJob{}, "scheduler/CreateJob", nil)
 	cdc.RegisterConcrete(&MsgExecuteJob{}, "scheduler/ExecuteJob", nil)
-
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

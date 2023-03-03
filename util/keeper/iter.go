@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"reflect"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"reflect"
 )
 
 func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler) ([][]byte, []T, error) {

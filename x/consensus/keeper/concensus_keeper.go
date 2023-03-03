@@ -235,7 +235,6 @@ func (k Keeper) AddMessageSignature(
 			)
 		}
 	})
-
 	if err != nil {
 		k.Logger(ctx).Error("error while adding messages signatures",
 			"err", err,
