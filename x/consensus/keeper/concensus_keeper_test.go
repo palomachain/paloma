@@ -533,8 +533,7 @@ func TestAddingSignatures(t *testing.T) {
 }
 
 type queueSupporter struct {
-	opt    *consensus.QueueOptions
-	action any
+	opt *consensus.QueueOptions
 }
 
 func (q queueSupporter) SupportedQueues(ctx sdk.Context) ([]consensus.SupportsConsensusQueueAction, error) {

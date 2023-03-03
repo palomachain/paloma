@@ -84,15 +84,6 @@ func init() {
 	}
 }
 
-type evmChainTemp struct {
-	chainReferenceID string
-	turnstoneID      string
-}
-
-func (e evmChainTemp) ChainReferenceID() string {
-	return e.chainReferenceID
-}
-
 var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
 type Keeper struct {

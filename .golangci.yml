@@ -12,7 +12,6 @@ run:
 linters:
   disable-all: true
   enable:
-    - deadcode
     - errcheck
     - gci
     - gofmt
@@ -20,7 +19,7 @@ linters:
     - goimports
     - govet
     - misspell
-    - varcheck
+    - unused
     - gosec
   fast: false
 
