@@ -38,7 +38,6 @@ var _ = Describe("jaling validators", func() {
 	})
 
 	Context("with only a single validator", func() {
-
 		var val sdk.ValAddress
 
 		BeforeEach(func() {
@@ -52,7 +51,6 @@ var _ = Describe("jaling validators", func() {
 			err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
 			Expect(err).To(MatchError(keeper.ErrCannotJailValidator))
 		})
-
 	})
 
 	Context("with already a valid valset", func() {

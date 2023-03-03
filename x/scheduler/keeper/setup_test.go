@@ -11,12 +11,15 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
+//nolint:deadcode
 func appForTesting(t testing.TB) (app.TestApp, sdk.Context) {
 	app := app.NewTestApp(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	return app, ctx
 }
+
+//nolint:deadcode
 func setupMsgServer(t testing.TB) (types.MsgServer, app.TestApp, context.Context) {
 	testApp, ctx := appForTesting(t)
 	return keeper.NewMsgServerImpl(testApp.SchedulerKeeper), testApp, sdk.WrapSDKContext(ctx)

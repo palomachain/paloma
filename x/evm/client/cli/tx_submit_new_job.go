@@ -12,8 +12,7 @@ import (
 
 var _ = strconv.Itoa(0)
 
-type submitNewJobPayloadJson struct {
-}
+type submitNewJobPayloadJson struct{}
 
 func CmdSubmitNewJob() *cobra.Command {
 	cmd := &cobra.Command{
@@ -21,7 +20,6 @@ func CmdSubmitNewJob() *cobra.Command {
 		Short: "Broadcast message SubmitNewJob",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err

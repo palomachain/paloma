@@ -171,7 +171,9 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	if ctx.BlockHeight()%50 == 0 || ctx.BlockHeight() == 1 {
-		am.keeper.TriggerSnapshotBuild(ctx)
+		if _, err := am.keeper.TriggerSnapshotBuild(ctx); err != nil {
+			am.keeper.Logger(ctx).Error("error triggering snapshot build", "error", err)
+		}
 	}
 
 	if ctx.BlockHeight()%5 == 0 {

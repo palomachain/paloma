@@ -5,14 +5,13 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/x/paloma/keeper"
-
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
@@ -24,7 +23,6 @@ func TestPalomaGinkgo(t *testing.T) {
 }
 
 var _ = Describe("jailing validators with missing external chain infos", func() {
-
 	var k *keeper.Keeper
 	var ctx sdk.Context
 	var a app.TestApp
@@ -106,7 +104,6 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 })
 
 var _ = Describe("checking the chain version", func() {
-
 	var k *keeper.Keeper
 	var ctx sdk.Context
 	var a app.TestApp
@@ -129,7 +126,6 @@ var _ = Describe("checking the chain version", func() {
 	})
 
 	Context("with a proposed chain version", func() {
-
 		DescribeTable("it checks the version",
 			func(appVersion string, panics bool) {
 				k.AppVersion = appVersion

@@ -21,4 +21,17 @@ linters:
     - govet
     - misspell
     - varcheck
+    - gosec
   fast: false
+
+issues:
+  exclude-rules:
+  # disabling some linters for test files
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+  # disabling some linting rules
+  exclude:
+    # gosec
+    - G114 # Use of net/http serve function that has no support for setting timeouts

@@ -56,5 +56,4 @@ func TestStoreIDs(t *testing.T) {
 		assert.Equal(t, uint64(3), ider.GetLastID(ctx, name1))
 		assert.Equal(t, uint64(1), ider.GetLastID(ctx, name2))
 	})
-
 }

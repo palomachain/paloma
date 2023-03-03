@@ -24,9 +24,6 @@ var (
 )
 
 const (
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgRegisterConductor int = 100
-
 	opWeightMsgAddExternalChainInfoForValidator = "op_weight_msg_add_external_chain_info_for_validator"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgAddExternalChainInfoForValidator int = 100

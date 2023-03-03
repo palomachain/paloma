@@ -25,7 +25,6 @@ func TestTreasuryKeeper(t *testing.T) {
 }
 
 var _ = Describe("adding funds", func() {
-
 	var k *keeper.Keeper
 	var ctx sdk.Context
 	var a app.TestApp

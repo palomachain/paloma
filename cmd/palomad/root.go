@@ -21,12 +21,11 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/spf13/cobra"
-	tmcli "github.com/tendermint/tendermint/libs/cli"
-
 	"github.com/palomachain/paloma/app"
 	palomaapp "github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/app/params"
+	"github.com/spf13/cobra"
+	tmcli "github.com/tendermint/tendermint/libs/cli"
 )
 
 // NewRootCmd returns the root command handler for the Paloma daemon.

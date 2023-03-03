@@ -128,7 +128,6 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		)
 		require.NoError(t, err)
 	}
-
 }
 
 func TestOnSnapshotBuilt(t *testing.T) {
@@ -190,7 +189,6 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	msgs, err = a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
 	require.NoError(t, err)
 	require.Len(t, msgs, 1)
-
 }
 
 func TestAddingSupportForNewChain(t *testing.T) {
@@ -429,7 +427,6 @@ var _ = Describe("evm", func() {
 			})
 
 			Context("adding smart contract", func() {
-
 				It("adds a new smart contract deployment", func() {
 					By("simple assertion that two smart contracts share different ids", func() {
 						Expect(smartContract.GetId()).NotTo(Equal(smartContract2.GetId()))
@@ -461,7 +458,6 @@ var _ = Describe("evm", func() {
 						Expect(
 							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
 						).To(BeTrue())
-
 					})
 
 					By("activating a new smart contract it removes a deployment for chain1 but it doesn't for chain2", func() {
@@ -507,7 +503,6 @@ var _ = Describe("evm", func() {
 	})
 
 	Describe("on snapshot build", func() {
-
 		var snapshot *valsettypes.Snapshot
 		When("validator set is valid", func() {
 			BeforeEach(func() {
@@ -691,9 +686,7 @@ var _ = Describe("evm", func() {
 						Expect(vset.UpdateValset.GetValset().GetValsetID()).NotTo(Equal(uint64(777)))
 						Expect(len(vset.UpdateValset.GetValset().GetValidators())).NotTo(BeZero())
 					})
-
 				})
-
 			})
 		})
 
@@ -728,13 +721,11 @@ var _ = Describe("evm", func() {
 					Expect(msgs).To(BeZero())
 				})
 			})
-
 		})
 	})
 })
 
 var _ = Describe("change min on chain balance", func() {
-
 	var a app.TestApp
 	var ctx sdk.Context
 	newChain := &types.AddChainProposal{
@@ -784,5 +775,4 @@ var _ = Describe("change min on chain balance", func() {
 			Expect(err).To(MatchError(keeper.ErrChainNotFound))
 		})
 	})
-
 })

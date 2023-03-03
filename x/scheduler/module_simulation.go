@@ -24,10 +24,12 @@ var (
 )
 
 const (
+	//nolint:gosec
 	opWeightMsgSubmitRecurringJob = "op_weight_msg_create_chain"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgSubmitRecurringJob int = 100
 
+	//nolint:gosec
 	opWeightMsgHello = "op_weight_msg_create_chain"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgHello int = 100

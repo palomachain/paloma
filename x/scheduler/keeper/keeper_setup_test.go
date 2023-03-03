@@ -16,6 +16,7 @@ import (
 	tmdb "github.com/tendermint/tm-db"
 )
 
+//nolint:deadcode
 func newSchedulerKeeper(t testing.TB) (*Keeper, sdk.Context) {
 	logger := log.NewNopLogger()
 

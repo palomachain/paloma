@@ -22,7 +22,9 @@ func applyFlags(cmd *cobra.Command) {
 	cmd.Flags().String(cli.FlagDescription, "", "description of proposal")
 	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
 
+	//nolint:errcheck
 	cmd.MarkFlagRequired(cli.FlagTitle)
+	//nolint:errcheck
 	cmd.MarkFlagRequired(cli.FlagDescription)
 }
 

@@ -104,6 +104,5 @@ var _ = Describe("wasm message handler", func() {
 				Expect(subject()).To(MatchError(types.ErrJobNotFound))
 			})
 		})
-
 	})
 })
