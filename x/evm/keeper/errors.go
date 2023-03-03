@@ -1,6 +1,6 @@
 package keeper
 
-import "github.com/vizualni/whoops"
+import "github.com/VolumeFi/whoops"
 
 const (
 	ErrChainNotFound                               = whoops.Errorf("chain with chainReferenceID '%s' was not found")

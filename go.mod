@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/CosmWasm/wasmd v0.30.0
 	github.com/CosmWasm/wasmvm v1.1.1
+	github.com/VolumeFi/whoops v0.7.2
 	github.com/cosmos/cosmos-sdk v0.45.13
 	github.com/cosmos/ibc-go/v4 v4.3.0
 	github.com/ethereum/go-ethereum v1.11.2
@@ -21,7 +22,6 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/tendermint/tendermint v0.34.26
 	github.com/tendermint/tm-db v0.6.7
-	github.com/vizualni/whoops v0.7.1
 	golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
 	golang.org/x/mod v0.8.0
 	google.golang.org/genproto v0.0.0-20230227214838-9b19f0bdc514

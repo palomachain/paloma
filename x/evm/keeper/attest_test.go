@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"sync"
 
+	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethcoretypes "github.com/ethereum/go-ethereum/core/types"
@@ -15,7 +16,6 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/mock"
-	"github.com/vizualni/whoops"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/palomachain/paloma/x/evm/types"

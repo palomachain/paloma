@@ -7,8 +7,8 @@ import (
 
 	"golang.org/x/mod/semver"
 
+	"github.com/VolumeFi/whoops"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/vizualni/whoops"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

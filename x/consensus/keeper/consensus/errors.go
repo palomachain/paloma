@@ -1,7 +1,7 @@
 package consensus
 
 import (
-	"github.com/vizualni/whoops"
+	"github.com/VolumeFi/whoops"
 )
 
 const (

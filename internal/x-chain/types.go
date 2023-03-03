@@ -1,9 +1,9 @@
 package xchain
 
 import (
+	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
-	"github.com/vizualni/whoops"
 )
 
 type (

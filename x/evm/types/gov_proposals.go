@@ -3,10 +3,10 @@ package types
 import (
 	"math/big"
 
+	"github.com/VolumeFi/whoops"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/ethereum/go-ethereum/common"
-	proto "github.com/gogo/protobuf/proto"
-	"github.com/vizualni/whoops"
+	"github.com/gogo/protobuf/proto"
 )
 
 const (
