@@ -227,15 +227,15 @@ var _ = g.Describe("attest router", func() {
 					evidence = []*consensustypes.Evidence{
 						{
 							ValAddress: sdk.ValAddress("123"),
-							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{whoops.Must(sampleTx1.MarshalBinary())})),
+							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(sampleTx1.MarshalBinary())})),
 						},
 						{
 							ValAddress: sdk.ValAddress("456"),
-							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{whoops.Must(sampleTx1.MarshalBinary())})),
+							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(sampleTx1.MarshalBinary())})),
 						},
 						{
 							ValAddress: sdk.ValAddress("789"),
-							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{whoops.Must(sampleTx1.MarshalBinary())})),
+							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(sampleTx1.MarshalBinary())})),
 						},
 					}
 				})

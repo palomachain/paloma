@@ -282,7 +282,7 @@ func (k Keeper) findEvidenceThatWon(
 		groups[hash] = val
 	}
 
-	// TODO: gas managment
+	// TODO: gas management
 	// TODO: punishing validators who misbehave
 	// TODO: check for every tx if it seems genuine
 

@@ -9,10 +9,6 @@ import (
 	"github.com/vizualni/whoops"
 )
 
-const (
-	encodingDelimiter = byte('|')
-)
-
 // getConsensusQueue gets the consensus queue for the given type.
 func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consensus.Queuer, error) {
 	for _, q := range k.registry.slice {

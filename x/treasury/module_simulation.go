@@ -23,8 +23,6 @@ var (
 	_ = baseapp.Paramspace
 )
 
-const ()
-
 // GenerateGenesisState creates a randomized GenState of the module
 func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	accs := make([]string, len(simState.Accounts))

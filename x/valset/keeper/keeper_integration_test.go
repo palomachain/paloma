@@ -5,21 +5,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/app"
-	testutil "github.com/palomachain/paloma/testutil"
+	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/x/valset/keeper"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-)
-
-var (
-	priv1 = secp256k1.GenPrivKey()
-	pk1   = priv1.PubKey()
-
-	priv2 = secp256k1.GenPrivKey()
-	pk2   = priv2.PubKey()
 )
 
 func TestGenesisGinkgo(t *testing.T) {

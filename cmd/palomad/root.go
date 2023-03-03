@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -79,10 +80,13 @@ func NewRootCmd() *cobra.Command {
 	}
 	initRootCmd(rootCmd, ac)
 
-	overwriteFlagDefaults(rootCmd, map[string]string{
+	if err := overwriteFlagDefaults(rootCmd, map[string]string{
 		flags.FlagChainID:        palomaapp.Name,
 		flags.FlagKeyringBackend: keyring.BackendOS,
-	})
+	}); err != nil {
+		// seems to be non-fatal issue
+		log.Printf("error overriding flag defaults: %s", err.Error())
+	}
 
 	stakingCmd := findCommand(rootCmd, "tx", "staking")
 

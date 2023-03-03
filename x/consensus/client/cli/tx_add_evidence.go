@@ -16,7 +16,6 @@ func CmdAddEvidence() *cobra.Command {
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			panic("remove! we don't need this")
-			return nil
 		},
 	}
 

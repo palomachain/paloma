@@ -9,7 +9,7 @@ import (
 	"github.com/palomachain/paloma/x/consensus/types"
 	consensustypemocks "github.com/palomachain/paloma/x/consensus/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
-	mock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 )
@@ -59,7 +59,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 		require.Empty(t, msgs)
 	})
 
-	t.Run("it sucessfully puts message into the queue", func(t *testing.T) {
+	t.Run("it successfully puts message into the queue", func(t *testing.T) {
 		err := keeper.PutMessageInQueue(ctx, queue, &types.SimpleMessage{
 			Sender: "bob",
 			Hello:  "hello",
@@ -69,7 +69,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 		require.NoError(t, err)
 	})
 
-	t.Run("it sucessfully gets message from the queue", func(t *testing.T) {
+	t.Run("it successfully gets message from the queue", func(t *testing.T) {
 		msgs, err := keeper.GetMessagesForSigning(
 			ctx,
 			queue,

@@ -572,12 +572,14 @@ func (k Keeper) setSmartContractAsDeploying(
 
 	id := k.ider.IncrementNextID(ctx, "smart-contract-deploying")
 
-	keeperutil.Save(
+	if err := keeperutil.Save(
 		k.smartContractDeploymentStore(ctx),
 		k.cdc,
 		keeperutil.Uint64ToByte(id),
 		item,
-	)
+	); err != nil {
+		k.Logger(ctx).Error("error setting smart contract in deployment store", "err", err)
+	}
 
 	k.Logger(ctx).Info("setting smart contract in deployment state", "smart-contract-id", smartContract.GetId(), "chain-reference-id", chainInfo.GetChainReferenceID())
 
@@ -716,7 +718,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		}
 
 		// put update valset message into the queue
-		k.ConsensusKeeper.PutMessageInQueue(
+		if err := k.ConsensusKeeper.PutMessageInQueue(
 			ctx,
 			consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chain.GetChainReferenceID())),
 			&types.Message{
@@ -727,7 +729,10 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 						Valset: &valset,
 					},
 				},
-			}, nil)
+			}, nil,
+		); err != nil {
+			k.Logger(ctx).Error("unable to put message in the queue", "err", err)
+		}
 	}
 
 	k.TryDeployingLastSmartContractToAllChains(ctx)

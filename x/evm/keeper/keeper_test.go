@@ -13,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/palomachain/paloma/app"
-	testutil "github.com/palomachain/paloma/testutil"
+	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/testutil/rand"
 	"github.com/palomachain/paloma/testutil/sample"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -257,7 +257,7 @@ func TestAddingSupportForNewChain(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("activiting chain", func(t *testing.T) {
+	t.Run("activating chain", func(t *testing.T) {
 		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
 			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "i don't exist", &types.SmartContract{}, "", []byte{})
 			require.Error(t, err)
@@ -453,7 +453,7 @@ var _ = Describe("evm", func() {
 						).To(BeTrue())
 					})
 
-					By("removing a smart deployment for chain1 - it means that it was successfuly uploaded", func() {
+					By("removing a smart deployment for chain1 - it means that it was successfully uploaded", func() {
 						a.EvmKeeper.RemoveSmartContractDeployment(ctx, smartContract.GetId(), chain1.GetChainReferenceID())
 						Expect(
 							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
