@@ -10,7 +10,6 @@ import (
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgAddExternalChainInfoForValidator{}, "valset/AddExternalChainInfoForValidator", nil)
 	cdc.RegisterConcrete(&MsgKeepAlive{}, "valset/KeepAlive", nil)
-
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

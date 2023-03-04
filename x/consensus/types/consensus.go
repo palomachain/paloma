@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	types "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	proto "github.com/gogo/protobuf/proto"
-	"gopkg.in/yaml.v2"
-
+	"github.com/gogo/protobuf/proto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	"gopkg.in/yaml.v2"
 )
 
 type ConsensusQueueType string

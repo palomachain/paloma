@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"reflect"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"reflect"
 )
 
 func Save(store sdk.KVStore, pm protoMarshaler, key []byte, val codec.ProtoMarshaler) error {
@@ -31,7 +32,6 @@ func Load[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, key []
 	}
 
 	err := pu.Unmarshal(bytez, val)
-
 	if err != nil {
 		return val, err
 	}

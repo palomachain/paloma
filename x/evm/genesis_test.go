@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	g "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
 	keepertest "github.com/palomachain/paloma/testutil/keeper"
 	"github.com/palomachain/paloma/testutil/nullify"
@@ -12,9 +14,6 @@ import (
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-
-	g "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 func TestGenesis(t *testing.T) {
@@ -29,7 +28,6 @@ func TestGenesis(t *testing.T) {
 
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)
-
 }
 
 func TestGenesisGinkgo(t *testing.T) {
@@ -39,14 +37,12 @@ func TestGenesisGinkgo(t *testing.T) {
 }
 
 var _ = g.Describe("genesis", func() {
-
 	var genesisState types.GenesisState
 	var k *keeper.Keeper
 	var ctx sdk.Context
 	var a app.TestApp
 
 	g.BeforeEach(func() {
-
 		t := g.GinkgoT()
 		a = app.NewTestApp(t, false)
 		ctx = a.NewContext(false, tmproto.Header{
@@ -82,7 +78,6 @@ var _ = g.Describe("genesis", func() {
 						)
 						Expect(err).To(BeNil())
 					}
-
 				}
 				got := evm.ExportGenesis(ctx, *k)
 
@@ -171,5 +166,4 @@ var _ = g.Describe("genesis", func() {
 })
 
 func TestGenesisChainInfo(t *testing.T) {
-
 }

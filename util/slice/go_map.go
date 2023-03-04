@@ -2,8 +2,9 @@ package slice
 
 import (
 	"fmt"
-	"golang.org/x/exp/constraints"
 	"sort"
+
+	"golang.org/x/exp/constraints"
 )
 
 func FromMapValues[K constraints.Ordered, V any](mm map[K]V) []V {

@@ -5,6 +5,8 @@ import (
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	xchainmocks "github.com/palomachain/paloma/internal/x-chain/mocks"
@@ -12,9 +14,6 @@ import (
 	"github.com/palomachain/paloma/x/scheduler/types"
 	"github.com/stretchr/testify/mock"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("wasm message handler", func() {
@@ -104,6 +103,5 @@ var _ = Describe("wasm message handler", func() {
 				Expect(subject()).To(MatchError(types.ErrJobNotFound))
 			})
 		})
-
 	})
 })

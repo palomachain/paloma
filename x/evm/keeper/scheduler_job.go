@@ -11,9 +11,7 @@ import (
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
-var (
-	xchainType = xchain.Type("evm")
-)
+var xchainType = xchain.Type("evm")
 
 var _ xchain.Bridge = Keeper{}
 

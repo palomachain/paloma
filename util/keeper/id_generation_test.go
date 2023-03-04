@@ -3,14 +3,9 @@ package keeper
 import (
 	"testing"
 
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-)
-
-var (
-	testStoreKey = storetypes.NewKVStoreKey("bla")
 )
 
 func newCtx(store sdk.MultiStore) sdk.Context {
@@ -61,5 +56,4 @@ func TestStoreIDs(t *testing.T) {
 		assert.Equal(t, uint64(3), ider.GetLastID(ctx, name1))
 		assert.Equal(t, uint64(1), ider.GetLastID(ctx, name2))
 	})
-
 }

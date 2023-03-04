@@ -18,7 +18,6 @@ func (k msgServer) AddEvidence(goCtx context.Context, msg *types.MsgAddEvidence)
 	}
 
 	err := k.Keeper.AddMessageEvidence(ctx, valAddr, msg)
-
 	if err != nil {
 		return nil, err
 	}

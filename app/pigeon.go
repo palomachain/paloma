@@ -57,7 +57,6 @@ func GetPigonListenPort() int {
 	}
 
 	port, err := strconv.ParseInt(listenPort, 10, 32)
-
 	if err != nil {
 		log.Fatalf("pigeon's port %s is invalid: %v", listenPort, err)
 	}
@@ -78,7 +77,6 @@ func CheckPigeonRunningLooper(ctx context.Context, client httpClienter) {
 }
 
 func PigeonMustRun(ctx context.Context, client httpClienter) {
-
 	port := GetPigonListenPort()
 	// extract port from url and verify that it's open locally
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://127.0.0.1:%d", port), nil)

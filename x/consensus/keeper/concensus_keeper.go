@@ -9,10 +9,6 @@ import (
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
-const (
-	encodingDelimiter = byte('|')
-)
-
 // getConsensusQueue gets the consensus queue for the given type.
 func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consensus.Queuer, error) {
 	for _, q := range k.registry.slice {
@@ -239,7 +235,6 @@ func (k Keeper) AddMessageSignature(
 			)
 		}
 	})
-
 	if err != nil {
 		k.Logger(ctx).Error("error while adding messages signatures",
 			"err", err,
