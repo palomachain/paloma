@@ -8,8 +8,6 @@ import (
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
-const collectFundsBlockRange = 100
-
 func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
 	return whoops.Try(func() {
 		var g whoops.Group

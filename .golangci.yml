@@ -12,12 +12,29 @@ run:
 linters:
   disable-all: true
   enable:
-    - deadcode
     - errcheck
     - gci
     - gofmt
+    - gofumpt
     - goimports
     - govet
     - misspell
-    - varcheck
+    - unused
+    - gosec
   fast: false
+
+issues:
+  # Restricts maximum count of issues to display with the same text, and show all instead.
+  max-same-issues: 0
+  max-issues-per-linter: 0
+  exclude-rules:
+  # disabling some linters for test files
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+  # disabling some linters rules
+  exclude:
+    # gosec
+    - G101 # Potential hardcoded credentials
+    - G114 # Use of net/http serve function that has no support for setting timeouts

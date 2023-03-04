@@ -24,9 +24,6 @@ var (
 )
 
 const (
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgRegisterConductor int = 100
-
 	opWeightMsgAddExternalChainInfoForValidator = "op_weight_msg_add_external_chain_info_for_validator"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgAddExternalChainInfoForValidator int = 100
@@ -53,7 +50,6 @@ func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedP
 
 // RandomizedParams creates randomized  param changes for the simulator
 func (am AppModule) RandomizedParams(_ *rand.Rand) []simtypes.ParamChange {
-
 	return []simtypes.ParamChange{}
 }
 

@@ -9,12 +9,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	xchainmocks "github.com/palomachain/paloma/internal/x-chain/mocks"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 	"github.com/palomachain/paloma/x/treasury/keeper"
 	"github.com/palomachain/paloma/x/treasury/types"
 	"github.com/stretchr/testify/mock"
-
-	xchainmocks "github.com/palomachain/paloma/internal/x-chain/mocks"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
@@ -25,7 +24,6 @@ func TestTreasuryKeeper(t *testing.T) {
 }
 
 var _ = Describe("adding funds", func() {
-
 	var k *keeper.Keeper
 	var ctx sdk.Context
 	var a app.TestApp

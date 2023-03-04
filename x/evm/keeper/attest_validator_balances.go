@@ -43,7 +43,9 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 	defer func() {
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
-		q.Remove(ctx, msg.GetId())
+		if err := q.Remove(ctx, msg.GetId()); err != nil {
+			k.Logger(ctx).Error("error removing message, attestValidatorBalances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+		}
 	}()
 
 	_, chainReferenceID := q.ChainInfo()
@@ -85,10 +87,24 @@ func (k Keeper) processValidatorBalanceProof(
 				continue
 			}
 
-			k.Valset.SetValidatorBalance(ctx, valAddr, "evm", chainReferenceID, hexAddr.String(), balance)
+			if err := k.Valset.SetValidatorBalance(ctx, valAddr, "evm", chainReferenceID, hexAddr.String(), balance); err != nil {
+				k.Logger(ctx).Error(
+					"error setting validator balance",
+					"err", err,
+					"val-addr", valAddr,
+					"eth-addr", hexAddr,
+				)
+			}
 			if balance.Cmp(minBalance) == -1 || balance.Cmp(big.NewInt(0)) == 0 {
 				if !k.Valset.IsJailed(ctx, valAddr) {
-					k.Valset.Jail(ctx, valAddr, fmt.Sprintf(types.JailReasonNotEnoughFunds, chainReferenceID, balanceStr, minBalance))
+					if err := k.Valset.Jail(ctx, valAddr, fmt.Sprintf(types.JailReasonNotEnoughFunds, chainReferenceID, balanceStr, minBalance)); err != nil {
+						k.Logger(ctx).Error(
+							"error jailing validator",
+							"err", err,
+							"val-addr", valAddr,
+							"eth-addr", hexAddr,
+						)
+					}
 				}
 			}
 		}

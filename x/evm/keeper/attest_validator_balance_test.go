@@ -82,12 +82,10 @@ var _ = g.Describe("attest validator balance", func() {
 					n,
 				).Return(nil)
 			}
-
 		})
 		g.It("updates the balances and jail those that have below min threshold", func() {
 			err := subject()
 			Expect(err).To(BeNil())
 		})
 	})
-
 })

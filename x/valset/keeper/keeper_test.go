@@ -10,17 +10,8 @@ import (
 	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-)
-
-var (
-	priv1 = secp256k1.GenPrivKey()
-	pk1   = priv1.PubKey()
-
-	priv2 = secp256k1.GenPrivKey()
-	pk2   = priv2.PubKey()
 )
 
 func TestIfValidatorCanBeAccepted(t *testing.T) {
@@ -158,7 +149,6 @@ func TestRegisteringPigeon(t *testing.T) {
 		)
 		require.ErrorIs(t, err, ErrValidatorWithAddrNotFound)
 	})
-
 }
 
 func TestCreatingSnapshots(t *testing.T) {
@@ -261,7 +251,6 @@ func TestCreatingSnapshots(t *testing.T) {
 		require.Equal(t, snapshot.Validators[0].Address, val1)
 		require.Equal(t, snapshot.Validators[1].Address, val2)
 	})
-
 }
 
 func TestIsNewSnapshotWorthy(t *testing.T) {

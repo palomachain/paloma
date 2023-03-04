@@ -96,7 +96,6 @@ func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte
 		bytes32,
 		big.NewInt(m.GetDeadline()),
 	)
-
 	if err != nil {
 		panic(err)
 	}
@@ -145,5 +144,4 @@ func TransformValsetToABIValset(val Valset) any {
 		}),
 		ValsetId: big.NewInt(int64(val.GetValsetID())),
 	}
-
 }
