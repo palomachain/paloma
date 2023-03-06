@@ -10,7 +10,7 @@ contributing has been established:
 1. If you would like to contribute, first do your best to check if discussions
    already exist as either a Github  [Issue](https://github.com/palomachain/paloma/issues) or
    [PR](https://github.com/palomachain/paloma/pulls). Be sure to also check out
-   our public [Telegram Channel](https://t.me/palomachain). Existing discussions will help you
+   our public [Telegram Channel](https://t.me/palomachain) and [Discord](https://discord.gg/tNqkNHvVNc). Existing discussions will help you
    gain context on the current status of the proposed contribution or topic. If
    one does not exist, feel free to start one.
 2. If you would like to create a [Github Issue](https://github.com/palomachain/paloma/issues),
@@ -78,6 +78,8 @@ branch.
 
 - Ensure the PR branch is rebased on `master`.
 - Ensure you provided unit tests and integration tests.
+- Ensure that you update the `CHANGELOG.md` and include relevant changes with a link to the PR in the  `Unreleased` section.
+    - If the PR is made from a community member it is up to the Team member/admin who merges the PR is responsible to  ensure that the `CHANGELOG.md` is updated
 - Merge the PR!
 
 ## Release procedure
@@ -104,11 +106,9 @@ When a major release is ready to be made, perform the following:
 
 1. Create a `release/vX.*.*` release.
 branch off of the desired commit on `master`, e.g. `release/v0.12.x` or `release/v1.x.x`.
-2. Create a `RELEASE_NOTES.md` template.
-3. Ensure correct branch protection rules are enabled. This can be done generally
-   using a regex such as `release/v*`.
-4. Create a branch off of the release branch that prepares the `RELEASE_NOTES.md`
-   based on the changelog.
+2. Create a branch off of the release branch to create a `RELEASE_NOTES.md` and update the `CHANGELOG.md` 
+3. The `RELEASE_NOTES.md` should highlight the new features and changes in this version. See [template here](https://github.com/palomachain/paloma/pull/686). Also, link back to to CHANGELOG.md
+4. In the `CHANGELOG.md`, create a new section for the the release version. The `CHANGELOG.md` must contain only the changes of that specific released version. All other changelog entries must be deleted and linked to the `main` branch changelog ([example from Cosmos SDK repo](https://github.com/cosmos/cosmos-sdk/blob/release/v0.46.x/CHANGELOG.md#previous-versions)). All links in the `CHANGELOG.md` must point to their respective PRs.
 5. Review and merge the release notes PR.
 6. Cut a release off of the release branch! Note, goreleaser should automatically
    create the release artifacts once the tag is pushed.
@@ -125,5 +125,4 @@ to the PR and Mergify will automatically create a backport PR against the releas
 branch. If a PR is already merged, you can comment on the PR for Mergify to create
 the backport PR via `@Mergifyio backport release/vX.*.*` (use the relevant release branch name).
 
-When you are ready to cut a point release, perform steps 4-7 from the Major
-Release Procedure.
+When you are ready to cut a point release, perform steps 2-7 from the Major Release Procedure.
