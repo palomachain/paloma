@@ -2,7 +2,6 @@ package main
 
 import (
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
-
 	palomaapp "github.com/palomachain/paloma/app"
 )
 

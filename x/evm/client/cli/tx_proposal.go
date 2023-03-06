@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"strconv"
 
+	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -12,7 +13,6 @@ import (
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/spf13/cobra"
-	"github.com/vizualni/whoops"
 )
 
 func applyFlags(cmd *cobra.Command) {
@@ -22,7 +22,9 @@ func applyFlags(cmd *cobra.Command) {
 	cmd.Flags().String(cli.FlagDescription, "", "description of proposal")
 	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
 
+	//nolint:errcheck
 	cmd.MarkFlagRequired(cli.FlagTitle)
+	//nolint:errcheck
 	cmd.MarkFlagRequired(cli.FlagDescription)
 }
 

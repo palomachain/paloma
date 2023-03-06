@@ -5,22 +5,30 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func overwriteFlagDefaults(c *cobra.Command, defaults map[string]string) {
-	set := func(s *pflag.FlagSet, key, val string) {
+func overwriteFlagDefaults(c *cobra.Command, defaults map[string]string) error {
+	set := func(s *pflag.FlagSet, key, val string) error {
 		if f := s.Lookup(key); f != nil {
 			f.DefValue = val
-			f.Value.Set(val)
+			if err := f.Value.Set(val); err != nil {
+				return err
+			}
 		}
+		return nil
 	}
 
 	for key, val := range defaults {
-		set(c.Flags(), key, val)
-		set(c.PersistentFlags(), key, val)
+		if err := set(c.Flags(), key, val); err != nil {
+			return err
+		}
+		if err := set(c.PersistentFlags(), key, val); err != nil {
+			return err
+		}
 	}
 
 	for _, c := range c.Commands() {
-		overwriteFlagDefaults(c, defaults)
+		return overwriteFlagDefaults(c, defaults)
 	}
+	return nil
 }
 
 func findCommand(root *cobra.Command, path ...string) *cobra.Command {

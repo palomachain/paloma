@@ -40,7 +40,6 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 		}
 
 		origMsg, err := msg.ConsensusMsg(k.cdc)
-
 		if err != nil {
 			return nil, err
 		}

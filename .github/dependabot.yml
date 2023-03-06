@@ -15,3 +15,5 @@ updates:
     labels:
       - "A:automerge"
       - "T:dependencies"
+    ignore:
+      - dependency-name: "github.com/cosmos/cosmos-sdk"

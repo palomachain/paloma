@@ -7,17 +7,16 @@ import (
 	"math/big"
 	"sort"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/tendermint/tendermint/libs/log"
-
+	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/valset/types"
-	"github.com/vizualni/whoops"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 const (
@@ -60,7 +59,6 @@ func NewKeeper(
 	}), nil)
 
 	return k
-
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
@@ -127,7 +125,6 @@ func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddres
 			continue
 		}
 		for _, existingChainInfo := range existingVal.ExternalChainInfo {
-
 			for _, newChainInfo := range chainInfos {
 				if newChainInfo.GetChainType() != existingChainInfo.GetChainType() {
 					continue
@@ -151,7 +148,6 @@ func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddres
 					)
 				}
 			}
-
 		}
 	}
 
@@ -165,7 +161,6 @@ func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddres
 		Address:           valAddr,
 		ExternalChainInfo: chainInfos,
 	})
-
 }
 
 // TriggerSnapshotBuild creates the snapshot of currently active validators that are

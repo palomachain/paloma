@@ -66,7 +66,6 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 	if !isCheckTx {
 		genesisState := NewDefaultGenesisState(encCfg.Codec)
 		stateBytes, err := json.MarshalIndent(genesisState, "", " ")
-
 		if err != nil {
 			panic(err)
 		}

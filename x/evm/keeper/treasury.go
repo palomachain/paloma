@@ -1,14 +1,12 @@
 package keeper
 
 import (
+	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
-	"github.com/vizualni/whoops"
 )
-
-const collectFundsBlockRange = 100
 
 func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
 	return whoops.Try(func() {

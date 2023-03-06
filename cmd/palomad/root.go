@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -20,12 +21,11 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/spf13/cobra"
-	tmcli "github.com/tendermint/tendermint/libs/cli"
-
 	"github.com/palomachain/paloma/app"
 	palomaapp "github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/app/params"
+	"github.com/spf13/cobra"
+	tmcli "github.com/tendermint/tendermint/libs/cli"
 )
 
 // NewRootCmd returns the root command handler for the Paloma daemon.
@@ -79,10 +79,13 @@ func NewRootCmd() *cobra.Command {
 	}
 	initRootCmd(rootCmd, ac)
 
-	overwriteFlagDefaults(rootCmd, map[string]string{
+	if err := overwriteFlagDefaults(rootCmd, map[string]string{
 		flags.FlagChainID:        palomaapp.Name,
 		flags.FlagKeyringBackend: keyring.BackendOS,
-	})
+	}); err != nil {
+		// seems to be non-fatal issue
+		log.Printf("error overriding flag defaults: %s", err.Error())
+	}
 
 	stakingCmd := findCommand(rootCmd, "tx", "staking")
 

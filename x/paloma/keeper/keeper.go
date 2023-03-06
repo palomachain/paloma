@@ -5,15 +5,13 @@ import (
 	"sort"
 	"strings"
 
-	"golang.org/x/mod/semver"
-
-	"github.com/tendermint/tendermint/libs/log"
-	"github.com/vizualni/whoops"
-
+	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/paloma/types"
+	"github.com/tendermint/tendermint/libs/log"
+	"golang.org/x/mod/semver"
 )
 
 type (

@@ -13,12 +13,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	palomaapp "github.com/palomachain/paloma/app"
+	"github.com/palomachain/paloma/app/params"
 	"github.com/spf13/cast"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-
-	palomaapp "github.com/palomachain/paloma/app"
-	"github.com/palomachain/paloma/app/params"
 )
 
 type appCreator struct {

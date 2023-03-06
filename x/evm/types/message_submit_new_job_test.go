@@ -5,12 +5,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/testutil/sample"
 	"github.com/stretchr/testify/require"
-	"github.com/vizualni/whoops"
 )
 
 func TestMsgSubmitNewJob_ValidateBasic(t *testing.T) {

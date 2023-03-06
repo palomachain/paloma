@@ -7,13 +7,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
-	testutil "github.com/palomachain/paloma/testutil"
+	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/testutil/rand"
 	"github.com/palomachain/paloma/testutil/sample"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -22,10 +25,6 @@ import (
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	"github.com/vizualni/whoops"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 var (
@@ -128,7 +127,6 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		)
 		require.NoError(t, err)
 	}
-
 }
 
 func TestOnSnapshotBuilt(t *testing.T) {
@@ -190,7 +188,6 @@ func TestOnSnapshotBuilt(t *testing.T) {
 	msgs, err = a.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
 	require.NoError(t, err)
 	require.Len(t, msgs, 1)
-
 }
 
 func TestAddingSupportForNewChain(t *testing.T) {
@@ -257,7 +254,7 @@ func TestAddingSupportForNewChain(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("activiting chain", func(t *testing.T) {
+	t.Run("activating chain", func(t *testing.T) {
 		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
 			err := a.EvmKeeper.ActivateChainReferenceID(ctx, "i don't exist", &types.SmartContract{}, "", []byte{})
 			require.Error(t, err)
@@ -429,7 +426,6 @@ var _ = Describe("evm", func() {
 			})
 
 			Context("adding smart contract", func() {
-
 				It("adds a new smart contract deployment", func() {
 					By("simple assertion that two smart contracts share different ids", func() {
 						Expect(smartContract.GetId()).NotTo(Equal(smartContract2.GetId()))
@@ -453,7 +449,7 @@ var _ = Describe("evm", func() {
 						).To(BeTrue())
 					})
 
-					By("removing a smart deployment for chain1 - it means that it was successfuly uploaded", func() {
+					By("removing a smart deployment for chain1 - it means that it was successfully uploaded", func() {
 						a.EvmKeeper.RemoveSmartContractDeployment(ctx, smartContract.GetId(), chain1.GetChainReferenceID())
 						Expect(
 							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
@@ -461,7 +457,6 @@ var _ = Describe("evm", func() {
 						Expect(
 							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
 						).To(BeTrue())
-
 					})
 
 					By("activating a new smart contract it removes a deployment for chain1 but it doesn't for chain2", func() {
@@ -507,7 +502,6 @@ var _ = Describe("evm", func() {
 	})
 
 	Describe("on snapshot build", func() {
-
 		var snapshot *valsettypes.Snapshot
 		When("validator set is valid", func() {
 			BeforeEach(func() {
@@ -691,9 +685,7 @@ var _ = Describe("evm", func() {
 						Expect(vset.UpdateValset.GetValset().GetValsetID()).NotTo(Equal(uint64(777)))
 						Expect(len(vset.UpdateValset.GetValset().GetValidators())).NotTo(BeZero())
 					})
-
 				})
-
 			})
 		})
 
@@ -728,13 +720,11 @@ var _ = Describe("evm", func() {
 					Expect(msgs).To(BeZero())
 				})
 			})
-
 		})
 	})
 })
 
 var _ = Describe("change min on chain balance", func() {
-
 	var a app.TestApp
 	var ctx sdk.Context
 	newChain := &types.AddChainProposal{
@@ -784,5 +774,4 @@ var _ = Describe("change min on chain balance", func() {
 			Expect(err).To(MatchError(keeper.ErrChainNotFound))
 		})
 	})
-
 })

@@ -22,7 +22,6 @@ func TestScheduler(t *testing.T) {
 }
 
 var _ = Describe("jobs!", func() {
-
 	var k *keeper.Keeper
 	var ctx sdk.Context
 	var a app.TestApp
@@ -298,7 +297,6 @@ var _ = Describe("jobs!", func() {
 						Expect(k.ScheduleNow(ctx, jobPayloadModifiable.GetID(), []byte("new payload"))).To(BeNil())
 					})
 				})
-
 			})
 		})
 	})

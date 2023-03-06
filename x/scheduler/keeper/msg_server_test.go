@@ -4,6 +4,4 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var (
-	BobAccAddr = sdk.AccAddress("bkla")
-)
+var BobAccAddr = sdk.AccAddress("bkla")

@@ -4,8 +4,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ ConsensusMsg = &SimpleMessage{}
-var _ ConsensusMsg = &EvenSimplerMessage{}
+var (
+	_ ConsensusMsg = &SimpleMessage{}
+	_ ConsensusMsg = &EvenSimplerMessage{}
+)
 
 func (msg *SimpleMessage) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))

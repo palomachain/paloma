@@ -5,11 +5,11 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/VolumeFi/whoops"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/palomachain/paloma/util/slice"
-	"github.com/vizualni/whoops"
 )
 
 func (_m *Message_UpdateValset) keccak256(orig *Message, _ uint64) []byte {
@@ -96,7 +96,6 @@ func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte
 		bytes32,
 		big.NewInt(m.GetDeadline()),
 	)
-
 	if err != nil {
 		panic(err)
 	}
@@ -145,5 +144,4 @@ func TransformValsetToABIValset(val Valset) any {
 		}),
 		ValsetId: big.NewInt(int64(val.GetValsetID())),
 	}
-
 }
