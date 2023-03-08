@@ -8,7 +8,7 @@ require (
 	github.com/VolumeFi/whoops v0.7.2
 	github.com/cosmos/cosmos-sdk v0.45.13
 	github.com/cosmos/ibc-go/v4 v4.3.0
-	github.com/ethereum/go-ethereum v1.11.2
+	github.com/ethereum/go-ethereum v1.11.3
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
