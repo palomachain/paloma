@@ -10,6 +10,7 @@ import (
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
@@ -136,12 +137,12 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				return err
 			}
 
-			ethMsg, err := tx.AsMessage(ethtypes.NewLondonSigner(tx.ChainId()), big.NewInt(0))
+			ethMsg, err := core.TransactionToMessage(tx, ethtypes.NewLondonSigner(tx.ChainId()), big.NewInt(0))
 			if err != nil {
 				return err
 			}
 
-			smartContractAddr := crypto.CreateAddress(ethMsg.From(), tx.Nonce()).Hex()
+			smartContractAddr := crypto.CreateAddress(ethMsg.From, tx.Nonce()).Hex()
 
 			if err != nil {
 				return err
