@@ -5,8 +5,8 @@ package types
 
 import (
 	fmt "fmt"
-	_ "github.com/gogo/protobuf/gogoproto"
-	proto "github.com/gogo/protobuf/proto"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -268,6 +268,7 @@ type Message struct {
 	TurnstoneID      string `protobuf:"bytes,1,opt,name=turnstoneID,proto3" json:"turnstoneID,omitempty"`
 	ChainReferenceID string `protobuf:"bytes,2,opt,name=chainReferenceID,proto3" json:"chainReferenceID,omitempty"`
 	// Types that are valid to be assigned to Action:
+	//
 	//	*Message_SubmitLogicCall
 	//	*Message_UpdateValset
 	//	*Message_UploadSmartContract

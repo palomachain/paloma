@@ -1,7 +1,7 @@
 package types
 
 import (
-	host "cosmossdk.io/simapp/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
 )
 
 // DefaultIndex is the default capability global index

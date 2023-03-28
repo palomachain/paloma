@@ -6,7 +6,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
-	"github.com/cosmos/cosmos-sdk/x/gov/client/rest"
 	"github.com/palomachain/paloma/x/evm/client/cli"
 )
 

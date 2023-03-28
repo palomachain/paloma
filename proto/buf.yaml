@@ -1,0 +1,21 @@
+version: v1
+name: buf.build/palomachain/paloma
+
+deps:
+  - buf.build/cosmos/cosmos-proto:1935555c206d4afb9e94615dfd0fad31
+  - buf.build/cosmos/cosmos-sdk:2aa7ff2b23df473a85b7a7fe1884105d
+  - buf.build/cosmos/gogo-proto:a14993478f40695898ed8a86931094b6656e8a5d
+  - buf.build/googleapis/googleapis
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
+    - COMMENTS
+  except:
+    - SERVICE_SUFFIX
+    - RPC_REQUEST_STANDARD_NAME
+    - COMMENT_FIELD
+    - FIELD_LOWER_SNAKE_CASE
+    - PACKAGE_DIRECTORY_MATCH

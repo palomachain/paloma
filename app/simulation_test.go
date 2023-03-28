@@ -7,9 +7,8 @@ import (
 	"cosmossdk.io/simapp"
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"github.com/stretchr/testify/require"
-
 	palomaapp "github.com/palomachain/paloma/app"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
