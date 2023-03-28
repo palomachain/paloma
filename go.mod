@@ -6,7 +6,7 @@ require (
 	github.com/CosmWasm/wasmd v0.30.0
 	github.com/CosmWasm/wasmvm v1.1.1
 	github.com/VolumeFi/whoops v0.7.2
-	github.com/cosmos/cosmos-sdk v0.45.13
+	github.com/cosmos/cosmos-sdk v0.47.1
 	github.com/cosmos/ibc-go/v4 v4.3.0
 	github.com/ethereum/go-ethereum v1.11.5
 	github.com/gogo/protobuf v1.3.3
