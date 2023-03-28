@@ -4,11 +4,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
+	"cosmossdk.io/simapp"
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	palomaapp "github.com/palomachain/paloma/app"
 	"github.com/stretchr/testify/require"
+
+	palomaapp "github.com/palomachain/paloma/app"
 )
 
 func init() {

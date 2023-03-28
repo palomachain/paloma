@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
+	"cosmossdk.io/simapp"
 	"github.com/cosmos/cosmos-sdk/version"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
