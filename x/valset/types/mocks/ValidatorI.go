@@ -4,7 +4,7 @@ package mocks
 
 import (
 	cosmos_sdktypes "github.com/cosmos/cosmos-sdk/types"
-	crypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
+	crypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 
 	mock "github.com/stretchr/testify/mock"
 

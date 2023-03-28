@@ -1,12 +1,13 @@
 package testutil
 
 import (
+	"github.com/cometbft/cometbft/crypto/ed25519"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
 	"github.com/palomachain/paloma/testutil/rand"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 func GenValidators(numValidators, totalConsPower int) []stakingtypes.Validator {

@@ -3,17 +3,18 @@ package evm_test
 import (
 	"testing"
 
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/require"
+
 	"github.com/palomachain/paloma/app"
 	keepertest "github.com/palomachain/paloma/testutil/keeper"
 	"github.com/palomachain/paloma/testutil/nullify"
 	"github.com/palomachain/paloma/x/evm"
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
-	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 func TestGenesis(t *testing.T) {

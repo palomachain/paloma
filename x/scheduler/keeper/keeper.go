@@ -5,15 +5,16 @@ import (
 	"fmt"
 
 	"github.com/VolumeFi/whoops"
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/scheduler/types"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 type (

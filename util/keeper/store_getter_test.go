@@ -1,10 +1,10 @@
 package keeper
 
 import (
+	tmdb "github.com/cometbft/cometbft-db"
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	tmdb "github.com/tendermint/tm-db"
 )
 
 func SampleStore(storeKeyName, memStoreKeyName string) (store.CommitMultiStore, *sdk.KVStoreKey, *sdk.MemoryStoreKey) {

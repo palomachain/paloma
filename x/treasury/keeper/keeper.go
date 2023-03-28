@@ -3,12 +3,13 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	"github.com/palomachain/paloma/x/treasury/types"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 type (

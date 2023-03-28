@@ -3,16 +3,17 @@ package consensus
 import (
 	"testing"
 
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
+	tmdb "github.com/tendermint/tm-db"
+
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
 	consensustypemocks "github.com/palomachain/paloma/x/consensus/types/mocks"
-	"github.com/stretchr/testify/assert"
-	mock "github.com/stretchr/testify/mock"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmdb "github.com/tendermint/tm-db"
 )
 
 func TestConsensusQueueAllMethods(t *testing.T) {
