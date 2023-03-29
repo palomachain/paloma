@@ -3,7 +3,7 @@ package types
 import (
 	"encoding/binary"
 
-	proto "github.com/gogo/protobuf/proto"
+	proto "github.com/cosmos/gogoproto/proto"
 )
 
 func Uint64ToByte(n uint64) []byte {

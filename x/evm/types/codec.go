@@ -6,7 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
-	proto "github.com/gogo/protobuf/proto"
+	proto "github.com/cosmos/gogoproto/proto"
+
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 )
 

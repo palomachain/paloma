@@ -5,8 +5,8 @@ import (
 
 	"github.com/VolumeFi/whoops"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/gogo/protobuf/proto"
 )
 
 const (
