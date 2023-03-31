@@ -32,4 +32,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
+## Release v0.11.7
+[All Pull Requests leading up to v0.11.7 Release] (https://github.com/palomachain/paloma/issues?q=label%3Av0.11.7)
+] This is a temporary update for this release. All future release will require each developer to update the Changelog with the details of their Pull Request.
 ## [Unreleased]
