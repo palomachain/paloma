@@ -89,8 +89,8 @@ var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
 type Keeper struct {
 	cdc        codec.BinaryCodec
-	storeKey   sdk.StoreKey
-	memKey     sdk.StoreKey
+	storeKey   storetypes.StoreKey
+	memKey     storetypes.StoreKey
 	paramstore paramtypes.Subspace
 
 	ConsensusKeeper types.ConsensusKeeper
@@ -102,7 +102,7 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
-	memKey sdk.StoreKey,
+	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 ) *Keeper {
 	// set KeyTable if it has not already been set

@@ -27,8 +27,8 @@ const (
 
 type Keeper struct {
 	cdc        codec.BinaryCodec
-	storeKey   sdk.StoreKey
-	memKey     sdk.StoreKey
+	storeKey   storetypes.StoreKey
+	memKey     storetypes.StoreKey
 	paramstore paramtypes.Subspace
 	staking    types.StakingKeeper
 	ider       keeperutil.IDGenerator
@@ -39,7 +39,7 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
-	memKey sdk.StoreKey,
+	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	staking types.StakingKeeper,
 ) *Keeper {

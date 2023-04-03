@@ -15,8 +15,8 @@ import (
 type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
-		storeKey   sdk.StoreKey
-		memKey     sdk.StoreKey
+		storeKey   storetypes.StoreKey
+		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
 
 		ider keeperutil.IDGenerator
@@ -30,7 +30,7 @@ type (
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
-	memKey sdk.StoreKey,
+	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	valsetKeeper types.ValsetKeeper,
 	reg *registry,
