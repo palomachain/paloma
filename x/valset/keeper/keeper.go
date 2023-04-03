@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"sort"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -269,8 +270,8 @@ func (k Keeper) isNewSnapshotWorthy(ctx sdk.Context, currentSnapshot, newSnapsho
 	// could own 60% of the network. And all other validators stayed the
 	// (relatively) same.
 	for i := 0; i < len(sortedCurrent); i++ {
-		percentageCurrent := sortedCurrent[i].ShareCount.ToDec().QuoInt(currentSnapshot.TotalShares)
-		percentageNow := sortedNew[i].ShareCount.ToDec().QuoInt(newSnapshot.TotalShares)
+		percentageCurrent := sdkmath.LegacyNewDecFromInt(sortedCurrent[i].ShareCount).QuoInt(currentSnapshot.TotalShares)
+		percentageNow := sdkmath.LegacyNewDecFromInt(sortedNew[i].ShareCount).QuoInt(newSnapshot.TotalShares)
 
 		if percentageCurrent.Sub(percentageNow).Abs().MustFloat64() >= 0.01 {
 			log("validator's power was increased for more than 1%")
