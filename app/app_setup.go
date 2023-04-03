@@ -5,12 +5,12 @@ import (
 	"os"
 	"time"
 
-	"cosmossdk.io/simapp"
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/version"
 )
 
@@ -25,8 +25,8 @@ type testing interface {
 
 // DefaultConsensusParams defines default Tendermint consensus parameters used
 // for testing purposes.
-var DefaultConsensusParams = &abci.ConsensusParams{
-	Block: &abci.BlockParams{
+var DefaultConsensusParams = &tmproto.ConsensusParams{
+	Block: &tmproto.BlockParams{
 		MaxBytes: 200000,
 		MaxGas:   2000000,
 	},
@@ -60,7 +60,7 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 		t.TempDir(),
 		5,
 		encCfg,
-		simapp.EmptyAppOptions{},
+		simtestutil.EmptyAppOptions{},
 	)
 
 	if !isCheckTx {

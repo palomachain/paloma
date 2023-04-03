@@ -21,8 +21,8 @@ func TestBatching(t *testing.T) {
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 	db := tmdb.NewMemDB()
 	stateStore := store.NewCommitMultiStore(db)
-	stateStore.MountStoreWithDB(storeKey, sdk.StoreTypeIAVL, db)
-	stateStore.MountStoreWithDB(memStoreKey, sdk.StoreTypeMemory, nil)
+	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
+	stateStore.MountStoreWithDB(memStoreKey, storetypes.StoreTypeMemory, nil)
 	assert.NoError(t, stateStore.LoadLatestVersion())
 
 	registry := types.ModuleCdc.InterfaceRegistry()
