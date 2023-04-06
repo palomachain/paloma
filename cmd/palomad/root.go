@@ -7,6 +7,7 @@ import (
 	"net/http/pprof"
 	"os"
 
+	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -19,7 +20,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/spf13/cobra"
@@ -42,7 +42,7 @@ func NewRootCmd() *cobra.Command {
 		WithLegacyAmino(encCfg.Amino).
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
-		WithBroadcastMode(flags.BroadcastBlock).
+		WithBroadcastMode(flags.BroadcastSync).
 		WithHomeDir(palomaapp.DefaultNodeHome).
 		WithViper("PALOMA")
 
@@ -70,7 +70,9 @@ func NewRootCmd() *cobra.Command {
 			}
 
 			customAppTemplate, customAppConfig := initAppConfig()
-			return server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig)
+			customTMConfig := initTendermintConfig()
+
+			return server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customTMConfig)
 		},
 	}
 
@@ -110,6 +112,16 @@ func NewRootCmd() *cobra.Command {
 	return rootCmd
 }
 
+func initTendermintConfig() *tmcfg.Config {
+	cfg := tmcfg.DefaultConfig()
+
+	// these values put a higher strain on node memory
+	// cfg.P2P.MaxNumInboundPeers = 100
+	// cfg.P2P.MaxNumOutboundPeers = 40
+
+	return cfg
+}
+
 func rootPreRunE(cmd *cobra.Command, args []string) error {
 	go func() {
 		pprofListen := os.Getenv("PPROF_LISTEN")
@@ -140,15 +152,6 @@ func rootPreRunE(cmd *cobra.Command, args []string) error {
 func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(ac.moduleManager, palomaapp.DefaultNodeHome),
-		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, palomaapp.DefaultNodeHome),
-		genutilcli.MigrateGenesisCmd(),
-		genutilcli.GenTxCmd(
-			ac.moduleManager,
-			ac.encCfg.TxConfig,
-			banktypes.GenesisBalancesIterator{},
-			palomaapp.DefaultNodeHome,
-		),
-		genutilcli.ValidateGenesisCmd(ac.moduleManager),
 		AddGenesisAccountCmd(palomaapp.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
