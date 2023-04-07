@@ -10,6 +10,8 @@ import (
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/server"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/version"
 )
@@ -51,16 +53,18 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 	t.Cleanup(func() {
 		version.Version = oldVersion
 	})
+
+	appOptions := make(simtestutil.AppOptionsMap, 0)
+	appOptions[flags.FlagHome] = t.TempDir()
+	appOptions[server.FlagInvCheckPeriod] = 5
+
 	app := New(
 		log.NewTMJSONLogger(os.Stdout),
 		db,
 		nil,
 		true,
-		map[int64]bool{},
-		t.TempDir(),
-		5,
 		encCfg,
-		simtestutil.EmptyAppOptions{},
+		appOptions,
 	)
 
 	if !isCheckTx {

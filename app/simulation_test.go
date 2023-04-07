@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/server"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
@@ -44,16 +46,17 @@ func BenchmarkSimulation(b *testing.B) {
 
 	encCfg := palomaapp.MakeEncodingConfig()
 
+	appOptions := make(simtestutil.AppOptionsMap, 0)
+	appOptions[flags.FlagHome] = palomaapp.DefaultNodeHome
+	appOptions[server.FlagInvCheckPeriod] = 0
+
 	app := palomaapp.New(
 		logger,
 		db,
 		nil,
 		true,
-		map[int64]bool{},
-		palomaapp.DefaultNodeHome,
-		0,
 		encCfg,
-		simtestutil.EmptyAppOptions{},
+		appOptions,
 	)
 
 	// Run randomized simulations
