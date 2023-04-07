@@ -8,13 +8,16 @@ import (
 	"strings"
 
 	"github.com/VolumeFi/whoops"
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -22,7 +25,6 @@ import (
 	"github.com/palomachain/paloma/x/evm/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 const (
@@ -88,8 +90,8 @@ var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
 type Keeper struct {
 	cdc        codec.BinaryCodec
-	storeKey   sdk.StoreKey
-	memKey     sdk.StoreKey
+	storeKey   storetypes.StoreKey
+	memKey     storetypes.StoreKey
 	paramstore paramtypes.Subspace
 
 	ConsensusKeeper types.ConsensusKeeper
@@ -101,7 +103,7 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
-	memKey sdk.StoreKey,
+	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 ) *Keeper {
 	// set KeyTable if it has not already been set

@@ -3,21 +3,18 @@ package main
 import (
 	"errors"
 	"io"
-	"path/filepath"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
+	dbm "github.com/cometbft/cometbft-db"
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/snapshots"
-	"github.com/cosmos/cosmos-sdk/store"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/spf13/cast"
+	"github.com/spf13/viper"
+
 	palomaapp "github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/app/params"
-	"github.com/spf13/cast"
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
 )
 
 type appCreator struct {
@@ -31,30 +28,9 @@ func (ac appCreator) newApp(
 	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
 ) servertypes.Application {
-	var cache sdk.MultiStorePersistentCache
-
-	if cast.ToBool(appOpts.Get(server.FlagInterBlockCache)) {
-		cache = store.NewCommitKVStoreCacheManager()
-	}
-
 	skipUpgradeHeights := make(map[int64]bool)
 	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
 		skipUpgradeHeights[int64(h)] = true
-	}
-
-	pruningOpts, err := server.GetPruningOptionsFromFlags(appOpts)
-	if err != nil {
-		panic(err)
-	}
-
-	snapshotDir := filepath.Join(cast.ToString(appOpts.Get(flags.FlagHome)), "data", "snapshots")
-	snapshotDB, err := sdk.NewLevelDB("metadata", snapshotDir)
-	if err != nil {
-		panic(err)
-	}
-	snapshotStore, err := snapshots.NewStore(snapshotDB, snapshotDir)
-	if err != nil {
-		panic(err)
 	}
 
 	return palomaapp.New(
@@ -62,26 +38,12 @@ func (ac appCreator) newApp(
 		db,
 		traceStore,
 		true,
-		skipUpgradeHeights,
-		cast.ToString(appOpts.Get(flags.FlagHome)),
-		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
 		ac.encCfg,
 		appOpts,
-		baseapp.SetPruning(pruningOpts),
-		baseapp.SetMinGasPrices(cast.ToString(appOpts.Get(server.FlagMinGasPrices))),
-		baseapp.SetMinRetainBlocks(cast.ToUint64(appOpts.Get(server.FlagMinRetainBlocks))),
-		baseapp.SetHaltHeight(cast.ToUint64(appOpts.Get(server.FlagHaltHeight))),
-		baseapp.SetHaltTime(cast.ToUint64(appOpts.Get(server.FlagHaltTime))),
-		baseapp.SetInterBlockCache(cache),
-		baseapp.SetTrace(cast.ToBool(appOpts.Get(server.FlagTrace))),
-		baseapp.SetIndexEvents(cast.ToStringSlice(appOpts.Get(server.FlagIndexEvents))),
-		baseapp.SetSnapshotStore(snapshotStore),
-		baseapp.SetSnapshotInterval(cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval))),
-		baseapp.SetSnapshotKeepRecent(cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent))),
+		server.DefaultBaseappOptions(appOpts)...,
 	)
 }
 
-// appExport creates a new simapp (optionally at a given height)
 func (ac appCreator) appExport(
 	logger log.Logger,
 	db dbm.DB,
@@ -90,34 +52,48 @@ func (ac appCreator) appExport(
 	forZeroHeight bool,
 	jailAllowedAddrs []string,
 	appOpts servertypes.AppOptions,
+	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
+	var app *palomaapp.App
+
+	// This check is necessary as we use the flag in x/upgrade, but we can exit
+	// more gracefully by checking the flag here.
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
 		return servertypes.ExportedApp{}, errors.New("application home not set")
 	}
 
-	var loadLatest bool
-	if height == -1 {
-		loadLatest = true
+	viperAppOpts, ok := appOpts.(*viper.Viper)
+	if !ok {
+		return servertypes.ExportedApp{}, errors.New("appOpts is not viper.Viper")
 	}
 
-	app := palomaapp.New(
-		logger,
-		db,
-		traceStore,
-		loadLatest,
-		map[int64]bool{},
-		homePath,
-		uint(1),
-		ac.encCfg,
-		appOpts,
-	)
+	// overwrite the FlagInvCheckPeriod
+	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
+	appOpts = viperAppOpts
 
 	if height != -1 {
+		app = palomaapp.New(logger, db, traceStore, false, ac.encCfg, appOpts)
+
 		if err := app.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
+	} else {
+		app = palomaapp.New(logger, db, traceStore, true, ac.encCfg, appOpts)
 	}
 
-	return app.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+	return app.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+}
+
+// GetAppDBBackend gets the backend type to use for the application DBs.
+func GetAppDBBackend(opts servertypes.AppOptions) dbm.BackendType {
+	rv := cast.ToString(opts.Get("app-db-backend"))
+	if len(rv) == 0 {
+		rv = cast.ToString(opts.Get("db-backend"))
+	}
+	if len(rv) != 0 {
+		return dbm.BackendType(rv)
+	}
+
+	return dbm.GoLevelDBBackend
 }

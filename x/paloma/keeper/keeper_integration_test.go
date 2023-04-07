@@ -4,16 +4,17 @@ import (
 	"math/big"
 	"testing"
 
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
 	"github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/x/paloma/keeper"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 func TestPalomaGinkgo(t *testing.T) {

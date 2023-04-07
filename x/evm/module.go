@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -11,11 +12,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/spf13/cobra"
+
 	"github.com/palomachain/paloma/x/evm/client/cli"
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
-	"github.com/spf13/cobra"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 var (
@@ -118,18 +119,8 @@ func (am AppModule) Name() string {
 	return am.AppModuleBasic.Name()
 }
 
-// Route returns the capability module's message routing key.
-func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
-}
-
 // QuerierRoute returns the capability module's query routing key.
 func (AppModule) QuerierRoute() string { return types.QuerierRoute }
-
-// LegacyQuerierHandler returns the capability module's Querier.
-func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
-	return nil
-}
 
 // RegisterServices registers a GRPC query service to respond to the
 // module-specific GRPC queries.

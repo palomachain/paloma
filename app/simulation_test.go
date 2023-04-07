@@ -4,15 +4,19 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/server"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	palomaapp "github.com/palomachain/paloma/app"
+	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 	"github.com/stretchr/testify/require"
+
+	palomaapp "github.com/palomachain/paloma/app"
 )
 
 func init() {
-	simapp.GetSimulatorFlags()
+	simcli.GetSimulatorFlags()
 }
 
 // BenchmarkSimulation run the chain simulation
@@ -21,11 +25,18 @@ func init() {
 // Running as go benchmark test:
 // `go test -benchmem -run=^$ -bench ^BenchmarkSimulation ./app -NumBlocks=200 -BlockSize 50 -Commit=true -Verbose=true -Enabled=true`
 func BenchmarkSimulation(b *testing.B) {
-	simapp.FlagEnabledValue = true
-	simapp.FlagCommitValue = true
+	b.ReportAllocs()
 
-	config, db, dir, logger, _, err := simapp.SetupSimulation("goleveldb-app-sim", "Simulation")
+	config := simcli.NewConfigFromFlags()
+	config.ChainID = "simulation-app"
+	config.Commit = true
+
+	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, "goleveldb-app-invariant-bench", "Simulation", simcli.FlagVerboseValue, simcli.FlagEnabledValue)
 	require.NoError(b, err, "simulation setup failed")
+
+	if skip {
+		b.Skip("skipping benchmark application simulation")
+	}
 
 	b.Cleanup(func() {
 		db.Close()
@@ -35,16 +46,17 @@ func BenchmarkSimulation(b *testing.B) {
 
 	encCfg := palomaapp.MakeEncodingConfig()
 
+	appOptions := make(simtestutil.AppOptionsMap, 0)
+	appOptions[flags.FlagHome] = palomaapp.DefaultNodeHome
+	appOptions[server.FlagInvCheckPeriod] = 0
+
 	app := palomaapp.New(
 		logger,
 		db,
 		nil,
 		true,
-		map[int64]bool{},
-		palomaapp.DefaultNodeHome,
-		0,
 		encCfg,
-		simapp.EmptyAppOptions{},
+		appOptions,
 	)
 
 	// Run randomized simulations
@@ -52,20 +64,20 @@ func BenchmarkSimulation(b *testing.B) {
 		b,
 		os.Stdout,
 		app.GetBaseApp(),
-		simapp.AppStateFn(app.AppCodec(), app.SimulationManager()),
+		simtestutil.AppStateFn(app.AppCodec(), app.SimulationManager(), app.DefaultGenesis()),
 		simulationtypes.RandomAccounts,
-		simapp.SimulationOperations(app, app.AppCodec(), config),
+		simtestutil.SimulationOperations(app, app.AppCodec(), config),
 		app.ModuleAccountAddrs(),
 		config,
 		app.AppCodec(),
 	)
 
 	// export state and simParams before the simulation error is checked
-	err = simapp.CheckExportSimulation(app, config, simParams)
+	err = simtestutil.CheckExportSimulation(app, config, simParams)
 	require.NoError(b, err)
 	require.NoError(b, simErr)
 
 	if config.Commit {
-		simapp.PrintStats(db)
+		simtestutil.PrintStats(db)
 	}
 }

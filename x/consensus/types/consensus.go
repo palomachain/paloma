@@ -6,9 +6,10 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gogo/protobuf/proto"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
+	"github.com/cosmos/gogoproto/proto"
 	"gopkg.in/yaml.v2"
+
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 )
 
 type ConsensusQueueType string

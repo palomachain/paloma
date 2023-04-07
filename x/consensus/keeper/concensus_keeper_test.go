@@ -3,15 +3,16 @@ package keeper
 import (
 	"testing"
 
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensusmock "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	"github.com/palomachain/paloma/x/consensus/types"
 	consensustypemocks "github.com/palomachain/paloma/x/consensus/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
 )
 
 const (

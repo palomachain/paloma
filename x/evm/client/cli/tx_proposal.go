@@ -10,9 +10,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
-	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/palomachain/paloma/x/evm/types"
+	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/spf13/cobra"
+
+	"github.com/palomachain/paloma/x/evm/types"
 )
 
 func applyFlags(cmd *cobra.Command) {
@@ -105,7 +106,7 @@ func CmdEvmProposeNewChain() *cobra.Command {
 				deposit, err := sdk.ParseCoinsNormalized(depositStr)
 				whoops.Assert(err)
 
-				msg, err := gov.NewMsgSubmitProposal(addChainProposal, deposit, from)
+				msg, err := govv1beta1types.NewMsgSubmitProposal(addChainProposal, deposit, from)
 				whoops.Assert(err)
 
 				err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -145,7 +146,7 @@ func CmdEvmProposalDeployNewSmartContract() *cobra.Command {
 				deposit, err := sdk.ParseCoinsNormalized(depositStr)
 				whoops.Assert(err)
 
-				msg, err := gov.NewMsgSubmitProposal(deployNewSmartContractProposal, deposit, from)
+				msg, err := govv1beta1types.NewMsgSubmitProposal(deployNewSmartContractProposal, deposit, from)
 				whoops.Assert(err)
 
 				err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -191,7 +192,7 @@ func CmdEvmProposalChangeMinOnChainBalance() *cobra.Command {
 				deposit, err := sdk.ParseCoinsNormalized(depositStr)
 				whoops.Assert(err)
 
-				msg, err := gov.NewMsgSubmitProposal(proposal, deposit, from)
+				msg, err := govv1beta1types.NewMsgSubmitProposal(proposal, deposit, from)
 				whoops.Assert(err)
 
 				err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -230,7 +231,7 @@ func CmdEvmProposeChainRemoval() *cobra.Command {
 				deposit, err := sdk.ParseCoinsNormalized(depositStr)
 				whoops.Assert(err)
 
-				msg, err := gov.NewMsgSubmitProposal(addChainProposal, deposit, from)
+				msg, err := govv1beta1types.NewMsgSubmitProposal(addChainProposal, deposit, from)
 				whoops.Assert(err)
 
 				err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)

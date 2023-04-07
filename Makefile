@@ -116,38 +116,27 @@ lint: install-linter
 ##                                 Protobuf                                  ##
 ###############################################################################
 
-DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
+protoVer=0.11.6
+protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
+protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
 
-containerProtoVer=v0.2
-containerProtoImage=tendermintdev/sdk-proto-gen:$(containerProtoVer)
-containerProtoGen=$(PROJECT_NAME)-proto-gen-$(containerProtoVer)
-containerProtoFmt=$(PROJECT_NAME)-proto-fmt-$(containerProtoVer)
-containerProtoGenSwagger=$(PROJECT_NAME)-proto-gen-swagger-$(containerProtoVer)
-
-proto-all: proto-format proto-lint proto-gen proto-swagger-gen
+proto-all: proto-format proto-lint proto-gen
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	@if docker ps -a --format '{{.Names}}' | grep -Eq "^${containerProtoGen}$$"; then docker start -a $(containerProtoGen); else docker run --name $(containerProtoGen) -v $(CURDIR):/workspace --workdir /workspace $(containerProtoImage) \
-		sh ./scripts/protocgen.sh; fi
-
-proto-swagger-gen:
-	@echo "Generating Swagger of Protobuf"
-	@if docker ps -a --format '{{.Names}}' | grep -Eq "^${containerProtoGenSwagger}$$"; then docker start -a $(containerProtoGenSwagger); else docker run --name $(containerProtoGenSwagger) -v $(CURDIR):/workspace --workdir /workspace $(containerProtoImage) \
-		sh ./scripts/protoc-swagger-gen.sh; fi
+	@$(protoImage) sh ./scripts/protocgen.sh
 
 proto-format:
-	@echo "Formatting Protobuf files"
-	@if docker ps -a --format '{{.Names}}' | grep -Eq "^${containerProtoFmt}$$"; then docker start -a $(containerProtoFmt); else docker run --name $(containerProtoFmt) -v $(CURDIR):/workspace --workdir /workspace tendermintdev/docker-build-proto \
-		find ./ -name "*.proto" -exec sh -c 'clang-format -style=file -i {}' \; ; fi
+	@$(protoImage) find ./ -name "*.proto" -exec clang-format -i {} \;
 
 proto-lint:
-	@echo "Linting Protobuf files"
-	@$(DOCKER_BUF) lint --error-format=json
+	@$(protoImage) buf lint --error-format=json
 
 proto-check-breaking:
-	@echo "Checking for breaking changes"
-	@$(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=main
+	@$(protoImage) buf breaking --against $(HTTPS_GIT)#branch=main
 
+proto-update-deps:
+	@echo "Updating Protobuf dependencies"
+	$(DOCKER) run --rm -v $(CURDIR)/proto:/workspace --workdir /workspace $(protoImageName) buf mod update
 
-.PHONY: proto-all proto-gen proto-lint proto-check-breaking proto-format proto-swagger-gen
+.PHONY: proto-all proto-gen proto-format proto-lint proto-check-breaking proto-update-deps

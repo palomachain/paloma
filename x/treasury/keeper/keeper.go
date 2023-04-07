@@ -3,19 +3,21 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	"github.com/palomachain/paloma/x/treasury/types"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
-		storeKey   sdk.StoreKey
-		memKey     sdk.StoreKey
+		storeKey   storetypes.StoreKey
+		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
 		bank       types.BankKeeper
 		account    types.AccountKeeper
@@ -27,7 +29,7 @@ type (
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
-	memKey sdk.StoreKey,
+	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	bank types.BankKeeper,
 	account types.AccountKeeper,

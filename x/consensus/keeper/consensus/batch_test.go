@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"testing"
 
+	tmdb "github.com/cometbft/cometbft-db"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmdb "github.com/tendermint/tm-db"
+
+	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 func TestBatching(t *testing.T) {
@@ -20,8 +21,8 @@ func TestBatching(t *testing.T) {
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 	db := tmdb.NewMemDB()
 	stateStore := store.NewCommitMultiStore(db)
-	stateStore.MountStoreWithDB(storeKey, sdk.StoreTypeIAVL, db)
-	stateStore.MountStoreWithDB(memStoreKey, sdk.StoreTypeMemory, nil)
+	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
+	stateStore.MountStoreWithDB(memStoreKey, storetypes.StoreTypeMemory, nil)
 	assert.NoError(t, stateStore.LoadLatestVersion())
 
 	registry := types.ModuleCdc.InterfaceRegistry()

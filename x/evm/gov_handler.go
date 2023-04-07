@@ -5,13 +5,14 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
-func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govtypes.Handler {
-	return func(ctx sdk.Context, content govtypes.Content) error {
+func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govv1beta1types.Handler {
+	return func(ctx sdk.Context, content govv1beta1types.Content) error {
 		switch c := content.(type) {
 		case *types.AddChainProposal:
 			balance, ok := new(big.Int).SetString(c.GetMinOnChainBalance(), 10)
@@ -29,14 +30,17 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govtypes.Handl
 			)
 		case *types.RemoveChainProposal:
 			return k.RemoveSupportForChain(ctx, c)
+
 		case *types.DeployNewSmartContractProposal:
 			_, err := k.SaveNewSmartContract(ctx, c.GetAbiJSON(), c.Bytecode())
 			return err
+
 		case *types.ChangeMinOnChainBalanceProposal:
 			balance, _ := new(big.Int).SetString(c.GetMinOnChainBalance(), 10)
 			err := k.ChangeMinOnChainBalance(ctx, c.GetChainReferenceID(), balance)
 			return err
 		}
+
 		return sdkerrors.ErrUnknownRequest
 	}
 }

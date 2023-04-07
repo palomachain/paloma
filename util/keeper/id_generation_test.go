@@ -3,9 +3,9 @@ package keeper
 import (
 	"testing"
 
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 func newCtx(store sdk.MultiStore) sdk.Context {
