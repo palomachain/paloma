@@ -4,8 +4,7 @@ import (
 	"math/big"
 
 	"github.com/VolumeFi/whoops"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/cosmos/gogoproto/proto"
+	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -17,29 +16,22 @@ const (
 )
 
 var (
-	_ govtypes.Content = &AddChainProposal{}
-	_ govtypes.Content = &RemoveChainProposal{}
-	_ govtypes.Content = &DeployNewSmartContractProposal{}
+	_ govv1beta1types.Content = &AddChainProposal{}
+	_ govv1beta1types.Content = &RemoveChainProposal{}
+	_ govv1beta1types.Content = &DeployNewSmartContractProposal{}
 )
 
 func init() {
-	govtypes.RegisterProposalType(ProposalTypeAddChain)
-	govtypes.RegisterProposalTypeCodec(&AddChainProposal{}, proto.MessageName(&AddChainProposal{}))
-
-	govtypes.RegisterProposalType(ProposalTypeRemoveChain)
-	govtypes.RegisterProposalTypeCodec(&RemoveChainProposal{}, proto.MessageName(&RemoveChainProposal{}))
-
-	govtypes.RegisterProposalType(ProposalDeployNewSmartContract)
-	govtypes.RegisterProposalTypeCodec(&DeployNewSmartContractProposal{}, proto.MessageName(&DeployNewSmartContractProposal{}))
-
-	govtypes.RegisterProposalType(ProposalTypeChangeMinOnChainBalance)
-	govtypes.RegisterProposalTypeCodec(&ChangeMinOnChainBalanceProposal{}, proto.MessageName(&ChangeMinOnChainBalanceProposal{}))
+	govv1beta1types.RegisterProposalType(ProposalTypeAddChain)
+	govv1beta1types.RegisterProposalType(ProposalTypeRemoveChain)
+	govv1beta1types.RegisterProposalType(ProposalDeployNewSmartContract)
+	govv1beta1types.RegisterProposalType(ProposalTypeChangeMinOnChainBalance)
 }
 
 func (a *AddChainProposal) ProposalRoute() string { return RouterKey }
 func (a *AddChainProposal) ProposalType() string  { return ProposalTypeAddChain }
 func (a *AddChainProposal) ValidateBasic() error {
-	if err := govtypes.ValidateAbstract(a); err != nil {
+	if err := govv1beta1types.ValidateAbstract(a); err != nil {
 		return err
 	}
 
@@ -49,7 +41,7 @@ func (a *AddChainProposal) ValidateBasic() error {
 func (a *RemoveChainProposal) ProposalRoute() string { return RouterKey }
 func (a *RemoveChainProposal) ProposalType() string  { return ProposalTypeRemoveChain }
 func (a *RemoveChainProposal) ValidateBasic() error {
-	if err := govtypes.ValidateAbstract(a); err != nil {
+	if err := govv1beta1types.ValidateAbstract(a); err != nil {
 		return err
 	}
 
@@ -62,7 +54,7 @@ func (a *DeployNewSmartContractProposal) Bytecode() []byte {
 func (a *DeployNewSmartContractProposal) ProposalRoute() string { return RouterKey }
 func (a *DeployNewSmartContractProposal) ProposalType() string  { return ProposalDeployNewSmartContract }
 func (a *DeployNewSmartContractProposal) ValidateBasic() error {
-	if err := govtypes.ValidateAbstract(a); err != nil {
+	if err := govv1beta1types.ValidateAbstract(a); err != nil {
 		return err
 	}
 
@@ -75,7 +67,7 @@ func (a *ChangeMinOnChainBalanceProposal) ProposalType() string {
 }
 
 func (a *ChangeMinOnChainBalanceProposal) ValidateBasic() error {
-	if err := govtypes.ValidateAbstract(a); err != nil {
+	if err := govv1beta1types.ValidateAbstract(a); err != nil {
 		return err
 	}
 	_, ok := new(big.Int).SetString(a.GetMinOnChainBalance(), 10)
