@@ -18,7 +18,7 @@ Paloma is the fastest, secure crosschain communications blockchain. For Crosscha
 - [International Community](#international-community)
 - [Releases](#releases)
 - [Active Networks](#active-networks)
-- [Join the Testnet](#testnet-setup-instructions)
+- [Join a network](#join-an-active-network)
 - [Contributing](CONTRIBUTING.md)
 
 ## Talk to us
@@ -52,13 +52,24 @@ We have active, helpful communities on Twitter and Telegram.
 See [Release procedure](CONTRIBUTING.md#release-procedure) for more information about the release model.
 
 ## Active Networks
-* Paloma Testnet 15 (January 20, 2023)
+* Testnet `paloma-testnet-15` (January 20, 2023) - current tag v0.11.7
+* Mainnet `messenger` (February 2, 2023) - current tag: v0.11.6
 
 
-## Testnet Setup Instructions
+## Join an active Network
 
 To get the latest `palomad` binary:
 
+Testnet:
+```shell
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.7/paloma_Linux_x86_64.tar.gz  | \
+  sudo tar -C /usr/local/bin -xvzf - palomad
+sudo chmod +x /usr/local/bin/palomad
+# Required until we figure out cgo
+sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/internal/api/libwasmvm.x86_64.so
+```
+
+Mainnet:
 ```shell
 wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.6/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
@@ -67,16 +78,19 @@ sudo chmod +x /usr/local/bin/palomad
 sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/internal/api/libwasmvm.x86_64.so
 ```
 
+
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
 
-### Steps for upgrading from a prior testnet to `paloma-testnet-14` (These need to be done in the order listed)
+### Steps for upgrading from a prior testnet to `paloma-testnet-15` (These need to be done in the order listed)
 
 **ALERT: You will need to update your pigeon config.yaml file to reference this new chain-ID!**
 
-1. Stop your paloma version and get 0.11.6
+1. Stop your paloma version and get 0.11.7
 ```
 service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.6/paloma_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.7
+
+/paloma_Linux_x86_64.tar.gz | \
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
@@ -105,7 +119,7 @@ service palomad start
 
 7. If you are planning to be a **VALIDATOR with stake**, ensure that your pigeon relayer is up & running and that you have at least 0.05 ETH on eth mainnet target chain and 0.05 BNB on bnb mainnet target chain addresses is in your pigeon configuration file.
 
-### Connecting to an existing testnet.
+### Connecting to an existing network.
 
 Download and install the latest release of palomad.
 
@@ -113,13 +127,26 @@ Initialize our configuration. This will populate a `~/.paloma/` directory.
 ```shell
 MONIKER="$(hostname)"
 palomad init "$MONIKER"
+
+#for testnet
+CHAIN_ID="paloma-testnet-15" 
+#for mainnet
+CHAIN_ID="messenger" 
+
 ```
 
-Copy the configs of the testnet we wish to connect to
+Copy the configs of the network we wish to connect to
 
+Testnet:
 ```shell
 wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-15/genesis.json
 wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-15/addrbook.json
+```
+
+Mainnet:
+```shell
+wget -O ~/.paloma/config/genesis.json https://https://raw.githubusercontent.com/palomachain/mainnet/master/messenger/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://https://raw.githubusercontent.com/palomachain/mainnet/master/messenger/addrbook.json
 ```
 
 Next you can generate a new set of keys to the new machine, or reuse an existing key.
@@ -157,7 +184,7 @@ palomad tx staking create-validator \
       --moniker="$MONIKER" \
       --website="https://www.example.com" \
       --details="<enter a description>" \
-      --chain-id=paloma-testnet-15 \
+      --chain-id=$CHAIN_ID \
       --commission-rate="0.1" \
       --commission-max-rate="0.2" \
       --commission-max-change-rate="0.05" \
@@ -207,6 +234,7 @@ service palomad status
 journalctl -u palomad.service -f
 ```
 
+
 ### Uploading a local contract
 
 ```shell
@@ -215,33 +243,3 @@ VALIDATOR="$(palomad keys list --list-names | head -n1)"
 palomad tx wasm store "$CONTRACT" --from "$VALIDATOR" --broadcast-mode block -y --gas auto --fees 3000000000ugrain
 ```
 
-## Setting up a new private testnet
-
-Download and install the latest release of palomad.
-
-Install `jq`, used by the setup script.
-
-```shell
-apt install jq
-```
-
-Set up the chain validator.
-
-```shell
-CHAIN_ID=paloma-testnet-15 \
-MNEMONIC="$(cat secret.mn)" \
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/palomachain/paloma/master/scripts/setup-volume-testnet.sh)"
-```
-
-We should now see an error free execution steadily increasing chain depth.
-
-```shell
-palomad start
-```
-
-Others wishing to connect to the new testnet will need your `.paloma/config/genesis.json` file,
-as well as the main peer designation. We can get the main peer designation with `jq`:
-
-```shell
-jq -r '.body.memo' ~/.paloma/config/gentx/gentx-*.json
-```
