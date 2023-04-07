@@ -65,6 +65,7 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -517,21 +518,38 @@ func New(
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
 
-	govRouter := govtypes.NewRouter()
-	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
+	govRouter := govv1beta1types.NewRouter()
+	govRouter.
+		AddRoute(govtypes.RouterKey, govv1beta1types.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper))
 
-	app.GovKeeper = govkeeper.NewKeeper(
-		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
-		&stakingKeeper, govRouter,
+	// Example of setting gov params:
+	// govConfig.MaxMetadataLen = 10000
+	govConfig := govtypes.DefaultConfig()
+	govKeeper := govkeeper.NewKeeper(
+		appCodec,
+		keys[govtypes.StoreKey],
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.StakingKeeper,
+		app.MsgServiceRouter(),
+		govConfig,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
+	// set legacy router for backwards compatibility with gov v1beta1
+	govKeeper.SetLegacyRouter(govRouter)
+
+	app.GovKeeper = *govKeeper.SetHooks(
+		govtypes.NewMultiGovHooks(
+		// register the governance hooks
+		),
 	)
 
 	wasmDir := filepath.Join(homePath, "data")
-
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
 		panic("error while reading wasm config: " + err.Error())
@@ -561,6 +579,7 @@ func New(
 			)
 		}),
 	)
+
 	// register wasm gov proposal types
 	// enabledProposals := GetEnabledProposals()
 	// if len(enabledProposals) != 0 {
@@ -625,8 +644,14 @@ func New(
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
-		upgradetypes.ModuleName, capabilitytypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
-		evidencetypes.ModuleName, stakingtypes.ModuleName, ibchost.ModuleName,
+		upgradetypes.ModuleName,
+		capabilitytypes.ModuleName,
+		minttypes.ModuleName,
+		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
+		evidencetypes.ModuleName,
+		stakingtypes.ModuleName,
+		ibchost.ModuleName,
 		feegrant.ModuleName,
 		schedulermoduletypes.ModuleName,
 		consensusmoduletypes.ModuleName,
@@ -647,9 +672,17 @@ func New(
 	)
 
 	app.mm.SetOrderEndBlockers(
-		crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, schedulermoduletypes.ModuleName,
-		upgradetypes.ModuleName, capabilitytypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
-		evidencetypes.ModuleName, ibchost.ModuleName,
+		crisistypes.ModuleName,
+		govtypes.ModuleName,
+		stakingtypes.ModuleName,
+		schedulermoduletypes.ModuleName,
+		upgradetypes.ModuleName,
+		capabilitytypes.ModuleName,
+		minttypes.ModuleName,
+		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
+		evidencetypes.ModuleName,
+		ibchost.ModuleName,
 		feegrant.ModuleName,
 		consensusmoduletypes.ModuleName,
 		crisistypes.ModuleName,
