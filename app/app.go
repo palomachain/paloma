@@ -119,7 +119,11 @@ import (
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 )
 
-const Name = "paloma"
+const (
+	Name = "paloma"
+
+	wasmAvailableCapabilities = "iterator,staking,stargate,paloma"
+)
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	return []govclient.ProposalHandler{
@@ -541,11 +545,10 @@ func New(
 	app.wasmKeeper = wasm.NewKeeper(
 		appCodec,
 		keys[wasm.StoreKey],
-		app.GetSubspace(wasm.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.StakingKeeper,
-		app.DistrKeeper,
+		distrkeeper.NewQuerier(app.DistrKeeper),
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		scopedWasmKeeper,
@@ -554,7 +557,8 @@ func New(
 		app.GRPCQueryRouter(),
 		wasmDir,
 		wasmConfig,
-		"iterator,staking,stargate,paloma",
+		wasmAvailableCapabilities,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 			return wasmkeeper.NewMessageHandlerChain(
 				old,
