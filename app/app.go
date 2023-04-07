@@ -17,6 +17,7 @@ import (
 	tmos "github.com/cometbft/cometbft/libs/os"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -217,7 +218,7 @@ type App struct {
 	GovKeeper             govkeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 	CrisisKeeper          *crisiskeeper.Keeper
-	UpgradeKeeper         upgradekeeper.Keeper
+	UpgradeKeeper         *upgradekeeper.Keeper
 	ParamsKeeper          paramskeeper.Keeper
 	IBCKeeper             *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 	EvidenceKeeper        evidencekeeper.Keeper
@@ -372,7 +373,24 @@ func New(
 	)
 
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
-	upgradeK := upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
+
+	// get skipUpgradeHeights from the app options
+	skipUpgradeHeights := map[int64]bool{}
+	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
+		skipUpgradeHeights[int64(h)] = true
+	}
+
+	// set the governance module account as the authority for conducting upgrades
+	homePath := cast.ToString(appOpts.Get(flags.FlagHome))
+	app.UpgradeKeeper = upgradekeeper.NewKeeper(
+		skipUpgradeHeights, keys[upgradetypes.StoreKey],
+		appCodec,
+		homePath,
+		app.BaseApp,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
+	// upgradeK := upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
 
 	semverVersion := app.Version()
 	if !strings.HasPrefix(semverVersion, "v") {
@@ -384,26 +402,17 @@ func New(
 		panic(fmt.Errorf("invalid app version '%s'", app.Version()))
 	}
 
-	upgradeK.SetUpgradeHandler(
+	app.UpgradeKeeper.SetUpgradeHandler(
 		upgradeName,
 		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+			// TODO: Implement IBC and other migrations!
 			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
 		},
 	)
-
-	// TODO: this is bug. Upgrade names should be as vMAJOR.MINOR like above.
-	upgradeK.SetUpgradeHandler(
-		semverVersion,
-		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
-		},
-	)
-
-	app.UpgradeKeeper = upgradeK
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-	app.StakingKeeper = *stakingKeeper.SetHooks(
+	app.StakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
@@ -428,13 +437,22 @@ func New(
 	)
 
 	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+		appCodec,
+		keys[ibchost.StoreKey],
+		app.GetSubspace(ibchost.ModuleName),
+		app.StakingKeeper,
+		app.UpgradeKeeper,
+		scopedIBCKeeper,
 	)
-	app.EvmKeeper = *evmmodulekeeper.NewKeeper(appCodec, keys[evmmoduletypes.StoreKey], keys[evmmoduletypes.MemStoreKey], app.GetSubspace(evmmoduletypes.ModuleName))
 
+	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
+		appCodec,
+		keys[evmmoduletypes.StoreKey],
+		keys[evmmoduletypes.MemStoreKey],
+		app.GetSubspace(evmmoduletypes.ModuleName),
+	)
 	app.EvmKeeper.Valset = app.ValsetKeeper
 	app.EvmKeeper.ConsensusKeeper = app.ConsensusKeeper
-
 	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 		app.EvmKeeper,
 	}
@@ -465,10 +483,14 @@ func New(
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
-		appCodec, keys[evidencetypes.StoreKey], &app.StakingKeeper, app.SlashingKeeper,
+		appCodec,
+		keys[evidencetypes.StoreKey],
+		app.StakingKeeper,
+		app.SlashingKeeper,
 	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
+
 	scopedSchedulerKeeper := app.CapabilityKeeper.ScopeToModule(schedulermoduletypes.ModuleName)
 	app.ScopedSchedulerKeeper = scopedSchedulerKeeper
 	app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
@@ -925,4 +947,17 @@ func (app *App) DefaultGenesis() map[string]json.RawMessage {
 
 func (app *App) RegisterNodeService(clientCtx client.Context) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
+}
+
+// BlockedAddresses returns all the app's blocked account addresses.
+func BlockedAddresses() map[string]bool {
+	modAccAddrs := make(map[string]bool)
+	for acc := range GetMaccPerms() {
+		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
+	}
+
+	// allow the following addresses to receive funds
+	delete(modAccAddrs, authtypes.NewModuleAddress(govtypes.ModuleName).String())
+
+	return modAccAddrs
 }
