@@ -17,6 +17,7 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
 	"golang.org/x/mod/semver"
 )
 
@@ -64,7 +65,18 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 			// dedicated x/consensus module.
 			baseapp.MigrateParams(ctx, baseAppLegacySS, &app.ConsensusParamsKeeper)
 
-			// TODO: Implement IBC and other migrations!
+			// TODO: We may need to execute ibc-go v6 migrations but importing ibc-go
+			// v6 will fail using Cosmos SDK v0.47.x.
+			//
+			// if err := v6.MigrateICS27ChannelCapability(ctx, app.cdc, app.keys[capabilitytypes.StoreKey], app.CapabilityKeeper, ""); err != nil {
+			// 	return nil, err
+			// }
+
+			// OPTIONAL: prune expired tendermint consensus states to save storage space
+			if _, err := ibctmmigrations.PruneExpiredConsensusStates(ctx, app.appCodec, app.IBCKeeper.ClientKeeper); err != nil {
+				return nil, err
+			}
+
 			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
 		},
 	)
