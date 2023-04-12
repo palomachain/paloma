@@ -12,11 +12,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
-
 	"github.com/palomachain/paloma/x/valset/client/cli"
 	"github.com/palomachain/paloma/x/valset/keeper"
 	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/spf13/cobra"
 )
 
 var (

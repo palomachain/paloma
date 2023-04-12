@@ -10,9 +10,8 @@ import (
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
-	"github.com/stretchr/testify/require"
-
 	palomaapp "github.com/palomachain/paloma/app"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {

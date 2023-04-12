@@ -22,11 +22,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/spf13/cobra"
-
 	"github.com/palomachain/paloma/app"
 	palomaapp "github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/app/params"
+	"github.com/spf13/cobra"
 )
 
 // NewRootCmd returns the root command handler for the Paloma daemon.

@@ -3,8 +3,8 @@
 package mocks
 
 import (
-	cosmos_sdktypes "github.com/cosmos/cosmos-sdk/types"
 	crypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
+	cosmos_sdktypes "github.com/cosmos/cosmos-sdk/types"
 
 	mock "github.com/stretchr/testify/mock"
 
