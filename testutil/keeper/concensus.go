@@ -12,10 +12,9 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/stretchr/testify/require"
-
 	"github.com/palomachain/paloma/x/consensus/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/stretchr/testify/require"
 )
 
 func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

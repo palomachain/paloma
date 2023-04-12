@@ -16,8 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/require"
-
 	"github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/testutil/rand"
@@ -26,6 +24,7 @@ import (
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/stretchr/testify/require"
 )
 
 var (

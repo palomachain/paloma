@@ -11,9 +11,8 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"golang.org/x/mod/semver"
-
 	"github.com/palomachain/paloma/x/paloma/types"
+	"golang.org/x/mod/semver"
 )
 
 type (
