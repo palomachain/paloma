@@ -16,9 +16,8 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/stretchr/testify/require"
-
 	"github.com/palomachain/paloma/app"
+	"github.com/stretchr/testify/require"
 )
 
 type (

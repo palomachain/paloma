@@ -26,7 +26,6 @@ import (
 )
 
 func (app *App) RegisterUpgradeHandlers(semverVersion string) {
-
 	// Set param key table for params module migration
 	for _, subspace := range app.ParamsKeeper.GetSubspaces() {
 		subspace := subspace
