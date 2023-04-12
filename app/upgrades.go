@@ -1,8 +1,6 @@
 package app
 
 import (
-	"fmt"
-
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,14 +23,9 @@ import (
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
 	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
-	"golang.org/x/mod/semver"
 )
 
 func (app *App) RegisterUpgradeHandlers(semverVersion string) {
-	upgradeName := semver.MajorMinor(semverVersion)
-	if upgradeName == "" {
-		panic(fmt.Errorf("invalid app version '%s'", app.Version()))
-	}
 
 	// Set param key table for params module migration
 	for _, subspace := range app.ParamsKeeper.GetSubspaces() {
@@ -80,7 +73,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 	baseAppLegacySS := app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable())
 
 	app.UpgradeKeeper.SetUpgradeHandler(
-		upgradeName,
+		semverVersion,
 		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			// Migrate CometBFT consensus parameters from x/params module to a
 			// dedicated x/consensus module.
