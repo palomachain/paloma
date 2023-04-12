@@ -7,7 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
 	"github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/x/valset/keeper"
@@ -41,10 +40,10 @@ var _ = Describe("jaling validators", func() {
 		var val sdk.ValAddress
 
 		BeforeEach(func() {
-			By("add a single validator")
-			validators := testutil.GenValidators(1, 100)
-			a.StakingKeeper.SetValidator(ctx, validators[0])
-			val = validators[0].GetOperator()
+			By("query existing validator")
+			vals := a.StakingKeeper.GetAllValidators(ctx)
+			Expect(len(vals)).To(Equal(1))
+			val = vals[0].GetOperator()
 		})
 
 		It("returns an error that it cannot jail the validator", func() {

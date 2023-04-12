@@ -10,11 +10,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/spf13/cast"
-	"github.com/spf13/viper"
-
 	palomaapp "github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/app/params"
+	"github.com/spf13/cast"
+	"github.com/spf13/viper"
 )
 
 type appCreator struct {

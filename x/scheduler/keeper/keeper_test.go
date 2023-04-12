@@ -7,13 +7,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/mock"
-
 	"github.com/palomachain/paloma/app"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	xchainmocks "github.com/palomachain/paloma/internal/x-chain/mocks"
 	"github.com/palomachain/paloma/x/scheduler/keeper"
 	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestScheduler(t *testing.T) {
