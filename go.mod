@@ -5,7 +5,7 @@ go 1.19
 require (
 	cosmossdk.io/math v1.0.0
 	github.com/CosmWasm/wasmd v0.40.0-rc.0
-	github.com/CosmWasm/wasmvm v1.2.1
+	github.com/CosmWasm/wasmvm v1.2.2
 	github.com/VolumeFi/whoops v0.7.2
 	github.com/cometbft/cometbft v0.37.0
 	github.com/cometbft/cometbft-db v0.7.0
