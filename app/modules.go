@@ -115,7 +115,7 @@ type GovModule struct {
 func (GovModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	minDeposit := sdk.NewCoins(sdk.NewCoin(BondDenom, govv1types.DefaultMinDepositTokens))
 	genState := govv1types.DefaultGenesisState()
-	genState.DepositParams.MinDeposit = minDeposit
+	genState.Params.MinDeposit = minDeposit
 
 	return cdc.MustMarshalJSON(genState)
 }

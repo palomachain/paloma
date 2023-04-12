@@ -1,8 +1,7 @@
 package app
 
 import (
-	"fmt"
-
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -18,15 +17,15 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
-	"golang.org/x/mod/semver"
+	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
+	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
+	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
+	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
+	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 func (app *App) RegisterUpgradeHandlers(semverVersion string) {
-	upgradeName := semver.MajorMinor(semverVersion)
-	if upgradeName == "" {
-		panic(fmt.Errorf("invalid app version '%s'", app.Version()))
-	}
-
 	// Set param key table for params module migration
 	for _, subspace := range app.ParamsKeeper.GetSubspaces() {
 		subspace := subspace
@@ -49,6 +48,20 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 			keyTable = govv1.ParamKeyTable() //nolint:staticcheck
 		case crisistypes.ModuleName:
 			keyTable = crisistypes.ParamKeyTable() //nolint:staticcheck
+		case consensusmoduletypes.ModuleName:
+			keyTable = consensusmoduletypes.ParamKeyTable() //nolint:staticcheck
+		case evmmoduletypes.ModuleName:
+			keyTable = evmmoduletypes.ParamKeyTable() //nolint:staticcheck
+		case palomamoduletypes.ModuleName:
+			keyTable = palomamoduletypes.ParamKeyTable() //nolint:staticcheck
+		case schedulermoduletypes.ModuleName:
+			keyTable = schedulermoduletypes.ParamKeyTable() //nolint:staticcheck
+		case treasurymoduletypes.ModuleName:
+			keyTable = treasurymoduletypes.ParamKeyTable() //nolint:staticcheck
+		case valsetmoduletypes.ModuleName:
+			keyTable = valsetmoduletypes.ParamKeyTable() //nolint:staticcheck
+		case wasmtypes.ModuleName:
+			keyTable = wasmtypes.ParamKeyTable() //nolint:staticcheck
 		}
 
 		if !subspace.HasKeyTable() {
@@ -59,7 +72,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 	baseAppLegacySS := app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable())
 
 	app.UpgradeKeeper.SetUpgradeHandler(
-		upgradeName,
+		semverVersion,
 		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			// Migrate CometBFT consensus parameters from x/params module to a
 			// dedicated x/consensus module.

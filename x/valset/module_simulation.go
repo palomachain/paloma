@@ -8,7 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-
 	"github.com/palomachain/paloma/testutil/sample"
 	valsetsimulation "github.com/palomachain/paloma/x/valset/simulation"
 	"github.com/palomachain/paloma/x/valset/types"
