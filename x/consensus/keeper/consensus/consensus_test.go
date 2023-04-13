@@ -8,12 +8,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/assert"
-	mock "github.com/stretchr/testify/mock"
-
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
 	consensustypemocks "github.com/palomachain/paloma/x/consensus/types/mocks"
+	"github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
 )
 
 func TestConsensusQueueAllMethods(t *testing.T) {

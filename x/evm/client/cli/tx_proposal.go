@@ -11,9 +11,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	"github.com/spf13/cobra"
-
 	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/spf13/cobra"
 )
 
 func applyFlags(cmd *cobra.Command) {
