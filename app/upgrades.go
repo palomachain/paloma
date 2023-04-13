@@ -25,6 +25,39 @@ import (
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 )
 
+var minCommissionRate = sdk.MustNewDecFromStr("0.05")
+
+// UpdateMinCommissionRate update minimum commission rate param.
+func UpdateMinCommissionRate(ctx sdk.Context, keeper StakingKeeper) (sdk.Dec, error) {
+	params := keeper.GetParams(ctx)
+	params.MinCommissionRate = minCommissionRate
+
+	keeper.SetParams(ctx, params)
+
+	return minCommissionRate, nil
+}
+
+// SetMinimumCommissionRate updates the commission rate for validators
+// whose current commission rate is lower than the new minimum commission rate.
+func SetMinimumCommissionRate(ctx sdk.Context, keeper StakingKeeper, minCommissionRate sdk.Dec) error {
+	validators := keeper.GetAllValidators(ctx)
+
+	for _, validator := range validators {
+		if validator.Commission.Rate.IsNil() || validator.Commission.Rate.LT(minCommissionRate) {
+			if err := keeper.BeforeValidatorModified(ctx, validator.GetOperator()); err != nil {
+				return err
+			}
+
+			validator.Commission.Rate = minCommissionRate
+			validator.Commission.UpdateTime = ctx.BlockTime()
+
+			keeper.SetValidator(ctx, validator)
+		}
+	}
+
+	return nil
+}
+
 func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 	// Set param key table for params module migration
 	for _, subspace := range app.ParamsKeeper.GetSubspaces() {
@@ -90,7 +123,22 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				return nil, err
 			}
 
-			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
+			vm, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
+			if err != nil {
+				return vm, err
+			}
+
+			minCommissionRate, err := UpdateMinCommissionRate(ctx, app.StakingKeeper)
+			if err != nil {
+				return vm, err
+			}
+
+			err = SetMinimumCommissionRate(ctx, app.StakingKeeper, minCommissionRate)
+			if err != nil {
+				return vm, err
+			}
+
+			return vm, nil
 		},
 	)
 }
