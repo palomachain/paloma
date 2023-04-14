@@ -19,6 +19,9 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
+	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
+	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
@@ -26,14 +29,11 @@ import (
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
 	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
-
-	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
-	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 )
 
 var minCommissionRate = sdk.MustNewDecFromStr("0.05")
 
-const upgradeName = "" // TODO: set upgrade name
+const upgradeName = "v0.18.1" // TODO: set upgrade name
 
 // UpdateMinCommissionRate update minimum commission rate param.
 func UpdateMinCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper) (sdk.Dec, error) {
@@ -157,16 +157,18 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 
 	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{
-				consensustypes.ModuleName,
-				icacontrollertypes.StoreKey,
-				icahosttypes.StoreKey,
-			},
 			Renamed: []storetypes.StoreRename{ // x/consensus module renamed to palomaconsensus
 				{
 					OldKey: consensustypes.ModuleName,
 					NewKey: consensusmoduletypes.ModuleName,
 				},
+			},
+			Added: []string{
+				consensustypes.ModuleName,
+				icacontrollertypes.StoreKey,
+				icahosttypes.StoreKey,
+				crisistypes.ModuleName,
+				ibcfeetypes.StoreKey,
 			},
 		}
 
