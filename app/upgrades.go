@@ -3,10 +3,12 @@ package app
 import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	consensustypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -14,8 +16,12 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
+	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
+	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
@@ -24,6 +30,43 @@ import (
 	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 )
+
+var minCommissionRate = sdk.MustNewDecFromStr("0.05")
+
+const upgradeName = "v0.18.1" // TODO: set upgrade name
+
+// UpdateMinCommissionRate update minimum commission rate param.
+func UpdateMinCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper) (sdk.Dec, error) {
+	params := keeper.GetParams(ctx)
+	params.MinCommissionRate = minCommissionRate
+
+	if err := keeper.SetParams(ctx, params); err != nil {
+		return sdk.Dec{}, err
+	}
+
+	return minCommissionRate, nil
+}
+
+// SetMinimumCommissionRate updates the commission rate for validators
+// whose current commission rate is lower than the new minimum commission rate.
+func SetMinimumCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper, minCommissionRate sdk.Dec) error {
+	validators := keeper.GetAllValidators(ctx)
+
+	for _, validator := range validators {
+		if validator.Commission.Rate.IsNil() || validator.Commission.Rate.LT(minCommissionRate) {
+			if err := keeper.Hooks().BeforeValidatorModified(ctx, validator.GetOperator()); err != nil {
+				return err
+			}
+
+			validator.Commission.Rate = minCommissionRate
+			validator.Commission.UpdateTime = ctx.BlockTime()
+
+			keeper.SetValidator(ctx, validator)
+		}
+	}
+
+	return nil
+}
 
 func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 	// Set param key table for params module migration
@@ -90,7 +133,48 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				return nil, err
 			}
 
-			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
+			vm, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
+			if err != nil {
+				return vm, err
+			}
+
+			minCommissionRate, err := UpdateMinCommissionRate(ctx, *app.StakingKeeper)
+			if err != nil {
+				return vm, err
+			}
+
+			err = SetMinimumCommissionRate(ctx, *app.StakingKeeper, minCommissionRate)
+			if err != nil {
+				return vm, err
+			}
+
+			return vm, nil
 		},
 	)
+
+	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		panic(err)
+	}
+
+	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Renamed: []storetypes.StoreRename{ // x/consensus module renamed to palomaconsensus
+				{
+					OldKey: consensustypes.ModuleName,
+					NewKey: consensusmoduletypes.ModuleName,
+				},
+			},
+			Added: []string{
+				consensusmoduletypes.ModuleName,
+				ibcfeetypes.ModuleName,
+				icacontrollertypes.StoreKey,
+				icahosttypes.StoreKey,
+				crisistypes.ModuleName,
+			},
+		}
+
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
 }
