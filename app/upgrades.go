@@ -40,7 +40,9 @@ func UpdateMinCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper) (sdk.
 	params := keeper.GetParams(ctx)
 	params.MinCommissionRate = minCommissionRate
 
-	keeper.SetParams(ctx, params)
+	if err := keeper.SetParams(ctx, params); err != nil {
+		return sdk.Dec{}, err
+	}
 
 	return minCommissionRate, nil
 }
@@ -164,7 +166,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				},
 			},
 			Added: []string{
-				consensustypes.ModuleName,
+				consensusmoduletypes.ModuleName,
 				icacontrollertypes.StoreKey,
 				icahosttypes.StoreKey,
 				crisistypes.ModuleName,
