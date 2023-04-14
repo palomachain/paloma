@@ -171,7 +171,6 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				icacontrollertypes.StoreKey,
 				icahosttypes.StoreKey,
 				crisistypes.ModuleName,
-				ibcfeetypes.StoreKey,
 			},
 		}
 
