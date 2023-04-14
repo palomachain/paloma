@@ -151,7 +151,7 @@ func rootPreRunE(cmd *cobra.Command, args []string) error {
 func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(ac.moduleManager, palomaapp.DefaultNodeHome),
-		AddGenesisAccountCmd(palomaapp.DefaultNodeHome),
+		genesisCommand(ac.encCfg),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		config.Cmd(),
@@ -166,6 +166,16 @@ func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
 		txCommand(ac.moduleManager),
 		keys.Commands(palomaapp.DefaultNodeHome),
 	)
+}
+
+// genesisCommand builds genesis-related `palomad genesis` command. Users may provide application specific commands as a parameter
+func genesisCommand(encodingConfig params.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
+	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, palomaapp.ModuleBasics, palomaapp.DefaultNodeHome)
+
+	for _, sub_cmd := range cmds {
+		cmd.AddCommand(sub_cmd)
+	}
+	return cmd
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
