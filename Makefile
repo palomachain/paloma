@@ -5,7 +5,7 @@ COMMIT               := $(shell git log -1 --format='%H')
 BUILD_DIR            ?= $(CURDIR)/build
 DIST_DIR             ?= $(CURDIR)/dist
 LEDGER_ENABLED       ?= true
-TM_VERSION           := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
+TM_VERSION           := $(shell go list -m github.com/cometbft/cometbft | sed 's:.* ::')
 DOCKER               := $(shell which docker)
 PROJECT_NAME         := paloma
 HTTPS_GIT            := https://github.com/palomachain/paloma.git
@@ -62,7 +62,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=paloma \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
-		  -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TM_VERSION)
+		  -X github.com/cometbft/cometbft/version.TMCoreSemVer=$(TM_VERSION)
 
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
