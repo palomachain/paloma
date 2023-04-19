@@ -33,8 +33,6 @@ import (
 
 var minCommissionRate = sdk.MustNewDecFromStr("0.05")
 
-const upgradeName = "v0.18.1" // TODO: set upgrade name
-
 // UpdateMinCommissionRate update minimum commission rate param.
 func UpdateMinCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper) (sdk.Dec, error) {
 	params := keeper.GetParams(ctx)
@@ -157,7 +155,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		panic(err)
 	}
 
-	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	if upgradeInfo.Name == semverVersion && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Renamed: []storetypes.StoreRename{ // x/consensus module renamed to palomaconsensus
 				{
