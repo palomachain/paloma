@@ -28,7 +28,6 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -109,6 +108,7 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/spf13/cast"
 
+	palomamempool "github.com/palomachain/paloma/app/mempool"
 	appparams "github.com/palomachain/paloma/app/params"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	consensusmodule "github.com/palomachain/paloma/x/consensus"
@@ -295,7 +295,7 @@ func New(
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 
-	nonceMempool := mempool.NewSenderNonceMempool()
+	nonceMempool := palomamempool.DefaultPriorityMempool()
 	abciPropHandler := baseapp.NewDefaultProposalHandler(nonceMempool, bApp)
 
 	bApp.SetMempool(nonceMempool)
