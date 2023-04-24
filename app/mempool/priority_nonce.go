@@ -103,8 +103,11 @@ type (
 // the defining transaction priority.
 func NewDefaultTxPriority() TxPriority[int64] {
 	return TxPriority[int64]{
-		GetTxPriority: func(goCtx context.Context, _ sdk.Tx) int64 {
-			// TODO: Use custom paloma ordering!
+		GetTxPriority: func(goCtx context.Context, tx sdk.Tx) int64 {
+			msgs := tx.GetMsgs()
+			if len(msgs) == 1 {
+			}
+
 			return sdk.UnwrapSDKContext(goCtx).Priority()
 		},
 		Compare: func(a, b int64) int {
