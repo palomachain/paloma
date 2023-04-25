@@ -6,11 +6,10 @@ import (
 	"math"
 	"strings"
 
-	"github.com/huandu/skiplist"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
+	"github.com/huandu/skiplist"
 )
 
 var (
