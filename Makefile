@@ -110,6 +110,10 @@ lint: install-linter
 	@echo "--> Linting..."
 	@third_party/golangci-lint run --concurrency 16 ./...
 
+lint-fix: install-linter
+	@echo "--> Fixing linter..."
+	@third_party/golangci-lint run --concurrency 16 ./... --fix	
+
 .PHONY: install build build-linux clean
 
 ###############################################################################

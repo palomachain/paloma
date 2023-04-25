@@ -106,6 +106,7 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+	palomamempool "github.com/palomachain/paloma/app/mempool"
 	appparams "github.com/palomachain/paloma/app/params"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	consensusmodule "github.com/palomachain/paloma/x/consensus"
@@ -292,6 +293,13 @@ func New(
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
+
+	nonceMempool := palomamempool.DefaultPriorityMempool()
+	abciPropHandler := baseapp.NewDefaultProposalHandler(nonceMempool, bApp)
+
+	bApp.SetMempool(nonceMempool)
+	bApp.SetPrepareProposal(abciPropHandler.PrepareProposalHandler())
+	bApp.SetProcessProposal(abciPropHandler.ProcessProposalHandler())
 
 	keys := sdk.NewKVStoreKeys(
 		authtypes.StoreKey,
