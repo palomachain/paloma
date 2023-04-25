@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/huandu/skiplist"
 
@@ -105,9 +106,30 @@ func NewDefaultTxPriority() TxPriority[int64] {
 	return TxPriority[int64]{
 		GetTxPriority: func(goCtx context.Context, tx sdk.Tx) int64 {
 			msgs := tx.GetMsgs()
+
+			// For transactions with a single message, we want to prioritize based on
+			// the message type, specifically for all message types in a domain.
+			//
+			// E.g. All consensus messages should be prioritized before all scheduler
+			// messages.
 			if len(msgs) == 1 {
+				msgTypeStr := sdk.MsgTypeURL(msgs[0])
+				switch {
+				case strings.HasPrefix(msgTypeStr, "/palomachain.paloma.consensus."):
+					return math.MaxInt64
+
+				case strings.HasPrefix(msgTypeStr, "/palomachain.paloma.scheduler."):
+					return math.MaxInt64 - 1
+
+				case strings.HasPrefix(msgTypeStr, "/palomachain.paloma.evm."):
+					return math.MaxInt64 - 2
+
+				case strings.HasPrefix(msgTypeStr, "/palomachain.paloma.valset."):
+					return math.MaxInt64 - 3
+				}
 			}
 
+			// default to CheckTx priority, which is typically based on fees
 			return sdk.UnwrapSDKContext(goCtx).Priority()
 		},
 		Compare: func(a, b int64) int {
