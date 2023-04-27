@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -19,8 +21,10 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
+	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
@@ -129,6 +133,34 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 			// OPTIONAL: prune expired tendermint consensus states to save storage space
 			if _, err := ibctmmigrations.PruneExpiredConsensusStates(ctx, app.appCodec, app.IBCKeeper.ClientKeeper); err != nil {
 				return nil, err
+			}
+
+			// save oldIcaVersion, so we can skip icahost.InitModule in longer term tests.
+			oldIcaVersion := fromVM[icatypes.ModuleName]
+
+			// Add Interchain Accounts host module
+			// set the ICS27 consensus version so InitGenesis is not run
+			fromVM[icatypes.ModuleName] = app.mm.Modules[icatypes.ModuleName].(module.HasConsensusVersion).ConsensusVersion()
+
+			// create ICS27 Host submodule params, host module not enabled.
+			hostParams := icahosttypes.Params{
+				HostEnabled:   false,
+				AllowMessages: []string{},
+			}
+
+			mod, found := app.mm.Modules[icatypes.ModuleName]
+			if !found {
+				return nil, fmt.Errorf("module %s is not in the module manager", icatypes.ModuleName)
+			}
+
+			icaMod, ok := mod.(ica.AppModule)
+			if !ok {
+				return nil, fmt.Errorf("expected module %s to be type %T, got %T", icatypes.ModuleName, ica.AppModule{}, mod)
+			}
+
+			// skip InitModule in upgrade tests after the upgrade has gone through.
+			if oldIcaVersion != fromVM[icatypes.ModuleName] {
+				icaMod.InitModule(ctx, icacontrollertypes.DefaultParams(), hostParams)
 			}
 
 			vm, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
