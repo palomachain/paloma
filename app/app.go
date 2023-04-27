@@ -184,7 +184,6 @@ var (
 		ibctm.AppModuleBasic{},
 		ica.AppModuleBasic{},
 		ibcfee.AppModuleBasic{},
-		consensus.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -329,7 +328,15 @@ func New(
 		crisistypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
-	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+	memKeys := sdk.NewMemoryStoreKeys(
+		capabilitytypes.MemStoreKey,
+		valsetmoduletypes.MemStoreKey,
+		consensusmoduletypes.MemStoreKey,
+		evmmoduletypes.MemStoreKey,
+		schedulermoduletypes.MemStoreKey,
+		treasurymoduletypes.MemStoreKey,
+		palomamoduletypes.MemStoreKey,
+	)
 
 	app := &App{
 		BaseApp:           bApp,
@@ -504,7 +511,7 @@ func New(
 	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
 		appCodec,
 		keys[valsetmoduletypes.StoreKey],
-		keys[valsetmoduletypes.MemStoreKey],
+		memKeys[valsetmoduletypes.MemStoreKey],
 		app.GetSubspace(valsetmoduletypes.ModuleName),
 		app.StakingKeeper,
 	)
@@ -514,7 +521,7 @@ func New(
 	app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
 		appCodec,
 		keys[consensusmoduletypes.StoreKey],
-		keys[consensusmoduletypes.MemStoreKey],
+		memKeys[consensusmoduletypes.MemStoreKey],
 		app.GetSubspace(consensusmoduletypes.ModuleName),
 		app.ValsetKeeper,
 		consensusRegistry,
@@ -523,7 +530,7 @@ func New(
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
 		appCodec,
 		keys[evmmoduletypes.StoreKey],
-		keys[evmmoduletypes.MemStoreKey],
+		memKeys[evmmoduletypes.MemStoreKey],
 		app.GetSubspace(evmmoduletypes.ModuleName),
 	)
 	app.EvmKeeper.Valset = app.ValsetKeeper
@@ -535,7 +542,7 @@ func New(
 	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
 		appCodec,
 		keys[palomamoduletypes.StoreKey],
-		keys[palomamoduletypes.MemStoreKey],
+		memKeys[palomamoduletypes.MemStoreKey],
 		app.GetSubspace(palomamoduletypes.ModuleName),
 		semverVersion,
 		app.ValsetKeeper,
@@ -559,7 +566,7 @@ func New(
 	app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
 		appCodec,
 		keys[schedulermoduletypes.StoreKey],
-		keys[schedulermoduletypes.MemStoreKey],
+		memKeys[schedulermoduletypes.MemStoreKey],
 		app.GetSubspace(schedulermoduletypes.ModuleName),
 		app.AccountKeeper,
 		[]xchain.Bridge{
@@ -569,8 +576,8 @@ func New(
 
 	app.TreasuryKeeper = *treasurymodulekeeper.NewKeeper(
 		appCodec,
-		keys[schedulermoduletypes.StoreKey],
-		keys[schedulermoduletypes.MemStoreKey],
+		keys[treasurymoduletypes.StoreKey],
+		memKeys[treasurymoduletypes.MemStoreKey],
 		app.GetSubspace(schedulermoduletypes.ModuleName),
 		app.BankKeeper,
 		app.AccountKeeper,
