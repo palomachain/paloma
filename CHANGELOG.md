@@ -33,3 +33,4 @@ Ref: https://keepachangelog.com/en/1.0.0/
 # Changelog
 
 ## [Unreleased]
+* https://github.com/palomachain/paloma/pull/818 - Upgrade the way of handling messages
