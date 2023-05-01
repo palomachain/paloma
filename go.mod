@@ -7,7 +7,7 @@ require (
 	github.com/CosmWasm/wasmd v0.40.0-rc.0
 	github.com/CosmWasm/wasmvm v1.2.3
 	github.com/VolumeFi/whoops v0.7.2
-	github.com/cometbft/cometbft v0.37.1
+	github.com/cometbft/cometbft v0.37.0
 	github.com/cometbft/cometbft-db v0.7.0
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
 	github.com/cosmos/cosmos-sdk v0.47.1
@@ -17,7 +17,6 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/huandu/skiplist v1.2.0
 	github.com/onsi/ginkgo/v2 v2.9.2
 	github.com/onsi/gomega v1.27.6
 	github.com/spf13/cast v1.5.0
@@ -129,6 +128,7 @@ require (
 	github.com/hdevalence/ed25519consensus v0.1.0 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
 	github.com/holiman/uint256 v1.2.2-0.20230321075855-87b91420868c // indirect
+	github.com/huandu/skiplist v1.2.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
