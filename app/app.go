@@ -106,6 +106,8 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+	"github.com/spf13/cast"
+
 	palomamempool "github.com/palomachain/paloma/app/mempool"
 	appparams "github.com/palomachain/paloma/app/params"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
@@ -128,7 +130,6 @@ import (
 	valsetmodule "github.com/palomachain/paloma/x/valset"
 	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
-	"github.com/spf13/cast"
 )
 
 const (
@@ -873,7 +874,7 @@ func New(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 
-	anteHandler, err := ante.NewAnteHandler(
+	anteHandler, err := NewAnteHandler(
 		ante.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
