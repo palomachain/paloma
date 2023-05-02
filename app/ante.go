@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 // NewAnteHandler returns an AnteHandler that checks and increments sequence
@@ -78,6 +79,10 @@ func BypassSigVerificationDecorator(ctx sdk.Context, tx sdk.Tx) bool {
 			msg := tx.GetMsgs()[0]
 			switch msg.(type) {
 			case *consensustypes.MsgAddEvidence:
+			case *consensustypes.MsgAddMessagesSignatures:
+			case *consensustypes.MsgDeleteJob:
+			case *consensustypes.MsgSetPublicAccessData:
+			case *valsettypes.MsgAddExternalChainInfoForValidator:
 				return true
 
 			default:
