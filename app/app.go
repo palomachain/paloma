@@ -289,6 +289,7 @@ func New(
 	interfaceRegistry := encodingCfg.InterfaceRegistry
 
 	bApp := baseapp.NewBaseApp(Name, logger, db, encodingCfg.TxConfig.TxDecoder(), baseAppOptions...)
+	bApp.SetTxEncoder(encodingCfg.TxConfig.TxEncoder())
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
