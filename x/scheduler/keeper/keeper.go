@@ -211,7 +211,6 @@ func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte) error {
 			"chain_type", router.GetChainType(),
 			"chain_reference_id", router.GetChainReferenceID(),
 		)
-		panic(err)
 	}
 
 	return err
