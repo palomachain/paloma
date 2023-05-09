@@ -203,6 +203,7 @@ func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte) error {
 			sdk.NewAttribute("chainReferenceID", router.GetChainReferenceID()),
 		)
 	} else {
+		panic(err)
 		k.Logger(ctx).Error(
 			"couldn't execute a job",
 			"job_id", jobID,
