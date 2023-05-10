@@ -207,6 +207,7 @@ func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte) error {
 			"couldn't execute a job",
 			"job_id", jobID,
 			"err", err,
+			"payload", payload,
 			"chain_type", router.GetChainType(),
 			"chain_reference_id", router.GetChainReferenceID(),
 		)
