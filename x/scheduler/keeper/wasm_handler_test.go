@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"testing"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
@@ -15,6 +14,7 @@ import (
 	xchainmocks "github.com/palomachain/paloma/internal/x-chain/mocks"
 	"github.com/palomachain/paloma/x/scheduler/keeper"
 	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
