@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"encoding/json"
+	"testing"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -13,6 +14,7 @@ import (
 	xchainmocks "github.com/palomachain/paloma/internal/x-chain/mocks"
 	"github.com/palomachain/paloma/x/scheduler/keeper"
 	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -105,3 +107,30 @@ var _ = Describe("wasm message handler", func() {
 		})
 	})
 })
+
+func TestKeeper_UnmarshallJob(t *testing.T) {
+	tests := []struct {
+		name          string
+		input         []byte
+		expected      keeper.ExecuteJobWasmEvent
+		expectedError error
+	}{
+		{
+			name:  "Happy Path",
+			input: []byte("{\"job_id\":\"dca_test_job_2\",\"payload\":\"2WBzzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZmYQoclhTARc=\"}"),
+			expected: keeper.ExecuteJobWasmEvent{
+				JobID:   "dca_test_job_2",
+				Payload: []byte("{\"hexPayload\":\"d96073cf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000199984287258530117\"}"),
+			},
+		},
+	}
+	asserter := assert.New(t)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testKeeper := keeper.Keeper{}
+			actual, _ := testKeeper.UnmarshallJob(tt.input)
+			asserter.Equal(string(tt.expected.Payload), string(actual.Payload))
+		})
+	}
+}
