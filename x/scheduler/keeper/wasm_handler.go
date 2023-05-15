@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/VolumeFi/whoops"
@@ -27,10 +29,20 @@ func (e ExecuteJobWasmEvent) valid() error {
 	return nil
 }
 
+func (k Keeper) UnmarshallJob(msg []byte) (ExecuteJobWasmEvent, error) {
+	var executeMsg ExecuteJobWasmEvent
+	err := json.Unmarshal(msg, &executeMsg)
+
+	hexString := hex.EncodeToString(executeMsg.Payload)
+
+	executeMsg.Payload = []byte(fmt.Sprintf("{\"hexPayload\":\"%s\"}", hexString))
+
+	return executeMsg, err
+}
+
 func (k Keeper) ExecuteWasmJobEventListener() wasmutil.MessengerFnc {
 	return func(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, error) {
-		var executeMsg ExecuteJobWasmEvent
-		err := json.Unmarshal(msg.Custom, &executeMsg)
+		executeMsg, err := k.UnmarshallJob(msg.Custom)
 		if err != nil {
 			return nil, nil, err
 		}
