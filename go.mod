@@ -3,7 +3,7 @@ module github.com/palomachain/paloma
 go 1.19
 
 require (
-	cosmossdk.io/math v1.0.0
+	cosmossdk.io/math v1.0.1
 	github.com/CosmWasm/wasmd v0.40.0-rc.0
 	github.com/CosmWasm/wasmvm v1.2.3
 	github.com/VolumeFi/whoops v0.7.2
