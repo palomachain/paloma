@@ -1,6 +1,9 @@
 # Changelog
 
 ## [v1.0.0]
+* (b272a43) Fix decoding of wasm job payload on execution (#833)
+* (ca9aa9c) Tweak matching string because it's not regex (#830)
+* (2a1ad03) Allow releasing for tags with appended info (#829)
 * (185c069) Setting the Tx Encoded in the app  (#824)
 * (f0cd750) Revert "Bump github.com/cometbft/cometbft from 0.37.0 to 0.37.1  (#809)" (#819)
 * (14ce472) Upgrade the way of handling messages  (#818)
