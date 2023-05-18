@@ -1,7 +1,6 @@
 # Changelog
 
 ## [v1.0.0]
-* (22ced42) Fix GLIBC errors seen by some (#844)
 * (b272a43) Fix decoding of wasm job payload on execution (#833)
 * (ca9aa9c) Tweak matching string because it's not regex (#830)
 * (2a1ad03) Allow releasing for tags with appended info (#829)
