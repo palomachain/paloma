@@ -58,26 +58,33 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 
 ## Join an active Network
 
-To get the latest `palomad` binary:
+> #### Note:
+> Some have seen errors with GLIBC version differences with the downloaded binaries for v1.0.0.  This is caused by a difference in the libraries of the host that built the binary and the host running the binary.
+>
+> We did not find this bug in time to fix it in the v1.0.0 release.  Instead there is a workaround.  If you experience these errors, please pull down the code and build it, rather than downloading the prebuilt binary
 
-Testnet:
+### To get the latest prebuilt `palomad` binary:
+
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.7/paloma_Linux_x86_64.tar.gz  | \
-  sudo tar -C /usr/local/bin -xvzf - palomad
+wget -O - https://github.com/palomachain/paloma/releases/download/v1.0.0/paloma_Linux_x86_64.tar.gz  | \
+  sudo tar -C ~/ -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
+
 # Required until we figure out cgo
 sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/internal/api/libwasmvm.x86_64.so
 ```
 
-Mainnet:
+### To build palomad using latest release
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.6/paloma_Linux_x86_64.tar.gz  | \
-  sudo tar -C /usr/local/bin -xvzf - palomad
-sudo chmod +x /usr/local/bin/palomad
+git clone https://github.com/palomachain/paloma.git
+cd paloma
+git checkout v1.0.0
+make build
+sudo mv ./build/palomad /usr/local/bin/palomad
+
 # Required until we figure out cgo
 sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/internal/api/libwasmvm.x86_64.so
 ```
-
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
 
@@ -88,9 +95,7 @@ If you're upgrading to the most recent version, you will need to stop `palomad` 
 1. Stop your paloma version and get 0.11.7
 ```
 service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v0.11.7
-
-/paloma_Linux_x86_64.tar.gz | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v1.0.0/paloma_Linux_x86_64.tar.gz | \
   tar -C /usr/local/bin -xvzf - palomad
 ```
 
