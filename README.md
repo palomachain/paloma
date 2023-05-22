@@ -52,8 +52,8 @@ We have active, helpful communities on Twitter and Telegram.
 See [Release procedure](CONTRIBUTING.md#release-procedure) for more information about the release model.
 
 ## Active Networks
-* Testnet `paloma-testnet-15` (January 20, 2023) - current tag v0.11.7
-* Mainnet `messenger` (February 2, 2023) - current tag: v0.11.6
+* Testnet `paloma-testnet-15` (January 20, 2023) - current tag v1.0.0
+* Mainnet `messenger` (February 2, 2023) - current tag: v1.0.0
 
 
 ## Join an active Network
@@ -92,7 +92,7 @@ If you're upgrading to the most recent version, you will need to stop `palomad` 
 
 **ALERT: You will need to update your pigeon config.yaml file to reference this new chain-ID!**
 
-1. Stop your paloma version and get 0.11.7
+1. Stop your paloma version and get v1.0.0
 ```
 service palomad stop
 wget -O - https://github.com/palomachain/paloma/releases/download/v1.0.0/paloma_Linux_x86_64.tar.gz | \
