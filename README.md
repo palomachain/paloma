@@ -76,6 +76,8 @@ systemctl stop palomad
 wget https://github.com/CosmWasm/wasmvm/releases/download/v1.2.3/libwasmvm.x86_64.so
 sudo mv libwasmvm.x86_64.so /usr/lib/
 
+rm -r ~/.paloma/data/wasm/cache
+
 systemctl start palomad
 ```
 
@@ -92,6 +94,8 @@ systemctl stop palomad
 
 wget https://github.com/CosmWasm/wasmvm/releases/download/v1.2.3/libwasmvm.x86_64.so
 sudo mv libwasmvm.x86_64.so /usr/lib/
+
+rm -r ~/.paloma/data/wasm/cache
 
 systemctl start palomad
 ```
