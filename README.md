@@ -71,7 +71,14 @@ wget -O - https://github.com/palomachain/paloma/releases/download/v1.0.0/paloma_
 sudo chmod +x /usr/local/bin/palomad
 
 # Required until we figure out cgo
-sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/internal/api/libwasmvm.x86_64.so
+systemctl stop palomad
+
+wget https://github.com/CosmWasm/wasmvm/releases/download/v1.2.3/libwasmvm.x86_64.so
+sudo mv libwasmvm.x86_64.so /usr/lib/
+
+rm -r ~/.paloma/data/wasm/cache
+
+systemctl start palomad
 ```
 
 ### To build palomad using latest release
@@ -83,46 +90,17 @@ make build
 sudo mv ./build/palomad /usr/local/bin/palomad
 
 # Required until we figure out cgo
-sudo wget -P /usr/lib https://github.com/CosmWasm/wasmvm/raw/main/internal/api/libwasmvm.x86_64.so
+systemctl stop palomad
+
+wget https://github.com/CosmWasm/wasmvm/releases/download/v1.2.3/libwasmvm.x86_64.so
+sudo mv libwasmvm.x86_64.so /usr/lib/
+
+rm -r ~/.paloma/data/wasm/cache
+
+systemctl start palomad
 ```
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
-
-### Steps for upgrading from a prior testnet to `paloma-testnet-15` (These need to be done in the order listed)
-
-**ALERT: You will need to update your pigeon config.yaml file to reference this new chain-ID!**
-
-1. Stop your paloma version and get v1.0.0
-```
-service palomad stop
-wget -O - https://github.com/palomachain/paloma/releases/download/v1.0.0/paloma_Linux_x86_64.tar.gz | \
-  tar -C /usr/local/bin -xvzf - palomad
-```
-
-2. [Setup your pigeon relayer by following the instructions](https://github.com/palomachain/pigeon#install) and then come back here.
-
-3. Copy the latest genesis file
-```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-15/genesis.json
-```
-
-4. Reset your local chain state:
-```bash
-palomad tendermint unsafe-reset-all --home $HOME/.paloma
-```
-
-5. Copy the latest addrbook
-```shell
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-15/addrbook.json
-```
-
-6. Start paloma.
-
-```
-service palomad start
-```
-
-7. If you are planning to be a **VALIDATOR with stake**, ensure that your pigeon relayer is up & running and that you have at least 0.05 ETH on eth mainnet target chain and 0.05 BNB on bnb mainnet target chain addresses is in your pigeon configuration file.
 
 ### Connecting to an existing network.
 
