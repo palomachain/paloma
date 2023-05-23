@@ -63,41 +63,35 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 >
 > We did not find this bug in time to fix it in the v1.0.0 release.  Instead there is a workaround.  If you experience these errors, please pull down the code and build it, rather than downloading the prebuilt binary
 
-### To get the latest prebuilt `palomad` binary:
 
-```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v1.0.0/paloma_Linux_x86_64.tar.gz  | \
-  sudo tar -C ~/ -xvzf - palomad
-sudo chmod +x /usr/local/bin/palomad
+### Install the correct version of libwasm
+The current required version of libwasm is `1.2.3`. If you're upgrading from a prior version it is recommended to remove the cache to avoid errors. If you're already have `palomad` running, you will need to stop it before doing these steps.
 
-# Required until we figure out cgo
-systemctl stop palomad
-
+```
 wget https://github.com/CosmWasm/wasmvm/releases/download/v1.2.3/libwasmvm.x86_64.so
 sudo mv libwasmvm.x86_64.so /usr/lib/
 
 rm -r ~/.paloma/data/wasm/cache
+```
 
-systemctl start palomad
+### To get the latest prebuilt `palomad` binary:
+
+```
+shell
+wget -O - https://github.com/palomachain/paloma/releases/download/v1.0.0/paloma_Linux_x86_64.tar.gz  | \
+  sudo tar -C ~/ -xvzf - palomad
+sudo chmod +x /usr/local/bin/palomad
 ```
 
 ### To build palomad using latest release
-```shell
+
+```
+shell
 git clone https://github.com/palomachain/paloma.git
 cd paloma
 git checkout v1.0.0
 make build
 sudo mv ./build/palomad /usr/local/bin/palomad
-
-# Required until we figure out cgo
-systemctl stop palomad
-
-wget https://github.com/CosmWasm/wasmvm/releases/download/v1.2.3/libwasmvm.x86_64.so
-sudo mv libwasmvm.x86_64.so /usr/lib/
-
-rm -r ~/.paloma/data/wasm/cache
-
-systemctl start palomad
 ```
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
