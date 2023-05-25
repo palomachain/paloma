@@ -10,7 +10,12 @@ import (
 func (k msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJob) (*types.MsgExecuteJobResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	err := k.Keeper.ScheduleNow(ctx, msg.GetJobID(), msg.GetPayload())
+	job, err := k.GetJob(ctx, msg.GetJobID())
+	if err != nil {
+		return nil, err
+	}
+
+	err = k.Keeper.ScheduleNow(ctx, msg.GetJobID(), msg.GetPayload(), []byte(job.Address.String()))
 	if err != nil {
 		return nil, err
 	}

@@ -18,6 +18,7 @@ message SubmitLogicCall {
   bytes abi = 2;
   bytes payload = 3;
   int64 deadline = 4;
+  bytes executorAddress = 5;
 }
 
 message UpdateValset {
