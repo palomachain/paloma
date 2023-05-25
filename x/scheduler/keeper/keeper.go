@@ -161,7 +161,7 @@ func (k Keeper) GetJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 	return job, nil
 }
 
-func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, executorAddress []byte) error {
+func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderPubKey []byte) error {
 	job, err := k.GetJob(ctx, jobID)
 	if err != nil {
 		k.Logger(ctx).Error("couldn't schedule a job", "job_id", jobID, "err", err)
@@ -194,7 +194,7 @@ func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, executorAd
 		payload = in
 	}
 
-	err = chain.ExecuteJob(ctx, job.GetDefinition(), payload, executorAddress, router.GetChainReferenceID())
+	err = chain.ExecuteJob(ctx, job.GetDefinition(), payload, senderPubKey, router.GetChainReferenceID())
 
 	if err == nil {
 		keeperutil.EmitEvent(k, ctx, "JobScheduler",

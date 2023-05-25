@@ -54,7 +54,7 @@ func (k Keeper) VerifyJob(ctx sdk.Context, definition, payload []byte, chainRefe
 }
 
 // ExecuteJob schedules the definition and payload for execution via consensus queue
-func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, executorAddress []byte, chainReferenceID xchain.ReferenceID) error {
+func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderPubKey []byte, chainReferenceID xchain.ReferenceID) error {
 	def, load, err := k.unmarshalJob(definition, payload, chainReferenceID)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, executor
 			Abi:                common.FromHex(def.GetABI()),
 			Payload:            common.FromHex(load.GetHexPayload()),
 			Deadline:           ctx.BlockTime().Add(10 * time.Minute).Unix(),
-			ExecutorAddress:    executorAddress,
+			SenderPubKey:       senderPubKey,
 		},
 	)
 }
