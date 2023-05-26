@@ -19,6 +19,7 @@ message SubmitLogicCall {
   bytes payload = 3;
   int64 deadline = 4;
   bytes senderPubKey = 5;
+  bytes contractAddress = 6;
 }
 
 message UpdateValset {

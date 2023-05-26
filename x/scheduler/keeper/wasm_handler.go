@@ -52,18 +52,7 @@ func (k Keeper) ExecuteWasmJobEventListener() wasmutil.MessengerFnc {
 			return nil, nil, whoops.Wrap(err, types.ErrWasmExecuteMessageNotValid)
 		}
 
-		var pubKeyBytes []byte
-
-		if executeMsg.Sender != "" {
-			senderAddr, err := sdk.AccAddressFromBech32(executeMsg.Sender)
-			if err != nil {
-				return nil, nil, err
-			}
-			pubKeyBytes = k.account.GetAccount(ctx, senderAddr).GetPubKey().Bytes()
-
-		}
-
-		err = k.ScheduleNow(ctx, executeMsg.JobID, executeMsg.Payload, pubKeyBytes)
+		err = k.ScheduleNow(ctx, executeMsg.JobID, executeMsg.Payload, nil, []byte(contractAddr.String()))
 		if err != nil {
 			return nil, nil, err
 		}
