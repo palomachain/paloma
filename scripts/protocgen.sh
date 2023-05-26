@@ -23,5 +23,3 @@ cd ..
 # move proto files to the right places
 cp -r ./github.com/palomachain/paloma/* ./
 rm -rf github.com
-
-go mod tidy
