@@ -13,7 +13,7 @@ func (k msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJob) (
 	// Find the public key of the sender
 	pubKeyBytes := k.account.GetAccount(ctx, msg.GetSigners()[0]).GetPubKey().Bytes()
 
-	err := k.Keeper.ScheduleNow(ctx, msg.GetJobID(), msg.GetPayload(), pubKeyBytes)
+	err := k.Keeper.ScheduleNow(ctx, msg.GetJobID(), msg.GetPayload(), pubKeyBytes, nil)
 	if err != nil {
 		return nil, err
 	}
