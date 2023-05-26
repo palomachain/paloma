@@ -13,9 +13,9 @@ import (
 )
 
 type ExecuteJobWasmEvent struct {
-	JobID string `json:"job_id"`
-
+	JobID   string `json:"job_id"`
 	Payload []byte `json:"payload"`
+	Sender  string `json:"sender"`
 }
 
 func (e ExecuteJobWasmEvent) valid() error {
@@ -52,7 +52,18 @@ func (k Keeper) ExecuteWasmJobEventListener() wasmutil.MessengerFnc {
 			return nil, nil, whoops.Wrap(err, types.ErrWasmExecuteMessageNotValid)
 		}
 
-		err = k.ScheduleNow(ctx, executeMsg.JobID, executeMsg.Payload)
+		var pubKeyBytes []byte
+
+		if executeMsg.Sender != "" {
+			senderAddr, err := sdk.AccAddressFromBech32(executeMsg.Sender)
+			if err != nil {
+				return nil, nil, err
+			}
+			pubKeyBytes = k.account.GetAccount(ctx, senderAddr).GetPubKey().Bytes()
+
+		}
+
+		err = k.ScheduleNow(ctx, executeMsg.JobID, executeMsg.Payload, pubKeyBytes)
 		if err != nil {
 			return nil, nil, err
 		}

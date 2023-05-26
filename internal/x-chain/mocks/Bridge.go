@@ -13,7 +13,7 @@ type Bridge struct {
 }
 
 // ExecuteJob provides a mock function with given fields: ctx, definition, payload, refID
-func (_m *Bridge) ExecuteJob(ctx types.Context, definition []byte, payload []byte, refID string) error {
+func (_m *Bridge) ExecuteJob(ctx types.Context, definition []byte, payload []byte, senderPubKey []byte, refID string) error {
 	ret := _m.Called(ctx, definition, payload, refID)
 
 	var r0 error
