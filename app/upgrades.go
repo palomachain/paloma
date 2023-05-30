@@ -187,7 +187,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		panic(err)
 	}
 
-	if upgradeInfo.Name == semverVersion && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	if upgradeInfo.Name == "v1.0.0" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Renamed: []storetypes.StoreRename{ // x/consensus module renamed to palomaconsensus
 				{
