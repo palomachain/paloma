@@ -357,6 +357,16 @@ func (k Keeper) setSnapshotAsCurrent(ctx sdk.Context, snapshot *types.Snapshot) 
 	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(newID), snapshot)
 }
 
+func (k Keeper) SetSnapshotOnChain(ctx sdk.Context, snapshotID uint64, chainReferenceID string) error {
+	snapStore := k.snapshotStore(ctx)
+	snapshot, err := k.FindSnapshotByID(ctx, snapshotID)
+	if err != nil {
+		return err
+	}
+	snapshot.Chains = append(snapshot.Chains, chainReferenceID)
+	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(snapshot.Id), snapshot)
+}
+
 // GetCurrentSnapshot returns the currently active snapshot.
 func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	snapStore := k.snapshotStore(ctx)
