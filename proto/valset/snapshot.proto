@@ -50,7 +50,7 @@ message Snapshot {
     (gogoproto.stdtime) = true
   ];
 
-  
+  repeated string chains = 6;
 }
 
 message ExternalChainInfo {
