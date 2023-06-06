@@ -390,7 +390,7 @@ func (k Keeper) GetLatestSnapshotOnChain(ctx sdk.Context, chainReferenceID strin
 		}
 	}
 
-	k.Logger(ctx).Error("Unable to get latest snapshot", "err", keeperutil.ErrNotFound)
+	k.Logger(ctx).Error("unable to get latest snapshot", "err", keeperutil.ErrNotFound)
 	return nil, keeperutil.ErrNotFound
 }
 

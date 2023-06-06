@@ -25,7 +25,11 @@ func (k msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJob) (
 	// Hook to trigger a valset update attempt
 	err = k.Keeper.EvmKeeper.OnJobExecution(ctx, job)
 	if err != nil {
-		return nil, err
+		// If we have an error here, don't exit.  Go ahead and schedule the job
+		k.Logger(ctx).Error("Error in EvmKeeper OnJobExecution hook",
+			"err", err,
+			"job_id", msg.GetJobID(),
+		)
 	}
 
 	err = k.Keeper.ScheduleNow(ctx, msg.GetJobID(), msg.GetPayload(), pubKeyBytes, nil)
