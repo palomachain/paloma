@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
@@ -17,21 +18,28 @@ import (
 	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
-type (
-	Keeper struct {
-		cdc        codec.BinaryCodec
-		storeKey   storetypes.StoreKey
-		memKey     storetypes.StoreKey
-		paramstore paramtypes.Subspace
+type SchedulerKeeper interface {
+	AddNewJob(ctx sdk.Context, job *types.Job) (sdk.AccAddress, error)
+	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI
+	GetJob(ctx sdk.Context, jobID string) (*types.Job, error)
+	Logger(ctx sdk.Context) log.Logger
+	PreJobExecution(ctx sdk.Context, job *types.Job) error
+	ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderPubKey []byte, contractAddress []byte) error
+}
 
-		account   types.AccountKeeper
-		EvmKeeper types.EvmKeeper
+type Keeper struct {
+	cdc        codec.BinaryCodec
+	storeKey   storetypes.StoreKey
+	memKey     storetypes.StoreKey
+	paramstore paramtypes.Subspace
 
-		ider keeperutil.IDGenerator
+	account   types.AccountKeeper
+	EvmKeeper types.EvmKeeper
 
-		Chains map[xchain.Type]xchain.Bridge
-	}
-)
+	ider keeperutil.IDGenerator
+
+	Chains map[xchain.Type]xchain.Bridge
+}
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
@@ -66,12 +74,21 @@ func NewKeeper(
 	return k
 }
 
+func (k Keeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI {
+	return k.account.GetAccount(ctx, addr)
+
+}
+
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 func (k Keeper) ModuleName() string {
 	return types.ModuleName
+}
+
+func (k Keeper) PreJobExecution(ctx sdk.Context, job *types.Job) error {
+	return k.EvmKeeper.PreJobExecution(ctx, job)
 }
 
 // store returns default store for this keeper!

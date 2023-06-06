@@ -668,7 +668,7 @@ func (k Keeper) GetLastSmartContract(ctx sdk.Context) (*types.SmartContract, err
 	return keeperutil.Load[*types.SmartContract](k.smartContractsStore(ctx), k.cdc, id)
 }
 
-func (k Keeper) OnJobExecution(ctx sdk.Context, job *schedulertypes.Job) error {
+func (k Keeper) PreJobExecution(ctx sdk.Context, job *schedulertypes.Job) error {
 	router := job.GetRouting()
 	chainReferenceID := router.GetChainReferenceID()
 	chain, err := k.GetChainInfo(ctx, chainReferenceID)

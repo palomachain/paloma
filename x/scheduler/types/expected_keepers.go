@@ -21,5 +21,5 @@ type BankKeeper interface {
 
 // EvmKeeper defines the expected interface for interacting with teh evm module
 type EvmKeeper interface {
-	OnJobExecution(ctx sdk.Context, job *Job) error
+	PreJobExecution(ctx sdk.Context, job *Job) error
 }
