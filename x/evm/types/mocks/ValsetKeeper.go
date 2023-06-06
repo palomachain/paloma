@@ -69,6 +69,32 @@ func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snap
 	return r0, r1
 }
 
+// GetLatestSnapshotOnChain provides a mock function with given fields: ctx, chainReferenceID
+func (_m *ValsetKeeper) GetLatestSnapshotOnChain(ctx types.Context, chainReferenceID string) (*valsettypes.Snapshot, error) {
+	ret := _m.Called(ctx, chainReferenceID)
+
+	var r0 *valsettypes.Snapshot
+	var r1 error
+	if rf, ok := ret.Get(0).(func(types.Context, string) (*valsettypes.Snapshot, error)); ok {
+		return rf(ctx, chainReferenceID)
+	}
+	if rf, ok := ret.Get(0).(func(types.Context, string) *valsettypes.Snapshot); ok {
+		r0 = rf(ctx, chainReferenceID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*valsettypes.Snapshot)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(types.Context, string) error); ok {
+		r1 = rf(ctx, chainReferenceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // IsJailed provides a mock function with given fields: ctx, val
 func (_m *ValsetKeeper) IsJailed(ctx types.Context, val types.ValAddress) bool {
 	ret := _m.Called(ctx, val)

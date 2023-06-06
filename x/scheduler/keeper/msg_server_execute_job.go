@@ -13,7 +13,22 @@ func (k msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJob) (
 	// Find the public key of the sender
 	pubKeyBytes := k.account.GetAccount(ctx, msg.GetSigners()[0]).GetPubKey().Bytes()
 
-	err := k.Keeper.ScheduleNow(ctx, msg.GetJobID(), msg.GetPayload(), pubKeyBytes, nil)
+	job, err := k.GetJob(ctx, msg.GetJobID())
+	if err != nil {
+		k.Logger(ctx).Error("couldn't get job's id",
+			"err", err,
+			"job_id", msg.GetJobID(),
+		)
+		return &types.MsgExecuteJobResponse{}, err
+	}
+
+	// Hook to trigger a valset update attempt
+	err = k.Keeper.EvmKeeper.OnJobExecution(ctx, job)
+	if err != nil {
+		return nil, err
+	}
+
+	err = k.Keeper.ScheduleNow(ctx, msg.GetJobID(), msg.GetPayload(), pubKeyBytes, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -24,7 +24,8 @@ type (
 		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
 
-		account types.AccountKeeper
+		account   types.AccountKeeper
+		EvmKeeper types.EvmKeeper
 
 		ider keeperutil.IDGenerator
 
@@ -38,6 +39,7 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	account types.AccountKeeper,
+	evmKeeper types.EvmKeeper,
 	chains []xchain.Bridge,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -55,6 +57,7 @@ func NewKeeper(
 		memKey:     memKey,
 		paramstore: ps,
 		account:    account,
+		EvmKeeper:  evmKeeper,
 		Chains:     cm,
 	}
 
