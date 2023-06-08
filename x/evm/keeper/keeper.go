@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/VolumeFi/whoops"
 	"github.com/cometbft/cometbft/libs/log"
@@ -23,6 +24,7 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
+	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -97,6 +99,7 @@ type Keeper struct {
 	Scheduler       types.JobScheduler
 	Valset          types.ValsetKeeper
 	ider            keeperutil.IDGenerator
+	msgSender       EvmMsgSender
 }
 
 func NewKeeper(
@@ -104,6 +107,8 @@ func NewKeeper(
 	storeKey,
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
+	consensusKeeper types.ConsensusKeeper,
+	valsetKeeper types.ValsetKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -111,10 +116,16 @@ func NewKeeper(
 	}
 
 	k := &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
+		cdc:             cdc,
+		storeKey:        storeKey,
+		memKey:          memKey,
+		paramstore:      ps,
+		ConsensusKeeper: consensusKeeper,
+		Valset:          valsetKeeper,
+		msgSender: msgSender{
+			ConsensusKeeper: consensusKeeper,
+			cdc:             cdc,
+		},
 	}
 
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.smartContractsStore), []byte("id-key"))
@@ -228,8 +239,10 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	}
 
 	vals, err := contractABI.Constructor.Inputs.Unpack(input)
-	fmt.Printf("[deploySmartContractToChain] UNPACK ERR: %v\n", err)
-	fmt.Printf("[deploySmartContractToChain] UNPACK ARGS: %+v\n", vals)
+	logger.Debug("[deploySmartContractToChain] UNPACK",
+		"ERR", err,
+		"ARGS", vals,
+	)
 	if err != nil {
 		return err
 	}
@@ -666,6 +679,82 @@ func (k Keeper) GetLastSmartContract(ctx sdk.Context) (*types.SmartContract, err
 	return keeperutil.Load[*types.SmartContract](k.smartContractsStore(ctx), k.cdc, id)
 }
 
+func (k Keeper) PreJobExecution(ctx sdk.Context, job *schedulertypes.Job) error {
+	router := job.GetRouting()
+	chainReferenceID := router.GetChainReferenceID()
+	chain, err := k.GetChainInfo(ctx, chainReferenceID)
+	if err != nil {
+		k.Logger(ctx).Error("couldn't get chain info",
+			"chain-reference-id", chainReferenceID,
+			"err", err,
+		)
+		return err
+	}
+	// Publish this valset if it differs from the current published valset for this chain
+	return k.justInTimeValsetUpdate(ctx, chain)
+}
+
+func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) error {
+	latestSnapshot, err := k.Valset.GetCurrentSnapshot(ctx)
+	if err != nil {
+		k.Logger(ctx).Error("couldn't get latest snapshot", "err", err)
+		return err
+	}
+	if latestSnapshot == nil {
+		// For some reason, GetCurrentShapshot is hiding the notFound errors and just returning nil, nil, so we need this
+		err := errors.New("nil, nil returned from Valset.GetCurrentSnapshot")
+		k.Logger(ctx).Error("unable to find current snapshot", "err", err)
+		return err
+	}
+
+	chainReferenceID := chain.GetChainReferenceID()
+
+	latestPublishedSnapshot, err := k.Valset.GetLatestSnapshotOnChain(ctx, chainReferenceID)
+	if err != nil {
+		k.Logger(ctx).Info("couldn't get latest published snapshot for chain.",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"err", err,
+		)
+		return err
+	}
+
+	latestValset := transformSnapshotToCompass(latestSnapshot, chainReferenceID, k.Logger(ctx))
+
+	if latestPublishedSnapshot.GetId() == latestSnapshot.GetId() {
+		k.Logger(ctx).Info("ignoring valset for chain because it is already most recent",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"valset-id", latestValset.GetValsetID(),
+		)
+		return nil
+	}
+
+	if !chain.IsActive() {
+		k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"valset-id", latestValset.GetValsetID(),
+		)
+		return nil
+	}
+
+	if !isEnoughToReachConsensus(latestValset) {
+		k.Logger(ctx).Info("ignoring valset for chain as there aren't enough validators to form a consensus for this chain",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"valset-id", latestValset.GetValsetID(),
+		)
+		return nil
+	}
+
+	err = k.msgSender.SendValsetMsgForChain(ctx, chain, latestValset)
+	if err != nil {
+		k.Logger(ctx).Error("unable to send valset message for chain",
+			"chain", chain.GetChainReferenceID(),
+			"err", err,
+		)
+	}
+
+	return err
+}
+
 func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
 	chainInfos, err := k.GetAllChainInfos(ctx)
 	if err != nil {
@@ -674,6 +763,25 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 	logger := k.Logger(ctx)
 	for _, chain := range chainInfos {
 		valset := transformSnapshotToCompass(snapshot, chain.GetChainReferenceID(), logger)
+
+		latestActiveValset, _ := k.Valset.GetLatestSnapshotOnChain(ctx, chain.GetChainReferenceID())
+		if latestActiveValset != nil {
+			latestActiveValsetAge := ctx.BlockTime().Sub(latestActiveValset.CreatedAt)
+
+			// If it's been less than 1 week since publishing a valset, don't publish
+			keepWarmDays := 7
+			if latestActiveValsetAge < (time.Duration(keepWarmDays) * 24 * time.Hour) {
+				k.Logger(ctx).Info(fmt.Sprintf("ignoring valset for chain because chain has had a valset update in the past %d days", keepWarmDays),
+					"chain-reference-id", chain.GetChainReferenceID(),
+					"current-block-height", ctx.BlockHeight(),
+					"current-published-valset-id", latestActiveValset.GetId(),
+					"current-published-valset-created-time", latestActiveValset.CreatedAt,
+					"valset-id", valset.GetValsetID(),
+				)
+				continue
+			}
+		}
+
 		if !chain.IsActive() {
 			k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
 				"chain-reference-id", chain.GetChainReferenceID(),
@@ -690,60 +798,86 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 			continue
 		}
 
-		k.Logger(ctx).Info("snapshot was built and a new update valset message is being sent over",
-			"chain-reference-id", chain.GetChainReferenceID(),
-			"valset-id", valset.GetValsetID(),
-		)
-
-		// clear all previous instances of the update valset from the queue
-		k.Logger(ctx).Info("clearing previous instances of the update valset from the queue")
-		queueName := consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chain.GetChainReferenceID()))
-		messages, err := k.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 999)
+		err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset)
 		if err != nil {
-			k.Logger(ctx).Error("unable to get messages from queue", "err", err)
-			continue
-		}
-
-		for _, msg := range messages {
-			cmsg, err := msg.ConsensusMsg(k.cdc)
-			if err != nil {
-				k.Logger(ctx).Error("unable to unpack message", "err", err)
-				continue
-			}
-
-			mmsg := cmsg.(*types.Message)
-			act := mmsg.GetAction()
-			if mmsg.GetTurnstoneID() != string(chain.GetSmartContractUniqueID()) {
-				continue
-			}
-			if _, ok := act.(*types.Message_UpdateValset); ok {
-				err := k.ConsensusKeeper.DeleteJob(ctx, queueName, msg.GetId())
-				if err != nil {
-					k.Logger(ctx).Error("unable to delete message", "err", err)
-					continue
-				}
-			}
-		}
-
-		// put update valset message into the queue
-		if err := k.ConsensusKeeper.PutMessageInQueue(
-			ctx,
-			consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chain.GetChainReferenceID())),
-			&types.Message{
-				TurnstoneID:      string(chain.GetSmartContractUniqueID()),
-				ChainReferenceID: chain.GetChainReferenceID(),
-				Action: &types.Message_UpdateValset{
-					UpdateValset: &types.UpdateValset{
-						Valset: &valset,
-					},
-				},
-			}, nil,
-		); err != nil {
-			k.Logger(ctx).Error("unable to put message in the queue", "err", err)
+			k.Logger(ctx).Error("unable to send valset message for chain",
+				"chain", chain.GetChainReferenceID(),
+				"err", err,
+			)
 		}
 	}
 
 	k.TryDeployingLastSmartContractToAllChains(ctx)
+}
+
+type EvmMsgSender interface {
+	SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInfo, valset types.Valset) error
+}
+
+type msgSender struct {
+	ConsensusKeeper types.ConsensusKeeper
+	cdc             codec.BinaryCodec
+}
+
+func (m msgSender) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInfo, valset types.Valset) error {
+	m.Logger(ctx).Info("snapshot was built and a new update valset message is being sent over",
+		"chainInfo-reference-id", chainInfo.GetChainReferenceID(),
+		"valset-id", valset.GetValsetID(),
+	)
+
+	// clear all other instances of the update valset from the queue
+	m.Logger(ctx).Info("clearing previous instances of the update valset from the queue")
+	queueName := consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID()))
+	messages, err := m.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 999)
+	if err != nil {
+		m.Logger(ctx).Error("unable to get messages from queue", "err", err)
+		return err
+	}
+
+	for _, msg := range messages {
+		cmsg, err := msg.ConsensusMsg(m.cdc)
+		if err != nil {
+			m.Logger(ctx).Error("unable to unpack message", "err", err)
+			return err
+		}
+
+		mmsg := cmsg.(*types.Message)
+		act := mmsg.GetAction()
+		if mmsg.GetTurnstoneID() != string(chainInfo.GetSmartContractUniqueID()) {
+			return nil
+		}
+		if _, ok := act.(*types.Message_UpdateValset); ok {
+			err := m.ConsensusKeeper.DeleteJob(ctx, queueName, msg.GetId())
+			if err != nil {
+				m.Logger(ctx).Error("unable to delete message", "err", err)
+				return err
+			}
+		}
+	}
+
+	// put update valset message into the queue
+	err = m.ConsensusKeeper.PutMessageInQueue(
+		ctx,
+		consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID())),
+		&types.Message{
+			TurnstoneID:      string(chainInfo.GetSmartContractUniqueID()),
+			ChainReferenceID: chainInfo.GetChainReferenceID(),
+			Action: &types.Message_UpdateValset{
+				UpdateValset: &types.UpdateValset{
+					Valset: &valset,
+				},
+			},
+		}, nil,
+	)
+	if err != nil {
+		m.Logger(ctx).Error("unable to put message in the queue", "err", err)
+		return err
+	}
+	return nil
 }
 
 func (k Keeper) CheckExternalBalancesForChain(ctx sdk.Context, chainReferenceID string) error {

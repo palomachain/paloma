@@ -533,9 +533,9 @@ func New(
 		keys[evmmoduletypes.StoreKey],
 		memKeys[evmmoduletypes.MemStoreKey],
 		app.GetSubspace(evmmoduletypes.ModuleName),
+		app.ConsensusKeeper,
+		app.ValsetKeeper,
 	)
-	app.EvmKeeper.Valset = app.ValsetKeeper
-	app.EvmKeeper.ConsensusKeeper = app.ConsensusKeeper
 	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 		app.EvmKeeper,
 	}
@@ -570,6 +570,7 @@ func New(
 		memKeys[schedulermoduletypes.MemStoreKey],
 		app.GetSubspace(schedulermoduletypes.ModuleName),
 		app.AccountKeeper,
+		app.EvmKeeper,
 		[]xchain.Bridge{
 			app.EvmKeeper,
 		},

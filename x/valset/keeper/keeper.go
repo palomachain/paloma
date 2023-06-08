@@ -357,6 +357,43 @@ func (k Keeper) setSnapshotAsCurrent(ctx sdk.Context, snapshot *types.Snapshot) 
 	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(newID), snapshot)
 }
 
+func (k Keeper) SetSnapshotOnChain(ctx sdk.Context, snapshotID uint64, chainReferenceID string) error {
+	snapStore := k.snapshotStore(ctx)
+	snapshot, err := k.FindSnapshotByID(ctx, snapshotID)
+	if err != nil {
+		return err
+	}
+	snapshot.Chains = append(snapshot.Chains, chainReferenceID)
+	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(snapshot.Id), snapshot)
+}
+
+func (k Keeper) GetLatestSnapshotOnChain(ctx sdk.Context, chainReferenceID string) (*types.Snapshot, error) {
+	snapshotId := k.ider.GetLastID(ctx, snapshotIDKey)
+
+	// Walk backwards from the most recent snapshot until we find one for this chainReferenceID
+	for {
+		snapshot, err := k.FindSnapshotByID(ctx, snapshotId)
+		if err != nil {
+			return nil, err
+		}
+
+		// See if this snapshot is active on this chain
+		for _, chain := range snapshot.Chains {
+			if chain == chainReferenceID {
+				return snapshot, nil
+			}
+		}
+
+		snapshotId = snapshot.GetId() - 1
+		if snapshotId == 0 {
+			break
+		}
+	}
+
+	k.Logger(ctx).Error("unable to get latest snapshot", "err", keeperutil.ErrNotFound)
+	return nil, keeperutil.ErrNotFound
+}
+
 // GetCurrentSnapshot returns the currently active snapshot.
 func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	snapStore := k.snapshotStore(ctx)
@@ -370,7 +407,6 @@ func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 }
 
 func (k Keeper) FindSnapshotByID(ctx sdk.Context, id uint64) (*types.Snapshot, error) {
-	k.Logger(ctx).Info("find snapshot by id", "id", id)
 	snapStore := k.snapshotStore(ctx)
 	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(id))
 }
@@ -507,4 +543,10 @@ func (k Keeper) _externalChainInfoStore(ctx sdk.Context) sdk.KVStore {
 func (k Keeper) snapshotStore(ctx sdk.Context) sdk.KVStore {
 	k.Logger(ctx).Debug("snapshot store", "store-key-name", k.storeKey.Name(), "store-key-string", k.storeKey.String())
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("snapshot"))
+}
+
+// SaveModifiedSnapshot is needed for integration tests
+func (k Keeper) SaveModifiedSnapshot(ctx sdk.Context, snapshot *types.Snapshot) error {
+	snapStore := k.snapshotStore(ctx)
+	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(snapshot.GetId()), snapshot)
 }

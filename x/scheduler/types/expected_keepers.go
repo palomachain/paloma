@@ -18,3 +18,8 @@ type BankKeeper interface {
 	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	// Methods imported from bank should be defined here
 }
+
+// EvmKeeper defines the expected interface for interacting with the evm module
+type EvmKeeper interface {
+	PreJobExecution(ctx sdk.Context, job *Job) error
+}

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"io/ioutil"
 	"math/big"
 	"sync"
@@ -264,14 +265,32 @@ var _ = g.Describe("attest router", func() {
 				g.When("message is UpdateValset", func() {
 					g.BeforeEach(func() {
 						consensusMsg.Action = &types.Message_UpdateValset{
-							UpdateValset: &types.UpdateValset{},
+							UpdateValset: &types.UpdateValset{
+								Valset: &types.Valset{
+									ValsetID: 1,
+								},
+							},
 						}
 					})
 
 					g.BeforeEach(func() {
 						q.On("GetAll", mock.Anything).Return(nil, nil)
 					})
-					successfulProcess()
+
+					g.When("successfully sets valset for chain", func() {
+						g.BeforeEach(func() {
+							v.On("SetSnapshotOnChain", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+						})
+						successfulProcess()
+					})
+
+					g.When("unsuccessfully sets valset for chain", func() {
+						// We still process successfully even if we get an error here
+						g.BeforeEach(func() {
+							v.On("SetSnapshotOnChain", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("example error"))
+						})
+						successfulProcess()
+					})
 				})
 
 				g.When("message is UploadSmartContract", func() {

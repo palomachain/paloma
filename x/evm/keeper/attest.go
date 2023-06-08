@@ -191,6 +191,17 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
 		}
 
+		// Set the snapshot as active for this chain
+		err := k.Valset.SetSnapshotOnChain(ctx, origMsg.UpdateValset.Valset.ValsetID, chainReferenceID)
+		if err != nil {
+			// We don't want to break here, so we'll just log the error and continue
+			k.Logger(ctx).Error("Failed to set snapshot as active for chain",
+				"err", err,
+				"valsetID", origMsg.UpdateValset.Valset.ValsetID,
+				"chainReferenceID", chainReferenceID,
+			)
+		}
+
 		// now remove all older update valsets given that new one was uploaded.
 		// if there are any, that is.
 		keeperutil.EmitEvent(k, ctx, types.AttestingUpdateValsetRemoveOldMessagesKey)
