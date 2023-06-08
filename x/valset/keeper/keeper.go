@@ -544,3 +544,9 @@ func (k Keeper) snapshotStore(ctx sdk.Context) sdk.KVStore {
 	k.Logger(ctx).Debug("snapshot store", "store-key-name", k.storeKey.Name(), "store-key-string", k.storeKey.String())
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("snapshot"))
 }
+
+// SaveModifiedSnapshot is needed for integration tests
+func (k Keeper) SaveModifiedSnapshot(ctx sdk.Context, snapshot *types.Snapshot) error {
+	snapStore := k.snapshotStore(ctx)
+	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(snapshot.GetId()), snapshot)
+}

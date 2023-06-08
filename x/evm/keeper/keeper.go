@@ -99,6 +99,7 @@ type Keeper struct {
 	Scheduler       types.JobScheduler
 	Valset          types.ValsetKeeper
 	ider            keeperutil.IDGenerator
+	msgSender       EvmMsgSender
 }
 
 func NewKeeper(
@@ -106,6 +107,8 @@ func NewKeeper(
 	storeKey,
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
+	consensusKeeper types.ConsensusKeeper,
+	valsetKeeper types.ValsetKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -113,10 +116,16 @@ func NewKeeper(
 	}
 
 	k := &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
+		cdc:             cdc,
+		storeKey:        storeKey,
+		memKey:          memKey,
+		paramstore:      ps,
+		ConsensusKeeper: consensusKeeper,
+		Valset:          valsetKeeper,
+		msgSender: msgSender{
+			ConsensusKeeper: consensusKeeper,
+			cdc:             cdc,
+		},
 	}
 
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.smartContractsStore), []byte("id-key"))
@@ -230,8 +239,10 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	}
 
 	vals, err := contractABI.Constructor.Inputs.Unpack(input)
-	fmt.Printf("[deploySmartContractToChain] UNPACK ERR: %v\n", err)
-	fmt.Printf("[deploySmartContractToChain] UNPACK ARGS: %+v\n", vals)
+	logger.Debug("[deploySmartContractToChain] UNPACK",
+		"ERR", err,
+		"ARGS", vals,
+	)
 	if err != nil {
 		return err
 	}
@@ -689,6 +700,12 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 		k.Logger(ctx).Error("couldn't get latest snapshot", "err", err)
 		return err
 	}
+	if latestSnapshot == nil {
+		// For some reason, GetCurrentShapshot is hiding the notFound errors and just returning nil, nil, so we need this
+		err := errors.New("nil, nil returned from Valset.GetCurrentSnapshot")
+		k.Logger(ctx).Error("unable to find curent snapshot", "err", err)
+		return err
+	}
 
 	chainReferenceID := chain.GetChainReferenceID()
 
@@ -727,7 +744,7 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 		return nil
 	}
 
-	err = k.sendValsetMsgForChain(ctx, chain, latestValset)
+	err = k.msgSender.SendValsetMsgForChain(ctx, chain, latestValset)
 	if err != nil {
 		k.Logger(ctx).Error("unable to send valset message for chain",
 			"chain", chain.GetChainReferenceID(),
@@ -781,7 +798,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 			continue
 		}
 
-		err = k.sendValsetMsgForChain(ctx, chain, valset)
+		err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset)
 		if err != nil {
 			k.Logger(ctx).Error("unable to send valset message for chain",
 				"chain", chain.GetChainReferenceID(),
@@ -793,25 +810,38 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 	k.TryDeployingLastSmartContractToAllChains(ctx)
 }
 
-func (k Keeper) sendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInfo, valset types.Valset) error {
-	k.Logger(ctx).Info("snapshot was built and a new update valset message is being sent over",
+type EvmMsgSender interface {
+	SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInfo, valset types.Valset) error
+}
+
+type msgSender struct {
+	ConsensusKeeper types.ConsensusKeeper
+	cdc             codec.BinaryCodec
+}
+
+func (m msgSender) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInfo, valset types.Valset) error {
+	m.Logger(ctx).Info("snapshot was built and a new update valset message is being sent over",
 		"chainInfo-reference-id", chainInfo.GetChainReferenceID(),
 		"valset-id", valset.GetValsetID(),
 	)
 
 	// clear all other instances of the update valset from the queue
-	k.Logger(ctx).Info("clearing previous instances of the update valset from the queue")
+	m.Logger(ctx).Info("clearing previous instances of the update valset from the queue")
 	queueName := consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID()))
-	messages, err := k.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 999)
+	messages, err := m.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 999)
 	if err != nil {
-		k.Logger(ctx).Error("unable to get messages from queue", "err", err)
+		m.Logger(ctx).Error("unable to get messages from queue", "err", err)
 		return err
 	}
 
 	for _, msg := range messages {
-		cmsg, err := msg.ConsensusMsg(k.cdc)
+		cmsg, err := msg.ConsensusMsg(m.cdc)
 		if err != nil {
-			k.Logger(ctx).Error("unable to unpack message", "err", err)
+			m.Logger(ctx).Error("unable to unpack message", "err", err)
 			return err
 		}
 
@@ -821,16 +851,16 @@ func (k Keeper) sendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInf
 			return nil
 		}
 		if _, ok := act.(*types.Message_UpdateValset); ok {
-			err := k.ConsensusKeeper.DeleteJob(ctx, queueName, msg.GetId())
+			err := m.ConsensusKeeper.DeleteJob(ctx, queueName, msg.GetId())
 			if err != nil {
-				k.Logger(ctx).Error("unable to delete message", "err", err)
+				m.Logger(ctx).Error("unable to delete message", "err", err)
 				return err
 			}
 		}
 	}
 
 	// put update valset message into the queue
-	err = k.ConsensusKeeper.PutMessageInQueue(
+	err = m.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID())),
 		&types.Message{
@@ -844,7 +874,7 @@ func (k Keeper) sendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInf
 		}, nil,
 	)
 	if err != nil {
-		k.Logger(ctx).Error("unable to put message in the queue", "err", err)
+		m.Logger(ctx).Error("unable to put message in the queue", "err", err)
 		return err
 	}
 	return nil
