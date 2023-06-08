@@ -8,10 +8,6 @@ import (
 	"strings"
 	"time"
 
-	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
-
-	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
-
 	"github.com/VolumeFi/whoops"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
