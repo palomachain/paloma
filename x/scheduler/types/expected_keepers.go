@@ -19,7 +19,7 @@ type BankKeeper interface {
 	// Methods imported from bank should be defined here
 }
 
-// EvmKeeper defines the expected interface for interacting with teh evm module
+// EvmKeeper defines the expected interface for interacting with the evm module
 type EvmKeeper interface {
 	PreJobExecution(ctx sdk.Context, job *Job) error
 }

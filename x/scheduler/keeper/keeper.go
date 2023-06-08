@@ -76,7 +76,6 @@ func NewKeeper(
 
 func (k Keeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI {
 	return k.account.GetAccount(ctx, addr)
-
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {

@@ -3,11 +3,14 @@ package keeper
 import (
 	"errors"
 	"fmt"
-	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 	"math/big"
 	"sort"
 	"strings"
 	"time"
+
+	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
+
+	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 
 	"github.com/VolumeFi/whoops"
 	"github.com/cometbft/cometbft/libs/log"
@@ -25,6 +28,7 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
+	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -703,7 +707,7 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 	if latestSnapshot == nil {
 		// For some reason, GetCurrentShapshot is hiding the notFound errors and just returning nil, nil, so we need this
 		err := errors.New("nil, nil returned from Valset.GetCurrentSnapshot")
-		k.Logger(ctx).Error("unable to find curent snapshot", "err", err)
+		k.Logger(ctx).Error("unable to find current snapshot", "err", err)
 		return err
 	}
 

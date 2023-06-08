@@ -2,17 +2,17 @@ package keeper
 
 import (
 	"errors"
+	"math/big"
+	"testing"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/evm/types/mocks"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
-	"github.com/stretchr/testify/require"
-	"math/big"
-
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
+	"github.com/stretchr/testify/require"
 )
 
 func buildKeeper(t *testing.T) (*Keeper, sdk.Context) {
@@ -309,7 +309,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 	asserter := assert.New(t)
 	for _, tt := range testcases {
 		t.Run(tt.name, func(t *testing.T) {
-			//ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+			// ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
 			k, ctx := buildKeeper(t)
 			tt.setupMocks(ctx, k)
 			job := &schedulertypes.Job{
@@ -327,5 +327,4 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 			asserter.Equal(tt.expectedError, actualErr)
 		})
 	}
-
 }

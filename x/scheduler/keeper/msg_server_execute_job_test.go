@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,7 +13,6 @@ import (
 	"github.com/palomachain/paloma/x/scheduler/types/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 func TestExecuteJob(t *testing.T) {
