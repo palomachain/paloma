@@ -122,8 +122,8 @@ wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomac
 
 Mainnet:
 ```shell
-wget -O ~/.paloma/config/genesis.json https://https://raw.githubusercontent.com/palomachain/mainnet/master/messenger/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://https://raw.githubusercontent.com/palomachain/mainnet/master/messenger/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/mainnet/master/messenger/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/mainnet/master/messenger/addrbook.json
 ```
 
 Next you can generate a new set of keys to the new machine, or reuse an existing key.
