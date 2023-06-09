@@ -4,9 +4,9 @@ package palomachain.paloma.evm;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "evm/params.proto";
-import "evm/turnstone.proto";
-import "evm/chain_info.proto";
+import "palomachain/paloma/evm/params.proto";
+import "palomachain/paloma/evm/turnstone.proto";
+import "palomachain/paloma/evm/chain_info.proto";
 
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 

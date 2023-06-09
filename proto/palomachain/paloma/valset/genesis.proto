@@ -2,7 +2,7 @@ syntax = "proto3";
 package palomachain.paloma.valset;
 
 import "gogoproto/gogo.proto";
-import "valset/params.proto";
+import "palomachain/paloma/valset/params.proto";
 
 option go_package = "github.com/palomachain/paloma/x/valset/types";
 
