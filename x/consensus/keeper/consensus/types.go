@@ -25,6 +25,8 @@ type Queuer interface {
 	AddEvidence(ctx sdk.Context, id uint64, evidence *types.Evidence) error
 	SetPublicAccessData(ctx sdk.Context, id uint64, data *types.PublicAccessData) error
 	GetPublicAccessData(ctx sdk.Context, id uint64) (*types.PublicAccessData, error)
+	SetErrorData(ctx sdk.Context, id uint64, data *types.ErrorData) error
+	GetErrorData(ctx sdk.Context, id uint64) (*types.ErrorData, error)
 	Remove(sdk.Context, uint64) error
 	GetAll(sdk.Context) ([]types.QueuedSignedMessageI, error)
 	GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error)

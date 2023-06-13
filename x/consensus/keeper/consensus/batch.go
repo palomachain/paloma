@@ -133,6 +133,14 @@ func (c BatchQueue) GetPublicAccessData(ctx sdk.Context, id uint64) (*types.Publ
 	return c.base.GetPublicAccessData(ctx, id)
 }
 
+func (c BatchQueue) SetErrorData(ctx sdk.Context, id uint64, data *types.ErrorData) error {
+	return c.base.SetErrorData(ctx, id, data)
+}
+
+func (c BatchQueue) GetErrorData(ctx sdk.Context, id uint64) (*types.ErrorData, error) {
+	return c.base.GetErrorData(ctx, id)
+}
+
 func (c BatchQueue) ChainInfo() (types.ChainType, string) {
 	return c.base.ChainInfo()
 }

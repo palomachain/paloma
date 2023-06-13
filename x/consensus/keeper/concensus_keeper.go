@@ -318,6 +318,43 @@ func (k Keeper) SetMessagePublicAccessData(
 	return err
 }
 
+func (k Keeper) SetMessageErrorData(
+	ctx sdk.Context,
+	valAddr sdk.ValAddress,
+	msg *types.MsgSetErrorData,
+) error {
+	err := whoops.Try(func() {
+		cq := whoops.Must(
+			k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
+		)
+
+		whoops.Assert(
+			cq.SetErrorData(
+				ctx,
+				msg.GetMessageID(),
+				&types.ErrorData{
+					ValAddress: valAddr,
+					Data:       msg.GetData(),
+				},
+			),
+		)
+		chainType, chainReferenceID := cq.ChainInfo()
+		k.Logger(ctx).Info("added error data",
+			"message-id", msg.GetMessageID(),
+			"queue-type-name", msg.GetQueueTypeName(),
+			"chain-type", chainType,
+			"chain-reference-id", chainReferenceID,
+		)
+	})
+	if err != nil {
+		k.Logger(ctx).Error("error while adding error data",
+			"err", err,
+		)
+	}
+
+	return err
+}
+
 func nonceFromID(id uint64) []byte {
 	return sdk.Uint64ToBigEndian(id)
 }
