@@ -27,6 +27,8 @@ type QueuedSignedMessageI interface {
 	GetEvidence() []*Evidence
 	SetPublicAccessData(*PublicAccessData)
 	GetPublicAccessData() *PublicAccessData
+	SetErrorData(*ErrorData)
+	GetErrorData() *ErrorData
 	GetBytesToSign() []byte
 	GetRequireSignatures() bool
 }
@@ -90,6 +92,10 @@ func (q *QueuedSignedMessage) AddEvidence(data Evidence) {
 
 func (q *QueuedSignedMessage) SetPublicAccessData(data *PublicAccessData) {
 	q.PublicAccessData = data
+}
+
+func (q *QueuedSignedMessage) SetErrorData(data *ErrorData) {
+	q.ErrorData = data
 }
 
 func (q *QueuedSignedMessage) Nonce() []byte {

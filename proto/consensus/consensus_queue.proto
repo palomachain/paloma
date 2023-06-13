@@ -21,6 +21,7 @@ message QueuedSignedMessage {
   repeated Evidence   evidence          = 7;
   PublicAccessData    publicAccessData  = 8;
   bool                requireSignatures = 9;
+  ErrorData           errorData         = 10;
 }
 
 message BatchOfConsensusMessages {
@@ -51,6 +52,12 @@ message Evidence {
 }
 
 message PublicAccessData {
+  bytes valAddress = 1
+      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
+  bytes data = 2;
+}
+
+message ErrorData {
   bytes valAddress = 1
       [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
   bytes data = 2;

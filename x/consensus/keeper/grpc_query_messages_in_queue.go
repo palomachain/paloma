@@ -53,6 +53,13 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 		if msg.GetPublicAccessData() != nil {
 			publicAccessData = msg.GetPublicAccessData().GetData()
 		}
+
+		var errorData []byte
+
+		if msg.GetErrorData() != nil {
+			errorData = msg.GetErrorData().GetData()
+		}
+
 		approvedMessage := &types.MessageWithSignatures{
 			Nonce:            msg.Nonce(),
 			Id:               msg.GetId(),
@@ -60,6 +67,7 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 			BytesToSign:      msg.GetBytesToSign(),
 			SignData:         []*types.ValidatorSignature{},
 			PublicAccessData: publicAccessData,
+			ErrorData:        errorData,
 		}
 		for _, signData := range msg.GetSignData() {
 			approvedMessage.SignData = append(approvedMessage.SignData, &types.ValidatorSignature{

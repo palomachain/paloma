@@ -13,6 +13,8 @@ service Msg {
   rpc AddEvidence(MsgAddEvidence) returns (MsgAddEvidenceResponse);
   rpc SetPublicAccessData(MsgSetPublicAccessData)
       returns (MsgSetPublicAccessDataResponse);
+  rpc SetErrorData(MsgSetErrorData)
+      returns (MsgSetErrorDataResponse);
 }
 
 message MsgAddMessagesSignatures {
@@ -54,3 +56,12 @@ message MsgSetPublicAccessData {
 }
 
 message MsgSetPublicAccessDataResponse {}
+
+message MsgSetErrorData {
+  string creator       = 1;
+  uint64 messageID     = 2;
+  string queueTypeName = 3;
+  bytes  data          = 4;
+}
+
+message MsgSetErrorDataResponse {}
