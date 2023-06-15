@@ -80,9 +80,9 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderPu
 		&types.SubmitLogicCall{
 			HexContractAddress: def.GetAddress(),
 			Abi:                common.FromHex(def.GetABI()),
-			Payload:            common.FromHex(load.GetHexPayload()),
+			Payload:            modifiedPayload,
 			Deadline:           ctx.BlockTime().Add(10 * time.Minute).Unix(),
-			SenderPubKey:       modifiedPayload,
+			SenderPubKey:       senderPubKey,
 			ContractAddress:    contractAddress,
 		},
 	)
