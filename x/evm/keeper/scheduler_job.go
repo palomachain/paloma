@@ -64,14 +64,15 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderPu
 		return err
 	}
 
-	modifiedPayload := common.FromHex(load.GetHexPayload())
-
+	var appendSenderBytes []byte
 	switch {
 	case senderPubKey != nil:
-		modifiedPayload = append(modifiedPayload, senderPubKey...)
+		appendSenderBytes = senderPubKey[1:]
 	case contractAddress != nil:
-		modifiedPayload = append(modifiedPayload, contractAddress...)
+		appendSenderBytes = contractAddress
 	}
+
+	modifiedPayload := append(common.FromHex(load.GetHexPayload()), appendSenderBytes...)
 
 	return k.AddSmartContractExecutionToConsensus(
 		ctx,
