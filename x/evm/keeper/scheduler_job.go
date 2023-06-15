@@ -63,6 +63,16 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderPu
 	if err != nil {
 		return err
 	}
+
+	modifiedPayload := common.FromHex(load.GetHexPayload())
+
+	switch {
+	case senderPubKey != nil:
+		modifiedPayload = append(modifiedPayload, senderPubKey...)
+	case contractAddress != nil:
+		modifiedPayload = append(modifiedPayload, contractAddress...)
+	}
+
 	return k.AddSmartContractExecutionToConsensus(
 		ctx,
 		chainReferenceID,
@@ -72,7 +82,7 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderPu
 			Abi:                common.FromHex(def.GetABI()),
 			Payload:            common.FromHex(load.GetHexPayload()),
 			Deadline:           ctx.BlockTime().Add(10 * time.Minute).Unix(),
-			SenderPubKey:       senderPubKey,
+			SenderPubKey:       modifiedPayload,
 			ContractAddress:    contractAddress,
 		},
 	)
