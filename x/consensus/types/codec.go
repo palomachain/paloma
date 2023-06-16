@@ -14,6 +14,7 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgDeleteJob{}, "consensus/DeleteJob", nil)
 	cdc.RegisterConcrete(&MsgAddEvidence{}, "consensus/AddEvidence", nil)
 	cdc.RegisterConcrete(&MsgSetPublicAccessData{}, "consensus/SetPublicAccessData", nil)
+	cdc.RegisterConcrete(&MsgSetErrorData{}, "consensus/SetErrorData", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

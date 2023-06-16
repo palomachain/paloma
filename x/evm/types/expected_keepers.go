@@ -43,5 +43,5 @@ type ValsetKeeper interface {
 }
 
 type JobScheduler interface {
-	ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderPubKey []byte, contractAddress []byte) error
+	ScheduleNow(ctx sdk.Context, jobID string, in []byte, SenderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error
 }

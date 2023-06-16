@@ -35,7 +35,7 @@ type CobraTXJobAdder interface {
 
 type Jobber interface {
 	VerifyJob(ctx sdk.Context, definition []byte, payload []byte, refID ReferenceID) (err error)
-	ExecuteJob(ctx sdk.Context, definition []byte, payload []byte, senderPubKey []byte, contractAddress []byte, refID ReferenceID) (err error)
+	ExecuteJob(ctx sdk.Context, definition []byte, payload []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress, refID ReferenceID) (err error)
 }
 
 //go:generate mockery --name=FundCollecter

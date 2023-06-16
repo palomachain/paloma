@@ -79,6 +79,7 @@ message MessageWithSignatures {
   repeated ValidatorSignature signData         = 4;
   bytes                       bytesToSign      = 5;
   bytes                       publicAccessData = 6;
+  bytes                       errorData        = 7;
 }
 
 message QueryMessagesInQueueRequest {

@@ -11,7 +11,7 @@ func (msgSrv msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJ
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Find the public key of the sender
-	pubKeyBytes := msgSrv.GetAccount(ctx, msg.GetSigners()[0]).GetPubKey().Bytes()
+	senderAddress := msgSrv.GetAccount(ctx, msg.GetSigners()[0]).GetAddress()
 
 	job, err := msgSrv.GetJob(ctx, msg.GetJobID())
 	if err != nil {
@@ -32,7 +32,7 @@ func (msgSrv msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJ
 		)
 	}
 
-	err = msgSrv.ScheduleNow(ctx, msg.GetJobID(), msg.GetPayload(), pubKeyBytes, nil)
+	err = msgSrv.ScheduleNow(ctx, msg.GetJobID(), msg.GetPayload(), senderAddress, nil)
 	if err != nil {
 		return nil, err
 	}
