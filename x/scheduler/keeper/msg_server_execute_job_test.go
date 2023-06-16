@@ -7,7 +7,6 @@ import (
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	cryptomocks "github.com/palomachain/paloma/testutil/third_party_mocks/cosmos/cosmos-sdk/crypto/types/mocks"
 	authmocks "github.com/palomachain/paloma/testutil/third_party_mocks/cosmos/cosmos-sdk/x/auth/types/mocks"
 	"github.com/palomachain/paloma/x/scheduler/types"
 	"github.com/palomachain/paloma/x/scheduler/types/mocks"
@@ -27,11 +26,7 @@ func TestExecuteJob(t *testing.T) {
 			msgServer: func() msgServer {
 				schedulerKeeper := mocks.NewSchedulerKeeper(t)
 				mockAccount := authmocks.NewAccountI(t)
-				mockPubKey := cryptomocks.NewPubKey(t)
-
-				mockPubKey.On("Bytes").Return([]byte(``))
-
-				mockAccount.On("GetPubKey").Return(mockPubKey)
+				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
 
 				schedulerKeeper.On("GetAccount",
 					mock.Anything,
@@ -70,11 +65,7 @@ func TestExecuteJob(t *testing.T) {
 			msgServer: func() msgServer {
 				schedulerKeeper := mocks.NewSchedulerKeeper(t)
 				mockAccount := authmocks.NewAccountI(t)
-				mockPubKey := cryptomocks.NewPubKey(t)
-
-				mockPubKey.On("Bytes").Return([]byte(``))
-
-				mockAccount.On("GetPubKey").Return(mockPubKey)
+				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
 
 				schedulerKeeper.On("GetAccount",
 					mock.Anything,
@@ -102,11 +93,7 @@ func TestExecuteJob(t *testing.T) {
 			msgServer: func() msgServer {
 				schedulerKeeper := mocks.NewSchedulerKeeper(t)
 				mockAccount := authmocks.NewAccountI(t)
-				mockPubKey := cryptomocks.NewPubKey(t)
-
-				mockPubKey.On("Bytes").Return([]byte(``))
-
-				mockAccount.On("GetPubKey").Return(mockPubKey)
+				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
 
 				schedulerKeeper.On("GetAccount",
 					mock.Anything,
@@ -147,11 +134,7 @@ func TestExecuteJob(t *testing.T) {
 			msgServer: func() msgServer {
 				schedulerKeeper := mocks.NewSchedulerKeeper(t)
 				mockAccount := authmocks.NewAccountI(t)
-				mockPubKey := cryptomocks.NewPubKey(t)
-
-				mockPubKey.On("Bytes").Return([]byte(``))
-
-				mockAccount.On("GetPubKey").Return(mockPubKey)
+				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
 
 				schedulerKeeper.On("GetAccount",
 					mock.Anything,

@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -54,7 +56,7 @@ func (k Keeper) VerifyJob(ctx sdk.Context, definition, payload []byte, chainRefe
 }
 
 // ExecuteJob schedules the definition and payload for execution via consensus queue
-func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderPubKey []byte, contractAddress []byte, chainReferenceID xchain.ReferenceID) error {
+func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress, chainReferenceID xchain.ReferenceID) error {
 	def, load, err := k.unmarshalJob(definition, payload, chainReferenceID)
 	if err != nil {
 		return err
@@ -66,10 +68,16 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderPu
 
 	var appendSenderBytes []byte
 	switch {
-	case senderPubKey != nil:
-		appendSenderBytes = senderPubKey[1:]
+	case senderAddress != nil:
+		appendSenderBytes, err = hex.DecodeString(addressToHex(senderAddress))
+		if err != nil {
+			return err
+		}
 	case contractAddress != nil:
-		appendSenderBytes = contractAddress
+		appendSenderBytes, err = hex.DecodeString(addressToHex(contractAddress))
+		if err != nil {
+			return err
+		}
 	}
 
 	modifiedPayload := append(common.FromHex(load.GetHexPayload()), appendSenderBytes...)
@@ -83,8 +91,12 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderPu
 			Abi:                common.FromHex(def.GetABI()),
 			Payload:            modifiedPayload,
 			Deadline:           ctx.BlockTime().Add(10 * time.Minute).Unix(),
-			SenderPubKey:       senderPubKey,
+			SenderAddress:      senderAddress,
 			ContractAddress:    contractAddress,
 		},
 	)
+}
+
+func addressToHex(address sdk.AccAddress) string {
+	return fmt.Sprintf("%x", address.Bytes())
 }
