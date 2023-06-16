@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
@@ -66,18 +67,24 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderAd
 		return err
 	}
 
-	var appendSenderBytes []byte
+	var hexBytes []byte
 	switch {
 	case senderAddress != nil:
-		appendSenderBytes, err = hex.DecodeString(addressToHex(senderAddress))
+		hexBytes, err = hex.DecodeString(addressToHex(senderAddress))
 		if err != nil {
 			return err
 		}
 	case contractAddress != nil:
-		appendSenderBytes, err = hex.DecodeString(addressToHex(contractAddress))
+		hexBytes, err = hex.DecodeString(addressToHex(contractAddress))
 		if err != nil {
 			return err
 		}
+	}
+
+	// zero pad our byte array to 32 bytes
+	appendSenderBytes, err := zeroPadBytes(hexBytes, 32)
+	if err != nil {
+		return err
 	}
 
 	modifiedPayload := append(common.FromHex(load.GetHexPayload()), appendSenderBytes...)
@@ -99,4 +106,15 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderAd
 
 func addressToHex(address sdk.AccAddress) string {
 	return fmt.Sprintf("%x", address.Bytes())
+}
+
+func zeroPadBytes(input []byte, size int) ([]byte, error) {
+	inputLen := len(input)
+	if inputLen > size {
+		return nil, whoops.String(fmt.Sprintf("Can not zero pad byte array of size %d to %d", inputLen, size))
+	}
+	ret := make([]byte, size)
+	copy(ret[size-inputLen:], input)
+
+	return ret, nil
 }
