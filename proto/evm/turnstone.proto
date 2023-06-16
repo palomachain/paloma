@@ -18,7 +18,7 @@ message SubmitLogicCall {
   bytes abi = 2;
   bytes payload = 3;
   int64 deadline = 4;
-  bytes senderPubKey = 5;
+  bytes senderAddress = 5;
   bytes contractAddress = 6;
 }
 

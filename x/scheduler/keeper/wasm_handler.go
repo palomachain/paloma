@@ -52,7 +52,7 @@ func (k Keeper) ExecuteWasmJobEventListener() wasmutil.MessengerFnc {
 			return nil, nil, whoops.Wrap(err, types.ErrWasmExecuteMessageNotValid)
 		}
 
-		err = k.ScheduleNow(ctx, executeMsg.JobID, executeMsg.Payload, nil, []byte(contractAddr.String()))
+		err = k.ScheduleNow(ctx, executeMsg.JobID, executeMsg.Payload, nil, contractAddr)
 		if err != nil {
 			return nil, nil, err
 		}

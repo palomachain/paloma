@@ -283,7 +283,7 @@ var _ = Describe("jobs!", func() {
 				})
 
 				It("schedules both jobs with the default payload", func() {
-					bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+					bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 					Expect(k.ScheduleNow(ctx, job.GetID(), nil, nil, nil)).To(BeNil())
 					Expect(k.ScheduleNow(ctx, jobPayloadModifiable.GetID(), nil, nil, nil)).To(BeNil())
 				})
@@ -293,7 +293,7 @@ var _ = Describe("jobs!", func() {
 						Expect(k.ScheduleNow(ctx, job.GetID(), []byte("new payload"), nil, nil)).To(MatchError(types.ErrCannotModifyJobPayload))
 					})
 					It("doesn't return an error", func() {
-						bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+						bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 						Expect(k.ScheduleNow(ctx, jobPayloadModifiable.GetID(), []byte("new payload"), nil, nil)).To(BeNil())
 					})
 				})

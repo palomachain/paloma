@@ -24,7 +24,7 @@ type SchedulerKeeper interface {
 	GetJob(ctx sdk.Context, jobID string) (*types.Job, error)
 	Logger(ctx sdk.Context) log.Logger
 	PreJobExecution(ctx sdk.Context, job *types.Job) error
-	ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderPubKey []byte, contractAddress []byte) error
+	ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error
 }
 
 type Keeper struct {
@@ -180,7 +180,7 @@ func (k Keeper) GetJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 	return job, nil
 }
 
-func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderPubKey []byte, contractAddress []byte) error {
+func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error {
 	job, err := k.GetJob(ctx, jobID)
 	if err != nil {
 		k.Logger(ctx).Error("couldn't schedule a job", "job_id", jobID, "err", err)
@@ -213,7 +213,7 @@ func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderPubK
 		payload = in
 	}
 
-	err = chain.ExecuteJob(ctx, job.GetDefinition(), payload, senderPubKey, contractAddress, router.GetChainReferenceID())
+	err = chain.ExecuteJob(ctx, job.GetDefinition(), payload, senderAddress, contractAddress, router.GetChainReferenceID())
 
 	if err == nil {
 		keeperutil.EmitEvent(k, ctx, "JobScheduler",

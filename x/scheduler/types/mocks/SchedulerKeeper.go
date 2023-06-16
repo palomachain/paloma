@@ -117,13 +117,13 @@ func (_m *SchedulerKeeper) PreJobExecution(ctx types.Context, job *schedulertype
 	return r0
 }
 
-// ScheduleNow provides a mock function with given fields: ctx, jobID, in, senderPubKey, contractAddress
-func (_m *SchedulerKeeper) ScheduleNow(ctx types.Context, jobID string, in []byte, senderPubKey []byte, contractAddress []byte) error {
-	ret := _m.Called(ctx, jobID, in, senderPubKey, contractAddress)
+// ScheduleNow provides a mock function with given fields: ctx, jobID, in, senderAddress, contractAddress
+func (_m *SchedulerKeeper) ScheduleNow(ctx types.Context, jobID string, in []byte, senderAddress types.AccAddress, contractAddress types.AccAddress) error {
+	ret := _m.Called(ctx, jobID, in, senderAddress, contractAddress)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, string, []byte, []byte, []byte) error); ok {
-		r0 = rf(ctx, jobID, in, senderPubKey, contractAddress)
+	if rf, ok := ret.Get(0).(func(types.Context, string, []byte, types.AccAddress, types.AccAddress) error); ok {
+		r0 = rf(ctx, jobID, in, senderAddress, contractAddress)
 	} else {
 		r0 = ret.Error(0)
 	}
