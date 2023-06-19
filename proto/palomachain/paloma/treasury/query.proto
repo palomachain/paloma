@@ -1,18 +1,18 @@
 syntax = "proto3";
-package palomachain.paloma.paloma;
+package palomachain.paloma.treasury;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "paloma/params.proto";
+import "palomachain/paloma/treasury/params.proto";
 
-option go_package = "github.com/palomachain/paloma/x/paloma/types";
+option go_package = "github.com/palomachain/paloma/x/treasury/types";
 
 // Query defines the gRPC querier service.
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/palomachain/paloma/paloma/params";
+    option (google.api.http).get = "/palomachain/paloma/treasury/params";
   }
 }
 

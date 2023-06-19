@@ -3,7 +3,7 @@ package palomachain.paloma.consensus;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "consensus/params.proto";
+import "palomachain/paloma/consensus/params.proto";
 import "google/protobuf/any.proto";
 
 option go_package = "github.com/palomachain/paloma/x/consensus/types";

@@ -1,7 +1,7 @@
 syntax = "proto3";
 package palomachain.paloma.valset;
 
-import "valset/snapshot.proto";
+import "palomachain/paloma/valset/snapshot.proto";
 
 option go_package = "github.com/palomachain/paloma/x/valset/types";
 

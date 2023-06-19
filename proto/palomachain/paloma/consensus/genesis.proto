@@ -2,7 +2,7 @@ syntax = "proto3";
 package palomachain.paloma.consensus;
 
 import "gogoproto/gogo.proto";
-import "consensus/params.proto";
+import "palomachain/paloma/consensus/params.proto";
 
 option go_package = "github.com/palomachain/paloma/x/consensus/types";
 

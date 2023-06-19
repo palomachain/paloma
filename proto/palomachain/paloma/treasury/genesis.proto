@@ -2,7 +2,7 @@ syntax = "proto3";
 package palomachain.paloma.treasury;
 
 import "gogoproto/gogo.proto";
-import "treasury/params.proto";
+import "palomachain/paloma/treasury/params.proto";
 
 option go_package = "github.com/palomachain/paloma/x/treasury/types";
 

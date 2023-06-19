@@ -2,7 +2,7 @@ syntax = "proto3";
 package palomachain.paloma.scheduler;
 
 import "gogoproto/gogo.proto";
-import "scheduler/params.proto";
+import "palomachain/paloma/scheduler/params.proto";
 
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
