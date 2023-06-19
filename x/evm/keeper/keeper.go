@@ -768,8 +768,8 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		if latestActiveValset != nil {
 			latestActiveValsetAge := ctx.BlockTime().Sub(latestActiveValset.CreatedAt)
 
-			// If it's been less than 1 week since publishing a valset, don't publish
-			keepWarmDays := 7
+			// If it's been less than 1 month since publishing a valset, don't publish
+			keepWarmDays := 30
 			if latestActiveValsetAge < (time.Duration(keepWarmDays) * 24 * time.Hour) {
 				k.Logger(ctx).Info(fmt.Sprintf("ignoring valset for chain because chain has had a valset update in the past %d days", keepWarmDays),
 					"chain-reference-id", chain.GetChainReferenceID(),
