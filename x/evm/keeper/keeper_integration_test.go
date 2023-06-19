@@ -358,9 +358,9 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	latestSnapshot, err := a.ValsetKeeper.GetCurrentSnapshot(ctx)
 	require.NoError(t, err)
 
-	// Age the latest snapshot by 7 days, 1 minute, set as active on chain
+	// Age the latest snapshot by 30 days, 1 minute, set as active on chain
 	latestSnapshot.Chains = []string{"bob"}
-	latestSnapshot.CreatedAt = ctx.BlockTime().Add(-((7 * 24 * time.Hour) + time.Minute))
+	latestSnapshot.CreatedAt = ctx.BlockTime().Add(-((30 * 24 * time.Hour) + time.Minute))
 	err = a.ValsetKeeper.SaveModifiedSnapshot(ctx, latestSnapshot)
 	require.NoError(t, err)
 
