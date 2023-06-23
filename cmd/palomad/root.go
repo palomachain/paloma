@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -16,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/types/module"
