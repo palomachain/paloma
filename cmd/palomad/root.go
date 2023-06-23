@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -157,7 +158,8 @@ func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
 		config.Cmd(),
 	)
 
-	server.AddCommands(rootCmd, palomaapp.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	application := ac.newApp
+	server.AddCommands(rootCmd, palomaapp.DefaultNodeHome, application, ac.appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
@@ -165,6 +167,10 @@ func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
 		queryCommand(ac.moduleManager),
 		txCommand(ac.moduleManager),
 		keys.Commands(palomaapp.DefaultNodeHome),
+	)
+
+	rootCmd.AddCommand(
+		snapshot.Cmd(application),
 	)
 }
 
