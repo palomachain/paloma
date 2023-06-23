@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -157,7 +158,8 @@ func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
 		config.Cmd(),
 	)
 
-	server.AddCommands(rootCmd, palomaapp.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	application := ac.newApp
+	server.AddCommands(rootCmd, palomaapp.DefaultNodeHome, application, ac.appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
@@ -165,6 +167,10 @@ func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
 		queryCommand(ac.moduleManager),
 		txCommand(ac.moduleManager),
 		keys.Commands(palomaapp.DefaultNodeHome),
+	)
+
+	rootCmd.AddCommand(
+		snapshot.Cmd(application),
 	)
 }
 
