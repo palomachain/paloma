@@ -1,0 +1,12 @@
+syntax = "proto3";
+package palomachain.paloma.treasury;
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/palomachain/paloma/x/treasury/types";
+
+message SecurityFeeProposal {
+  string title = 1;
+  string description = 2;
+  string fee = 3 [(cosmos_proto.scalar) = "cosmos.Dec"];
+}
