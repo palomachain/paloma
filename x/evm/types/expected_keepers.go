@@ -42,6 +42,6 @@ type ValsetKeeper interface {
 	SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error
 }
 
-type JobScheduler interface {
+type SchedulerKeeper interface {
 	ScheduleNow(ctx sdk.Context, jobID string, in []byte, SenderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error
 }

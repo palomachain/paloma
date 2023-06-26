@@ -96,10 +96,10 @@ type Keeper struct {
 	paramstore paramtypes.Subspace
 
 	ConsensusKeeper types.ConsensusKeeper
-	Scheduler       types.JobScheduler
+	Scheduler       types.SchedulerKeeper
 	Valset          types.ValsetKeeper
 	ider            keeperutil.IDGenerator
-	msgSender       EvmMsgSender
+	msgSender       types.MsgSender
 }
 
 func NewKeeper(
@@ -808,10 +808,6 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 	}
 
 	k.TryDeployingLastSmartContractToAllChains(ctx)
-}
-
-type EvmMsgSender interface {
-	SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInfo, valset types.Valset) error
 }
 
 type msgSender struct {

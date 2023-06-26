@@ -18,15 +18,6 @@ import (
 	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
-type SchedulerKeeper interface {
-	AddNewJob(ctx sdk.Context, job *types.Job) (sdk.AccAddress, error)
-	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI
-	GetJob(ctx sdk.Context, jobID string) (*types.Job, error)
-	Logger(ctx sdk.Context) log.Logger
-	PreJobExecution(ctx sdk.Context, job *types.Job) error
-	ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error
-}
-
 type Keeper struct {
 	cdc        codec.BinaryCodec
 	storeKey   storetypes.StoreKey

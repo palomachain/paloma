@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -22,4 +23,9 @@ type BankKeeper interface {
 // EvmKeeper defines the expected interface for interacting with the evm module
 type EvmKeeper interface {
 	PreJobExecution(ctx sdk.Context, job *Job) error
+}
+
+// ValsetKeeper defines the expected interface for interacting with the valset module
+type ValsetKeeper interface {
+	GetCurrentSnapshot(ctx sdk.Context) (*valsettypes.Snapshot, error)
 }

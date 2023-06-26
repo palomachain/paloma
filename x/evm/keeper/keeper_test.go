@@ -128,7 +128,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 			chainReferenceID: "test-chain",
 			setupMocks: func(ctx sdk.Context, k *Keeper) {
 				valsetKeeperMock := mocks.NewValsetKeeper(t)
-				msgSenderMock := mocks.NewEvmMsgSender(t)
+				msgSenderMock := mocks.NewMsgSender(t)
 
 				unpublishedSnapshot := &valsettypes.Snapshot{
 					Id:          1,
