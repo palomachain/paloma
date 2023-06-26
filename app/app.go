@@ -123,6 +123,7 @@ import (
 	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
 	treasurymodule "github.com/palomachain/paloma/x/treasury"
+	treasuryclient "github.com/palomachain/paloma/x/treasury/client"
 	treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
 	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	valsetmodule "github.com/palomachain/paloma/x/valset"
@@ -145,6 +146,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
 		evmclient.ProposalHandler,
+		treasuryclient.ProposalHandler,
 	}
 }
 
@@ -594,7 +596,8 @@ func New(
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
-		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper))
+		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
+		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
 
 	// Example of setting gov params:
 	// govConfig.MaxMetadataLen = 10000

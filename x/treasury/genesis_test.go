@@ -20,6 +20,8 @@ func TestGenesis(t *testing.T) {
 	got := treasury.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)
 
+	require.Equal(t, "0.01", got.TreasuryFees.SecurityFee)
+	require.Equal(t, "0.01", got.TreasuryFees.CommunityFundFee)
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)
 }

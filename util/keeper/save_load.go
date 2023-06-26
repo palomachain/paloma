@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func Save(store sdk.KVStore, pm protoMarshaler, key []byte, val codec.ProtoMarshaler) error {
+func Save(store sdk.KVStore, pm ProtoMarshaler, key []byte, val codec.ProtoMarshaler) error {
 	bytez, err := pm.Marshal(val)
 	if err != nil {
 		return err
@@ -16,7 +16,7 @@ func Save(store sdk.KVStore, pm protoMarshaler, key []byte, val codec.ProtoMarsh
 	return nil
 }
 
-func Load[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, key []byte) (T, error) {
+func Load[T codec.ProtoMarshaler](store sdk.KVStore, pu ProtoUnmarshaler, key []byte) (T, error) {
 	var val T
 	if key == nil {
 		return val, ErrNotFound.Format(val, key)

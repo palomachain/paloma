@@ -5,6 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "palomachain/paloma/treasury/params.proto";
+import "palomachain/paloma/treasury/fees.proto";
 
 option go_package = "github.com/palomachain/paloma/x/treasury/types";
 
@@ -13,6 +14,10 @@ service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/palomachain/paloma/treasury/params";
+  }
+
+  rpc QueryFees(QueryFeesRequest) returns (Fees) {
+    option (google.api.http).get = "/palomachain/paloma/treasury/fees";
   }
 }
 
@@ -24,3 +29,5 @@ message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
 }
+
+message QueryFeesRequest {}

@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler) ([][]byte, []T, error) {
+func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu ProtoUnmarshaler) ([][]byte, []T, error) {
 	res := []T{}
 	keys := [][]byte{}
 	err := IterAllFnc(store, pu, func(key []byte, val T) bool {
@@ -21,7 +21,7 @@ func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler) ([]
 	return keys, res, nil
 }
 
-func IterAllRaw(store sdk.KVStore, pu protoUnmarshaler) (keys [][]byte, values [][]byte, _err error) {
+func IterAllRaw(store sdk.KVStore, pu ProtoUnmarshaler) (keys [][]byte, values [][]byte, _err error) {
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
@@ -31,7 +31,7 @@ func IterAllRaw(store sdk.KVStore, pu protoUnmarshaler) (keys [][]byte, values [
 	return
 }
 
-func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu protoUnmarshaler, fnc func([]byte, T) bool) error {
+func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu ProtoUnmarshaler, fnc func([]byte, T) bool) error {
 	res := []T{}
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
