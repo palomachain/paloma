@@ -8,7 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
-	"gopkg.in/yaml.v2"
 )
 
 type ConsensusQueueType string
@@ -63,8 +62,11 @@ type MessageQueuedForBatchingI interface {
 var _ MessageQueuedForBatchingI = &BatchOfConsensusMessages{}
 
 func (q *QueuedSignedMessage) String() string {
-	out, _ := yaml.Marshal(q)
-	return string(out)
+	if q == nil {
+		return ""
+	}
+
+	return fmt.Sprintf("%+v", *q)
 }
 
 func (q *QueuedSignedMessage) AddSignData(data *SignData) {
