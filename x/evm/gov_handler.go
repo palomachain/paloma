@@ -38,6 +38,18 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govv1beta1type
 			balance, _ := new(big.Int).SetString(c.GetMinOnChainBalance(), 10)
 			err := k.ChangeMinOnChainBalance(ctx, c.GetChainReferenceID(), balance)
 			return err
+
+		case *types.RelayWeightsProposal:
+			return k.SetRelayWeights(
+				ctx,
+				c.GetChainReferenceID(),
+				&types.RelayWeights{
+					Fee:         c.Fee,
+					Uptime:      c.Uptime,
+					SuccessRate: c.SuccessRate,
+					Speed:       c.Speed,
+				},
+			)
 		}
 
 		return sdkerrors.ErrUnknownRequest

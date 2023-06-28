@@ -1,0 +1,16 @@
+syntax = "proto3";
+package palomachain.paloma.evm;
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/palomachain/paloma/x/evm/types";
+
+message RelayWeightsProposal {
+  string title = 1;
+  string description = 2;
+  string chainReferenceID = 3;
+  string fee = 4 [(cosmos_proto.scalar) = "cosmos.Dec"];
+  string uptime = 5 [(cosmos_proto.scalar) = "cosmos.Dec"];
+  string successRate = 6 [(cosmos_proto.scalar) = "cosmos.Dec"];
+  string speed = 7 [(cosmos_proto.scalar) = "cosmos.Dec"];
+}

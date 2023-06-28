@@ -469,6 +469,12 @@ func (k Keeper) AddSupportForNewChain(
 		ReferenceBlockHeight: blockHeight,
 		ReferenceBlockHash:   blockHashAtHeight,
 		MinOnChainBalance:    minimumOnChainBalance.Text(10),
+		RelayWeights: &types.RelayWeights{
+			Fee:         "1.0",
+			Uptime:      "1.0",
+			SuccessRate: "1.0",
+			Speed:       "1.0",
+		},
 	}
 
 	err = k.updateChainInfo(ctx, chainInfo)
@@ -979,4 +985,24 @@ func generateSmartContractID(ctx sdk.Context) (res [32]byte) {
 	b := []byte(fmt.Sprintf("%d", ctx.BlockHeight()))
 	copy(res[:], b)
 	return
+}
+
+func (k Keeper) SetRelayWeights(ctx sdk.Context, chainReferenceID string, weights *types.RelayWeights) error {
+	chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
+	if err != nil {
+		return err
+	}
+
+	chainInfo.RelayWeights = weights
+
+	return keeperutil.Save(k.chainInfoStore(ctx), k.cdc, []byte(chainReferenceID), chainInfo)
+}
+
+func (k Keeper) GetRelayWeights(ctx sdk.Context, chainReferenceID string) (*types.RelayWeights, error) {
+	chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
+	if err != nil {
+		return &types.RelayWeights{}, err
+	}
+
+	return chainInfo.RelayWeights, nil
 }

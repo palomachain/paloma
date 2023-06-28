@@ -98,6 +98,12 @@ var _ = g.Describe("genesis", func() {
 						BlockHeight:       123,
 						BlockHashAtHeight: "0x1234",
 						MinOnChainBalance: "555",
+						RelayWeights: &types.RelayWeights{
+							Fee:         "1.0",
+							Uptime:      "1.0",
+							SuccessRate: "1.0",
+							Speed:       "1.0",
+						},
 					},
 					{
 						ChainReferenceID:  "ropsten",
@@ -105,6 +111,12 @@ var _ = g.Describe("genesis", func() {
 						BlockHeight:       124,
 						BlockHashAtHeight: "0x5555",
 						MinOnChainBalance: "555",
+						RelayWeights: &types.RelayWeights{
+							Fee:         "1.0",
+							Uptime:      "1.0",
+							SuccessRate: "1.0",
+							Speed:       "1.0",
+						},
 					},
 				},
 				&types.GenesisSmartContract{

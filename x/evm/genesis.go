@@ -36,6 +36,20 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 		if err != nil {
 			panic(err)
 		}
+
+		err = k.SetRelayWeights(
+			ctx,
+			chainInfo.GetChainReferenceID(),
+			&types.RelayWeights{
+				Fee:         "1.0",
+				Uptime:      "1.0",
+				SuccessRate: "1.0",
+				Speed:       "1.0",
+			},
+		)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	sc := genState.GetSmartContract()
@@ -65,6 +79,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 			BlockHeight:       chainInfo.GetReferenceBlockHeight(),
 			BlockHashAtHeight: chainInfo.GetReferenceBlockHash(),
 			MinOnChainBalance: whoops.Must(chainInfo.GetMinOnChainBalanceBigInt()).Text(10),
+			RelayWeights:      whoops.Must(k.GetRelayWeights(ctx, chainInfo.GetChainReferenceID())),
 		})
 	}
 	genesis.Chains = genesisChainInfos

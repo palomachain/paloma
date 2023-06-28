@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"math/big"
 	"strconv"
 
@@ -38,6 +39,7 @@ func CmdEvmChainProposalHandler() *cobra.Command {
 	cmd.AddCommand(CmdEvmProposeChainRemoval())
 	cmd.AddCommand(CmdEvmProposalDeployNewSmartContract())
 	cmd.AddCommand(CmdEvmProposalChangeMinOnChainBalance())
+	cmd.AddCommand(CmdEvmProposalChangeRelayWeights())
 
 	return cmd
 }
@@ -231,6 +233,54 @@ func CmdEvmProposeChainRemoval() *cobra.Command {
 				whoops.Assert(err)
 
 				msg, err := govv1beta1types.NewMsgSubmitProposal(addChainProposal, deposit, from)
+				whoops.Assert(err)
+
+				err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+				whoops.Assert(err)
+			})
+		},
+	}
+	applyFlags(cmd)
+
+	return cmd
+}
+
+func CmdEvmProposalChangeRelayWeights() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "propose-relay-weights [chain-reference-id] [weights]",
+		Short:   "Changes the relay weights for a given EVM chain referenced by the chain-reference-id",
+		Example: "change-relay-weights eth-main {\"fee\": 0.50, \"uptime\": 0.75, \"successRate\": 0.90, \"speed\": 0.20}",
+		Args:    cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			return whoops.Try(func() {
+				clientCtx, err := client.GetClientTxContext(cmd)
+				whoops.Assert(err)
+
+				chainReferenceID, weightsString := args[0], args[1]
+
+				var weights types.RelayWeights
+				err = json.Unmarshal([]byte(weightsString), &weights)
+				whoops.Assert(err)
+
+				proposal := &types.RelayWeightsProposal{
+					Title:            whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
+					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					ChainReferenceID: chainReferenceID,
+					Fee:              weights.Fee,
+					Uptime:           weights.Uptime,
+					SuccessRate:      weights.SuccessRate,
+					Speed:            weights.Speed,
+				}
+
+				from := clientCtx.GetFromAddress()
+
+				depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+				whoops.Assert(err)
+
+				deposit, err := sdk.ParseCoinsNormalized(depositStr)
+				whoops.Assert(err)
+
+				msg, err := govv1beta1types.NewMsgSubmitProposal(proposal, deposit, from)
 				whoops.Assert(err)
 
 				err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)

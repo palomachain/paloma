@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package palomachain.paloma.evm;
 
+import "palomachain/paloma/evm/relay_weights.proto";
+
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 message ChainInfo {
@@ -32,6 +34,8 @@ message ChainInfo {
   uint64 activeSmartContractID = 11;
 
   string minOnChainBalance = 12;
+
+  RelayWeights relayWeights = 13;
 
 }
 
