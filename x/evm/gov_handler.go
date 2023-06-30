@@ -44,10 +44,10 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govv1beta1type
 				ctx,
 				c.GetChainReferenceID(),
 				&types.RelayWeights{
-					Fee:         c.Fee,
-					Uptime:      c.Uptime,
-					SuccessRate: c.SuccessRate,
-					Speed:       c.Speed,
+					Fee:           c.Fee,
+					Uptime:        c.Uptime,
+					SuccessRate:   c.SuccessRate,
+					ExecutionTime: c.ExecutionTime,
 				},
 			)
 		}

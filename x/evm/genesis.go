@@ -41,10 +41,10 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 			ctx,
 			chainInfo.GetChainReferenceID(),
 			&types.RelayWeights{
-				Fee:         "1.0",
-				Uptime:      "1.0",
-				SuccessRate: "1.0",
-				Speed:       "1.0",
+				Fee:           "1.0",
+				Uptime:        "1.0",
+				SuccessRate:   "1.0",
+				ExecutionTime: "1.0",
 			},
 		)
 		if err != nil {

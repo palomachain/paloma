@@ -12,5 +12,5 @@ message RelayWeightsProposal {
   string fee = 4 [(cosmos_proto.scalar) = "cosmos.Dec"];
   string uptime = 5 [(cosmos_proto.scalar) = "cosmos.Dec"];
   string successRate = 6 [(cosmos_proto.scalar) = "cosmos.Dec"];
-  string speed = 7 [(cosmos_proto.scalar) = "cosmos.Dec"];
+  string executionTime = 7 [(cosmos_proto.scalar) = "cosmos.Dec"];
 }

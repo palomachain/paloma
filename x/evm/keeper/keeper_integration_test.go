@@ -70,6 +70,9 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		a.StakingKeeper.SetValidator(ctx, val)
 	}
 
+	_, err = a.ValsetKeeper.TriggerSnapshotBuild(ctx)
+	require.NoError(t, err)
+
 	smartContractAddr := common.BytesToAddress(rand.Bytes(5))
 	err = a.EvmKeeper.AddSmartContractExecutionToConsensus(
 		ctx,
@@ -1025,19 +1028,19 @@ var _ = Describe("change relay weights", func() {
 			Expect(err).To(BeNil())
 			weights := ci.GetRelayWeights()
 			Expect(weights).To(Equal(&types.RelayWeights{
-				Fee:         "1.0",
-				Uptime:      "1.0",
-				SuccessRate: "1.0",
-				Speed:       "1.0",
+				Fee:           "1.0",
+				Uptime:        "1.0",
+				SuccessRate:   "1.0",
+				ExecutionTime: "1.0",
 			}))
 		})
 
 		It("changes the relay weights", func() {
 			newWeights := &types.RelayWeights{
-				Fee:         "0.12",
-				Uptime:      "0.34",
-				SuccessRate: "0.56",
-				Speed:       "0.78",
+				Fee:           "0.12",
+				Uptime:        "0.34",
+				SuccessRate:   "0.56",
+				ExecutionTime: "0.78",
 			}
 			err := a.EvmKeeper.SetRelayWeights(ctx, newChain.GetChainReferenceID(), newWeights)
 			Expect(err).To(BeNil())
@@ -1052,10 +1055,10 @@ var _ = Describe("change relay weights", func() {
 	When("chain info does not exists", func() {
 		It("returns an error", func() {
 			err := a.EvmKeeper.SetRelayWeights(ctx, newChain.GetChainReferenceID(), &types.RelayWeights{
-				Fee:         "0.12",
-				Uptime:      "0.34",
-				SuccessRate: "0.56",
-				Speed:       "0.78",
+				Fee:           "0.12",
+				Uptime:        "0.34",
+				SuccessRate:   "0.56",
+				ExecutionTime: "0.78",
 			})
 			Expect(err).To(MatchError(keeper.ErrChainNotFound))
 		})

@@ -23,6 +23,7 @@ type BankKeeper interface {
 // EvmKeeper defines the expected interface for interacting with the evm module
 type EvmKeeper interface {
 	PreJobExecution(ctx sdk.Context, job *Job) error
+	PickValidatorForMessage(ctx sdk.Context, chainReferenceID string) (string, error)
 }
 
 // ValsetKeeper defines the expected interface for interacting with the valset module

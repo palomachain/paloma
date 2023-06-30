@@ -14,13 +14,13 @@ type MsgSender struct {
 	mock.Mock
 }
 
-// SendValsetMsgForChain provides a mock function with given fields: ctx, chainInfo, valset
-func (_m *MsgSender) SendValsetMsgForChain(ctx types.Context, chainInfo *evmtypes.ChainInfo, valset evmtypes.Valset) error {
-	ret := _m.Called(ctx, chainInfo, valset)
+// SendValsetMsgForChain provides a mock function with given fields: ctx, chainInfo, valset, assignee
+func (_m *MsgSender) SendValsetMsgForChain(ctx types.Context, chainInfo *evmtypes.ChainInfo, valset evmtypes.Valset, assignee string) error {
+	ret := _m.Called(ctx, chainInfo, valset, assignee)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, *evmtypes.ChainInfo, evmtypes.Valset) error); ok {
-		r0 = rf(ctx, chainInfo, valset)
+	if rf, ok := ret.Get(0).(func(types.Context, *evmtypes.ChainInfo, evmtypes.Valset, string) error); ok {
+		r0 = rf(ctx, chainInfo, valset, assignee)
 	} else {
 		r0 = ret.Error(0)
 	}

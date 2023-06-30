@@ -96,10 +96,11 @@ type Keeper struct {
 	paramstore paramtypes.Subspace
 
 	ConsensusKeeper types.ConsensusKeeper
-	Scheduler       types.SchedulerKeeper
+	SchedulerKeeper types.SchedulerKeeper
 	Valset          types.ValsetKeeper
 	ider            keeperutil.IDGenerator
 	msgSender       types.MsgSender
+	msgAssigner     types.MsgAssigner
 }
 
 func NewKeeper(
@@ -126,11 +127,22 @@ func NewKeeper(
 			ConsensusKeeper: consensusKeeper,
 			cdc:             cdc,
 		},
+		msgAssigner: MsgAssigner{
+			valsetKeeper,
+		},
 	}
 
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.smartContractsStore), []byte("id-key"))
 
 	return k
+}
+
+func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string) (string, error) {
+	weights, err := k.GetRelayWeights(ctx, chainReferenceID)
+	if err != nil {
+		return "", err
+	}
+	return k.msgAssigner.PickValidatorForMessage(ctx, *weights)
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
@@ -143,6 +155,11 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	turnstoneID string,
 	logicCall *types.SubmitLogicCall,
 ) error {
+	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID)
+	if err != nil {
+		return err
+	}
+
 	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
@@ -156,6 +173,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 			Action: &types.Message_SubmitLogicCall{
 				SubmitLogicCall: logicCall,
 			},
+			Assignee: assignee,
 		}, nil)
 }
 
@@ -253,6 +271,12 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		"chain-reference-id", chainInfo.GetChainReferenceID(),
 		"constructor-input", input,
 	)
+
+	assignee, err := k.PickValidatorForMessage(ctx, chainInfo.GetChainReferenceID())
+	if err != nil {
+		return err
+	}
+
 	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
@@ -270,6 +294,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 					ConstructorInput: input,
 				},
 			},
+			Assignee: assignee,
 		}, nil)
 }
 
@@ -470,10 +495,10 @@ func (k Keeper) AddSupportForNewChain(
 		ReferenceBlockHash:   blockHashAtHeight,
 		MinOnChainBalance:    minimumOnChainBalance.Text(10),
 		RelayWeights: &types.RelayWeights{
-			Fee:         "1.0",
-			Uptime:      "1.0",
-			SuccessRate: "1.0",
-			Speed:       "1.0",
+			Fee:           "1.0",
+			Uptime:        "1.0",
+			SuccessRate:   "1.0",
+			ExecutionTime: "1.0",
 		},
 	}
 
@@ -750,7 +775,12 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 		return nil
 	}
 
-	err = k.msgSender.SendValsetMsgForChain(ctx, chain, latestValset)
+	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID())
+	if err != nil {
+		return err
+	}
+
+	err = k.msgSender.SendValsetMsgForChain(ctx, chain, latestValset, assignee)
 	if err != nil {
 		k.Logger(ctx).Error("unable to send valset message for chain",
 			"chain", chain.GetChainReferenceID(),
@@ -804,7 +834,17 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 			continue
 		}
 
-		err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset)
+		assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID())
+		if err != nil {
+			k.Logger(ctx).Info("ignoring valset for chain as there was an error picking a validator to run the message",
+				"chain-reference-id", chain.GetChainReferenceID(),
+				"valset-id", valset.GetValsetID(),
+				"error", err,
+			)
+			continue
+		}
+
+		err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset, assignee)
 		if err != nil {
 			k.Logger(ctx).Error("unable to send valset message for chain",
 				"chain", chain.GetChainReferenceID(),
@@ -825,7 +865,7 @@ func (m msgSender) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInfo, valset types.Valset) error {
+func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInfo, valset types.Valset, assignee string) error {
 	m.Logger(ctx).Info("snapshot was built and a new update valset message is being sent over",
 		"chainInfo-reference-id", chainInfo.GetChainReferenceID(),
 		"valset-id", valset.GetValsetID(),
@@ -873,6 +913,7 @@ func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.Chain
 					Valset: &valset,
 				},
 			},
+			Assignee: assignee,
 		}, nil,
 	)
 	if err != nil {
