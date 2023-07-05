@@ -11,7 +11,6 @@ type RelayWeightsFloat64 struct {
 
 // Float64Values returns the float64Values of our RelayWeight strings.  On error, we use 0
 func (m *RelayWeights) Float64Values() RelayWeightsFloat64 {
-
 	fee, _ := strconv.ParseFloat(m.Fee, 64)
 	uptime, _ := strconv.ParseFloat(m.Uptime, 64)
 	successRate, _ := strconv.ParseFloat(m.SuccessRate, 64)

@@ -542,6 +542,204 @@ func (m *QueryMessagesInQueueResponse) GetMessages() []*MessageWithSignatures {
 	return nil
 }
 
+type QueryQueuedMessagesForRelayingRequest struct {
+	QueueTypeName string                                        `protobuf:"bytes,1,opt,name=queueTypeName,proto3" json:"queueTypeName,omitempty"`
+	ValAddress    github_com_cosmos_cosmos_sdk_types.ValAddress `protobuf:"bytes,2,opt,name=valAddress,proto3,casttype=github.com/cosmos/cosmos-sdk/types.ValAddress" json:"valAddress,omitempty"`
+}
+
+func (m *QueryQueuedMessagesForRelayingRequest) Reset()         { *m = QueryQueuedMessagesForRelayingRequest{} }
+func (m *QueryQueuedMessagesForRelayingRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryQueuedMessagesForRelayingRequest) ProtoMessage()    {}
+func (*QueryQueuedMessagesForRelayingRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_186b66ae011355e3, []int{9}
+}
+func (m *QueryQueuedMessagesForRelayingRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryQueuedMessagesForRelayingRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryQueuedMessagesForRelayingRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryQueuedMessagesForRelayingRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryQueuedMessagesForRelayingRequest.Merge(m, src)
+}
+func (m *QueryQueuedMessagesForRelayingRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryQueuedMessagesForRelayingRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryQueuedMessagesForRelayingRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryQueuedMessagesForRelayingRequest proto.InternalMessageInfo
+
+func (m *QueryQueuedMessagesForRelayingRequest) GetQueueTypeName() string {
+	if m != nil {
+		return m.QueueTypeName
+	}
+	return ""
+}
+
+func (m *QueryQueuedMessagesForRelayingRequest) GetValAddress() github_com_cosmos_cosmos_sdk_types.ValAddress {
+	if m != nil {
+		return m.ValAddress
+	}
+	return nil
+}
+
+type QueryQueuedMessagesForRelayingResponse struct {
+	Messages []*MessageWithSignatures `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
+}
+
+func (m *QueryQueuedMessagesForRelayingResponse) Reset() {
+	*m = QueryQueuedMessagesForRelayingResponse{}
+}
+func (m *QueryQueuedMessagesForRelayingResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryQueuedMessagesForRelayingResponse) ProtoMessage()    {}
+func (*QueryQueuedMessagesForRelayingResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_186b66ae011355e3, []int{10}
+}
+func (m *QueryQueuedMessagesForRelayingResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryQueuedMessagesForRelayingResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryQueuedMessagesForRelayingResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryQueuedMessagesForRelayingResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryQueuedMessagesForRelayingResponse.Merge(m, src)
+}
+func (m *QueryQueuedMessagesForRelayingResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryQueuedMessagesForRelayingResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryQueuedMessagesForRelayingResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryQueuedMessagesForRelayingResponse proto.InternalMessageInfo
+
+func (m *QueryQueuedMessagesForRelayingResponse) GetMessages() []*MessageWithSignatures {
+	if m != nil {
+		return m.Messages
+	}
+	return nil
+}
+
+type QueryQueuedMessagesForAttestingRequest struct {
+	QueueTypeName string                                        `protobuf:"bytes,1,opt,name=queueTypeName,proto3" json:"queueTypeName,omitempty"`
+	ValAddress    github_com_cosmos_cosmos_sdk_types.ValAddress `protobuf:"bytes,2,opt,name=valAddress,proto3,casttype=github.com/cosmos/cosmos-sdk/types.ValAddress" json:"valAddress,omitempty"`
+}
+
+func (m *QueryQueuedMessagesForAttestingRequest) Reset() {
+	*m = QueryQueuedMessagesForAttestingRequest{}
+}
+func (m *QueryQueuedMessagesForAttestingRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryQueuedMessagesForAttestingRequest) ProtoMessage()    {}
+func (*QueryQueuedMessagesForAttestingRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_186b66ae011355e3, []int{11}
+}
+func (m *QueryQueuedMessagesForAttestingRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryQueuedMessagesForAttestingRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryQueuedMessagesForAttestingRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryQueuedMessagesForAttestingRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryQueuedMessagesForAttestingRequest.Merge(m, src)
+}
+func (m *QueryQueuedMessagesForAttestingRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryQueuedMessagesForAttestingRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryQueuedMessagesForAttestingRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryQueuedMessagesForAttestingRequest proto.InternalMessageInfo
+
+func (m *QueryQueuedMessagesForAttestingRequest) GetQueueTypeName() string {
+	if m != nil {
+		return m.QueueTypeName
+	}
+	return ""
+}
+
+func (m *QueryQueuedMessagesForAttestingRequest) GetValAddress() github_com_cosmos_cosmos_sdk_types.ValAddress {
+	if m != nil {
+		return m.ValAddress
+	}
+	return nil
+}
+
+type QueryQueuedMessagesForAttestingResponse struct {
+	Messages []*MessageWithSignatures `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
+}
+
+func (m *QueryQueuedMessagesForAttestingResponse) Reset() {
+	*m = QueryQueuedMessagesForAttestingResponse{}
+}
+func (m *QueryQueuedMessagesForAttestingResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryQueuedMessagesForAttestingResponse) ProtoMessage()    {}
+func (*QueryQueuedMessagesForAttestingResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_186b66ae011355e3, []int{12}
+}
+func (m *QueryQueuedMessagesForAttestingResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryQueuedMessagesForAttestingResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryQueuedMessagesForAttestingResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryQueuedMessagesForAttestingResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryQueuedMessagesForAttestingResponse.Merge(m, src)
+}
+func (m *QueryQueuedMessagesForAttestingResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryQueuedMessagesForAttestingResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryQueuedMessagesForAttestingResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryQueuedMessagesForAttestingResponse proto.InternalMessageInfo
+
+func (m *QueryQueuedMessagesForAttestingResponse) GetMessages() []*MessageWithSignatures {
+	if m != nil {
+		return m.Messages
+	}
+	return nil
+}
+
 type QueryGetAllQueueNamesRequest struct {
 }
 
@@ -549,7 +747,7 @@ func (m *QueryGetAllQueueNamesRequest) Reset()         { *m = QueryGetAllQueueNa
 func (m *QueryGetAllQueueNamesRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryGetAllQueueNamesRequest) ProtoMessage()    {}
 func (*QueryGetAllQueueNamesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{9}
+	return fileDescriptor_186b66ae011355e3, []int{13}
 }
 func (m *QueryGetAllQueueNamesRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -586,7 +784,7 @@ func (m *QueryGetAllQueueNamesResponse) Reset()         { *m = QueryGetAllQueueN
 func (m *QueryGetAllQueueNamesResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryGetAllQueueNamesResponse) ProtoMessage()    {}
 func (*QueryGetAllQueueNamesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{10}
+	return fileDescriptor_186b66ae011355e3, []int{14}
 }
 func (m *QueryGetAllQueueNamesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -632,6 +830,10 @@ func init() {
 	proto.RegisterType((*MessageWithSignatures)(nil), "palomachain.paloma.consensus.MessageWithSignatures")
 	proto.RegisterType((*QueryMessagesInQueueRequest)(nil), "palomachain.paloma.consensus.QueryMessagesInQueueRequest")
 	proto.RegisterType((*QueryMessagesInQueueResponse)(nil), "palomachain.paloma.consensus.QueryMessagesInQueueResponse")
+	proto.RegisterType((*QueryQueuedMessagesForRelayingRequest)(nil), "palomachain.paloma.consensus.QueryQueuedMessagesForRelayingRequest")
+	proto.RegisterType((*QueryQueuedMessagesForRelayingResponse)(nil), "palomachain.paloma.consensus.QueryQueuedMessagesForRelayingResponse")
+	proto.RegisterType((*QueryQueuedMessagesForAttestingRequest)(nil), "palomachain.paloma.consensus.QueryQueuedMessagesForAttestingRequest")
+	proto.RegisterType((*QueryQueuedMessagesForAttestingResponse)(nil), "palomachain.paloma.consensus.QueryQueuedMessagesForAttestingResponse")
 	proto.RegisterType((*QueryGetAllQueueNamesRequest)(nil), "palomachain.paloma.consensus.QueryGetAllQueueNamesRequest")
 	proto.RegisterType((*QueryGetAllQueueNamesResponse)(nil), "palomachain.paloma.consensus.QueryGetAllQueueNamesResponse")
 }
@@ -641,63 +843,70 @@ func init() {
 }
 
 var fileDescriptor_186b66ae011355e3 = []byte{
-	// 883 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x55, 0x5b, 0x8f, 0xdb, 0x44,
-	0x14, 0x5e, 0xe7, 0x46, 0xf7, 0x6c, 0x17, 0xaa, 0x21, 0x54, 0x21, 0x84, 0x34, 0xb2, 0x42, 0x15,
-	0x2e, 0xb5, 0xd9, 0x5d, 0x09, 0xb4, 0xf4, 0x01, 0x25, 0x5c, 0xaa, 0x0a, 0x0a, 0x8d, 0xa9, 0x8a,
-	0xe0, 0x25, 0x9a, 0xd8, 0x53, 0xaf, 0x55, 0x67, 0xc6, 0xeb, 0x19, 0x57, 0x1b, 0x50, 0x85, 0xc4,
-	0x2f, 0x40, 0xe2, 0x91, 0x87, 0xfe, 0x00, 0xfe, 0x05, 0x0f, 0xa8, 0x8f, 0x45, 0xbc, 0xf0, 0x54,
-	0xa1, 0x5d, 0xc4, 0x7f, 0x80, 0x27, 0xe4, 0x99, 0xb1, 0x37, 0xd9, 0x5c, 0x59, 0xc4, 0x53, 0x26,
-	0xe7, 0xf2, 0x9d, 0xf3, 0x9d, 0x9b, 0xa1, 0x13, 0xe1, 0x90, 0x8d, 0xb0, 0x7b, 0x80, 0x03, 0x6a,
-	0xab, 0xb7, 0xed, 0x32, 0xca, 0x09, 0xe5, 0x09, 0xb7, 0x0f, 0x13, 0x12, 0x8f, 0xad, 0x28, 0x66,
-	0x82, 0xa1, 0xc6, 0x84, 0xa5, 0xa5, 0xde, 0x56, 0x6e, 0x59, 0xaf, 0xfa, 0xcc, 0x67, 0xd2, 0xd0,
-	0x4e, 0x5f, 0xca, 0xa7, 0xde, 0xf0, 0x19, 0xf3, 0x43, 0x62, 0xe3, 0x28, 0xb0, 0x31, 0xa5, 0x4c,
-	0x60, 0x11, 0x30, 0xca, 0xb5, 0xf6, 0xd5, 0xa5, 0xb1, 0x23, 0x1c, 0xe3, 0x51, 0x66, 0xfa, 0xa2,
-	0x06, 0x92, 0xff, 0x86, 0xc9, 0x3d, 0x1b, 0x53, 0x9d, 0x97, 0x59, 0x05, 0xd4, 0x4f, 0xd3, 0xbc,
-	0x2d, 0xed, 0x1d, 0x72, 0x98, 0x10, 0x2e, 0xcc, 0x2f, 0xe0, 0xf9, 0x29, 0x29, 0x8f, 0x52, 0x60,
-	0xd4, 0x83, 0x8a, 0xc2, 0xad, 0x19, 0x2d, 0xa3, 0xb3, 0xb5, 0xdb, 0xb6, 0x96, 0xb1, 0xb2, 0x94,
-	0x77, 0xaf, 0xf4, 0xf8, 0xe9, 0x95, 0x0d, 0x47, 0x7b, 0x9a, 0x8f, 0x0c, 0x68, 0x4b, 0xec, 0x7e,
-	0x42, 0x12, 0xe2, 0xdd, 0x22, 0x9c, 0x63, 0x9f, 0xf0, 0x0f, 0x59, 0xfc, 0x59, 0xe0, 0xd3, 0x80,
-	0xfa, 0x3a, 0x07, 0xd4, 0x07, 0x78, 0x80, 0xc3, 0xae, 0xe7, 0xc5, 0x84, 0xab, 0x80, 0x17, 0x7b,
-	0x3b, 0x7f, 0x3f, 0xbd, 0x72, 0xcd, 0x0f, 0xc4, 0x41, 0x32, 0xb4, 0x5c, 0x36, 0xb2, 0x5d, 0xc6,
-	0x47, 0x8c, 0xeb, 0x9f, 0x6b, 0xdc, 0xbb, 0x6f, 0x8b, 0x71, 0x44, 0xb8, 0x75, 0x37, 0x77, 0x74,
-	0x26, 0x40, 0x50, 0x1b, 0xb6, 0x0f, 0xd3, 0xa8, 0x77, 0xc6, 0x11, 0xf9, 0x04, 0x8f, 0x48, 0xad,
-	0xd0, 0x32, 0x3a, 0x9b, 0xce, 0xb4, 0xd0, 0xfc, 0x0a, 0x5e, 0x59, 0x91, 0xa0, 0x2e, 0x47, 0x1f,
-	0xb6, 0x47, 0x4a, 0x7b, 0x87, 0xa5, 0xba, 0x9a, 0xd1, 0x2a, 0x76, 0xb6, 0x76, 0x5f, 0x5f, 0x5e,
-	0x95, 0x5b, 0x93, 0x2e, 0xce, 0x34, 0x82, 0xf9, 0x0d, 0x6c, 0x4f, 0xe9, 0x51, 0x15, 0xca, 0x94,
-	0x51, 0x97, 0xa8, 0x02, 0x38, 0xea, 0x0f, 0x7a, 0x16, 0x0a, 0x81, 0x27, 0xb3, 0x2f, 0x39, 0x85,
-	0xc0, 0x43, 0x2d, 0xd8, 0x1a, 0x8e, 0x05, 0xe1, 0x3a, 0x8f, 0xa2, 0xb4, 0x9d, 0x14, 0xa1, 0xab,
-	0x50, 0x1c, 0x71, 0xbf, 0x56, 0x92, 0x7d, 0xab, 0x5a, 0x6a, 0x20, 0xac, 0x6c, 0x20, 0xac, 0x2e,
-	0x1d, 0x3b, 0xa9, 0x81, 0xf9, 0x97, 0x01, 0xe8, 0x2e, 0x0e, 0x03, 0x0f, 0x0b, 0x45, 0x18, 0x8b,
-	0x24, 0x26, 0xff, 0x47, 0x33, 0x1a, 0xb0, 0xc9, 0x33, 0x7c, 0x49, 0xe5, 0xa2, 0x73, 0x2a, 0x48,
-	0xb5, 0xe4, 0x48, 0xc4, 0xf8, 0x7d, 0x2c, 0xb0, 0xe6, 0x73, 0x2a, 0x40, 0x6f, 0xc1, 0x65, 0x72,
-	0x24, 0x48, 0x4c, 0x71, 0xd8, 0x75, 0x5d, 0x96, 0x50, 0x91, 0xa5, 0x56, 0x92, 0x1d, 0x5d, 0xa0,
-	0x4d, 0x51, 0xa3, 0x64, 0x18, 0x06, 0xee, 0x47, 0x64, 0x5c, 0x2b, 0x2b, 0xd4, 0x5c, 0x60, 0x3e,
-	0x2a, 0xc0, 0x0b, 0xba, 0xfa, 0x9f, 0x07, 0xe2, 0x20, 0x67, 0xcf, 0xd7, 0xec, 0x82, 0xae, 0x71,
-	0x71, 0x45, 0x8d, 0xd1, 0xc7, 0x70, 0x21, 0x25, 0x2a, 0xa9, 0x95, 0xe4, 0xc8, 0xbc, 0xb9, 0x7c,
-	0x64, 0x66, 0x1b, 0xe2, 0xe4, 0x08, 0x67, 0x7b, 0x5f, 0x9e, 0xed, 0xfd, 0x6b, 0x70, 0x49, 0x91,
-	0xec, 0xba, 0x2e, 0xe1, 0x5c, 0xc6, 0xad, 0x48, 0xb3, 0x19, 0xb9, 0xac, 0x7b, 0x1c, 0xb3, 0x58,
-	0x1a, 0x3d, 0xa3, 0xeb, 0x9e, 0x09, 0xcc, 0x9f, 0x0c, 0x78, 0x49, 0xee, 0x46, 0xb6, 0x15, 0x37,
-	0xa9, 0xdc, 0x92, 0x6c, 0x67, 0x67, 0x16, 0xcc, 0x98, 0xb3, 0x60, 0xe8, 0x21, 0xb4, 0xf8, 0xfd,
-	0x20, 0xfa, 0xe0, 0x41, 0xe0, 0x11, 0xea, 0x92, 0xdb, 0x31, 0x4b, 0x5f, 0x5e, 0x6f, 0x7c, 0x3a,
-	0x29, 0x6a, 0x20, 0xce, 0x33, 0x62, 0x2b, 0xa1, 0x4d, 0x06, 0x8d, 0xf9, 0x1c, 0xf4, 0x5a, 0x7f,
-	0x0a, 0x17, 0xf4, 0x52, 0x72, 0xbd, 0xd1, 0x7b, 0x6b, 0x6d, 0xf4, 0xf4, 0xcc, 0x38, 0x39, 0x88,
-	0xd9, 0xd4, 0x01, 0x6f, 0x10, 0xd1, 0x0d, 0x43, 0x19, 0x2c, 0xad, 0x43, 0x7e, 0x6d, 0xdf, 0x86,
-	0x97, 0x17, 0xe8, 0x75, 0x46, 0x97, 0xa1, 0x22, 0x2b, 0xa8, 0xf2, 0xd9, 0x74, 0xf4, 0xbf, 0xdd,
-	0x1f, 0x2b, 0x50, 0x96, 0x9e, 0xe8, 0x07, 0x03, 0x2a, 0xea, 0xdc, 0xa2, 0x15, 0xb3, 0x34, 0x7b,
-	0xed, 0xeb, 0x3b, 0xff, 0xc2, 0x43, 0x65, 0x64, 0xbe, 0xf1, 0xed, 0xaf, 0x7f, 0x7c, 0x5f, 0xb8,
-	0x8a, 0xda, 0xf6, 0x1a, 0x5f, 0x21, 0xf4, 0xa7, 0x01, 0xb5, 0x45, 0xd7, 0x14, 0xf5, 0xd6, 0x88,
-	0xbe, 0xe2, 0x5b, 0x51, 0x7f, 0xef, 0x3f, 0x61, 0x68, 0x4e, 0x5d, 0xc9, 0xe9, 0x3a, 0xda, 0xb7,
-	0x57, 0x7d, 0xd5, 0x13, 0xe2, 0x0d, 0xb2, 0xee, 0x0e, 0xee, 0xb1, 0x78, 0xc0, 0x35, 0x97, 0x5f,
-	0x0c, 0x78, 0xee, 0xcc, 0x58, 0xa1, 0xfd, 0x35, 0x72, 0x9b, 0xbf, 0x4e, 0xf5, 0x77, 0xce, 0xe3,
-	0xaa, 0xd9, 0xdc, 0x90, 0x6c, 0xba, 0xe8, 0xdd, 0xe5, 0x6c, 0x72, 0x1a, 0x01, 0x1d, 0x48, 0x66,
-	0xf6, 0xd7, 0x53, 0xcb, 0xfa, 0x10, 0xfd, 0x6c, 0xc0, 0xa5, 0xb3, 0x93, 0x89, 0xd6, 0xc9, 0x6c,
-	0xc1, 0xb8, 0xd7, 0xaf, 0x9f, 0xcb, 0x57, 0xd3, 0xda, 0x97, 0xb4, 0xf6, 0xd0, 0xce, 0x72, 0x5a,
-	0x3e, 0x11, 0x03, 0x1c, 0x86, 0x8a, 0xd2, 0x80, 0xa6, 0x10, 0xbd, 0x9b, 0x8f, 0x8f, 0x9b, 0xc6,
-	0x93, 0xe3, 0xa6, 0xf1, 0xfb, 0x71, 0xd3, 0xf8, 0xee, 0xa4, 0xb9, 0xf1, 0xe4, 0xa4, 0xb9, 0xf1,
-	0xdb, 0x49, 0x73, 0xe3, 0x4b, 0x7b, 0xe2, 0xc4, 0xcc, 0x81, 0x3d, 0x9a, 0x00, 0x96, 0xf7, 0x66,
-	0x58, 0x91, 0x47, 0x7d, 0xef, 0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xb2, 0xe9, 0x9e, 0x9a, 0x00,
-	0x0a, 0x00, 0x00,
+	// 997 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x56, 0xcb, 0x6f, 0x1b, 0x45,
+	0x18, 0xcf, 0x38, 0x89, 0x69, 0xbe, 0x34, 0x50, 0x0d, 0xa1, 0x72, 0x4d, 0x70, 0xad, 0x55, 0x08,
+	0xe1, 0xd1, 0x5d, 0x92, 0x48, 0xa0, 0x34, 0x20, 0x64, 0xb7, 0xa5, 0xaa, 0xa0, 0xd0, 0x2c, 0x55,
+	0x11, 0x5c, 0xac, 0xf1, 0xee, 0x74, 0xb3, 0xea, 0x7a, 0xc6, 0xd9, 0x99, 0xad, 0xe2, 0xa2, 0x0a,
+	0x89, 0x1b, 0x37, 0x24, 0x8e, 0x1c, 0x0a, 0xff, 0x0a, 0x07, 0xd4, 0x63, 0x11, 0x17, 0x4e, 0x15,
+	0x4a, 0x10, 0x07, 0x0e, 0xdc, 0xe1, 0x84, 0x76, 0x66, 0xbc, 0xf1, 0x23, 0x7e, 0xc4, 0x21, 0x12,
+	0x27, 0xaf, 0x67, 0xbe, 0xef, 0x37, 0xbf, 0xdf, 0xf7, 0x9a, 0x81, 0xd5, 0x26, 0x89, 0x78, 0x83,
+	0x78, 0x3b, 0x24, 0x64, 0x8e, 0xfe, 0x76, 0x3c, 0xce, 0x04, 0x65, 0x22, 0x11, 0xce, 0x6e, 0x42,
+	0xe3, 0x96, 0xdd, 0x8c, 0xb9, 0xe4, 0x78, 0xa9, 0xc3, 0xd2, 0xd6, 0xdf, 0x76, 0x66, 0x59, 0x5c,
+	0x0c, 0x78, 0xc0, 0x95, 0xa1, 0x93, 0x7e, 0x69, 0x9f, 0xe2, 0x52, 0xc0, 0x79, 0x10, 0x51, 0x87,
+	0x34, 0x43, 0x87, 0x30, 0xc6, 0x25, 0x91, 0x21, 0x67, 0xc2, 0xec, 0xbe, 0x3a, 0xf4, 0xec, 0x26,
+	0x89, 0x49, 0xa3, 0x6d, 0x7a, 0xc1, 0x00, 0xa9, 0x7f, 0xf5, 0xe4, 0xae, 0x43, 0x98, 0xe1, 0x65,
+	0x2d, 0x02, 0xde, 0x4e, 0x69, 0xde, 0x52, 0xf6, 0x2e, 0xdd, 0x4d, 0xa8, 0x90, 0xd6, 0x67, 0xf0,
+	0x7c, 0xd7, 0xaa, 0x68, 0xa6, 0xc0, 0xb8, 0x0a, 0x79, 0x8d, 0x5b, 0x40, 0x65, 0xb4, 0x3a, 0xbf,
+	0xbe, 0x6c, 0x0f, 0x53, 0x65, 0x6b, 0xef, 0xea, 0xcc, 0xe3, 0xa7, 0x17, 0xa7, 0x5c, 0xe3, 0x69,
+	0x3d, 0x42, 0xb0, 0xac, 0xb0, 0xb7, 0x13, 0x9a, 0x50, 0xff, 0x26, 0x15, 0x82, 0x04, 0x54, 0xbc,
+	0xcf, 0xe3, 0x4f, 0xc2, 0x80, 0x85, 0x2c, 0x30, 0x1c, 0xf0, 0x36, 0xc0, 0x7d, 0x12, 0x55, 0x7c,
+	0x3f, 0xa6, 0x42, 0x1f, 0x78, 0xb6, 0xba, 0xf6, 0xcf, 0xd3, 0x8b, 0x97, 0x82, 0x50, 0xee, 0x24,
+	0x75, 0xdb, 0xe3, 0x0d, 0xc7, 0xe3, 0xa2, 0xc1, 0x85, 0xf9, 0xb9, 0x24, 0xfc, 0x7b, 0x8e, 0x6c,
+	0x35, 0xa9, 0xb0, 0xef, 0x64, 0x8e, 0x6e, 0x07, 0x08, 0x5e, 0x86, 0x85, 0xdd, 0xf4, 0xd4, 0xdb,
+	0xad, 0x26, 0xfd, 0x88, 0x34, 0x68, 0x21, 0x57, 0x46, 0xab, 0x73, 0x6e, 0xf7, 0xa2, 0xf5, 0x00,
+	0x5e, 0x1e, 0x41, 0xd0, 0x84, 0x63, 0x1b, 0x16, 0x1a, 0x7a, 0xf7, 0x36, 0x4f, 0xf7, 0x0a, 0xa8,
+	0x3c, 0xbd, 0x3a, 0xbf, 0xfe, 0xfa, 0xf0, 0xa8, 0xdc, 0xec, 0x74, 0x71, 0xbb, 0x11, 0xac, 0x2f,
+	0x61, 0xa1, 0x6b, 0x1f, 0x2f, 0xc2, 0x2c, 0xe3, 0xcc, 0xa3, 0x3a, 0x00, 0xae, 0xfe, 0x83, 0x9f,
+	0x85, 0x5c, 0xe8, 0x2b, 0xf6, 0x33, 0x6e, 0x2e, 0xf4, 0x71, 0x19, 0xe6, 0xeb, 0x2d, 0x49, 0x85,
+	0xe1, 0x31, 0xad, 0x6c, 0x3b, 0x97, 0xf0, 0x0a, 0x4c, 0x37, 0x44, 0x50, 0x98, 0x51, 0x79, 0x5b,
+	0xb4, 0x75, 0x41, 0xd8, 0xed, 0x82, 0xb0, 0x2b, 0xac, 0xe5, 0xa6, 0x06, 0xd6, 0xdf, 0x08, 0xf0,
+	0x1d, 0x12, 0x85, 0x3e, 0x91, 0x5a, 0x30, 0x91, 0x49, 0x4c, 0x4f, 0x23, 0x19, 0x4b, 0x30, 0x27,
+	0xda, 0xf8, 0x4a, 0xca, 0x59, 0xf7, 0x70, 0x21, 0xdd, 0xa5, 0x7b, 0x32, 0x26, 0x57, 0x89, 0x24,
+	0x46, 0xcf, 0xe1, 0x02, 0x7e, 0x0b, 0xce, 0xd3, 0x3d, 0x49, 0x63, 0x46, 0xa2, 0x8a, 0xe7, 0xf1,
+	0x84, 0xc9, 0x36, 0xb5, 0x19, 0x95, 0xd1, 0x01, 0xbb, 0x29, 0x6a, 0x33, 0xa9, 0x47, 0xa1, 0xf7,
+	0x01, 0x6d, 0x15, 0x66, 0x35, 0x6a, 0xb6, 0x60, 0x3d, 0xca, 0xc1, 0x0b, 0x26, 0xfa, 0x9f, 0x86,
+	0x72, 0x27, 0x53, 0x2f, 0xc6, 0xcc, 0x82, 0x89, 0xf1, 0xf4, 0x88, 0x18, 0xe3, 0x0f, 0xe1, 0x4c,
+	0x2a, 0x54, 0x49, 0x9b, 0x51, 0x25, 0xf3, 0xe6, 0xf0, 0x92, 0xe9, 0x4f, 0x88, 0x9b, 0x21, 0xf4,
+	0xe6, 0x7e, 0xb6, 0x3f, 0xf7, 0xaf, 0xc1, 0x39, 0x2d, 0xb2, 0xe2, 0x79, 0x54, 0x08, 0x75, 0x6e,
+	0x5e, 0x99, 0xf5, 0xad, 0xab, 0xb8, 0xc7, 0x31, 0x8f, 0x95, 0xd1, 0x33, 0x26, 0xee, 0xed, 0x05,
+	0xeb, 0x47, 0x04, 0x2f, 0xaa, 0xde, 0x68, 0x77, 0xc5, 0x0d, 0xa6, 0xba, 0xa4, 0xdd, 0xb3, 0x7d,
+	0x0d, 0x86, 0x8e, 0x68, 0x30, 0xfc, 0x10, 0xca, 0xe2, 0x5e, 0xd8, 0xbc, 0x76, 0x3f, 0xf4, 0x29,
+	0xf3, 0xe8, 0xad, 0x98, 0xa7, 0x5f, 0x7e, 0xb5, 0x75, 0x58, 0x29, 0xba, 0x20, 0x26, 0x29, 0xb1,
+	0x91, 0xd0, 0x16, 0x87, 0xa5, 0xa3, 0x35, 0x98, 0xb6, 0xfe, 0x18, 0xce, 0x98, 0xa6, 0x14, 0xa6,
+	0xa3, 0x37, 0xc6, 0xea, 0xe8, 0xee, 0x9a, 0x71, 0x33, 0x10, 0xeb, 0x7b, 0x34, 0x68, 0xa2, 0xb8,
+	0x34, 0x22, 0xad, 0x8e, 0x99, 0x37, 0x5e, 0xfc, 0xba, 0x9b, 0x31, 0xf7, 0x1f, 0x34, 0xa3, 0xd5,
+	0x82, 0x95, 0x51, 0x0c, 0x4f, 0x2b, 0x3a, 0x3f, 0xa0, 0x41, 0x67, 0x57, 0xa4, 0xa4, 0x42, 0xfe,
+	0x1f, 0xc2, 0xf3, 0x00, 0x5e, 0x19, 0x49, 0xf1, 0xb4, 0xe2, 0x53, 0x32, 0xe5, 0x7a, 0x9d, 0xca,
+	0x4a, 0x14, 0x29, 0x06, 0xa9, 0xcc, 0xec, 0xae, 0x7e, 0x1b, 0x5e, 0x1a, 0xb0, 0x6f, 0x18, 0x9d,
+	0x87, 0xbc, 0x0a, 0x90, 0xe6, 0x33, 0xe7, 0x9a, 0x7f, 0xeb, 0x5f, 0x03, 0xcc, 0x2a, 0x4f, 0xfc,
+	0x1d, 0x82, 0xbc, 0xbe, 0xac, 0xf1, 0x88, 0x49, 0xd4, 0xff, 0x56, 0x28, 0xae, 0x1d, 0xc3, 0x43,
+	0x33, 0xb2, 0xde, 0xf8, 0xea, 0x97, 0xdf, 0xbf, 0xcd, 0xad, 0xe0, 0x65, 0x67, 0x8c, 0x37, 0x0c,
+	0xfe, 0x03, 0x41, 0x61, 0xd0, 0x5d, 0x8c, 0xab, 0x63, 0x9c, 0x3e, 0xe2, 0xa5, 0x51, 0xbc, 0x72,
+	0x22, 0x0c, 0xa3, 0xa9, 0xa2, 0x34, 0x6d, 0xe1, 0x4d, 0x67, 0xd4, 0x9b, 0x30, 0xa1, 0x7e, 0xad,
+	0x9d, 0xdd, 0xda, 0x5d, 0x1e, 0xd7, 0x84, 0xd1, 0xf2, 0x27, 0x82, 0x0b, 0x03, 0x1b, 0x10, 0x4f,
+	0xc4, 0xb2, 0x67, 0xc0, 0x14, 0xaf, 0x9e, 0x0c, 0xc4, 0x68, 0xad, 0x2a, 0xad, 0xef, 0xe0, 0xcb,
+	0xc7, 0xd7, 0x1a, 0xb7, 0xe5, 0xfc, 0x85, 0xa0, 0x38, 0xb8, 0x9d, 0xf0, 0x44, 0x44, 0x7b, 0x07,
+	0x46, 0xf1, 0xda, 0x09, 0x51, 0x8c, 0xde, 0x2b, 0x4a, 0xef, 0xbb, 0x78, 0xeb, 0xf8, 0x7a, 0x49,
+	0xa6, 0xe8, 0x67, 0x04, 0xcf, 0xf5, 0x5c, 0x39, 0x78, 0x73, 0x0c, 0x7e, 0x47, 0x5f, 0xb5, 0xc5,
+	0xcb, 0x93, 0xb8, 0x1a, 0x3d, 0xd7, 0x95, 0x9e, 0x0a, 0x7e, 0x6f, 0xb8, 0x9e, 0x4c, 0x48, 0xc8,
+	0x6a, 0x4a, 0x9b, 0xf3, 0x45, 0xd7, 0xa4, 0x7d, 0x88, 0x7f, 0x42, 0x70, 0xae, 0x77, 0xee, 0xe0,
+	0x71, 0x98, 0x0d, 0x18, 0x66, 0xc5, 0xad, 0x89, 0x7c, 0x8d, 0xac, 0x4d, 0x25, 0x6b, 0x03, 0xaf,
+	0x0d, 0x97, 0x15, 0x50, 0x59, 0x23, 0x51, 0xa4, 0x25, 0xd5, 0x58, 0x0a, 0x51, 0xbd, 0xf1, 0x78,
+	0xbf, 0x84, 0x9e, 0xec, 0x97, 0xd0, 0x6f, 0xfb, 0x25, 0xf4, 0xcd, 0x41, 0x69, 0xea, 0xc9, 0x41,
+	0x69, 0xea, 0xd7, 0x83, 0xd2, 0xd4, 0xe7, 0x4e, 0xc7, 0xad, 0x71, 0x04, 0xec, 0x5e, 0x07, 0xb0,
+	0xba, 0x42, 0xea, 0x79, 0xf5, 0xe0, 0xdb, 0xf8, 0x37, 0x00, 0x00, 0xff, 0xff, 0x9c, 0xdd, 0x77,
+	0xc8, 0x1c, 0x0e, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -716,6 +925,10 @@ type QueryClient interface {
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// Queries a list of QueuedMessagesForSigning items.
 	QueuedMessagesForSigning(ctx context.Context, in *QueryQueuedMessagesForSigningRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForSigningResponse, error)
+	// Queries a list of QueuedMessagesForRelaying items.
+	QueuedMessagesForRelaying(ctx context.Context, in *QueryQueuedMessagesForRelayingRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForRelayingResponse, error)
+	// Queries a list of QueuedMessagesForAttesting items.
+	QueuedMessagesForAttesting(ctx context.Context, in *QueryQueuedMessagesForAttestingRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForAttestingResponse, error)
 	// Queries a list of MessagesInQueue items.
 	MessagesInQueue(ctx context.Context, in *QueryMessagesInQueueRequest, opts ...grpc.CallOption) (*QueryMessagesInQueueResponse, error)
 	// Queries a list of GetAllQueueNames items.
@@ -748,6 +961,24 @@ func (c *queryClient) QueuedMessagesForSigning(ctx context.Context, in *QueryQue
 	return out, nil
 }
 
+func (c *queryClient) QueuedMessagesForRelaying(ctx context.Context, in *QueryQueuedMessagesForRelayingRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForRelayingResponse, error) {
+	out := new(QueryQueuedMessagesForRelayingResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.consensus.Query/QueuedMessagesForRelaying", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) QueuedMessagesForAttesting(ctx context.Context, in *QueryQueuedMessagesForAttestingRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForAttestingResponse, error) {
+	out := new(QueryQueuedMessagesForAttestingResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.consensus.Query/QueuedMessagesForAttesting", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) MessagesInQueue(ctx context.Context, in *QueryMessagesInQueueRequest, opts ...grpc.CallOption) (*QueryMessagesInQueueResponse, error) {
 	out := new(QueryMessagesInQueueResponse)
 	err := c.cc.Invoke(ctx, "/palomachain.paloma.consensus.Query/MessagesInQueue", in, out, opts...)
@@ -772,6 +1003,10 @@ type QueryServer interface {
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// Queries a list of QueuedMessagesForSigning items.
 	QueuedMessagesForSigning(context.Context, *QueryQueuedMessagesForSigningRequest) (*QueryQueuedMessagesForSigningResponse, error)
+	// Queries a list of QueuedMessagesForRelaying items.
+	QueuedMessagesForRelaying(context.Context, *QueryQueuedMessagesForRelayingRequest) (*QueryQueuedMessagesForRelayingResponse, error)
+	// Queries a list of QueuedMessagesForAttesting items.
+	QueuedMessagesForAttesting(context.Context, *QueryQueuedMessagesForAttestingRequest) (*QueryQueuedMessagesForAttestingResponse, error)
 	// Queries a list of MessagesInQueue items.
 	MessagesInQueue(context.Context, *QueryMessagesInQueueRequest) (*QueryMessagesInQueueResponse, error)
 	// Queries a list of GetAllQueueNames items.
@@ -787,6 +1022,12 @@ func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsReq
 }
 func (*UnimplementedQueryServer) QueuedMessagesForSigning(ctx context.Context, req *QueryQueuedMessagesForSigningRequest) (*QueryQueuedMessagesForSigningResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueuedMessagesForSigning not implemented")
+}
+func (*UnimplementedQueryServer) QueuedMessagesForRelaying(ctx context.Context, req *QueryQueuedMessagesForRelayingRequest) (*QueryQueuedMessagesForRelayingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueuedMessagesForRelaying not implemented")
+}
+func (*UnimplementedQueryServer) QueuedMessagesForAttesting(ctx context.Context, req *QueryQueuedMessagesForAttestingRequest) (*QueryQueuedMessagesForAttestingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueuedMessagesForAttesting not implemented")
 }
 func (*UnimplementedQueryServer) MessagesInQueue(ctx context.Context, req *QueryMessagesInQueueRequest) (*QueryMessagesInQueueResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MessagesInQueue not implemented")
@@ -831,6 +1072,42 @@ func _Query_QueuedMessagesForSigning_Handler(srv interface{}, ctx context.Contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).QueuedMessagesForSigning(ctx, req.(*QueryQueuedMessagesForSigningRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueuedMessagesForRelaying_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryQueuedMessagesForRelayingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueuedMessagesForRelaying(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/palomachain.paloma.consensus.Query/QueuedMessagesForRelaying",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueuedMessagesForRelaying(ctx, req.(*QueryQueuedMessagesForRelayingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueuedMessagesForAttesting_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryQueuedMessagesForAttestingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueuedMessagesForAttesting(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/palomachain.paloma.consensus.Query/QueuedMessagesForAttesting",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueuedMessagesForAttesting(ctx, req.(*QueryQueuedMessagesForAttestingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -882,6 +1159,14 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "QueuedMessagesForSigning",
 			Handler:    _Query_QueuedMessagesForSigning_Handler,
+		},
+		{
+			MethodName: "QueuedMessagesForRelaying",
+			Handler:    _Query_QueuedMessagesForRelaying_Handler,
+		},
+		{
+			MethodName: "QueuedMessagesForAttesting",
+			Handler:    _Query_QueuedMessagesForAttesting_Handler,
 		},
 		{
 			MethodName: "MessagesInQueue",
@@ -1294,6 +1579,154 @@ func (m *QueryMessagesInQueueResponse) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryQueuedMessagesForRelayingRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryQueuedMessagesForRelayingRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryQueuedMessagesForRelayingRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ValAddress) > 0 {
+		i -= len(m.ValAddress)
+		copy(dAtA[i:], m.ValAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ValAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.QueueTypeName) > 0 {
+		i -= len(m.QueueTypeName)
+		copy(dAtA[i:], m.QueueTypeName)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.QueueTypeName)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryQueuedMessagesForRelayingResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryQueuedMessagesForRelayingResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryQueuedMessagesForRelayingResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Messages) > 0 {
+		for iNdEx := len(m.Messages) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Messages[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryQueuedMessagesForAttestingRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryQueuedMessagesForAttestingRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryQueuedMessagesForAttestingRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ValAddress) > 0 {
+		i -= len(m.ValAddress)
+		copy(dAtA[i:], m.ValAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ValAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.QueueTypeName) > 0 {
+		i -= len(m.QueueTypeName)
+		copy(dAtA[i:], m.QueueTypeName)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.QueueTypeName)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryQueuedMessagesForAttestingResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryQueuedMessagesForAttestingResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryQueuedMessagesForAttestingResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Messages) > 0 {
+		for iNdEx := len(m.Messages) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Messages[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *QueryGetAllQueueNamesRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1521,6 +1954,70 @@ func (m *QueryMessagesInQueueRequest) Size() (n int) {
 }
 
 func (m *QueryMessagesInQueueResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Messages) > 0 {
+		for _, e := range m.Messages {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *QueryQueuedMessagesForRelayingRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.QueueTypeName)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.ValAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryQueuedMessagesForRelayingResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Messages) > 0 {
+		for _, e := range m.Messages {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *QueryQueuedMessagesForAttestingRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.QueueTypeName)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.ValAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryQueuedMessagesForAttestingResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2707,6 +3204,406 @@ func (m *QueryMessagesInQueueResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: QueryMessagesInQueueResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Messages", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Messages = append(m.Messages, &MessageWithSignatures{})
+			if err := m.Messages[len(m.Messages)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryQueuedMessagesForRelayingRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForRelayingRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForRelayingRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueueTypeName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.QueueTypeName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValAddress", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValAddress = append(m.ValAddress[:0], dAtA[iNdEx:postIndex]...)
+			if m.ValAddress == nil {
+				m.ValAddress = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryQueuedMessagesForRelayingResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForRelayingResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForRelayingResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Messages", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Messages = append(m.Messages, &MessageWithSignatures{})
+			if err := m.Messages[len(m.Messages)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryQueuedMessagesForAttestingRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForAttestingRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForAttestingRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueueTypeName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.QueueTypeName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValAddress", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValAddress = append(m.ValAddress[:0], dAtA[iNdEx:postIndex]...)
+			if m.ValAddress == nil {
+				m.ValAddress = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryQueuedMessagesForAttestingResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForAttestingResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForAttestingResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:

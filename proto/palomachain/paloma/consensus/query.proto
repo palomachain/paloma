@@ -21,6 +21,20 @@ service Query {
         "/palomachain/paloma/consensus/queued_messages_for_signing";
   }
 
+  // Queries a list of QueuedMessagesForRelaying items.
+  rpc QueuedMessagesForRelaying(QueryQueuedMessagesForRelayingRequest)
+      returns (QueryQueuedMessagesForRelayingResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/consensus/queued_messages_for_relaying";
+  }
+
+  // Queries a list of QueuedMessagesForAttesting items.
+  rpc QueuedMessagesForAttesting(QueryQueuedMessagesForAttestingRequest)
+      returns (QueryQueuedMessagesForAttestingResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/consensus/queued_messages_for_attesting";
+  }
+
   // Queries a list of MessagesInQueue items.
   rpc MessagesInQueue(QueryMessagesInQueueRequest)
       returns (QueryMessagesInQueueResponse) {
@@ -89,6 +103,24 @@ message QueryMessagesInQueueRequest {
 }
 
 message QueryMessagesInQueueResponse {
+  repeated MessageWithSignatures messages = 1;
+}
+
+message QueryQueuedMessagesForRelayingRequest {
+  string queueTypeName                    = 1;
+  bytes  valAddress = 2[(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
+}
+
+message QueryQueuedMessagesForRelayingResponse {
+  repeated MessageWithSignatures messages = 1;
+}
+
+message QueryQueuedMessagesForAttestingRequest {
+  string queueTypeName                    = 1;
+  bytes  valAddress = 2 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
+}
+
+message QueryQueuedMessagesForAttestingResponse {
   repeated MessageWithSignatures messages = 1;
 }
 

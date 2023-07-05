@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	proto "github.com/cosmos/gogoproto/proto"
+	"github.com/cosmos/gogoproto/proto"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -40,6 +40,12 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&TxExecutedProof{},
 		&SmartContractExecutionErrorProof{},
 		&ValidatorBalancesAttestationRes{},
+	)
+	registry.RegisterImplementations(
+		(*TurnstoneMsg)(nil),
+		&Message{},
+		&ValidatorBalancesAttestation{},
+		&CollectFunds{},
 	)
 	// any arbitrary message
 	registry.RegisterImplementations(

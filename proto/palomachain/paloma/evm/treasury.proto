@@ -16,4 +16,5 @@ message FundCollectedEvent {
 message CollectFunds {
   uint64 fromBlockHeight = 1;
   uint64 toBlockHeight = 2;
+  string assignee = 3;
 }

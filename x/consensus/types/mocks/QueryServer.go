@@ -92,6 +92,58 @@ func (_m *QueryServer) Params(_a0 context.Context, _a1 *types.QueryParamsRequest
 	return r0, r1
 }
 
+// QueuedMessagesForAttesting provides a mock function with given fields: _a0, _a1
+func (_m *QueryServer) QueuedMessagesForAttesting(_a0 context.Context, _a1 *types.QueryQueuedMessagesForAttestingRequest) (*types.QueryQueuedMessagesForAttestingResponse, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *types.QueryQueuedMessagesForAttestingResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryQueuedMessagesForAttestingRequest) (*types.QueryQueuedMessagesForAttestingResponse, error)); ok {
+		return rf(_a0, _a1)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryQueuedMessagesForAttestingRequest) *types.QueryQueuedMessagesForAttestingResponse); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.QueryQueuedMessagesForAttestingResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *types.QueryQueuedMessagesForAttestingRequest) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// QueuedMessagesForRelaying provides a mock function with given fields: _a0, _a1
+func (_m *QueryServer) QueuedMessagesForRelaying(_a0 context.Context, _a1 *types.QueryQueuedMessagesForRelayingRequest) (*types.QueryQueuedMessagesForRelayingResponse, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *types.QueryQueuedMessagesForRelayingResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryQueuedMessagesForRelayingRequest) (*types.QueryQueuedMessagesForRelayingResponse, error)); ok {
+		return rf(_a0, _a1)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryQueuedMessagesForRelayingRequest) *types.QueryQueuedMessagesForRelayingResponse); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.QueryQueuedMessagesForRelayingResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *types.QueryQueuedMessagesForRelayingRequest) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // QueuedMessagesForSigning provides a mock function with given fields: _a0, _a1
 func (_m *QueryServer) QueuedMessagesForSigning(_a0 context.Context, _a1 *types.QueryQueuedMessagesForSigningRequest) (*types.QueryQueuedMessagesForSigningResponse, error) {
 	ret := _m.Called(_a0, _a1)

@@ -16,6 +16,7 @@ message ValidatorBalancesAttestation {
     (gogoproto.nullable) = false,
     (gogoproto.stdtime) = true
   ];
+  string assignee = 7;
 }
 
 message ValidatorBalancesAttestationRes {
