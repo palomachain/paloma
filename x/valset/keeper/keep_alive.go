@@ -14,7 +14,10 @@ import (
 
 const (
 	// TODO: make this a param
-	defaultKeepAliveDuration = 5 * time.Minute
+	defaultKeepAliveDuration        = 5 * time.Minute
+	cValidatorJailedErrorMessage    = "validator is jailed"
+	cValidatorNotBondedErrorMessage = "validator is not bonded"
+	cJailingImminentThreshold       = time.Second * 30
 )
 
 type keepAliveData struct {
@@ -25,7 +28,10 @@ type keepAliveData struct {
 
 func (k Keeper) KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress) error {
 	if err := k.CanAcceptValidator(ctx, valAddr); err != nil {
-		if !errors.Is(err, ErrValidatorNotInKeepAlive) {
+		// Make sure we allow validators to keep alive even if jailed
+		// or not bonded.
+		// https://github.com/VolumeFi/paloma/issues/254
+		if whoops.Is(err, ErrValidatorWithAddrNotFound) {
 			return err
 		}
 	}
@@ -57,12 +63,18 @@ func (k Keeper) ValidatorAliveUntil(ctx sdk.Context, valAddr sdk.ValAddress) (ti
 	if !store.Has(valAddr) {
 		return time.Time{}, ErrValidatorNotInKeepAlive.Format(valAddr)
 	}
+
 	dataBz := store.Get(valAddr)
 	var data keepAliveData
 	err := json.Unmarshal(dataBz, &data)
 	if err != nil {
 		return time.Time{}, err
 	}
+
+	if data.AliveUntil.UTC().Sub(ctx.BlockTime().UTC()) < cJailingImminentThreshold {
+		k.Logger(ctx).Info("Validator TTL is about to run out. Jailing is imminent.", "validator-address", data.ValAddr)
+	}
+
 	return data.AliveUntil, nil
 }
 
@@ -74,11 +86,11 @@ func (k Keeper) CanAcceptValidator(ctx sdk.Context, valAddr sdk.ValAddress) erro
 	}
 
 	if stakingVal.IsJailed() {
-		return ErrValidatorCannotBePigeon.Format(valAddr.String()).WrapS("validator is jailed")
+		return ErrValidatorCannotBePigeon.Format(valAddr.String()).WrapS(cValidatorJailedErrorMessage)
 	}
 
 	if !stakingVal.IsBonded() {
-		return ErrValidatorCannotBePigeon.Format(valAddr.String()).WrapS("validator is not bonded")
+		return ErrValidatorCannotBePigeon.Format(valAddr.String()).WrapS(cValidatorNotBondedErrorMessage)
 	}
 
 	return nil
