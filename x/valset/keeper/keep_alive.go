@@ -17,7 +17,7 @@ const (
 	defaultKeepAliveDuration        = 5 * time.Minute
 	cValidatorJailedErrorMessage    = "validator is jailed"
 	cValidatorNotBondedErrorMessage = "validator is not bonded"
-	cJailingImminentThreshold       = time.Second * 30
+	cJailingImminentThreshold       = 2 * time.Minute
 )
 
 type keepAliveData struct {
