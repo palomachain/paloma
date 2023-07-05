@@ -458,7 +458,7 @@ func TestPickValidatorForMessage(t *testing.T) {
 	testcases := []struct {
 		name        string
 		setup       func() MsgAssigner
-		weights     types.RelayWeights
+		weights     *types.RelayWeights
 		expected    string
 		expectedErr error
 	}{
@@ -491,7 +491,7 @@ func TestPickValidatorForMessage(t *testing.T) {
 
 				return msgAssigner
 			},
-			weights: types.RelayWeights{
+			weights: &types.RelayWeights{
 				ExecutionTime: "0.5",
 				SuccessRate:   "0.5",
 				Uptime:        "0.5",

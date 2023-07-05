@@ -195,7 +195,7 @@ func pickValidator(ctx sdk.Context, validatorsInfos map[string]ValidatorInfo, we
 	return highScorers[detRand.Intn(len(highScorers))]
 }
 
-func (ma MsgAssigner) PickValidatorForMessage(ctx sdk.Context, weights types.RelayWeights) (string, error) {
+func (ma MsgAssigner) PickValidatorForMessage(ctx sdk.Context, weights *types.RelayWeights) (string, error) {
 	currentSnapshot, err := ma.ValsetKeeper.GetCurrentSnapshot(ctx)
 	if err != nil {
 		return "", err
@@ -213,8 +213,8 @@ func (ma MsgAssigner) PickValidatorForMessage(ctx sdk.Context, weights types.Rel
 
 	validatorsInfos := buildValidatorsInfos(assignableValidators)
 
-	if (weights == types.RelayWeights{}) {
-		weights = types.RelayWeights{
+	if weights == nil {
+		weights = &types.RelayWeights{
 			ExecutionTime: "1.0",
 			SuccessRate:   "1.0",
 			Uptime:        "1.0",

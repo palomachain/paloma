@@ -142,7 +142,7 @@ func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string
 	if err != nil {
 		return "", err
 	}
-	return k.msgAssigner.PickValidatorForMessage(ctx, *weights)
+	return k.msgAssigner.PickValidatorForMessage(ctx, weights)
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
