@@ -3,6 +3,7 @@ package valset
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -19,9 +20,12 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_            module.AppModule      = AppModule{}
+	_            module.AppModuleBasic = AppModuleBasic{}
+	nextJailTick                       = time.Now().UTC().Add(cJailTickInterval)
 )
+
+const cJailTickInterval = time.Minute
 
 // ----------------------------------------------------------------------------
 // AppModuleBasic
@@ -164,10 +168,12 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		}
 	}
 
-	if ctx.BlockHeight() > 50 && ctx.BlockHeight()%10 == 0 {
+	if ctx.BlockHeight() > 50 && time.Now().UTC().After(nextJailTick) {
 		if err := am.keeper.JailInactiveValidators(ctx); err != nil {
 			am.keeper.Logger(ctx).Error("error while jailing inactive validators", "error", err)
 		}
+
+		nextJailTick = time.Now().UTC().Add(cJailTickInterval)
 	}
 	return []abci.ValidatorUpdate{}
 }
