@@ -70,6 +70,9 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		a.StakingKeeper.SetValidator(ctx, val)
 	}
 
+	_, err = a.ValsetKeeper.TriggerSnapshotBuild(ctx)
+	require.NoError(t, err)
+
 	smartContractAddr := common.BytesToAddress(rand.Bytes(5))
 	err = a.EvmKeeper.AddSmartContractExecutionToConsensus(
 		ctx,
@@ -991,6 +994,72 @@ var _ = Describe("change min on chain balance", func() {
 	When("chain info does not exists", func() {
 		It("returns an error", func() {
 			err := a.EvmKeeper.ChangeMinOnChainBalance(ctx, newChain.GetChainReferenceID(), big.NewInt(888))
+			Expect(err).To(MatchError(keeper.ErrChainNotFound))
+		})
+	})
+})
+
+var _ = Describe("change relay weights", func() {
+	var a app.TestApp
+	var ctx sdk.Context
+	newChain := &types.AddChainProposal{
+		ChainReferenceID:  "eth-main",
+		Title:             "bla",
+		Description:       "bla",
+		BlockHeight:       uint64(123),
+		BlockHashAtHeight: "0x1234",
+	}
+
+	BeforeEach(func() {
+		a = app.NewTestApp(GinkgoT(), false)
+		ctx = a.NewContext(false, tmproto.Header{
+			Height: 5,
+		})
+	})
+
+	When("chain info exists", func() {
+		BeforeEach(func() {
+			err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain.GetChainReferenceID(), newChain.GetChainID(), 1, "a", big.NewInt(55))
+			Expect(err).To(BeNil())
+		})
+
+		BeforeEach(func() {
+			ci, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
+			Expect(err).To(BeNil())
+			weights := ci.GetRelayWeights()
+			Expect(weights).To(Equal(&types.RelayWeights{
+				Fee:           "1.0",
+				Uptime:        "1.0",
+				SuccessRate:   "1.0",
+				ExecutionTime: "1.0",
+			}))
+		})
+
+		It("changes the relay weights", func() {
+			newWeights := &types.RelayWeights{
+				Fee:           "0.12",
+				Uptime:        "0.34",
+				SuccessRate:   "0.56",
+				ExecutionTime: "0.78",
+			}
+			err := a.EvmKeeper.SetRelayWeights(ctx, newChain.GetChainReferenceID(), newWeights)
+			Expect(err).To(BeNil())
+
+			ci, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
+			Expect(err).To(BeNil())
+			weights := ci.GetRelayWeights()
+			Expect(weights).To(Equal(newWeights))
+		})
+	})
+
+	When("chain info does not exists", func() {
+		It("returns an error", func() {
+			err := a.EvmKeeper.SetRelayWeights(ctx, newChain.GetChainReferenceID(), &types.RelayWeights{
+				Fee:           "0.12",
+				Uptime:        "0.34",
+				SuccessRate:   "0.56",
+				ExecutionTime: "0.78",
+			})
 			Expect(err).To(MatchError(keeper.ErrChainNotFound))
 		})
 	})

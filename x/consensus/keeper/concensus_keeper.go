@@ -4,8 +4,10 @@ import (
 	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -77,26 +79,73 @@ func (k Keeper) PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg con
 }
 
 // GetMessagesForSigning returns messages for a single validator that needs to be signed.
-func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	all, err := k.GetMessagesFromQueue(ctx, queueTypeName, 1000)
+func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 1000)
 	if err != nil {
 		return nil, err
 	}
-	for _, msg := range all {
-		// did this validator already signed this message
-		alreadySigned := false
+
+	// Filter out already signed messages
+	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
 		for _, signData := range msg.GetSignData() {
-			if signData.ValAddress.Equals(val) {
-				alreadySigned = true
-				break
+			if signData.ValAddress.Equals(valAddress) {
+				return false
 			}
 		}
-		if alreadySigned {
-			// they have already signed it
-			continue
-		}
-		msgs = append(msgs, msg)
+		return true
+	})
+
+	return msgs, nil
+}
+
+// GetMessagesForRelaying returns messages for a single validator to relay.
+func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 1000)
+	if err != nil {
+		return nil, err
 	}
+
+	// Filter down to just messages assigned to this validator
+	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
+		var unpackedMsg evmtypes.TurnstoneMsg
+		if err := k.cdc.UnpackAny(msg.GetMsg(), &unpackedMsg); err != nil {
+			k.Logger(ctx).With("err", err).Error("Failed to unpack message")
+			return false
+		}
+
+		return unpackedMsg.GetAssignee() == valAddress.String()
+	})
+
+	// Filter down to just messages that have neither publicAccessData nor errorData
+	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
+		return msg.GetPublicAccessData() == nil && msg.GetErrorData() == nil
+	})
+
+	return msgs, nil
+}
+
+// GetMessagesForAttesting returns messages for a single validator to attest.
+func (k Keeper) GetMessagesForAttesting(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 1000)
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter down to just messages that have either publicAccessData or errorData
+	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
+		return msg.GetPublicAccessData() != nil || msg.GetErrorData() != nil
+	})
+
+	// Filter out messages this validator has already attested to
+	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
+		for _, evidence := range msg.GetEvidence() {
+			if evidence.ValAddress.Equals(valAddress) {
+				return false
+			}
+		}
+
+		return true
+	})
 
 	return msgs, nil
 }
@@ -374,4 +423,47 @@ func (k Keeper) queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *ty
 		BytesToSign: msg.GetBytesToSign(),
 		Msg:         anyMsg,
 	}
+}
+
+func (k Keeper) queuedMessageToMessageWithSignatures(msg types.QueuedSignedMessageI) (types.MessageWithSignatures, error) {
+	consensusMsg, err := msg.ConsensusMsg(k.cdc)
+	if err != nil {
+		return types.MessageWithSignatures{}, err
+	}
+	anyMsg, err := codectypes.NewAnyWithValue(consensusMsg)
+	if err != nil {
+		return types.MessageWithSignatures{}, err
+	}
+
+	var publicAccessData []byte
+
+	if msg.GetPublicAccessData() != nil {
+		publicAccessData = msg.GetPublicAccessData().GetData()
+	}
+
+	var errorData []byte
+
+	if msg.GetErrorData() != nil {
+		errorData = msg.GetErrorData().GetData()
+	}
+
+	respMsg := types.MessageWithSignatures{
+		Nonce:            nonceFromID(msg.GetId()),
+		Id:               msg.GetId(),
+		BytesToSign:      msg.GetBytesToSign(),
+		Msg:              anyMsg,
+		PublicAccessData: publicAccessData,
+		ErrorData:        errorData,
+	}
+
+	for _, signData := range msg.GetSignData() {
+		respMsg.SignData = append(respMsg.SignData, &types.ValidatorSignature{
+			ValAddress:             signData.GetValAddress(),
+			Signature:              signData.GetSignature(),
+			ExternalAccountAddress: signData.GetExternalAccountAddress(),
+			PublicKey:              signData.GetPublicKey(),
+		})
+	}
+
+	return respMsg, nil
 }

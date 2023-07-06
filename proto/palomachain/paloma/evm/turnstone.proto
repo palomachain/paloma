@@ -45,6 +45,7 @@ message Message {
   }
 
   string compassAddr = 6;
+  string assignee = 7;
 }
 
 message TxExecutedProof {

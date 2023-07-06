@@ -13,12 +13,14 @@ const (
 	ProposalTypeRemoveChain             = "EVMRemoveChainProposal"
 	ProposalDeployNewSmartContract      = "EVMDeployNewSmartContract"
 	ProposalTypeChangeMinOnChainBalance = "EVMProposalChangeMinOnChainBalance"
+	ProposalTypeRelayWeights            = "EVMProposalRelayWeights"
 )
 
 var (
 	_ govv1beta1types.Content = &AddChainProposal{}
 	_ govv1beta1types.Content = &RemoveChainProposal{}
 	_ govv1beta1types.Content = &DeployNewSmartContractProposal{}
+	_ govv1beta1types.Content = &RelayWeightsProposal{}
 )
 
 func init() {
@@ -26,6 +28,7 @@ func init() {
 	govv1beta1types.RegisterProposalType(ProposalTypeRemoveChain)
 	govv1beta1types.RegisterProposalType(ProposalDeployNewSmartContract)
 	govv1beta1types.RegisterProposalType(ProposalTypeChangeMinOnChainBalance)
+	govv1beta1types.RegisterProposalType(ProposalTypeRelayWeights)
 }
 
 func (a *AddChainProposal) ProposalRoute() string { return RouterKey }
@@ -73,6 +76,16 @@ func (a *ChangeMinOnChainBalanceProposal) ValidateBasic() error {
 	_, ok := new(big.Int).SetString(a.GetMinOnChainBalance(), 10)
 	if !ok {
 		return whoops.String("invalid balance")
+	}
+
+	return nil
+}
+
+func (a *RelayWeightsProposal) ProposalRoute() string { return RouterKey }
+func (a *RelayWeightsProposal) ProposalType() string  { return ProposalTypeRelayWeights }
+func (a *RelayWeightsProposal) ValidateBasic() error {
+	if err := govv1beta1types.ValidateAbstract(a); err != nil {
+		return err
 	}
 
 	return nil

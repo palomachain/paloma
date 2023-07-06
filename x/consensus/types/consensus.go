@@ -30,6 +30,7 @@ type QueuedSignedMessageI interface {
 	GetErrorData() *ErrorData
 	GetBytesToSign() []byte
 	GetRequireSignatures() bool
+	GetMsg() *types.Any
 }
 
 type Salt struct {

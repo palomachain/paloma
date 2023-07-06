@@ -3,6 +3,7 @@ package palomachain.paloma.evm;
 
 import "gogoproto/gogo.proto";
 import "palomachain/paloma/evm/params.proto";
+import "palomachain/paloma/evm/relay_weights.proto";
 
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
@@ -21,6 +22,7 @@ message GenesisChainInfo {
   uint64 blockHeight       = 3;
   string blockHashAtHeight = 4;
   string minOnChainBalance = 5;
+  RelayWeights relayWeights = 6;
 }
 
 message GenesisSmartContract {

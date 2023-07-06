@@ -24,7 +24,7 @@ func TestExecuteJob(t *testing.T) {
 		{
 			name: "full success scheduling job",
 			msgServer: func() msgServer {
-				schedulerKeeper := mocks.NewSchedulerKeeper(t)
+				schedulerKeeper := mocks.NewKeeper(t)
 				mockAccount := authmocks.NewAccountI(t)
 				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
 
@@ -63,7 +63,7 @@ func TestExecuteJob(t *testing.T) {
 		{
 			name: "error getting job.  returns the error",
 			msgServer: func() msgServer {
-				schedulerKeeper := mocks.NewSchedulerKeeper(t)
+				schedulerKeeper := mocks.NewKeeper(t)
 				mockAccount := authmocks.NewAccountI(t)
 				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
 
@@ -91,7 +91,7 @@ func TestExecuteJob(t *testing.T) {
 		{
 			name: "error in PreJobExecution hook.  continues on to schedule job",
 			msgServer: func() msgServer {
-				schedulerKeeper := mocks.NewSchedulerKeeper(t)
+				schedulerKeeper := mocks.NewKeeper(t)
 				mockAccount := authmocks.NewAccountI(t)
 				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
 
@@ -132,7 +132,7 @@ func TestExecuteJob(t *testing.T) {
 		{
 			name: "error in scheduling.  returns the error",
 			msgServer: func() msgServer {
-				schedulerKeeper := mocks.NewSchedulerKeeper(t)
+				schedulerKeeper := mocks.NewKeeper(t)
 				mockAccount := authmocks.NewAccountI(t)
 				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
 
