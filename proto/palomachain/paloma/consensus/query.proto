@@ -103,7 +103,7 @@ message QueryMessagesInQueueRequest {
 }
 
 message QueryMessagesInQueueResponse {
-  repeated MessageWithSignatures messages = 1;
+  repeated MessageWithSignatures messages = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryQueuedMessagesForRelayingRequest {
@@ -112,7 +112,7 @@ message QueryQueuedMessagesForRelayingRequest {
 }
 
 message QueryQueuedMessagesForRelayingResponse {
-  repeated MessageWithSignatures messages = 1;
+  repeated MessageWithSignatures messages = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryQueuedMessagesForAttestingRequest {
@@ -121,7 +121,7 @@ message QueryQueuedMessagesForAttestingRequest {
 }
 
 message QueryQueuedMessagesForAttestingResponse {
-  repeated MessageWithSignatures messages = 1;
+  repeated MessageWithSignatures messages = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryGetAllQueueNamesRequest {}

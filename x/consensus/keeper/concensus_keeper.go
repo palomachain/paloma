@@ -109,7 +109,6 @@ func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, va
 	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
 		var unpackedMsg evmtypes.TurnstoneMsg
 		if err := k.cdc.UnpackAny(msg.GetMsg(), &unpackedMsg); err != nil {
-			// Log the error
 			k.Logger(ctx).With("err", err).Error("Failed to unpack message")
 			return false
 		}
@@ -426,14 +425,14 @@ func (k Keeper) queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *ty
 	}
 }
 
-func (k Keeper) queuedMessageToMessageWithSignatures(msg types.QueuedSignedMessageI) *types.MessageWithSignatures {
+func (k Keeper) queuedMessageToMessageWithSignatures(msg types.QueuedSignedMessageI) (types.MessageWithSignatures, error) {
 	consensusMsg, err := msg.ConsensusMsg(k.cdc)
 	if err != nil {
-		panic(err)
+		return types.MessageWithSignatures{}, err
 	}
 	anyMsg, err := codectypes.NewAnyWithValue(consensusMsg)
 	if err != nil {
-		panic(err)
+		return types.MessageWithSignatures{}, err
 	}
 
 	var publicAccessData []byte
@@ -448,7 +447,7 @@ func (k Keeper) queuedMessageToMessageWithSignatures(msg types.QueuedSignedMessa
 		errorData = msg.GetErrorData().GetData()
 	}
 
-	respMsg := &types.MessageWithSignatures{
+	respMsg := types.MessageWithSignatures{
 		Nonce:            nonceFromID(msg.GetId()),
 		Id:               msg.GetId(),
 		BytesToSign:      msg.GetBytesToSign(),
@@ -466,5 +465,5 @@ func (k Keeper) queuedMessageToMessageWithSignatures(msg types.QueuedSignedMessa
 		})
 	}
 
-	return respMsg
+	return respMsg, nil
 }

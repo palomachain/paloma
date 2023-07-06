@@ -20,9 +20,13 @@ func (k Keeper) QueuedMessagesForAttesting(goCtx context.Context, req *types.Que
 		return nil, err
 	}
 
-	var res []*types.MessageWithSignatures
-	for _, msg := range msgs {
-		res = append(res, k.queuedMessageToMessageWithSignatures(msg))
+	res := make([]types.MessageWithSignatures, len(msgs))
+	for i, msg := range msgs {
+		msgWithSignatures, err := k.queuedMessageToMessageWithSignatures(msg)
+		if err != nil {
+			return nil, err
+		}
+		res[i] = msgWithSignatures
 	}
 
 	return &types.QueryQueuedMessagesForAttestingResponse{

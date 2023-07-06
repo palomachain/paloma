@@ -60,7 +60,7 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 			errorData = msg.GetErrorData().GetData()
 		}
 
-		approvedMessage := &types.MessageWithSignatures{
+		approvedMessage := types.MessageWithSignatures{
 			Nonce:            msg.Nonce(),
 			Id:               msg.GetId(),
 			Msg:              anyMsg,

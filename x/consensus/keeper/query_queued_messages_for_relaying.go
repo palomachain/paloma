@@ -20,10 +20,14 @@ func (k Keeper) QueuedMessagesForRelaying(goCtx context.Context, req *types.Quer
 		return nil, err
 	}
 
-	var res []*types.MessageWithSignatures
+	var res []types.MessageWithSignatures
 	for _, msg := range msgs {
 		if msg.GetRequireSignatures() {
-			res = append(res, k.queuedMessageToMessageWithSignatures(msg))
+			msgWithSignatures, err := k.queuedMessageToMessageWithSignatures(msg)
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, msgWithSignatures)
 		}
 	}
 
