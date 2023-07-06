@@ -3,7 +3,6 @@ package keeper
 import (
 	"errors"
 	"math"
-	"math/rand"
 	"sort"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -189,10 +188,9 @@ func pickValidator(ctx sdk.Context, validatorsInfos map[string]ValidatorInfo, we
 		}
 	}
 
-	// All else equal, grab a random of our high scorers deterministically within this block
-	detRand := rand.New(rand.NewSource(ctx.BlockHeight())) //nolint:gosec
+	// All else equal, grab one of our high scorers, but not always the same one
 	sort.Strings(highScorers)
-	return highScorers[detRand.Intn(len(highScorers))]
+	return highScorers[int(ctx.BlockHeight())%len(highScorers)]
 }
 
 func (ma MsgAssigner) PickValidatorForMessage(ctx sdk.Context, weights *types.RelayWeights) (string, error) {
