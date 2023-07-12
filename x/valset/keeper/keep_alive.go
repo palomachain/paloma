@@ -172,7 +172,6 @@ func (k Keeper) isValidatorInGracePeriod(ctx sdk.Context, valAddr sdk.ValAddress
 	store := k.gracePeriodStore(ctx)
 	bytes := store.Get(valAddr)
 	return libvalid.NotNil(bytes) && ctx.BlockHeight()-int64(sdk.BigEndianToUint64(bytes)) <= cGracePeriodBlockHeight
-
 }
 
 func (k Keeper) keepAliveStore(ctx sdk.Context) sdk.KVStore {
