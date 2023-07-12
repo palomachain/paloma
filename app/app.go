@@ -3,6 +3,11 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+
+	gravitymodule "github.com/palomachain/paloma/x/gravity"
+	gravityclient "github.com/palomachain/paloma/x/gravity/client"
+	gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
+	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	"io"
 	"os"
 	"path/filepath"
@@ -147,6 +152,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		ibcclientclient.UpgradeProposalHandler,
 		evmclient.ProposalHandler,
 		treasuryclient.ProposalHandler,
+		gravityclient.ProposalHandler,
 	}
 }
 
@@ -178,6 +184,7 @@ var (
 		valsetmodule.AppModuleBasic{},
 		wasm.AppModuleBasic{},
 		evm.AppModuleBasic{},
+		gravitymodule.AppModuleBasic{},
 		palomamodule.AppModuleBasic{},
 		treasurymodule.AppModuleBasic{},
 		consensus.AppModuleBasic{},
@@ -265,6 +272,7 @@ type App struct {
 	PalomaKeeper    palomamodulekeeper.Keeper
 	TreasuryKeeper  treasurymodulekeeper.Keeper
 	EvmKeeper       evmmodulekeeper.Keeper
+	GravityKeeper   gravitymodulekeeper.Keeper
 	wasmKeeper      wasm.Keeper
 
 	// mm is the module manager
@@ -327,6 +335,7 @@ func New(
 		treasurymoduletypes.StoreKey,
 		wasm.StoreKey,
 		evmmoduletypes.StoreKey,
+		gravitymoduletypes.StoreKey,
 		consensusparamtypes.StoreKey,
 		crisistypes.StoreKey,
 	)
@@ -542,6 +551,20 @@ func New(
 		app.EvmKeeper,
 	}
 
+	app.GravityKeeper = gravitymodulekeeper.NewKeeper(
+		appCodec,
+		keys[gravitymoduletypes.StoreKey],
+		app.GetSubspace(gravitymoduletypes.ModuleName),
+		app.AccountKeeper,
+		app.StakingKeeper,
+		app.BankKeeper,
+		app.SlashingKeeper,
+		app.DistrKeeper,
+		sdk.DefaultPowerReduction,
+		map[string]string{},
+		map[string]string{},
+	)
+
 	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
 		appCodec,
 		keys[palomamoduletypes.StoreKey],
@@ -597,6 +620,7 @@ func New(
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
+		AddRoute(gravitymoduletypes.RouterKey, gravitymodule.NewCommunityPoolEthereumSpendProposalHandler(app.GravityKeeper)).
 		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
 
 	// Example of setting gov params:
@@ -711,6 +735,7 @@ func New(
 	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
+	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	app.mm = module.NewManager(
 		genutil.NewAppModule(
@@ -737,6 +762,7 @@ func New(
 		consensusModule,
 		valsetModule,
 		evmModule,
+		gravityModule,
 		palomaModule,
 		treasuryModule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
@@ -773,6 +799,7 @@ func New(
 		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
+		gravitymoduletypes.ModuleName,
 		treasurymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
@@ -804,6 +831,7 @@ func New(
 		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
+		gravitymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
@@ -844,6 +872,7 @@ func New(
 		ibcfeetypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
+		gravitymoduletypes.ModuleName,
 		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
@@ -1075,6 +1104,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(wasm.ModuleName)
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
+	paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
 
 	return paramsKeeper
 }

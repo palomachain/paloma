@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -97,6 +98,8 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 			keyTable = consensusmoduletypes.ParamKeyTable() //nolint:staticcheck
 		case evmmoduletypes.ModuleName:
 			keyTable = evmmoduletypes.ParamKeyTable() //nolint:staticcheck
+		case gravitymoduletypes.ModuleName:
+			keyTable = gravitymoduletypes.ParamKeyTable() //nolint:staticcheck
 		case palomamoduletypes.ModuleName:
 			keyTable = palomamoduletypes.ParamKeyTable() //nolint:staticcheck
 		case schedulermoduletypes.ModuleName:
