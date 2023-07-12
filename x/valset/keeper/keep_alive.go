@@ -171,7 +171,8 @@ func (k Keeper) JailInactiveValidators(ctx sdk.Context) error {
 func (k Keeper) isValidatorInGracePeriod(ctx sdk.Context, valAddr sdk.ValAddress) bool {
 	store := k.gracePeriodStore(ctx)
 	bytes := store.Get(valAddr)
-	return libvalid.NotNil(bytes) && (uint64(ctx.BlockHeight())-sdk.BigEndianToUint64(bytes)) <= cGracePeriodBlockHeight
+	return libvalid.NotNil(bytes) && ctx.BlockHeight()-int64(sdk.BigEndianToUint64(bytes)) <= cGracePeriodBlockHeight
+
 }
 
 func (k Keeper) keepAliveStore(ctx sdk.Context) sdk.KVStore {
