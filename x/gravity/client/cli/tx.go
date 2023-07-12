@@ -13,9 +13,8 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/spf13/cobra"
-
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/spf13/cobra"
 )
 
 func GetTxCmd(storeKey string) *cobra.Command {
@@ -38,7 +37,7 @@ func GetTxCmd(storeKey string) *cobra.Command {
 
 func CmdSendToEthereum() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "send-to-ethereum [ethereum-reciever] [send-coins] [fee-coins]",
+		Use:     "send-to-ethereum [ethereum-receiver] [send-coins] [fee-coins]",
 		Aliases: []string{"send", "transfer"},
 		Args:    cobra.ExactArgs(3),
 		Short:   "Send tokens from cosmos chain to connected ethereum chain",

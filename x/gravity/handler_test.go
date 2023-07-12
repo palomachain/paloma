@@ -8,12 +8,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/stretchr/testify/require"
-
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/palomachain/paloma/x/gravity"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/require"
 )
 
 var MaxAddrLen = 20
@@ -47,7 +46,8 @@ func TestHandleMsgSendToEthereum(t *testing.T) {
 		Sender:            userCosmosAddr.String(),
 		EthereumRecipient: ethDestination,
 		Amount:            sendingCoin,
-		BridgeFee:         feeCoin}
+		BridgeFee:         feeCoin,
+	}
 	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
 	_, err := h(ctx, msg) // send 55
 	require.NoError(t, err)
@@ -59,7 +59,8 @@ func TestHandleMsgSendToEthereum(t *testing.T) {
 		Sender:            userCosmosAddr.String(),
 		EthereumRecipient: ethDestination,
 		Amount:            sendingCoin,
-		BridgeFee:         feeCoin}
+		BridgeFee:         feeCoin,
+	}
 	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
 	_, err1 := h(ctx, msg1) // send 55
 	require.NoError(t, err1)
@@ -72,7 +73,8 @@ func TestHandleMsgSendToEthereum(t *testing.T) {
 		Sender:            userCosmosAddr.String(),
 		EthereumRecipient: ethDestination,
 		Amount:            sendingCoin,
-		BridgeFee:         feeCoin}
+		BridgeFee:         feeCoin,
+	}
 	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
 	_, err2 := h(ctx, msg2) // send 55
 	require.Error(t, err2)
@@ -117,7 +119,7 @@ func TestMsgSubmitEthreumEventSendToCosmosSingleValidator(t *testing.T) {
 	eva, err := types.PackEvent(sendToCosmosEvent)
 	require.NoError(t, err)
 
-	msgSubmitEvent := &types.MsgSubmitEthereumEvent{eva, myOrchestratorAddr.String()}
+	msgSubmitEvent := &types.MsgSubmitEthereumEvent{Event: eva, Signer: myOrchestratorAddr.String()}
 	// when
 	ctx = ctx.WithBlockTime(myBlockTime)
 	_, err = h(ctx, msgSubmitEvent)
@@ -155,7 +157,7 @@ func TestMsgSubmitEthreumEventSendToCosmosSingleValidator(t *testing.T) {
 	eva, err = types.PackEvent(sendToCosmosEvent)
 	require.NoError(t, err)
 
-	msgSubmitEvent = &types.MsgSubmitEthereumEvent{eva, myOrchestratorAddr.String()}
+	msgSubmitEvent = &types.MsgSubmitEthereumEvent{Event: eva, Signer: myOrchestratorAddr.String()}
 
 	// when
 	ctx = ctx.WithBlockTime(myBlockTime)
@@ -179,7 +181,7 @@ func TestMsgSubmitEthreumEventSendToCosmosSingleValidator(t *testing.T) {
 	eva, err = types.PackEvent(sendToCosmosEvent)
 	require.NoError(t, err)
 
-	msgSubmitEvent = &types.MsgSubmitEthereumEvent{eva, myOrchestratorAddr.String()}
+	msgSubmitEvent = &types.MsgSubmitEthereumEvent{Event: eva, Signer: myOrchestratorAddr.String()}
 	// when
 	ctx = ctx.WithBlockTime(myBlockTime)
 	_, err = h(ctx, msgSubmitEvent)
@@ -228,7 +230,7 @@ func TestMsgSubmitEthreumEventSendToCosmosMultiValidator(t *testing.T) {
 	}
 	ethClaim1a, err := types.PackEvent(ethClaim1)
 	require.NoError(t, err)
-	ethClaim1Msg := &types.MsgSubmitEthereumEvent{ethClaim1a, orchestratorAddr1.String()}
+	ethClaim1Msg := &types.MsgSubmitEthereumEvent{Event: ethClaim1a, Signer: orchestratorAddr1.String()}
 	ethClaim2 := &types.SendToCosmosEvent{
 		EventNonce:     myNonce,
 		TokenContract:  myErc20.Contract,
@@ -238,7 +240,7 @@ func TestMsgSubmitEthreumEventSendToCosmosMultiValidator(t *testing.T) {
 	}
 	ethClaim2a, err := types.PackEvent(ethClaim2)
 	require.NoError(t, err)
-	ethClaim2Msg := &types.MsgSubmitEthereumEvent{ethClaim2a, orchestratorAddr2.String()}
+	ethClaim2Msg := &types.MsgSubmitEthereumEvent{Event: ethClaim2a, Signer: orchestratorAddr2.String()}
 	ethClaim3 := &types.SendToCosmosEvent{
 		EventNonce:     myNonce,
 		TokenContract:  myErc20.Contract,
@@ -248,7 +250,7 @@ func TestMsgSubmitEthreumEventSendToCosmosMultiValidator(t *testing.T) {
 	}
 	ethClaim3a, err := types.PackEvent(ethClaim3)
 	require.NoError(t, err)
-	ethClaim3Msg := &types.MsgSubmitEthereumEvent{ethClaim3a, orchestratorAddr3.String()}
+	ethClaim3Msg := &types.MsgSubmitEthereumEvent{Event: ethClaim3a, Signer: orchestratorAddr3.String()}
 
 	// when
 	ctx = ctx.WithBlockTime(myBlockTime)

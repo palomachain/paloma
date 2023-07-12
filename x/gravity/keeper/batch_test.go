@@ -6,10 +6,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palomachain/paloma/x/gravity/types"
 )
 
 func TestBatches(t *testing.T) {

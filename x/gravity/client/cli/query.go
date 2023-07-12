@@ -131,7 +131,6 @@ func CmdBatchTx() *cobra.Command {
 				TokenContract: contractAddress,
 				BatchNonce:    nonce,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -167,7 +166,6 @@ func CmdContractCallTx() *cobra.Command {
 				InvalidationScope: invalidationScope,
 				InvalidationNonce: invalidationNonce,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -326,7 +324,6 @@ func CmdBatchTxConfirmations() *cobra.Command {
 				BatchNonce:    nonce,
 				TokenContract: contractAddress,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -362,7 +359,6 @@ func CmdContractCallTxConfirmations() *cobra.Command {
 				InvalidationNonce: invalidationNonce,
 				InvalidationScope: invalidationScope,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -394,7 +390,6 @@ func CmdUnsignedSignerSetTxs() *cobra.Command {
 			res, err := queryClient.UnsignedSignerSetTxs(cmd.Context(), &types.UnsignedSignerSetTxsRequest{
 				Address: address.String(),
 			})
-
 			if err != nil {
 				return err
 			}
@@ -426,7 +421,6 @@ func CmdUnsignedBatchTxs() *cobra.Command {
 			res, err := queryClient.UnsignedBatchTxs(cmd.Context(), &types.UnsignedBatchTxsRequest{
 				Address: address.String(),
 			})
-
 			if err != nil {
 				return err
 			}
@@ -458,7 +452,6 @@ func CmdUnsignedContractCallTxs() *cobra.Command {
 			res, err := queryClient.UnsignedContractCallTxs(cmd.Context(), &types.UnsignedContractCallTxsRequest{
 				Address: address.String(),
 			})
-
 			if err != nil {
 				return err
 			}
@@ -516,7 +509,6 @@ func CmdLastSubmittedEthereumEvent() *cobra.Command {
 			res, err := queryClient.LastSubmittedEthereumEvent(cmd.Context(), &types.LastSubmittedEthereumEventRequest{
 				Address: address.String(),
 			})
-
 			if err != nil {
 				return err
 			}
@@ -573,7 +565,6 @@ func CmdERC20ToDenom() *cobra.Command {
 			res, err := queryClient.ERC20ToDenom(cmd.Context(), &types.ERC20ToDenomRequest{
 				Erc20: contract,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -636,7 +627,6 @@ func CmdDenomToERC20() *cobra.Command {
 			res, err := queryClient.DenomToERC20(cmd.Context(), &types.DenomToERC20Request{
 				Denom: args[0],
 			})
-
 			if err != nil {
 				return err
 			}
@@ -674,7 +664,6 @@ func CmdUnbatchedSendToEthereums() *cobra.Command {
 				SenderAddress: sender.String(),
 				Pagination:    pageReq,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -707,7 +696,6 @@ func CmdDelegateKeysByValidator() *cobra.Command {
 			res, err := queryClient.DelegateKeysByValidator(cmd.Context(), &types.DelegateKeysByValidatorRequest{
 				ValidatorAddress: validatorAddress.String(),
 			})
-
 			if err != nil {
 				return err
 			}
@@ -769,7 +757,6 @@ func CmdDelegateKeysByOrchestrator() *cobra.Command {
 			res, err := queryClient.DelegateKeysByOrchestrator(cmd.Context(), &types.DelegateKeysByOrchestratorRequest{
 				OrchestratorAddress: orcAddr.String(),
 			})
-
 			if err != nil {
 				return err
 			}
@@ -843,14 +830,6 @@ func parseContractAddress(s string) (string, error) {
 		return "", fmt.Errorf("%s not a valid contract address, please input a valid contract address", s)
 	}
 	return s, nil
-}
-
-func parseCount(s string) (int64, error) {
-	count, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("count %s not a valid int, please input a valid count", s)
-	}
-	return count, nil
 }
 
 func parseNonce(s string) (uint64, error) {

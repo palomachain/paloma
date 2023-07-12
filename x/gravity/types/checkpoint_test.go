@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,9 +13,7 @@ import (
 func TestBatchTxCheckpoint(t *testing.T) {
 	senderAddr, err := sdk.AccAddressFromHexUnsafe("527FBEE652609AB150F0AEE9D61A2F76CFC4A73E")
 	require.NoError(t, err)
-	var (
-		erc20Addr = gethcommon.HexToAddress("0x835973768750b3ED2D5c3EF5AdcD5eDb44d12aD4")
-	)
+	erc20Addr := gethcommon.HexToAddress("0x835973768750b3ED2D5c3EF5AdcD5eDb44d12aD4")
 
 	src := BatchTx{
 		BatchNonce: 1,

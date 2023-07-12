@@ -2,13 +2,12 @@ package types_test
 
 import (
 	"bytes"
-	"github.com/palomachain/paloma/app/params"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/assert"
-
+	"github.com/palomachain/paloma/app/params"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/assert"
 )
 
 var MaxAddrLen = 20
@@ -78,5 +77,4 @@ func TestValidateMsgDelegateKeys(t *testing.T) {
 			assert.NoError(t, err)
 		})
 	}
-
 }

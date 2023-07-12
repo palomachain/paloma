@@ -5,9 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/stretchr/testify/require"
-
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAddToOutgoingPool(t *testing.T) {

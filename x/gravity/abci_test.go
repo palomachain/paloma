@@ -2,19 +2,18 @@ package gravity_test
 
 import (
 	"fmt"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"testing"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/stretchr/testify/require"
-
 	"github.com/palomachain/paloma/x/gravity"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSignerSetTxCreationIfNotAvailable(t *testing.T) {
@@ -85,7 +84,14 @@ func TestSignerSetTxSlashing_SignerSetTxCreated_After_ValidatorBonded(t *testing
 		if i == 0 {
 			continue
 		}
-		pk.SetEthereumSignature(ctx, &types.SignerSetTxConfirmation{signerSet.Nonce, keeper.AccAddrs[i].String(), []byte("dummysig")}, val)
+		pk.SetEthereumSignature(ctx,
+			&types.SignerSetTxConfirmation{
+				SignerSetNonce: signerSet.Nonce,
+				EthereumSigner: keeper.AccAddrs[i].String(),
+				Signature:      []byte("dummysig"),
+			},
+			val,
+		)
 	}
 
 	gravity.EndBlocker(ctx, pk)
@@ -97,7 +103,6 @@ func TestSignerSetTxSlashing_SignerSetTxCreated_After_ValidatorBonded(t *testing
 	// ensure that the  validator who attested the signer set tx is not slashed.
 	val = input.StakingKeeper.Validator(ctx, keeper.ValAddrs[1])
 	require.False(t, val.IsJailed())
-
 }
 
 func TestSignerSetTxSlashing_UnbondingValidator_UnbondWindow_NotExpired(t *testing.T) {
@@ -144,7 +149,15 @@ func TestSignerSetTxSlashing_UnbondingValidator_UnbondWindow_NotExpired(t *testi
 			// don't sign with first validator
 			continue
 		}
-		gravityKeeper.SetEthereumSignature(ctx, &types.SignerSetTxConfirmation{vs.Nonce, keeper.EthAddrs[i].Hex(), []byte("dummySig")}, val)
+		gravityKeeper.SetEthereumSignature(
+			ctx,
+			&types.SignerSetTxConfirmation{
+				SignerSetNonce: vs.Nonce,
+				EthereumSigner: keeper.EthAddrs[i].Hex(),
+				Signature:      []byte("dummySig"),
+			},
+			val,
+		)
 	}
 	staking.EndBlocker(input.Context, &input.StakingKeeper)
 
@@ -316,7 +329,7 @@ func TestUpdateObservedEthereumHeight(t *testing.T) {
 	gravityKeeper.SetLastObservedEthereumBlockHeightWithCosmos(ctx, 2, 5)
 
 	// update runs on mod 50 block heights, no votes have been sent so it
-	// shoudl leave the set values alone
+	// should leave the set values alone
 	ctx = ctx.WithBlockHeight(50)
 	gravity.EndBlocker(ctx, gravityKeeper)
 

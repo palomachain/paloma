@@ -5,11 +5,11 @@ import (
 	"crypto/sha256"
 	"fmt"
 
+	tmbytes "github.com/cometbft/cometbft/libs/bytes"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/common"
-	tmbytes "github.com/cometbft/cometbft/libs/bytes"
 )
 
 var (

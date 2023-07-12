@@ -6,7 +6,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 

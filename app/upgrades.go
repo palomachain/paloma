@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -30,6 +29,7 @@ import (
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
 	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"

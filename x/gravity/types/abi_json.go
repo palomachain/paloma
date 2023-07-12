@@ -14,7 +14,7 @@ package types
 // truncate the first several bytes where the call name is encoded to finally get the equal of the
 
 const (
-	// OutgoingBatchTxCheckpointABIJSON checks the ETH ABI for compatability of the OutgoingBatchTx message
+	// OutgoingBatchTxCheckpointABIJSON checks the ETH ABI for compatibility of the OutgoingBatchTx message
 	OutgoingBatchTxCheckpointABIJSON = `[{
 		"name": "submitBatch",
 		"stateMutability": "pure",
@@ -34,7 +34,7 @@ const (
 		]
 	}]`
 
-	// ValsetCheckpointABIJSON checks the ETH ABI for compatability of the Valset update message
+	// ValsetCheckpointABIJSON checks the ETH ABI for compatibility of the Valset update message
 	ValsetCheckpointABIJSON = `[{
 		"name": "checkpoint",
 		"stateMutability": "pure",
@@ -53,7 +53,7 @@ const (
 		]
 	}]`
 
-	// OutgoingLogicCallABIJSON checks the ETH ABI for compatability of the logic call message
+	// OutgoingLogicCallABIJSON checks the ETH ABI for compatibility of the logic call message
 	OutgoingLogicCallABIJSON = `[{
 	  "name": "checkpoint",
       "outputs": [],

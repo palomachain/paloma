@@ -11,7 +11,6 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -100,7 +99,6 @@ func (k msgServer) SetDelegateKeys(c context.Context, msg *types.MsgDelegateKeys
 	)
 
 	return &types.MsgDelegateKeysResponse{}, nil
-
 }
 
 // SubmitEthereumTxConfirmation handles MsgSubmitEthereumTxConfirmation
@@ -278,7 +276,7 @@ func (k msgServer) SubmitEthereumHeightVote(c context.Context, msg *types.MsgEth
 }
 
 // getSignerValidator takes an sdk.AccAddress that represents either a validator or orchestrator address and returns
-// the assoicated validator address
+// the associated validator address
 func (k Keeper) getSignerValidator(ctx sdk.Context, signerString string) (sdk.ValAddress, error) {
 	signer, err := sdk.AccAddressFromBech32(signerString)
 	if err != nil {

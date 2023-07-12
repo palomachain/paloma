@@ -3,11 +3,6 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-
-	gravitymodule "github.com/palomachain/paloma/x/gravity"
-	gravityclient "github.com/palomachain/paloma/x/gravity/client"
-	gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
-	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	"io"
 	"os"
 	"path/filepath"
@@ -121,6 +116,10 @@ import (
 	evmclient "github.com/palomachain/paloma/x/evm/client"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	gravitymodule "github.com/palomachain/paloma/x/gravity"
+	gravityclient "github.com/palomachain/paloma/x/gravity/client"
+	gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
+	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	palomamodule "github.com/palomachain/paloma/x/paloma"
 	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"

@@ -56,7 +56,7 @@ var (
 	// ParamsStoreSlashFractionBatch stores the slash fraction Batch
 	ParamsStoreSlashFractionBatch = []byte("SlashFractionBatch")
 
-	// ParamsStoreSlashFractionEthereumSignature stores the slash fraction ethereum siganture
+	// ParamsStoreSlashFractionEthereumSignature stores the slash fraction ethereum signature
 	ParamsStoreSlashFractionEthereumSignature = []byte("SlashFractionEthereumSignature")
 
 	// ParamsStoreSlashFractionConflictingEthereumSignature stores the slash fraction ConflictingEthereumSignature

@@ -3,16 +3,14 @@ package gravity_test
 import (
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/gravity"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Have the validators put in a erc20<>denom relation with ERC20DeployedEvent
@@ -71,7 +69,7 @@ func addDenomToERC20Relation(tv *testingVars) {
 		Display: "atom",
 	})
 
-	var myNonce = uint64(1)
+	myNonce := uint64(1)
 
 	deployedEvent := &types.ERC20DeployedEvent{
 		CosmosDenom:   tv.denom,
@@ -175,7 +173,7 @@ func acceptDepositEvent(tv *testingVars) {
 	eva, err := types.PackEvent(sendToCosmosEvent)
 	require.NoError(tv.t, err)
 
-	msgSubmitEvent := &types.MsgSubmitEthereumEvent{eva, myOrchestratorAddr.String()}
+	msgSubmitEvent := &types.MsgSubmitEthereumEvent{Event: eva, Signer: myOrchestratorAddr.String()}
 	_, err = tv.h(tv.ctx, msgSubmitEvent)
 	require.NoError(tv.t, err)
 	gravity.EndBlocker(tv.ctx, tv.input.GravityKeeper)

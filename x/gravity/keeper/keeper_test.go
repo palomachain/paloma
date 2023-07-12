@@ -7,10 +7,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palomachain/paloma/x/gravity/types"
 )
 
 func TestCurrentValsetNormalization(t *testing.T) {
@@ -513,7 +512,6 @@ func TestKeeper_GetEthereumSignatures(t *testing.T) {
 }
 
 func TestKeeper_Migration(t *testing.T) {
-
 	input := CreateTestEnv(t)
 	gk := input.GravityKeeper
 	ctx := input.Context
@@ -558,7 +556,7 @@ func TestKeeper_Migration(t *testing.T) {
 		},
 	}
 
-	//Put an outgoing transaction into the system
+	// Put an outgoing transaction into the system
 
 	var (
 		now                 = time.Now().UTC()
@@ -665,7 +663,6 @@ func TestKeeper_Migration(t *testing.T) {
 		got := gk.GetEthereumSignatures(ctx, storeIndex)
 		require.Len(t, got, 0)
 	}
-
 }
 
 // TODO(levi) review/ensure coverage for:

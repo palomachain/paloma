@@ -7,7 +7,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 

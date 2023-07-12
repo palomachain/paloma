@@ -24,7 +24,6 @@ func NewEthereumSignature(hash []byte, privateKey *ecdsa.PrivateKey) ([]byte, er
 // ValidateEthereumSignature takes a message, an associated signature and public key and
 // returns an error if the signature isn't valid
 func ValidateEthereumSignature(hash []byte, signature []byte, ethAddress common.Address) error {
-
 	/// signature to public key: invalid signature length: invalid
 	/// signature not matching: invalid: invalid
 	if len(signature) < 65 {
@@ -32,7 +31,7 @@ func ValidateEthereumSignature(hash []byte, signature []byte, ethAddress common.
 	}
 
 	// Copy to avoid mutating signature slice by accident
-	var sigCopy = make([]byte, len(signature))
+	sigCopy := make([]byte, len(signature))
 	copy(sigCopy, signature)
 
 	// To verify signature

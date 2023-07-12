@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"math"
 	"sort"
 	"strconv"
@@ -16,11 +14,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -144,7 +143,7 @@ func (k Keeper) SetEthereumSignature(ctx sdk.Context, sig types.EthereumTxConfir
 
 // GetEthereumSignatures returns all etherum signatures for a given outgoing tx by store index
 func (k Keeper) GetEthereumSignatures(ctx sdk.Context, storeIndex []byte) map[string][]byte {
-	var signatures = make(map[string][]byte)
+	signatures := make(map[string][]byte)
 	k.iterateEthereumSignatures(ctx, storeIndex, func(val sdk.ValAddress, h []byte) bool {
 		signatures[val.String()] = h
 		return false
@@ -536,7 +535,8 @@ func (k Keeper) setLastObservedSignerSetTx(ctx sdk.Context, signerSet types.Sign
 
 // CreateContractCallTx xxx
 func (k Keeper) CreateContractCallTx(ctx sdk.Context, invalidationNonce uint64, invalidationScope tmbytes.HexBytes,
-	address common.Address, payload []byte, tokens []types.ERC20Token, fees []types.ERC20Token) *types.ContractCallTx {
+	address common.Address, payload []byte, tokens []types.ERC20Token, fees []types.ERC20Token,
+) *types.ContractCallTx {
 	params := k.GetParams(ctx)
 
 	newContractCallTx := &types.ContractCallTx{
@@ -684,7 +684,6 @@ func (k Keeper) MigrateGravityContract(ctx sdk.Context, newBridgeAddress string,
 	k.iterateEthereumEventVoteRecords(ctx, func(_ []byte, voteRecord *types.EthereumEventVoteRecord) bool {
 		for _, vote := range voteRecord.Votes {
 			val, err := sdk.ValAddressFromBech32(vote)
-
 			if err != nil {
 				panic(err)
 			}

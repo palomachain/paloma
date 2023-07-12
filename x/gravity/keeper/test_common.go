@@ -2,39 +2,13 @@ package keeper
 
 import (
 	"bytes"
+	"testing"
+	"time"
+
 	"cosmossdk.io/math"
 	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	"github.com/cosmos/cosmos-sdk/std"
-	"github.com/cosmos/cosmos-sdk/store"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/capability"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
-	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	//distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
-	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	"github.com/cosmos/cosmos-sdk/x/evidence"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-	"github.com/cosmos/cosmos-sdk/x/gov"
-	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/cosmos/cosmos-sdk/x/mint"
-	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
-	appparams "github.com/palomachain/paloma/app/params"
-	"testing"
-	"time"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -42,30 +16,48 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	ccrypto "github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/cosmos/cosmos-sdk/std"
+	"github.com/cosmos/cosmos-sdk/store"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/cosmos/cosmos-sdk/x/capability"
+	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
-	//distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
-
+	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	"github.com/cosmos/cosmos-sdk/x/evidence"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
-
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"github.com/cosmos/cosmos-sdk/x/mint"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
+	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
+	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	gethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/stretchr/testify/require"
-
+	appparams "github.com/palomachain/paloma/app/params"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -81,7 +73,7 @@ var (
 		gov.NewAppModuleBasic(
 			[]govclient.ProposalHandler{
 				paramsclient.ProposalHandler,
-				//distrclient.ProposalHandler, // TODO TYLER
+				// distrclient.ProposalHandler, // TODO TYLER
 				upgradeclient.LegacyProposalHandler,
 				upgradeclient.LegacyCancelProposalHandler,
 			},
@@ -373,7 +365,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 		blockedAddr,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	bankKeeper.SetParams(ctx, banktypes.Params{DefaultSendEnabled: true})
+	err = bankKeeper.SetParams(ctx, banktypes.Params{DefaultSendEnabled: true})
+	require.Nil(t, err)
 
 	stakingKeeper := stakingkeeper.NewKeeper(
 		marshaler,
@@ -382,7 +375,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 		bankKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	stakingKeeper.SetParams(ctx, TestingStakeParams)
+	err = stakingKeeper.SetParams(ctx, TestingStakeParams)
+	require.Nil(t, err)
 
 	distKeeper := distrkeeper.NewKeeper(
 		marshaler,
@@ -393,7 +387,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	distKeeper.SetParams(ctx, distrtypes.DefaultParams())
+	err = distKeeper.SetParams(ctx, distrtypes.DefaultParams())
+	require.Nil(t, err)
 
 	// set genesis items required for distribution
 	distKeeper.SetFeePool(ctx, distrtypes.InitialFeePool())
@@ -426,15 +421,15 @@ func CreateTestEnv(t *testing.T) TestInput {
 	require.NotNil(t, moduleAcct)
 
 	// TODO : Tyler
-	//router := baseapp.NewMsgServiceRouter()
-	//router.AddRoute(bank.AppModule{}.Route())
-	//router.AddRoute(staking.AppModule{}.Route())
-	//router.AddRoute(distribution.AppModule{}.Route())
+	// router := baseapp.NewMsgServiceRouter()
+	// router.AddRoute(bank.AppModule{}.Route())
+	// router.AddRoute(staking.AppModule{}.Route())
+	// router.AddRoute(distribution.AppModule{}.Route())
 
 	// Load default wasm config
 
 	govRouter := govv1beta1types.NewRouter().
-		//AddRoute(paramsproposal.RouterKey, params.NewParamChangeProposalHandler(paramsKeeper)).
+		// AddRoute(paramsproposal.RouterKey, params.NewParamChangeProposalHandler(paramsKeeper)).
 		AddRoute(govtypes.RouterKey, govv1beta1types.ProposalHandler)
 
 	govKeeper := govkeeper.NewKeeper(
@@ -451,9 +446,9 @@ func CreateTestEnv(t *testing.T) TestInput {
 	govKeeper.SetLegacyRouter(govRouter)
 
 	govKeeper.SetProposalID(ctx, govv1beta1types.DefaultStartingProposalID)
-	//govKeeper.SetDepositParams(ctx, govtypes.DefaultDepositParams())
-	//govKeeper.SetVotingParams(ctx, govtypes.DefaultVotingParams())
-	//govKeeper.SetTallyParams(ctx, govtypes.DefaultTallyParams())
+	// govKeeper.SetDepositParams(ctx, govtypes.DefaultDepositParams())
+	// govKeeper.SetVotingParams(ctx, govtypes.DefaultVotingParams())
+	// govKeeper.SetTallyParams(ctx, govtypes.DefaultTallyParams())
 
 	slashingKeeper := slashingkeeper.NewKeeper(
 		marshaler,
@@ -479,7 +474,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 
 	stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(
-			//distKeeper.Hooks(),
+			// distKeeper.Hooks(),
 			slashingKeeper.Hooks(),
 			k.Hooks(),
 		),
@@ -510,7 +505,7 @@ func getSubspace(k paramskeeper.Keeper, moduleName string) paramstypes.Subspace 
 
 // MakeTestCodec creates a legacy amino codec for testing
 func MakeTestCodec() *codec.LegacyAmino {
-	var cdc = codec.NewLegacyAmino()
+	cdc := codec.NewLegacyAmino()
 	auth.AppModuleBasic{}.RegisterLegacyAminoCodec(cdc)
 	bank.AppModuleBasic{}.RegisterLegacyAminoCodec(cdc)
 	staking.AppModuleBasic{}.RegisterLegacyAminoCodec(cdc)
@@ -518,7 +513,7 @@ func MakeTestCodec() *codec.LegacyAmino {
 	sdk.RegisterLegacyAminoCodec(cdc)
 	ccodec.RegisterCrypto(cdc)
 	params.AppModuleBasic{}.RegisterLegacyAminoCodec(cdc)
-	//types.RegisterCodec(cdc)
+	// types.RegisterCodec(cdc)
 	return cdc
 }
 
@@ -683,7 +678,6 @@ func (s *StakingKeeperMock) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (
 func (s *StakingKeeperMock) ValidatorQueueIterator(ctx sdk.Context, endTime time.Time, endHeight int64) sdk.Iterator {
 	store := ctx.KVStore(sdk.NewKVStoreKey("staking"))
 	return store.Iterator(stakingtypes.ValidatorQueueKey, sdk.InclusiveEndBytes(stakingtypes.GetValidatorQueueKey(endTime, endHeight)))
-
 }
 
 // Slash staisfies the interface

@@ -1,8 +1,6 @@
 package types
 
 import (
-	"github.com/gogo/protobuf/proto"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -10,6 +8,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"github.com/gogo/protobuf/proto"
 )
 
 // RegisterLegacyAminoCodec registers the vesting interfaces and concrete types on the

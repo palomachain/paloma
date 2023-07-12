@@ -6,7 +6,6 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -126,7 +125,11 @@ func ExportGenesis(ctx sdk.Context, k Keeper) types.GenesisState {
 		outgoingTxs = append(outgoingTxs, ota)
 		sstx, _ := otx.(*types.SignerSetTx)
 		k.iterateEthereumSignatures(ctx, sstx.GetStoreIndex(), func(val sdk.ValAddress, sig []byte) bool {
-			siga, _ := types.PackConfirmation(&types.SignerSetTxConfirmation{sstx.Nonce, k.GetValidatorEthereumAddress(ctx, val).Hex(), sig})
+			siga, _ := types.PackConfirmation(&types.SignerSetTxConfirmation{
+				SignerSetNonce: sstx.Nonce,
+				EthereumSigner: k.GetValidatorEthereumAddress(ctx, val).Hex(),
+				Signature:      sig,
+			})
 			ethereumTxConfirmations = append(ethereumTxConfirmations, siga)
 			return false
 		})
@@ -139,7 +142,12 @@ func ExportGenesis(ctx sdk.Context, k Keeper) types.GenesisState {
 		outgoingTxs = append(outgoingTxs, ota)
 		btx, _ := otx.(*types.BatchTx)
 		k.iterateEthereumSignatures(ctx, btx.GetStoreIndex(), func(val sdk.ValAddress, sig []byte) bool {
-			siga, _ := types.PackConfirmation(&types.BatchTxConfirmation{btx.TokenContract, btx.BatchNonce, k.GetValidatorEthereumAddress(ctx, val).Hex(), sig})
+			siga, _ := types.PackConfirmation(&types.BatchTxConfirmation{
+				TokenContract:  btx.TokenContract,
+				BatchNonce:     btx.BatchNonce,
+				EthereumSigner: k.GetValidatorEthereumAddress(ctx, val).Hex(),
+				Signature:      sig,
+			})
 			ethereumTxConfirmations = append(ethereumTxConfirmations, siga)
 			return false
 		})
@@ -152,7 +160,12 @@ func ExportGenesis(ctx sdk.Context, k Keeper) types.GenesisState {
 		outgoingTxs = append(outgoingTxs, ota)
 		btx, _ := otx.(*types.ContractCallTx)
 		k.iterateEthereumSignatures(ctx, btx.GetStoreIndex(), func(val sdk.ValAddress, sig []byte) bool {
-			siga, _ := types.PackConfirmation(&types.ContractCallTxConfirmation{btx.InvalidationScope, btx.InvalidationNonce, k.GetValidatorEthereumAddress(ctx, val).Hex(), sig})
+			siga, _ := types.PackConfirmation(&types.ContractCallTxConfirmation{
+				InvalidationScope: btx.InvalidationScope,
+				InvalidationNonce: btx.InvalidationNonce,
+				EthereumSigner:    k.GetValidatorEthereumAddress(ctx, val).Hex(),
+				Signature:         sig,
+			})
 			ethereumTxConfirmations = append(ethereumTxConfirmations, siga)
 			return false
 		})

@@ -11,9 +11,8 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/stretchr/testify/require"
-
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMsgServer_SubmitEthereumSignature(t *testing.T) {

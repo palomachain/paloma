@@ -32,7 +32,7 @@ func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
 }
 
 func createBatchTxs(ctx sdk.Context, k keeper.Keeper) {
-	// TODO: this needs some more work, is super naieve
+	// TODO: this needs some more work, is super naive
 	if ctx.BlockHeight()%10 == 0 {
 		cm := map[string]bool{}
 		k.IterateUnbatchedSendToEthereums(ctx, func(ste *types.SendToEthereum) bool {

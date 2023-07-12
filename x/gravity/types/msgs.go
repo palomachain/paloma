@@ -122,7 +122,6 @@ func (msg MsgSubmitEthereumTxConfirmation) ValidateBasic() (err error) {
 	}
 
 	event, err := UnpackConfirmation(msg.Confirmation)
-
 	if err != nil {
 		return err
 	}

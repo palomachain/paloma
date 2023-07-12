@@ -4,12 +4,10 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
