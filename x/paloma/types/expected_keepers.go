@@ -21,7 +21,7 @@ type BankKeeper interface {
 }
 
 type ValsetKeeper interface {
-	UnjailedValidators(ctx sdk.Context) []stakingtypes.ValidatorI
+	GetUnjailedValidators(ctx sdk.Context) []stakingtypes.ValidatorI
 	Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error
 	GetValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) ([]*valsettypes.ExternalChainInfo, error)
 }

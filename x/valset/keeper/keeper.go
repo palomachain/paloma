@@ -305,7 +305,7 @@ func (k Keeper) isNewSnapshotWorthy(ctx sdk.Context, currentSnapshot, newSnapsho
 	return false
 }
 
-func (k Keeper) UnjailedValidators(ctx sdk.Context) []stakingtypes.ValidatorI {
+func (k Keeper) GetUnjailedValidators(ctx sdk.Context) []stakingtypes.ValidatorI {
 	validators := []stakingtypes.ValidatorI{}
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		if !val.IsJailed() {
@@ -520,8 +520,12 @@ func (k Keeper) jailReasonStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("jail-reasons"))
 }
 
-func (k Keeper) validatorStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("validators"))
+func (k Keeper) gracePeriodStore(ctx sdk.Context) sdk.KVStore {
+	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("grace-period"))
+}
+
+func (k Keeper) unjailedSnapshotStore(ctx sdk.Context) sdk.KVStore {
+	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("unjailed-snapshot"))
 }
 
 func (k Keeper) externalChainInfoStore(ctx sdk.Context, val sdk.ValAddress) sdk.KVStore {

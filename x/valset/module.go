@@ -164,6 +164,8 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		}
 	}
 
+	am.keeper.UpdateGracePeriod(ctx)
+
 	if ctx.BlockHeight() > 50 && ctx.BlockHeight()%10 == 0 {
 		if err := am.keeper.JailInactiveValidators(ctx); err != nil {
 			am.keeper.Logger(ctx).Error("error while jailing inactive validators", "error", err)
