@@ -464,3 +464,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 		})
 	}
 }
+
+func TestGracePeriodCoverage(t *testing.T) {
+	k, _, ctx := newValsetKeeper(t)
+	ctx = ctx.WithBlockHeight(100)
+
+	t.Run("with unjailed validator covered by grace period", func(t *testing.T) {
+		for i := cGracePeriodBlockHeight; i >= 0; i-- {
+			val := sdk.ValAddress("validator")
+			bh := sdk.Uint64ToBigEndian(uint64(ctx.BlockHeight() - int64(i)))
+			k.gracePeriodStore(ctx).Set(val, bh)
+			require.True(t, k.isValidatorInGracePeriod(ctx, val))
+		}
+	})
+
+	t.Run("with unjailed validator no longer covered by grace period", func(t *testing.T) {
+		val := sdk.ValAddress("validator")
+		bh := sdk.Uint64ToBigEndian(uint64(ctx.BlockHeight() - cGracePeriodBlockHeight - 1))
+		k.gracePeriodStore(ctx).Set(val, bh)
+		require.False(t, k.isValidatorInGracePeriod(ctx, val), "bh = %d", bh)
+	})
+
+	t.Run("with not present in grace period store", func(t *testing.T) {
+		val := sdk.ValAddress("validator-bonded")
+		require.False(t, k.isValidatorInGracePeriod(ctx, val))
+	})
+}

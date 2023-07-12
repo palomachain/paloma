@@ -68,7 +68,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx sdk.Context) error {
 	k.Logger(ctx).Info("start jailing validators with invalid external chain infos")
-	vals := k.Valset.UnjailedValidators(ctx)
+	vals := k.Valset.GetUnjailedValidators(ctx)
 
 	// making a map of chain types and their external chains
 	type mapkey [2]string
