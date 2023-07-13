@@ -29,6 +29,7 @@ import (
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
 	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
@@ -97,6 +98,8 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 			keyTable = consensusmoduletypes.ParamKeyTable() //nolint:staticcheck
 		case evmmoduletypes.ModuleName:
 			keyTable = evmmoduletypes.ParamKeyTable() //nolint:staticcheck
+		case gravitymoduletypes.ModuleName:
+			keyTable = gravitymoduletypes.ParamKeyTable() //nolint:staticcheck
 		case palomamoduletypes.ModuleName:
 			keyTable = palomamoduletypes.ParamKeyTable() //nolint:staticcheck
 		case schedulermoduletypes.ModuleName:
@@ -201,6 +204,17 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				icacontrollertypes.StoreKey,
 				icahosttypes.StoreKey,
 				crisistypes.ModuleName,
+			},
+		}
+
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
+
+	if upgradeInfo.Name == "v1.5.0" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{
+				gravitymoduletypes.ModuleName,
 			},
 		}
 
