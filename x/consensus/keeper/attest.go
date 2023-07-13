@@ -14,7 +14,7 @@ func (k Keeper) CheckAndProcessAttestedMessages(ctx sdk.Context) error {
 			return err
 		}
 		for _, opt := range opts {
-			msgs, err := k.GetMessagesFromQueue(ctx, opt.QueueTypeName, 9999)
+			msgs, err := k.GetMessagesFromQueue(ctx, opt.QueueTypeName, 0)
 			if err != nil {
 				return err
 			}

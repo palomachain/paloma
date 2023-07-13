@@ -874,7 +874,7 @@ func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.Chain
 	// clear all other instances of the update valset from the queue
 	m.Logger(ctx).Info("clearing previous instances of the update valset from the queue")
 	queueName := consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID()))
-	messages, err := m.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 999)
+	messages, err := m.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 0)
 	if err != nil {
 		m.Logger(ctx).Error("unable to get messages from queue", "err", err)
 		return err
