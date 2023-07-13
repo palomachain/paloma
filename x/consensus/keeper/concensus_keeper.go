@@ -11,6 +11,8 @@ import (
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
+var defaultResponseMessageCount = 1000
+
 // getConsensusQueue gets the consensus queue for the given type.
 func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consensus.Queuer, error) {
 	for _, q := range k.registry.slice {
@@ -80,7 +82,7 @@ func (k Keeper) PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg con
 
 // GetMessagesForSigning returns messages for a single validator that needs to be signed.
 func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 1000)
+	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -95,12 +97,16 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val
 		return true
 	})
 
+	if len(msgs) > defaultResponseMessageCount {
+		msgs = msgs[:defaultResponseMessageCount]
+	}
+
 	return msgs, nil
 }
 
 // GetMessagesForRelaying returns messages for a single validator to relay.
 func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 1000)
+	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -121,12 +127,16 @@ func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, va
 		return msg.GetPublicAccessData() == nil && msg.GetErrorData() == nil
 	})
 
+	if len(msgs) > defaultResponseMessageCount {
+		msgs = msgs[:defaultResponseMessageCount]
+	}
+
 	return msgs, nil
 }
 
 // GetMessagesForAttesting returns messages for a single validator to attest.
 func (k Keeper) GetMessagesForAttesting(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 1000)
+	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +156,10 @@ func (k Keeper) GetMessagesForAttesting(ctx sdk.Context, queueTypeName string, v
 
 		return true
 	})
+
+	if len(msgs) > defaultResponseMessageCount {
+		msgs = msgs[:defaultResponseMessageCount]
+	}
 
 	return msgs, nil
 }
