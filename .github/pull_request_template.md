@@ -4,7 +4,7 @@
 
 # Background
 
-_A short paragraph on test what exactly this PR solves._
+_A short paragraph about what exactly this PR solves and what is the problem._
 
 # Testing completed
 
