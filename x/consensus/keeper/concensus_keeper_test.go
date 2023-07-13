@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/cometbft/cometbft/crypto/secp256k1"
@@ -11,6 +10,7 @@ import (
 	"github.com/palomachain/paloma/x/consensus/types"
 	consensustypemocks "github.com/palomachain/paloma/x/consensus/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
