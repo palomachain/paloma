@@ -163,5 +163,12 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	if err := am.keeper.CheckAndProcessAttestedMessages(ctx); err != nil {
 		am.keeper.Logger(ctx).Error("error while attesting to messages", "err", err)
 	}
+
+	if ctx.BlockHeight()%10 == 0 {
+		err := am.keeper.DeleteOldMessages(ctx, 300)
+		if err != nil {
+			am.keeper.Logger(ctx).Error("error while deleting old messages", "err", err)
+		}
+	}
 	return []abci.ValidatorUpdate{}
 }
