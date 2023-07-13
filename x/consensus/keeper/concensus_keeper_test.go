@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/cometbft/cometbft/crypto/secp256k1"
@@ -88,6 +89,75 @@ var (
 	key1 = secp256k1.GenPrivKey()
 	key2 = secp256k1.GenPrivKey()
 )
+
+func TestGetMessagesFromQueue(t *testing.T) {
+	testcases := []struct {
+		name              string
+		setupMessageCount int
+		inputCount        int
+		expectedCount     int
+	}{
+		{
+			name:              "returns all messages when requesting 0",
+			inputCount:        0,
+			setupMessageCount: 5000,
+			expectedCount:     5000,
+		},
+		{
+			name:              "returns all messages when requesting -1",
+			inputCount:        -1,
+			setupMessageCount: 5000,
+			expectedCount:     5000,
+		},
+		{
+			name:              "returns 5 messages when requesting 5",
+			inputCount:        5,
+			setupMessageCount: 50,
+			expectedCount:     5,
+		},
+		{
+			name:              "returns all messages messages when requesting more than total",
+			inputCount:        500,
+			setupMessageCount: 50,
+			expectedCount:     50,
+		},
+	}
+	addMessages := func(ctx sdk.Context, k Keeper, queue string, numMessages int) {
+		for i := 0; i < numMessages; i++ {
+			err := k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
+			require.NoError(t, err)
+		}
+	}
+
+	asserter := assert.New(t)
+	for _, tt := range testcases {
+		t.Run(tt.name, func(t *testing.T) {
+			k, _, ctx := newConsensusKeeper(t)
+			queue := types.Queue(defaultQueueName, chainType, chainReferenceID)
+
+			msgType := &types.SimpleMessage{}
+
+			k.registry.Add(
+				queueSupporter{
+					opt: consensus.ApplyOpts(nil,
+						consensus.WithQueueTypeName(queue),
+						consensus.WithStaticTypeCheck(msgType),
+						consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
+						consensus.WithChainInfo(chainType, chainReferenceID),
+						consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
+							return true
+						}),
+					),
+				},
+			)
+			addMessages(ctx, *k, queue, tt.setupMessageCount)
+
+			msgsInQueue, err := k.GetMessagesFromQueue(ctx, queue, tt.inputCount)
+			require.NoError(t, err)
+			asserter.Equal(tt.expectedCount, len(msgsInQueue))
+		})
+	}
+}
 
 func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 	testValidators := []valsettypes.Validator{

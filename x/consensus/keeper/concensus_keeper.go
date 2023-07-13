@@ -152,9 +152,6 @@ func (k Keeper) GetMessagesForAttesting(ctx sdk.Context, queueTypeName string, v
 
 // GetMessagesFromQueue gets N messages from the queue.
 func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n int) (msgs []types.QueuedSignedMessageI, err error) {
-	if n <= 0 {
-		return nil, ErrInvalidLimitValue.Format(n)
-	}
 	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue", "err", err)
@@ -167,7 +164,7 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 		return nil, err
 	}
 
-	if len(msgs) > n {
+	if n > 0 && len(msgs) > n {
 		msgs = msgs[:n]
 	}
 
