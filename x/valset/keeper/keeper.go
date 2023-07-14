@@ -35,6 +35,8 @@ type Keeper struct {
 	ider       keeperutil.IDGenerator
 
 	SnapshotListeners []types.OnSnapshotBuiltListener
+
+	minimumPigeonVersion string
 }
 
 func NewKeeper(
@@ -43,6 +45,7 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	staking types.StakingKeeper,
+	minimumPigeonVersion string,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -50,11 +53,12 @@ func NewKeeper(
 	}
 
 	k := &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
-		staking:    staking,
+		cdc:                  cdc,
+		storeKey:             storeKey,
+		memKey:               memKey,
+		paramstore:           ps,
+		staking:              staking,
+		minimumPigeonVersion: minimumPigeonVersion,
 	}
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx sdk.Context) sdk.KVStore {
 		return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("IDs"))
