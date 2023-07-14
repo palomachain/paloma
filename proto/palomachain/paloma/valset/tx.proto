@@ -21,6 +21,7 @@ message MsgAddExternalChainInfoForValidatorResponse {}
 
 message MsgKeepAlive {
   string creator = 1;
+  string pigeonVersion = 2;
 }
 
 message MsgKeepAliveResponse {}
