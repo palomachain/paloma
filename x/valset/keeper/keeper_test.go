@@ -68,7 +68,7 @@ func TestRegisteringPigeon(t *testing.T) {
 	ms.StakingKeeper.On("Validator", mock.Anything, nonExistingVal).Return(nil)
 
 	t.Run("if validator has been alive before, but it's not now, then it returns an error", func(t *testing.T) {
-		err := k.KeepValidatorAlive(ctx.WithBlockTime(time.Unix(555, 0)), val)
+		err := k.KeepValidatorAlive(ctx.WithBlockTime(time.Unix(555, 0)), val, "v1.4.0")
 		require.NoError(t, err)
 		alive, err := k.IsValidatorAlive(ctx, val)
 		require.NoError(t, err)
@@ -76,9 +76,9 @@ func TestRegisteringPigeon(t *testing.T) {
 	})
 
 	t.Run("setting the validator to current ctx's block time", func(t *testing.T) {
-		err := k.KeepValidatorAlive(ctx, val)
+		err := k.KeepValidatorAlive(ctx, val, "v1.4.0")
 		require.NoError(t, err)
-		err = k.KeepValidatorAlive(ctx, val2)
+		err = k.KeepValidatorAlive(ctx, val2, "v1.4.0")
 		require.NoError(t, err)
 	})
 

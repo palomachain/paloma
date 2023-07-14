@@ -13,10 +13,10 @@ import (
 	"github.com/palomachain/paloma/util/libvalid"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/valset/types"
+	"golang.org/x/mod/semver"
 )
 
 const (
-	// TODO: make this a param
 	defaultKeepAliveDuration        = 5 * time.Minute
 	cValidatorJailedErrorMessage    = "validator is jailed"
 	cValidatorNotBondedErrorMessage = "validator is not bonded"
@@ -31,14 +31,9 @@ type keepAliveData struct {
 	AliveUntil  time.Time
 }
 
-func (k Keeper) KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress) error {
-	if err := k.CanAcceptValidator(ctx, valAddr); err != nil {
-		// Make sure we allow validators to keep alive even if jailed
-		// or not bonded.
-		// https://github.com/VolumeFi/paloma/issues/254
-		if whoops.Is(err, ErrValidatorWithAddrNotFound) {
-			return err
-		}
+func (k Keeper) KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress, pigeonVersion string) error {
+	if err := k.CanAcceptKeepAlive(ctx, valAddr, pigeonVersion); err != nil {
+		return err
 	}
 
 	store := k.keepAliveStore(ctx)
@@ -81,6 +76,21 @@ func (k Keeper) ValidatorAliveUntil(ctx sdk.Context, valAddr sdk.ValAddress) (ti
 	}
 
 	return data.AliveUntil, nil
+}
+
+func (k Keeper) CanAcceptKeepAlive(ctx sdk.Context, valAddr sdk.ValAddress, pigeonVersion string) error {
+	stakingVal := k.staking.Validator(ctx, valAddr)
+
+	if stakingVal == nil {
+		return ErrValidatorWithAddrNotFound.Format(valAddr.String())
+	}
+
+	requiredVersion := "v1.4.0"
+	if semver.Compare(pigeonVersion, requiredVersion) < 0 {
+		return ErrValidatorPigeonOutOfDate.Format(valAddr.String(), pigeonVersion, requiredVersion)
+	}
+
+	return nil
 }
 
 func (k Keeper) CanAcceptValidator(ctx sdk.Context, valAddr sdk.ValAddress) error {

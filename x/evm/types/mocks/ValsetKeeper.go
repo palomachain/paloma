@@ -123,13 +123,13 @@ func (_m *ValsetKeeper) Jail(ctx types.Context, valAddr types.ValAddress, reason
 	return r0
 }
 
-// KeepValidatorAlive provides a mock function with given fields: ctx, valAddr
-func (_m *ValsetKeeper) KeepValidatorAlive(ctx types.Context, valAddr types.ValAddress) error {
-	ret := _m.Called(ctx, valAddr)
+// KeepValidatorAlive provides a mock function with given fields: ctx, valAddr, pigeonVersion
+func (_m *ValsetKeeper) KeepValidatorAlive(ctx types.Context, valAddr types.ValAddress, pigeonVersion string) error {
+	ret := _m.Called(ctx, valAddr, pigeonVersion)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) error); ok {
-		r0 = rf(ctx, valAddr)
+	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress, string) error); ok {
+		r0 = rf(ctx, valAddr, pigeonVersion)
 	} else {
 		r0 = ret.Error(0)
 	}
