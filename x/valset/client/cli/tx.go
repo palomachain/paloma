@@ -22,7 +22,6 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdAddExternalChainInfoForValidator())
-	cmd.AddCommand(CmdKeepAlive())
 
 	return cmd
 }

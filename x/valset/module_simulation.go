@@ -25,10 +25,6 @@ const (
 	opWeightMsgAddExternalChainInfoForValidator = "op_weight_msg_add_external_chain_info_for_validator"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgAddExternalChainInfoForValidator int = 100
-
-	opWeightMsgKeepAlive = "op_weight_msg_keep_alive"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgKeepAlive int = 100
 )
 
 // GenerateGenesisState creates a randomized GenState of the module
@@ -62,17 +58,6 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	operations = append(operations, simulation.NewWeightedOperation(
 		weightMsgAddExternalChainInfoForValidator,
 		valsetsimulation.SimulateMsgAddExternalChainInfoForValidator(am.accountKeeper, am.bankKeeper, am.keeper),
-	))
-
-	var weightMsgKeepAlive int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgKeepAlive, &weightMsgKeepAlive, nil,
-		func(_ *rand.Rand) {
-			weightMsgKeepAlive = defaultWeightMsgKeepAlive
-		},
-	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgKeepAlive,
-		valsetsimulation.SimulateMsgKeepAlive(am.accountKeeper, am.bankKeeper, am.keeper),
 	))
 
 	return operations
