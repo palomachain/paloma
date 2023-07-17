@@ -91,7 +91,6 @@ func (k Keeper) jobsStore(ctx sdk.Context) sdk.KVStore {
 }
 
 func (k Keeper) AddNewJob(ctx sdk.Context, job *types.Job) (sdk.AccAddress, error) {
-	fmt.Printf("[MsgCreateJob][AddNewJob][job] UNPACK ARGS: %+v\n", job)
 	if k.JobIDExists(ctx, job.GetID()) {
 		return nil, types.ErrJobWithIDAlreadyExists.Wrap(job.GetID())
 	}
@@ -124,7 +123,6 @@ func (k Keeper) AddNewJob(ctx sdk.Context, job *types.Job) (sdk.AccAddress, erro
 }
 
 func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
-	fmt.Printf("[MsgCreateJob][saveJob][job] UNPACK ARGS: %+v\n", job)
 	if job.GetOwner().Empty() {
 		return types.ErrInvalid.Wrap("owner can't be empty when adding a new job")
 	}

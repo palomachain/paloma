@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"io/ioutil"
 	"strconv"
 
@@ -59,7 +58,6 @@ func CmdCreateJob() *cobra.Command {
 				Creator: clientCtx.GetFromAddress().String(),
 				Job:     job,
 			}
-			fmt.Printf("[MsgCreateJob][cmdCreateJob][msg] UNPACK ARGS: %+v\n", msg)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

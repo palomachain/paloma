@@ -1,8 +1,6 @@
 package types
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -39,7 +37,6 @@ func (msg *MsgCreateJob) GetSignBytes() []byte {
 }
 
 func (msg *MsgCreateJob) ValidateBasic() error {
-	fmt.Printf("[MsgCreateJob][ValidateBasic][msg] UNPACK ARGS: %+v\n", msg)
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
