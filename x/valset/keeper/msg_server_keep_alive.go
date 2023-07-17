@@ -12,7 +12,7 @@ func (k msgServer) KeepAlive(goCtx context.Context, msg *types.MsgKeepAlive) (*t
 
 	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
 	valAddr := sdk.ValAddress(creator.Bytes())
-	err := k.Keeper.KeepValidatorAlive(ctx, valAddr)
+	err := k.Keeper.KeepValidatorAlive(ctx, valAddr, msg.PigeonVersion)
 	if err != nil {
 		return nil, err
 	}

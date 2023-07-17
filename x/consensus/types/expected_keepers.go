@@ -23,5 +23,5 @@ type ValsetKeeper interface {
 	GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType, chainReferenceID, signedByAddress string) ([]byte, error)
 	GetCurrentSnapshot(ctx sdk.Context) (*valsettypes.Snapshot, error)
 	CanAcceptValidator(ctx sdk.Context, valAddr sdk.ValAddress) error
-	KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress) error
+	KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress, pigeonVersion string) error
 }

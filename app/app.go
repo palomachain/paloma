@@ -140,6 +140,8 @@ const (
 	Name = "paloma"
 
 	wasmAvailableCapabilities = "iterator,staking,stargate,paloma"
+
+	minimumPigeonVersion = "v1.4.0"
 )
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -525,6 +527,7 @@ func New(
 		memKeys[valsetmoduletypes.MemStoreKey],
 		app.GetSubspace(valsetmoduletypes.ModuleName),
 		app.StakingKeeper,
+		minimumPigeonVersion,
 	)
 
 	consensusRegistry := consensusmodulekeeper.NewRegistry()

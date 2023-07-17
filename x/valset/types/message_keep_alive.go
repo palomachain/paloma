@@ -5,23 +5,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-const TypeMsgKeepAlive = "keep_alive"
-
 var _ sdk.Msg = &MsgKeepAlive{}
-
-func NewMsgKeepAlive(creator string) *MsgKeepAlive {
-	return &MsgKeepAlive{
-		Creator: creator,
-	}
-}
-
-func (msg *MsgKeepAlive) Route() string {
-	return RouterKey
-}
-
-func (msg *MsgKeepAlive) Type() string {
-	return TypeMsgKeepAlive
-}
 
 func (msg *MsgKeepAlive) GetSigners() []sdk.AccAddress {
 	creator, err := sdk.AccAddressFromBech32(msg.Creator)

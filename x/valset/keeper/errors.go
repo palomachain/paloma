@@ -16,5 +16,6 @@ const (
 
 	ErrCannotJailValidator = whoops.Errorf("cannot jail validator: %s")
 
-	ErrValidatorAlreadyJailed = whoops.Errorf("validator already jailed: %s")
+	ErrValidatorAlreadyJailed   = whoops.Errorf("validator already jailed: %s")
+	ErrValidatorPigeonOutOfDate = whoops.Errorf("validator %s pigeon is out of date.  Version %s less than required %s")
 )
