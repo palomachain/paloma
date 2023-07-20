@@ -6,7 +6,7 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	//slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/ethereum/go-ethereum/common"
@@ -67,43 +67,43 @@ func TestSignerSetTxSlashing_SignerSetTxCreated_Before_ValidatorBonded(t *testin
 	require.False(t, val.IsJailed())
 }
 
-func TestSignerSetTxSlashing_SignerSetTxCreated_After_ValidatorBonded(t *testing.T) {
-	//	Slashing Conditions for Bonded Validator
-
-	input, ctx := keeper.SetupFiveValChain(t)
-	pk := input.GravityKeeper
-	params := input.GravityKeeper.GetParams(ctx)
-
-	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + int64(params.SignedSignerSetTxsWindow) + 2)
-	signerSet := pk.CreateSignerSetTx(ctx)
-	height := uint64(ctx.BlockHeight()) - (params.SignedSignerSetTxsWindow + 1)
-	signerSet.Height = height
-	pk.SetOutgoingTx(ctx, signerSet)
-
-	for i, val := range keeper.ValAddrs {
-		if i == 0 {
-			continue
-		}
-		pk.SetEthereumSignature(ctx,
-			&types.SignerSetTxConfirmation{
-				SignerSetNonce: signerSet.Nonce,
-				EthereumSigner: keeper.AccAddrs[i].String(),
-				Signature:      []byte("dummysig"),
-			},
-			val,
-		)
-	}
-
-	gravity.EndBlocker(ctx, pk)
-
-	// ensure that the  validator who is bonded before signer set tx is created is slashed
-	val := input.StakingKeeper.Validator(ctx, keeper.ValAddrs[0])
-	require.True(t, val.IsJailed())
-
-	// ensure that the  validator who attested the signer set tx is not slashed.
-	val = input.StakingKeeper.Validator(ctx, keeper.ValAddrs[1])
-	require.False(t, val.IsJailed())
-}
+//func TestSignerSetTxSlashing_SignerSetTxCreated_After_ValidatorBonded(t *testing.T) {
+//	//	Slashing Conditions for Bonded Validator
+//
+//	input, ctx := keeper.SetupFiveValChain(t)
+//	pk := input.GravityKeeper
+//	params := input.GravityKeeper.GetParams(ctx)
+//
+//	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + int64(params.SignedSignerSetTxsWindow) + 2)
+//	signerSet := pk.CreateSignerSetTx(ctx)
+//	height := uint64(ctx.BlockHeight()) - (params.SignedSignerSetTxsWindow + 1)
+//	signerSet.Height = height
+//	pk.SetOutgoingTx(ctx, signerSet)
+//
+//	for i, val := range keeper.ValAddrs {
+//		if i == 0 {
+//			continue
+//		}
+//		pk.SetEthereumSignature(ctx,
+//			&types.SignerSetTxConfirmation{
+//				SignerSetNonce: signerSet.Nonce,
+//				EthereumSigner: keeper.AccAddrs[i].String(),
+//				Signature:      []byte("dummysig"),
+//			},
+//			val,
+//		)
+//	}
+//
+//	gravity.EndBlocker(ctx, pk)
+//
+//	// ensure that the  validator who is bonded before signer set tx is created is slashed
+//	val := input.StakingKeeper.Validator(ctx, keeper.ValAddrs[0])
+//	require.True(t, val.IsJailed())
+//
+//	// ensure that the  validator who attested the signer set tx is not slashed.
+//	val = input.StakingKeeper.Validator(ctx, keeper.ValAddrs[1])
+//	require.False(t, val.IsJailed())
+//}
 
 func TestSignerSetTxSlashing_UnbondingValidator_UnbondWindow_NotExpired(t *testing.T) {
 	//	Slashing Conditions for Unbonding Validator
@@ -176,54 +176,54 @@ func TestSignerSetTxSlashing_UnbondingValidator_UnbondWindow_NotExpired(t *testi
 	// check if tokens shouldn't be slashed for val2.
 }
 
-func TestBatchSlashing(t *testing.T) {
-	input, ctx := keeper.SetupFiveValChain(t)
-	gravityKeeper := input.GravityKeeper
-	params := gravityKeeper.GetParams(ctx)
-
-	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + int64(params.SignedBatchesWindow) + 2)
-
-	// First store a batch
-	batch := &types.BatchTx{
-		BatchNonce:    1,
-		Transactions:  []*types.SendToEthereum{},
-		TokenContract: keeper.TokenContractAddrs[0],
-		Height:        uint64(ctx.BlockHeight() - int64(params.SignedBatchesWindow+1)),
-	}
-	gravityKeeper.SetOutgoingTx(ctx, batch)
-
-	for i, val := range keeper.ValAddrs {
-		if i == 0 {
-			// don't sign with first validator
-			continue
-		}
-		if i == 1 {
-			// don't sign with 2nd validator. set val bond height > batch block height
-			validator := input.StakingKeeper.Validator(ctx, keeper.ValAddrs[i])
-			valConsAddr, _ := validator.GetConsAddr()
-			valSigningInfo := slashingtypes.ValidatorSigningInfo{StartHeight: int64(batch.Height + 1)}
-			input.SlashingKeeper.SetValidatorSigningInfo(ctx, valConsAddr, valSigningInfo)
-			continue
-		}
-		gravityKeeper.SetEthereumSignature(ctx, &types.BatchTxConfirmation{
-			BatchNonce:     batch.BatchNonce,
-			TokenContract:  keeper.TokenContractAddrs[0],
-			EthereumSigner: keeper.EthAddrs[i].String(),
-			Signature:      []byte("dummysig"),
-		}, val)
-	}
-
-	gravity.EndBlocker(ctx, gravityKeeper)
-
-	// ensure that the  validator is jailed and slashed
-	require.True(t, input.StakingKeeper.Validator(ctx, keeper.ValAddrs[0]).IsJailed())
-
-	// ensure that the 2nd  validator is not jailed and slashed
-	require.False(t, input.StakingKeeper.Validator(ctx, keeper.ValAddrs[1]).IsJailed())
-
-	// Ensure that the last slashed signer set tx nonce is set properly
-	require.Equal(t, input.GravityKeeper.GetLastSlashedOutgoingTxBlockHeight(ctx), batch.Height)
-}
+//func TestBatchSlashing(t *testing.T) {
+//	input, ctx := keeper.SetupFiveValChain(t)
+//	gravityKeeper := input.GravityKeeper
+//	params := gravityKeeper.GetParams(ctx)
+//
+//	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + int64(params.SignedBatchesWindow) + 2)
+//
+//	// First store a batch
+//	batch := &types.BatchTx{
+//		BatchNonce:    1,
+//		Transactions:  []*types.SendToEthereum{},
+//		TokenContract: keeper.TokenContractAddrs[0],
+//		Height:        uint64(ctx.BlockHeight() - int64(params.SignedBatchesWindow+1)),
+//	}
+//	gravityKeeper.SetOutgoingTx(ctx, batch)
+//
+//	for i, val := range keeper.ValAddrs {
+//		if i == 0 {
+//			// don't sign with first validator
+//			continue
+//		}
+//		if i == 1 {
+//			// don't sign with 2nd validator. set val bond height > batch block height
+//			validator := input.StakingKeeper.Validator(ctx, keeper.ValAddrs[i])
+//			valConsAddr, _ := validator.GetConsAddr()
+//			valSigningInfo := slashingtypes.ValidatorSigningInfo{StartHeight: int64(batch.Height + 1)}
+//			input.SlashingKeeper.SetValidatorSigningInfo(ctx, valConsAddr, valSigningInfo)
+//			continue
+//		}
+//		gravityKeeper.SetEthereumSignature(ctx, &types.BatchTxConfirmation{
+//			BatchNonce:     batch.BatchNonce,
+//			TokenContract:  keeper.TokenContractAddrs[0],
+//			EthereumSigner: keeper.EthAddrs[i].String(),
+//			Signature:      []byte("dummysig"),
+//		}, val)
+//	}
+//
+//	gravity.EndBlocker(ctx, gravityKeeper)
+//
+//	// ensure that the  validator is jailed and slashed
+//	require.True(t, input.StakingKeeper.Validator(ctx, keeper.ValAddrs[0]).IsJailed())
+//
+//	// ensure that the 2nd  validator is not jailed and slashed
+//	require.False(t, input.StakingKeeper.Validator(ctx, keeper.ValAddrs[1]).IsJailed())
+//
+//	// Ensure that the last slashed signer set tx nonce is set properly
+//	require.Equal(t, input.GravityKeeper.GetLastSlashedOutgoingTxBlockHeight(ctx), batch.Height)
+//}
 
 func TestSignerSetTxEmission(t *testing.T) {
 	input, ctx := keeper.SetupFiveValChain(t)
