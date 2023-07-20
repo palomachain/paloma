@@ -141,7 +141,7 @@ const (
 
 	wasmAvailableCapabilities = "iterator,staking,stargate,paloma"
 
-	minimumPigeonVersion = "v1.4.0"
+	minimumPigeonVersion = "v1.5.0"
 )
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
