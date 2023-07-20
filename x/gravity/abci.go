@@ -26,7 +26,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 
 // EndBlocker is called at the end of every block
 func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
-	//outgoingTxSlashing(ctx, k)
+	// outgoingTxSlashing(ctx, k)
 	eventVoteRecordTally(ctx, k)
 	updateObservedEthereumHeight(ctx, k)
 }
@@ -272,6 +272,7 @@ func cleanupTimedOutContractCallTxs(ctx sdk.Context, k keeper.Keeper) {
 	})
 }
 
+//nolint:unused
 func outgoingTxSlashing(ctx sdk.Context, k keeper.Keeper) {
 	params := k.GetParams(ctx)
 	maxHeight := uint64(0)
