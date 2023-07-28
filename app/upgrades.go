@@ -215,6 +215,9 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 	}
 
 	logger.Info("Checking for migration v1.5.0...")
+	covered := !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height)
+	exp := (upgradeInfo.Name == "v1.5.0" || upgradeInfo.Name == "v1.6.1") && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height)
+	logger.With("upgradeInfo", upgradeInfo).With("upgradeInfo.Height", upgradeInfo.Height).With("upgradeInfo.Name", upgradeInfo.Name).With("covered", covered).With("exp", exp)
 	if (upgradeInfo.Name == "v1.5.0" || upgradeInfo.Name == "v1.6.1") && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		logger.Info("Running migration v1.5.0...")
 		storeUpgrades := storetypes.StoreUpgrades{
