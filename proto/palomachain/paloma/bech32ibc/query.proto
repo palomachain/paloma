@@ -1,0 +1,46 @@
+syntax = "proto3";
+package palomachain.paloma.bech32ibc;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/duration.proto";
+
+import "palomachain/paloma/bech32ibc/types.proto";
+
+option go_package = "github.com/palomachain/paloma/x/bech32ibc/types";
+
+service Query {
+  // HrpIbcRecords returns to full list of records
+  rpc HrpIbcRecords(QueryHrpIbcRecordsRequest)
+      returns (QueryHrpIbcRecordsResponse) {}
+
+  // HrpIbcRecord returns the record for a requested HRP
+  rpc HrpIbcRecord(QueryHrpIbcRecordRequest)
+      returns (QueryHrpIbcRecordResponse) {}
+
+  // NativeHrp returns the chain's native HRP
+  rpc NativeHrp(QueryNativeHrpRequest) returns (QueryNativeHrpResponse) {}
+}
+
+message QueryHrpIbcRecordsRequest {}
+message QueryHrpIbcRecordsResponse {
+  repeated HrpIbcRecord hrp_ibc_records = 1 [
+    (gogoproto.moretags) = "yaml:\"hrp_ibc_records\"",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message QueryHrpIbcRecordRequest {
+  string hrp = 1 [ (gogoproto.moretags) = "yaml:\"hrp\"" ];
+}
+message QueryHrpIbcRecordResponse {
+  HrpIbcRecord hrp_ibc_record = 1 [
+    (gogoproto.moretags) = "yaml:\"hrp_ibc_record\"",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message QueryNativeHrpRequest {}
+message QueryNativeHrpResponse {
+  string native_hrp = 1 [ (gogoproto.moretags) = "yaml:\"native_hrp\"" ];
+}

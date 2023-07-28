@@ -2,22 +2,25 @@ package cli
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
 	"strconv"
-	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/version"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
-	"github.com/spf13/cobra"
 )
 
+// GetTxCmd bundles all the subcmds together so they appear under `gravity tx`
 func GetTxCmd(storeKey string) *cobra.Command {
+	// needed for governance proposal txs in cli case
+	// internal check prevents double registration in node case
+	keeper.RegisterProposalTypes()
+
+	// nolint: exhaustruct
 	gravityTxCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Gravity transaction subcommands",
@@ -26,224 +29,203 @@ func GetTxCmd(storeKey string) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	gravityTxCmd.AddCommand(
-		CmdSendToEthereum(),
-		CmdCancelSendToEthereum(),
-		CmdSetDelegateKeys(),
-	)
+	gravityTxCmd.AddCommand([]*cobra.Command{
+		CmdSendToEth(),
+		CmdCancelSendToEth(),
+		CmdRequestBatch(),
+		CmdSetOrchestratorAddress(),
+		CmdExecutePendingIbcAutoForwards(),
+	}...)
 
 	return gravityTxCmd
 }
 
-func CmdSendToEthereum() *cobra.Command {
+// CmdSendToEth sends tokens to Ethereum. Locks Cosmos-side tokens into the Transaction pool for batching.
+func CmdSendToEth() *cobra.Command {
+	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:     "send-to-ethereum [ethereum-receiver] [send-coins] [fee-coins]",
-		Aliases: []string{"send", "transfer"},
-		Args:    cobra.ExactArgs(3),
-		Short:   "Send tokens from cosmos chain to connected ethereum chain",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			from := clientCtx.GetFromAddress()
-			if from == nil {
-				return fmt.Errorf("must pass from flag")
-			}
-
-			if !common.IsHexAddress(args[0]) {
-				return fmt.Errorf("must be a valid ethereum address got %s", args[0])
-			}
-
-			// Get amount of coins
-			sendCoin, err := sdk.ParseCoinNormalized(args[1])
-			if err != nil {
-				return err
-			}
-
-			feeCoin, err := sdk.ParseCoinNormalized(args[2])
-			if err != nil {
-				return err
-			}
-
-			msg := types.NewMsgSendToEthereum(from, common.HexToAddress(args[0]).Hex(), sendCoin, feeCoin)
-			if err = msg.ValidateBasic(); err != nil {
-				return err
-			}
-
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
-		},
-	}
-
-	flags.AddTxFlagsToCmd(cmd)
-	return cmd
-}
-
-func CmdCancelSendToEthereum() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "cancel-send-to-ethereum [id]",
-		Args:  cobra.ExactArgs(1),
-		Short: "Cancel ethereum send by id",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			from := clientCtx.GetFromAddress()
-			if from == nil {
-				return fmt.Errorf("must pass from flag")
-			}
-
-			id, err := strconv.ParseUint(args[0], 10, 64)
-			if err != nil {
-				return err
-			}
-
-			msg := types.NewMsgCancelSendToEthereum(id, from)
-			if err = msg.ValidateBasic(); err != nil {
-				return err
-			}
-
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
-		},
-	}
-
-	flags.AddTxFlagsToCmd(cmd)
-	return cmd
-}
-
-func CmdSetDelegateKeys() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "set-delegate-keys [validator-address] [orchestrator-address] [ethereum-address] [ethereum-signature]",
+		Use:   "send-to-eth [eth-dest] [amount] [bridge-fee] [chain-fee]",
+		Short: "Adds a new entry to the transaction pool to withdraw an amount from the Ethereum bridge contract. This will not execute until a batch is requested and then actually relayed. Chain fee must be at least min_chain_fee_basis_points in `query gravity params`. Your funds can be reclaimed using cancel-send-to-eth so long as they remain in the pool",
 		Args:  cobra.ExactArgs(4),
-		Short: "Set gravity delegate keys",
-		Long: `Set a validator's Ethereum and orchestrator addresses. The validator must
-sign over a binary Proto-encoded DelegateKeysSignMsg message. The message contains
-the validator's address and operator account current nonce.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
+			cliCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
+			cosmosAddr := cliCtx.GetFromAddress()
 
-			valAddr, err := sdk.ValAddressFromBech32(args[0])
+			amount, err := sdk.ParseCoinsNormalized(args[1])
 			if err != nil {
-				return err
+				return sdkerrors.Wrap(err, "amount")
 			}
-
-			orcAddr, err := sdk.AccAddressFromBech32(args[1])
+			bridgeFee, err := sdk.ParseCoinsNormalized(args[2])
 			if err != nil {
-				return err
+				return sdkerrors.Wrap(err, "bridge fee")
 			}
-
-			ethAddr, err := parseContractAddress(args[2])
+			chainFee, err := sdk.ParseCoinsNormalized(args[3])
 			if err != nil {
-				return err
+				return sdkerrors.Wrap(err, "chain fee")
 			}
 
-			ethSig, err := hexutil.Decode(args[3])
+			ethAddr, err := types.NewEthAddress(args[0])
 			if err != nil {
-				return err
+				return sdkerrors.Wrap(err, "invalid eth address")
 			}
 
-			msg := types.NewMsgDelegateKeys(valAddr, orcAddr, ethAddr, ethSig)
-			if err = msg.ValidateBasic(); err != nil {
-				return err
+			if len(amount) != 1 || len(bridgeFee) != 1 || len(chainFee) != 1 {
+				return fmt.Errorf("unexpected coin amounts, expecting just 1 coin amount for both amount and bridgeFee")
 			}
 
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+			// Make the message
+			msg := types.MsgSendToEth{
+				Sender:    cosmosAddr.String(),
+				EthDest:   ethAddr.GetAddress().Hex(),
+				Amount:    amount[0],
+				BridgeFee: bridgeFee[0],
+				ChainFee:  chainFee[0],
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			// Send it
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), &msg)
 		},
 	}
-
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
 
-func CmdSubmitCommunityPoolEthereumSpendProposal() *cobra.Command {
+// CmdCancelSendToEth enables users to take their Transaction out of the pool. Note that this cannot be done if it is
+// locked up in a pending batch or if it has already been executed on Ethereum
+func CmdCancelSendToEth() *cobra.Command {
+	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "community-pool-ethereum-spend [proposal-file]",
+		Use:   "cancel-send-to-eth [transaction id]",
+		Short: "Removes an entry from the transaction pool, preventing your tokens from going to Ethereum and refunding the send.",
 		Args:  cobra.ExactArgs(1),
-		Short: "Submit a community pool Ethereum spend proposal",
-		Long: strings.TrimSpace(
-			fmt.Sprintf(`Submit a community pool Ethereum spend proposal along with an initial deposit.
-The proposal details must be supplied via a JSON file. The funds from the community pool
-will be bridged to Ethereum to the supplied recipient Ethereum address. Only one denomination
-of Cosmos token can be sent, and the bridge fee supplied along with the amount must be of the
-same denomination.
-
-Example:
-$ %s tx gov submit-proposal community-pool-ethereum-spend <path/to/proposal.json> --from=<key_or_address>
-
-Where proposal.json contains:
-
-{
-	"title": "Community Pool Ethereum Spend",
-	"description": "Bridge me some tokens to Ethereum!",
-	"recipient": "0x0000000000000000000000000000000000000000",
-	"amount": "20000ugrain",
-	"bridge_fee": "1000ugrain",
-	"deposit": "1000ugrain"
-}
-`,
-				version.AppName,
-			),
-		),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
+			cliCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
+			cosmosAddr := cliCtx.GetFromAddress()
 
-			proposal, err := ParseCommunityPoolEthereumSpendProposal(clientCtx.Codec, args[0])
+			txId, err := strconv.ParseUint(args[0], 0, 64)
 			if err != nil {
+				return sdkerrors.Wrap(err, "failed to parse transaction id")
+			}
+
+			// Make the message
+			msg := types.MsgCancelSendToEth{
+				Sender:        cosmosAddr.String(),
+				TransactionId: txId,
+			}
+			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
-
-			if len(proposal.Title) == 0 {
-				return fmt.Errorf("title is empty")
-			}
-
-			if len(proposal.Description) == 0 {
-				return fmt.Errorf("description is empty")
-			}
-
-			if !common.IsHexAddress(proposal.Recipient) {
-				return fmt.Errorf("recipient is not a valid Ethereum address")
-			}
-
-			amount, err := sdk.ParseCoinNormalized(proposal.Amount)
-			if err != nil {
-				return err
-			}
-
-			bridgeFee, err := sdk.ParseCoinNormalized(proposal.BridgeFee)
-			if err != nil {
-				return err
-			}
-
-			if amount.Denom != bridgeFee.Denom {
-				return fmt.Errorf("amount and bridge fee denominations must match")
-			}
-
-			deposit, err := sdk.ParseCoinsNormalized(proposal.Deposit)
-			if err != nil {
-				return err
-			}
-
-			from := clientCtx.GetFromAddress()
-
-			content := types.NewCommunityPoolEthereumSpendProposal(proposal.Title, proposal.Description, proposal.Recipient, amount, bridgeFee)
-
-			msg, err := govtypes.NewMsgSubmitProposal(content, deposit, from)
-			if err != nil {
-				return err
-			}
-
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+			// Send it
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), &msg)
 		},
 	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
 
+// CmdRequestBatch requests that the validators create and confirm a batch to be sent to Ethereum. This
+// is a manual command which duplicates the efforts of the Ethereum Relayer, likely not to be used often
+func CmdRequestBatch() *cobra.Command {
+	// nolint: exhaustruct
+	cmd := &cobra.Command{
+		Use:   "request-batch [token_contract_address]",
+		Short: "Request a new batch on the cosmos side for pooled withdrawal transactions",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			cosmosAddr := cliCtx.GetFromAddress()
+
+			// TODO: better denom searching
+			msg := types.MsgRequestBatch{
+				Sender: cosmosAddr.String(),
+				Denom:  fmt.Sprintf("gravity%s", args[0]),
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			// Send it
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), &msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+// CmdSetOrchestratorAddress registers delegate keys for a validator so that their Orchestrator has authority to perform
+// its responsibility
+func CmdSetOrchestratorAddress() *cobra.Command {
+	// nolint: exhaustruct
+	cmd := &cobra.Command{
+		Use:   "set-orchestrator-address [validator-address] [orchestrator-address] [ethereum-address]",
+		Short: "Allows validators to delegate their voting responsibilities to a given key.",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			msg := types.MsgSetOrchestratorAddress{
+				Validator:    args[0],
+				Orchestrator: args[1],
+				EthAddress:   args[2],
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			// Send it
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), &msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+// CmdExecutePendingIbcAutoForwards Executes a number of queued IBC Auto Forwards. When users perform a Send to Cosmos
+// with a registered foreign address prefix (e.g. canto1... cre1...), their funds will be locked in the Gravity module
+// until their pending forward is executed. This will send the funds to the equivalent gravity-prefixed account and then
+// immediately create an IBC transfer to the destination chain to the original foreign account. If there is an IBC
+// failure, the funds will be deposited on the gravity-prefixed account.
+func CmdExecutePendingIbcAutoForwards() *cobra.Command {
+	// nolint: exhaustruct
+	cmd := &cobra.Command{
+		Use:   "execute-pending-ibc-auto-forwards [forwards-to-execute]",
+		Short: "Executes a given number of IBC Auto-Forwards",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			sender := cliCtx.GetFromAddress()
+			if sender.String() == "" {
+				return fmt.Errorf("from address must be specified")
+			}
+			forwardsToClear, err := strconv.ParseUint(args[0], 10, 0)
+			if err != nil {
+				return sdkerrors.Wrap(err, "Unable to parse forwards-to-execute as an non-negative integer")
+			}
+			msg := types.MsgExecuteIbcAutoForwards{
+				ForwardsToClear: forwardsToClear,
+				Executor:        cliCtx.GetFromAddress().String(),
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			// Send it
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), &msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

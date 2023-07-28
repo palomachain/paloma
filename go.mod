@@ -3,7 +3,8 @@ module github.com/palomachain/paloma
 go 1.20
 
 require (
-	cosmossdk.io/errors v1.0.0-beta.7
+	//github.com/althea-net/bech32-ibc v0.4.5
+	cosmossdk.io/errors v1.0.0-beta.7 // indirect
 	cosmossdk.io/math v1.0.1
 	github.com/CosmWasm/wasmd v0.40.1
 	github.com/CosmWasm/wasmvm v1.2.4

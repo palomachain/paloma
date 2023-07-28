@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/palomachain/paloma/x/bech32ibc"
 	"io"
 	"os"
 	"path/filepath"
@@ -109,6 +110,10 @@ import (
 	palomamempool "github.com/palomachain/paloma/app/mempool"
 	appparams "github.com/palomachain/paloma/app/params"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	bech32ibcmodule "github.com/palomachain/paloma/x/bech32ibc"
+	bech32ibcclient "github.com/palomachain/paloma/x/bech32ibc/client"
+	bech32ibckeeper "github.com/palomachain/paloma/x/bech32ibc/keeper"
+	bech32ibcmoduletypes "github.com/palomachain/paloma/x/bech32ibc/types"
 	consensusmodule "github.com/palomachain/paloma/x/consensus"
 	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
@@ -152,8 +157,9 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
 		evmclient.ProposalHandler,
-		treasuryclient.ProposalHandler,
 		gravityclient.ProposalHandler,
+		bech32ibcclient.ProposalHandler,
+		treasuryclient.ProposalHandler,
 	}
 }
 
@@ -186,6 +192,7 @@ var (
 		wasm.AppModuleBasic{},
 		evm.AppModuleBasic{},
 		gravitymodule.AppModuleBasic{},
+		bech32ibcmodule.AppModuleBasic{},
 		palomamodule.AppModuleBasic{},
 		treasurymodule.AppModuleBasic{},
 		consensus.AppModuleBasic{},
@@ -274,6 +281,7 @@ type App struct {
 	TreasuryKeeper  treasurymodulekeeper.Keeper
 	EvmKeeper       evmmodulekeeper.Keeper
 	GravityKeeper   gravitymodulekeeper.Keeper
+	Bech32IBCKeeper bech32ibckeeper.Keeper
 	wasmKeeper      wasm.Keeper
 
 	// mm is the module manager
@@ -453,7 +461,8 @@ func New(
 	// set the governance module account as the authority for conducting upgrades
 	homePath := cast.ToString(appOpts.Get(flags.FlagHome))
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(
-		skipUpgradeHeights, keys[upgradetypes.StoreKey],
+		skipUpgradeHeights,
+		keys[upgradetypes.StoreKey],
 		appCodec,
 		homePath,
 		app.BaseApp,
@@ -553,6 +562,13 @@ func New(
 		app.EvmKeeper,
 	}
 
+	app.Bech32IBCKeeper = bech32ibckeeper.NewKeeper(
+		app.IBCKeeper.ChannelKeeper,
+		appCodec,
+		keys[bech32ibcmoduletypes.StoreKey],
+		app.TransferKeeper,
+	)
+
 	app.GravityKeeper = gravitymodulekeeper.NewKeeper(
 		appCodec,
 		keys[gravitymoduletypes.StoreKey],
@@ -562,9 +578,8 @@ func New(
 		app.BankKeeper,
 		app.SlashingKeeper,
 		app.DistrKeeper,
-		sdk.DefaultPowerReduction,
-		map[string]string{},
-		map[string]string{},
+		app.TransferKeeper,
+		app.Bech32IBCKeeper,
 	)
 
 	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
@@ -622,7 +637,8 @@ func New(
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
-		AddRoute(gravitymoduletypes.RouterKey, gravitymodule.NewCommunityPoolEthereumSpendProposalHandler(app.GravityKeeper)).
+		AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
+		AddRoute(bech32ibcmoduletypes.RouterKey, bech32ibc.NewBech32IBCProposalHandler(app.Bech32IBCKeeper)).
 		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
 
 	// Example of setting gov params:
@@ -801,6 +817,7 @@ func New(
 		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
+		bech32ibcmoduletypes.ModuleName,
 		gravitymoduletypes.ModuleName,
 		treasurymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -833,6 +850,7 @@ func New(
 		palomamoduletypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
+		bech32ibcmoduletypes.ModuleName,
 		gravitymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
@@ -874,6 +892,7 @@ func New(
 		ibcfeetypes.ModuleName,
 		wasm.ModuleName,
 		evmmoduletypes.ModuleName,
+		bech32ibcmoduletypes.ModuleName,
 		gravitymoduletypes.ModuleName,
 		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,

@@ -3,90 +3,84 @@ package types
 import (
 	"testing"
 
+	types "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
 
+// nolint: exhaustruct
 func TestGenesisStateValidate(t *testing.T) {
-	var nilByteSlice []byte
 	specs := map[string]struct {
 		src    *GenesisState
 		expErr bool
 	}{
 		"default params": {src: DefaultGenesisState(), expErr: false},
-		"empty params":   {src: &GenesisState{Params: &Params{}}, expErr: true},
+		"empty params": {src: &GenesisState{
+			Params: &Params{
+				GravityId:                    "",
+				ContractSourceHash:           "",
+				BridgeEthereumAddress:        "",
+				BridgeChainId:                0,
+				SignedValsetsWindow:          0,
+				SignedBatchesWindow:          0,
+				SignedLogicCallsWindow:       0,
+				TargetBatchTimeout:           0,
+				AverageBlockTime:             0,
+				AverageEthereumBlockTime:     0,
+				SlashFractionValset:          types.Dec{},
+				SlashFractionBatch:           types.Dec{},
+				SlashFractionLogicCall:       types.Dec{},
+				UnbondSlashingValsetsWindow:  0,
+				SlashFractionBadEthSignature: types.Dec{},
+				ValsetReward: types.Coin{
+					Denom:  "",
+					Amount: types.Int{},
+				},
+			},
+			GravityNonces:      GravityNonces{},
+			Valsets:            []Valset{},
+			ValsetConfirms:     []MsgValsetConfirm{},
+			Batches:            []OutgoingTxBatch{},
+			BatchConfirms:      []MsgConfirmBatch{},
+			LogicCalls:         []OutgoingLogicCall{},
+			LogicCallConfirms:  []MsgConfirmLogicCall{},
+			Attestations:       []Attestation{},
+			DelegateKeys:       []MsgSetOrchestratorAddress{},
+			Erc20ToDenoms:      []ERC20ToDenom{},
+			UnbatchedTransfers: []OutgoingTransferTx{},
+		}, expErr: true},
 		"invalid params": {src: &GenesisState{
 			Params: &Params{
-				GravityId:             "foo",
-				ContractSourceHash:    "laksdjflasdkfja",
-				BridgeEthereumAddress: "invalid-eth-address",
-				BridgeChainId:         3279089,
-			},
-		}, expErr: true},
-		"valid delegate": {src: &GenesisState{
-			Params: DefaultParams(),
-			DelegateKeys: []*MsgDelegateKeys{
-				{
-					ValidatorAddress:    "cosmosvaloper13yfm8as7y0mzsxqkfmk5jvgm45aez0u24jk95z",
-					OrchestratorAddress: "cosmos1h706wwrghfpydyh735aet8aluhf95dqj0psgyf",
-					EthereumAddress:     "0xFDb0aaBD40774BBF3068Bf29E8b0a6C88BE26F83",
-					EthSignature:        []byte("0xa2f643b5b919050eb4e200bae900d16fd28adca4d727fb7cc1c68f2517e601d0355340ee0913b1e3b5a5837fbd795857a004e0333913cfb7c59e159ff02115b01c"),
+				GravityId:                    "foo",
+				ContractSourceHash:           "laksdjflasdkfja",
+				BridgeEthereumAddress:        "invalid-eth-address",
+				BridgeChainId:                3279089,
+				SignedValsetsWindow:          0,
+				SignedBatchesWindow:          0,
+				SignedLogicCallsWindow:       0,
+				TargetBatchTimeout:           0,
+				AverageBlockTime:             0,
+				AverageEthereumBlockTime:     0,
+				SlashFractionValset:          types.Dec{},
+				SlashFractionBatch:           types.Dec{},
+				SlashFractionLogicCall:       types.Dec{},
+				UnbondSlashingValsetsWindow:  0,
+				SlashFractionBadEthSignature: types.Dec{},
+				ValsetReward: types.Coin{
+					Denom:  "",
+					Amount: types.Int{},
 				},
 			},
-		}, expErr: false},
-		"valid delegate with placeholder signature": {src: &GenesisState{
-			Params: DefaultParams(),
-			DelegateKeys: []*MsgDelegateKeys{
-				{
-					ValidatorAddress:    "cosmosvaloper13yfm8as7y0mzsxqkfmk5jvgm45aez0u24jk95z",
-					OrchestratorAddress: "cosmos1h706wwrghfpydyh735aet8aluhf95dqj0psgyf",
-					EthereumAddress:     "0xFDb0aaBD40774BBF3068Bf29E8b0a6C88BE26F83",
-					EthSignature:        []byte("unused"), // this will marshal into "dW51c2Vk" as []byte will be encoded as base64
-				},
-			},
-		}, expErr: false},
-		"valid delegate with nil signature": {src: &GenesisState{
-			Params: DefaultParams(),
-			DelegateKeys: []*MsgDelegateKeys{
-				{
-					ValidatorAddress:    "cosmosvaloper13yfm8as7y0mzsxqkfmk5jvgm45aez0u24jk95z",
-					OrchestratorAddress: "cosmos1h706wwrghfpydyh735aet8aluhf95dqj0psgyf",
-					EthereumAddress:     "0xFDb0aaBD40774BBF3068Bf29E8b0a6C88BE26F83",
-					EthSignature:        nilByteSlice,
-				},
-			},
-		}, expErr: true},
-		"delegate with bad validator address": {src: &GenesisState{
-			Params: DefaultParams(),
-			DelegateKeys: []*MsgDelegateKeys{
-				{
-					ValidatorAddress:    "cosmosvaloper1wrong",
-					OrchestratorAddress: "cosmos1h706wwrghfpydyh735aet8aluhf95dqj0psgyf",
-					EthereumAddress:     "0xFDb0aaBD40774BBF3068Bf29E8b0a6C88BE26F83",
-					EthSignature:        []byte("0xa2f643b5b919050eb4e200bae900d16fd28adca4d727fb7cc1c68f2517e601d0355340ee0913b1e3b5a5837fbd795857a004e0333913cfb7c59e159ff02115b01c"),
-				},
-			},
-		}, expErr: true},
-		"delegate with bad orchestrator address": {src: &GenesisState{
-			Params: DefaultParams(),
-			DelegateKeys: []*MsgDelegateKeys{
-				{
-					ValidatorAddress:    "cosmosvaloper13yfm8as7y0mzsxqkfmk5jvgm45aez0u24jk95z",
-					OrchestratorAddress: "cosmos1wrong",
-					EthereumAddress:     "0xFDb0aaBD40774BBF3068Bf29E8b0a6C88BE26F83",
-					EthSignature:        []byte("0xa2f643b5b919050eb4e200bae900d16fd28adca4d727fb7cc1c68f2517e601d0355340ee0913b1e3b5a5837fbd795857a004e0333913cfb7c59e159ff02115b01c"),
-				},
-			},
-		}, expErr: true},
-		"delegate with bad eth address": {src: &GenesisState{
-			Params: DefaultParams(),
-			DelegateKeys: []*MsgDelegateKeys{
-				{
-					ValidatorAddress:    "cosmosvaloper13yfm8as7y0mzsxqkfmk5jvgm45aez0u24jk95z",
-					OrchestratorAddress: "cosmos1h706wwrghfpydyh735aet8aluhf95dqj0psgyf",
-					EthereumAddress:     "0xdeadbeef",
-					EthSignature:        []byte("0xa2f643b5b919050eb4e200bae900d16fd28adca4d727fb7cc1c68f2517e601d0355340ee0913b1e3b5a5837fbd795857a004e0333913cfb7c59e159ff02115b01c"),
-				},
-			},
+			GravityNonces:      GravityNonces{},
+			Valsets:            []Valset{},
+			ValsetConfirms:     []MsgValsetConfirm{},
+			Batches:            []OutgoingTxBatch{},
+			BatchConfirms:      []MsgConfirmBatch{},
+			LogicCalls:         []OutgoingLogicCall{},
+			LogicCallConfirms:  []MsgConfirmLogicCall{},
+			Attestations:       []Attestation{},
+			DelegateKeys:       []MsgSetOrchestratorAddress{},
+			Erc20ToDenoms:      []ERC20ToDenom{},
+			UnbatchedTransfers: []OutgoingTransferTx{},
 		}, expErr: true},
 	}
 	for msg, spec := range specs {

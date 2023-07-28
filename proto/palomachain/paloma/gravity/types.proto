@@ -1,0 +1,110 @@
+syntax = "proto3";
+package palomachain.paloma.gravity;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/bank/v1beta1/bank.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/gravity/types";
+
+// BridgeValidator represents a validator's ETH address and its power
+message BridgeValidator {
+  uint64 power            = 1;
+  string ethereum_address = 2;
+}
+
+// Valset is the Ethereum Bridge Multsig Set, each gravity validator also
+// maintains an ETH key to sign messages, these are used to check signatures on
+// ETH because of the significant gas savings
+message Valset {
+  uint64                   nonce   = 1;
+  repeated BridgeValidator members = 2 [(gogoproto.nullable) = false];
+  uint64                   height  = 3;
+  string reward_amount         = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable)   = false
+  ];
+  // the reward token in it's Ethereum hex address representation
+  string reward_token               = 5;
+  
+}
+
+// LastObservedEthereumBlockHeight stores the last observed
+// Ethereum block height along with the Cosmos block height that
+// it was observed at. These two numbers can be used to project
+// outward and always produce batches with timeouts in the future
+// even if no Ethereum block height has been relayed for a long time
+message LastObservedEthereumBlockHeight {
+  uint64 cosmos_block_height   = 1;
+  uint64 ethereum_block_height = 2;
+}
+
+// This records the relationship between an ERC20 token and the denom
+// of the corresponding Cosmos originated asset
+message ERC20ToDenom {
+  string erc20 = 1;
+  string denom = 2;
+}
+
+// UnhaltBridgeProposal defines a custom governance proposal useful for restoring
+// the bridge after a oracle disagreement. Once this proposal is passed bridge state will roll back events 
+// to the nonce provided in target_nonce if and only if those events have not yet been observed (executed on the Cosmos chain). This allows for easy
+// handling of cases where for example an Ethereum hardfork has occured and more than 1/3 of the vlaidtor set
+// disagrees with the rest. Normally this would require a chain halt, manual genesis editing and restar to resolve
+// with this feature a governance proposal can be used instead
+message UnhaltBridgeProposal {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  string title = 1;
+  string description = 2;
+  uint64 target_nonce = 4;
+}
+
+// AirdropProposal defines a custom governance proposal type that allows an airdrop to occur in a decentralized
+// fashion. A list of destination addresses and an amount per airdrop recipient is provided. The funds for this
+// airdrop are removed from the Community Pool, if the community pool does not have sufficient funding to perform
+// the airdrop to all provided recipients nothing will occur
+message AirdropProposal {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  string title = 1;
+  string description = 2;
+  string denom = 3;
+  bytes  recipients = 4;
+  repeated uint64 amounts   = 5;
+}
+
+// IBCMetadataProposal defines a custom governance proposal type that allows governance to set the
+// metadata for an IBC token, this will allow Gravity to deploy an ERC20 representing this token on
+// Ethereum
+// Name: the token name
+// Symbol: the token symbol
+// Description: the token description, not sent to ETH at all, only used on Cosmos
+// Display: the token display name (only used on Cosmos to decide ERC20 Decimals)
+// Deicmals: the decimals for the display unit
+// ibc_denom is the denom of the token in question on this chain
+message IBCMetadataProposal {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  string title = 1;
+  string description = 2;
+  cosmos.bank.v1beta1.Metadata metadata  = 3 [
+    (gogoproto.nullable) = false
+  ];
+  string ibc_denom = 4;
+}
+
+// PendingIbcAutoForward represents a SendToCosmos transaction with a foreign CosmosReceiver which will be added to the
+// PendingIbcAutoForward queue in attestation_handler and sent over IBC on some submission of a MsgExecuteIbcAutoForwards
+message PendingIbcAutoForward {
+  string foreign_receiver = 1;         // the destination address. sdk.AccAddress does not preserve foreign prefixes
+  cosmos.base.v1beta1.Coin token = 2; // the token sent from ethereum to the ibc-enabled chain over `IbcChannel`
+  string ibc_channel = 3;              // the IBC channel to send `Amount` over via ibc-transfer module
+  uint64 event_nonce = 4;              // the EventNonce from the MsgSendToCosmosClaim, used for ordering the queue
+}

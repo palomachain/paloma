@@ -1,0 +1,26 @@
+syntax = "proto3";
+package palomachain.paloma.bech32ibc;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/palomachain/paloma/x/bech32ibc/types";
+
+// An HrpIbcRecord maps a bech32 human-readable prefix to an IBC source
+// channel
+message HrpIbcRecord {
+  option (gogoproto.equal) = true;
+
+  // The bech32 human readable prefix that serves as the key
+  string hrp = 1 [ (gogoproto.moretags) = "yaml:\"hrp\"" ];
+  // the channel by which the packet will be sent
+  string source_channel = 2
+      [ (gogoproto.moretags) = "yaml:\"source_channel\"" ];
+  uint64 ics_to_height_offset = 3;
+  google.protobuf.Duration ics_to_time_offset = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true,
+    (gogoproto.jsontag) = "ics_to_time_offset,omitempty",
+    (gogoproto.moretags) = "yaml:\"ics_to_time_offset\""
+  ];
+}

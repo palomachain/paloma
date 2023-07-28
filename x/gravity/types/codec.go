@@ -3,165 +3,75 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	"github.com/gogo/protobuf/proto"
 )
 
-// RegisterLegacyAminoCodec registers the vesting interfaces and concrete types on the
-// provided LegacyAmino codec. These types are used for Amino JSON serialization
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgDelegateKeys{}, "gravity-bridge/MsgDelegateKeys", nil)
-	cdc.RegisterConcrete(&MsgSendToEthereum{}, "gravity-bridge/MsgSendToEthereum", nil)
-	cdc.RegisterConcrete(&MsgCancelSendToEthereum{}, "gravity-bridge/MsgCancelSendToEthereum", nil)
-}
-
-var (
-	amino = codec.NewLegacyAmino()
-
-	// ModuleCdc references the global x/bank module codec. Note, the codec should
-	// ONLY be used in certain instances of tests and for JSON encoding as Amino is
-	// still used for that purpose.
-	//
-	// The actual codec used for serialization should be provided to x/staking and
-	// defined at the application level.
-	ModuleCdc = codec.NewAminoCodec(amino)
-)
+// ModuleCdc is the codec for the module
+var ModuleCdc = codec.NewLegacyAmino()
 
 func init() {
-	RegisterLegacyAminoCodec(amino)
-	cryptocodec.RegisterCrypto(amino)
-	amino.Seal()
+	RegisterCodec(ModuleCdc)
 }
 
 // RegisterInterfaces registers the interfaces for the proto stuff
+// nolint: exhaustruct
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgSendToEthereum{},
-		&MsgCancelSendToEthereum{},
-		&MsgSubmitEthereumEvent{},
-		&MsgSubmitEthereumTxConfirmation{},
-		&MsgDelegateKeys{},
-		&MsgEthereumHeightVote{},
+		&MsgValsetConfirm{},
+		&MsgSendToEth{},
+		&MsgRequestBatch{},
+		&MsgConfirmBatch{},
+		&MsgConfirmLogicCall{},
+		&MsgSendToCosmosClaim{},
+		&MsgBatchSendToEthClaim{},
+		&MsgERC20DeployedClaim{},
+		&MsgSetOrchestratorAddress{},
+		&MsgLogicCallExecutedClaim{},
+		&MsgValsetUpdatedClaim{},
+		&MsgCancelSendToEth{},
+		&MsgSubmitBadSignatureEvidence{},
 	)
 
 	registry.RegisterInterface(
-		"gravity.v1.EthereumEvent",
-		(*EthereumEvent)(nil),
-		&SendToCosmosEvent{},
-		&BatchExecutedEvent{},
-		&ERC20DeployedEvent{},
-		&ContractCallExecutedEvent{},
-		&SignerSetTxExecutedEvent{},
+		"gravity.v1beta1.EthereumClaim",
+		(*EthereumClaim)(nil),
+		&MsgSendToCosmosClaim{},
+		&MsgBatchSendToEthClaim{},
+		&MsgERC20DeployedClaim{},
+		&MsgLogicCallExecutedClaim{},
+		&MsgValsetUpdatedClaim{},
 	)
 
-	registry.RegisterInterface(
-		"gravity.v1.EthereumSignature",
-		(*EthereumTxConfirmation)(nil),
-		&BatchTxConfirmation{},
-		&ContractCallTxConfirmation{},
-		&SignerSetTxConfirmation{},
-	)
+	registry.RegisterImplementations((*govtypes.Content)(nil), &UnhaltBridgeProposal{}, &AirdropProposal{}, &IBCMetadataProposal{})
 
-	registry.RegisterInterface(
-		"gravity.v1.OutgoingTx",
-		(*OutgoingTx)(nil),
-		&SignerSetTx{},
-		&BatchTx{},
-		&ContractCallTx{},
-	)
-
-	registry.RegisterImplementations((*govtypes.Content)(nil),
-		&CommunityPoolEthereumSpendProposal{},
-	)
+	registry.RegisterInterface("gravity.v1beta1.EthereumSigned", (*EthereumSigned)(nil), &Valset{}, &OutgoingTxBatch{}, &OutgoingLogicCall{})
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
-func PackEvent(event EthereumEvent) (*types.Any, error) {
-	msg, ok := event.(proto.Message)
-	if !ok {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrPackAny, "cannot proto marshal %T", event)
-	}
-
-	anyEvent, err := types.NewAnyWithValue(msg)
-	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrPackAny, err.Error())
-	}
-
-	return anyEvent, nil
-}
-
-// UnpackEvent unpacks an Any into an EthereumEvent. It returns an error if the
-// event can't be unpacked.
-func UnpackEvent(any *types.Any) (EthereumEvent, error) {
-	if any == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnpackAny, "protobuf Any message cannot be nil")
-	}
-
-	event, ok := any.GetCachedValue().(EthereumEvent)
-	if !ok {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnpackAny, "cannot unpack Any into EthereumEvent %T", any)
-	}
-
-	return event, nil
-}
-
-func PackConfirmation(confirmation EthereumTxConfirmation) (*types.Any, error) {
-	msg, ok := confirmation.(proto.Message)
-	if !ok {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrPackAny, "cannot proto marshal %T", confirmation)
-	}
-
-	anyEvent, err := types.NewAnyWithValue(msg)
-	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrPackAny, err.Error())
-	}
-
-	return anyEvent, nil
-}
-
-// UnpackConfirmation unpacks an Any into a Confirm interface. It returns an error if the
-// confirmation can't be unpacked.
-func UnpackConfirmation(any *types.Any) (EthereumTxConfirmation, error) {
-	if any == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnpackAny, "protobuf Any message cannot be nil")
-	}
-
-	confirm, ok := any.GetCachedValue().(EthereumTxConfirmation)
-	if !ok {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnpackAny, "cannot unpack Any into EthereumSignature %T", any)
-	}
-
-	return confirm, nil
-}
-
-func PackOutgoingTx(outgoing OutgoingTx) (*types.Any, error) {
-	msg, ok := outgoing.(proto.Message)
-	if !ok {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrPackAny, "cannot proto marshal %T", outgoing)
-	}
-
-	anyEvent, err := types.NewAnyWithValue(msg)
-	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrPackAny, err.Error())
-	}
-
-	return anyEvent, nil
-}
-
-func UnpackOutgoingTx(any *types.Any) (OutgoingTx, error) {
-	if any == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnpackAny, "protobuf Any message cannot be nil")
-	}
-
-	confirm, ok := any.GetCachedValue().(OutgoingTx)
-	if !ok {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnpackAny, "cannot unpack Any into OutgoingTx %T", any)
-	}
-
-	return confirm, nil
+// RegisterCodec registers concrete types on the Amino codec
+// nolint: exhaustruct
+func RegisterCodec(cdc *codec.LegacyAmino) {
+	cdc.RegisterInterface((*EthereumClaim)(nil), nil)
+	cdc.RegisterConcrete(&MsgSetOrchestratorAddress{}, "gravity/MsgSetOrchestratorAddress", nil)
+	cdc.RegisterConcrete(&MsgValsetConfirm{}, "gravity/MsgValsetConfirm", nil)
+	cdc.RegisterConcrete(&MsgSendToEth{}, "gravity/MsgSendToEth", nil)
+	cdc.RegisterConcrete(&MsgRequestBatch{}, "gravity/MsgRequestBatch", nil)
+	cdc.RegisterConcrete(&MsgConfirmBatch{}, "gravity/MsgConfirmBatch", nil)
+	cdc.RegisterConcrete(&MsgConfirmLogicCall{}, "gravity/MsgConfirmLogicCall", nil)
+	cdc.RegisterConcrete(&Valset{}, "gravity/Valset", nil)
+	cdc.RegisterConcrete(&MsgSendToCosmosClaim{}, "gravity/MsgSendToCosmosClaim", nil)
+	cdc.RegisterConcrete(&MsgBatchSendToEthClaim{}, "gravity/MsgBatchSendToEthClaim", nil)
+	cdc.RegisterConcrete(&MsgERC20DeployedClaim{}, "gravity/MsgERC20DeployedClaim", nil)
+	cdc.RegisterConcrete(&MsgLogicCallExecutedClaim{}, "gravity/MsgLogicCallExecutedClaim", nil)
+	cdc.RegisterConcrete(&MsgValsetUpdatedClaim{}, "gravity/MsgValsetUpdatedClaim", nil)
+	cdc.RegisterConcrete(&OutgoingTxBatch{}, "gravity/OutgoingTxBatch", nil)
+	cdc.RegisterConcrete(&MsgCancelSendToEth{}, "gravity/MsgCancelSendToEth", nil)
+	cdc.RegisterConcrete(&OutgoingTransferTx{}, "gravity/OutgoingTransferTx", nil)
+	cdc.RegisterConcrete(&ERC20Token{}, "gravity/ERC20Token", nil)
+	cdc.RegisterConcrete(&IDSet{}, "gravity/IDSet", nil)
+	cdc.RegisterConcrete(&Attestation{}, "gravity/Attestation", nil)
+	cdc.RegisterConcrete(&MsgSubmitBadSignatureEvidence{}, "gravity/MsgSubmitBadSignatureEvidence", nil)
 }

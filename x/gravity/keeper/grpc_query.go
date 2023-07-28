@@ -2,471 +2,500 @@ package keeper
 
 import (
 	"context"
+	"strings"
 
-	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/palomachain/paloma/x/gravity/types"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
+// nolint: exhaustruct
 var _ types.QueryServer = Keeper{}
 
-func (k Keeper) Params(c context.Context, req *types.ParamsRequest) (*types.ParamsResponse, error) {
-	params := k.GetParams(sdk.UnwrapSDKContext(c))
-	return &types.ParamsResponse{Params: params}, nil
+const MERCURY_UPGRADE_HEIGHT uint64 = 1282013
+const QUERY_ATTESTATIONS_LIMIT uint64 = 1000
+
+// Params queries the params of the gravity module
+func (k Keeper) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	var params types.Params
+	k.paramSpace.GetParamSet(sdk.UnwrapSDKContext(c), &params)
+	return &types.QueryParamsResponse{Params: params}, nil
 }
 
-func (k Keeper) LatestSignerSetTx(c context.Context, req *types.LatestSignerSetTxRequest) (*types.SignerSetTxResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), append([]byte{types.OutgoingTxKey}, types.SignerSetTxPrefixByte))
-	iter := store.ReverseIterator(nil, nil)
-	defer iter.Close()
-
-	if !iter.Valid() {
-		return nil, status.Errorf(codes.NotFound, "latest signer set not found")
-	}
-
-	var any cdctypes.Any
-	k.cdc.MustUnmarshal(iter.Value(), &any)
-
-	var otx types.OutgoingTx
-	if err := k.cdc.UnpackAny(&any, &otx); err != nil {
-		return nil, err
-	}
-	ss, ok := otx.(*types.SignerSetTx)
-	if !ok {
-		return nil, status.Errorf(codes.InvalidArgument, "couldn't cast to signer set for latest")
-	}
-	return &types.SignerSetTxResponse{SignerSet: ss}, nil
-}
-
-func (k Keeper) SignerSetTx(c context.Context, req *types.SignerSetTxRequest) (*types.SignerSetTxResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-
-	key := types.MakeSignerSetTxKey(req.SignerSetNonce)
-	otx := k.GetOutgoingTx(ctx, key)
-	if otx == nil {
-		return &types.SignerSetTxResponse{}, nil
-	}
-
-	ss, ok := otx.(*types.SignerSetTx)
-	if !ok {
-		return nil, status.Errorf(codes.InvalidArgument, "couldn't cast to signer set for %d", req.SignerSetNonce)
-	}
-
-	return &types.SignerSetTxResponse{SignerSet: ss}, nil
-}
-
-func (k Keeper) BatchTx(c context.Context, req *types.BatchTxRequest) (*types.BatchTxResponse, error) {
-	if !common.IsHexAddress(req.TokenContract) {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid hex address %s", req.TokenContract)
-	}
-
-	res := &types.BatchTxResponse{}
-
-	key := types.MakeBatchTxKey(common.HexToAddress(req.TokenContract), req.BatchNonce)
-	otx := k.GetOutgoingTx(sdk.UnwrapSDKContext(c), key)
-	if otx == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "no batch tx found for %d %s", req.BatchNonce, req.TokenContract)
-	}
-	batch, ok := otx.(*types.BatchTx)
-	if !ok {
-		return nil, status.Errorf(codes.InvalidArgument, "couldn't cast to batch tx for %d %s", req.BatchNonce, req.TokenContract)
-	}
-	res.Batch = batch
-
-	return res, nil
-}
-
-func (k Keeper) ContractCallTx(c context.Context, req *types.ContractCallTxRequest) (*types.ContractCallTxResponse, error) {
-	key := types.MakeContractCallTxKey(req.InvalidationScope, req.InvalidationNonce)
-	otx := k.GetOutgoingTx(sdk.UnwrapSDKContext(c), key)
-	if otx == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "no contract call found for %d %s", req.InvalidationNonce, req.InvalidationScope)
-	}
-
-	cctx, ok := otx.(*types.ContractCallTx)
-	if !ok {
-		return nil, status.Errorf(codes.InvalidArgument, "couldn't cast to contract call for %d %s", req.InvalidationNonce, req.InvalidationScope)
-	}
-
-	return &types.ContractCallTxResponse{LogicCall: cctx}, nil
-}
-
-func (k Keeper) SignerSetTxs(c context.Context, req *types.SignerSetTxsRequest) (*types.SignerSetTxsResponse, error) {
-	var signers []*types.SignerSetTx
-	pageRes, err := k.PaginateOutgoingTxsByType(sdk.UnwrapSDKContext(c), req.Pagination, types.SignerSetTxPrefixByte, func(_ []byte, otx types.OutgoingTx) (hit bool) {
-		signer, ok := otx.(*types.SignerSetTx)
-		if !ok {
-			panic(sdkerrors.Wrapf(types.ErrInvalid, "couldn't cast to signer set for %s", otx))
-		}
-		signers = append(signers, signer)
-
-		return true
-	})
+// CurrentValset queries the CurrentValset of the gravity module
+func (k Keeper) CurrentValset(
+	c context.Context,
+	req *types.QueryCurrentValsetRequest) (*types.QueryCurrentValsetResponse, error) {
+	vs, err := k.GetCurrentValset(sdk.UnwrapSDKContext(c))
 	if err != nil {
-		return nil, err
+		// nolint: exhaustruct
+		return &types.QueryCurrentValsetResponse{}, err
 	}
-
-	return &types.SignerSetTxsResponse{SignerSets: signers, Pagination: pageRes}, nil
+	return &types.QueryCurrentValsetResponse{Valset: vs}, nil
 }
 
-func (k Keeper) BatchTxs(c context.Context, req *types.BatchTxsRequest) (*types.BatchTxsResponse, error) {
-	var batches []*types.BatchTx
-	pageRes, err := k.PaginateOutgoingTxsByType(sdk.UnwrapSDKContext(c), req.Pagination, types.BatchTxPrefixByte, func(_ []byte, otx types.OutgoingTx) (hit bool) {
-		batch, ok := otx.(*types.BatchTx)
-		if !ok {
-			panic(sdkerrors.Wrapf(types.ErrInvalid, "couldn't cast to batch tx for %s", otx))
-		}
-		batches = append(batches, batch)
-		return true
-	})
+// ValsetRequest queries the ValsetRequest of the gravity module
+func (k Keeper) ValsetRequest(
+	c context.Context,
+	req *types.QueryValsetRequestRequest) (*types.QueryValsetRequestResponse, error) {
+	return &types.QueryValsetRequestResponse{Valset: k.GetValset(sdk.UnwrapSDKContext(c), req.Nonce)}, nil
+}
+
+// ValsetConfirm queries the ValsetConfirm of the gravity module
+func (k Keeper) ValsetConfirm(
+	c context.Context,
+	req *types.QueryValsetConfirmRequest) (*types.QueryValsetConfirmResponse, error) {
+	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
-		return nil, err
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "address invalid")
 	}
-
-	return &types.BatchTxsResponse{Batches: batches, Pagination: pageRes}, nil
+	return &types.QueryValsetConfirmResponse{Confirm: k.GetValsetConfirm(sdk.UnwrapSDKContext(c), req.Nonce, addr)}, nil
 }
 
-func (k Keeper) ContractCallTxs(c context.Context, req *types.ContractCallTxsRequest) (*types.ContractCallTxsResponse, error) {
-	var calls []*types.ContractCallTx
-	pageRes, err := k.PaginateOutgoingTxsByType(sdk.UnwrapSDKContext(c), req.Pagination, types.ContractCallTxPrefixByte, func(_ []byte, otx types.OutgoingTx) (hit bool) {
-		call, ok := otx.(*types.ContractCallTx)
-		if !ok {
-			panic(sdkerrors.Wrapf(types.ErrInvalid, "couldn't cast to contract call for %s", otx))
+// ValsetConfirmsByNonce queries the ValsetConfirmsByNonce of the gravity module
+func (k Keeper) ValsetConfirmsByNonce(
+	c context.Context,
+	req *types.QueryValsetConfirmsByNonceRequest) (*types.QueryValsetConfirmsByNonceResponse, error) {
+	confirms := k.GetValsetConfirms(sdk.UnwrapSDKContext(c), req.Nonce)
+
+	return &types.QueryValsetConfirmsByNonceResponse{Confirms: confirms}, nil
+}
+
+const maxValsetRequestsReturned = 5
+
+// LastValsetRequests queries the LastValsetRequests of the gravity module
+func (k Keeper) LastValsetRequests(
+	c context.Context,
+	req *types.QueryLastValsetRequestsRequest) (*types.QueryLastValsetRequestsResponse, error) {
+	valReq := k.GetValsets(sdk.UnwrapSDKContext(c))
+	valReqLen := len(valReq)
+	retLen := 0
+	if valReqLen < maxValsetRequestsReturned {
+		retLen = valReqLen
+	} else {
+		retLen = maxValsetRequestsReturned
+	}
+	return &types.QueryLastValsetRequestsResponse{Valsets: valReq[0:retLen]}, nil
+}
+
+// LastPendingValsetRequestByAddr queries the LastPendingValsetRequestByAddr of the gravity module
+func (k Keeper) LastPendingValsetRequestByAddr(
+	c context.Context,
+	req *types.QueryLastPendingValsetRequestByAddrRequest) (*types.QueryLastPendingValsetRequestByAddrResponse, error) {
+	addr, err := sdk.AccAddressFromBech32(req.Address)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "address invalid")
+	}
+
+	var pendingValsetReq []types.Valset
+	k.IterateValsets(sdk.UnwrapSDKContext(c), func(_ []byte, val *types.Valset) bool {
+		// foundConfirm is true if the operatorAddr has signed the valset we are currently looking at
+		foundConfirm := k.GetValsetConfirm(sdk.UnwrapSDKContext(c), val.Nonce, addr) != nil
+		// if this valset has NOT been signed by operatorAddr, store it in pendingValsetReq
+		// and exit the loop
+		if !foundConfirm {
+			pendingValsetReq = append(pendingValsetReq, *val)
 		}
+		// if we have more than 100 unconfirmed requests in
+		// our array we should exit, TODO pagination
+		if len(pendingValsetReq) > 100 {
+			return true
+		}
+		// return false to continue the loop
+		return false
+	})
+	return &types.QueryLastPendingValsetRequestByAddrResponse{Valsets: pendingValsetReq}, nil
+}
+
+// BatchFees queries the batch fees from unbatched pool
+func (k Keeper) BatchFees(
+	c context.Context,
+	req *types.QueryBatchFeeRequest) (*types.QueryBatchFeeResponse, error) {
+	return &types.QueryBatchFeeResponse{BatchFees: k.GetAllBatchFees(sdk.UnwrapSDKContext(c), OutgoingTxBatchSize)}, nil
+}
+
+// LastPendingBatchRequestByAddr queries the LastPendingBatchRequestByAddr of
+// the gravity module.
+func (k Keeper) LastPendingBatchRequestByAddr(
+	c context.Context,
+	req *types.QueryLastPendingBatchRequestByAddrRequest,
+) (*types.QueryLastPendingBatchRequestByAddrResponse, error) {
+	addr, err := sdk.AccAddressFromBech32(req.Address)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "address invalid")
+	}
+
+	var pendingBatchReq types.InternalOutgoingTxBatches
+
+	found := false
+	k.IterateOutgoingTxBatches(sdk.UnwrapSDKContext(c), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
+		foundConfirm := k.GetBatchConfirm(sdk.UnwrapSDKContext(c), batch.BatchNonce, batch.TokenContract, addr) != nil
+		if !foundConfirm {
+			pendingBatchReq = append(pendingBatchReq, batch)
+			found = true
+
+			return true
+		}
+
+		return false
+	})
+
+	if found {
+		ref := pendingBatchReq.ToExternalArray()
+		return &types.QueryLastPendingBatchRequestByAddrResponse{Batch: ref}, nil
+	}
+
+	return &types.QueryLastPendingBatchRequestByAddrResponse{Batch: nil}, nil
+}
+
+func (k Keeper) LastPendingLogicCallByAddr(
+	c context.Context,
+	req *types.QueryLastPendingLogicCallByAddrRequest) (*types.QueryLastPendingLogicCallByAddrResponse, error) {
+	addr, err := sdk.AccAddressFromBech32(req.Address)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "address invalid")
+	}
+
+	var pendingLogicReq []types.OutgoingLogicCall
+	found := false
+	k.IterateOutgoingLogicCalls(sdk.UnwrapSDKContext(c), func(_ []byte, logic types.OutgoingLogicCall) bool {
+		foundConfirm := k.GetLogicCallConfirm(sdk.UnwrapSDKContext(c),
+			logic.InvalidationId, logic.InvalidationNonce, addr) != nil
+		if !foundConfirm {
+			pendingLogicReq = append(pendingLogicReq, logic)
+			found = true
+			return true
+		}
+		return false
+	})
+
+	if found {
+		return &types.QueryLastPendingLogicCallByAddrResponse{Call: pendingLogicReq}, nil
+	} else {
+		return &types.QueryLastPendingLogicCallByAddrResponse{Call: nil}, nil
+	}
+}
+
+const MaxResults = 100 // todo: impl pagination
+
+// OutgoingTxBatches queries the OutgoingTxBatches of the gravity module
+func (k Keeper) OutgoingTxBatches(
+	c context.Context,
+	req *types.QueryOutgoingTxBatchesRequest) (*types.QueryOutgoingTxBatchesResponse, error) {
+	var batches []types.OutgoingTxBatch
+	k.IterateOutgoingTxBatches(sdk.UnwrapSDKContext(c), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
+		batches = append(batches, batch.ToExternal())
+		return len(batches) == MaxResults
+	})
+	return &types.QueryOutgoingTxBatchesResponse{Batches: batches}, nil
+}
+
+// OutgoingLogicCalls queries the OutgoingLogicCalls of the gravity module
+func (k Keeper) OutgoingLogicCalls(
+	c context.Context,
+	req *types.QueryOutgoingLogicCallsRequest) (*types.QueryOutgoingLogicCallsResponse, error) {
+	var calls []types.OutgoingLogicCall
+	k.IterateOutgoingLogicCalls(sdk.UnwrapSDKContext(c), func(_ []byte, call types.OutgoingLogicCall) bool {
 		calls = append(calls, call)
-		return true
+		return len(calls) == MaxResults
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.ContractCallTxsResponse{Calls: calls, Pagination: pageRes}, nil
+	return &types.QueryOutgoingLogicCallsResponse{Calls: calls}, nil
 }
 
-func (k Keeper) SignerSetTxConfirmations(c context.Context, req *types.SignerSetTxConfirmationsRequest) (*types.SignerSetTxConfirmationsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	key := types.MakeSignerSetTxKey(req.SignerSetNonce)
+// BatchRequestByNonce queries the BatchRequestByNonce of the gravity module.
+func (k Keeper) BatchRequestByNonce(
+	c context.Context,
+	req *types.QueryBatchRequestByNonceRequest,
+) (*types.QueryBatchRequestByNonceResponse, error) {
+	addr, err := types.NewEthAddress(req.ContractAddress)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, err.Error())
+	}
 
-	var out []*types.SignerSetTxConfirmation
-	k.iterateEthereumSignatures(ctx, key, func(val sdk.ValAddress, sig []byte) bool {
-		out = append(out, &types.SignerSetTxConfirmation{
-			SignerSetNonce: req.SignerSetNonce,
-			EthereumSigner: k.GetValidatorEthereumAddress(ctx, val).Hex(),
-			Signature:      sig,
+	foundBatch := k.GetOutgoingTXBatch(sdk.UnwrapSDKContext(c), *addr, req.Nonce)
+	if foundBatch == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "cannot find tx batch")
+	}
+
+	return &types.QueryBatchRequestByNonceResponse{Batch: foundBatch.ToExternal()}, nil
+}
+
+// BatchConfirms returns the batch confirmations by nonce and token contract
+func (k Keeper) BatchConfirms(
+	c context.Context,
+	req *types.QueryBatchConfirmsRequest) (*types.QueryBatchConfirmsResponse, error) {
+	var confirms []types.MsgConfirmBatch
+	contract, err := types.NewEthAddress(req.ContractAddress)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "invalid contract address in request")
+	}
+	k.IterateBatchConfirmByNonceAndTokenContract(sdk.UnwrapSDKContext(c),
+		req.Nonce, *contract, func(_ []byte, c types.MsgConfirmBatch) bool {
+			confirms = append(confirms, c)
+			return false
 		})
-		return false
-	})
-
-	return &types.SignerSetTxConfirmationsResponse{Signatures: out}, nil
+	return &types.QueryBatchConfirmsResponse{Confirms: confirms}, nil
 }
 
-func (k Keeper) BatchTxConfirmations(c context.Context, req *types.BatchTxConfirmationsRequest) (*types.BatchTxConfirmationsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	key := types.MakeBatchTxKey(common.HexToAddress(req.TokenContract), req.BatchNonce)
+// LogicConfirms returns the Logic confirmations by nonce and token contract
+func (k Keeper) LogicConfirms(
+	c context.Context,
+	req *types.QueryLogicConfirmsRequest) (*types.QueryLogicConfirmsResponse, error) {
+	confirms := k.GetLogicConfirmsByInvalidationIdAndNonce(sdk.UnwrapSDKContext(c), req.InvalidationId, req.InvalidationNonce)
 
-	var out []*types.BatchTxConfirmation
-	k.iterateEthereumSignatures(ctx, key, func(val sdk.ValAddress, sig []byte) bool {
-		out = append(out, &types.BatchTxConfirmation{
-			TokenContract:  req.TokenContract,
-			BatchNonce:     req.BatchNonce,
-			EthereumSigner: k.GetValidatorEthereumAddress(ctx, val).Hex(),
-			Signature:      sig,
-		})
-		return false
-	})
-	return &types.BatchTxConfirmationsResponse{Signatures: out}, nil
+	return &types.QueryLogicConfirmsResponse{Confirms: confirms}, nil
 }
 
-func (k Keeper) ContractCallTxConfirmations(c context.Context, req *types.ContractCallTxConfirmationsRequest) (*types.ContractCallTxConfirmationsResponse, error) {
+// LastEventNonceByAddr returns the last event nonce for the given validator address,
+// this allows eth oracles to figure out where they left off
+func (k Keeper) LastEventNonceByAddr(
+	c context.Context,
+	req *types.QueryLastEventNonceByAddrRequest) (*types.QueryLastEventNonceByAddrResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	key := types.MakeContractCallTxKey(req.InvalidationScope, req.InvalidationNonce)
-
-	var out []*types.ContractCallTxConfirmation
-	k.iterateEthereumSignatures(ctx, key, func(val sdk.ValAddress, sig []byte) bool {
-		out = append(out, &types.ContractCallTxConfirmation{
-			InvalidationScope: req.InvalidationScope,
-			InvalidationNonce: req.InvalidationNonce,
-			EthereumSigner:    k.GetValidatorEthereumAddress(ctx, val).Hex(),
-			Signature:         sig,
-		})
-		return false
-	})
-	return &types.ContractCallTxConfirmationsResponse{Signatures: out}, nil
-}
-
-func (k Keeper) UnsignedSignerSetTxs(c context.Context, req *types.UnsignedSignerSetTxsRequest) (*types.UnsignedSignerSetTxsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	val, err := k.getSignerValidator(ctx, req.Address)
+	var ret types.QueryLastEventNonceByAddrResponse
+	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
-		return nil, err
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, req.Address)
 	}
-	var signerSets []*types.SignerSetTx
-	k.IterateOutgoingTxsByType(ctx, types.SignerSetTxPrefixByte, func(_ []byte, otx types.OutgoingTx) bool {
-		sig := k.getEthereumSignature(ctx, otx.GetStoreIndex(), val)
-		if len(sig) == 0 { // it's pending
-			signerSet, ok := otx.(*types.SignerSetTx)
-			if !ok {
-				panic(sdkerrors.Wrapf(types.ErrInvalid, "couldn't cast to signer set for %s", otx))
-			}
-			signerSets = append(signerSets, signerSet)
-		}
-		return false
-	})
-	return &types.UnsignedSignerSetTxsResponse{SignerSets: signerSets}, nil
+	validator, found := k.GetOrchestratorValidator(ctx, addr)
+	if !found {
+		return nil, sdkerrors.Wrap(types.ErrUnknown, "address")
+	}
+	if err := sdk.VerifyAddressFormat(validator.GetOperator()); err != nil {
+		return nil, sdkerrors.Wrap(err, "invalid validator address")
+	}
+	lastEventNonce := k.GetLastEventNonceByValidator(ctx, validator.GetOperator())
+	ret.EventNonce = lastEventNonce
+	return &ret, nil
 }
 
-func (k Keeper) UnsignedBatchTxs(c context.Context, req *types.UnsignedBatchTxsRequest) (*types.UnsignedBatchTxsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	val, err := k.getSignerValidator(ctx, req.Address)
-	if err != nil {
-		return nil, err
-	}
-	var batches []*types.BatchTx
-	k.IterateOutgoingTxsByType(ctx, types.BatchTxPrefixByte, func(_ []byte, otx types.OutgoingTx) bool {
-		sig := k.getEthereumSignature(ctx, otx.GetStoreIndex(), val)
-		if len(sig) == 0 { // it's pending
-			batch, ok := otx.(*types.BatchTx)
-			if !ok {
-				panic(sdkerrors.Wrapf(types.ErrInvalid, "couldn't cast to batch tx for %s", otx))
-			}
-			batches = append(batches, batch)
-		}
-		return false
-	})
-	return &types.UnsignedBatchTxsResponse{Batches: batches}, nil
-}
-
-func (k Keeper) UnsignedContractCallTxs(c context.Context, req *types.UnsignedContractCallTxsRequest) (*types.UnsignedContractCallTxsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	val, err := k.getSignerValidator(ctx, req.Address)
-	if err != nil {
-		return nil, err
-	}
-	var calls []*types.ContractCallTx
-	k.IterateOutgoingTxsByType(ctx, types.ContractCallTxPrefixByte, func(_ []byte, otx types.OutgoingTx) bool {
-		sig := k.getEthereumSignature(ctx, otx.GetStoreIndex(), val)
-		if len(sig) == 0 { // it's pending
-			call, ok := otx.(*types.ContractCallTx)
-			if !ok {
-				panic(sdkerrors.Wrapf(types.ErrInvalid, "couldn't cast to contract call for %s", otx))
-			}
-			calls = append(calls, call)
-		}
-		return false
-	})
-	return &types.UnsignedContractCallTxsResponse{Calls: calls}, nil
-}
-
-func (k Keeper) LastSubmittedEthereumEvent(c context.Context, req *types.LastSubmittedEthereumEventRequest) (*types.LastSubmittedEthereumEventResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	valAddr, err := k.getSignerValidator(ctx, req.Address)
-	if err != nil {
-		return nil, err
-	}
-
-	res := &types.LastSubmittedEthereumEventResponse{
-		EventNonce: k.getLastEventNonceByValidator(ctx, valAddr),
-	}
-	return res, nil
-}
-
-func (k Keeper) BatchTxFees(c context.Context, req *types.BatchTxFeesRequest) (*types.BatchTxFeesResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	res := &types.BatchTxFeesResponse{}
-
-	// TODO: is this what we want here?
-	// Should this calculation return a
-	// map[contract_address]fees or something similar?
-	k.IterateOutgoingTxsByType(ctx, types.BatchTxPrefixByte, func(key []byte, otx types.OutgoingTx) bool {
-		btx, _ := otx.(*types.BatchTx)
-		for _, tx := range btx.Transactions {
-			_, denom := k.ERC20ToDenomLookup(ctx, common.HexToAddress(tx.Erc20Fee.Contract))
-			res.Fees = append(res.Fees, sdk.NewCoin(denom, tx.Erc20Fee.Amount))
-		}
-		return false
-	})
-
-	return res, nil
-}
-
-func (k Keeper) ERC20ToDenom(c context.Context, req *types.ERC20ToDenomRequest) (*types.ERC20ToDenomResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	cosmosOriginated, denom := k.ERC20ToDenomLookup(ctx, common.HexToAddress(req.Erc20))
-	res := &types.ERC20ToDenomResponse{
-		Denom:            denom,
-		CosmosOriginated: cosmosOriginated,
-	}
-	return res, nil
-}
-
-func (k Keeper) DenomToERC20Params(c context.Context, req *types.DenomToERC20ParamsRequest) (*types.DenomToERC20ParamsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	if existingERC20, exists := k.getCosmosOriginatedERC20(ctx, req.Denom); exists {
-		return nil, sdkerrors.Wrapf(
-			types.ErrInvalidERC20Event,
-			"ERC20 token %s already exists for denom %s", existingERC20.Hex(), req.Denom,
-		)
-	}
-
-	// use metadata, if we can find it
-	if md, ok := k.bankKeeper.GetDenomMetaData(ctx, req.Denom); ok && md.Base != "" {
-		var erc20Decimals uint64
-		for _, denomUnit := range md.DenomUnits {
-			if denomUnit.Denom == md.Display {
-				erc20Decimals = uint64(denomUnit.Exponent)
-				break
-			}
-		}
-
-		return &types.DenomToERC20ParamsResponse{
-			BaseDenom:     md.Base,
-			Erc20Name:     md.Display,
-			Erc20Symbol:   md.Display,
-			Erc20Decimals: erc20Decimals,
-		}, nil
-	}
-
-	if supply := k.bankKeeper.GetSupply(ctx, req.Denom); supply.IsZero() {
-		return nil, sdkerrors.Wrapf(
-			types.ErrInvalidERC20Event,
-			"no supply exists for token %s without metadata", req.Denom,
-		)
-	}
-
-	// no metadata, go with a zero decimal, no symbol erc-20
-	res := &types.DenomToERC20ParamsResponse{
-		BaseDenom:     req.Denom,
-		Erc20Name:     req.Denom,
-		Erc20Symbol:   "",
-		Erc20Decimals: 0,
-	}
-
-	return res, nil
-}
-
-func (k Keeper) DenomToERC20(c context.Context, req *types.DenomToERC20Request) (*types.DenomToERC20Response, error) {
+// DenomToERC20 queries the Cosmos Denom that maps to an Ethereum ERC20
+func (k Keeper) DenomToERC20(
+	c context.Context,
+	req *types.QueryDenomToERC20Request) (*types.QueryDenomToERC20Response, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	cosmosOriginated, erc20, err := k.DenomToERC20Lookup(ctx, req.Denom)
 	if err != nil {
-		return nil, err
+		return nil, sdkerrors.Wrapf(err, "invalid denom (%v) queried", req.Denom)
 	}
-	res := &types.DenomToERC20Response{
-		Erc20:            erc20.Hex(),
-		CosmosOriginated: cosmosOriginated,
-	}
-	return res, nil
+	var ret types.QueryDenomToERC20Response
+	ret.Erc20 = erc20.GetAddress().Hex()
+	ret.CosmosOriginated = cosmosOriginated
+
+	return &ret, err
 }
 
-func (k Keeper) BatchedSendToEthereums(c context.Context, req *types.BatchedSendToEthereumsRequest) (*types.BatchedSendToEthereumsResponse, error) {
+// ERC20ToDenom queries the ERC20 contract that maps to an Ethereum ERC20 if any
+func (k Keeper) ERC20ToDenom(
+	c context.Context,
+	req *types.QueryERC20ToDenomRequest) (*types.QueryERC20ToDenomResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	res := &types.BatchedSendToEthereumsResponse{}
+	ethAddr, err := types.NewEthAddress(req.Erc20)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "invalid Erc20 in request: %s", req.Erc20)
+	}
+	cosmosOriginated, name := k.ERC20ToDenomLookup(ctx, *ethAddr)
+	var ret types.QueryERC20ToDenomResponse
+	ret.Denom = name
+	ret.CosmosOriginated = cosmosOriginated
 
-	k.IterateOutgoingTxsByType(ctx, types.BatchTxPrefixByte, func(_ []byte, outgoing types.OutgoingTx) bool {
-		batchTx := outgoing.(*types.BatchTx)
-		for _, ste := range batchTx.Transactions {
-			if ste.Sender == req.SenderAddress {
-				res.SendToEthereums = append(res.SendToEthereums, ste)
+	return &ret, nil
+}
+
+// GetLastObservedEthBlock queries the LastObservedEthereumBlockHeight
+func (k Keeper) GetLastObservedEthBlock(
+	c context.Context,
+	req *types.QueryLastObservedEthBlockRequest,
+) (*types.QueryLastObservedEthBlockResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+
+	locator := k.GetLastObservedEthereumBlockHeight
+
+	ethHeight := locator(ctx)
+
+	return &types.QueryLastObservedEthBlockResponse{Block: ethHeight.EthereumBlockHeight}, nil
+}
+
+// GetLastObservedEthNonce queries the LastObservedEventNonce
+func (k Keeper) GetLastObservedEthNonce(
+	c context.Context,
+	req *types.QueryLastObservedEthNonceRequest,
+) (*types.QueryLastObservedEthNonceResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+
+	locator := k.GetLastObservedEventNonce
+
+	nonce := locator(ctx)
+
+	return &types.QueryLastObservedEthNonceResponse{Nonce: nonce}, nil
+}
+
+// GetAttestations queries the attestation map
+func (k Keeper) GetAttestations(
+	c context.Context,
+	req *types.QueryAttestationsRequest,
+) (*types.QueryAttestationsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+
+	iterator := k.IterateAttestations
+
+	limit := req.Limit
+	if limit == 0 || limit > QUERY_ATTESTATIONS_LIMIT {
+		limit = QUERY_ATTESTATIONS_LIMIT
+	}
+
+	var (
+		attestations []types.Attestation
+		count        uint64
+		iterErr      error
+	)
+
+	reverse := strings.EqualFold(req.OrderBy, "desc")
+	filter := req.Height > 0 || req.Nonce > 0 || req.ClaimType != ""
+
+	iterator(ctx, reverse, func(_ []byte, att types.Attestation) (abort bool) {
+		claim, err := k.UnpackAttestationClaim(&att)
+		if err != nil {
+			iterErr = sdkerrors.Wrap(sdkerrors.ErrUnpackAny, "failed to unmarshal Ethereum claim")
+			return true
+		}
+
+		var match bool
+		switch {
+		case filter && claim.GetEthBlockHeight() == req.Height:
+			attestations = append(attestations, att)
+			match = true
+
+		case filter && claim.GetEventNonce() == req.Nonce:
+			attestations = append(attestations, att)
+			match = true
+
+		case filter && claim.GetType().String() == req.ClaimType:
+			attestations = append(attestations, att)
+			match = true
+
+		case !filter:
+			// No filter provided, so we include the attestation. This is equivalent
+			// to providing no query params or just limit and/or order_by.
+			attestations = append(attestations, att)
+			match = true
+		}
+
+		if match {
+			count++
+			if count >= limit {
+				return true
 			}
 		}
 
 		return false
 	})
+	if iterErr != nil {
+		return nil, iterErr
+	}
 
-	return res, nil
+	return &types.QueryAttestationsResponse{Attestations: attestations}, nil
 }
 
-func (k Keeper) UnbatchedSendToEthereums(c context.Context, req *types.UnbatchedSendToEthereumsRequest) (*types.UnbatchedSendToEthereumsResponse, error) {
+func (k Keeper) GetDelegateKeyByValidator(
+	c context.Context,
+	req *types.QueryDelegateKeysByValidatorAddress) (*types.QueryDelegateKeysByValidatorAddressResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	res := &types.UnbatchedSendToEthereumsResponse{}
-
-	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{types.SendToEthereumKey})
-	pageRes, err := query.FilteredPaginate(prefixStore, req.Pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
-		var ste types.SendToEthereum
-		k.cdc.MustUnmarshal(value, &ste)
-		if ste.Sender == req.SenderAddress {
-			res.SendToEthereums = append(res.SendToEthereums, &ste)
-			return true, nil
+	keys := k.GetDelegateKeys(ctx)
+	reqValidator, err := sdk.ValAddressFromBech32(req.ValidatorAddress)
+	if err != nil {
+		return nil, err
+	}
+	for _, key := range keys {
+		keyValidator, err := sdk.ValAddressFromBech32(key.Validator)
+		// this should be impossible due to the validate basic on the set orchestrator message
+		if err != nil {
+			panic("Invalid validator addr in store!")
 		}
-		return false, nil
-	})
+		if reqValidator.Equals(keyValidator) {
+			return &types.QueryDelegateKeysByValidatorAddressResponse{EthAddress: key.EthAddress, OrchestratorAddress: key.Orchestrator}, nil
+		}
+	}
+
+	return nil, sdkerrors.Wrap(types.ErrInvalid, "No validator")
+}
+
+func (k Keeper) GetDelegateKeyByOrchestrator(
+	c context.Context,
+	req *types.QueryDelegateKeysByOrchestratorAddress) (*types.QueryDelegateKeysByOrchestratorAddressResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	keys := k.GetDelegateKeys(ctx)
+	reqOrchestrator, err := sdk.AccAddressFromBech32(req.OrchestratorAddress)
 	if err != nil {
 		return nil, err
 	}
-	res.Pagination = pageRes
+	for _, key := range keys {
+		keyOrchestrator, err := sdk.AccAddressFromBech32(key.Orchestrator)
+		// this should be impossible due to the validate basic on the set orchestrator message
+		if err != nil {
+			panic("Invalid orchestrator addr in store!")
+		}
+		if reqOrchestrator.Equals(keyOrchestrator) {
+			return &types.QueryDelegateKeysByOrchestratorAddressResponse{ValidatorAddress: key.Validator, EthAddress: key.EthAddress}, nil
+		}
 
-	return res, nil
+	}
+	return nil, sdkerrors.Wrap(types.ErrInvalid, "No validator")
 }
 
-func (k Keeper) DelegateKeysByValidator(c context.Context, req *types.DelegateKeysByValidatorRequest) (*types.DelegateKeysByValidatorResponse, error) {
+func (k Keeper) GetDelegateKeyByEth(
+	c context.Context,
+	req *types.QueryDelegateKeysByEthAddress) (*types.QueryDelegateKeysByEthAddressResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	valAddr, err := sdk.ValAddressFromBech32(req.ValidatorAddress)
-	if err != nil {
-		return nil, err
+	keys := k.GetDelegateKeys(ctx)
+	if err := types.ValidateEthAddress(req.EthAddress); err != nil {
+		return nil, sdkerrors.Wrap(err, "invalid eth address")
 	}
-	ethAddr := k.GetValidatorEthereumAddress(ctx, valAddr)
-	orchAddr := k.GetEthereumOrchestratorAddress(ctx, ethAddr)
-	res := &types.DelegateKeysByValidatorResponse{
-		EthAddress:          ethAddr.Hex(),
-		OrchestratorAddress: orchAddr.String(),
+	for _, key := range keys {
+		if req.EthAddress == key.EthAddress {
+			return &types.QueryDelegateKeysByEthAddressResponse{
+				ValidatorAddress:    key.Validator,
+				OrchestratorAddress: key.Orchestrator,
+			}, nil
+		}
 	}
-	return res, nil
+
+	return nil, sdkerrors.Wrap(types.ErrInvalid, "No validator")
 }
 
-func (k Keeper) DelegateKeysByEthereumSigner(c context.Context, req *types.DelegateKeysByEthereumSignerRequest) (*types.DelegateKeysByEthereumSignerResponse, error) {
+func (k Keeper) GetPendingSendToEth(
+	c context.Context,
+	req *types.QueryPendingSendToEth) (*types.QueryPendingSendToEthResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	if !common.IsHexAddress(req.EthereumSigner) {
-		return nil, sdkerrors.Wrapf(types.ErrInvalid, "ethereum signer needs to be a hex address")
+	batches := k.GetOutgoingTxBatches(ctx)
+	unbatchedTxs := k.GetUnbatchedTransactions(ctx)
+	senderAddress := req.GetSenderAddress()
+	res := types.QueryPendingSendToEthResponse{
+		TransfersInBatches: []types.OutgoingTransferTx{},
+		UnbatchedTransfers: []types.OutgoingTransferTx{},
 	}
-	ethAddr := common.HexToAddress(req.EthereumSigner)
-	orchAddr := k.GetEthereumOrchestratorAddress(ctx, ethAddr)
-	valAddr := k.GetOrchestratorValidatorAddress(ctx, orchAddr)
-	res := &types.DelegateKeysByEthereumSignerResponse{
-		ValidatorAddress:    valAddr.String(),
-		OrchestratorAddress: orchAddr.String(),
+	for _, batch := range batches {
+		for _, tx := range batch.Transactions {
+			if senderAddress == "" || tx.Sender.String() == senderAddress {
+				res.TransfersInBatches = append(res.TransfersInBatches, tx.ToExternal())
+			}
+		}
 	}
-	return res, nil
+	for _, tx := range unbatchedTxs {
+		if senderAddress == "" || tx.Sender.String() == senderAddress {
+			res.UnbatchedTransfers = append(res.UnbatchedTransfers, tx.ToExternal())
+		}
+	}
+
+	return &res, nil
 }
 
-func (k Keeper) DelegateKeysByOrchestrator(c context.Context, req *types.DelegateKeysByOrchestratorRequest) (*types.DelegateKeysByOrchestratorResponse, error) {
+func (k Keeper) GetPendingIbcAutoForwards(
+	c context.Context,
+	req *types.QueryPendingIbcAutoForwards,
+) (*types.QueryPendingIbcAutoForwardsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	orchAddr, err := sdk.AccAddressFromBech32(req.OrchestratorAddress)
-	if err != nil {
-		return nil, err
-	}
-	valAddr := k.GetOrchestratorValidatorAddress(ctx, orchAddr)
-	ethAddr := k.GetValidatorEthereumAddress(ctx, valAddr)
-	res := &types.DelegateKeysByOrchestratorResponse{
-		ValidatorAddress: valAddr.String(),
-		EthereumSigner:   ethAddr.Hex(),
-	}
-	return res, nil
-}
-
-func (k Keeper) DelegateKeys(c context.Context, req *types.DelegateKeysRequest) (*types.DelegateKeysResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	delegateKeys := k.getDelegateKeys(ctx)
-
-	res := &types.DelegateKeysResponse{
-		DelegateKeys: delegateKeys,
-	}
-	return res, nil
-}
-
-func (k Keeper) LastObservedEthereumHeight(c context.Context, req *types.LastObservedEthereumHeightRequest) (*types.LastObservedEthereumHeightResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	lastObservedEthereumHeight := k.GetLastObservedEthereumBlockHeight(ctx)
-
-	res := &types.LastObservedEthereumHeightResponse{
-		LastObservedEthereumHeight: &lastObservedEthereumHeight,
-	}
-
-	return res, nil
+	pendingForwards := k.PendingIbcAutoForwards(ctx, req.Limit)
+	return &types.QueryPendingIbcAutoForwardsResponse{PendingIbcAutoForwards: pendingForwards}, nil
 }

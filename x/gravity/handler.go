@@ -1,9 +1,11 @@
 package gravity
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -14,45 +16,52 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
-
 		switch msg := msg.(type) {
-		case *types.MsgSendToEthereum:
-			res, err := msgServer.SendToEthereum(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgSetOrchestratorAddress:
+			res, err := msgServer.SetOrchestratorAddress(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-
-		case *types.MsgCancelSendToEthereum:
-			res, err := msgServer.CancelSendToEthereum(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgValsetConfirm:
+			res, err := msgServer.ValsetConfirm(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-
-		case *types.MsgSubmitEthereumTxConfirmation:
-			res, err := msgServer.SubmitEthereumTxConfirmation(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgSendToEth:
+			res, err := msgServer.SendToEth(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-
-		case *types.MsgSubmitEthereumEvent:
-			res, err := msgServer.SubmitEthereumEvent(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgRequestBatch:
+			res, err := msgServer.RequestBatch(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-
-		case *types.MsgDelegateKeys:
-			res, err := msgServer.SetDelegateKeys(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgConfirmBatch:
+			res, err := msgServer.ConfirmBatch(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-
-		case *types.MsgEthereumHeightVote:
-			res, err := msgServer.SubmitEthereumHeightVote(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgConfirmLogicCall:
+			res, err := msgServer.ConfirmLogicCall(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgSendToCosmosClaim:
+			res, err := msgServer.SendToCosmosClaim(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgExecuteIbcAutoForwards:
+			res, err := msgServer.ExecuteIbcAutoForwards(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgBatchSendToEthClaim:
+			res, err := msgServer.BatchSendToEthClaim(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgERC20DeployedClaim:
+			res, err := msgServer.ERC20DeployedClaim(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgLogicCallExecutedClaim:
+			res, err := msgServer.LogicCallExecutedClaim(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgCancelSendToEth:
+			res, err := msgServer.CancelSendToEth(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgValsetUpdatedClaim:
+			res, err := msgServer.ValsetUpdateClaim(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgSubmitBadSignatureEvidence:
+			res, err := msgServer.SubmitBadSignatureEvidence(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
 		default:
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized %s message type: %T", types.ModuleName, msg)
-		}
-	}
-}
-
-func NewCommunityPoolEthereumSpendProposalHandler(k keeper.Keeper) govtypes.Handler {
-	return func(ctx sdk.Context, content govtypes.Content) error {
-		switch c := content.(type) {
-		case *types.CommunityPoolEthereumSpendProposal:
-			return k.HandleCommunityPoolEthereumSpendProposal(ctx, c)
-		default:
-			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized gravity proposal content type: %T", c)
+			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, fmt.Sprintf("Unrecognized Gravity Msg type: %v", sdk.MsgTypeURL(msg)))
 		}
 	}
 }

@@ -1,0 +1,29 @@
+syntax = "proto3";
+package palomachain.paloma.gravity;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/gravity/types";
+
+// IDSet represents a set of IDs
+message IDSet { repeated uint64 ids = 1; }
+
+message BatchFees {
+  string token      = 1;
+  string total_fees = 2 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  uint64 tx_count   = 3;
+}
+
+message EventWithdrawalReceived {
+  string bridge_contract = 1;
+  string bridge_chain_id = 2;
+  string outgoing_tx_id = 3;
+  string nonce = 4;
+}
+
+message EventWithdrawCanceled {
+  string sender = 1;
+  string tx_id = 2;
+  string bridge_contract = 3;
+  string bridge_chain_id = 4;
+}

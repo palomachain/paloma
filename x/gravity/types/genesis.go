@@ -3,96 +3,116 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"time"
+	"strconv"
+	"strings"
 
-	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 // DefaultParamspace defines the default auth module parameter subspace
 const (
 	// todo: implement oracle constants as params
-	DefaultParamspace     = ModuleName
-	EventVoteRecordPeriod = 24 * time.Hour // TODO: value????
+	DefaultParamspace = ModuleName
 )
 
 var (
+	// AttestationVotesPowerThreshold threshold of votes power to succeed
+	AttestationVotesPowerThreshold = sdk.NewInt(66)
+
 	// ParamsStoreKeyGravityID stores the gravity id
 	ParamsStoreKeyGravityID = []byte("GravityID")
 
 	// ParamsStoreKeyContractHash stores the contract hash
 	ParamsStoreKeyContractHash = []byte("ContractHash")
 
-	// ParamsStoreKeyBridgeContractAddress stores the contract address
-	ParamsStoreKeyBridgeContractAddress = []byte("BridgeContractAddress")
+	// ParamsStoreKeyBridgeContractAddress stores the ethereum address
+	ParamsStoreKeyBridgeEthereumAddress = []byte("BridgeEthereumAddress")
 
 	// ParamsStoreKeyBridgeContractChainID stores the bridge chain id
 	ParamsStoreKeyBridgeContractChainID = []byte("BridgeChainID")
 
-	// ParamsStoreKeySignedSignerSetTxsWindow stores the signed blocks window
-	ParamsStoreKeySignedSignerSetTxsWindow = []byte("SignedSignerSetTxWindow")
+	// ParamsStoreKeySignedValsetsWindow stores the signed blocks window
+	ParamsStoreKeySignedValsetsWindow = []byte("SignedValsetsWindow")
 
 	// ParamsStoreKeySignedBatchesWindow stores the signed blocks window
 	ParamsStoreKeySignedBatchesWindow = []byte("SignedBatchesWindow")
 
-	// ParamsStoreKeyEthereumSignaturesWindow stores the signed blocks window
-	ParamsStoreKeyEthereumSignaturesWindow = []byte("EthereumSignaturesWindow")
+	// ParamsStoreKeySignedLogicCallsWindow stores the signed blocks window
+	ParamsStoreKeySignedLogicCallsWindow = []byte("SignedLogicCallsWindow")
 
-	// ParamsStoreKeyTargetEthTxTimeout stores the target ethereum transaction timeout
-	ParamsStoreKeyTargetEthTxTimeout = []byte("TargetEthTxTimeout")
+	// ParamsStoreKeySignedClaimsWindow stores the signed blocks window
+	ParamsStoreKeyTargetBatchTimeout = []byte("TargetBatchTimeout")
 
-	// ParamsStoreKeyAverageBlockTime stores the signed blocks window
+	// ParamsStoreKeySignedClaimsWindow stores the signed blocks window
 	ParamsStoreKeyAverageBlockTime = []byte("AverageBlockTime")
 
-	// ParamsStoreKeyAverageEthereumBlockTime stores the signed blocks window
+	// ParamsStoreKeySignedClaimsWindow stores the signed blocks window
 	ParamsStoreKeyAverageEthereumBlockTime = []byte("AverageEthereumBlockTime")
 
-	// ParamsStoreSlashFractionSignerSetTx stores the slash fraction valset
-	ParamsStoreSlashFractionSignerSetTx = []byte("SlashFractionSignerSetTx")
+	// ParamsStoreSlashFractionValset stores the slash fraction valset
+	ParamsStoreSlashFractionValset = []byte("SlashFractionValset")
 
 	// ParamsStoreSlashFractionBatch stores the slash fraction Batch
 	ParamsStoreSlashFractionBatch = []byte("SlashFractionBatch")
 
-	// ParamsStoreSlashFractionEthereumSignature stores the slash fraction ethereum signature
-	ParamsStoreSlashFractionEthereumSignature = []byte("SlashFractionEthereumSignature")
+	// ParamStoreUnbondSlashingValsetsWindow stores unbond slashing valset window
+	ParamStoreUnbondSlashingValsetsWindow = []byte("UnbondSlashingValsetsWindow")
 
-	// ParamsStoreSlashFractionConflictingEthereumSignature stores the slash fraction ConflictingEthereumSignature
-	ParamsStoreSlashFractionConflictingEthereumSignature = []byte("SlashFractionConflictingEthereumSignature")
+	// ParamStoreSlashFractionBadEthSignature stores the amount by which a validator making a fraudulent eth signature will be slashed
+	ParamStoreSlashFractionBadEthSignature = []byte("SlashFractionBadEthSignature")
 
-	//  ParamStoreUnbondSlashingSignerSetTxsWindow stores unbond slashing valset window
-	ParamStoreUnbondSlashingSignerSetTxsWindow = []byte("UnbondSlashingSignerSetTxsWindow")
+	// ValsetRewardAmount the amount of the coin, both denom and amount to issue
+	// to a relayer when they relay a valset
+	ParamStoreValsetRewardAmount = []byte("ValsetReward")
+
+	// ResetBridgeState boolean indicates the oracle events of the bridge history should be reset
+	ParamStoreResetBridgeState = []byte("ResetBridgeState")
+
+	// ResetBridgeHeight stores the nonce after which oracle events should be discarded when resetting the bridge
+	ParamStoreResetBridgeNonce = []byte("ResetBridgeNonce")
+
+	// ParamBridgeActive allows governance to temporarily halt the bridge via vote, in this context halting
+	// means no more batches will be created and no oracle events executed. Valset creation will continue
+	// to be allowed as it must continue to ensure bridge continuity.
+	ParamStoreBridgeActive = []byte("BridgeActive")
+
+	// ParamStoreEthereumBlacklist allows storage of blocked Ethereum addresses blocked for use with the bridge
+	// this could be for technical reasons (zero address) or non-technical reasons, these apply across all ERC20 tokens
+	ParamStoreEthereumBlacklist = []byte("EthereumBlacklist")
+
+	// ParamStoreMinChainFeeBasisPoints allows governance to set the minimum SendToEth `ChainFee` in terms of basis points
+	// or hundredths of a percent, e.g. 10% fee = 1000 and 0.02% fee = 2. If this is set > 0 and a MsgSendToEth is
+	// submitted with too low of a ChainFee value, it will be rejected in the AnteHandler
+	ParamStoreMinChainFeeBasisPoints = []byte("MinChainFeeBasisPoints")
 
 	// Ensure that params implements the proper interface
-	_ paramtypes.ParamSet = &Params{}
+	_ paramtypes.ParamSet = &Params{
+		GravityId:                    "",
+		ContractSourceHash:           "",
+		BridgeEthereumAddress:        "",
+		BridgeChainId:                0,
+		SignedValsetsWindow:          0,
+		SignedBatchesWindow:          0,
+		SignedLogicCallsWindow:       0,
+		TargetBatchTimeout:           0,
+		AverageBlockTime:             0,
+		AverageEthereumBlockTime:     0,
+		SlashFractionValset:          sdk.Dec{},
+		SlashFractionBatch:           sdk.Dec{},
+		SlashFractionLogicCall:       sdk.Dec{},
+		UnbondSlashingValsetsWindow:  0,
+		SlashFractionBadEthSignature: sdk.Dec{},
+		ValsetReward: sdk.Coin{
+			Denom:  "",
+			Amount: sdk.Int{},
+		},
+		BridgeActive:           true,
+		EthereumBlacklist:      []string{},
+		MinChainFeeBasisPoints: 0,
+	}
 )
-
-func (gs *GenesisState) UnpackInterfaces(unpacker cdctypes.AnyUnpacker) error {
-	for _, otx := range gs.OutgoingTxs {
-		var outgoing OutgoingTx
-		if err := unpacker.UnpackAny(otx, &outgoing); err != nil {
-			return err
-		}
-	}
-	for _, sig := range gs.Confirmations {
-		var signature EthereumTxConfirmation
-		if err := unpacker.UnpackAny(sig, &signature); err != nil {
-			return err
-		}
-	}
-	for _, evr := range gs.EthereumEventVoteRecords {
-		if err := evr.UnpackInterfaces(unpacker); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func EventVoteRecordPowerThreshold(totalPower sdk.Int) sdk.Int {
-	return sdk.NewInt(66).Mul(totalPower).Quo(sdk.NewInt(100))
-}
 
 // ValidateBasic validates genesis state by looping through the params and
 // calling their validation functions
@@ -100,40 +120,51 @@ func (s GenesisState) ValidateBasic() error {
 	if err := s.Params.ValidateBasic(); err != nil {
 		return sdkerrors.Wrap(err, "params")
 	}
-	if len(s.DelegateKeys) != 0 {
-		for _, delegateKey := range s.DelegateKeys {
-			if err := delegateKey.ValidateBasic(); err != nil {
-				return sdkerrors.Wrap(err, "delegates")
-			}
-		}
-	}
 	return nil
 }
 
 // DefaultGenesisState returns empty genesis state
-// TODO: set some better defaults here
+// nolint: exhaustruct
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
-		Params: DefaultParams(),
+		Params:                 DefaultParams(),
+		GravityNonces:          GravityNonces{},
+		Valsets:                []Valset{},
+		ValsetConfirms:         []MsgValsetConfirm{},
+		Batches:                []OutgoingTxBatch{},
+		BatchConfirms:          []MsgConfirmBatch{},
+		LogicCalls:             []OutgoingLogicCall{},
+		LogicCallConfirms:      []MsgConfirmLogicCall{},
+		Attestations:           []Attestation{},
+		DelegateKeys:           []MsgSetOrchestratorAddress{},
+		Erc20ToDenoms:          []ERC20ToDenom{},
+		UnbatchedTransfers:     []OutgoingTransferTx{},
+		PendingIbcAutoForwards: []PendingIbcAutoForward{},
 	}
 }
 
 // DefaultParams returns a copy of the default params
 func DefaultParams() *Params {
 	return &Params{
-		GravityId:                                 "defaultgravityid",
-		BridgeEthereumAddress:                     "0x0000000000000000000000000000000000000000",
-		SignedSignerSetTxsWindow:                  10000,
-		SignedBatchesWindow:                       10000,
-		EthereumSignaturesWindow:                  10000,
-		TargetEthTxTimeout:                        43200000,
-		AverageBlockTime:                          5000,
-		AverageEthereumBlockTime:                  15000,
-		SlashFractionSignerSetTx:                  sdk.NewDec(1).Quo(sdk.NewDec(1000)),
-		SlashFractionBatch:                        sdk.NewDec(1).Quo(sdk.NewDec(1000)),
-		SlashFractionEthereumSignature:            sdk.NewDec(1).Quo(sdk.NewDec(1000)),
-		SlashFractionConflictingEthereumSignature: sdk.NewDec(1).Quo(sdk.NewDec(1000)),
-		UnbondSlashingSignerSetTxsWindow:          10000,
+		GravityId:                    "defaultgravityid",
+		ContractSourceHash:           "",
+		BridgeEthereumAddress:        "0x0000000000000000000000000000000000000000",
+		BridgeChainId:                0,
+		SignedValsetsWindow:          10000,
+		SignedBatchesWindow:          10000,
+		SignedLogicCallsWindow:       10000,
+		TargetBatchTimeout:           43200000,
+		AverageBlockTime:             5000,
+		AverageEthereumBlockTime:     15000,
+		SlashFractionValset:          sdk.NewDec(1).Quo(sdk.NewDec(1000)),
+		SlashFractionBatch:           sdk.NewDec(1).Quo(sdk.NewDec(1000)),
+		SlashFractionLogicCall:       sdk.NewDec(1).Quo(sdk.NewDec(1000)),
+		UnbondSlashingValsetsWindow:  10000,
+		SlashFractionBadEthSignature: sdk.NewDec(1).Quo(sdk.NewDec(1000)),
+		ValsetReward:                 sdk.Coin{Denom: "", Amount: sdk.ZeroInt()},
+		BridgeActive:                 true,
+		EthereumBlacklist:            []string{},
+		MinChainFeeBasisPoints:       2,
 	}
 }
 
@@ -151,7 +182,7 @@ func (p Params) ValidateBasic() error {
 	if err := validateBridgeChainID(p.BridgeChainId); err != nil {
 		return sdkerrors.Wrap(err, "bridge chain id")
 	}
-	if err := validateTargetEthTxTimeout(p.TargetEthTxTimeout); err != nil {
+	if err := validateTargetBatchTimeout(p.TargetBatchTimeout); err != nil {
 		return sdkerrors.Wrap(err, "Batch timeout")
 	}
 	if err := validateAverageBlockTime(p.AverageBlockTime); err != nil {
@@ -160,37 +191,68 @@ func (p Params) ValidateBasic() error {
 	if err := validateAverageEthereumBlockTime(p.AverageEthereumBlockTime); err != nil {
 		return sdkerrors.Wrap(err, "Ethereum block time")
 	}
-	if err := validateSignedSignerSetTxsWindow(p.SignedSignerSetTxsWindow); err != nil {
-		return sdkerrors.Wrap(err, "signed blocks window")
+	if err := validateSignedValsetsWindow(p.SignedValsetsWindow); err != nil {
+		return sdkerrors.Wrap(err, "signed blocks window valsets")
 	}
 	if err := validateSignedBatchesWindow(p.SignedBatchesWindow); err != nil {
-		return sdkerrors.Wrap(err, "signed blocks window")
+		return sdkerrors.Wrap(err, "signed blocks window batches")
 	}
-	if err := validateEthereumSignaturesWindow(p.EthereumSignaturesWindow); err != nil {
-		return sdkerrors.Wrap(err, "signed blocks window")
+	if err := validateSignedLogicCallsWindow(p.SignedLogicCallsWindow); err != nil {
+		return sdkerrors.Wrap(err, "signed blocks window logic calls")
 	}
-	if err := validateSlashFractionSignerSetTx(p.SlashFractionSignerSetTx); err != nil {
-		return sdkerrors.Wrap(err, "slash fraction signersettx")
+	if err := validateSlashFractionValset(p.SlashFractionValset); err != nil {
+		return sdkerrors.Wrap(err, "slash fraction valset")
 	}
 	if err := validateSlashFractionBatch(p.SlashFractionBatch); err != nil {
-		return sdkerrors.Wrap(err, "slash fraction batch tx")
+		return sdkerrors.Wrap(err, "slash fraction batch")
 	}
-	if err := validateSlashFractionEthereumSignature(p.SlashFractionEthereumSignature); err != nil {
-		return sdkerrors.Wrap(err, "slash fraction ethereum signature")
+	if err := validateSlashFractionLogicCall(p.SlashFractionLogicCall); err != nil {
+		return sdkerrors.Wrap(err, "slash fraction logic call")
 	}
-	if err := validateSlashFractionConflictingEthereumSignature(p.SlashFractionConflictingEthereumSignature); err != nil {
-		return sdkerrors.Wrap(err, "slash fraction conflicting ethereum signature")
+	if err := validateSlashFractionBadEthSignature(p.SlashFractionBadEthSignature); err != nil {
+		return sdkerrors.Wrap(err, "slash fraction BadEthSignature")
 	}
-	if err := validateUnbondSlashingSignerSetTxsWindow(p.UnbondSlashingSignerSetTxsWindow); err != nil {
-		return sdkerrors.Wrap(err, "unbond slashing signersettx window")
+	if err := validateUnbondSlashingValsetsWindow(p.UnbondSlashingValsetsWindow); err != nil {
+		return sdkerrors.Wrap(err, "unbond Slashing valset window")
 	}
-
+	if err := validateValsetRewardAmount(p.ValsetReward); err != nil {
+		return sdkerrors.Wrap(err, "ValsetReward amount")
+	}
+	if err := validateBridgeActive(p.BridgeActive); err != nil {
+		return sdkerrors.Wrap(err, "bridge active parameter")
+	}
+	if err := validateEthereumBlacklistAddresses(p.EthereumBlacklist); err != nil {
+		return sdkerrors.Wrap(err, "ethereum blacklist parameter")
+	}
+	if err := validateMinChainFeeBasisPoints(p.MinChainFeeBasisPoints); err != nil {
+		return sdkerrors.Wrap(err, "min chain fee basis points parameter")
+	}
 	return nil
 }
 
 // ParamKeyTable for auth module
 func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
+	return paramtypes.NewKeyTable().RegisterParamSet(&Params{
+		GravityId:                    "",
+		ContractSourceHash:           "",
+		BridgeEthereumAddress:        "",
+		BridgeChainId:                0,
+		SignedValsetsWindow:          0,
+		SignedBatchesWindow:          0,
+		SignedLogicCallsWindow:       0,
+		TargetBatchTimeout:           0,
+		AverageBlockTime:             0,
+		AverageEthereumBlockTime:     0,
+		SlashFractionValset:          sdk.Dec{},
+		SlashFractionBatch:           sdk.Dec{},
+		SlashFractionLogicCall:       sdk.Dec{},
+		UnbondSlashingValsetsWindow:  0,
+		SlashFractionBadEthSignature: sdk.Dec{},
+		ValsetReward:                 sdk.Coin{Denom: "", Amount: sdk.Int{}},
+		BridgeActive:                 false,
+		EthereumBlacklist:            []string{},
+		MinChainFeeBasisPoints:       0,
+	})
 }
 
 // ParamSetPairs implements the ParamSet interface and returns all the key/value pairs
@@ -199,33 +261,30 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(ParamsStoreKeyGravityID, &p.GravityId, validateGravityID),
 		paramtypes.NewParamSetPair(ParamsStoreKeyContractHash, &p.ContractSourceHash, validateContractHash),
-		paramtypes.NewParamSetPair(ParamsStoreKeyBridgeContractAddress, &p.BridgeEthereumAddress, validateBridgeContractAddress),
+		paramtypes.NewParamSetPair(ParamsStoreKeyBridgeEthereumAddress, &p.BridgeEthereumAddress, validateBridgeContractAddress),
 		paramtypes.NewParamSetPair(ParamsStoreKeyBridgeContractChainID, &p.BridgeChainId, validateBridgeChainID),
-		paramtypes.NewParamSetPair(ParamsStoreKeySignedSignerSetTxsWindow, &p.SignedSignerSetTxsWindow, validateSignedSignerSetTxsWindow),
+		paramtypes.NewParamSetPair(ParamsStoreKeySignedValsetsWindow, &p.SignedValsetsWindow, validateSignedValsetsWindow),
 		paramtypes.NewParamSetPair(ParamsStoreKeySignedBatchesWindow, &p.SignedBatchesWindow, validateSignedBatchesWindow),
-		paramtypes.NewParamSetPair(ParamsStoreKeyEthereumSignaturesWindow, &p.EthereumSignaturesWindow, validateEthereumSignaturesWindow),
+		paramtypes.NewParamSetPair(ParamsStoreKeySignedLogicCallsWindow, &p.SignedLogicCallsWindow, validateSignedLogicCallsWindow),
+		paramtypes.NewParamSetPair(ParamsStoreKeyTargetBatchTimeout, &p.TargetBatchTimeout, validateTargetBatchTimeout),
 		paramtypes.NewParamSetPair(ParamsStoreKeyAverageBlockTime, &p.AverageBlockTime, validateAverageBlockTime),
-		paramtypes.NewParamSetPair(ParamsStoreKeyTargetEthTxTimeout, &p.TargetEthTxTimeout, validateTargetEthTxTimeout),
 		paramtypes.NewParamSetPair(ParamsStoreKeyAverageEthereumBlockTime, &p.AverageEthereumBlockTime, validateAverageEthereumBlockTime),
-		paramtypes.NewParamSetPair(ParamsStoreSlashFractionSignerSetTx, &p.SlashFractionSignerSetTx, validateSlashFractionSignerSetTx),
+		paramtypes.NewParamSetPair(ParamsStoreSlashFractionValset, &p.SlashFractionValset, validateSlashFractionValset),
 		paramtypes.NewParamSetPair(ParamsStoreSlashFractionBatch, &p.SlashFractionBatch, validateSlashFractionBatch),
-		paramtypes.NewParamSetPair(ParamsStoreSlashFractionEthereumSignature, &p.SlashFractionEthereumSignature, validateSlashFractionEthereumSignature),
-		paramtypes.NewParamSetPair(ParamsStoreSlashFractionConflictingEthereumSignature, &p.SlashFractionConflictingEthereumSignature, validateSlashFractionConflictingEthereumSignature),
-		paramtypes.NewParamSetPair(ParamStoreUnbondSlashingSignerSetTxsWindow, &p.UnbondSlashingSignerSetTxsWindow, validateUnbondSlashingSignerSetTxsWindow),
+		paramtypes.NewParamSetPair(ParamStoreUnbondSlashingValsetsWindow, &p.UnbondSlashingValsetsWindow, validateUnbondSlashingValsetsWindow),
+		paramtypes.NewParamSetPair(ParamStoreSlashFractionBadEthSignature, &p.SlashFractionBadEthSignature, validateSlashFractionBadEthSignature),
+		paramtypes.NewParamSetPair(ParamStoreValsetRewardAmount, &p.ValsetReward, validateValsetRewardAmount),
+		paramtypes.NewParamSetPair(ParamStoreBridgeActive, &p.BridgeActive, validateBridgeActive),
+		paramtypes.NewParamSetPair(ParamStoreEthereumBlacklist, &p.EthereumBlacklist, validateEthereumBlacklistAddresses),
+		paramtypes.NewParamSetPair(ParamStoreMinChainFeeBasisPoints, &p.MinChainFeeBasisPoints, validateMinChainFeeBasisPoints),
 	}
 }
 
 // Equal returns a boolean determining if two Params types are identical.
 func (p Params) Equal(p2 Params) bool {
-	pb, err := p.Marshal()
-	if err != nil {
-		panic(err)
-	}
-	p2b, err := p2.Marshal()
-	if err != nil {
-		panic(err)
-	}
-	return bytes.Equal(pb, p2b)
+	bz1 := ModuleCdc.MustMarshalLengthPrefixed(&p)
+	bz2 := ModuleCdc.MustMarshalLengthPrefixed(&p2)
+	return bytes.Equal(bz1, bz2)
 }
 
 func validateGravityID(i interface{}) error {
@@ -255,7 +314,7 @@ func validateBridgeChainID(i interface{}) error {
 	return nil
 }
 
-func validateTargetEthTxTimeout(i interface{}) error {
+func validateTargetBatchTimeout(i interface{}) error {
 	val, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -290,13 +349,16 @@ func validateBridgeContractAddress(i interface{}) error {
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
-	if !common.IsHexAddress(v) {
-		return fmt.Errorf("not an ethereum address: %s", v)
+	if err := ValidateEthAddress(v); err != nil {
+		// TODO: ensure that empty addresses are valid in params
+		if !strings.Contains(err.Error(), "empty") {
+			return err
+		}
 	}
 	return nil
 }
 
-func validateSignedSignerSetTxsWindow(i interface{}) error {
+func validateSignedValsetsWindow(i interface{}) error {
 	// TODO: do we want to set some bounds on this value?
 	if _, ok := i.(uint64); !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -304,7 +366,7 @@ func validateSignedSignerSetTxsWindow(i interface{}) error {
 	return nil
 }
 
-func validateUnbondSlashingSignerSetTxsWindow(i interface{}) error {
+func validateUnbondSlashingValsetsWindow(i interface{}) error {
 	// TODO: do we want to set some bounds on this value?
 	if _, ok := i.(uint64); !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -312,7 +374,7 @@ func validateUnbondSlashingSignerSetTxsWindow(i interface{}) error {
 	return nil
 }
 
-func validateSlashFractionSignerSetTx(i interface{}) error {
+func validateSlashFractionValset(i interface{}) error {
 	// TODO: do we want to set some bounds on this value?
 	if _, ok := i.(sdk.Dec); !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -328,7 +390,7 @@ func validateSignedBatchesWindow(i interface{}) error {
 	return nil
 }
 
-func validateEthereumSignaturesWindow(i interface{}) error {
+func validateSignedLogicCallsWindow(i interface{}) error {
 	// TODO: do we want to set some bounds on this value?
 	if _, ok := i.(uint64); !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -344,7 +406,7 @@ func validateSlashFractionBatch(i interface{}) error {
 	return nil
 }
 
-func validateSlashFractionEthereumSignature(i interface{}) error {
+func validateSlashFractionLogicCall(i interface{}) error {
 	// TODO: do we want to set some bounds on this value?
 	if _, ok := i.(sdk.Dec); !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -352,10 +414,51 @@ func validateSlashFractionEthereumSignature(i interface{}) error {
 	return nil
 }
 
-func validateSlashFractionConflictingEthereumSignature(i interface{}) error {
+func validateSlashFractionBadEthSignature(i interface{}) error {
 	// TODO: do we want to set some bounds on this value?
 	if _, ok := i.(sdk.Dec); !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	return nil
+}
+
+func validateValsetRewardAmount(i interface{}) error {
+	if _, ok := i.(sdk.Coin); !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	return nil
+}
+
+func validateBridgeActive(i interface{}) error {
+	if _, ok := i.(bool); !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	return nil
+}
+
+func validateEthereumBlacklistAddresses(i interface{}) error {
+	strArr, ok := i.([]string)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	for index, value := range strArr {
+		if err := ValidateEthAddress(value); err != nil {
+
+			if !strings.Contains(err.Error(), "empty, index is"+strconv.Itoa(index)) {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func validateMinChainFeeBasisPoints(i interface{}) error {
+	v, ok := i.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v >= 10000 {
+		return fmt.Errorf("MinChainFeeBasisPoints is set to 10000 or more, this is an unreasonable fee amount")
 	}
 	return nil
 }
@@ -366,13 +469,5 @@ func strToFixByteArray(s string) ([32]byte, error) {
 		return out, fmt.Errorf("string too long")
 	}
 	copy(out[:], s)
-	return out, nil
-}
-
-func byteArrayToFixByteArray(b []byte) (out [32]byte, err error) {
-	if len(b) > 32 {
-		return out, fmt.Errorf("array too long")
-	}
-	copy(out[:], b)
 	return out, nil
 }
