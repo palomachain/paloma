@@ -72,6 +72,7 @@ func SetMinimumCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper, minC
 }
 
 func (app *App) RegisterUpgradeHandlers(semverVersion string) {
+	logger := app.Logger().With("version", semverVersion)
 	// Set param key table for params module migration
 	for _, subspace := range app.ParamsKeeper.GetSubspaces() {
 		subspace := subspace
@@ -190,7 +191,9 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		panic(err)
 	}
 
+	logger.Info("Checking for migration v1.0.0...")
 	if upgradeInfo.Name == "v1.0.0" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		logger.Info("Running migration v1.0.0...")
 		storeUpgrades := storetypes.StoreUpgrades{
 			Renamed: []storetypes.StoreRename{ // x/consensus module renamed to palomaconsensus
 				{
@@ -211,7 +214,9 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
 
+	logger.Info("Checking for migration v1.5.0...")
 	if (upgradeInfo.Name == "v1.5.0" || upgradeInfo.Name == "v1.6.1") && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		logger.Info("Running migration v1.5.0...")
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{
 				gravitymoduletypes.ModuleName,
