@@ -3,33 +3,16 @@ package palomachain.paloma.evm;
 
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
-// Msg defines the Msg service.
 service Msg {
-  rpc SubmitNewJob(MsgSubmitNewJob) returns (MsgSubmitNewJobResponse);
-  rpc UploadNewSmartContractTemp(MsgUploadNewSmartContractTemp)
-      returns (MsgUploadNewSmartContractTempResponse);
+    rpc DeployNewSmartContract(MsgDeployNewSmartContractRequest) returns (DeployNewSmartContractResponse);
 }
 
-message MsgSubmitNewJob {
-  string creator                 = 1;
-  string hexSmartContractAddress = 2;
-  string hexPayload              = 3;
-
-  string abi    = 4;
-  string method = 5;
-
-  string chainType        = 6;
-  string chainReferenceID = 7;
+message MsgDeployNewSmartContractRequest {
+  string creator = 1;
+  string title = 2;
+  string description = 3;
+  
+  string abiJSON = 4; 
+  string bytecodeHex = 5; 
 }
-
-message MsgSubmitNewJobResponse {}
-
-message MsgUploadNewSmartContractTemp {
-  string creator          = 1;
-  string abi              = 2;
-  string bytecode         = 3;
-  string constructorInput = 4;
-  string chainReferenceID = 5;
-}
-
-message MsgUploadNewSmartContractTempResponse {}
+message DeployNewSmartContractResponse {}

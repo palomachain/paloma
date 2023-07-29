@@ -11,16 +11,14 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgSubmitNewJob{}, "evm/SubmitNewJob", nil)
-	cdc.RegisterConcrete(&MsgUploadNewSmartContractTemp{}, "evm/UploadNewSmartContractTemp", nil)
+	cdc.RegisterConcrete(&MsgDeployNewSmartContractRequest{}, "evm/DeployNewSmartContract", nil)
 	cdc.RegisterConcrete(&RelayWeightsProposal{}, "evm/RelayWeightsProposal", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&MsgSubmitNewJob{},
-		&MsgUploadNewSmartContractTemp{},
+		&MsgDeployNewSmartContractRequest{},
 	)
 	registry.RegisterImplementations(
 		(*govv1beta1types.Content)(nil),

@@ -661,7 +661,10 @@ var _ = Describe("evm", func() {
 							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
 						).To(BeFalse())
 
-						_, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+						sc, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+						Expect(err).To(BeNil())
+
+						err = a.EvmKeeper.SetAsCompassContract(ctx, sc)
 						Expect(err).To(BeNil())
 
 						Expect(
@@ -700,7 +703,9 @@ var _ = Describe("evm", func() {
 					})
 
 					By("adding a new smart contract deployment deploys it to chain1 only", func() {
-						_, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract2.GetAbiJSON(), smartContract2.GetBytecode())
+						sc, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract2.GetAbiJSON(), smartContract2.GetBytecode())
+						Expect(err).To(BeNil())
+						err = a.EvmKeeper.SetAsCompassContract(ctx, sc)
 						Expect(err).To(BeNil())
 						Expect(
 							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
@@ -772,7 +777,9 @@ var _ = Describe("evm", func() {
 					)
 					Expect(err).To(BeNil())
 
-					_, err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+					sc, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+					Expect(err).To(BeNil())
+					err = a.EvmKeeper.SetAsCompassContract(ctx, sc)
 					Expect(err).To(BeNil())
 
 					err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract, "addr", []byte("abc"))
@@ -933,7 +940,9 @@ var _ = Describe("evm", func() {
 						big.NewInt(55),
 					)
 					Expect(err).To(BeNil())
-					_, err = a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+					sc, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+					Expect(err).To(BeNil())
+					err = a.EvmKeeper.SetAsCompassContract(ctx, sc)
 					Expect(err).To(BeNil())
 				})
 

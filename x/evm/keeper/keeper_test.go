@@ -75,6 +75,8 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context) {
 
 	sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))
 	require.NoError(t, err)
+	err = k.SetAsCompassContract(ctx, sc)
+	require.NoError(t, err)
 
 	dep, _ := k.getSmartContractDeploying(ctx, sc.GetId(), "test-chain")
 	require.NotNil(t, dep)
@@ -99,6 +101,8 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context) {
 	require.NoError(t, err)
 
 	sc, err = k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))
+	require.NoError(t, err)
+	err = k.SetAsCompassContract(ctx, sc)
 	require.NoError(t, err)
 
 	dep, _ = k.getSmartContractDeploying(ctx, sc.GetId(), "test-chain")
