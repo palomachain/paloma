@@ -78,7 +78,7 @@ rm -r ~/.paloma/data/wasm/cache
 
 ```shell
 wget -O - https://github.com/palomachain/paloma/releases/download/v1.6.1/paloma_Linux_x86_64.tar.gz  | \
-  sudo tar -C ~/ -xvzf - palomad
+  sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 ```
 
