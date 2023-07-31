@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/palomachain/paloma/x/gravity/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/require"
 )
 

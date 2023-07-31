@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palomachain/paloma/x/gravity/types"
 	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/palomachain/paloma/x/gravity/types"
 )
 
 // nolint: exhaustruct

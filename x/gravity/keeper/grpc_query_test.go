@@ -4,12 +4,12 @@ import (
 	gocontext "context"
 	"testing"
 
-	"github.com/palomachain/paloma/app"
-	"github.com/palomachain/paloma/x/gravity/keeper"
-	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/app"
+	"github.com/palomachain/paloma/x/gravity/keeper"
+	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/require"
 )
 
