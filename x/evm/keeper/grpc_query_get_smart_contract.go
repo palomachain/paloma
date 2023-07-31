@@ -20,7 +20,7 @@ func (k Keeper) QueryGetSmartContract(goCtx context.Context, req *types.QueryGet
 	var err error
 
 	if req.GetSmartContractID() == 0 {
-		smartContract, err = k.GetLastSmartContract(ctx)
+		smartContract, err = k.GetLastCompassContract(ctx)
 	} else {
 		smartContract, err = k.getSmartContract(ctx, req.GetSmartContractID())
 	}

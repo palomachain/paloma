@@ -148,7 +148,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				return err
 			}
 
-			deployingSmartContract, _ := k.getSmartContractDeploying(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
+			deployingSmartContract, _ := k.getSmartContractDeployment(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
 			if deployingSmartContract == nil {
 				return ErrCannotActiveSmartContractThatIsNotDeploying
 			}
