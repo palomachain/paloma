@@ -3,8 +3,6 @@ package gravity
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -14,10 +12,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/palomachain/paloma/x/gravity/client/cli"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/spf13/cobra"
 )
 
 // type check to ensure the interface is properly implemented

@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/stretchr/testify/require"
-
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetAndDeleteAttestation(t *testing.T) {

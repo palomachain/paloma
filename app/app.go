@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/palomachain/paloma/x/bech32ibc"
 	"io"
 	"os"
 	"path/filepath"
@@ -110,6 +109,7 @@ import (
 	palomamempool "github.com/palomachain/paloma/app/mempool"
 	appparams "github.com/palomachain/paloma/app/params"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	"github.com/palomachain/paloma/x/bech32ibc"
 	bech32ibcmodule "github.com/palomachain/paloma/x/bech32ibc"
 	bech32ibcclient "github.com/palomachain/paloma/x/bech32ibc/client"
 	bech32ibckeeper "github.com/palomachain/paloma/x/bech32ibc/keeper"

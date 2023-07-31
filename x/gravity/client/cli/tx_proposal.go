@@ -3,11 +3,8 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"os"
 	"strings"
-
-	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -16,8 +13,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-
+	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/spf13/cobra"
 )
 
 func CmdGravityProposalHandler() *cobra.Command {

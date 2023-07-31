@@ -1,22 +1,21 @@
 package gravity
 
 import (
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"testing"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestValsetCreationIfNotAvailable(t *testing.T) {

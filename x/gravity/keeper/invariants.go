@@ -7,7 +7,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
-
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 

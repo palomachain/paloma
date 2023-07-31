@@ -10,7 +10,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 

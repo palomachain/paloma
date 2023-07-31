@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"testing"
 
+	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/palomachain/paloma/x/gravity/types"
 )
 
 // nolint: exhaustruct

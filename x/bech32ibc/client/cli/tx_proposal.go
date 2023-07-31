@@ -3,17 +3,14 @@ package cli
 import (
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/client/tx"
-
-	"github.com/spf13/cobra"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-
 	"github.com/palomachain/paloma/x/bech32ibc/types"
+	"github.com/spf13/cobra"
 )
 
 var (

@@ -6,14 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/palomachain/paloma/x/bech32ibc"
 	bech32ibctypes "github.com/palomachain/paloma/x/bech32ibc/types"
-
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/require"
 )
 
 // Tests that batches and transactions are preserved during chain restart, including pending forwards

@@ -6,7 +6,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-
 	"github.com/palomachain/paloma/x/bech32ibc/keeper"
 	"github.com/palomachain/paloma/x/bech32ibc/types"
 )

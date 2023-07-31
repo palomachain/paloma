@@ -1,11 +1,10 @@
 package keeper
 
 import (
+	"bytes"
 	"encoding/hex"
 	"testing"
 	"time"
-
-	"bytes"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

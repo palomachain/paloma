@@ -5,10 +5,9 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 

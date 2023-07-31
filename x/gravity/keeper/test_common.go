@@ -2,10 +2,6 @@ package keeper
 
 import (
 	"bytes"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
-	bech32ibckeeper "github.com/palomachain/paloma/x/bech32ibc/keeper"
-	bech32ibctypes "github.com/palomachain/paloma/x/bech32ibc/types"
 	"testing"
 	"time"
 
@@ -22,6 +18,7 @@ import (
 	ccrypto "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/store"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -41,6 +38,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/evidence"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/gov"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -60,19 +58,16 @@ import (
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	gethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/stretchr/testify/require"
-
 	ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
-
-	//bech32ibckeeper "github.com/althea-net/bech32-ibc/x/bech32ibc/keeper"
-	//bech32ibctypes "github.com/althea-net/bech32-ibc/x/bech32ibc/types"
-
+	gethcommon "github.com/ethereum/go-ethereum/common"
 	gravityparams "github.com/palomachain/paloma/app/params"
+	bech32ibckeeper "github.com/palomachain/paloma/x/bech32ibc/keeper"
+	bech32ibctypes "github.com/palomachain/paloma/x/bech32ibc/types"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/require"
 )
 
 var (

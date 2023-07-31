@@ -217,7 +217,7 @@ func TestAppendBytes(t *testing.T) {
 	lenEthAddr := len(ethAddrBytes)
 	lenNonce := len(UInt64Bytes(nonce))
 
-	// Appended bytes should be same length as sum of all lenghts
+	// Appended bytes should be same length as sum of all lengths
 	require.Equal(t, lenPrefix+lenEthAddr+lenNonce+len(bytes), len(appended))
 
 	// Appended bytes should be in correct order and be same as source

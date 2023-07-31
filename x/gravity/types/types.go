@@ -3,14 +3,13 @@ package types
 import (
 	"crypto/md5"
 	"encoding/binary"
-	fmt "fmt"
+	"fmt"
 	"strconv"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	bech32ibckeeper "github.com/palomachain/paloma/x/bech32ibc/keeper"
 )
 

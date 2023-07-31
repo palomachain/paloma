@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -12,6 +11,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/spf13/cobra"
 )
 
 // GetTxCmd bundles all the subcmds together so they appear under `gravity tx`

@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"fmt"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"sort"
 
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
@@ -15,13 +16,9 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/ethereum/go-ethereum/common"
-
 	ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
-
+	"github.com/ethereum/go-ethereum/common"
 	bech32ibckeeper "github.com/palomachain/paloma/x/bech32ibc/keeper"
-
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 

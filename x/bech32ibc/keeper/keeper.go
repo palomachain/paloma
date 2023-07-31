@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/cometbft/cometbft/libs/log"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkstore "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

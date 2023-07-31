@@ -4,12 +4,11 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Have the validators put in a erc20<>denom relation with ERC20DeployedEvent

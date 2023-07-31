@@ -1,11 +1,11 @@
 package types
 
 import (
-	"cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"

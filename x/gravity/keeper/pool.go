@@ -7,7 +7,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -308,7 +307,7 @@ func (k Keeper) GetBatchFeeByTokenType(ctx sdk.Context, tokenContractAddr types.
 }
 
 // GetAllBatchFees creates a fee entry for every batch type currently in the store
-// this can be used by relayers to determine what batch types are desireable to request
+// this can be used by relayers to determine what batch types are desirable to request
 func (k Keeper) GetAllBatchFees(ctx sdk.Context, maxElements uint) (batchFees []types.BatchFees) {
 	batchFeesMap := k.createBatchFees(ctx, maxElements)
 	// create array of batchFees

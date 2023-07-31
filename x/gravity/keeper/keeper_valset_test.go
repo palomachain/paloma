@@ -1,16 +1,16 @@
 package keeper
 
 import (
+	"bytes"
 	"fmt"
+	"sort"
 	"testing"
 
-	"bytes"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/slices"
-	"sort"
 )
 
 const (
@@ -22,7 +22,7 @@ func TestValsets(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
 	k := input.GravityKeeper
 
-	// verify that no valsets exist in the begining
+	// verify that no valsets exist in the beginning
 	assert.Equal(t, 0, len(k.GetValsets(ctx)))
 
 	valset, err := k.GetCurrentValset(ctx)
@@ -108,7 +108,7 @@ func TestIterateValsetConfirms(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
 	k := input.GravityKeeper
 
-	// verify that no valsets exist in the begining
+	// verify that no valsets exist in the beginning
 	assert.Equal(t, 0, len(k.GetValsets(ctx)))
 
 	valset, err := k.GetCurrentValset(ctx)

@@ -9,7 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
-
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 

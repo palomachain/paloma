@@ -3,12 +3,10 @@ package keeper
 import (
 	"context"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/x/bech32ibc/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/palomachain/paloma/x/bech32ibc/types"
 )
 
 var _ types.QueryServer = Keeper{}
