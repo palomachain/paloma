@@ -98,8 +98,12 @@ func (k Keeper) GetHrpIbcRecords(ctx sdk.Context) (HrpIbcRecords []types.HrpIbcR
 	return records
 }
 
-func (k Keeper) SetHrpIbcRecords(ctx sdk.Context, hrpIbcRecords []types.HrpIbcRecord) {
+func (k Keeper) SetHrpIbcRecords(ctx sdk.Context, hrpIbcRecords []types.HrpIbcRecord) error {
 	for _, record := range hrpIbcRecords {
-		k.setHrpIbcRecord(ctx, record)
+		err := k.setHrpIbcRecord(ctx, record)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }

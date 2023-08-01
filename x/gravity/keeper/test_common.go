@@ -268,7 +268,8 @@ func SetupFiveValChain(t *testing.T) (TestInput, sdk.Context) {
 	input := CreateTestEnv(t)
 
 	// Set the params for our modules
-	input.StakingKeeper.SetParams(input.Context, TestingStakeParams)
+	err := input.StakingKeeper.SetParams(input.Context, TestingStakeParams)
+	require.NoError(t, err)
 
 	// Initialize each of the validators
 	stakingMsgSvr := stakingkeeper.NewMsgServerImpl(&input.StakingKeeper)
@@ -320,7 +321,8 @@ func SetupTestChain(t *testing.T, weights []uint64, setDelegateAddresses bool) (
 
 	// Set the params for our modules
 	TestingStakeParams.MaxValidators = 100
-	input.StakingKeeper.SetParams(input.Context, TestingStakeParams)
+	err := input.StakingKeeper.SetParams(input.Context, TestingStakeParams)
+	require.NoError(t, err)
 
 	// Initialize each of the validators
 	stakingMsgSvr := stakingkeeper.NewMsgServerImpl(&input.StakingKeeper)
@@ -371,7 +373,8 @@ func SetupTestChain(t *testing.T, weights []uint64, setDelegateAddresses bool) (
 			staking.EndBlocker(input.Context, &input.StakingKeeper)
 
 			// set a request every time.
-			input.GravityKeeper.SetValsetRequest(input.Context)
+			_, err = input.GravityKeeper.SetValsetRequest(input.Context)
+			require.NoError(t, err)
 		}
 
 	}
@@ -502,10 +505,11 @@ func CreateTestEnv(t *testing.T) TestInput {
 		blockedAddr,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	bankKeeper.SetParams(ctx, banktypes.Params{
+	err = bankKeeper.SetParams(ctx, banktypes.Params{
 		SendEnabled:        []*banktypes.SendEnabled{},
 		DefaultSendEnabled: true,
 	})
+	require.NoError(t, err)
 
 	stakingKeeper := stakingkeeper.NewKeeper(
 		marshaler,
@@ -514,7 +518,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 		bankKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	stakingKeeper.SetParams(ctx, TestingStakeParams)
+	err = stakingKeeper.SetParams(ctx, TestingStakeParams)
+	require.NoError(t, err)
 
 	distKeeper := distrkeeper.NewKeeper(
 		marshaler,
@@ -525,7 +530,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	distKeeper.SetParams(ctx, distrtypes.DefaultParams())
+	err = distKeeper.SetParams(ctx, distrtypes.DefaultParams())
+	require.NoError(t, err)
 
 	// set genesis items required for distribution
 	distKeeper.SetFeePool(ctx, distrtypes.InitialFeePool())

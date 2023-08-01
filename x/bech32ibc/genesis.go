@@ -9,8 +9,14 @@ import (
 // InitGenesis initializes the module's state from a provided genesis
 // state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
-	k.SetNativeHrp(ctx, genState.NativeHRP)
-	k.SetHrpIbcRecords(ctx, genState.HrpIBCRecords)
+	err := k.SetNativeHrp(ctx, genState.NativeHRP)
+	if err != nil {
+		panic(err)
+	}
+	err = k.SetHrpIbcRecords(ctx, genState.HrpIBCRecords)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // ExportGenesis returns the module's exported genesis.

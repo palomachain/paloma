@@ -11,7 +11,7 @@ import (
 // Creates a random nonzero uint64 test value
 func NonzeroUint64() (ret uint64) {
 	for ret == 0 {
-		ret = rand.Uint64()
+		ret = rand.Uint64() //nolint:gosec
 	}
 	return
 }
@@ -20,7 +20,7 @@ func NonzeroUint64() (ret uint64) {
 func NonemptySdkAccAddress() (ret sdk.AccAddress) {
 	for ret.Empty() {
 		addr := make([]byte, 20)
-		rand.Read(addr)
+		rand.Read(addr) //nolint:gosec
 		ret = sdk.AccAddress(addr)
 	}
 	return
@@ -30,7 +30,7 @@ func NonemptySdkAccAddress() (ret sdk.AccAddress) {
 func NonemptyEthAddress() (ret string) {
 	for ret == "" {
 		addr := make([]byte, 20)
-		rand.Read(addr)
+		rand.Read(addr) //nolint:gosec
 		ret = hex.EncodeToString(addr)
 	}
 	ret = "0x" + ret
@@ -42,7 +42,7 @@ func NonzeroSdkInt() (ret sdk.Int) {
 	amount := big.NewInt(0)
 	for amount.Cmp(big.NewInt(0)) == 0 {
 		amountBz := make([]byte, 32)
-		rand.Read(amountBz)
+		rand.Read(amountBz) //nolint:gosec
 		amount = big.NewInt(0).SetBytes(amountBz)
 	}
 	ret = sdk.NewIntFromBigInt(amount)

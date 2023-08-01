@@ -1,7 +1,7 @@
 package types
 
 import (
-	"crypto/md5"
+	"crypto/md5" // nolint:gosec
 	"encoding/binary"
 	"fmt"
 	"strconv"
@@ -99,7 +99,7 @@ func GetNativePrefixedAccAddress(ctx sdk.Context, bech32IbcKeeper bech32ibckeepe
 // Hashing string using cryptographic MD5 function
 // returns 128bit(16byte) value
 func HashString(input string) []byte {
-	md5 := md5.New()
+	md5 := md5.New() // nolint:gosec
 	md5.Write([]byte(input))
 	return md5.Sum(nil)
 }

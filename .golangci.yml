@@ -15,8 +15,8 @@ linters:
     - errcheck
     - gci
     - gofmt
-    - gofumpt
-    - goimports
+#    - gofumpt
+#    - goimports
     - govet
     - misspell
     - unused

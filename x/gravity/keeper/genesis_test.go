@@ -146,7 +146,8 @@ func TestBatchAndTxImportExport(t *testing.T) {
 		IcsToHeightOffset: 1000,
 		IcsToTimeOffset:   1000,
 	}
-	input.GravityKeeper.bech32IbcKeeper.SetHrpIbcRecords(ctx, []bech32ibctypes.HrpIbcRecord{rec})
+	err := input.GravityKeeper.bech32IbcKeeper.SetHrpIbcRecords(ctx, []bech32ibctypes.HrpIbcRecord{rec})
+	require.NoError(t, err)
 	hrpRecords := input.GravityKeeper.bech32IbcKeeper.GetHrpIbcRecords(ctx)
 	require.Equal(t, len(hrpRecords), 1)
 	require.Equal(t, hrpRecords[0], rec)

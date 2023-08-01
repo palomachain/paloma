@@ -108,8 +108,14 @@ func NewCmdSubmitUpdateHrpIbcRecordProposal() *cobra.Command {
 	cmd.Flags().Uint64(IcsToHeightOffset, 0, "timeout for IBC routed packets through this channel, in blocks. A value of X here, means that if a packet is attempted to get relayed at counter-party chain height of N, and fails to be ack'd by height N+X, the packet will bounce back to the source chain.")
 	cmd.Flags().String(IcsToTimeoutOffset, "", "the offset of timeout to expire on target chain")
 	flags.AddTxFlagsToCmd(cmd)
-	cmd.MarkFlagRequired(cli.FlagTitle)
-	cmd.MarkFlagRequired(cli.FlagDescription)
+	err := cmd.MarkFlagRequired(cli.FlagTitle)
+	if err != nil {
+		panic(err)
+	}
+	err = cmd.MarkFlagRequired(cli.FlagDescription)
+	if err != nil {
+		panic(err)
+	}
 
 	return cmd
 }
