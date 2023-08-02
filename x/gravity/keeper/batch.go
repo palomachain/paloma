@@ -31,29 +31,11 @@ func (k Keeper) BuildOutgoingTXBatch(
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "bridge paused")
 	}
 
-	lastBatch := k.GetLastOutgoingBatchByTokenType(ctx, contract)
-
-	// lastBatch may be nil if there are no existing batches, we only need
-	// to perform this check if a previous batch exists
-	if lastBatch != nil {
-		// this traverses the current tx pool for this token type and determines what
-		// fees a hypothetical batch would have if created
-		currentFees := k.GetBatchFeeByTokenType(ctx, contract, maxElements)
-		if currentFees == nil {
-			return nil, sdkerrors.Wrap(types.ErrInvalid, "error getting fees from tx pool")
-		}
-
-		lastFees := lastBatch.ToExternal().GetFees()
-		if lastFees.GTE(currentFees.TotalFees) {
-			return nil, sdkerrors.Wrap(types.ErrInvalid, "new batch would not be more profitable")
-		}
-	}
-
 	selectedTxs, err := k.pickUnbatchedTxs(ctx, contract, maxElements)
 	if err != nil {
 		return nil, err
 	} else if len(selectedTxs) == 0 {
-		return nil, sdkerrors.Wrap(types.ErrInvalid, "no transactions of this type to batch")
+		return nil, nil // Nothing to batch, so do nothing
 	}
 
 	nextID := k.autoIncrementID(ctx, types.KeyLastOutgoingBatchID)

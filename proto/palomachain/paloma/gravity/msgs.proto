@@ -116,7 +116,7 @@ message MsgSendToEthResponse {}
 // -------------
 message MsgRequestBatch {
   string sender = 1;
-  string denom        = 2;
+  string chain_reference_id        = 2;
 }
 
 message MsgRequestBatchResponse {}

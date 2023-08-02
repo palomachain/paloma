@@ -43,7 +43,7 @@ func TestBatches(t *testing.T) {
 	// batch should not be created if there is no txs of the given token type in tx pool
 	noBatch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, *myTokenContractAddr, 2)
 	require.Nil(t, noBatch)
-	require.Error(t, err)
+	require.Nil(t, err)
 
 	// add some TX to the pool
 	for i, v := range []uint64{2, 3, 2, 1} {
@@ -162,13 +162,8 @@ func TestBatches(t *testing.T) {
 	}
 	assert.Equal(t, expUnbatchedTx, gotUnbatchedTx)
 
-	// CREATE SECOND, MORE PROFITABLE BATCH
+	// CREATE SECOND BATCH
 	// ====================================
-
-	// first check that less profitable batch cannot be created
-	noBatch, err = input.GravityKeeper.BuildOutgoingTXBatch(ctx, *myTokenContractAddr, 2)
-	require.Nil(t, noBatch)
-	require.Error(t, err)
 
 	// add some more TX to the pool to create a more profitable batch
 	for i, v := range []uint64{4, 5} {
@@ -252,7 +247,7 @@ func TestBatches(t *testing.T) {
 	require.NotNil(t, lastOutgoingBatch)
 	assert.Equal(t, lastOutgoingBatch.BatchNonce, secondBatch.BatchNonce)
 
-	// EXECUTE THE MORE PROFITABLE BATCH
+	// EXECUTE THE MORE SECOND BATCH
 	// =================================
 
 	// Execute the batch

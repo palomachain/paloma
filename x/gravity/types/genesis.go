@@ -151,7 +151,7 @@ func DefaultGenesisState() *GenesisState {
 // DefaultParams returns a copy of the default params
 func DefaultParams() *Params {
 	return &Params{
-		GravityId:                    "defaultgravityid",
+		GravityId:                    "palomagravity",
 		ContractSourceHash:           "",
 		BridgeEthereumAddress:        "0x0000000000000000000000000000000000000000",
 		BridgeChainId:                0,

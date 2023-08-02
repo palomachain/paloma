@@ -212,7 +212,13 @@ func (k msgServer) RequestBatch(c context.Context, msg *types.MsgRequestBatch) (
 
 	// Check if the denom is a gravity coin, if not, check if there is a deployed ERC20 representing it.
 	// If not, error out
-	_, tokenContract, err := k.DenomToERC20Lookup(ctx, msg.Denom)
+
+	// TODO : Implement setting up the denom by chain
+	var denom string
+	if msg.ChainReferenceId == "bnb-main" {
+		denom = "ugrain"
+	}
+	_, tokenContract, err := k.DenomToERC20Lookup(ctx, denom)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "Could not look up erc 20 denominator")
 	}
@@ -220,6 +226,10 @@ func (k msgServer) RequestBatch(c context.Context, msg *types.MsgRequestBatch) (
 	batch, err := k.BuildOutgoingTXBatch(ctx, *tokenContract, OutgoingTxBatchSize)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "Could not build outgoing tx batch")
+	}
+
+	if batch == nil {
+		return &types.MsgRequestBatchResponse{}, nil
 	}
 
 	return &types.MsgRequestBatchResponse{}, ctx.EventManager().EmitTypedEvent(

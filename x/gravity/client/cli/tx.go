@@ -136,7 +136,7 @@ func CmdCancelSendToEth() *cobra.Command {
 func CmdRequestBatch() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "request-batch [token_contract_address]",
+		Use:   "request-batch [chain-reference-id]",
 		Short: "Request a new batch on the cosmos side for pooled withdrawal transactions",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -146,10 +146,9 @@ func CmdRequestBatch() *cobra.Command {
 			}
 			cosmosAddr := cliCtx.GetFromAddress()
 
-			// TODO: better denom searching
 			msg := types.MsgRequestBatch{
-				Sender: cosmosAddr.String(),
-				Denom:  fmt.Sprintf("gravity%s", args[0]),
+				Sender:           cosmosAddr.String(),
+				ChainReferenceId: args[0],
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err

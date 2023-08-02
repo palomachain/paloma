@@ -184,10 +184,10 @@ func (msg MsgSendToEth) GetSigners() []sdk.AccAddress {
 }
 
 // NewMsgRequestBatch returns a new msgRequestBatch
-func NewMsgRequestBatch(orchestrator sdk.AccAddress) *MsgRequestBatch {
+func NewMsgRequestBatch(orchestrator sdk.AccAddress, chainReferenceId string) *MsgRequestBatch {
 	return &MsgRequestBatch{
-		Sender: orchestrator.String(),
-		Denom:  "",
+		Sender:           orchestrator.String(),
+		ChainReferenceId: chainReferenceId,
 	}
 }
 
