@@ -220,7 +220,7 @@ func (k msgServer) RequestBatch(c context.Context, msg *types.MsgRequestBatch) (
 	}
 	_, tokenContract, err := k.DenomToERC20Lookup(ctx, denom)
 	if err != nil {
-		return nil, sdkerrors.Wrap(err, "Could not look up erc 20 denominator")
+		return nil, sdkerrors.Wrap(err, "Could not look up erc 20 denom")
 	}
 
 	batch, err := k.BuildOutgoingTXBatch(ctx, *tokenContract, OutgoingTxBatchSize)
