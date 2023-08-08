@@ -14,6 +14,7 @@ import (
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/valset/keeper"
 	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,6 +45,8 @@ func ValsetKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		nil,
 		"v1.4.0",
 	)
+
+	k.EvmKeeper = mocks.NewEvmKeeper(t)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 

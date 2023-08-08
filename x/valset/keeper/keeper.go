@@ -33,6 +33,7 @@ type Keeper struct {
 	paramstore paramtypes.Subspace
 	staking    types.StakingKeeper
 	ider       keeperutil.IDGenerator
+	EvmKeeper  types.EvmKeeper
 
 	SnapshotListeners []types.OnSnapshotBuiltListener
 
@@ -321,11 +322,36 @@ func (k Keeper) GetUnjailedValidators(ctx sdk.Context) []stakingtypes.ValidatorI
 	return validators
 }
 
+// ValidatorSupportsAllChains returns true if the validator supports all chains in the keeper
+func (k Keeper) ValidatorSupportsAllChains(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
+	valSupportedChains, err := k.GetValidatorChainInfos(ctx, validatorAddress)
+	if err != nil {
+		k.Logger(ctx).Error("Unable to get supported chains for validator",
+			"validator-address",
+			validatorAddress.String(),
+		)
+		return false
+	}
+
+	valSupportedChainReferenceIDs := make([]string, len(valSupportedChains))
+	for i, v := range valSupportedChains {
+		valSupportedChainReferenceIDs[i] = v.GetChainReferenceID()
+	}
+
+	missingChains, err := k.EvmKeeper.MissingChains(ctx, valSupportedChainReferenceIDs)
+	if err != nil {
+		k.Logger(ctx).With("error", err).Error("error checking missing chains for validator",
+			"validator-address",
+			validatorAddress.String())
+	}
+	return len(missingChains) == 0
+}
+
 // createNewSnapshot builds a current snapshot of validators.
 func (k Keeper) createNewSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	validators := []stakingtypes.ValidatorI{}
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
-		if val.IsBonded() && !val.IsJailed() {
+		if val.IsBonded() && !val.IsJailed() && k.ValidatorSupportsAllChains(ctx, val.GetOperator()) {
 			validators = append(validators, val)
 		}
 		return false

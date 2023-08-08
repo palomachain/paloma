@@ -179,6 +179,9 @@ func TestCreatingSnapshots(t *testing.T) {
 		f(1, vali2)
 	})
 
+	ms.EvmKeeper.On("MissingChains", mock.Anything, mock.Anything).Return([]string(nil), nil)
+	ms.EvmKeeper.On("MissingChains", mock.Anything, mock.Anything).Return([]string(nil), nil)
+
 	state1 := []*types.ExternalChainInfo{
 		{
 			ChainType:        "evm",

@@ -25,6 +25,7 @@ import (
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -68,6 +69,22 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
+	}
+
+	for _, validator := range validators {
+		valAddr, err := validator.GetConsAddr()
+		require.NoError(t, err)
+		pubKey, err := validator.ConsPubKey()
+		require.NoError(t, err)
+		err = a.ValsetKeeper.AddExternalChainInfo(ctx, validator.GetOperator(), []*valsettypes.ExternalChainInfo{
+			{
+				ChainType:        "evm",
+				ChainReferenceID: newChain.GetChainReferenceID(),
+				Address:          valAddr.String(),
+				Pubkey:           pubKey.Bytes(),
+			},
+		})
+		require.NoError(t, err)
 	}
 
 	_, err = a.ValsetKeeper.TriggerSnapshotBuild(ctx)
@@ -509,6 +526,136 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			require.Error(t, keeper.ErrChainNotFound)
 		})
 	})
+}
+
+func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
+	testcases := []struct {
+		name     string
+		setup    func(sdk.Context, app.TestApp) sdk.ValAddress
+		expected bool
+	}{
+		{
+			name: "returns true when all chains supported",
+			setup: func(ctx sdk.Context, a app.TestApp) sdk.ValAddress {
+				for i, chainId := range []string{"chain-1", "chain-2"} {
+					newChain := &types.AddChainProposal{
+						ChainReferenceID:  chainId,
+						ChainID:           uint64(i),
+						Title:             "bla",
+						Description:       "bla",
+						BlockHeight:       uint64(123),
+						BlockHashAtHeight: "0x1234",
+					}
+
+					err := a.EvmKeeper.AddSupportForNewChain(
+						ctx,
+						newChain.GetChainReferenceID(),
+						newChain.GetChainID(),
+						newChain.GetBlockHeight(),
+						newChain.GetBlockHashAtHeight(),
+						big.NewInt(55),
+					)
+					require.NoError(t, err)
+
+					err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, fmt.Sprintf("addr%d", i), []byte("abc"))
+					require.NoError(t, err)
+				}
+
+				validator := genValidators(1, 1000)[0]
+				a.StakingKeeper.SetValidator(ctx, validator)
+
+				private, err := crypto.GenerateKey()
+				require.NoError(t, err)
+
+				accAddr := crypto.PubkeyToAddress(private.PublicKey)
+
+				// Add support for both chains created
+				externalChains := make([]*valsettypes.ExternalChainInfo, 2)
+				for i, chainId := range []string{"chain-1", "chain-2"} {
+					externalChains[i] = &valsettypes.ExternalChainInfo{
+						ChainType:        "evm",
+						ChainReferenceID: chainId,
+						Address:          accAddr.Hex(),
+						Pubkey:           accAddr[:],
+					}
+				}
+				err = a.ValsetKeeper.AddExternalChainInfo(ctx, validator.GetOperator(), externalChains)
+				require.NoError(t, err)
+
+				return validator.GetOperator()
+			},
+			expected: true,
+		},
+		{
+			name: "returns false when a chain is not supported",
+			setup: func(ctx sdk.Context, a app.TestApp) sdk.ValAddress {
+				for i, chainId := range []string{"chain-1", "chain-2"} {
+					newChain := &types.AddChainProposal{
+						ChainReferenceID:  chainId,
+						ChainID:           uint64(i),
+						Title:             "bla",
+						Description:       "bla",
+						BlockHeight:       uint64(123),
+						BlockHashAtHeight: "0x1234",
+					}
+
+					err := a.EvmKeeper.AddSupportForNewChain(
+						ctx,
+						newChain.GetChainReferenceID(),
+						newChain.GetChainID(),
+						newChain.GetBlockHeight(),
+						newChain.GetBlockHashAtHeight(),
+						big.NewInt(55),
+					)
+					require.NoError(t, err)
+
+					err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, fmt.Sprintf("addr%d", i), []byte("abc"))
+					require.NoError(t, err)
+				}
+
+				validator := genValidators(1, 1000)[0]
+				a.StakingKeeper.SetValidator(ctx, validator)
+
+				private, err := crypto.GenerateKey()
+				require.NoError(t, err)
+
+				accAddr := crypto.PubkeyToAddress(private.PublicKey)
+
+				// Only add support for one of two chains created
+				err = a.ValsetKeeper.AddExternalChainInfo(
+					ctx,
+					validator.GetOperator(),
+					[]*valsettypes.ExternalChainInfo{
+						{
+							ChainType:        "evm",
+							ChainReferenceID: "chain-1",
+							Address:          accAddr.Hex(),
+							Pubkey:           accAddr[:],
+						},
+					},
+				)
+				require.NoError(t, err)
+
+				return validator.GetOperator()
+			},
+			expected: false,
+		},
+	}
+
+	asserter := assert.New(t)
+	for _, tt := range testcases {
+		t.Run(tt.name, func(t *testing.T) {
+			a := app.NewTestApp(t, false)
+			ctx := a.NewContext(false, tmproto.Header{
+				Height: 5,
+			})
+
+			validatorAddress := tt.setup(ctx, a)
+
+			actual := a.ValsetKeeper.ValidatorSupportsAllChains(ctx, validatorAddress)
+			asserter.Equal(tt.expected, actual)
+		})
+	}
 }
 
 func TestWithGinkgo(t *testing.T) {

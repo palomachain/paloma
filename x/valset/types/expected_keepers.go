@@ -29,3 +29,7 @@ type StakingKeeper interface {
 type OnSnapshotBuiltListener interface {
 	OnSnapshotBuilt(sdk.Context, *Snapshot)
 }
+
+type EvmKeeper interface {
+	MissingChains(ctx sdk.Context, chainReferenceIDs []string) ([]string, error)
+}
