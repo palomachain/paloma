@@ -20,6 +20,7 @@ import (
 
 type mockedServices struct {
 	StakingKeeper *mocks.StakingKeeper
+	EvmKeeper     *mocks.EvmKeeper
 }
 
 func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
@@ -46,6 +47,7 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 
 	ms := mockedServices{
 		StakingKeeper: mocks.NewStakingKeeper(t),
+		EvmKeeper:     mocks.NewEvmKeeper(t),
 	}
 	k := NewKeeper(
 		appCodec,
@@ -55,6 +57,8 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		ms.StakingKeeper,
 		"v1.4.0",
 	)
+
+	k.EvmKeeper = ms.EvmKeeper
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
 	ctx = ctx.WithMultiStore(stateStore).WithGasMeter(sdk.NewInfiniteGasMeter())

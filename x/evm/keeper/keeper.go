@@ -227,6 +227,34 @@ func (k Keeper) GetChainInfo(ctx sdk.Context, targetChainReferenceID string) (*t
 	return res, nil
 }
 
+// MissingChains returns the chains in this keeper that aren't in the input slice
+func (k Keeper) MissingChains(ctx sdk.Context, inputChainReferenceIDs []string) ([]string, error) {
+	allChains, err := k.GetAllChainInfos(ctx)
+	if err != nil {
+		k.Logger(ctx).Error("Unable to get chains infos from keeper")
+		return nil, err
+	}
+
+	// Build a map to use for efficient comparison
+	supportedChainMap := make(map[string]bool, len(inputChainReferenceIDs))
+	for _, chainReferenceID := range inputChainReferenceIDs {
+		supportedChainMap[chainReferenceID] = true
+	}
+
+	// Walk through all chains and aggregate the ones not supported
+	var unsuportedChainReferenceIDs []string
+	for _, chain := range allChains {
+		chainReferenceID := chain.GetChainReferenceID()
+		if !chain.IsActive() {
+			continue
+		}
+		if _, found := supportedChainMap[chainReferenceID]; !found {
+			unsuportedChainReferenceIDs = append(unsuportedChainReferenceIDs, chainReferenceID)
+		}
+	}
+	return unsuportedChainReferenceIDs, nil
+}
+
 func (k Keeper) updateChainInfo(ctx sdk.Context, chainInfo *types.ChainInfo) error {
 	return keeperutil.Save(k.chainInfoStore(ctx), k.cdc, []byte(chainInfo.GetChainReferenceID()), chainInfo)
 }

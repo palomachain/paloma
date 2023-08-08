@@ -313,7 +313,6 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 	asserter := assert.New(t)
 	for _, tt := range testcases {
 		t.Run(tt.name, func(t *testing.T) {
-			// ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
 			k, ctx := buildKeeper(t)
 			tt.setupMocks(ctx, k)
 			job := &schedulertypes.Job{
@@ -328,6 +327,126 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 			actualErr := k.PreJobExecution(ctx, job)
 
 			// The real assertions we're making is that the mocks call the correct functions for the path
+			asserter.Equal(tt.expectedError, actualErr)
+		})
+	}
+}
+
+func TestKeeper_MissingChains(t *testing.T) {
+	testcases := []struct {
+		name                   string
+		inputChainReferenceIDs []string
+		setup                  func(sdk.Context, *Keeper)
+		expected               []string
+		expectedError          error
+	}{
+		{
+			name: "Returns a list of chains that are missing - 2 chain missing, inactive chain ignored",
+			inputChainReferenceIDs: []string{
+				"test-chain",
+			},
+			setup: func(ctx sdk.Context, k *Keeper) {
+				for i, chainId := range []string{"test-chain-2", "test-chain-3"} {
+					err := k.AddSupportForNewChain(
+						ctx,
+						chainId,
+						uint64(i+3), // 2 chains already set up by keeper
+						uint64(i+100),
+						"",
+						big.NewInt(55),
+					)
+					require.NoError(t, err)
+
+					// Activate chain
+					chainInfo, err := k.GetChainInfo(ctx, chainId)
+					require.NoError(t, err)
+
+					chainInfo.SmartContractAddr = "0x1234"
+
+					err = k.updateChainInfo(ctx, chainInfo)
+					require.NoError(t, err)
+				}
+			},
+			expected: []string{
+				"test-chain-2",
+				"test-chain-3",
+			},
+		},
+		{
+			name: "Returns a list of chains that are missing - extra chain in input ignored",
+			inputChainReferenceIDs: []string{
+				"test-chain",
+				"extra-chain",
+				"test-chain-2",
+			},
+			setup: func(ctx sdk.Context, k *Keeper) {
+				for i, chainId := range []string{"test-chain-2", "test-chain-3"} {
+					err := k.AddSupportForNewChain(
+						ctx,
+						chainId,
+						uint64(i+3), // 2 chains already set up by keeper
+						uint64(i+100),
+						"",
+						big.NewInt(55),
+					)
+					require.NoError(t, err)
+
+					// Activate chain
+					chainInfo, err := k.GetChainInfo(ctx, chainId)
+					require.NoError(t, err)
+
+					chainInfo.SmartContractAddr = "0x1234"
+
+					err = k.updateChainInfo(ctx, chainInfo)
+					require.NoError(t, err)
+				}
+			},
+			expected: []string{
+				"test-chain-3",
+			},
+		},
+		{
+			name: "Returns a list of chains that are missing - nil slice when matching",
+			inputChainReferenceIDs: []string{
+				"test-chain",
+				"test-chain-2",
+				"test-chain-3",
+			},
+			setup: func(ctx sdk.Context, k *Keeper) {
+				for i, chainId := range []string{"test-chain-2", "test-chain-3"} {
+					err := k.AddSupportForNewChain(
+						ctx,
+						chainId,
+						uint64(i+3), // 2 chains already set up by keeper
+						uint64(i+100),
+						"",
+						big.NewInt(55),
+					)
+					require.NoError(t, err)
+
+					// Activate chain
+					chainInfo, err := k.GetChainInfo(ctx, chainId)
+					require.NoError(t, err)
+
+					chainInfo.SmartContractAddr = "0x1234"
+
+					err = k.updateChainInfo(ctx, chainInfo)
+					require.NoError(t, err)
+				}
+			},
+			expected: []string(nil),
+		},
+	}
+
+	asserter := assert.New(t)
+	for _, tt := range testcases {
+		t.Run(tt.name, func(t *testing.T) {
+			k, ctx := buildKeeper(t)
+			tt.setup(ctx, k)
+
+			actual, actualErr := k.MissingChains(ctx, tt.inputChainReferenceIDs)
+			asserter.Equal(tt.expected, actual)
+			asserter.Equal(len(tt.expected), len(actual))
 			asserter.Equal(tt.expectedError, actualErr)
 		})
 	}
