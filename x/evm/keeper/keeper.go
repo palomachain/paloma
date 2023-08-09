@@ -458,17 +458,55 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 	return err
 }
 
-func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
+func (k Keeper) PublishValsetToChain(ctx sdk.Context, valset types.Valset, chain *types.ChainInfo) error {
+	if !chain.IsActive() {
+		k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"valset-id", valset.GetValsetID(),
+		)
+		return nil
+	}
+
+	if !isEnoughToReachConsensus(valset) {
+		k.Logger(ctx).Info("ignoring valset for chain as there aren't enough validators to form a consensus for this chain",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"valset-id", valset.GetValsetID(),
+		)
+		return nil
+	}
+
+	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID())
+	if err != nil {
+		k.Logger(ctx).Error("error picking a validator to run the message",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"valset-id", valset.GetValsetID(),
+			"error", err,
+		)
+		return err
+	}
+
+	err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset, assignee)
+	if err != nil {
+		k.Logger(ctx).Error("unable to send valset message for chain",
+			"chain", chain.GetChainReferenceID(),
+			"err", err,
+		)
+		return err
+	}
+	return nil
+}
+
+func (k Keeper) PublishSnapshotToAllChains(ctx sdk.Context, snapshot *valsettypes.Snapshot, forcePublish bool) error {
 	chainInfos, err := k.GetAllChainInfos(ctx)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	logger := k.Logger(ctx)
 	for _, chain := range chainInfos {
 		valset := transformSnapshotToCompass(snapshot, chain.GetChainReferenceID(), logger)
 
 		latestActiveValset, _ := k.Valset.GetLatestSnapshotOnChain(ctx, chain.GetChainReferenceID())
-		if latestActiveValset != nil {
+		if latestActiveValset != nil && !forcePublish {
 			latestActiveValsetAge := ctx.BlockTime().Sub(latestActiveValset.CreatedAt)
 
 			// If it's been less than 1 month since publishing a valset, don't publish
@@ -485,39 +523,18 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 			}
 		}
 
-		if !chain.IsActive() {
-			k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
-				"chain-reference-id", chain.GetChainReferenceID(),
-				"valset-id", valset.GetValsetID(),
-			)
-			continue
-		}
-
-		if !isEnoughToReachConsensus(valset) {
-			k.Logger(ctx).Info("ignoring valset for chain as there isn't enough validators to form a consensus for this chain",
-				"chain-reference-id", chain.GetChainReferenceID(),
-				"valset-id", valset.GetValsetID(),
-			)
-			continue
-		}
-
-		assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID())
+		err := k.PublishValsetToChain(ctx, valset, chain)
 		if err != nil {
-			k.Logger(ctx).Info("ignoring valset for chain as there was an error picking a validator to run the message",
-				"chain-reference-id", chain.GetChainReferenceID(),
-				"valset-id", valset.GetValsetID(),
-				"error", err,
-			)
-			continue
+			k.Logger(ctx).Error(err.Error())
 		}
+	}
+	return nil
+}
 
-		err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset, assignee)
-		if err != nil {
-			k.Logger(ctx).Error("unable to send valset message for chain",
-				"chain", chain.GetChainReferenceID(),
-				"err", err,
-			)
-		}
+func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
+	err := k.PublishSnapshotToAllChains(ctx, snapshot, false)
+	if err != nil {
+		panic(err)
 	}
 
 	k.TryDeployingLastCompassContractToAllChains(ctx)
