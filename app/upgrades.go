@@ -181,6 +181,23 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				return vm, err
 			}
 
+			// Try to build a snapshot.  Fails silently if unworthy
+			_, err = app.ValsetKeeper.TriggerSnapshotBuild(ctx)
+			if err != nil {
+				return vm, err
+			}
+
+			snapshot, err := app.ValsetKeeper.GetCurrentSnapshot(ctx)
+			if err != nil {
+				return vm, err
+			}
+
+			// Publish latest snapshot to all chains
+			err = app.EvmKeeper.PublishSnapshotToAllChains(ctx, snapshot, true)
+			if err != nil {
+				return vm, err
+			}
+
 			return vm, nil
 		},
 	)

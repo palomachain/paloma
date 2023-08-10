@@ -420,8 +420,8 @@ func (k Keeper) GetLatestSnapshotOnChain(ctx sdk.Context, chainReferenceID strin
 		}
 	}
 
-	k.Logger(ctx).Error("unable to get latest snapshot", "err", keeperutil.ErrNotFound)
-	return nil, keeperutil.ErrNotFound
+	// If we made it here, we didn't find a snapshot for this chain
+	return nil, keeperutil.ErrNotFound.Format(&types.Snapshot{}, snapshotIDKey)
 }
 
 // GetCurrentSnapshot returns the currently active snapshot.
