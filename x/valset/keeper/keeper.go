@@ -299,10 +299,32 @@ func (k Keeper) isNewSnapshotWorthy(ctx sdk.Context, currentSnapshot, newSnapsho
 		currentMap := slice.MakeMapKeys(currentVal.ExternalChainInfos, keyFnc)
 		newMap := slice.MakeMapKeys(newVal.ExternalChainInfos, keyFnc)
 
-		for _, acc := range currentMap {
-			if _, ok := newMap[keyFnc(acc)]; !ok {
+		for _, currv := range currentMap {
+			newv, ok := newMap[keyFnc(currv)]
+			if !ok {
 				log("validator changed some of the external address")
 				return true
+			}
+
+			if len(newv.Traits) != len(currv.Traits) {
+				log("validator changed some of its traits")
+				return true
+			}
+
+			currentTraitMap := make(map[string]struct{})
+			newTraitMap := make(map[string]struct{})
+			for _, v := range currv.Traits {
+				currentTraitMap[v] = struct{}{}
+			}
+			for _, v := range newv.Traits {
+				newTraitMap[v] = struct{}{}
+			}
+
+			for k := range currentTraitMap {
+				if _, fnd := newTraitMap[k]; !fnd {
+					log("validator changed some of its traits")
+					return true
+				}
 			}
 		}
 	}
