@@ -425,6 +425,66 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 		},
 		{
 			expRes: false,
+			name:   "two snapshots have same validators and same traits",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(20),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(1000),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(200),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+				},
+			},
+		},
+		{
+			expRes: true,
+			name:   "two snapshots have same validators and different traits",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(20),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(1000),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(200),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"def"}},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+				},
+			},
+		},
+		{
+			expRes: false,
 			name:   "if the powers are still the same then it's not worthy",
 			curr: &types.Snapshot{
 				TotalShares: sdk.NewInt(100),
