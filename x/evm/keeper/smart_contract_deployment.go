@@ -45,7 +45,7 @@ func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID 
 	return
 }
 
-func (k Keeper) RemoveSmartContractDeployment(ctx sdk.Context, smartContractID uint64, chainReferenceID string) {
+func (k Keeper) DeleteSmartContractDeployment(ctx sdk.Context, smartContractID uint64, chainReferenceID string) {
 	_, key := k.getSmartContractDeployment(ctx, smartContractID, chainReferenceID)
 	if key == nil {
 		return

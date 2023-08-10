@@ -350,7 +350,7 @@ func (k Keeper) ActivateChainReferenceID(
 	chainInfo.SmartContractAddr = smartContractAddr
 	chainInfo.SmartContractUniqueID = smartContractUniqueID
 
-	k.RemoveSmartContractDeployment(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID())
+	k.DeleteSmartContractDeployment(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID())
 
 	return k.updateChainInfo(ctx, chainInfo)
 }
