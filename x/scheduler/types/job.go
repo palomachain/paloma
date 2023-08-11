@@ -55,11 +55,26 @@ func (j *Job) ValidateBasic() error {
 		return ErrInvalid.Wrap("job's routing information chain reference ID can't be empty")
 	}
 
+	if j.EnforceMEVRelay && !j.isTargetedAtChainWithMEVRelayingSupport() {
+		return ErrInvalid.Wrap("MEV relaying not supported on target chain")
+	}
+
 	if err := j.Permissions.ValidateBasic(); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (j *Job) isTargetedAtChainWithMEVRelayingSupport() bool {
+	switch j.Routing.ChainReferenceID {
+	case "eth-main":
+	case "bnb-main":
+	case "matic-main":
+		return true
+	}
+
+	return false
 }
 
 func (p *Permissions) ValidateBasic() error {

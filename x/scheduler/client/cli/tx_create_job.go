@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -23,10 +23,11 @@ func CmdCreateJob() *cobra.Command {
 		payload string
 
 		payloadModifiable bool
+		mev               bool
 	}
 
 	cmd := &cobra.Command{
-		Use:   "create-job [--job-id] [--chain-type] [--chain-ref-id] [--definition] [--payload] [--payload-modifiable]",
+		Use:   "create-job [--job-id] [--chain-type] [--chain-ref-id] [--definition] [--payload] [--payload-modifiable] [--mev]",
 		Short: "Creates a new job",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -42,14 +43,15 @@ func CmdCreateJob() *cobra.Command {
 					ChainReferenceID: ff.chRefId,
 				},
 				IsPayloadModifiable: ff.payloadModifiable,
+				EnforceMEVRelay:     ff.mev,
 			}
 
-			job.Definition, err = ioutil.ReadFile(ff.def)
+			job.Definition, err = os.ReadFile(ff.def)
 			if err != nil {
 				return err
 			}
 
-			job.Payload, err = ioutil.ReadFile(ff.payload)
+			job.Payload, err = os.ReadFile(ff.payload)
 			if err != nil {
 				return err
 			}
@@ -72,6 +74,7 @@ func CmdCreateJob() *cobra.Command {
 	cmd.Flags().StringVar(&ff.def, "definition", "", "path to a job's definition json file")
 	cmd.Flags().StringVar(&ff.payload, "payload", "", "path to a job's default json file. Can be empty, but then payload-modifiable flag must be set")
 	cmd.Flags().BoolVar(&ff.payloadModifiable, "payload-modifiable", false, "")
+	cmd.Flags().BoolVar(&ff.mev, "mev", false, "Enforce MEV relaying for this message")
 
 	flags.AddTxFlagsToCmd(cmd)
 
