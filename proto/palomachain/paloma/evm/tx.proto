@@ -5,6 +5,7 @@ option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 service Msg {
     rpc DeployNewSmartContract(MsgDeployNewSmartContractRequest) returns (DeployNewSmartContractResponse);
+    rpc RemoveSmartContractDeployment(MsgRemoveSmartContractDeploymentRequest) returns (RemoveSmartContractDeploymentResponse);
 }
 
 message MsgDeployNewSmartContractRequest {
@@ -16,3 +17,10 @@ message MsgDeployNewSmartContractRequest {
   string bytecodeHex = 5; 
 }
 message DeployNewSmartContractResponse {}
+
+message MsgRemoveSmartContractDeploymentRequest {
+  string Sender = 1;
+  uint64 smartContractID = 2;
+  string chainReferenceID = 3;
+}
+message RemoveSmartContractDeploymentResponse {}
