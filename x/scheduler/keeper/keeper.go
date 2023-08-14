@@ -184,7 +184,17 @@ func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddr
 		payload = in
 	}
 
-	err = chain.ExecuteJob(ctx, job.GetDefinition(), payload, senderAddress, contractAddress, router.GetChainReferenceID())
+	jcfg := &xchain.JobConfiguration{
+		Definition:      job.GetDefinition(),
+		Payload:         payload,
+		SenderAddress:   senderAddress,
+		ContractAddress: contractAddress,
+		RefID:           router.GetChainReferenceID(),
+		Requirements: xchain.JobRequirements{
+			EnforceMEVRelay: job.EnforceMEVRelay,
+		},
+	}
+	err = chain.ExecuteJob(ctx, jcfg)
 
 	if err == nil {
 		keeperutil.EmitEvent(k, ctx, "JobScheduler",
@@ -200,6 +210,7 @@ func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddr
 			"payload", payload,
 			"chain_type", router.GetChainType(),
 			"chain_reference_id", router.GetChainReferenceID(),
+			"enforce_mev_relay", job.EnforceMEVRelay,
 		)
 	}
 

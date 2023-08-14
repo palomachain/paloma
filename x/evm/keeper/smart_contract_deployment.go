@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -119,7 +120,10 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	turnstoneID string,
 	logicCall *types.SubmitLogicCall,
 ) error {
-	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID)
+	requirements := &xchain.JobRequirements{
+		EnforceMEVRelay: logicCall.ExecutionRequirements.EnforceMEVRelay,
+	}
+	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID, requirements)
 	if err != nil {
 		return err
 	}
@@ -236,7 +240,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		"constructor-input", input,
 	)
 
-	assignee, err := k.PickValidatorForMessage(ctx, chainInfo.GetChainReferenceID())
+	assignee, err := k.PickValidatorForMessage(ctx, chainInfo.GetChainReferenceID(), nil)
 	if err != nil {
 		return err
 	}

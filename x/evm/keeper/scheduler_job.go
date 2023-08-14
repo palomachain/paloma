@@ -57,25 +57,25 @@ func (k Keeper) VerifyJob(ctx sdk.Context, definition, payload []byte, chainRefe
 }
 
 // ExecuteJob schedules the definition and payload for execution via consensus queue
-func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress, chainReferenceID xchain.ReferenceID) error {
-	def, load, err := k.unmarshalJob(definition, payload, chainReferenceID)
+func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) error {
+	def, load, err := k.unmarshalJob(jcfg.Definition, jcfg.Payload, jcfg.RefID)
 	if err != nil {
 		return err
 	}
-	ci, err := k.GetChainInfo(ctx, chainReferenceID)
+	ci, err := k.GetChainInfo(ctx, jcfg.RefID)
 	if err != nil {
 		return err
 	}
 
 	var hexBytes []byte
 	switch {
-	case senderAddress != nil:
-		hexBytes, err = hex.DecodeString(addressToHex(senderAddress))
+	case jcfg.SenderAddress != nil:
+		hexBytes, err = hex.DecodeString(addressToHex(jcfg.SenderAddress))
 		if err != nil {
 			return err
 		}
-	case contractAddress != nil:
-		hexBytes, err = hex.DecodeString(addressToHex(contractAddress))
+	case jcfg.ContractAddress != nil:
+		hexBytes, err = hex.DecodeString(addressToHex(jcfg.ContractAddress))
 		if err != nil {
 			return err
 		}
@@ -91,15 +91,18 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, definition, payload []byte, senderAd
 
 	return k.AddSmartContractExecutionToConsensus(
 		ctx,
-		chainReferenceID,
+		jcfg.RefID,
 		string(ci.GetSmartContractUniqueID()),
 		&types.SubmitLogicCall{
 			HexContractAddress: def.GetAddress(),
 			Abi:                common.FromHex(def.GetABI()),
 			Payload:            modifiedPayload,
 			Deadline:           ctx.BlockTime().Add(10 * time.Minute).Unix(),
-			SenderAddress:      senderAddress,
-			ContractAddress:    contractAddress,
+			SenderAddress:      jcfg.SenderAddress,
+			ContractAddress:    jcfg.ContractAddress,
+			ExecutionRequirements: types.SubmitLogicCall_ExecutionRequirements{
+				EnforceMEVRelay: jcfg.Requirements.EnforceMEVRelay,
+			},
 		},
 	)
 }
