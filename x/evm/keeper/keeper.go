@@ -136,12 +136,12 @@ func NewKeeper(
 	return k
 }
 
-func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string) (string, error) {
+func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error) {
 	weights, err := k.GetRelayWeights(ctx, chainReferenceID)
 	if err != nil {
 		return "", err
 	}
-	return k.msgAssigner.PickValidatorForMessage(ctx, weights)
+	return k.msgAssigner.PickValidatorForMessage(ctx, weights, chainReferenceID, requirements)
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
@@ -442,7 +442,7 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 		return nil
 	}
 
-	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID())
+	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
 	if err != nil {
 		return err
 	}
@@ -475,7 +475,7 @@ func (k Keeper) PublishValsetToChain(ctx sdk.Context, valset types.Valset, chain
 		return nil
 	}
 
-	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID())
+	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
 	if err != nil {
 		k.Logger(ctx).Error("error picking a validator to run the message",
 			"chain-reference-id", chain.GetChainReferenceID(),

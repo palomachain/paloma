@@ -6,8 +6,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
+//go:generate mockery --name=Keeper
 type Keeper interface {
-	AddNewJob(ctx sdk.Context, job *Job) (sdk.AccAddress, error)
+	AddNewJob(ctx sdk.Context, job *Job) error
 	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI
 	GetJob(ctx sdk.Context, jobID string) (*Job, error)
 	Logger(ctx sdk.Context) log.Logger

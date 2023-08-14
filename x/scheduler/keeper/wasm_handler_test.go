@@ -69,7 +69,7 @@ var _ = Describe("wasm message handler", func() {
 		BeforeEach(func() {
 			bm.On("VerifyJob", mock.Anything, mock.Anything, mock.Anything, refID).Return(nil)
 			var err error
-			_, err = a.SchedulerKeeper.AddNewJob(ctx, &types.Job{
+			err = a.SchedulerKeeper.AddNewJob(ctx, &types.Job{
 				ID:    jobID,
 				Owner: sdk.AccAddress("me"),
 				Routing: types.Routing{
@@ -88,7 +88,7 @@ var _ = Describe("wasm message handler", func() {
 				subjectMsg.JobID = jobID
 			})
 			BeforeEach(func() {
-				bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, refID).Return(nil)
+				bm.On("ExecuteJob", mock.Anything, mock.Anything).Return(nil)
 			})
 
 			It("schedules the job", func() {

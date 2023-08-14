@@ -199,7 +199,7 @@ var _ = Describe("jobs!", func() {
 	Context("adding a new job", func() {
 		var job types.Job
 		subject := func() error {
-			_, err := k.AddNewJob(ctx, &job)
+			err := k.AddNewJob(ctx, &job)
 			return err
 		}
 		Context("job is invalid", func() {
@@ -276,9 +276,9 @@ var _ = Describe("jobs!", func() {
 
 				BeforeEach(func() {
 					var err error
-					_, err = k.AddNewJob(ctx, &job)
+					err = k.AddNewJob(ctx, &job)
 					Expect(err).To(BeNil())
-					_, err = k.AddNewJob(ctx, &jobPayloadModifiable)
+					err = k.AddNewJob(ctx, &jobPayloadModifiable)
 					Expect(err).To(BeNil())
 				})
 

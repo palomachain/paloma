@@ -14,12 +14,16 @@ message Valset {
 }
 
 message SubmitLogicCall {
+  message ExecutionRequirements {
+    bool enforceMEVRelay = 1;
+  }
   string hexContractAddress = 1;
   bytes abi = 2;
   bytes payload = 3;
   int64 deadline = 4;
   bytes senderAddress = 5;
   bytes contractAddress = 6;
+  ExecutionRequirements executionRequirements = 7 [(gogoproto.nullable) = false];
 }
 
 message UpdateValset {

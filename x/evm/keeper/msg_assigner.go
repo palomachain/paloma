@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -15,9 +16,26 @@ type MsgAssigner struct {
 	ValsetKeeper types.ValsetKeeper
 }
 
-func filterAssignableValidators(validators []valsettypes.Validator) []valsettypes.Validator {
-	// Placeholder until we start excluding validators for some reasons
-	return validators
+func filterAssignableValidators(validators []valsettypes.Validator, chainID string, req *xchain.JobRequirements) []valsettypes.Validator {
+	if req == nil || req.EnforceMEVRelay == false {
+		return validators
+	}
+
+	return slice.Filter(validators, func(val valsettypes.Validator) bool {
+		for _, v := range val.ExternalChainInfos {
+			if v.ChainReferenceID != chainID {
+				return false
+			}
+
+			for _, t := range v.Traits {
+				if req.EnforceMEVRelay && t == valsettypes.PIGEON_TRAIT_MEV {
+					return true
+				}
+			}
+		}
+
+		return false
+	})
 }
 
 func getValidatorsFees(validators []valsettypes.Validator) map[string]float64 {
@@ -56,11 +74,21 @@ func getValidatorsExecutionTime(validators []valsettypes.Validator) map[string]f
 	return validatorsSuccessRate
 }
 
+func getValidatorsFeatureSet(validators []valsettypes.Validator) map[string]float64 {
+	validatorsFeatureSet := make(map[string]float64, len(validators))
+	for _, validator := range validators {
+		// Placeholder until we start tracking validator feature sets
+		validatorsFeatureSet[validator.Address.String()] = 0.5
+	}
+	return validatorsFeatureSet
+}
+
 type ValidatorInfo struct {
 	Fee           float64
 	Uptime        float64
 	SuccessRate   float64
 	ExecutionTime float64
+	FeatureSet    float64
 }
 
 func buildValidatorsInfos(validators []valsettypes.Validator) map[string]ValidatorInfo {
@@ -68,6 +96,7 @@ func buildValidatorsInfos(validators []valsettypes.Validator) map[string]Validat
 	uptime := getValidatorsUptime(validators)
 	successRate := getValidatorsSuccessRate(validators)
 	executionTime := getValidatorsExecutionTime(validators)
+	featureSet := getValidatorsFeatureSet(validators)
 
 	validatorsInfos := make(map[string]ValidatorInfo, len(validators))
 
@@ -78,6 +107,7 @@ func buildValidatorsInfos(validators []valsettypes.Validator) map[string]Validat
 			Uptime:        uptime[validatorAddress],
 			SuccessRate:   successRate[validatorAddress],
 			ExecutionTime: executionTime[validatorAddress],
+			FeatureSet:    featureSet[validatorAddress],
 		}
 	}
 
@@ -108,6 +138,8 @@ type validatorsMeta struct {
 	minSuccessRate   float64
 	maxExecutionTime float64
 	minExecutionTime float64
+	maxFeatureSet    float64
+	minFeatureSet    float64
 }
 
 func rankValidators(validatorsInfos map[string]ValidatorInfo, relayWeights types.RelayWeightsFloat64) map[string]int {
@@ -149,6 +181,13 @@ func rankValidators(validatorsInfos map[string]ValidatorInfo, relayWeights types
 			acc.maxExecutionTime = val.ExecutionTime
 		}
 
+		if val.FeatureSet < acc.minFeatureSet || acc.minFeatureSet == 0 {
+			acc.minFeatureSet = val.FeatureSet
+		}
+		if val.FeatureSet > acc.maxFeatureSet {
+			acc.maxFeatureSet = val.FeatureSet
+		}
+
 		return acc
 	})
 
@@ -158,12 +197,14 @@ func rankValidators(validatorsInfos map[string]ValidatorInfo, relayWeights types
 			"uptime":        scoreValue(validatorsMetadata.maxUptime, validatorsMetadata.minUptime, info.Uptime, false),
 			"successRate":   scoreValue(validatorsMetadata.maxSuccessRate, validatorsMetadata.minSuccessRate, info.SuccessRate, false),
 			"executionTime": scoreValue(validatorsMetadata.maxExecutionTime, validatorsMetadata.minExecutionTime, info.ExecutionTime, true),
+			"featureSet":    scoreValue(validatorsMetadata.maxFeatureSet, validatorsMetadata.minFeatureSet, info.FeatureSet, false),
 		}
 
 		score := (scores["fee"] * relayWeights.Fee) +
 			(scores["uptime"] * relayWeights.Uptime) +
 			(scores["successRate"] * relayWeights.SuccessRate) +
-			(scores["executionTime"] * relayWeights.ExecutionTime)
+			(scores["executionTime"] * relayWeights.ExecutionTime) +
+			(scores["featureSet"] * relayWeights.FeatureSet)
 
 		ranked[valAddr] = int(math.Round(score * 10))
 	}
@@ -193,7 +234,7 @@ func pickValidator(ctx sdk.Context, validatorsInfos map[string]ValidatorInfo, we
 	return highScorers[int(ctx.BlockHeight())%len(highScorers)]
 }
 
-func (ma MsgAssigner) PickValidatorForMessage(ctx sdk.Context, weights *types.RelayWeights) (string, error) {
+func (ma MsgAssigner) PickValidatorForMessage(ctx sdk.Context, weights *types.RelayWeights, chainID string, req *xchain.JobRequirements) (string, error) {
 	currentSnapshot, err := ma.ValsetKeeper.GetCurrentSnapshot(ctx)
 	if err != nil {
 		return "", err
@@ -204,7 +245,7 @@ func (ma MsgAssigner) PickValidatorForMessage(ctx sdk.Context, weights *types.Re
 		return "", errors.New("no snapshot found")
 	}
 
-	assignableValidators := filterAssignableValidators(currentSnapshot.Validators)
+	assignableValidators := filterAssignableValidators(currentSnapshot.Validators, chainID, req)
 	if len(assignableValidators) == 0 {
 		return "", errors.New("no assignable validators for message")
 	}
@@ -217,6 +258,7 @@ func (ma MsgAssigner) PickValidatorForMessage(ctx sdk.Context, weights *types.Re
 			SuccessRate:   "1.0",
 			Uptime:        "1.0",
 			Fee:           "1.0",
+			FeatureSet:    "1.0",
 		}
 	}
 	relayWeights := weights.Float64Values()
