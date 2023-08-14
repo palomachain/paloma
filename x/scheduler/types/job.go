@@ -68,9 +68,7 @@ func (j *Job) ValidateBasic() error {
 
 func (j *Job) isTargetedAtChainWithMEVRelayingSupport() bool {
 	switch j.Routing.ChainReferenceID {
-	case "eth-main",
-		"bnb-main",
-		"matic-main":
+	case "eth-main", "bnb-main", "matic-main":
 		return true
 	}
 
