@@ -56,7 +56,7 @@ func (j *Job) ValidateBasic() error {
 	}
 
 	if j.EnforceMEVRelay && !j.isTargetedAtChainWithMEVRelayingSupport() {
-		return ErrInvalid.Wrap("MEV relaying not supported on target chain")
+		return ErrInvalid.Wrapf("MEV relaying not supported on target chain '%s'", j.Routing.ChainReferenceID)
 	}
 
 	if err := j.Permissions.ValidateBasic(); err != nil {
@@ -68,9 +68,9 @@ func (j *Job) ValidateBasic() error {
 
 func (j *Job) isTargetedAtChainWithMEVRelayingSupport() bool {
 	switch j.Routing.ChainReferenceID {
-	case "eth-main":
-	case "bnb-main":
-	case "matic-main":
+	case "eth-main",
+		"bnb-main",
+		"matic-main":
 		return true
 	}
 
