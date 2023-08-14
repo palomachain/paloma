@@ -28,9 +28,7 @@ message Job {
 
   repeated Trigger triggers = 9;
 
-  bytes address = 10 [
-    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"
-  ];
+  reserved 10;
 
   bool enforceMEVRelay = 11;
   

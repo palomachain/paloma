@@ -17,10 +17,7 @@ message MsgCreateJob {
   Job    job     = 2;
 }
 
-message MsgCreateJobResponse {
-  bytes jobAddress = 1
-      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
-}
+message MsgCreateJobResponse {}
 
 message MsgExecuteJob {
   string creator = 1;
