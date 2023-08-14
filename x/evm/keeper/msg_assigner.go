@@ -77,7 +77,7 @@ func getValidatorsExecutionTime(validators []valsettypes.Validator) map[string]f
 func getValidatorsFeatureSet(validators []valsettypes.Validator) map[string]float64 {
 	validatorsFeatureSet := make(map[string]float64, len(validators))
 	for _, validator := range validators {
-		// Placeholder until we start tracking validator executionTime
+		// Placeholder until we start tracking validator feature sets
 		validatorsFeatureSet[validator.Address.String()] = 0.5
 	}
 	return validatorsFeatureSet
