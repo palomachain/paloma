@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
-	"time"
 
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
@@ -73,11 +72,7 @@ func NewRootCmd() *cobra.Command {
 			customAppTemplate, customAppConfig := initAppConfig()
 			customTMConfig := initTendermintConfig()
 
-			if err := server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customTMConfig); err != nil {
-				return err
-			}
-
-			return applyForcedConfigOptions(cmd)
+			return server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customTMConfig)
 		},
 	}
 
@@ -115,13 +110,6 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	return rootCmd
-}
-
-// applyForcedConfigOptions reads in the serverContext, applies config to it, and then applies it
-func applyForcedConfigOptions(cmd *cobra.Command) error {
-	serverCtx := server.GetServerContextFromCmd(cmd)
-	serverCtx.Config.Consensus.TimeoutCommit = 1 * time.Second
-	return server.SetCmdServerContext(cmd, serverCtx)
 }
 
 func initTendermintConfig() *tmcfg.Config {
