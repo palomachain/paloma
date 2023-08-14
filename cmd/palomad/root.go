@@ -130,7 +130,8 @@ func NewRootCmd() *cobra.Command {
 func isRunningAgainstLocalNode(nodeURI string) bool {
 	for _, v := range []string{
 		"localhost",
-		"::",
+		"127.0.0.1",
+		"::1",
 	} {
 		if strings.Contains(nodeURI, v) {
 			return true
