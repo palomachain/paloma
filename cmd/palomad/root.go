@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
+	"strings"
 	"time"
 
 	tmcfg "github.com/cometbft/cometbft/config"
@@ -102,8 +103,17 @@ func NewRootCmd() *cobra.Command {
 		oldPreRun := child.PreRunE
 		child.PreRunE = func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
-				// the process will die if pigeon is not running
-				app.PigeonMustRun(cmd.Context(), app.PigeonHTTPClient())
+				clientCtx, err := client.GetClientTxContext(cmd)
+				if err != nil {
+					return fmt.Errorf("failed to get client tx: %w", err)
+				}
+
+				// Only perform the pigeon liveness check in case the client is running against a local
+				// Paloma node.
+				if isRunningAgainstLocalNode(clientCtx.NodeURI) {
+					// the process will die if pigeon is not running
+					app.PigeonMustRun(cmd.Context(), app.PigeonHTTPClient())
+				}
 			}
 
 			if oldPreRun != nil {
@@ -115,6 +125,20 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	return rootCmd
+}
+
+func isRunningAgainstLocalNode(nodeURI string) bool {
+	for _, v := range []string{
+		"localhost",
+		"127.0.0.1",
+		"::1",
+	} {
+		if strings.Contains(nodeURI, v) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // applyForcedConfigOptions reads in the serverContext, applies config to it, and then applies it
