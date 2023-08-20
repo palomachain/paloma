@@ -774,6 +774,48 @@ func TestFilterAssignableValidators(t *testing.T) {
 			requirements: &xchain.JobRequirements{EnforceMEVRelay: true},
 			chainID:      chainID,
 		},
+		{
+			name:        "with MEV set as requirement and multiple chains configured - REGRESSION",
+			expectedStr: "should return only validators with MEV trait",
+			validators: []valsettypes.Validator{
+				{
+					Address: sdk.ValAddress("validator-1"),
+				},
+				{
+					Address: sdk.ValAddress("validator-2"),
+					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+						{
+							ChainReferenceID: "other-chain",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+						{
+							ChainReferenceID: chainID,
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+					},
+				},
+				{
+					Address: sdk.ValAddress("validator-3"),
+				},
+			},
+			expected: []valsettypes.Validator{
+				{
+					Address: sdk.ValAddress("validator-2"),
+					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+						{
+							ChainReferenceID: "other-chain",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+						{
+							ChainReferenceID: chainID,
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+					},
+				},
+			},
+			requirements: &xchain.JobRequirements{EnforceMEVRelay: true},
+			chainID:      chainID,
+		},
 	}
 
 	for k, v := range tests {
