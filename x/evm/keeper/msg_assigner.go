@@ -24,7 +24,7 @@ func filterAssignableValidators(validators []valsettypes.Validator, chainID stri
 	return slice.Filter(validators, func(val valsettypes.Validator) bool {
 		for _, v := range val.ExternalChainInfos {
 			if v.ChainReferenceID != chainID {
-				return false
+				continue
 			}
 
 			for _, t := range v.Traits {
