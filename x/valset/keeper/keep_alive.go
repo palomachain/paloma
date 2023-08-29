@@ -17,11 +17,6 @@ import (
 )
 
 const (
-	// Deprecated. Remove after https://github.com/VolumeFi/paloma/issues/707 is deployed on all nets
-	defaultKeepAliveDuration = 5 * time.Minute
-	// Deprecated. Remove after https://github.com/VolumeFi/paloma/issues/707 is deployed on all nets
-	cJailingImminentThreshold = 2 * time.Minute
-
 	cValidatorJailedErrorMessage         = "validator is jailed"
 	cValidatorNotBondedErrorMessage      = "validator is not bonded"
 	cJailingDefaultKeepAliveBlockHeight  = 185 // calculated against current block speed of 1.612 seconds
