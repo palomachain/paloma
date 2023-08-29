@@ -83,8 +83,9 @@ message QueryGetValidatorAliveUntilRequest {
 }
 
 message QueryGetValidatorAliveUntilResponse {
-  google.protobuf.Timestamp aliveUntil = 1
-      [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+  reserved 1; // deprecated
+
+  int64 aliveUntilBlockHeight = 2;
 }
 
 message QueryGetValidatorJailReasonRequest {
@@ -102,10 +103,10 @@ message QueryGetAlivePigeonsResponse {
   message ValidatorAlive {
     bytes                     valAddress = 1 [(gogoproto.casttype) =
                               "github.com/cosmos/cosmos-sdk/types.ValAddress"];
-    google.protobuf.Timestamp aliveUntil = 2
-        [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
-    int64  ttl   = 3;
+    reserved 2; // deprecated
+    reserved 3; // deprecated
     string error = 4;
+    int64 aliveUntilBlockHeight = 5;
   }
 
   repeated ValidatorAlive aliveValidators = 1;
