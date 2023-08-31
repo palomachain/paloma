@@ -310,7 +310,7 @@ func (c *msgClient) DeployNewSmartContract(ctx context.Context, in *MsgDeployNew
 
 func (c *msgClient) RemoveSmartContractDeployment(ctx context.Context, in *MsgRemoveSmartContractDeploymentRequest, opts ...grpc.CallOption) (*RemoveSmartContractDeploymentResponse, error) {
 	out := new(RemoveSmartContractDeploymentResponse)
-	err := c.cc.Invoke(ctx, "/palomachain.paloma.evm.Msg/DeleteSmartContractDeployment", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.evm.Msg/RemoveSmartContractDeployment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +331,7 @@ func (*UnimplementedMsgServer) DeployNewSmartContract(ctx context.Context, req *
 	return nil, status.Errorf(codes.Unimplemented, "method DeployNewSmartContract not implemented")
 }
 func (*UnimplementedMsgServer) RemoveSmartContractDeployment(ctx context.Context, req *MsgRemoveSmartContractDeploymentRequest) (*RemoveSmartContractDeploymentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteSmartContractDeployment not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveSmartContractDeployment not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -366,7 +366,7 @@ func _Msg_RemoveSmartContractDeployment_Handler(srv interface{}, ctx context.Con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/palomachain.paloma.evm.Msg/DeleteSmartContractDeployment",
+		FullMethod: "/palomachain.paloma.evm.Msg/RemoveSmartContractDeployment",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).RemoveSmartContractDeployment(ctx, req.(*MsgRemoveSmartContractDeploymentRequest))
@@ -383,7 +383,7 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_DeployNewSmartContract_Handler,
 		},
 		{
-			MethodName: "DeleteSmartContractDeployment",
+			MethodName: "RemoveSmartContractDeployment",
 			Handler:    _Msg_RemoveSmartContractDeployment_Handler,
 		},
 	},

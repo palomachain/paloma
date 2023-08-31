@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -21,7 +20,6 @@ func (k Keeper) GetAlivePigeons(goCtx context.Context, req *types.QueryGetAliveP
 
 	vals := k.GetUnjailedValidators(ctx)
 
-	now := time.Now().UTC()
 	res := slice.Map(vals, func(val stakingtypes.ValidatorI) *types.QueryGetAlivePigeonsResponse_ValidatorAlive {
 		until, err := k.ValidatorAliveUntil(ctx, val.GetOperator())
 		s := &types.QueryGetAlivePigeonsResponse_ValidatorAlive{
@@ -30,8 +28,7 @@ func (k Keeper) GetAlivePigeons(goCtx context.Context, req *types.QueryGetAliveP
 		if err != nil {
 			s.Error = err.Error()
 		} else {
-			s.AliveUntil = until
-			s.Ttl = int64(until.Sub(now))
+			s.AliveUntilBlockHeight = until
 		}
 		return s
 	})
