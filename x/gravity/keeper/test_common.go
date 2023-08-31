@@ -651,6 +651,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		getSubspace(paramsKeeper, valsettypes.ModuleName),
 		stakingKeeper,
 		"v1.5.0",
+		sdk.DefaultPowerReduction,
 	)
 
 	consensusRegistry := consensuskeeper.NewRegistry()

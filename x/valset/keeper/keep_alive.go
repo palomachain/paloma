@@ -17,18 +17,20 @@ import (
 )
 
 const (
-	defaultKeepAliveDuration        = 5 * time.Minute
-	cValidatorJailedErrorMessage    = "validator is jailed"
-	cValidatorNotBondedErrorMessage = "validator is not bonded"
-	cJailingImminentThreshold       = 2 * time.Minute
-	cGracePeriodBlockHeight         = 10
-	cUnjailedSnapshotStoreKey       = "unjailed-validators-snapshot"
+	cValidatorJailedErrorMessage         = "validator is jailed"
+	cValidatorNotBondedErrorMessage      = "validator is not bonded"
+	cJailingDefaultKeepAliveBlockHeight  = 185 // calculated against current block speed of 1.612 seconds
+	cJailingImminentThresholdBlockHeight = 60  // publish warning if less than 60 blocks worth of TTL remaining
+	cJailingGracePeriodBlockHeight       = 30  // don't jail a validator during the first 30 blocks after unjailing
+	cUnjailedSnapshotStoreKey            = "unjailed-validators-snapshot"
 )
 
 type keepAliveData struct {
 	ValAddr     sdk.ValAddress
 	ContactedAt time.Time
-	AliveUntil  time.Time
+	// Deprecated. Remove after https://github.com/VolumeFi/paloma/issues/707 is deployed on all nets
+	AliveUntil            time.Time
+	AliveUntilBlockHeight int64
 }
 
 func (k Keeper) KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress, pigeonVersion string) error {
@@ -38,9 +40,9 @@ func (k Keeper) KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress, pige
 
 	store := k.keepAliveStore(ctx)
 	data := keepAliveData{
-		ValAddr:     valAddr,
-		ContactedAt: ctx.BlockTime(),
-		AliveUntil:  ctx.BlockTime().Add(defaultKeepAliveDuration),
+		ValAddr:               valAddr,
+		ContactedAt:           ctx.BlockTime(),
+		AliveUntilBlockHeight: ctx.BlockHeader().Height + cJailingDefaultKeepAliveBlockHeight,
 	}
 	bz, err := json.Marshal(data)
 	if err != nil {
@@ -55,27 +57,38 @@ func (k Keeper) IsValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress) (bool,
 	if err != nil {
 		return false, err
 	}
-	return ctx.BlockTime().Before(aliveUntil), nil
+
+	return ctx.BlockHeight() < aliveUntil, nil
 }
 
-func (k Keeper) ValidatorAliveUntil(ctx sdk.Context, valAddr sdk.ValAddress) (time.Time, error) {
+func (k Keeper) ValidatorAliveUntil(ctx sdk.Context, valAddr sdk.ValAddress) (int64, error) {
 	store := k.keepAliveStore(ctx)
 	if !store.Has(valAddr) {
-		return time.Time{}, ErrValidatorNotInKeepAlive.Format(valAddr)
+		return 0, ErrValidatorNotInKeepAlive.Format(valAddr)
 	}
 
 	dataBz := store.Get(valAddr)
 	var data keepAliveData
 	err := json.Unmarshal(dataBz, &data)
 	if err != nil {
-		return time.Time{}, err
+		return 0, err
 	}
 
-	if data.AliveUntil.UTC().Sub(ctx.BlockTime().UTC()) < cJailingImminentThreshold {
+	// hack hack hack
+	// To ensure a smooth migration to block based Pigeon TTL, we're going to pretend we received a valid
+	// future block height as long as the AliveUntil time is still valid.
+	// remove this once https://github.com/VolumeFi/paloma/issues/709 has been deployed to all nets
+	if data.AliveUntilBlockHeight == 0 {
+		if ctx.BlockTime().Before(data.AliveUntil) {
+			data.AliveUntilBlockHeight = ctx.BlockHeight() + cJailingDefaultKeepAliveBlockHeight
+		}
+	}
+
+	if data.AliveUntilBlockHeight-ctx.BlockHeight() <= cJailingImminentThresholdBlockHeight {
 		k.Logger(ctx).Info("Validator TTL is about to run out. Jailing is imminent.", "validator-address", data.ValAddr)
 	}
 
-	return data.AliveUntil, nil
+	return data.AliveUntilBlockHeight, nil
 }
 
 func (k Keeper) CanAcceptKeepAlive(ctx sdk.Context, valAddr sdk.ValAddress, pigeonVersion string) error {
@@ -180,7 +193,7 @@ func (k Keeper) JailInactiveValidators(ctx sdk.Context) error {
 func (k Keeper) isValidatorInGracePeriod(ctx sdk.Context, valAddr sdk.ValAddress) bool {
 	store := k.gracePeriodStore(ctx)
 	bytes := store.Get(valAddr)
-	return libvalid.NotNil(bytes) && ctx.BlockHeight()-int64(sdk.BigEndianToUint64(bytes)) <= cGracePeriodBlockHeight
+	return libvalid.NotNil(bytes) && ctx.BlockHeight()-int64(sdk.BigEndianToUint64(bytes)) <= cJailingGracePeriodBlockHeight
 }
 
 func (k Keeper) keepAliveStore(ctx sdk.Context) sdk.KVStore {

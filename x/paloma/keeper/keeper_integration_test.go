@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -39,7 +40,9 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 	})
 
 	BeforeEach(func() {
-		vals = testutil.GenValidators(3, 100)
+		// Generate enough validators to ensure jailing is not prevented due to high
+		// amount of stake in network.
+		vals = testutil.GenValidators(10, 100)
 
 		for _, val := range vals {
 			a.StakingKeeper.SetValidator(ctx, val)
@@ -52,6 +55,7 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			// val[0] has everything
 			// val[1] has only one chain
 			// val[2] doesn't have anything
+			// All other vals have everything
 			err := a.ValsetKeeper.AddExternalChainInfo(ctx, vals[0].GetOperator(), []*valsettypes.ExternalChainInfo{
 				{
 					ChainType:        "evm",
@@ -76,6 +80,23 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 				},
 			})
 			Expect(err).To(BeNil())
+			for i, v := range vals[3:] {
+				err := a.ValsetKeeper.AddExternalChainInfo(ctx, v.GetOperator(), []*valsettypes.ExternalChainInfo{
+					{
+						ChainType:        "evm",
+						ChainReferenceID: "c1",
+						Address:          fmt.Sprintf("abc%d", i+3),
+						Pubkey:           []byte(fmt.Sprintf("abc%d", i+3)),
+					},
+					{
+						ChainType:        "evm",
+						ChainReferenceID: "c2",
+						Address:          fmt.Sprintf("abcd%d", i+3),
+						Pubkey:           []byte(fmt.Sprintf("abcd%d", i+3)),
+					},
+				})
+				Expect(err).To(BeNil())
+			}
 		})
 
 		BeforeEach(func() {

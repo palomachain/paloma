@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"testing"
-	"time"
 
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -50,7 +49,7 @@ func TestIfValidatorCanBeAccepted(t *testing.T) {
 
 func TestRegisteringPigeon(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
-	ctx = ctx.WithBlockTime(time.Unix(999999999, 0))
+	ctx = ctx.WithBlockHeight(1000)
 	val := sdk.ValAddress("validator")
 	val2 := sdk.ValAddress("validator2")
 	nonExistingVal := sdk.ValAddress("i dont exist")
@@ -68,7 +67,7 @@ func TestRegisteringPigeon(t *testing.T) {
 	ms.StakingKeeper.On("Validator", mock.Anything, nonExistingVal).Return(nil)
 
 	t.Run("if validator has been alive before, but it's not now, then it returns an error", func(t *testing.T) {
-		err := k.KeepValidatorAlive(ctx.WithBlockTime(time.Unix(555, 0)), val, "v1.4.0")
+		err := k.KeepValidatorAlive(ctx.WithBlockHeight(500), val, "v1.4.0")
 		require.NoError(t, err)
 		alive, err := k.IsValidatorAlive(ctx, val)
 		require.NoError(t, err)
@@ -533,7 +532,7 @@ func TestGracePeriodCoverage(t *testing.T) {
 	ctx = ctx.WithBlockHeight(100)
 
 	t.Run("with unjailed validator covered by grace period", func(t *testing.T) {
-		for i := cGracePeriodBlockHeight; i >= 0; i-- {
+		for i := cJailingGracePeriodBlockHeight; i >= 0; i-- {
 			val := sdk.ValAddress("validator")
 			bh := sdk.Uint64ToBigEndian(uint64(ctx.BlockHeight() - int64(i)))
 			k.gracePeriodStore(ctx).Set(val, bh)
@@ -543,7 +542,7 @@ func TestGracePeriodCoverage(t *testing.T) {
 
 	t.Run("with unjailed validator no longer covered by grace period", func(t *testing.T) {
 		val := sdk.ValAddress("validator")
-		bh := sdk.Uint64ToBigEndian(uint64(ctx.BlockHeight() - cGracePeriodBlockHeight - 1))
+		bh := sdk.Uint64ToBigEndian(uint64(ctx.BlockHeight() - cJailingGracePeriodBlockHeight - 1))
 		k.gracePeriodStore(ctx).Set(val, bh)
 		require.False(t, k.isValidatorInGracePeriod(ctx, val), "bh = %d", bh)
 	})

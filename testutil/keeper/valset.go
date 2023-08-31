@@ -44,6 +44,7 @@ func ValsetKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		paramsSubspace,
 		nil,
 		"v1.4.0",
+		sdk.DefaultPowerReduction,
 	)
 
 	k.EvmKeeper = mocks.NewEvmKeeper(t)

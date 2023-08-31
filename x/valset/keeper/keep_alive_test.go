@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
-	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -15,13 +14,15 @@ import (
 
 func TestJailingInactiveValidators(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
-	ctx = ctx.WithBlockTime(time.Unix(1000000000, 0)).WithBlockHeight(100)
+	ctx = ctx.WithBlockHeight(1000)
 
 	valBuild := func(id int, toBeJailed bool) (*mocks.StakingValidatorI, sdk.ValAddress) {
 		val := sdk.ValAddress(fmt.Sprintf("validator_%d", id))
 		vali := mocks.NewStakingValidatorI(t)
+		stake := sdk.DefaultPowerReduction
 		ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
 		vali.On("IsJailed").Return(false)
+		vali.On("GetConsensusPower", k.powerReduction).Return(stake.Int64())
 		vali.On("IsBonded").Return(true)
 		vali.On("GetOperator").Return(val)
 		vali.On("GetStatus").Return(stakingtypes.Bonded)
@@ -30,7 +31,7 @@ func TestJailingInactiveValidators(t *testing.T) {
 			vali.On("GetConsAddr").Return(consAddr, nil)
 			ms.StakingKeeper.On("Jail", mock.Anything, consAddr)
 		} else {
-			err := k.KeepValidatorAlive(ctx.WithBlockTime(ctx.BlockTime().Add(-defaultKeepAliveDuration/2)), val, "v1.4.0")
+			err := k.KeepValidatorAlive(ctx.WithBlockHeight(ctx.BlockHeight()-(cJailingDefaultKeepAliveBlockHeight/2)), val, "v1.4.0")
 			require.NoError(t, err)
 		}
 		return vali, val
@@ -124,7 +125,7 @@ func TestCanAcceptKeepAlive(t *testing.T) {
 
 func TestUpdateGracePeriod(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
-	ctx = ctx.WithBlockTime(time.Unix(1000000000, 0)).WithBlockHeight(100)
+	ctx = ctx.WithBlockHeight(1000)
 
 	valBuild := func(id int) (*mocks.StakingValidatorI, sdk.ValAddress) {
 		val := sdk.ValAddress(fmt.Sprintf("validator_%d", id))

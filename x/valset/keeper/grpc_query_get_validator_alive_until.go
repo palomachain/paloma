@@ -22,6 +22,6 @@ func (k Keeper) GetValidatorAliveUntil(goCtx context.Context, req *types.QueryGe
 	}
 
 	return &types.QueryGetValidatorAliveUntilResponse{
-		AliveUntil: aliveUntil,
+		AliveUntilBlockHeight: aliveUntil,
 	}, nil
 }

@@ -141,7 +141,7 @@ const (
 
 	wasmAvailableCapabilities = "iterator,staking,stargate,paloma"
 
-	minimumPigeonVersion = "v1.5.0"
+	minimumPigeonVersion = "v1.6.0"
 )
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -530,6 +530,7 @@ func New(
 		app.GetSubspace(valsetmoduletypes.ModuleName),
 		app.StakingKeeper,
 		minimumPigeonVersion,
+		sdk.DefaultPowerReduction,
 	)
 
 	consensusRegistry := consensusmodulekeeper.NewRegistry()
