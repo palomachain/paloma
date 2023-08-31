@@ -24,20 +24,21 @@ import (
 const (
 	snapshotIDKey                   = "snapshot-id"
 	maxNumOfAllowedExternalAccounts = 100
+	cJailingNetworkShareProtection  = 0.25
 )
 
 type Keeper struct {
-	cdc        codec.BinaryCodec
-	storeKey   storetypes.StoreKey
-	memKey     storetypes.StoreKey
-	paramstore paramtypes.Subspace
-	staking    types.StakingKeeper
-	ider       keeperutil.IDGenerator
-	EvmKeeper  types.EvmKeeper
-
+	EvmKeeper         types.EvmKeeper
 	SnapshotListeners []types.OnSnapshotBuiltListener
 
+	cdc                  codec.BinaryCodec
+	ider                 keeperutil.IDGenerator
+	memKey               storetypes.StoreKey
 	minimumPigeonVersion string
+	paramstore           paramtypes.Subspace
+	powerReduction       sdkmath.Int
+	staking              types.StakingKeeper
+	storeKey             storetypes.StoreKey
 }
 
 func NewKeeper(
@@ -47,6 +48,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	staking types.StakingKeeper,
 	minimumPigeonVersion string,
+	powerReduction sdkmath.Int,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -60,6 +62,7 @@ func NewKeeper(
 		paramstore:           ps,
 		staking:              staking,
 		minimumPigeonVersion: minimumPigeonVersion,
+		powerReduction:       powerReduction,
 	}
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx sdk.Context) sdk.KVStore {
 		return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("IDs"))
@@ -525,16 +528,26 @@ func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) err
 	if val.IsJailed() {
 		return ErrValidatorAlreadyJailed.Format(valAddr.String())
 	}
+
+	consensusPower := val.GetConsensusPower(k.powerReduction)
+	totalConsensusPower := int64(0)
 	count := 0
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		if val.IsBonded() && !val.IsJailed() {
+			totalConsensusPower += val.GetConsensusPower(k.powerReduction)
 			count++
 		}
 		return false
 	})
+
 	if count == 1 {
 		return ErrCannotJailValidator.Format(valAddr).WrapS("number of active validators would be zero then")
 	}
+
+	if float64(consensusPower)/float64(totalConsensusPower) > cJailingNetworkShareProtection {
+		return ErrCannotJailValidator.Format(valAddr).WrapS("validator stake holds over %v percent of entire network", cJailingNetworkShareProtection)
+	}
+
 	cons, err := val.GetConsAddr()
 	if err != nil {
 		return err

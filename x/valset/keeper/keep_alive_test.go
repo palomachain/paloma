@@ -19,8 +19,10 @@ func TestJailingInactiveValidators(t *testing.T) {
 	valBuild := func(id int, toBeJailed bool) (*mocks.StakingValidatorI, sdk.ValAddress) {
 		val := sdk.ValAddress(fmt.Sprintf("validator_%d", id))
 		vali := mocks.NewStakingValidatorI(t)
+		stake := sdk.DefaultPowerReduction
 		ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
 		vali.On("IsJailed").Return(false)
+		vali.On("GetConsensusPower", k.powerReduction).Return(stake.Int64())
 		vali.On("IsBonded").Return(true)
 		vali.On("GetOperator").Return(val)
 		vali.On("GetStatus").Return(stakingtypes.Bonded)

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	sdkmath "cosmossdk.io/math"
 	tmbytes "github.com/cometbft/cometbft/libs/bytes"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -33,7 +34,7 @@ type Keeper struct {
 	bankKeeper             types.BankKeeper
 	SlashingKeeper         types.SlashingKeeper
 	DistributionKeeper     types.DistributionKeeper
-	PowerReduction         sdk.Int
+	PowerReduction         sdkmath.Int
 	hooks                  types.GravityHooks
 	ReceiverModuleAccounts map[string]string
 	SenderModuleAccounts   map[string]string
@@ -49,7 +50,7 @@ func NewKeeper(
 	bankKeeper types.BankKeeper,
 	slashingKeeper types.SlashingKeeper,
 	distributionKeeper types.DistributionKeeper,
-	powerReduction sdk.Int,
+	powerReduction sdkmath.Int,
 	receiverModuleAccounts map[string]string,
 	senderModuleAccounts map[string]string,
 ) Keeper {

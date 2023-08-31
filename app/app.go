@@ -528,6 +528,7 @@ func New(
 		app.GetSubspace(valsetmoduletypes.ModuleName),
 		app.StakingKeeper,
 		minimumPigeonVersion,
+		sdk.DefaultPowerReduction,
 	)
 
 	consensusRegistry := consensusmodulekeeper.NewRegistry()
