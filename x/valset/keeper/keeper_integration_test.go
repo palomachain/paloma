@@ -95,5 +95,19 @@ var _ = Describe("jaling validators", func() {
 				Expect(err).To(MatchError(keeper.ErrValidatorAlreadyJailed))
 			})
 		})
+
+		Context("jailing validator with too much network stake", func() {
+			BeforeEach(func() {
+				By("change validator stake")
+				validators := testutil.GenValidators(1, 100)
+				a.StakingKeeper.SetValidator(ctx, validators[0])
+				a.StakingKeeper.SetValidatorByConsAddr(ctx, validators[0])
+				val = validators[0].GetOperator()
+			})
+			It("returns an error", func() {
+				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
+				Expect(err).To(MatchError(keeper.ErrCannotJailValidator))
+			})
+		})
 	})
 })

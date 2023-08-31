@@ -56,6 +56,7 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		paramsSubspace,
 		ms.StakingKeeper,
 		"v1.4.0",
+		sdk.DefaultPowerReduction,
 	)
 
 	k.EvmKeeper = ms.EvmKeeper
