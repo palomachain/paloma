@@ -10,4 +10,5 @@ message RelayWeights {
   string uptime = 2 [(cosmos_proto.scalar) = "cosmos.Dec"];
   string successRate = 3 [(cosmos_proto.scalar) = "cosmos.Dec"];
   string executionTime = 4 [(cosmos_proto.scalar) = "cosmos.Dec"];
+  string featureSet = 5 [(cosmos_proto.scalar) = "cosmos.Dec"];
 }

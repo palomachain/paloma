@@ -33,6 +33,7 @@ type Keeper struct {
 	paramstore paramtypes.Subspace
 	staking    types.StakingKeeper
 	ider       keeperutil.IDGenerator
+	EvmKeeper  types.EvmKeeper
 
 	SnapshotListeners []types.OnSnapshotBuiltListener
 
@@ -115,7 +116,7 @@ func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddres
 		return err
 	}
 
-	allExistingChainAccounts, err := k.getAllChainInfos(ctx)
+	allExistingChainAccounts, err := k.GetAllChainInfos(ctx)
 	if err != nil {
 		return err
 	}
@@ -298,10 +299,32 @@ func (k Keeper) isNewSnapshotWorthy(ctx sdk.Context, currentSnapshot, newSnapsho
 		currentMap := slice.MakeMapKeys(currentVal.ExternalChainInfos, keyFnc)
 		newMap := slice.MakeMapKeys(newVal.ExternalChainInfos, keyFnc)
 
-		for _, acc := range currentMap {
-			if _, ok := newMap[keyFnc(acc)]; !ok {
+		for _, currv := range currentMap {
+			newv, ok := newMap[keyFnc(currv)]
+			if !ok {
 				log("validator changed some of the external address")
 				return true
+			}
+
+			if len(newv.Traits) != len(currv.Traits) {
+				log("validator changed some of its traits")
+				return true
+			}
+
+			currentTraitMap := make(map[string]struct{})
+			newTraitMap := make(map[string]struct{})
+			for _, v := range currv.Traits {
+				currentTraitMap[v] = struct{}{}
+			}
+			for _, v := range newv.Traits {
+				newTraitMap[v] = struct{}{}
+			}
+
+			for k := range currentTraitMap {
+				if _, fnd := newTraitMap[k]; !fnd {
+					log("validator changed some of its traits")
+					return true
+				}
 			}
 		}
 	}
@@ -321,11 +344,36 @@ func (k Keeper) GetUnjailedValidators(ctx sdk.Context) []stakingtypes.ValidatorI
 	return validators
 }
 
+// ValidatorSupportsAllChains returns true if the validator supports all chains in the keeper
+func (k Keeper) ValidatorSupportsAllChains(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
+	valSupportedChains, err := k.GetValidatorChainInfos(ctx, validatorAddress)
+	if err != nil {
+		k.Logger(ctx).Error("Unable to get supported chains for validator",
+			"validator-address",
+			validatorAddress.String(),
+		)
+		return false
+	}
+
+	valSupportedChainReferenceIDs := make([]string, len(valSupportedChains))
+	for i, v := range valSupportedChains {
+		valSupportedChainReferenceIDs[i] = v.GetChainReferenceID()
+	}
+
+	missingChains, err := k.EvmKeeper.MissingChains(ctx, valSupportedChainReferenceIDs)
+	if err != nil {
+		k.Logger(ctx).With("error", err).Error("error checking missing chains for validator",
+			"validator-address",
+			validatorAddress.String())
+	}
+	return len(missingChains) == 0
+}
+
 // createNewSnapshot builds a current snapshot of validators.
 func (k Keeper) createNewSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	validators := []stakingtypes.ValidatorI{}
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
-		if val.IsBonded() && !val.IsJailed() {
+		if val.IsBonded() && !val.IsJailed() && k.ValidatorSupportsAllChains(ctx, val.GetOperator()) {
 			validators = append(validators, val)
 		}
 		return false
@@ -394,8 +442,8 @@ func (k Keeper) GetLatestSnapshotOnChain(ctx sdk.Context, chainReferenceID strin
 		}
 	}
 
-	k.Logger(ctx).Error("unable to get latest snapshot", "err", keeperutil.ErrNotFound)
-	return nil, keeperutil.ErrNotFound
+	// If we made it here, we didn't find a snapshot for this chain
+	return nil, keeperutil.ErrNotFound.Format(&types.Snapshot{}, snapshotIDKey)
 }
 
 // GetCurrentSnapshot returns the currently active snapshot.
@@ -431,7 +479,7 @@ func (k Keeper) GetValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) 
 	return info.ExternalChainInfo, nil
 }
 
-func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ValidatorExternalAccounts, error) {
+func (k Keeper) GetAllChainInfos(ctx sdk.Context) ([]*types.ValidatorExternalAccounts, error) {
 	chainInfoStore := k._externalChainInfoStore(ctx)
 	iter := chainInfoStore.Iterator(nil, nil)
 

@@ -29,7 +29,10 @@ type OutgoingTxBatch struct {
 	BatchTimeout       uint64               `protobuf:"varint,2,opt,name=batch_timeout,json=batchTimeout,proto3" json:"batch_timeout,omitempty"`
 	Transactions       []OutgoingTransferTx `protobuf:"bytes,3,rep,name=transactions,proto3" json:"transactions"`
 	TokenContract      string               `protobuf:"bytes,4,opt,name=token_contract,json=tokenContract,proto3" json:"token_contract,omitempty"`
-	CosmosBlockCreated uint64               `protobuf:"varint,5,opt,name=cosmos_block_created,json=cosmosBlockCreated,proto3" json:"cosmos_block_created,omitempty"`
+	PalomaBlockCreated uint64               `protobuf:"varint,5,opt,name=paloma_block_created,json=palomaBlockCreated,proto3" json:"paloma_block_created,omitempty"`
+	ChainReferenceId   string               `protobuf:"bytes,6,opt,name=chain_reference_id,json=chainReferenceId,proto3" json:"chain_reference_id,omitempty"`
+	BytesToSign        []byte               `protobuf:"bytes,7,opt,name=bytes_to_sign,json=bytesToSign,proto3" json:"bytes_to_sign,omitempty"`
+	Assignee           string               `protobuf:"bytes,8,opt,name=assignee,proto3" json:"assignee,omitempty"`
 }
 
 func (m *OutgoingTxBatch) Reset()         { *m = OutgoingTxBatch{} }
@@ -93,11 +96,32 @@ func (m *OutgoingTxBatch) GetTokenContract() string {
 	return ""
 }
 
-func (m *OutgoingTxBatch) GetCosmosBlockCreated() uint64 {
+func (m *OutgoingTxBatch) GetPalomaBlockCreated() uint64 {
 	if m != nil {
-		return m.CosmosBlockCreated
+		return m.PalomaBlockCreated
 	}
 	return 0
+}
+
+func (m *OutgoingTxBatch) GetChainReferenceId() string {
+	if m != nil {
+		return m.ChainReferenceId
+	}
+	return ""
+}
+
+func (m *OutgoingTxBatch) GetBytesToSign() []byte {
+	if m != nil {
+		return m.BytesToSign
+	}
+	return nil
+}
+
+func (m *OutgoingTxBatch) GetAssignee() string {
+	if m != nil {
+		return m.Assignee
+	}
+	return ""
 }
 
 // OutgoingTransferTx represents an individual send from gravity to ETH
@@ -106,7 +130,6 @@ type OutgoingTransferTx struct {
 	Sender      string     `protobuf:"bytes,2,opt,name=sender,proto3" json:"sender,omitempty"`
 	DestAddress string     `protobuf:"bytes,3,opt,name=dest_address,json=destAddress,proto3" json:"dest_address,omitempty"`
 	Erc20Token  ERC20Token `protobuf:"bytes,4,opt,name=erc20_token,json=erc20Token,proto3" json:"erc20_token"`
-	Erc20Fee    ERC20Token `protobuf:"bytes,5,opt,name=erc20_fee,json=erc20Fee,proto3" json:"erc20_fee"`
 }
 
 func (m *OutgoingTransferTx) Reset()         { *m = OutgoingTransferTx{} }
@@ -170,114 +193,6 @@ func (m *OutgoingTransferTx) GetErc20Token() ERC20Token {
 	return ERC20Token{}
 }
 
-func (m *OutgoingTransferTx) GetErc20Fee() ERC20Token {
-	if m != nil {
-		return m.Erc20Fee
-	}
-	return ERC20Token{}
-}
-
-// OutgoingLogicCall represents an individual logic call from gravity to ETH
-type OutgoingLogicCall struct {
-	Transfers            []ERC20Token `protobuf:"bytes,1,rep,name=transfers,proto3" json:"transfers"`
-	Fees                 []ERC20Token `protobuf:"bytes,2,rep,name=fees,proto3" json:"fees"`
-	LogicContractAddress string       `protobuf:"bytes,3,opt,name=logic_contract_address,json=logicContractAddress,proto3" json:"logic_contract_address,omitempty"`
-	Payload              []byte       `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`
-	Timeout              uint64       `protobuf:"varint,5,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	InvalidationId       []byte       `protobuf:"bytes,6,opt,name=invalidation_id,json=invalidationId,proto3" json:"invalidation_id,omitempty"`
-	InvalidationNonce    uint64       `protobuf:"varint,7,opt,name=invalidation_nonce,json=invalidationNonce,proto3" json:"invalidation_nonce,omitempty"`
-	CosmosBlockCreated   uint64       `protobuf:"varint,8,opt,name=cosmos_block_created,json=cosmosBlockCreated,proto3" json:"cosmos_block_created,omitempty"`
-}
-
-func (m *OutgoingLogicCall) Reset()         { *m = OutgoingLogicCall{} }
-func (m *OutgoingLogicCall) String() string { return proto.CompactTextString(m) }
-func (*OutgoingLogicCall) ProtoMessage()    {}
-func (*OutgoingLogicCall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1fc736f1b08df26c, []int{2}
-}
-func (m *OutgoingLogicCall) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *OutgoingLogicCall) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_OutgoingLogicCall.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *OutgoingLogicCall) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_OutgoingLogicCall.Merge(m, src)
-}
-func (m *OutgoingLogicCall) XXX_Size() int {
-	return m.Size()
-}
-func (m *OutgoingLogicCall) XXX_DiscardUnknown() {
-	xxx_messageInfo_OutgoingLogicCall.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_OutgoingLogicCall proto.InternalMessageInfo
-
-func (m *OutgoingLogicCall) GetTransfers() []ERC20Token {
-	if m != nil {
-		return m.Transfers
-	}
-	return nil
-}
-
-func (m *OutgoingLogicCall) GetFees() []ERC20Token {
-	if m != nil {
-		return m.Fees
-	}
-	return nil
-}
-
-func (m *OutgoingLogicCall) GetLogicContractAddress() string {
-	if m != nil {
-		return m.LogicContractAddress
-	}
-	return ""
-}
-
-func (m *OutgoingLogicCall) GetPayload() []byte {
-	if m != nil {
-		return m.Payload
-	}
-	return nil
-}
-
-func (m *OutgoingLogicCall) GetTimeout() uint64 {
-	if m != nil {
-		return m.Timeout
-	}
-	return 0
-}
-
-func (m *OutgoingLogicCall) GetInvalidationId() []byte {
-	if m != nil {
-		return m.InvalidationId
-	}
-	return nil
-}
-
-func (m *OutgoingLogicCall) GetInvalidationNonce() uint64 {
-	if m != nil {
-		return m.InvalidationNonce
-	}
-	return 0
-}
-
-func (m *OutgoingLogicCall) GetCosmosBlockCreated() uint64 {
-	if m != nil {
-		return m.CosmosBlockCreated
-	}
-	return 0
-}
-
 type EventOutgoingBatchCanceled struct {
 	BridgeContract string `protobuf:"bytes,1,opt,name=bridge_contract,json=bridgeContract,proto3" json:"bridge_contract,omitempty"`
 	BridgeChainId  string `protobuf:"bytes,2,opt,name=bridge_chain_id,json=bridgeChainId,proto3" json:"bridge_chain_id,omitempty"`
@@ -289,7 +204,7 @@ func (m *EventOutgoingBatchCanceled) Reset()         { *m = EventOutgoingBatchCa
 func (m *EventOutgoingBatchCanceled) String() string { return proto.CompactTextString(m) }
 func (*EventOutgoingBatchCanceled) ProtoMessage()    {}
 func (*EventOutgoingBatchCanceled) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1fc736f1b08df26c, []int{3}
+	return fileDescriptor_1fc736f1b08df26c, []int{2}
 }
 func (m *EventOutgoingBatchCanceled) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -351,13 +266,14 @@ type EventOutgoingBatch struct {
 	BridgeChainId  string `protobuf:"bytes,2,opt,name=bridge_chain_id,json=bridgeChainId,proto3" json:"bridge_chain_id,omitempty"`
 	BatchId        string `protobuf:"bytes,3,opt,name=batch_id,json=batchId,proto3" json:"batch_id,omitempty"`
 	Nonce          string `protobuf:"bytes,4,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Assignee       string `protobuf:"bytes,5,opt,name=assignee,proto3" json:"assignee,omitempty"`
 }
 
 func (m *EventOutgoingBatch) Reset()         { *m = EventOutgoingBatch{} }
 func (m *EventOutgoingBatch) String() string { return proto.CompactTextString(m) }
 func (*EventOutgoingBatch) ProtoMessage()    {}
 func (*EventOutgoingBatch) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1fc736f1b08df26c, []int{4}
+	return fileDescriptor_1fc736f1b08df26c, []int{3}
 }
 func (m *EventOutgoingBatch) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -414,10 +330,16 @@ func (m *EventOutgoingBatch) GetNonce() string {
 	return ""
 }
 
+func (m *EventOutgoingBatch) GetAssignee() string {
+	if m != nil {
+		return m.Assignee
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*OutgoingTxBatch)(nil), "palomachain.paloma.gravity.OutgoingTxBatch")
 	proto.RegisterType((*OutgoingTransferTx)(nil), "palomachain.paloma.gravity.OutgoingTransferTx")
-	proto.RegisterType((*OutgoingLogicCall)(nil), "palomachain.paloma.gravity.OutgoingLogicCall")
 	proto.RegisterType((*EventOutgoingBatchCanceled)(nil), "palomachain.paloma.gravity.EventOutgoingBatchCanceled")
 	proto.RegisterType((*EventOutgoingBatch)(nil), "palomachain.paloma.gravity.EventOutgoingBatch")
 }
@@ -427,47 +349,43 @@ func init() {
 }
 
 var fileDescriptor_1fc736f1b08df26c = []byte{
-	// 638 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x54, 0x4d, 0x4f, 0x1b, 0x3d,
-	0x10, 0xce, 0x86, 0xf0, 0x91, 0x49, 0x08, 0xc2, 0x8a, 0xd0, 0xbe, 0x39, 0x04, 0xde, 0x54, 0xa5,
-	0x1c, 0xca, 0x06, 0xa5, 0xfd, 0x01, 0x6d, 0x22, 0x5a, 0xa5, 0xea, 0x87, 0xb4, 0xca, 0xa1, 0xea,
-	0x65, 0xe5, 0xd8, 0x66, 0xb1, 0xd8, 0xd8, 0xd1, 0xae, 0x41, 0xf0, 0x17, 0x7a, 0xea, 0xa5, 0x3d,
-	0xf6, 0xf7, 0x70, 0xe4, 0xd8, 0x53, 0x55, 0xc1, 0xaf, 0xe8, 0xad, 0xf2, 0x78, 0x37, 0x40, 0x29,
-	0x48, 0xf4, 0xd2, 0x9b, 0xe7, 0x99, 0x0f, 0x3f, 0xf3, 0x78, 0xc6, 0xb0, 0x39, 0xa5, 0x89, 0x9e,
-	0x50, 0xb6, 0x4f, 0xa5, 0xea, 0xba, 0x73, 0x37, 0x4e, 0xe9, 0x91, 0x34, 0x27, 0xdd, 0x31, 0x35,
-	0x6c, 0x3f, 0x98, 0xa6, 0xda, 0x68, 0xd2, 0xba, 0x12, 0x17, 0xb8, 0x73, 0x90, 0xc7, 0xb5, 0x9a,
-	0xb1, 0x8e, 0x35, 0x86, 0x75, 0xed, 0xc9, 0x65, 0xb4, 0x1e, 0xdf, 0x51, 0x99, 0x1a, 0x23, 0x32,
-	0x43, 0x8d, 0xd4, 0xca, 0x45, 0x77, 0x3e, 0x96, 0x61, 0xe5, 0xdd, 0xa1, 0x89, 0xb5, 0x54, 0xf1,
-	0xe8, 0xb8, 0x6f, 0x6f, 0x26, 0xeb, 0x50, 0x43, 0x0a, 0x91, 0xd2, 0x8a, 0x09, 0xdf, 0xdb, 0xf0,
-	0xb6, 0x2a, 0x21, 0x20, 0xf4, 0xd6, 0x22, 0xe4, 0x01, 0x2c, 0xbb, 0x00, 0x23, 0x27, 0x42, 0x1f,
-	0x1a, 0xbf, 0x8c, 0x21, 0x75, 0x04, 0x47, 0x0e, 0x23, 0xef, 0xa1, 0x6e, 0x52, 0xaa, 0x32, 0xca,
-	0xec, 0x75, 0x99, 0x3f, 0xb7, 0x31, 0xb7, 0x55, 0xeb, 0x05, 0xc1, 0xed, 0x0d, 0x05, 0x33, 0x22,
-	0x36, 0x6f, 0x4f, 0xa4, 0xa3, 0xe3, 0x7e, 0xe5, 0xf4, 0xfb, 0x7a, 0x29, 0xbc, 0x56, 0x89, 0x3c,
-	0x84, 0x86, 0xd1, 0x07, 0x42, 0x45, 0x4c, 0x2b, 0x93, 0x52, 0x66, 0xfc, 0xca, 0x86, 0xb7, 0x55,
-	0x0d, 0x97, 0x11, 0x1d, 0xe4, 0x20, 0xd9, 0x81, 0x26, 0xd3, 0xd9, 0x44, 0x67, 0xd1, 0x38, 0xd1,
-	0xec, 0x20, 0x62, 0xa9, 0xa0, 0x46, 0x70, 0x7f, 0x1e, 0xc9, 0x12, 0xe7, 0xeb, 0x5b, 0xd7, 0xc0,
-	0x79, 0x3a, 0x3f, 0x3d, 0x20, 0x37, 0x39, 0x90, 0x06, 0x94, 0x25, 0xcf, 0x65, 0x28, 0x4b, 0x4e,
-	0xd6, 0x60, 0x21, 0x13, 0x8a, 0x8b, 0x14, 0xfb, 0xae, 0x86, 0xb9, 0x45, 0xfe, 0x87, 0x3a, 0x17,
-	0x99, 0x89, 0x28, 0xe7, 0xa9, 0xc8, 0x6c, 0xc7, 0xd6, 0x5b, 0xb3, 0xd8, 0x73, 0x07, 0x91, 0x37,
-	0x50, 0x13, 0x29, 0xeb, 0xed, 0x44, 0x48, 0x15, 0x79, 0xd7, 0x7a, 0x9b, 0x77, 0x69, 0xb2, 0x1b,
-	0x0e, 0x7a, 0x3b, 0x23, 0x1b, 0x9d, 0x6b, 0x01, 0x58, 0x00, 0x11, 0x32, 0x84, 0xaa, 0x2b, 0xb7,
-	0x27, 0x04, 0xf6, 0x75, 0xdf, 0x62, 0x4b, 0x98, 0xfe, 0x42, 0x88, 0xce, 0xe7, 0x39, 0x58, 0x2d,
-	0x7a, 0x7f, 0xad, 0x63, 0xc9, 0x06, 0x34, 0x49, 0xc8, 0x2b, 0xa8, 0x9a, 0x5c, 0x88, 0xcc, 0xf7,
-	0xf0, 0x05, 0xef, 0x77, 0xc1, 0x65, 0x3a, 0x79, 0x06, 0x95, 0x3d, 0x21, 0x32, 0xbf, 0xfc, 0x17,
-	0x65, 0x30, 0x93, 0x3c, 0x85, 0xb5, 0xc4, 0x52, 0x9b, 0x3d, 0xfc, 0x6f, 0x52, 0x37, 0xd1, 0x5b,
-	0x0c, 0x40, 0xa1, 0xb9, 0x0f, 0x8b, 0x53, 0x7a, 0x92, 0x68, 0xca, 0x51, 0xef, 0x7a, 0x58, 0x98,
-	0xd6, 0x53, 0x4c, 0xb0, 0x1b, 0x8a, 0xc2, 0x24, 0x8f, 0x60, 0x45, 0xaa, 0x23, 0x9a, 0x48, 0x8e,
-	0xcb, 0x12, 0x49, 0xee, 0x2f, 0x60, 0x6e, 0xe3, 0x2a, 0x3c, 0xe4, 0x64, 0x1b, 0xc8, 0xb5, 0x40,
-	0xb7, 0x32, 0x8b, 0x58, 0x6d, 0xf5, 0xaa, 0xc7, 0x6d, 0xce, 0x6d, 0x33, 0xb9, 0x74, 0xeb, 0x4c,
-	0x7e, 0xf5, 0xa0, 0xb5, 0x7b, 0x24, 0x94, 0x29, 0x1e, 0x07, 0x77, 0x74, 0x40, 0x15, 0x13, 0x89,
-	0xe0, 0x96, 0xe8, 0x38, 0x95, 0x3c, 0x16, 0x97, 0xcb, 0xe0, 0xa1, 0x16, 0x0d, 0x07, 0xcf, 0xb6,
-	0x61, 0xf3, 0x32, 0xd0, 0x2a, 0x6e, 0x3b, 0x72, 0xd3, 0xbb, 0x9c, 0x07, 0x5a, 0x74, 0xc8, 0xc9,
-	0x7f, 0xb0, 0xe4, 0x76, 0x5b, 0xf2, 0x5c, 0xd5, 0x45, 0xb4, 0x87, 0x9c, 0x34, 0x61, 0xde, 0xb5,
-	0xe7, 0xd6, 0xcd, 0x19, 0x9d, 0x2f, 0x1e, 0x90, 0x9b, 0x04, 0xff, 0x3d, 0xb1, 0xfe, 0xcb, 0xd3,
-	0xf3, 0xb6, 0x77, 0x76, 0xde, 0xf6, 0x7e, 0x9c, 0xb7, 0xbd, 0x4f, 0x17, 0xed, 0xd2, 0xd9, 0x45,
-	0xbb, 0xf4, 0xed, 0xa2, 0x5d, 0xfa, 0xb0, 0x1d, 0x4b, 0xb3, 0x7f, 0x38, 0x0e, 0x98, 0x9e, 0x74,
-	0xff, 0xf0, 0x5b, 0x1e, 0xcf, 0xfe, 0x4b, 0x73, 0x32, 0x15, 0xd9, 0x78, 0x01, 0xbf, 0xca, 0x27,
-	0xbf, 0x02, 0x00, 0x00, 0xff, 0xff, 0xaa, 0xd4, 0x59, 0x80, 0xb4, 0x05, 0x00, 0x00,
+	// 561 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x53, 0xcd, 0x6e, 0x13, 0x31,
+	0x10, 0xce, 0xa6, 0xff, 0xde, 0xa4, 0x45, 0x56, 0x84, 0x96, 0x1c, 0xb6, 0x21, 0x88, 0x90, 0x43,
+	0xd9, 0x44, 0xe1, 0x09, 0x48, 0x54, 0xa1, 0x1c, 0x00, 0x69, 0xc9, 0x01, 0x71, 0x59, 0x79, 0xed,
+	0xe9, 0xc6, 0x6a, 0x62, 0x47, 0x5e, 0xa7, 0x4a, 0xde, 0x82, 0x27, 0xe0, 0x11, 0x38, 0xf0, 0x14,
+	0x3d, 0xf6, 0xc8, 0x09, 0xa1, 0xe4, 0x25, 0x38, 0x22, 0xdb, 0xdb, 0x94, 0xa8, 0xd0, 0x2b, 0x37,
+	0xcf, 0x37, 0x9f, 0xc7, 0xdf, 0x7c, 0x33, 0x46, 0xad, 0x19, 0x99, 0xc8, 0x29, 0xa1, 0x63, 0xc2,
+	0x45, 0xc7, 0x9d, 0x3b, 0x99, 0x22, 0x57, 0x5c, 0x2f, 0x3b, 0x29, 0xd1, 0x74, 0x1c, 0xcd, 0x94,
+	0xd4, 0x12, 0xd7, 0xff, 0xe0, 0x45, 0xee, 0x1c, 0x15, 0xbc, 0x7a, 0x2d, 0x93, 0x99, 0xb4, 0xb4,
+	0x8e, 0x39, 0xb9, 0x1b, 0xf5, 0xb3, 0x07, 0x2a, 0x13, 0xad, 0x21, 0xd7, 0x44, 0x73, 0x29, 0x1c,
+	0xbb, 0xf9, 0xab, 0x8c, 0x4e, 0xde, 0xcf, 0x75, 0x26, 0xb9, 0xc8, 0x46, 0x8b, 0xbe, 0x79, 0x19,
+	0x9f, 0x22, 0xdf, 0x4a, 0x48, 0x84, 0x14, 0x14, 0x02, 0xaf, 0xe1, 0xb5, 0x77, 0x63, 0x64, 0xa1,
+	0x77, 0x06, 0xc1, 0xcf, 0x50, 0xd5, 0x11, 0x34, 0x9f, 0x82, 0x9c, 0xeb, 0xa0, 0x6c, 0x29, 0x15,
+	0x0b, 0x8e, 0x1c, 0x86, 0x3f, 0xa2, 0x8a, 0x56, 0x44, 0xe4, 0x84, 0x9a, 0xe7, 0xf2, 0x60, 0xa7,
+	0xb1, 0xd3, 0xf6, 0x7b, 0x51, 0xf4, 0xef, 0x86, 0xa2, 0x8d, 0x10, 0x73, 0xef, 0x02, 0xd4, 0x68,
+	0xd1, 0xdf, 0xbd, 0xfe, 0x71, 0x5a, 0x8a, 0xb7, 0x2a, 0xe1, 0xe7, 0xe8, 0x58, 0xcb, 0x4b, 0x10,
+	0x09, 0x95, 0x42, 0x2b, 0x42, 0x75, 0xb0, 0xdb, 0xf0, 0xda, 0x47, 0x71, 0xd5, 0xa2, 0x83, 0x02,
+	0xc4, 0x5d, 0x54, 0x73, 0xf5, 0x93, 0x74, 0x22, 0xe9, 0x65, 0x42, 0x15, 0x10, 0x0d, 0x2c, 0xd8,
+	0xb3, 0x62, 0xb1, 0xcb, 0xf5, 0x4d, 0x6a, 0xe0, 0x32, 0xf8, 0x0c, 0x61, 0xab, 0x2b, 0x51, 0x70,
+	0x01, 0x0a, 0x04, 0x85, 0x84, 0xb3, 0x60, 0xdf, 0x16, 0x7f, 0x64, 0x33, 0xf1, 0x6d, 0x62, 0xc8,
+	0x70, 0x13, 0x55, 0xd3, 0xa5, 0x86, 0x3c, 0xd1, 0x32, 0xc9, 0x79, 0x26, 0x82, 0x83, 0x86, 0xd7,
+	0xae, 0xc4, 0xbe, 0x05, 0x47, 0xf2, 0x03, 0xcf, 0x04, 0xae, 0xa3, 0x43, 0x92, 0x9b, 0x24, 0x40,
+	0x70, 0x68, 0xeb, 0x6c, 0xe2, 0xe6, 0x57, 0x0f, 0xe1, 0xfb, 0x1d, 0xe3, 0x63, 0x54, 0xe6, 0xac,
+	0x30, 0xbd, 0xcc, 0x19, 0x7e, 0x8c, 0xf6, 0x73, 0x10, 0x0c, 0x94, 0x75, 0xf9, 0x28, 0x2e, 0x22,
+	0xfc, 0x14, 0x55, 0x18, 0xe4, 0x3a, 0x21, 0x8c, 0x29, 0xc8, 0x8d, 0xbf, 0x26, 0xeb, 0x1b, 0xec,
+	0xb5, 0x83, 0xf0, 0x5b, 0xe4, 0x83, 0xa2, 0xbd, 0x6e, 0x62, 0x8d, 0xb1, 0x2e, 0xf9, 0xbd, 0xd6,
+	0x43, 0x13, 0x38, 0x8f, 0x07, 0xbd, 0xee, 0xc8, 0xb0, 0x0b, 0xe7, 0x91, 0x2d, 0x60, 0x91, 0xe6,
+	0x17, 0x0f, 0xd5, 0xcf, 0xaf, 0x40, 0xe8, 0x5b, 0xd5, 0x76, 0x5d, 0x06, 0x44, 0x50, 0x98, 0x00,
+	0xc3, 0x2f, 0xd0, 0x49, 0xaa, 0x38, 0xcb, 0xe0, 0x6e, 0x2e, 0x9e, 0xd5, 0x74, 0xec, 0xe0, 0xcd,
+	0x60, 0x5a, 0x77, 0x44, 0xeb, 0x36, 0x67, 0x45, 0x6b, 0xd5, 0x82, 0x68, 0xd0, 0x21, 0xc3, 0x4f,
+	0xd0, 0xa1, 0x5b, 0x33, 0xce, 0x8a, 0xee, 0x0e, 0x6c, 0x3c, 0x64, 0xb8, 0x86, 0xf6, 0xdc, 0x72,
+	0xba, 0xc9, 0xbb, 0xa0, 0xf9, 0xcd, 0x43, 0xf8, 0xbe, 0xc0, 0xff, 0x2f, 0x6c, 0x6b, 0x0d, 0xf6,
+	0xb6, 0xd7, 0xa0, 0xff, 0xe6, 0x7a, 0x15, 0x7a, 0x37, 0xab, 0xd0, 0xfb, 0xb9, 0x0a, 0xbd, 0xcf,
+	0xeb, 0xb0, 0x74, 0xb3, 0x0e, 0x4b, 0xdf, 0xd7, 0x61, 0xe9, 0xd3, 0xcb, 0x8c, 0xeb, 0xf1, 0x3c,
+	0x8d, 0xa8, 0x9c, 0x76, 0xfe, 0xf2, 0xa9, 0x17, 0x9b, 0x6f, 0xad, 0x97, 0x33, 0xc8, 0xd3, 0x7d,
+	0xfb, 0xa3, 0x5f, 0xfd, 0x0e, 0x00, 0x00, 0xff, 0xff, 0xc6, 0xcb, 0xa0, 0x08, 0x5b, 0x04, 0x00,
+	0x00,
 }
 
 func (m *OutgoingTxBatch) Marshal() (dAtA []byte, err error) {
@@ -490,8 +408,29 @@ func (m *OutgoingTxBatch) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.CosmosBlockCreated != 0 {
-		i = encodeVarintBatch(dAtA, i, uint64(m.CosmosBlockCreated))
+	if len(m.Assignee) > 0 {
+		i -= len(m.Assignee)
+		copy(dAtA[i:], m.Assignee)
+		i = encodeVarintBatch(dAtA, i, uint64(len(m.Assignee)))
+		i--
+		dAtA[i] = 0x42
+	}
+	if len(m.BytesToSign) > 0 {
+		i -= len(m.BytesToSign)
+		copy(dAtA[i:], m.BytesToSign)
+		i = encodeVarintBatch(dAtA, i, uint64(len(m.BytesToSign)))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if len(m.ChainReferenceId) > 0 {
+		i -= len(m.ChainReferenceId)
+		copy(dAtA[i:], m.ChainReferenceId)
+		i = encodeVarintBatch(dAtA, i, uint64(len(m.ChainReferenceId)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if m.PalomaBlockCreated != 0 {
+		i = encodeVarintBatch(dAtA, i, uint64(m.PalomaBlockCreated))
 		i--
 		dAtA[i] = 0x28
 	}
@@ -550,16 +489,6 @@ func (m *OutgoingTransferTx) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	{
-		size, err := m.Erc20Fee.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarintBatch(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x2a
-	{
 		size, err := m.Erc20Token.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
@@ -587,93 +516,6 @@ func (m *OutgoingTransferTx) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintBatch(dAtA, i, uint64(m.Id))
 		i--
 		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *OutgoingLogicCall) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *OutgoingLogicCall) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *OutgoingLogicCall) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.CosmosBlockCreated != 0 {
-		i = encodeVarintBatch(dAtA, i, uint64(m.CosmosBlockCreated))
-		i--
-		dAtA[i] = 0x40
-	}
-	if m.InvalidationNonce != 0 {
-		i = encodeVarintBatch(dAtA, i, uint64(m.InvalidationNonce))
-		i--
-		dAtA[i] = 0x38
-	}
-	if len(m.InvalidationId) > 0 {
-		i -= len(m.InvalidationId)
-		copy(dAtA[i:], m.InvalidationId)
-		i = encodeVarintBatch(dAtA, i, uint64(len(m.InvalidationId)))
-		i--
-		dAtA[i] = 0x32
-	}
-	if m.Timeout != 0 {
-		i = encodeVarintBatch(dAtA, i, uint64(m.Timeout))
-		i--
-		dAtA[i] = 0x28
-	}
-	if len(m.Payload) > 0 {
-		i -= len(m.Payload)
-		copy(dAtA[i:], m.Payload)
-		i = encodeVarintBatch(dAtA, i, uint64(len(m.Payload)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.LogicContractAddress) > 0 {
-		i -= len(m.LogicContractAddress)
-		copy(dAtA[i:], m.LogicContractAddress)
-		i = encodeVarintBatch(dAtA, i, uint64(len(m.LogicContractAddress)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.Fees) > 0 {
-		for iNdEx := len(m.Fees) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Fees[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintBatch(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
-		}
-	}
-	if len(m.Transfers) > 0 {
-		for iNdEx := len(m.Transfers) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Transfers[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintBatch(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
-		}
 	}
 	return len(dAtA) - i, nil
 }
@@ -749,6 +591,13 @@ func (m *EventOutgoingBatch) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.Assignee) > 0 {
+		i -= len(m.Assignee)
+		copy(dAtA[i:], m.Assignee)
+		i = encodeVarintBatch(dAtA, i, uint64(len(m.Assignee)))
+		i--
+		dAtA[i] = 0x2a
+	}
 	if len(m.Nonce) > 0 {
 		i -= len(m.Nonce)
 		copy(dAtA[i:], m.Nonce)
@@ -813,8 +662,20 @@ func (m *OutgoingTxBatch) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovBatch(uint64(l))
 	}
-	if m.CosmosBlockCreated != 0 {
-		n += 1 + sovBatch(uint64(m.CosmosBlockCreated))
+	if m.PalomaBlockCreated != 0 {
+		n += 1 + sovBatch(uint64(m.PalomaBlockCreated))
+	}
+	l = len(m.ChainReferenceId)
+	if l > 0 {
+		n += 1 + l + sovBatch(uint64(l))
+	}
+	l = len(m.BytesToSign)
+	if l > 0 {
+		n += 1 + l + sovBatch(uint64(l))
+	}
+	l = len(m.Assignee)
+	if l > 0 {
+		n += 1 + l + sovBatch(uint64(l))
 	}
 	return n
 }
@@ -838,50 +699,6 @@ func (m *OutgoingTransferTx) Size() (n int) {
 	}
 	l = m.Erc20Token.Size()
 	n += 1 + l + sovBatch(uint64(l))
-	l = m.Erc20Fee.Size()
-	n += 1 + l + sovBatch(uint64(l))
-	return n
-}
-
-func (m *OutgoingLogicCall) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Transfers) > 0 {
-		for _, e := range m.Transfers {
-			l = e.Size()
-			n += 1 + l + sovBatch(uint64(l))
-		}
-	}
-	if len(m.Fees) > 0 {
-		for _, e := range m.Fees {
-			l = e.Size()
-			n += 1 + l + sovBatch(uint64(l))
-		}
-	}
-	l = len(m.LogicContractAddress)
-	if l > 0 {
-		n += 1 + l + sovBatch(uint64(l))
-	}
-	l = len(m.Payload)
-	if l > 0 {
-		n += 1 + l + sovBatch(uint64(l))
-	}
-	if m.Timeout != 0 {
-		n += 1 + sovBatch(uint64(m.Timeout))
-	}
-	l = len(m.InvalidationId)
-	if l > 0 {
-		n += 1 + l + sovBatch(uint64(l))
-	}
-	if m.InvalidationNonce != 0 {
-		n += 1 + sovBatch(uint64(m.InvalidationNonce))
-	}
-	if m.CosmosBlockCreated != 0 {
-		n += 1 + sovBatch(uint64(m.CosmosBlockCreated))
-	}
 	return n
 }
 
@@ -929,6 +746,10 @@ func (m *EventOutgoingBatch) Size() (n int) {
 		n += 1 + l + sovBatch(uint64(l))
 	}
 	l = len(m.Nonce)
+	if l > 0 {
+		n += 1 + l + sovBatch(uint64(l))
+	}
+	l = len(m.Assignee)
 	if l > 0 {
 		n += 1 + l + sovBatch(uint64(l))
 	}
@@ -1076,9 +897,9 @@ func (m *OutgoingTxBatch) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 5:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CosmosBlockCreated", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field PalomaBlockCreated", wireType)
 			}
-			m.CosmosBlockCreated = 0
+			m.PalomaBlockCreated = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowBatch
@@ -1088,11 +909,109 @@ func (m *OutgoingTxBatch) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.CosmosBlockCreated |= uint64(b&0x7F) << shift
+				m.PalomaBlockCreated |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainReferenceId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowBatch
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthBatch
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthBatch
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChainReferenceId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BytesToSign", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowBatch
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthBatch
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthBatch
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.BytesToSign = append(m.BytesToSign[:0], dAtA[iNdEx:postIndex]...)
+			if m.BytesToSign == nil {
+				m.BytesToSign = []byte{}
+			}
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Assignee", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowBatch
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthBatch
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthBatch
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Assignee = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipBatch(dAtA[iNdEx:])
@@ -1259,314 +1178,6 @@ func (m *OutgoingTransferTx) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Erc20Fee", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBatch
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthBatch
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthBatch
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Erc20Fee.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipBatch(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthBatch
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *OutgoingLogicCall) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowBatch
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: OutgoingLogicCall: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: OutgoingLogicCall: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Transfers", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBatch
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthBatch
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthBatch
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Transfers = append(m.Transfers, ERC20Token{})
-			if err := m.Transfers[len(m.Transfers)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Fees", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBatch
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthBatch
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthBatch
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Fees = append(m.Fees, ERC20Token{})
-			if err := m.Fees[len(m.Fees)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LogicContractAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBatch
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthBatch
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthBatch
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.LogicContractAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Payload", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBatch
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthBatch
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthBatch
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Payload = append(m.Payload[:0], dAtA[iNdEx:postIndex]...)
-			if m.Payload == nil {
-				m.Payload = []byte{}
-			}
-			iNdEx = postIndex
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Timeout", wireType)
-			}
-			m.Timeout = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBatch
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Timeout |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InvalidationId", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBatch
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthBatch
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthBatch
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.InvalidationId = append(m.InvalidationId[:0], dAtA[iNdEx:postIndex]...)
-			if m.InvalidationId == nil {
-				m.InvalidationId = []byte{}
-			}
-			iNdEx = postIndex
-		case 7:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InvalidationNonce", wireType)
-			}
-			m.InvalidationNonce = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBatch
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.InvalidationNonce |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 8:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CosmosBlockCreated", wireType)
-			}
-			m.CosmosBlockCreated = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBatch
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.CosmosBlockCreated |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipBatch(dAtA[iNdEx:])
@@ -1922,6 +1533,38 @@ func (m *EventOutgoingBatch) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Nonce = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Assignee", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowBatch
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthBatch
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthBatch
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Assignee = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

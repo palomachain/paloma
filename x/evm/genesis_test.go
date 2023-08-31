@@ -67,7 +67,7 @@ var _ = g.Describe("genesis", func() {
 
 				if smartContract != nil {
 					for _, ci := range chainInfo {
-						sc, err := k.GetLastSmartContract(ctx)
+						sc, err := k.GetLastCompassContract(ctx)
 						Expect(err).To(BeNil())
 						err = k.ActivateChainReferenceID(
 							ctx,

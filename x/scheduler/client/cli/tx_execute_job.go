@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -33,7 +33,7 @@ func CmdExecuteJob() *cobra.Command {
 
 			var payload []byte
 			if len(ff.payloadPath) > 0 {
-				bz, err := ioutil.ReadFile(ff.payloadPath)
+				bz, err := os.ReadFile(ff.payloadPath)
 				if err != nil {
 					return err
 				}

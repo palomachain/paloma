@@ -5,9 +5,8 @@ package types
 
 import (
 	fmt "fmt"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
-	types1 "github.com/cosmos/cosmos-sdk/types"
-	types "github.com/cosmos/cosmos-sdk/x/bank/types"
+	_ "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-sdk/x/bank/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
@@ -79,86 +78,13 @@ func (m *BridgeValidator) GetEthereumAddress() string {
 	return ""
 }
 
-// Valset is the Ethereum Bridge Multsig Set, each gravity validator also
-// maintains an ETH key to sign messages, these are used to check signatures on
-// ETH because of the significant gas savings
-type Valset struct {
-	Nonce        uint64                                 `protobuf:"varint,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	Members      []BridgeValidator                      `protobuf:"bytes,2,rep,name=members,proto3" json:"members"`
-	Height       uint64                                 `protobuf:"varint,3,opt,name=height,proto3" json:"height,omitempty"`
-	RewardAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=reward_amount,json=rewardAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"reward_amount"`
-	// the reward token in it's Ethereum hex address representation
-	RewardToken string `protobuf:"bytes,5,opt,name=reward_token,json=rewardToken,proto3" json:"reward_token,omitempty"`
-}
-
-func (m *Valset) Reset()         { *m = Valset{} }
-func (m *Valset) String() string { return proto.CompactTextString(m) }
-func (*Valset) ProtoMessage()    {}
-func (*Valset) Descriptor() ([]byte, []int) {
-	return fileDescriptor_90024a00c9d4f5e8, []int{1}
-}
-func (m *Valset) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *Valset) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_Valset.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *Valset) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Valset.Merge(m, src)
-}
-func (m *Valset) XXX_Size() int {
-	return m.Size()
-}
-func (m *Valset) XXX_DiscardUnknown() {
-	xxx_messageInfo_Valset.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Valset proto.InternalMessageInfo
-
-func (m *Valset) GetNonce() uint64 {
-	if m != nil {
-		return m.Nonce
-	}
-	return 0
-}
-
-func (m *Valset) GetMembers() []BridgeValidator {
-	if m != nil {
-		return m.Members
-	}
-	return nil
-}
-
-func (m *Valset) GetHeight() uint64 {
-	if m != nil {
-		return m.Height
-	}
-	return 0
-}
-
-func (m *Valset) GetRewardToken() string {
-	if m != nil {
-		return m.RewardToken
-	}
-	return ""
-}
-
 // LastObservedEthereumBlockHeight stores the last observed
 // Ethereum block height along with the Cosmos block height that
 // it was observed at. These two numbers can be used to project
 // outward and always produce batches with timeouts in the future
 // even if no Ethereum block height has been relayed for a long time
 type LastObservedEthereumBlockHeight struct {
-	CosmosBlockHeight   uint64 `protobuf:"varint,1,opt,name=cosmos_block_height,json=cosmosBlockHeight,proto3" json:"cosmos_block_height,omitempty"`
+	PalomaBlockHeight   uint64 `protobuf:"varint,1,opt,name=paloma_block_height,json=palomaBlockHeight,proto3" json:"paloma_block_height,omitempty"`
 	EthereumBlockHeight uint64 `protobuf:"varint,2,opt,name=ethereum_block_height,json=ethereumBlockHeight,proto3" json:"ethereum_block_height,omitempty"`
 }
 
@@ -166,7 +92,7 @@ func (m *LastObservedEthereumBlockHeight) Reset()         { *m = LastObservedEth
 func (m *LastObservedEthereumBlockHeight) String() string { return proto.CompactTextString(m) }
 func (*LastObservedEthereumBlockHeight) ProtoMessage()    {}
 func (*LastObservedEthereumBlockHeight) Descriptor() ([]byte, []int) {
-	return fileDescriptor_90024a00c9d4f5e8, []int{2}
+	return fileDescriptor_90024a00c9d4f5e8, []int{1}
 }
 func (m *LastObservedEthereumBlockHeight) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -195,9 +121,9 @@ func (m *LastObservedEthereumBlockHeight) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_LastObservedEthereumBlockHeight proto.InternalMessageInfo
 
-func (m *LastObservedEthereumBlockHeight) GetCosmosBlockHeight() uint64 {
+func (m *LastObservedEthereumBlockHeight) GetPalomaBlockHeight() uint64 {
 	if m != nil {
-		return m.CosmosBlockHeight
+		return m.PalomaBlockHeight
 	}
 	return 0
 }
@@ -212,15 +138,16 @@ func (m *LastObservedEthereumBlockHeight) GetEthereumBlockHeight() uint64 {
 // This records the relationship between an ERC20 token and the denom
 // of the corresponding Cosmos originated asset
 type ERC20ToDenom struct {
-	Erc20 string `protobuf:"bytes,1,opt,name=erc20,proto3" json:"erc20,omitempty"`
-	Denom string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+	Erc20            string `protobuf:"bytes,1,opt,name=erc20,proto3" json:"erc20,omitempty"`
+	Denom            string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+	ChainReferenceId string `protobuf:"bytes,3,opt,name=chain_reference_id,json=chainReferenceId,proto3" json:"chain_reference_id,omitempty"`
 }
 
 func (m *ERC20ToDenom) Reset()         { *m = ERC20ToDenom{} }
 func (m *ERC20ToDenom) String() string { return proto.CompactTextString(m) }
 func (*ERC20ToDenom) ProtoMessage()    {}
 func (*ERC20ToDenom) Descriptor() ([]byte, []int) {
-	return fileDescriptor_90024a00c9d4f5e8, []int{3}
+	return fileDescriptor_90024a00c9d4f5e8, []int{2}
 }
 func (m *ERC20ToDenom) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -263,131 +190,17 @@ func (m *ERC20ToDenom) GetDenom() string {
 	return ""
 }
 
-// IBCMetadataProposal defines a custom governance proposal type that allows governance to set the
-// metadata for an IBC token, this will allow Gravity to deploy an ERC20 representing this token on
-// Ethereum
-// Name: the token name
-// Symbol: the token symbol
-// Description: the token description, not sent to ETH at all, only used on Cosmos
-// Display: the token display name (only used on Cosmos to decide ERC20 Decimals)
-// Deicmals: the decimals for the display unit
-// ibc_denom is the denom of the token in question on this chain
-type IBCMetadataProposal struct {
-	Title       string         `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
-	Description string         `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	Metadata    types.Metadata `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata"`
-	IbcDenom    string         `protobuf:"bytes,4,opt,name=ibc_denom,json=ibcDenom,proto3" json:"ibc_denom,omitempty"`
-}
-
-func (m *IBCMetadataProposal) Reset()      { *m = IBCMetadataProposal{} }
-func (*IBCMetadataProposal) ProtoMessage() {}
-func (*IBCMetadataProposal) Descriptor() ([]byte, []int) {
-	return fileDescriptor_90024a00c9d4f5e8, []int{4}
-}
-func (m *IBCMetadataProposal) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *IBCMetadataProposal) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_IBCMetadataProposal.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *IBCMetadataProposal) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_IBCMetadataProposal.Merge(m, src)
-}
-func (m *IBCMetadataProposal) XXX_Size() int {
-	return m.Size()
-}
-func (m *IBCMetadataProposal) XXX_DiscardUnknown() {
-	xxx_messageInfo_IBCMetadataProposal.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_IBCMetadataProposal proto.InternalMessageInfo
-
-// PendingIbcAutoForward represents a SendToCosmos transaction with a foreign CosmosReceiver which will be added to the
-// PendingIbcAutoForward queue in attestation_handler and sent over IBC on some submission of a MsgExecuteIbcAutoForwards
-type PendingIbcAutoForward struct {
-	ForeignReceiver string       `protobuf:"bytes,1,opt,name=foreign_receiver,json=foreignReceiver,proto3" json:"foreign_receiver,omitempty"`
-	Token           *types1.Coin `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
-	IbcChannel      string       `protobuf:"bytes,3,opt,name=ibc_channel,json=ibcChannel,proto3" json:"ibc_channel,omitempty"`
-	EventNonce      uint64       `protobuf:"varint,4,opt,name=event_nonce,json=eventNonce,proto3" json:"event_nonce,omitempty"`
-}
-
-func (m *PendingIbcAutoForward) Reset()         { *m = PendingIbcAutoForward{} }
-func (m *PendingIbcAutoForward) String() string { return proto.CompactTextString(m) }
-func (*PendingIbcAutoForward) ProtoMessage()    {}
-func (*PendingIbcAutoForward) Descriptor() ([]byte, []int) {
-	return fileDescriptor_90024a00c9d4f5e8, []int{5}
-}
-func (m *PendingIbcAutoForward) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *PendingIbcAutoForward) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_PendingIbcAutoForward.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *PendingIbcAutoForward) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PendingIbcAutoForward.Merge(m, src)
-}
-func (m *PendingIbcAutoForward) XXX_Size() int {
-	return m.Size()
-}
-func (m *PendingIbcAutoForward) XXX_DiscardUnknown() {
-	xxx_messageInfo_PendingIbcAutoForward.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_PendingIbcAutoForward proto.InternalMessageInfo
-
-func (m *PendingIbcAutoForward) GetForeignReceiver() string {
+func (m *ERC20ToDenom) GetChainReferenceId() string {
 	if m != nil {
-		return m.ForeignReceiver
+		return m.ChainReferenceId
 	}
 	return ""
-}
-
-func (m *PendingIbcAutoForward) GetToken() *types1.Coin {
-	if m != nil {
-		return m.Token
-	}
-	return nil
-}
-
-func (m *PendingIbcAutoForward) GetIbcChannel() string {
-	if m != nil {
-		return m.IbcChannel
-	}
-	return ""
-}
-
-func (m *PendingIbcAutoForward) GetEventNonce() uint64 {
-	if m != nil {
-		return m.EventNonce
-	}
-	return 0
 }
 
 func init() {
 	proto.RegisterType((*BridgeValidator)(nil), "palomachain.paloma.gravity.BridgeValidator")
-	proto.RegisterType((*Valset)(nil), "palomachain.paloma.gravity.Valset")
 	proto.RegisterType((*LastObservedEthereumBlockHeight)(nil), "palomachain.paloma.gravity.LastObservedEthereumBlockHeight")
 	proto.RegisterType((*ERC20ToDenom)(nil), "palomachain.paloma.gravity.ERC20ToDenom")
-	proto.RegisterType((*IBCMetadataProposal)(nil), "palomachain.paloma.gravity.IBCMetadataProposal")
-	proto.RegisterType((*PendingIbcAutoForward)(nil), "palomachain.paloma.gravity.PendingIbcAutoForward")
 }
 
 func init() {
@@ -395,49 +208,30 @@ func init() {
 }
 
 var fileDescriptor_90024a00c9d4f5e8 = []byte{
-	// 666 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x54, 0x4d, 0x4f, 0x13, 0x5d,
-	0x14, 0xee, 0x40, 0xe1, 0xa5, 0xb7, 0xbc, 0x41, 0x07, 0x30, 0x15, 0xe3, 0x0c, 0x76, 0x41, 0x30,
-	0x86, 0x19, 0xa8, 0x3b, 0x36, 0x86, 0x56, 0x54, 0xe2, 0x17, 0x19, 0x09, 0x0b, 0x37, 0x93, 0x3b,
-	0x77, 0x8e, 0xd3, 0x9b, 0xce, 0xdc, 0xdb, 0xdc, 0xb9, 0x2d, 0xf2, 0x03, 0x4c, 0x5c, 0xba, 0x74,
-	0xc9, 0x9f, 0x70, 0xe1, 0x3f, 0x60, 0xc9, 0xd2, 0xb8, 0x20, 0x06, 0x36, 0xfe, 0x07, 0x37, 0xe6,
-	0x7e, 0xb4, 0x16, 0x3f, 0x56, 0xbd, 0xe7, 0x39, 0xe7, 0x3c, 0xe7, 0xe3, 0x39, 0x1d, 0xb4, 0xd6,
-	0xc7, 0x39, 0x2f, 0x30, 0xe9, 0x62, 0xca, 0x42, 0xf3, 0x0e, 0x33, 0x81, 0x87, 0x54, 0x1e, 0x87,
-	0xf2, 0xb8, 0x0f, 0x65, 0xd0, 0x17, 0x5c, 0x72, 0x77, 0x65, 0x22, 0x2e, 0x30, 0xef, 0xc0, 0xc6,
-	0xad, 0x78, 0x84, 0x97, 0x05, 0x2f, 0xc3, 0x04, 0x97, 0x10, 0x0e, 0xb7, 0x12, 0x90, 0x78, 0x2b,
-	0x24, 0x5c, 0x05, 0xaa, 0xdc, 0x09, 0x3f, 0xeb, 0x8d, 0xfd, 0xca, 0xb0, 0xfe, 0xa5, 0x8c, 0x67,
-	0x5c, 0x3f, 0x43, 0xf5, 0x32, 0x68, 0x33, 0x42, 0x0b, 0x6d, 0x41, 0xd3, 0x0c, 0x0e, 0x71, 0x4e,
-	0x53, 0x2c, 0xb9, 0x70, 0x97, 0xd0, 0x4c, 0x9f, 0x1f, 0x81, 0x68, 0x38, 0xab, 0xce, 0x7a, 0x35,
-	0x32, 0x86, 0x7b, 0x17, 0x5d, 0x03, 0xd9, 0x05, 0x01, 0x83, 0x22, 0xc6, 0x69, 0x2a, 0xa0, 0x2c,
-	0x1b, 0x53, 0xab, 0xce, 0x7a, 0x2d, 0x5a, 0x18, 0xe1, 0x3b, 0x06, 0x6e, 0xfe, 0x70, 0xd0, 0xec,
-	0x21, 0xce, 0x4b, 0x90, 0x8a, 0x8b, 0x71, 0x46, 0x60, 0xc4, 0xa5, 0x0d, 0xf7, 0x29, 0xfa, 0xaf,
-	0x80, 0x22, 0x01, 0xa1, 0x28, 0xa6, 0xd7, 0xeb, 0xad, 0x7b, 0xc1, 0xbf, 0x07, 0x0f, 0x7e, 0xeb,
-	0xaf, 0x5d, 0x3d, 0x3d, 0xf7, 0x2b, 0xd1, 0x88, 0xc1, 0xbd, 0x81, 0x66, 0xbb, 0x40, 0xb3, 0xae,
-	0x6c, 0x4c, 0xeb, 0x1a, 0xd6, 0x72, 0x5f, 0xa1, 0xff, 0x05, 0x1c, 0x61, 0x91, 0xc6, 0xb8, 0xe0,
-	0x03, 0x26, 0x1b, 0x55, 0xd5, 0x6d, 0x3b, 0x50, 0xd9, 0x5f, 0xcf, 0xfd, 0xb5, 0x8c, 0xca, 0xee,
-	0x20, 0x09, 0x08, 0x2f, 0x42, 0xbb, 0x39, 0xf3, 0xb3, 0x51, 0xa6, 0x3d, 0x2b, 0xca, 0x1e, 0x93,
-	0xd1, 0xbc, 0x21, 0xd9, 0xd1, 0x1c, 0xee, 0x1d, 0x64, 0xed, 0x58, 0xf2, 0x1e, 0xb0, 0xc6, 0x8c,
-	0xde, 0x40, 0xdd, 0x60, 0x07, 0x0a, 0x6a, 0xbe, 0x73, 0x90, 0xff, 0x0c, 0x97, 0xf2, 0x65, 0x52,
-	0x82, 0x18, 0x42, 0xba, 0x6b, 0xb7, 0xd3, 0xce, 0x39, 0xe9, 0x3d, 0x31, 0xbd, 0x05, 0x68, 0xd1,
-	0x14, 0x8b, 0x13, 0x85, 0xc6, 0x76, 0x00, 0xb3, 0xa4, 0xeb, 0xc6, 0x35, 0x19, 0xdf, 0x42, 0xcb,
-	0xe3, 0xe5, 0x5f, 0xc9, 0x98, 0xd2, 0x19, 0x8b, 0xf0, 0x67, 0x8d, 0xe6, 0x36, 0x9a, 0xdf, 0x8d,
-	0x3a, 0xad, 0xcd, 0x03, 0xfe, 0x10, 0x18, 0x2f, 0x94, 0x14, 0x20, 0x48, 0x6b, 0x53, 0x57, 0xa9,
-	0x45, 0xc6, 0x50, 0x68, 0xaa, 0xdc, 0x56, 0x4b, 0x63, 0x34, 0x3f, 0x3b, 0x68, 0x71, 0xaf, 0xdd,
-	0x79, 0x0e, 0x12, 0xa7, 0x58, 0xe2, 0x7d, 0xc1, 0xfb, 0xbc, 0xc4, 0xb9, 0x8a, 0x96, 0x54, 0xe6,
-	0x30, 0xe2, 0xd0, 0x86, 0xbb, 0x8a, 0xea, 0x29, 0x94, 0x44, 0xd0, 0xbe, 0xa4, 0x9c, 0x59, 0xa6,
-	0x49, 0xc8, 0x7d, 0x80, 0xe6, 0x0a, 0xcb, 0xa5, 0x55, 0xaa, 0xb7, 0x6e, 0x07, 0x66, 0xca, 0x40,
-	0x5f, 0xa8, 0x3d, 0xd7, 0x60, 0x54, 0xd0, 0x6a, 0x3c, 0x4e, 0x72, 0x6f, 0xa1, 0x1a, 0x4d, 0x48,
-	0x6c, 0x5a, 0xd5, 0x42, 0x46, 0x73, 0x34, 0x21, 0x7a, 0xb2, 0xed, 0xf9, 0xf7, 0x27, 0x7e, 0xe5,
-	0xe3, 0x89, 0x5f, 0xf9, 0x7e, 0xe2, 0x57, 0x9a, 0x9f, 0x1c, 0xb4, 0xbc, 0x0f, 0x2c, 0xa5, 0x2c,
-	0xdb, 0x4b, 0xc8, 0xce, 0x40, 0xf2, 0x47, 0x5c, 0x28, 0x79, 0xd4, 0x09, 0xbf, 0xe1, 0x02, 0x68,
-	0xc6, 0x62, 0x01, 0x04, 0xe8, 0xd0, 0xde, 0x78, 0x2d, 0x5a, 0xb0, 0x78, 0x64, 0x61, 0x37, 0x44,
-	0x33, 0x46, 0xe0, 0x29, 0xdd, 0xed, 0xcd, 0x5f, 0xdd, 0x96, 0x30, 0xee, 0xb6, 0xc3, 0x29, 0x8b,
-	0x4c, 0x9c, 0xeb, 0xa3, 0xba, 0x6a, 0x90, 0x74, 0x31, 0x63, 0x90, 0xeb, 0x21, 0x6b, 0x11, 0xa2,
-	0x09, 0xe9, 0x18, 0x44, 0x05, 0xc0, 0x10, 0x98, 0x8c, 0xcd, 0xff, 0xa1, 0xaa, 0x85, 0x43, 0x1a,
-	0x7a, 0xa1, 0x90, 0xf6, 0xe3, 0xd3, 0x0b, 0xcf, 0x39, 0xbb, 0xf0, 0x9c, 0x6f, 0x17, 0x9e, 0xf3,
-	0xe1, 0xd2, 0xab, 0x9c, 0x5d, 0x7a, 0x95, 0x2f, 0x97, 0x5e, 0xe5, 0xf5, 0xc6, 0xc4, 0xa9, 0xfe,
-	0xe5, 0x43, 0xf2, 0xf6, 0xea, 0xa7, 0x24, 0x99, 0xd5, 0xff, 0xec, 0xfb, 0x3f, 0x03, 0x00, 0x00,
-	0xff, 0xff, 0x2c, 0xb5, 0x8e, 0x81, 0x75, 0x04, 0x00, 0x00,
+	// 361 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x92, 0xc1, 0x4a, 0xf3, 0x40,
+	0x14, 0x85, 0x9b, 0xfe, 0xbf, 0x42, 0x07, 0xa1, 0x35, 0xad, 0x50, 0xba, 0x88, 0xa5, 0x0b, 0xa9,
+	0xa0, 0x99, 0xb6, 0x3e, 0x81, 0xd5, 0xa2, 0x82, 0x20, 0x04, 0x71, 0xe1, 0x26, 0x4c, 0x32, 0xd7,
+	0x24, 0xb4, 0xc9, 0x84, 0x99, 0x69, 0xb5, 0x0f, 0xe0, 0xde, 0xc7, 0x72, 0xd9, 0xa5, 0x4b, 0x69,
+	0x5f, 0x44, 0x66, 0x26, 0x2d, 0x2d, 0xba, 0xbb, 0xe7, 0x7c, 0xe7, 0x72, 0xb8, 0xcc, 0xa0, 0x93,
+	0x9c, 0x4c, 0x58, 0x4a, 0xc2, 0x98, 0x24, 0x19, 0x36, 0x33, 0x8e, 0x38, 0x99, 0x25, 0x72, 0x8e,
+	0xe5, 0x3c, 0x07, 0xe1, 0xe6, 0x9c, 0x49, 0x66, 0xb7, 0xb6, 0x72, 0xae, 0x99, 0xdd, 0x22, 0xd7,
+	0x72, 0x42, 0x26, 0x52, 0x26, 0x70, 0x40, 0x04, 0xe0, 0x59, 0x3f, 0x00, 0x49, 0xfa, 0x38, 0x64,
+	0x2a, 0xa8, 0x76, 0xb7, 0x78, 0x36, 0xde, 0x70, 0x25, 0x0a, 0xde, 0x88, 0x58, 0xc4, 0xf4, 0x88,
+	0xd5, 0x64, 0xdc, 0x8e, 0x87, 0xaa, 0x43, 0x9e, 0xd0, 0x08, 0x9e, 0xc8, 0x24, 0xa1, 0x44, 0x32,
+	0x6e, 0x37, 0xd0, 0x5e, 0xce, 0x5e, 0x81, 0x37, 0xad, 0xb6, 0xd5, 0xfd, 0xef, 0x19, 0x61, 0x9f,
+	0xa2, 0x1a, 0xc8, 0x18, 0x38, 0x4c, 0x53, 0x9f, 0x50, 0xca, 0x41, 0x88, 0x66, 0xb9, 0x6d, 0x75,
+	0x2b, 0x5e, 0x75, 0xed, 0x5f, 0x1a, 0xbb, 0xf3, 0x6e, 0xa1, 0xe3, 0x7b, 0x22, 0xe4, 0x43, 0x20,
+	0x80, 0xcf, 0x80, 0x8e, 0x0a, 0x3e, 0x9c, 0xb0, 0x70, 0x7c, 0x0b, 0x49, 0x14, 0x4b, 0xdb, 0x45,
+	0x75, 0x73, 0x9f, 0x1f, 0x28, 0xd7, 0x8f, 0xb5, 0x5d, 0x54, 0x1e, 0x1a, 0xb4, 0x9d, 0x1f, 0xa0,
+	0xa3, 0x4d, 0xfd, 0xce, 0x46, 0x59, 0x6f, 0xd4, 0xe1, 0x77, 0x47, 0x27, 0x46, 0x07, 0x23, 0xef,
+	0x6a, 0xd0, 0x7b, 0x64, 0xd7, 0x90, 0xb1, 0x54, 0x1d, 0x06, 0x3c, 0x1c, 0xf4, 0x74, 0x4b, 0xc5,
+	0x33, 0x42, 0xb9, 0x54, 0xe1, 0xe2, 0x1a, 0x23, 0xec, 0x33, 0x64, 0xeb, 0x57, 0xf0, 0x39, 0xbc,
+	0x00, 0x87, 0x2c, 0x04, 0x3f, 0xa1, 0xcd, 0x7f, 0x3a, 0x52, 0xd3, 0xc4, 0x5b, 0x83, 0x3b, 0x3a,
+	0xbc, 0xf9, 0x5c, 0x3a, 0xd6, 0x62, 0xe9, 0x58, 0xdf, 0x4b, 0xc7, 0xfa, 0x58, 0x39, 0xa5, 0xc5,
+	0xca, 0x29, 0x7d, 0xad, 0x9c, 0xd2, 0xf3, 0x79, 0x94, 0xc8, 0x78, 0x1a, 0xb8, 0x21, 0x4b, 0xf1,
+	0x1f, 0x9f, 0xe0, 0x6d, 0xf7, 0x1b, 0x04, 0xfb, 0xfa, 0x55, 0x2e, 0x7e, 0x02, 0x00, 0x00, 0xff,
+	0xff, 0x5d, 0xa2, 0xa3, 0x98, 0x31, 0x02, 0x00, 0x00,
 }
 
 func (m *BridgeValidator) Marshal() (dAtA []byte, err error) {
@@ -475,70 +269,6 @@ func (m *BridgeValidator) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Valset) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Valset) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *Valset) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.RewardToken) > 0 {
-		i -= len(m.RewardToken)
-		copy(dAtA[i:], m.RewardToken)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.RewardToken)))
-		i--
-		dAtA[i] = 0x2a
-	}
-	{
-		size := m.RewardAmount.Size()
-		i -= size
-		if _, err := m.RewardAmount.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTypes(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x22
-	if m.Height != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.Height))
-		i--
-		dAtA[i] = 0x18
-	}
-	if len(m.Members) > 0 {
-		for iNdEx := len(m.Members) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Members[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintTypes(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
-		}
-	}
-	if m.Nonce != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.Nonce))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *LastObservedEthereumBlockHeight) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -564,8 +294,8 @@ func (m *LastObservedEthereumBlockHeight) MarshalToSizedBuffer(dAtA []byte) (int
 		i--
 		dAtA[i] = 0x10
 	}
-	if m.CosmosBlockHeight != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.CosmosBlockHeight))
+	if m.PalomaBlockHeight != 0 {
+		i = encodeVarintTypes(dAtA, i, uint64(m.PalomaBlockHeight))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -592,6 +322,13 @@ func (m *ERC20ToDenom) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.ChainReferenceId) > 0 {
+		i -= len(m.ChainReferenceId)
+		copy(dAtA[i:], m.ChainReferenceId)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.ChainReferenceId)))
+		i--
+		dAtA[i] = 0x1a
+	}
 	if len(m.Denom) > 0 {
 		i -= len(m.Denom)
 		copy(dAtA[i:], m.Denom)
@@ -603,114 +340,6 @@ func (m *ERC20ToDenom) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.Erc20)
 		copy(dAtA[i:], m.Erc20)
 		i = encodeVarintTypes(dAtA, i, uint64(len(m.Erc20)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *IBCMetadataProposal) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *IBCMetadataProposal) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *IBCMetadataProposal) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.IbcDenom) > 0 {
-		i -= len(m.IbcDenom)
-		copy(dAtA[i:], m.IbcDenom)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.IbcDenom)))
-		i--
-		dAtA[i] = 0x22
-	}
-	{
-		size, err := m.Metadata.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarintTypes(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x1a
-	if len(m.Description) > 0 {
-		i -= len(m.Description)
-		copy(dAtA[i:], m.Description)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Description)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Title) > 0 {
-		i -= len(m.Title)
-		copy(dAtA[i:], m.Title)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Title)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *PendingIbcAutoForward) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *PendingIbcAutoForward) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *PendingIbcAutoForward) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.EventNonce != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.EventNonce))
-		i--
-		dAtA[i] = 0x20
-	}
-	if len(m.IbcChannel) > 0 {
-		i -= len(m.IbcChannel)
-		copy(dAtA[i:], m.IbcChannel)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.IbcChannel)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if m.Token != nil {
-		{
-			size, err := m.Token.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTypes(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.ForeignReceiver) > 0 {
-		i -= len(m.ForeignReceiver)
-		copy(dAtA[i:], m.ForeignReceiver)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.ForeignReceiver)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -744,41 +373,14 @@ func (m *BridgeValidator) Size() (n int) {
 	return n
 }
 
-func (m *Valset) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Nonce != 0 {
-		n += 1 + sovTypes(uint64(m.Nonce))
-	}
-	if len(m.Members) > 0 {
-		for _, e := range m.Members {
-			l = e.Size()
-			n += 1 + l + sovTypes(uint64(l))
-		}
-	}
-	if m.Height != 0 {
-		n += 1 + sovTypes(uint64(m.Height))
-	}
-	l = m.RewardAmount.Size()
-	n += 1 + l + sovTypes(uint64(l))
-	l = len(m.RewardToken)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	return n
-}
-
 func (m *LastObservedEthereumBlockHeight) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.CosmosBlockHeight != 0 {
-		n += 1 + sovTypes(uint64(m.CosmosBlockHeight))
+	if m.PalomaBlockHeight != 0 {
+		n += 1 + sovTypes(uint64(m.PalomaBlockHeight))
 	}
 	if m.EthereumBlockHeight != 0 {
 		n += 1 + sovTypes(uint64(m.EthereumBlockHeight))
@@ -800,52 +402,9 @@ func (m *ERC20ToDenom) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	return n
-}
-
-func (m *IBCMetadataProposal) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Title)
+	l = len(m.ChainReferenceId)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
-	}
-	l = len(m.Description)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	l = m.Metadata.Size()
-	n += 1 + l + sovTypes(uint64(l))
-	l = len(m.IbcDenom)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	return n
-}
-
-func (m *PendingIbcAutoForward) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.ForeignReceiver)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	if m.Token != nil {
-		l = m.Token.Size()
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	l = len(m.IbcChannel)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	if m.EventNonce != 0 {
-		n += 1 + sovTypes(uint64(m.EventNonce))
 	}
 	return n
 }
@@ -957,194 +516,6 @@ func (m *BridgeValidator) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Valset) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTypes
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Valset: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Valset: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
-			}
-			m.Nonce = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Nonce |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Members", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Members = append(m.Members, BridgeValidator{})
-			if err := m.Members[len(m.Members)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Height", wireType)
-			}
-			m.Height = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Height |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RewardAmount", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.RewardAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RewardToken", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.RewardToken = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTypes(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *LastObservedEthereumBlockHeight) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1176,9 +547,9 @@ func (m *LastObservedEthereumBlockHeight) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CosmosBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field PalomaBlockHeight", wireType)
 			}
-			m.CosmosBlockHeight = 0
+			m.PalomaBlockHeight = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -1188,7 +559,7 @@ func (m *LastObservedEthereumBlockHeight) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.CosmosBlockHeight |= uint64(b&0x7F) << shift
+				m.PalomaBlockHeight |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -1326,156 +697,9 @@ func (m *ERC20ToDenom) Unmarshal(dAtA []byte) error {
 			}
 			m.Denom = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTypes(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *IBCMetadataProposal) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTypes
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: IBCMetadataProposal: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: IBCMetadataProposal: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Title", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Title = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Description", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Description = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IbcDenom", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainReferenceId", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1503,177 +727,8 @@ func (m *IBCMetadataProposal) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.IbcDenom = string(dAtA[iNdEx:postIndex])
+			m.ChainReferenceId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTypes(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *PendingIbcAutoForward) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTypes
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: PendingIbcAutoForward: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: PendingIbcAutoForward: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ForeignReceiver", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ForeignReceiver = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Token", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Token == nil {
-				m.Token = &types1.Coin{}
-			}
-			if err := m.Token.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IbcChannel", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.IbcChannel = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EventNonce", wireType)
-			}
-			m.EventNonce = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.EventNonce |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTypes(dAtA[iNdEx:])

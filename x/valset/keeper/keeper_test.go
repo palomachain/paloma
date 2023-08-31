@@ -179,6 +179,9 @@ func TestCreatingSnapshots(t *testing.T) {
 		f(1, vali2)
 	})
 
+	ms.EvmKeeper.On("MissingChains", mock.Anything, mock.Anything).Return([]string(nil), nil)
+	ms.EvmKeeper.On("MissingChains", mock.Anything, mock.Anything).Return([]string(nil), nil)
+
 	state1 := []*types.ExternalChainInfo{
 		{
 			ChainType:        "evm",
@@ -414,6 +417,66 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 						ShareCount: sdk.NewInt(200),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc"}, {Address: "def"},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+				},
+			},
+		},
+		{
+			expRes: false,
+			name:   "two snapshots have same validators and same traits",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(20),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(1000),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(200),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+				},
+			},
+		},
+		{
+			expRes: true,
+			name:   "two snapshots have same validators and different traits",
+			curr: &types.Snapshot{
+				TotalShares: sdk.NewInt(100),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(20),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
+						},
+					},
+					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+				},
+			},
+			neww: &types.Snapshot{
+				TotalShares: sdk.NewInt(1000),
+				Validators: []types.Validator{
+					{
+						Address:    sdk.ValAddress("123"),
+						ShareCount: sdk.NewInt(200),
+						ExternalChainInfos: []*types.ExternalChainInfo{
+							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"def"}},
 						},
 					},
 					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},

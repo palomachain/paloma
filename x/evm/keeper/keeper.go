@@ -15,7 +15,6 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
@@ -23,6 +22,7 @@ import (
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
+	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -132,170 +132,21 @@ func NewKeeper(
 		},
 	}
 
-	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.smartContractsStore), []byte("id-key"))
+	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.provideSmartContractStore), []byte("id-key"))
 
 	return k
 }
 
-func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string) (string, error) {
+func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error) {
 	weights, err := k.GetRelayWeights(ctx, chainReferenceID)
 	if err != nil {
 		return "", err
 	}
-	return k.msgAssigner.PickValidatorForMessage(ctx, weights)
+	return k.msgAssigner.PickValidatorForMessage(ctx, weights, chainReferenceID, requirements)
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
-}
-
-func (k Keeper) AddSmartContractExecutionToConsensus(
-	ctx sdk.Context,
-	chainReferenceID,
-	turnstoneID string,
-	logicCall *types.SubmitLogicCall,
-) error {
-	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID)
-	if err != nil {
-		return err
-	}
-
-	return k.ConsensusKeeper.PutMessageInQueue(
-		ctx,
-		consensustypes.Queue(
-			ConsensusTurnstoneMessage,
-			xchainType,
-			chainReferenceID,
-		),
-		&types.Message{
-			ChainReferenceID: chainReferenceID,
-			TurnstoneID:      turnstoneID,
-			Action: &types.Message_SubmitLogicCall{
-				SubmitLogicCall: logicCall,
-			},
-			Assignee: assignee,
-		}, nil)
-}
-
-func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) (retErr error) {
-	defer func() {
-		args := []any{
-			"chain-reference-id", chainInfo.GetChainReferenceID(),
-			"smart-contract-id", smartContract.GetId(),
-		}
-		if retErr != nil {
-			args = append(args, "err", retErr)
-		}
-
-		if retErr != nil {
-			k.Logger(ctx).Error("error adding a message to deploy smart contract to chain", args...)
-		} else {
-			k.Logger(ctx).Info("added a new smart contract deployment to queue", args...)
-		}
-	}()
-	logger := k.Logger(ctx)
-	contractABI, err := abi.JSON(strings.NewReader(smartContract.GetAbiJSON()))
-	if err != nil {
-		return err
-	}
-
-	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
-	var totalShares sdk.Int
-	if snapshot != nil {
-		totalShares = snapshot.TotalShares
-	}
-	logger.Info(
-		"get current snapshot",
-		"snapshot-id", snapshot.GetId(),
-		"validators-size", len(snapshot.GetValidators()),
-		"total-shares", totalShares,
-	)
-
-	switch {
-	case err == nil:
-		// does nothing
-	case errors.Is(err, keeperutil.ErrNotFound):
-		// can't deploy as there is no consensus
-		return nil
-	default:
-		return err
-	}
-	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID(), logger)
-	logger.Info("returning valset info for deploy smart contract to chain",
-		"valset-id", valset.ValsetID,
-		"valset-validator-size", len(valset.Validators),
-		"valset-power-size", len(valset.Powers),
-	)
-	if !isEnoughToReachConsensus(valset) {
-		k.Logger(ctx).Info(
-			"skipping deployment as there are not enough validators to form a consensus",
-			"chain-id", chainInfo.GetChainReferenceID(),
-			"smart-contract-id", smartContract.GetId(),
-			"valset-id", valset.GetValsetID(),
-		)
-		return whoops.WrapS(
-			ErrConsensusNotAchieved,
-			"cannot build a valset. valset-id: %d, chain-reference-id: %s, smart-contract-id: %d",
-			valset.GetValsetID(), chainInfo.GetChainReferenceID(), smartContract.GetId(),
-		)
-	}
-	uniqueID := generateSmartContractID(ctx)
-
-	k.setSmartContractAsDeploying(ctx, smartContract, chainInfo, uniqueID[:])
-
-	// set the smart contract constructor arguments
-	input, err := contractABI.Pack("", uniqueID, types.TransformValsetToABIValset(valset))
-
-	logger.Info(
-		"transform valset to abi valset",
-		"valset-id", valset.GetValsetID(),
-		"validators-size", len(valset.GetValidators()),
-		"power-size", len(valset.GetPowers()),
-	)
-	if err != nil {
-		return err
-	}
-
-	vals, err := contractABI.Constructor.Inputs.Unpack(input)
-	logger.Debug("[deploySmartContractToChain] UNPACK",
-		"ERR", err,
-		"ARGS", vals,
-	)
-	if err != nil {
-		return err
-	}
-
-	logger.Info(
-		"smart contract deployment constructor input",
-		"x-chain-type", xchainType,
-		"chain-reference-id", chainInfo.GetChainReferenceID(),
-		"constructor-input", input,
-	)
-
-	assignee, err := k.PickValidatorForMessage(ctx, chainInfo.GetChainReferenceID())
-	if err != nil {
-		return err
-	}
-
-	return k.ConsensusKeeper.PutMessageInQueue(
-		ctx,
-		consensustypes.Queue(
-			ConsensusTurnstoneMessage,
-			xchainType,
-			chainInfo.GetChainReferenceID(),
-		),
-		&types.Message{
-			ChainReferenceID: chainInfo.GetChainReferenceID(),
-			Action: &types.Message_UploadSmartContract{
-				UploadSmartContract: &types.UploadSmartContract{
-					Id:               smartContract.GetId(),
-					Bytecode:         smartContract.GetBytecode(),
-					Abi:              smartContract.GetAbiJSON(),
-					ConstructorInput: input,
-				},
-			},
-			Assignee: assignee,
-		}, nil)
 }
 
 func (k Keeper) ChangeMinOnChainBalance(ctx sdk.Context, chainReferenceID string, balance *big.Int) error {
@@ -305,85 +156,6 @@ func (k Keeper) ChangeMinOnChainBalance(ctx sdk.Context, chainReferenceID string
 	}
 	ci.MinOnChainBalance = balance.Text(10)
 	return k.updateChainInfo(ctx, ci)
-}
-
-func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode []byte) (*types.SmartContract, error) {
-	smartContract := &types.SmartContract{
-		Id:       k.ider.IncrementNextID(ctx, "smart-contract"),
-		AbiJSON:  abiJSON,
-		Bytecode: bytecode,
-	}
-
-	err := k.saveSmartContract(ctx, smartContract)
-	if err != nil {
-		return nil, err
-	}
-
-	k.Logger(ctx).Info("saving new smart contract", "smart-contract-id", smartContract.GetId())
-	err = k.setAsLastSmartContract(ctx, smartContract)
-	if err != nil {
-		return nil, err
-	}
-	k.Logger(ctx).Info("setting smart contract as the latest one", "smart-contract-id", smartContract.GetId())
-
-	err = k.tryDeployingSmartContractToAllChains(ctx, smartContract)
-	if err != nil {
-		// that's ok. it will try to deploy it on every end blocker
-		if !errors.Is(err, ErrConsensusNotAchieved) {
-			return nil, err
-		}
-	}
-
-	return smartContract, nil
-}
-
-func (k Keeper) TryDeployingLastSmartContractToAllChains(ctx sdk.Context) {
-	smartContract, err := k.GetLastSmartContract(ctx)
-	if err != nil {
-		k.Logger(ctx).Error("error while getting latest smart contract", "err", err)
-		return
-	}
-	err = k.tryDeployingSmartContractToAllChains(ctx, smartContract)
-	if err != nil {
-		k.Logger(ctx).Error("error while trying to deploy smart contract to all chains",
-			"err", err,
-			"smart-contract-id", smartContract.GetId(),
-		)
-		return
-	}
-	k.Logger(ctx).Info("trying to deploy smart contract to all chains",
-		"smart-contract-id", smartContract.GetId(),
-	)
-}
-
-func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContract *types.SmartContract) error {
-	var g whoops.Group
-	chainInfos, err := k.GetAllChainInfos(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, chainInfo := range chainInfos {
-		k.Logger(ctx).Info("trying to deploy smart contract to EVM chain", "smart-contract-id", smartContract.GetId(), "chain-reference-id", chainInfo.GetChainReferenceID())
-		if k.HasAnySmartContractDeployment(ctx, chainInfo.GetChainReferenceID()) {
-			// we are already deploying to this chain. Lets wait it out.
-			continue
-		}
-		if chainInfo.GetActiveSmartContractID() >= smartContract.GetId() {
-			// the chain has the newer version of the chain, so skipping the "old" smart contract upgrade
-			continue
-		}
-		k.Logger(ctx).Info("deploying smart contracts actually",
-			"smart-contract-id", smartContract.GetId(),
-			"chain-reference-id", chainInfo.GetChainReferenceID())
-		g.Add(k.deploySmartContractToChain(ctx, chainInfo, smartContract))
-	}
-
-	if g.Err() {
-		return g
-	}
-
-	return nil
 }
 
 func (k Keeper) SupportedQueues(ctx sdk.Context) ([]consensus.SupportsConsensusQueueAction, error) {
@@ -456,6 +228,34 @@ func (k Keeper) GetChainInfo(ctx sdk.Context, targetChainReferenceID string) (*t
 	return res, nil
 }
 
+// MissingChains returns the chains in this keeper that aren't in the input slice
+func (k Keeper) MissingChains(ctx sdk.Context, inputChainReferenceIDs []string) ([]string, error) {
+	allChains, err := k.GetAllChainInfos(ctx)
+	if err != nil {
+		k.Logger(ctx).Error("Unable to get chains infos from keeper")
+		return nil, err
+	}
+
+	// Build a map to use for efficient comparison
+	supportedChainMap := make(map[string]bool, len(inputChainReferenceIDs))
+	for _, chainReferenceID := range inputChainReferenceIDs {
+		supportedChainMap[chainReferenceID] = true
+	}
+
+	// Walk through all chains and aggregate the ones not supported
+	var unsuportedChainReferenceIDs []string
+	for _, chain := range allChains {
+		chainReferenceID := chain.GetChainReferenceID()
+		if !chain.IsActive() {
+			continue
+		}
+		if _, found := supportedChainMap[chainReferenceID]; !found {
+			unsuportedChainReferenceIDs = append(unsuportedChainReferenceIDs, chainReferenceID)
+		}
+	}
+	return unsuportedChainReferenceIDs, nil
+}
+
 func (k Keeper) updateChainInfo(ctx sdk.Context, chainInfo *types.ChainInfo) error {
 	return keeperutil.Save(k.chainInfoStore(ctx), k.cdc, []byte(chainInfo.GetChainReferenceID()), chainInfo)
 }
@@ -507,7 +307,7 @@ func (k Keeper) AddSupportForNewChain(
 		return err
 	}
 
-	k.TryDeployingLastSmartContractToAllChains(ctx)
+	k.TryDeployingLastCompassContractToAllChains(ctx)
 	return nil
 }
 
@@ -551,7 +351,7 @@ func (k Keeper) ActivateChainReferenceID(
 	chainInfo.SmartContractAddr = smartContractAddr
 	chainInfo.SmartContractUniqueID = smartContractUniqueID
 
-	k.RemoveSmartContractDeployment(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID())
+	k.DeleteSmartContractDeployment(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID())
 
 	return k.updateChainInfo(ctx, chainInfo)
 }
@@ -574,140 +374,8 @@ func (k Keeper) RemoveSupportForChain(ctx sdk.Context, proposal *types.RemoveCha
 	return nil
 }
 
-func (k Keeper) smartContractDeploymentStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("smart-contract-deployment"))
-}
-
 func (k Keeper) chainInfoStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("chain-info"))
-}
-
-func (k Keeper) smartContractsStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("smart-contracts"))
-}
-
-func (k Keeper) setSmartContractAsDeploying(
-	ctx sdk.Context,
-	smartContract *types.SmartContract,
-	chainInfo *types.ChainInfo,
-	uniqueID []byte,
-) *types.SmartContractDeployment {
-	if foundItem, _ := k.getSmartContractDeploying(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID()); foundItem != nil {
-		k.Logger(ctx).Error(
-			"smart contract is already deploying",
-			"smart-contract-id", smartContract.GetId(),
-			"chain-reference-id", chainInfo.GetChainReferenceID(),
-		)
-		return foundItem
-	}
-
-	item := &types.SmartContractDeployment{
-		SmartContractID:  smartContract.GetId(),
-		ChainReferenceID: chainInfo.GetChainReferenceID(),
-		UniqueID:         uniqueID,
-	}
-
-	id := k.ider.IncrementNextID(ctx, "smart-contract-deploying")
-
-	if err := keeperutil.Save(
-		k.smartContractDeploymentStore(ctx),
-		k.cdc,
-		keeperutil.Uint64ToByte(id),
-		item,
-	); err != nil {
-		k.Logger(ctx).Error("error setting smart contract in deployment store", "err", err)
-	}
-
-	k.Logger(ctx).Info("setting smart contract in deployment state", "smart-contract-id", smartContract.GetId(), "chain-reference-id", chainInfo.GetChainReferenceID())
-
-	return item
-}
-
-func (k Keeper) getSmartContractDeploying(ctx sdk.Context, smartContractID uint64, chainReferenceID string) (res *types.SmartContractDeployment, key []byte) {
-	if err := keeperutil.IterAllFnc(
-		k.smartContractDeploymentStore(ctx),
-		k.cdc,
-		func(keyArg []byte, item *types.SmartContractDeployment) bool {
-			if item.ChainReferenceID == chainReferenceID && item.SmartContractID == smartContractID {
-				res = item
-				key = keyArg
-				return false
-			}
-			return true
-		},
-	); err != nil {
-		k.Logger(ctx).Error(
-			"error getting smart contract from deployment store by contractID, chainRef",
-			"err", err,
-			"smartContractID", smartContractID,
-			"chainReferenceID", chainReferenceID,
-		)
-	}
-	return
-}
-
-func (k Keeper) AllSmartContractsDeployments(ctx sdk.Context) ([]*types.SmartContractDeployment, error) {
-	_, res, err := keeperutil.IterAll[*types.SmartContractDeployment](
-		k.smartContractDeploymentStore(ctx),
-		k.cdc,
-	)
-	return res, err
-}
-
-func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID string) (found bool) {
-	if err := keeperutil.IterAllFnc(
-		k.smartContractDeploymentStore(ctx),
-		k.cdc,
-		func(keyArg []byte, item *types.SmartContractDeployment) bool {
-			if item.ChainReferenceID == chainReferenceID {
-				found = true
-				return false
-			}
-			return true
-		},
-	); err != nil {
-		k.Logger(ctx).Error(
-			"error getting smart contract from deployment store by chain Ref",
-			"err", err,
-			"chainReferenceID", chainReferenceID,
-		)
-	}
-	return
-}
-
-func (k Keeper) RemoveSmartContractDeployment(ctx sdk.Context, smartContractID uint64, chainReferenceID string) {
-	_, key := k.getSmartContractDeploying(ctx, smartContractID, chainReferenceID)
-	if key == nil {
-		return
-	}
-	k.Logger(ctx).Info("removing a smart contract deployment", "smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID)
-	k.smartContractDeploymentStore(ctx).Delete(key)
-}
-
-var lastSmartContractKey = []byte{0x1}
-
-func (k Keeper) lastSmartContractStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("latest-smart-contract"))
-}
-
-func (k Keeper) getSmartContract(ctx sdk.Context, id uint64) (*types.SmartContract, error) {
-	return keeperutil.Load[*types.SmartContract](k.smartContractsStore(ctx), k.cdc, keeperutil.Uint64ToByte(id))
-}
-
-func (k Keeper) saveSmartContract(ctx sdk.Context, smartContract *types.SmartContract) error {
-	return keeperutil.Save(k.smartContractsStore(ctx), k.cdc, keeperutil.Uint64ToByte(smartContract.GetId()), smartContract)
-}
-
-func (k Keeper) setAsLastSmartContract(ctx sdk.Context, smartContract *types.SmartContract) error {
-	kv := k.lastSmartContractStore(ctx)
-	kv.Set(lastSmartContractKey, keeperutil.Uint64ToByte(smartContract.GetId()))
-	return nil
-}
-
-func (k Keeper) GetLastSmartContract(ctx sdk.Context) (*types.SmartContract, error) {
-	kv := k.lastSmartContractStore(ctx)
-	id := kv.Get(lastSmartContractKey)
-	return keeperutil.Load[*types.SmartContract](k.smartContractsStore(ctx), k.cdc, id)
 }
 
 func (k Keeper) PreJobExecution(ctx sdk.Context, job *schedulertypes.Job) error {
@@ -775,7 +443,7 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 		return nil
 	}
 
-	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID())
+	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
 	if err != nil {
 		return err
 	}
@@ -791,17 +459,55 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 	return err
 }
 
-func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
+func (k Keeper) PublishValsetToChain(ctx sdk.Context, valset types.Valset, chain *types.ChainInfo) error {
+	if !chain.IsActive() {
+		k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"valset-id", valset.GetValsetID(),
+		)
+		return nil
+	}
+
+	if !isEnoughToReachConsensus(valset) {
+		k.Logger(ctx).Info("ignoring valset for chain as there aren't enough validators to form a consensus for this chain",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"valset-id", valset.GetValsetID(),
+		)
+		return nil
+	}
+
+	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
+	if err != nil {
+		k.Logger(ctx).Error("error picking a validator to run the message",
+			"chain-reference-id", chain.GetChainReferenceID(),
+			"valset-id", valset.GetValsetID(),
+			"error", err,
+		)
+		return err
+	}
+
+	err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset, assignee)
+	if err != nil {
+		k.Logger(ctx).Error("unable to send valset message for chain",
+			"chain", chain.GetChainReferenceID(),
+			"err", err,
+		)
+		return err
+	}
+	return nil
+}
+
+func (k Keeper) PublishSnapshotToAllChains(ctx sdk.Context, snapshot *valsettypes.Snapshot, forcePublish bool) error {
 	chainInfos, err := k.GetAllChainInfos(ctx)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	logger := k.Logger(ctx)
 	for _, chain := range chainInfos {
 		valset := transformSnapshotToCompass(snapshot, chain.GetChainReferenceID(), logger)
 
 		latestActiveValset, _ := k.Valset.GetLatestSnapshotOnChain(ctx, chain.GetChainReferenceID())
-		if latestActiveValset != nil {
+		if latestActiveValset != nil && !forcePublish {
 			latestActiveValsetAge := ctx.BlockTime().Sub(latestActiveValset.CreatedAt)
 
 			// If it's been less than 1 month since publishing a valset, don't publish
@@ -818,42 +524,21 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 			}
 		}
 
-		if !chain.IsActive() {
-			k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
-				"chain-reference-id", chain.GetChainReferenceID(),
-				"valset-id", valset.GetValsetID(),
-			)
-			continue
-		}
-
-		if !isEnoughToReachConsensus(valset) {
-			k.Logger(ctx).Info("ignoring valset for chain as there isn't enough validators to form a consensus for this chain",
-				"chain-reference-id", chain.GetChainReferenceID(),
-				"valset-id", valset.GetValsetID(),
-			)
-			continue
-		}
-
-		assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID())
+		err := k.PublishValsetToChain(ctx, valset, chain)
 		if err != nil {
-			k.Logger(ctx).Info("ignoring valset for chain as there was an error picking a validator to run the message",
-				"chain-reference-id", chain.GetChainReferenceID(),
-				"valset-id", valset.GetValsetID(),
-				"error", err,
-			)
-			continue
-		}
-
-		err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset, assignee)
-		if err != nil {
-			k.Logger(ctx).Error("unable to send valset message for chain",
-				"chain", chain.GetChainReferenceID(),
-				"err", err,
-			)
+			k.Logger(ctx).Error(err.Error())
 		}
 	}
+	return nil
+}
 
-	k.TryDeployingLastSmartContractToAllChains(ctx)
+func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
+	err := k.PublishSnapshotToAllChains(ctx, snapshot, false)
+	if err != nil {
+		panic(err)
+	}
+
+	k.TryDeployingLastCompassContractToAllChains(ctx)
 }
 
 type msgSender struct {
@@ -1046,4 +731,37 @@ func (k Keeper) GetRelayWeights(ctx sdk.Context, chainReferenceID string) (*type
 	}
 
 	return chainInfo.RelayWeights, nil
+}
+
+func (k Keeper) GetEthAddressByValidator(ctx sdk.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *gravitymoduletypes.EthAddress, found bool, err error) {
+	chainInfos, err := k.Valset.GetValidatorChainInfos(ctx, validator)
+	if err != nil {
+		return ethAddress, false, err
+	}
+	for _, chainInfo := range chainInfos {
+		if chainInfo.GetChainReferenceID() == chainReferenceId {
+			ethAddress = &gravitymoduletypes.EthAddress{}
+			err = ethAddress.SetAddress(chainInfo.GetAddress())
+			if err != nil {
+				return ethAddress, false, err
+			}
+			return ethAddress, true, nil
+		}
+	}
+	return ethAddress, false, nil
+}
+
+func (k Keeper) GetValidatorAddressByEthAddress(ctx sdk.Context, ethAddr gravitymoduletypes.EthAddress, chainReferenceId string) (valAddr sdk.ValAddress, found bool, err error) {
+	validatorsExternalAccounts, err := k.Valset.GetAllChainInfos(ctx)
+	if err != nil {
+		return valAddr, false, err
+	}
+	for _, validatorExternalAccounts := range validatorsExternalAccounts {
+		for _, chainInfo := range validatorExternalAccounts.ExternalChainInfo {
+			if chainInfo.GetChainReferenceID() == chainReferenceId && ethAddr.GetAddress().String() == chainInfo.GetAddress() {
+				return validatorExternalAccounts.Address, true, nil
+			}
+		}
+	}
+	return
 }

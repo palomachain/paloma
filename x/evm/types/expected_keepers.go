@@ -40,6 +40,8 @@ type ValsetKeeper interface {
 	Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error
 	IsJailed(ctx sdk.Context, val sdk.ValAddress) bool
 	SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error
+	GetValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) ([]*valsettypes.ExternalChainInfo, error)
+	GetAllChainInfos(ctx sdk.Context) ([]*valsettypes.ValidatorExternalAccounts, error)
 }
 
 type SchedulerKeeper interface {

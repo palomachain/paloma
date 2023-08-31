@@ -9,8 +9,8 @@ import (
 
 // ignore
 func TestPrefixKeysSameLength(t *testing.T) {
-	allKeys := getAllKeys()
-	prefixKeys := allKeys[0:27]
+	allKeys := getAllKeys(t)
+	prefixKeys := allKeys[0:19]
 	length := len(HashString("All keys should be same length when hashed"))
 
 	for _, key := range prefixKeys {
@@ -19,7 +19,7 @@ func TestPrefixKeysSameLength(t *testing.T) {
 }
 
 func TestNoDuplicateKeys(t *testing.T) {
-	keys := getAllKeys()
+	keys := getAllKeys(t)
 
 	for i, key := range keys {
 		keys[i] = nil
@@ -27,16 +27,14 @@ func TestNoDuplicateKeys(t *testing.T) {
 	}
 }
 
-func getAllKeys() [][]byte {
+func getAllKeys(t *testing.T) [][]byte {
 	i := 0
 	inc := func(i *int) *int { *i += 1; return i }
 
-	keys := make([][]byte, 47)
+	keys := make([][]byte, 33)
 
 	keys[i] = EthAddressByValidatorKey
 	keys[*inc(&i)] = ValidatorByEthAddressKey
-	keys[*inc(&i)] = ValsetRequestKey
-	keys[*inc(&i)] = ValsetConfirmKey
 	keys[*inc(&i)] = LEGACYOracleClaimKey
 	keys[*inc(&i)] = OracleAttestationKey
 	keys[*inc(&i)] = OutgoingTXPoolKey
@@ -48,26 +46,18 @@ func getAllKeys() [][]byte {
 	keys[*inc(&i)] = KeyLastTXPoolID
 	keys[*inc(&i)] = KeyLastOutgoingBatchID
 	keys[*inc(&i)] = KeyOrchestratorAddress
-	keys[*inc(&i)] = KeyOutgoingLogicCall
-	keys[*inc(&i)] = KeyOutgoingLogicConfirm
 	keys[*inc(&i)] = LastObservedEthereumBlockHeightKey
 	keys[*inc(&i)] = DenomToERC20Key
 	keys[*inc(&i)] = ERC20ToDenomKey
-	keys[*inc(&i)] = LastSlashedValsetNonce
-	keys[*inc(&i)] = LatestValsetNonce
 	keys[*inc(&i)] = LastSlashedBatchBlock
-	keys[*inc(&i)] = LastSlashedLogicCallBlock
 	keys[*inc(&i)] = LastUnBondingBlockHeight
-	keys[*inc(&i)] = LastObservedValsetKey
 	keys[*inc(&i)] = PastEthSignatureCheckpointKey
 
 	// sdk.AccAddress, sdk.ValAddress
-	dummyAddr := []byte("gravity1ahx7f8wyertuus9r20284ej0asrs085ceqtfnm")
+	dummyAddr := []byte("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
 	// EthAddress
 	ethAddr, err := NewEthAddress("0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B")
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	dummyEthAddr := *ethAddr
 	// Nonce
 	dummyNonce := uint64(1)
@@ -75,28 +65,35 @@ func getAllKeys() [][]byte {
 	dummyBytes := []byte("0xc783df8a850f42e7F7e57013759C285caa701eB6")
 	// InternationalERC20Token
 	dummyErc := InternalERC20Token{Amount: sdk.OneInt(), Contract: dummyEthAddr}
+
 	// Denom
+	dummyChainReferenceID := "test-chain"
 	dummyDenom := "footoken"
 
-	keys[*inc(&i)] = GetOrchestratorAddressKey(dummyAddr)
-	keys[*inc(&i)] = GetEthAddressByValidatorKey(dummyAddr)
+	orchestratorAddressKey, err := GetOrchestratorAddressKey(dummyAddr)
+	require.NoError(t, err)
+	keys[*inc(&i)] = orchestratorAddressKey
+
+	ethAddressByValidatorKey, err := GetEthAddressByValidatorKey(dummyAddr)
+	require.NoError(t, err)
+	keys[*inc(&i)] = ethAddressByValidatorKey
+
 	keys[*inc(&i)] = GetValidatorByEthAddressKey(dummyEthAddr)
-	keys[*inc(&i)] = GetValsetKey(dummyNonce)
-	keys[*inc(&i)] = GetValsetConfirmNoncePrefix(dummyNonce)
-	keys[*inc(&i)] = GetValsetConfirmKey(dummyNonce, dummyAddr)
 	keys[*inc(&i)] = GetAttestationKey(dummyNonce, dummyBytes)
 	keys[*inc(&i)] = GetOutgoingTxPoolContractPrefix(dummyEthAddr)
 	keys[*inc(&i)] = GetOutgoingTxPoolKey(dummyErc, dummyNonce)
 	keys[*inc(&i)] = GetOutgoingTxBatchContractPrefix(dummyEthAddr)
 	keys[*inc(&i)] = GetOutgoingTxBatchKey(dummyEthAddr, dummyNonce)
 	keys[*inc(&i)] = GetBatchConfirmNonceContractPrefix(dummyEthAddr, dummyNonce)
-	keys[*inc(&i)] = GetBatchConfirmKey(dummyEthAddr, dummyNonce, dummyAddr)
-	keys[*inc(&i)] = GetLastEventNonceByValidatorKey(dummyAddr)
-	keys[*inc(&i)] = GetDenomToERC20Key(dummyDenom)
-	keys[*inc(&i)] = GetERC20ToDenomKey(dummyEthAddr)
-	keys[*inc(&i)] = GetOutgoingLogicCallKey(dummyBytes, dummyNonce)
-	keys[*inc(&i)] = GetLogicConfirmNonceInvalidationIdPrefix(dummyBytes, dummyNonce)
-	keys[*inc(&i)] = GetLogicConfirmKey(dummyBytes, dummyNonce, dummyAddr)
+
+	batchConfirmKey, err := GetBatchConfirmKey(dummyEthAddr, dummyNonce, dummyAddr)
+	keys[*inc(&i)] = batchConfirmKey
+
+	lastEventNonceByValidatorKey, err := GetLastEventNonceByValidatorKey(dummyAddr)
+	keys[*inc(&i)] = lastEventNonceByValidatorKey
+
+	keys[*inc(&i)] = GetDenomToERC20Key(dummyChainReferenceID, dummyDenom)
+	keys[*inc(&i)] = GetERC20ToDenomKey(dummyChainReferenceID, dummyEthAddr)
 	keys[*inc(&i)] = GetPastEthSignatureCheckpointKey(dummyBytes)
 
 	return keys

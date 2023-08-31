@@ -1,0 +1,14 @@
+syntax = "proto3";
+package palomachain.paloma.gravity;
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/palomachain/paloma/x/gravity/types";
+
+message SetERC20ToDenomProposal {
+  string title = 1;
+  string description = 2;
+  string chain_reference_id = 3;
+  string erc20 = 4;
+  string denom = 5;
+}

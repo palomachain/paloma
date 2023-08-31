@@ -2,17 +2,20 @@ package keeper
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"testing"
 
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/evm/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBuildValidatorsInfos(t *testing.T) {
@@ -40,18 +43,21 @@ func TestBuildValidatorsInfos(t *testing.T) {
 					SuccessRate:   1.0,
 					Uptime:        1.0,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				sdk.ValAddress("testvalidator2").String(): {
 					ExecutionTime: 0.5,
 					SuccessRate:   1.0,
 					Uptime:        1.0,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				sdk.ValAddress("testvalidator3").String(): {
 					ExecutionTime: 0.5,
 					SuccessRate:   1.0,
 					Uptime:        1.0,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 			},
 		},
@@ -122,18 +128,21 @@ func TestRankValidators(t *testing.T) {
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator2": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator3": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 			},
 			relayWeights: types.RelayWeightsFloat64{
@@ -141,6 +150,7 @@ func TestRankValidators(t *testing.T) {
 				SuccessRate:   0.5,
 				Uptime:        0.5,
 				Fee:           0.5,
+				FeatureSet:    0.5,
 			},
 			expected: map[string]int{
 				"testvalidator1": 0,
@@ -156,18 +166,21 @@ func TestRankValidators(t *testing.T) {
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.04,
+					FeatureSet:    0.5,
 				},
 				"testvalidator2": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator3": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 			},
 			relayWeights: types.RelayWeightsFloat64{
@@ -175,6 +188,7 @@ func TestRankValidators(t *testing.T) {
 				SuccessRate:   0.5,
 				Uptime:        0.5,
 				Fee:           0.5,
+				FeatureSet:    0.5,
 			},
 			expected: map[string]int{
 				"testvalidator1": 5,
@@ -190,18 +204,21 @@ func TestRankValidators(t *testing.T) {
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator2": {
 					ExecutionTime: 0.4,
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator3": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 			},
 			relayWeights: types.RelayWeightsFloat64{
@@ -209,6 +226,7 @@ func TestRankValidators(t *testing.T) {
 				SuccessRate:   0.5,
 				Uptime:        0.5,
 				Fee:           0.5,
+				FeatureSet:    0.5,
 			},
 			expected: map[string]int{
 				"testvalidator1": 0,
@@ -224,18 +242,21 @@ func TestRankValidators(t *testing.T) {
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator2": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator3": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.5,
 					Uptime:        0.9,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 			},
 			relayWeights: types.RelayWeightsFloat64{
@@ -243,6 +264,7 @@ func TestRankValidators(t *testing.T) {
 				SuccessRate:   0.5,
 				Uptime:        0.5,
 				Fee:           0.5,
+				FeatureSet:    0.5,
 			},
 			expected: map[string]int{
 				"testvalidator1": 0,
@@ -258,18 +280,21 @@ func TestRankValidators(t *testing.T) {
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator2": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.8,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator3": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 			},
 			relayWeights: types.RelayWeightsFloat64{
@@ -277,6 +302,45 @@ func TestRankValidators(t *testing.T) {
 				SuccessRate:   0.5,
 				Uptime:        0.5,
 				Fee:           0.5,
+				FeatureSet:    0.5,
+			},
+			expected: map[string]int{
+				"testvalidator1": 0,
+				"testvalidator2": 5,
+				"testvalidator3": 0,
+			},
+		},
+		{
+			name: "Validator with a higher feature set count is ranked higher",
+			validatorsInfos: map[string]ValidatorInfo{
+				"testvalidator1": {
+					ExecutionTime: 0.5,
+					SuccessRate:   0.5,
+					Uptime:        0.7,
+					Fee:           0.05,
+					FeatureSet:    0.5,
+				},
+				"testvalidator2": {
+					ExecutionTime: 0.5,
+					SuccessRate:   0.5,
+					Uptime:        0.7,
+					Fee:           0.05,
+					FeatureSet:    0.8,
+				},
+				"testvalidator3": {
+					ExecutionTime: 0.5,
+					SuccessRate:   0.5,
+					Uptime:        0.7,
+					Fee:           0.05,
+					FeatureSet:    0.5,
+				},
+			},
+			relayWeights: types.RelayWeightsFloat64{
+				ExecutionTime: 0.5,
+				SuccessRate:   0.5,
+				Uptime:        0.5,
+				Fee:           0.5,
+				FeatureSet:    0.5,
 			},
 			expected: map[string]int{
 				"testvalidator1": 0,
@@ -292,18 +356,21 @@ func TestRankValidators(t *testing.T) {
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator2": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.8,
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator3": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.04,
+					FeatureSet:    0.5,
 				},
 			},
 			relayWeights: types.RelayWeightsFloat64{
@@ -311,6 +378,7 @@ func TestRankValidators(t *testing.T) {
 				SuccessRate:   0.25,
 				Uptime:        0.5,
 				Fee:           0.75,
+				FeatureSet:    0.5,
 			},
 			expected: map[string]int{
 				"testvalidator1": 0,
@@ -326,18 +394,21 @@ func TestRankValidators(t *testing.T) {
 					SuccessRate:   0.5,
 					Uptime:        0.8, // Higher uptime
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator2": {
 					ExecutionTime: 0.5,
 					SuccessRate:   0.8, // Higher success rate
 					Uptime:        0.7,
 					Fee:           0.05,
+					FeatureSet:    0.5,
 				},
 				"testvalidator3": {
 					ExecutionTime: 0.6, // Slower executionTime
 					SuccessRate:   0.5,
 					Uptime:        0.7,
 					Fee:           0.04, // Lower fee
+					FeatureSet:    0.5,
 				},
 			},
 			relayWeights: types.RelayWeightsFloat64{
@@ -345,6 +416,7 @@ func TestRankValidators(t *testing.T) {
 				SuccessRate:   0.5,
 				Uptime:        0.5,
 				Fee:           0.5,
+				FeatureSet:    0.5,
 			},
 			expected: map[string]int{
 				"testvalidator1": 10,
@@ -456,11 +528,13 @@ func TestPickValidator(t *testing.T) {
 
 func TestPickValidatorForMessage(t *testing.T) {
 	testcases := []struct {
-		name        string
-		setup       func() MsgAssigner
-		weights     *types.RelayWeights
-		expected    string
-		expectedErr error
+		name         string
+		setup        func() MsgAssigner
+		weights      *types.RelayWeights
+		chainID      string
+		requirements *xchain.JobRequirements
+		expected     string
+		expectedErr  error
 	}{
 		{
 			name: "assigns a consistent pseudo-random validator in the happy path with equal weights",
@@ -560,6 +634,42 @@ func TestPickValidatorForMessage(t *testing.T) {
 			},
 			expected: sdk.ValAddress("testvalidator1").String(),
 		},
+		{
+			name: "applies validator filtering based on job requirements",
+			setup: func() MsgAssigner {
+				msgAssigner := MsgAssigner{}
+
+				valsetKeeperMock := mocks.NewValsetKeeper(t)
+
+				snapshot := &valsettypes.Snapshot{
+					Id:          1,
+					Chains:      []string{"test-chain"},
+					TotalShares: sdk.NewInt(75000),
+					Validators: []valsettypes.Validator{
+						{
+							Address: sdk.ValAddress("testvalidator1"),
+						},
+						{
+							Address: sdk.ValAddress("testvalidator2"),
+							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+								{ChainReferenceID: "test-chain", Traits: []string{valsettypes.PIGEON_TRAIT_MEV}},
+							},
+						},
+						{
+							Address: sdk.ValAddress("testvalidator3"),
+						},
+					},
+				}
+				valsetKeeperMock.On("GetCurrentSnapshot", mock.Anything).Return(snapshot, nil)
+
+				msgAssigner.ValsetKeeper = valsetKeeperMock
+
+				return msgAssigner
+			},
+			expected:     sdk.ValAddress("testvalidator2").String(),
+			chainID:      "test-chain",
+			requirements: &xchain.JobRequirements{EnforceMEVRelay: true},
+		},
 	}
 
 	asserter := assert.New(t)
@@ -577,10 +687,141 @@ func TestPickValidatorForMessage(t *testing.T) {
 
 			messageAssigner := tt.setup()
 
-			actual, actualErr := messageAssigner.PickValidatorForMessage(ctx, tt.weights)
+			actual, actualErr := messageAssigner.PickValidatorForMessage(ctx, tt.weights, tt.chainID, tt.requirements)
 
 			asserter.Equal(tt.expected, actual)
 			asserter.Equal(tt.expectedErr, actualErr)
+		})
+	}
+}
+
+func TestFilterAssignableValidators(t *testing.T) {
+	chainID := "test-chain"
+	defaultValidators := []valsettypes.Validator{
+		{
+			Address: sdk.ValAddress("validator-1"),
+		},
+		{
+			Address: sdk.ValAddress("validator-2"),
+		},
+		{
+			Address: sdk.ValAddress("validator-3"),
+		},
+	}
+	tests := []struct {
+		name         string
+		validators   []valsettypes.Validator
+		chainID      string
+		requirements *xchain.JobRequirements
+		expected     []valsettypes.Validator
+		expectedStr  string
+	}{
+		{
+			name:         "with empty validator slice",
+			expectedStr:  "should return empty slice",
+			validators:   []valsettypes.Validator{},
+			expected:     []valsettypes.Validator{},
+			requirements: nil,
+			chainID:      chainID,
+		},
+		{
+			name:         "with nil requirement",
+			expectedStr:  "should return input slice",
+			validators:   defaultValidators,
+			expected:     defaultValidators,
+			requirements: nil,
+			chainID:      chainID,
+		},
+		{
+			name:         "with no set requirement",
+			expectedStr:  "should return input slice",
+			validators:   defaultValidators,
+			expected:     defaultValidators,
+			requirements: &xchain.JobRequirements{},
+			chainID:      chainID,
+		},
+		{
+			name:        "with MEV set as requirement",
+			expectedStr: "should return only validators with MEV trait",
+			validators: []valsettypes.Validator{
+				{
+					Address: sdk.ValAddress("validator-1"),
+				},
+				{
+					Address: sdk.ValAddress("validator-2"),
+					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+						{
+							ChainReferenceID: chainID,
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+					},
+				},
+				{
+					Address: sdk.ValAddress("validator-3"),
+				},
+			},
+			expected: []valsettypes.Validator{
+				{
+					Address: sdk.ValAddress("validator-2"),
+					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+						{
+							ChainReferenceID: chainID,
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+					},
+				},
+			},
+			requirements: &xchain.JobRequirements{EnforceMEVRelay: true},
+			chainID:      chainID,
+		},
+		{
+			name:        "with MEV set as requirement and multiple chains configured - REGRESSION",
+			expectedStr: "should return only validators with MEV trait",
+			validators: []valsettypes.Validator{
+				{
+					Address: sdk.ValAddress("validator-1"),
+				},
+				{
+					Address: sdk.ValAddress("validator-2"),
+					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+						{
+							ChainReferenceID: "other-chain",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+						{
+							ChainReferenceID: chainID,
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+					},
+				},
+				{
+					Address: sdk.ValAddress("validator-3"),
+				},
+			},
+			expected: []valsettypes.Validator{
+				{
+					Address: sdk.ValAddress("validator-2"),
+					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+						{
+							ChainReferenceID: "other-chain",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+						{
+							ChainReferenceID: chainID,
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+					},
+				},
+			},
+			requirements: &xchain.JobRequirements{EnforceMEVRelay: true},
+			chainID:      chainID,
+		},
+	}
+
+	for k, v := range tests {
+		t.Run(fmt.Sprintf("%d. %s", k, v.name), func(t *testing.T) {
+			r := filterAssignableValidators(v.validators, v.chainID, v.requirements)
+			require.Equal(t, v.expected, r, v.expectedStr)
 		})
 	}
 }

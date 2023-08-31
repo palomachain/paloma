@@ -2,6 +2,7 @@ package evm
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/VolumeFi/whoops"
@@ -55,9 +56,12 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	sc := genState.GetSmartContract()
 	if sc != nil {
 		b := common.FromHex(sc.GetBytecodeHex())
-		_, err := k.SaveNewSmartContract(ctx, sc.GetAbiJson(), b)
+		nsc, err := k.SaveNewSmartContract(ctx, sc.GetAbiJson(), b)
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("failed to save new compass contract: %w", err))
+		}
+		if err := k.SetAsCompassContract(ctx, nsc); err != nil {
+			panic(fmt.Errorf("failed to set as compass contract: %w", err))
 		}
 	}
 }
@@ -84,7 +88,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	}
 	genesis.Chains = genesisChainInfos
 
-	sc, err := k.GetLastSmartContract(ctx)
+	sc, err := k.GetLastCompassContract(ctx)
 	switch {
 	case err == nil:
 		genesis.SmartContract = &types.GenesisSmartContract{

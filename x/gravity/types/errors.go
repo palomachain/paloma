@@ -1,7 +1,7 @@
 package types
 
 import (
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 )
 
 var (
@@ -16,13 +16,11 @@ var (
 	ErrNonContiguousEventNonce  = sdkerrors.Register(ModuleName, 9, "non contiguous event nonce, expected: %v received: %v")
 	ErrResetDelegateKeys        = sdkerrors.Register(ModuleName, 10, "can not set orchestrator addresses more than once")
 	ErrMismatched               = sdkerrors.Register(ModuleName, 11, "mismatched")
-	ErrNoValidators             = sdkerrors.Register(ModuleName, 12, "no bonded validators in active set")
-	ErrInvalidValAddress        = sdkerrors.Register(ModuleName, 13, "invalid validator address in current valset %v")
 	ErrInvalidEthAddress        = sdkerrors.Register(ModuleName, 14, "discovered invalid eth address stored for validator %v")
-	ErrInvalidValset            = sdkerrors.Register(ModuleName, 15, "generated invalid valset")
 	ErrDuplicateEthereumKey     = sdkerrors.Register(ModuleName, 16, "duplicate ethereum key")
 	ErrDuplicateOrchestratorKey = sdkerrors.Register(ModuleName, 17, "duplicate orchestrator key")
 	ErrInvalidAttestation       = sdkerrors.Register(ModuleName, 18, "invalid attestation submitted")
 	ErrInvalidClaim             = sdkerrors.Register(ModuleName, 19, "invalid claim submitted")
-	ErrInvalidLogicCall         = sdkerrors.Register(ModuleName, 20, "invalid logic call submitted")
+	ErrDenomNotFound            = sdkerrors.Register(ModuleName, 21, "denom not found")
+	ErrERC20NotFound            = sdkerrors.Register(ModuleName, 22, "erc20 not found")
 )

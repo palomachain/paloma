@@ -1,17 +1,10 @@
 package types
 
 import (
-	"fmt"
-	math "math"
-	"math/big"
+	"math"
 	"sort"
-	"strings"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	gethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 //////////////////////////////////////
@@ -197,197 +190,16 @@ func (b InternalBridgeValidators) ValidateBasic() error {
 	return nil
 }
 
-//////////////////////////////////////
-// VALSETS              //
-//////////////////////////////////////
-
-// NewValset returns a new valset
-func NewValset(nonce, height uint64, members InternalBridgeValidators, rewardAmount sdk.Int, rewardToken EthAddress) (*Valset, error) {
-	if err := members.ValidateBasic(); err != nil {
-		return nil, sdkerrors.Wrap(err, "invalid members")
-	}
-	members.Sort()
-	var mem []BridgeValidator
-	for _, val := range members {
-		mem = append(mem, val.ToExternal())
-	}
-	vs := Valset{Nonce: uint64(nonce), Members: mem, Height: height, RewardAmount: rewardAmount, RewardToken: rewardToken.GetAddress().Hex()}
-	return &vs,
-		nil
-}
-
-// GetCheckpoint returns the checkpoint
-func (v Valset) GetCheckpoint(gravityIDstring string) []byte {
-
-	// error case here should not occur outside of testing since the above is a constant
-	contractAbi, abiErr := abi.JSON(strings.NewReader(ValsetCheckpointABIJSON))
-	if abiErr != nil {
-		panic("Bad ABI constant!")
-	}
-
-	// the contract argument is not a arbitrary length array but a fixed length 32 byte
-	// array, therefore we have to utf8 encode the string (the default in this case) and
-	// then copy the variable length encoded data into a fixed length array. This function
-	// will panic if gravityId is too long to fit in 32 bytes
-	gravityID, err := strToFixByteArray(gravityIDstring)
-	if err != nil {
-		panic(err)
-	}
-
-	// this should never happen, unless an invalid parameter value has been set by the chain
-	err = ValidateEthAddress(v.RewardToken)
-	if err != nil {
-		panic(err)
-	}
-	rewardToken := gethcommon.HexToAddress(v.RewardToken)
-
-	if v.RewardAmount.BigInt() == nil {
-		// this must be programmer error
-		panic("Invalid reward amount passed in valset GetCheckpoint!")
-	}
-	rewardAmount := v.RewardAmount.BigInt()
-
-	checkpointBytes := []uint8("checkpoint")
-	var checkpoint [32]uint8
-	copy(checkpoint[:], checkpointBytes)
-
-	memberAddresses := make([]gethcommon.Address, len(v.Members))
-	convertedPowers := make([]*big.Int, len(v.Members))
-	for i, m := range v.Members {
-		memberAddresses[i] = gethcommon.HexToAddress(m.EthereumAddress)
-		convertedPowers[i] = big.NewInt(int64(m.Power))
-	}
-	// the word 'checkpoint' needs to be the same as the 'name' above in the checkpointAbiJson
-	// but other than that it's a constant that has no impact on the output. This is because
-	// it gets encoded as a function name which we must then discard.
-	bytes, packErr := contractAbi.Pack("checkpoint", gravityID, checkpoint, big.NewInt(int64(v.Nonce)), memberAddresses, convertedPowers, rewardAmount, rewardToken)
-
-	// this should never happen outside of test since any case that could crash on encoding
-	// should be filtered above.
-	if packErr != nil {
-		panic(fmt.Sprintf("Error packing checkpoint! %s/n", packErr))
-	}
-
-	// we hash the resulting encoded bytes discarding the first 4 bytes these 4 bytes are the constant
-	// method name 'checkpoint'. If you were to replace the checkpoint constant in this code you would
-	// then need to adjust how many bytes you truncate off the front to get the output of abi.encode()
-	hash := crypto.Keccak256Hash(bytes[4:])
-	return hash.Bytes()
-}
-
-// WithoutEmptyMembers returns a new Valset without member that have 0 power or an empty Ethereum address.
-func (v *Valset) WithoutEmptyMembers() *Valset {
-	if v == nil {
-		return nil
-	}
-	r := Valset{
-		Nonce:        v.Nonce,
-		Members:      make([]BridgeValidator, 0, len(v.Members)),
-		Height:       0,
-		RewardAmount: sdk.Int{},
-		RewardToken:  "",
-	}
-	for i := range v.Members {
-		if _, err := v.Members[i].ToInternal(); err == nil {
-			r.Members = append(r.Members, v.Members[i])
-		}
-	}
-	return &r
-}
-
-// Equal compares all of the valset members, additionally returning an error explaining the problem
-func (v Valset) Equal(o Valset) (bool, error) {
-	if v.Height != o.Height {
-		return false, sdkerrors.Wrap(ErrInvalid, "valset heights mismatch")
-	}
-
-	if v.Nonce != o.Nonce {
-		return false, sdkerrors.Wrap(ErrInvalid, "valset nonces mismatch")
-	}
-
-	if !v.RewardAmount.Equal(o.RewardAmount) {
-		return false, sdkerrors.Wrap(ErrInvalid, "valset reward amounts mismatch")
-	}
-
-	if v.RewardToken != o.RewardToken {
-		return false, sdkerrors.Wrap(ErrInvalid, "valset reward tokens mismatch")
-	}
-
-	var bvs BridgeValidators = v.Members
-	var ovs BridgeValidators = o.Members
-	if !bvs.Equal(ovs) {
-		return false, sdkerrors.Wrap(ErrInvalid, "valset members mismatch")
-	}
-
-	return true, nil
-}
-
-func (v Valset) ValidateBasic() error {
-	if len(v.Members) == 0 {
-		return sdkerrors.Wrap(ErrInvalidValset, "valset must have members")
-	}
-	for _, mem := range v.Members {
-		_, err := mem.ToInternal() // ToInternal validates the InternalBridgeValidator for us
-		if err != nil {
-			return err
-		}
-	}
-	if v.RewardAmount.IsNegative() {
-		return sdkerrors.Wrap(ErrInvalidValset, "valset reward must not be negative")
-	}
-	cleanToken := strings.TrimSpace(v.RewardToken)
-	if v.RewardAmount.IsPositive() && cleanToken == "" {
-		return sdkerrors.Wrap(ErrInvalidValset, "no valset reward denom for nonzero reward")
-	}
-	if cleanToken != v.RewardToken {
-		return sdkerrors.Wrap(ErrInvalidValset, "reward token should be properly formatted")
-	}
-	return nil
-}
-
-// Valsets is a collection of valset
-type Valsets []Valset
-
-func (v Valsets) Len() int {
-	return len(v)
-}
-
-func (v Valsets) Less(i, j int) bool {
-	return v[i].Nonce > v[j].Nonce
-}
-
-func (v Valsets) Swap(i, j int) {
-	v[i], v[j] = v[j], v[i]
-}
-
-func (v Valsets) ValidateBasic() error {
-	for _, valset := range v {
-		if err := valset.ValidateBasic(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// GetFees returns the total fees contained within a given batch
-func (b OutgoingTxBatch) GetFees() sdk.Int {
-	sum := sdk.ZeroInt()
-	for _, t := range b.Transactions {
-		sum = sum.Add(t.Erc20Fee.Amount)
-	}
-	return sum
-}
-
 // This interface is implemented by all the types that are used
 // to create transactions on Ethereum that are signed by validators.
 // The naming here could be improved.
 type EthereumSigned interface {
-	GetCheckpoint(gravityIDstring string) []byte
+	GetCheckpoint(turnstoneID string) ([]byte, error)
+	GetChainReferenceID() string
 }
 
 // nolint: exhaustruct
 var (
-	_ EthereumSigned = &Valset{}
 	_ EthereumSigned = &OutgoingTxBatch{}
-	_ EthereumSigned = &OutgoingLogicCall{}
+	_ EthereumSigned = &InternalOutgoingTxBatch{}
 )

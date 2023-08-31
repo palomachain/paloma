@@ -5,41 +5,46 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
 func (k Keeper) CheckBadSignatureEvidence(
 	ctx sdk.Context,
-	msg *types.MsgSubmitBadSignatureEvidence) error {
+	msg *types.MsgSubmitBadSignatureEvidence,
+	chainReferenceID string,
+) error {
 	var subject types.EthereumSigned
 
 	err := k.cdc.UnpackAny(msg.Subject, &subject)
-
 	if err != nil {
-		return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("Invalid Any encoded evidence %s", err))
+		return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("invalid Any encoded evidence %s", err))
 	}
 
 	switch subject := subject.(type) {
 	case *types.OutgoingTxBatch:
-		return k.checkBadSignatureEvidenceInternal(ctx, subject, msg.Signature)
-	case *types.Valset:
-		return k.checkBadSignatureEvidenceInternal(ctx, subject, msg.Signature)
-	case *types.OutgoingLogicCall:
+		subject.ChainReferenceId = chainReferenceID
 		return k.checkBadSignatureEvidenceInternal(ctx, subject, msg.Signature)
 
 	default:
-		return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("Bad signature must be over a batch, valset, or logic call got %s", subject))
+		return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("bad signature must be over a batch. got %s", subject))
 	}
 }
 
 func (k Keeper) checkBadSignatureEvidenceInternal(ctx sdk.Context, subject types.EthereumSigned, signature string) error {
-	// Get checkpoint of the supposed bad signature (fake valset, batch, or logic call submitted to eth)
-	gravityID := k.GetGravityID(ctx)
-	checkpoint := subject.GetCheckpoint(gravityID)
+	// Get checkpoint of the supposed bad signature (fake batch submitted to eth)
 
+	ci, err := k.evmKeeper.GetChainInfo(ctx, subject.GetChainReferenceID())
+	if err != nil {
+		return sdkerrors.Wrap(err, "unable to create batch")
+	}
+	turnstoneID := string(ci.SmartContractUniqueID)
+	checkpoint, err := subject.GetCheckpoint(turnstoneID)
+	if err != nil {
+		return err
+	}
 	// Try to find the checkpoint in the archives. If it exists, we don't slash because
 	// this is not a bad signature
 	if k.GetPastEthSignatureCheckpoint(ctx, checkpoint) {
@@ -64,9 +69,12 @@ func (k Keeper) checkBadSignatureEvidenceInternal(ctx sdk.Context, subject types
 	}
 
 	// Find the offending validator by eth address
-	val, found := k.GetValidatorByEthAddress(ctx, *ethAddress)
+	val, found, err := k.GetValidatorByEthAddress(ctx, *ethAddress, subject.GetChainReferenceID())
+	if err != nil {
+		return err
+	}
 	if !found {
-		return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("Did not find validator for eth address %s from signature %s with checkpoint %s and GravityID %s", ethAddress.GetAddress().Hex(), signature, hex.EncodeToString(checkpoint), gravityID))
+		return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("Did not find validator for eth address %s from signature %s with checkpoint %s and TurnstoneID %s", ethAddress.GetAddress().Hex(), signature, hex.EncodeToString(checkpoint), turnstoneID))
 	}
 
 	// Slash the offending validator
@@ -84,16 +92,16 @@ func (k Keeper) checkBadSignatureEvidenceInternal(ctx sdk.Context, subject types
 	return nil
 }
 
-// SetPastEthSignatureCheckpoint puts the checkpoint of a valset, batch, or logic call into a set
+// SetPastEthSignatureCheckpoint puts the checkpoint of a batch into a set
 // in order to prove later that it existed at one point.
 func (k Keeper) SetPastEthSignatureCheckpoint(ctx sdk.Context, checkpoint []byte) {
-	store := ctx.KVStore(k.storeKey)
+	store := k.GetStore(ctx)
 	store.Set(types.GetPastEthSignatureCheckpointKey(checkpoint), []byte{0x1})
 }
 
 // GetPastEthSignatureCheckpoint tells you whether a given checkpoint has ever existed
 func (k Keeper) GetPastEthSignatureCheckpoint(ctx sdk.Context, checkpoint []byte) (found bool) {
-	store := ctx.KVStore(k.storeKey)
+	store := k.GetStore(ctx)
 	if bytes.Equal(store.Get(types.GetPastEthSignatureCheckpointKey(checkpoint)), []byte{0x1}) {
 		return true
 	} else {
@@ -101,8 +109,8 @@ func (k Keeper) GetPastEthSignatureCheckpoint(ctx sdk.Context, checkpoint []byte
 	}
 }
 
-func (k Keeper) IteratePastEthSignatureCheckpoints(ctx sdk.Context, cb func(key []byte, value []byte) (stop bool)) {
-	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PastEthSignatureCheckpointKey)
+func (k Keeper) IteratePastEthSignatureCheckpoints(ctx sdk.Context, cb func(key []byte, value []byte) (stop bool)) error {
+	prefixStore := prefix.NewStore(k.GetStore(ctx), types.PastEthSignatureCheckpointKey)
 	iter := prefixStore.Iterator(nil, nil)
 	defer iter.Close()
 
@@ -110,11 +118,12 @@ func (k Keeper) IteratePastEthSignatureCheckpoints(ctx sdk.Context, cb func(key 
 		key := iter.Key()
 		val := iter.Value()
 		if !bytes.Equal(val, []byte{0x1}) {
-			panic(fmt.Sprintf("Invalid stored past eth signature checkpoint key=%v: value %v", key, val))
+			return fmt.Errorf("Invalid stored past eth signature checkpoint key=%v: value %v", key, val)
 		}
 
 		if cb(key, val) {
 			break
 		}
 	}
+	return nil
 }

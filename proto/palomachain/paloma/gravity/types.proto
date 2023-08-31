@@ -13,29 +13,13 @@ message BridgeValidator {
   string ethereum_address = 2;
 }
 
-// Valset is the Ethereum Bridge Multsig Set, each gravity validator also
-// maintains an ETH key to sign messages, these are used to check signatures on
-// ETH because of the significant gas savings
-message Valset {
-  uint64                   nonce   = 1;
-  repeated BridgeValidator members = 2 [(gogoproto.nullable) = false];
-  uint64                   height  = 3;
-  string reward_amount         = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable)   = false
-  ];
-  // the reward token in it's Ethereum hex address representation
-  string reward_token               = 5;
-  
-}
-
 // LastObservedEthereumBlockHeight stores the last observed
 // Ethereum block height along with the Cosmos block height that
 // it was observed at. These two numbers can be used to project
 // outward and always produce batches with timeouts in the future
 // even if no Ethereum block height has been relayed for a long time
 message LastObservedEthereumBlockHeight {
-  uint64 cosmos_block_height   = 1;
+  uint64 paloma_block_height   = 1;
   uint64 ethereum_block_height = 2;
 }
 
@@ -44,35 +28,5 @@ message LastObservedEthereumBlockHeight {
 message ERC20ToDenom {
   string erc20 = 1;
   string denom = 2;
-}
-
-// IBCMetadataProposal defines a custom governance proposal type that allows governance to set the
-// metadata for an IBC token, this will allow Gravity to deploy an ERC20 representing this token on
-// Ethereum
-// Name: the token name
-// Symbol: the token symbol
-// Description: the token description, not sent to ETH at all, only used on Cosmos
-// Display: the token display name (only used on Cosmos to decide ERC20 Decimals)
-// Deicmals: the decimals for the display unit
-// ibc_denom is the denom of the token in question on this chain
-message IBCMetadataProposal {
-  option (gogoproto.equal) = false;
-  option (gogoproto.goproto_getters) = false;
-  option (gogoproto.goproto_stringer) = false;
-
-  string title = 1;
-  string description = 2;
-  cosmos.bank.v1beta1.Metadata metadata  = 3 [
-    (gogoproto.nullable) = false
-  ];
-  string ibc_denom = 4;
-}
-
-// PendingIbcAutoForward represents a SendToCosmos transaction with a foreign CosmosReceiver which will be added to the
-// PendingIbcAutoForward queue in attestation_handler and sent over IBC on some submission of a MsgExecuteIbcAutoForwards
-message PendingIbcAutoForward {
-  string foreign_receiver = 1;         // the destination address. sdk.AccAddress does not preserve foreign prefixes
-  cosmos.base.v1beta1.Coin token = 2; // the token sent from ethereum to the ibc-enabled chain over `IbcChannel`
-  string ibc_channel = 3;              // the IBC channel to send `Amount` over via ibc-transfer module
-  uint64 event_nonce = 4;              // the EventNonce from the MsgSendToCosmosClaim, used for ordering the queue
+  string chain_reference_id = 3;
 }

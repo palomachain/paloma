@@ -19,34 +19,29 @@ func init() {
 // nolint: exhaustruct
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgValsetConfirm{},
 		&MsgSendToEth{},
-		&MsgRequestBatch{},
 		&MsgConfirmBatch{},
-		&MsgConfirmLogicCall{},
-		&MsgSendToCosmosClaim{},
+		&MsgSendToPalomaClaim{},
 		&MsgBatchSendToEthClaim{},
-		&MsgERC20DeployedClaim{},
-		&MsgSetOrchestratorAddress{},
-		&MsgLogicCallExecutedClaim{},
-		&MsgValsetUpdatedClaim{},
 		&MsgCancelSendToEth{},
 		&MsgSubmitBadSignatureEvidence{},
 	)
 
 	registry.RegisterInterface(
-		"gravity.v1beta1.EthereumClaim",
+		"palomachain.paloma.gravity.EthereumClaim",
 		(*EthereumClaim)(nil),
-		&MsgSendToCosmosClaim{},
+		&MsgSendToPalomaClaim{},
 		&MsgBatchSendToEthClaim{},
-		&MsgERC20DeployedClaim{},
-		&MsgLogicCallExecutedClaim{},
-		&MsgValsetUpdatedClaim{},
 	)
 
-	registry.RegisterImplementations((*govtypes.Content)(nil), &IBCMetadataProposal{})
+	registry.RegisterImplementations(
+		(*govtypes.Content)(nil),
+		&SetERC20ToDenomProposal{},
+	)
 
-	registry.RegisterInterface("gravity.v1beta1.EthereumSigned", (*EthereumSigned)(nil), &Valset{}, &OutgoingTxBatch{}, &OutgoingLogicCall{})
+	registry.RegisterInterface("palomachain.paloma.gravity.EthereumSigned", (*EthereumSigned)(nil),
+		&OutgoingTxBatch{},
+	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
@@ -55,18 +50,10 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 // nolint: exhaustruct
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterInterface((*EthereumClaim)(nil), nil)
-	cdc.RegisterConcrete(&MsgSetOrchestratorAddress{}, "gravity/MsgSetOrchestratorAddress", nil)
-	cdc.RegisterConcrete(&MsgValsetConfirm{}, "gravity/MsgValsetConfirm", nil)
 	cdc.RegisterConcrete(&MsgSendToEth{}, "gravity/MsgSendToEth", nil)
-	cdc.RegisterConcrete(&MsgRequestBatch{}, "gravity/MsgRequestBatch", nil)
 	cdc.RegisterConcrete(&MsgConfirmBatch{}, "gravity/MsgConfirmBatch", nil)
-	cdc.RegisterConcrete(&MsgConfirmLogicCall{}, "gravity/MsgConfirmLogicCall", nil)
-	cdc.RegisterConcrete(&Valset{}, "gravity/Valset", nil)
-	cdc.RegisterConcrete(&MsgSendToCosmosClaim{}, "gravity/MsgSendToCosmosClaim", nil)
+	cdc.RegisterConcrete(&MsgSendToPalomaClaim{}, "gravity/MsgSendToPalomaClaim", nil)
 	cdc.RegisterConcrete(&MsgBatchSendToEthClaim{}, "gravity/MsgBatchSendToEthClaim", nil)
-	cdc.RegisterConcrete(&MsgERC20DeployedClaim{}, "gravity/MsgERC20DeployedClaim", nil)
-	cdc.RegisterConcrete(&MsgLogicCallExecutedClaim{}, "gravity/MsgLogicCallExecutedClaim", nil)
-	cdc.RegisterConcrete(&MsgValsetUpdatedClaim{}, "gravity/MsgValsetUpdatedClaim", nil)
 	cdc.RegisterConcrete(&OutgoingTxBatch{}, "gravity/OutgoingTxBatch", nil)
 	cdc.RegisterConcrete(&MsgCancelSendToEth{}, "gravity/MsgCancelSendToEth", nil)
 	cdc.RegisterConcrete(&OutgoingTransferTx{}, "gravity/OutgoingTransferTx", nil)
@@ -74,4 +61,5 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&IDSet{}, "gravity/IDSet", nil)
 	cdc.RegisterConcrete(&Attestation{}, "gravity/Attestation", nil)
 	cdc.RegisterConcrete(&MsgSubmitBadSignatureEvidence{}, "gravity/MsgSubmitBadSignatureEvidence", nil)
+	cdc.RegisterConcrete(&SetERC20ToDenomProposal{}, "gravity/SetERC20ToDenomProposal", nil)
 }

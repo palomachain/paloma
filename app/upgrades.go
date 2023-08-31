@@ -181,6 +181,23 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				return vm, err
 			}
 
+			// Try to build a snapshot.  Fails silently if unworthy
+			_, err = app.ValsetKeeper.TriggerSnapshotBuild(ctx)
+			if err != nil {
+				return vm, err
+			}
+
+			snapshot, err := app.ValsetKeeper.GetCurrentSnapshot(ctx)
+			if err != nil {
+				return vm, err
+			}
+
+			// Publish latest snapshot to all chains
+			err = app.EvmKeeper.PublishSnapshotToAllChains(ctx, snapshot, true)
+			if err != nil {
+				return vm, err
+			}
+
 			return vm, nil
 		},
 	)
@@ -211,7 +228,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
 
-	if upgradeInfo.Name == "v1.5.0" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	if (upgradeInfo.Name == "v1.5.0" || upgradeInfo.Name == "v1.6.1") && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{
 				gravitymoduletypes.ModuleName,

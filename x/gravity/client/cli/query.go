@@ -5,7 +5,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/spf13/cobra"
 )
@@ -29,13 +28,10 @@ func GetQueryCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	gravityQueryCmd.AddCommand([]*cobra.Command{
-		CmdGetCurrentValset(),
-		CmdGetValsetRequest(),
-		CmdGetValsetConfirm(),
-		CmdGetPendingValsetRequest(),
+		CmdGetErc20ToDenoms(),
 		CmdGetPendingOutgoingTXBatchRequest(),
+		CmdGetOutgoingTXBatchRequest(),
 		CmdGetPendingSendToEth(),
-		GetCmdPendingIbcAutoForwards(),
 		CmdGetAttestations(),
 		CmdGetLastObservedEthBlock(),
 		CmdGetLastObservedEthNonce(),
@@ -45,12 +41,11 @@ func GetQueryCmd() *cobra.Command {
 	return gravityQueryCmd
 }
 
-// CmdGetCurrentValset fetches the current validator set
-func CmdGetCurrentValset() *cobra.Command {
+func CmdGetErc20ToDenoms() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "current-valset",
-		Short: "Query current valset",
+		Use:   "erc20-to-denoms",
+		Short: "Query mapping of erc20 token addresses to denoms",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -59,110 +54,9 @@ func CmdGetCurrentValset() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := &types.QueryCurrentValsetRequest{}
+			req := &types.QueryErc20ToDenoms{}
 
-			res, err := queryClient.CurrentValset(cmd.Context(), req)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
-		},
-	}
-	flags.AddQueryFlagsToCmd(cmd)
-	return cmd
-}
-
-// CmdGetValsetRequest fetches a historical valset with the given valset nonce, for use in Ethereum relaying
-func CmdGetValsetRequest() *cobra.Command {
-	// nolint: exhaustruct
-	cmd := &cobra.Command{
-		Use:   "valset-request [nonce]",
-		Short: "Get requested valset with a particular nonce",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
-
-			nonce, err := strconv.ParseUint(args[0], 10, 64)
-			if err != nil {
-				return err
-			}
-
-			req := &types.QueryValsetRequestRequest{
-				Nonce: nonce,
-			}
-
-			res, err := queryClient.ValsetRequest(cmd.Context(), req)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
-		},
-	}
-	flags.AddQueryFlagsToCmd(cmd)
-	return cmd
-}
-
-// CmdGetValsetConfirm fetches a confirm for the valset with the given nonce made by the given validator
-func CmdGetValsetConfirm() *cobra.Command {
-	// nolint: exhaustruct
-	cmd := &cobra.Command{
-		Use:   "valset-confirm [nonce] [bech32 validator address]",
-		Short: "Get valset confirmation with a particular nonce from a particular validator",
-		Args:  cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
-
-			nonce, err := strconv.ParseUint(args[0], 10, 64)
-			if err != nil {
-				return err
-			}
-
-			req := &types.QueryValsetConfirmRequest{
-				Nonce:   nonce,
-				Address: args[1],
-			}
-
-			res, err := queryClient.ValsetConfirm(cmd.Context(), req)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
-		},
-	}
-	flags.AddQueryFlagsToCmd(cmd)
-	return cmd
-}
-
-// CmdGetPendingValsetRequest fetches the valset to be confirmed next by the given validator, if any exists
-func CmdGetPendingValsetRequest() *cobra.Command {
-	// nolint: exhaustruct
-	cmd := &cobra.Command{
-		Use:   "pending-valset-request [bech32 orchestrator address]",
-		Short: "Get the latest valset request which has not been signed by a particular orchestrator",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
-
-			req := &types.QueryLastPendingValsetRequestByAddrRequest{
-				Address: args[0],
-			}
-
-			res, err := queryClient.LastPendingValsetRequestByAddr(cmd.Context(), req)
+			res, err := queryClient.GetErc20ToDenoms(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
@@ -204,6 +98,37 @@ func CmdGetPendingOutgoingTXBatchRequest() *cobra.Command {
 	return cmd
 }
 
+// CmdGetOutgoingTXBatchRequest fetches all outgoing tx batches
+func CmdGetOutgoingTXBatchRequest() *cobra.Command {
+	// nolint: exhaustruct
+	cmd := &cobra.Command{
+		Use:   "outgoing-tx-batches [chain-reference-id] [orchestrator-address]",
+		Short: "Get all outgoing TX batches",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QueryOutgoingTxBatchesRequest{
+				ChainReferenceId: args[0],
+				Assignee:         args[1],
+			}
+
+			res, err := queryClient.OutgoingTxBatches(cmd.Context(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
 // CmdGetPendingSendToEth fetches all pending Sends to Ethereum made by the given address
 func CmdGetPendingSendToEth() *cobra.Command {
 	// nolint: exhaustruct
@@ -223,42 +148,6 @@ func CmdGetPendingSendToEth() *cobra.Command {
 			}
 
 			res, err := queryClient.GetPendingSendToEth(cmd.Context(), req)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
-		},
-	}
-	flags.AddQueryFlagsToCmd(cmd)
-	return cmd
-}
-
-// GetCmdPendingIbcAutoForwards fetches the next IBC auto forwards to be executed, up to an optional limit
-func GetCmdPendingIbcAutoForwards() *cobra.Command {
-	// nolint: exhaustruct
-	cmd := &cobra.Command{
-		Use:   "pending-ibc-auto-forwards [optional limit]",
-		Short: "Query SendToCosmos transactions waiting to be forwarded over IBC",
-		Args:  cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
-
-			var limit uint64 = 0
-			if args[0] != "" {
-				var err error
-				limit, err = strconv.ParseUint(args[0], 10, 0)
-				if err != nil {
-					return sdkerrors.Wrapf(err, "Unable to parse limit from %v", args[0])
-				}
-			}
-
-			req := &types.QueryPendingIbcAutoForwards{Limit: limit}
-			res, err := queryClient.GetPendingIbcAutoForwards(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
@@ -342,7 +231,7 @@ func CmdGetAttestations() *cobra.Command {
 	flags.AddQueryFlagsToCmd(cmd)
 	// Local flags
 	cmd.Flags().String(FlagOrder, "asc", "order attestations by eth block height: set to 'desc' for reverse ordering")
-	cmd.Flags().String(FlagClaimType, "", "which types of claims to filter, empty for all or one of: CLAIM_TYPE_SEND_TO_COSMOS, CLAIM_TYPE_BATCH_SEND_TO_ETH, CLAIM_TYPE_ERC20_DEPLOYED, CLAIM_TYPE_LOGIC_CALL_EXECUTED, CLAIM_TYPE_VALSET_UPDATED")
+	cmd.Flags().String(FlagClaimType, "", "which types of claims to filter, empty for all or one of: CLAIM_TYPE_SEND_TO_PALOMA, CLAIM_TYPE_BATCH_SEND_TO_ETH")
 	cmd.Flags().Uint64(FlagNonce, 0, "the exact nonce to find, 0 for any")
 	cmd.Flags().Uint64(FlagEthHeight, 0, "the exact ethereum block height an event happened at, 0 for any")
 	cmd.Flags().Bool(FlagUseV1Key, false, "if querying with --height less than 1282013 this flag must be provided to locate the attestations")

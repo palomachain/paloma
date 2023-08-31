@@ -5,8 +5,8 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-sdk/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
-	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
@@ -28,60 +28,16 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // The slashing fractions for the various gravity related slashing conditions. The first three
 // refer to not submitting a particular message, the third for submitting a different claim
 // for the same Ethereum event
-//
-// unbond_slashing_valsets_window
-//
-// The unbond slashing valsets window is used to determine how many blocks after starting to unbond
-// a validator needs to continue signing blocks. The goal of this paramater is that when a validator leaves
-// the set, if their leaving creates enough change in the validator set to justify an update they will sign
-// a validator set update for the Ethereum bridge that does not include themselves. Allowing us to remove them
-// from the Ethereum bridge and replace them with the new set gracefully.
-//
-// valset_reward
-//
-// These parameters allow for the bridge oracle to resolve a fork on the Ethereum chain without halting
-// the chain. Once set reset bridge state will roll back events to the nonce provided in reset_bridge_nonce
-// if and only if those events have not yet been observed (executed on the Cosmos chain). This allows for easy
-// handling of cases where for example an Ethereum hardfork has occured and more than 1/3 of the vlaidtor set
-// disagrees with the rest. Normally this would require a chain halt, manual genesis editing and restar to resolve
-// with this feature a governance proposal can be used instead
-//
-// bridge_active
-//
-// This boolean flag can be used by governance to temporarily halt the bridge due to a vulnerability or other issue
-// In this context halting the bridge means prevent the execution of any oracle events from Ethereum and preventing
-// the creation of new batches that may be relayed to Ethereum.
-// This does not prevent the creation of validator sets
-// or slashing for not submitting validator set signatures as either of these might allow key signers to leave the validator
-// set and steal funds on Ethereum without consequence.
-// The practical outcome of this flag being set to 'false' is that deposits from Ethereum will not show up and withdraws from
-// Cosmos will not execute on Ethereum.
-//
-// min_chain_fee_basis_points
-//
-// The minimum SendToEth `chain_fee` amount, in terms of basis points. e.g. 10% fee = 1000, and 0.02% fee = 2
 type Params struct {
-	GravityId                    string                                 `protobuf:"bytes,1,opt,name=gravity_id,json=gravityId,proto3" json:"gravity_id,omitempty"`
-	ContractSourceHash           string                                 `protobuf:"bytes,2,opt,name=contract_source_hash,json=contractSourceHash,proto3" json:"contract_source_hash,omitempty"`
-	BridgeEthereumAddress        string                                 `protobuf:"bytes,4,opt,name=bridge_ethereum_address,json=bridgeEthereumAddress,proto3" json:"bridge_ethereum_address,omitempty"`
-	BridgeChainId                uint64                                 `protobuf:"varint,5,opt,name=bridge_chain_id,json=bridgeChainId,proto3" json:"bridge_chain_id,omitempty"`
-	SignedValsetsWindow          uint64                                 `protobuf:"varint,6,opt,name=signed_valsets_window,json=signedValsetsWindow,proto3" json:"signed_valsets_window,omitempty"`
-	SignedBatchesWindow          uint64                                 `protobuf:"varint,7,opt,name=signed_batches_window,json=signedBatchesWindow,proto3" json:"signed_batches_window,omitempty"`
-	SignedLogicCallsWindow       uint64                                 `protobuf:"varint,8,opt,name=signed_logic_calls_window,json=signedLogicCallsWindow,proto3" json:"signed_logic_calls_window,omitempty"`
-	TargetBatchTimeout           uint64                                 `protobuf:"varint,9,opt,name=target_batch_timeout,json=targetBatchTimeout,proto3" json:"target_batch_timeout,omitempty"`
-	AverageBlockTime             uint64                                 `protobuf:"varint,10,opt,name=average_block_time,json=averageBlockTime,proto3" json:"average_block_time,omitempty"`
-	AverageEthereumBlockTime     uint64                                 `protobuf:"varint,11,opt,name=average_ethereum_block_time,json=averageEthereumBlockTime,proto3" json:"average_ethereum_block_time,omitempty"`
-	SlashFractionValset          github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,12,opt,name=slash_fraction_valset,json=slashFractionValset,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_valset"`
-	SlashFractionBatch           github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,13,opt,name=slash_fraction_batch,json=slashFractionBatch,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_batch"`
-	SlashFractionLogicCall       github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,14,opt,name=slash_fraction_logic_call,json=slashFractionLogicCall,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_logic_call"`
-	UnbondSlashingValsetsWindow  uint64                                 `protobuf:"varint,15,opt,name=unbond_slashing_valsets_window,json=unbondSlashingValsetsWindow,proto3" json:"unbond_slashing_valsets_window,omitempty"`
-	SlashFractionBadEthSignature github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,16,opt,name=slash_fraction_bad_eth_signature,json=slashFractionBadEthSignature,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_bad_eth_signature"`
-	ValsetReward                 types.Coin                             `protobuf:"bytes,17,opt,name=valset_reward,json=valsetReward,proto3" json:"valset_reward"`
-	BridgeActive                 bool                                   `protobuf:"varint,18,opt,name=bridge_active,json=bridgeActive,proto3" json:"bridge_active,omitempty"`
-	// addresses on this blacklist are forbidden from depositing or withdrawing
-	// from Ethereum to the bridge
-	EthereumBlacklist      []string `protobuf:"bytes,19,rep,name=ethereum_blacklist,json=ethereumBlacklist,proto3" json:"ethereum_blacklist,omitempty"`
-	MinChainFeeBasisPoints uint64   `protobuf:"varint,20,opt,name=min_chain_fee_basis_points,json=minChainFeeBasisPoints,proto3" json:"min_chain_fee_basis_points,omitempty"`
+	ContractSourceHash           string                                 `protobuf:"bytes,1,opt,name=contract_source_hash,json=contractSourceHash,proto3" json:"contract_source_hash,omitempty"`
+	BridgeEthereumAddress        string                                 `protobuf:"bytes,2,opt,name=bridge_ethereum_address,json=bridgeEthereumAddress,proto3" json:"bridge_ethereum_address,omitempty"`
+	BridgeChainId                uint64                                 `protobuf:"varint,3,opt,name=bridge_chain_id,json=bridgeChainId,proto3" json:"bridge_chain_id,omitempty"`
+	SignedBatchesWindow          uint64                                 `protobuf:"varint,4,opt,name=signed_batches_window,json=signedBatchesWindow,proto3" json:"signed_batches_window,omitempty"`
+	TargetBatchTimeout           uint64                                 `protobuf:"varint,5,opt,name=target_batch_timeout,json=targetBatchTimeout,proto3" json:"target_batch_timeout,omitempty"`
+	AverageBlockTime             uint64                                 `protobuf:"varint,6,opt,name=average_block_time,json=averageBlockTime,proto3" json:"average_block_time,omitempty"`
+	AverageEthereumBlockTime     uint64                                 `protobuf:"varint,7,opt,name=average_ethereum_block_time,json=averageEthereumBlockTime,proto3" json:"average_ethereum_block_time,omitempty"`
+	SlashFractionBatch           github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,8,opt,name=slash_fraction_batch,json=slashFractionBatch,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_batch"`
+	SlashFractionBadEthSignature github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,9,opt,name=slash_fraction_bad_eth_signature,json=slashFractionBadEthSignature,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_bad_eth_signature"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
@@ -117,13 +73,6 @@ func (m *Params) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Params proto.InternalMessageInfo
 
-func (m *Params) GetGravityId() string {
-	if m != nil {
-		return m.GravityId
-	}
-	return ""
-}
-
 func (m *Params) GetContractSourceHash() string {
 	if m != nil {
 		return m.ContractSourceHash
@@ -145,23 +94,9 @@ func (m *Params) GetBridgeChainId() uint64 {
 	return 0
 }
 
-func (m *Params) GetSignedValsetsWindow() uint64 {
-	if m != nil {
-		return m.SignedValsetsWindow
-	}
-	return 0
-}
-
 func (m *Params) GetSignedBatchesWindow() uint64 {
 	if m != nil {
 		return m.SignedBatchesWindow
-	}
-	return 0
-}
-
-func (m *Params) GetSignedLogicCallsWindow() uint64 {
-	if m != nil {
-		return m.SignedLogicCallsWindow
 	}
 	return 0
 }
@@ -187,56 +122,15 @@ func (m *Params) GetAverageEthereumBlockTime() uint64 {
 	return 0
 }
 
-func (m *Params) GetUnbondSlashingValsetsWindow() uint64 {
-	if m != nil {
-		return m.UnbondSlashingValsetsWindow
-	}
-	return 0
-}
-
-func (m *Params) GetValsetReward() types.Coin {
-	if m != nil {
-		return m.ValsetReward
-	}
-	return types.Coin{}
-}
-
-func (m *Params) GetBridgeActive() bool {
-	if m != nil {
-		return m.BridgeActive
-	}
-	return false
-}
-
-func (m *Params) GetEthereumBlacklist() []string {
-	if m != nil {
-		return m.EthereumBlacklist
-	}
-	return nil
-}
-
-func (m *Params) GetMinChainFeeBasisPoints() uint64 {
-	if m != nil {
-		return m.MinChainFeeBasisPoints
-	}
-	return 0
-}
-
 // GenesisState struct, containing all persistant data required by the Gravity module
 type GenesisState struct {
-	Params                 *Params                     `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
-	GravityNonces          GravityNonces               `protobuf:"bytes,2,opt,name=gravity_nonces,json=gravityNonces,proto3" json:"gravity_nonces"`
-	Valsets                []Valset                    `protobuf:"bytes,3,rep,name=valsets,proto3" json:"valsets"`
-	ValsetConfirms         []MsgValsetConfirm          `protobuf:"bytes,4,rep,name=valset_confirms,json=valsetConfirms,proto3" json:"valset_confirms"`
-	Batches                []OutgoingTxBatch           `protobuf:"bytes,5,rep,name=batches,proto3" json:"batches"`
-	BatchConfirms          []MsgConfirmBatch           `protobuf:"bytes,6,rep,name=batch_confirms,json=batchConfirms,proto3" json:"batch_confirms"`
-	LogicCalls             []OutgoingLogicCall         `protobuf:"bytes,7,rep,name=logic_calls,json=logicCalls,proto3" json:"logic_calls"`
-	LogicCallConfirms      []MsgConfirmLogicCall       `protobuf:"bytes,8,rep,name=logic_call_confirms,json=logicCallConfirms,proto3" json:"logic_call_confirms"`
-	Attestations           []Attestation               `protobuf:"bytes,9,rep,name=attestations,proto3" json:"attestations"`
-	DelegateKeys           []MsgSetOrchestratorAddress `protobuf:"bytes,10,rep,name=delegate_keys,json=delegateKeys,proto3" json:"delegate_keys"`
-	Erc20ToDenoms          []ERC20ToDenom              `protobuf:"bytes,11,rep,name=erc20_to_denoms,json=erc20ToDenoms,proto3" json:"erc20_to_denoms"`
-	UnbatchedTransfers     []OutgoingTransferTx        `protobuf:"bytes,12,rep,name=unbatched_transfers,json=unbatchedTransfers,proto3" json:"unbatched_transfers"`
-	PendingIbcAutoForwards []PendingIbcAutoForward     `protobuf:"bytes,13,rep,name=pending_ibc_auto_forwards,json=pendingIbcAutoForwards,proto3" json:"pending_ibc_auto_forwards"`
+	Params             *Params              `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+	GravityNonces      GravityNonces        `protobuf:"bytes,2,opt,name=gravity_nonces,json=gravityNonces,proto3" json:"gravity_nonces"`
+	Batches            []OutgoingTxBatch    `protobuf:"bytes,3,rep,name=batches,proto3" json:"batches"`
+	BatchConfirms      []MsgConfirmBatch    `protobuf:"bytes,4,rep,name=batch_confirms,json=batchConfirms,proto3" json:"batch_confirms"`
+	Attestations       []Attestation        `protobuf:"bytes,7,rep,name=attestations,proto3" json:"attestations"`
+	Erc20ToDenoms      []ERC20ToDenom       `protobuf:"bytes,9,rep,name=erc20_to_denoms,json=erc20ToDenoms,proto3" json:"erc20_to_denoms"`
+	UnbatchedTransfers []OutgoingTransferTx `protobuf:"bytes,10,rep,name=unbatched_transfers,json=unbatchedTransfers,proto3" json:"unbatched_transfers"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -286,20 +180,6 @@ func (m *GenesisState) GetGravityNonces() GravityNonces {
 	return GravityNonces{}
 }
 
-func (m *GenesisState) GetValsets() []Valset {
-	if m != nil {
-		return m.Valsets
-	}
-	return nil
-}
-
-func (m *GenesisState) GetValsetConfirms() []MsgValsetConfirm {
-	if m != nil {
-		return m.ValsetConfirms
-	}
-	return nil
-}
-
 func (m *GenesisState) GetBatches() []OutgoingTxBatch {
 	if m != nil {
 		return m.Batches
@@ -314,30 +194,9 @@ func (m *GenesisState) GetBatchConfirms() []MsgConfirmBatch {
 	return nil
 }
 
-func (m *GenesisState) GetLogicCalls() []OutgoingLogicCall {
-	if m != nil {
-		return m.LogicCalls
-	}
-	return nil
-}
-
-func (m *GenesisState) GetLogicCallConfirms() []MsgConfirmLogicCall {
-	if m != nil {
-		return m.LogicCallConfirms
-	}
-	return nil
-}
-
 func (m *GenesisState) GetAttestations() []Attestation {
 	if m != nil {
 		return m.Attestations
-	}
-	return nil
-}
-
-func (m *GenesisState) GetDelegateKeys() []MsgSetOrchestratorAddress {
-	if m != nil {
-		return m.DelegateKeys
 	}
 	return nil
 }
@@ -356,33 +215,20 @@ func (m *GenesisState) GetUnbatchedTransfers() []OutgoingTransferTx {
 	return nil
 }
 
-func (m *GenesisState) GetPendingIbcAutoForwards() []PendingIbcAutoForward {
-	if m != nil {
-		return m.PendingIbcAutoForwards
-	}
-	return nil
-}
-
 // GravityCounters contains the many noces and counters required to maintain the bridge state in the genesis
 type GravityNonces struct {
-	// the nonce of the last generated validator set
-	LatestValsetNonce uint64 `protobuf:"varint,1,opt,name=latest_valset_nonce,json=latestValsetNonce,proto3" json:"latest_valset_nonce,omitempty"`
 	// the last observed Gravity.sol contract event nonce
-	LastObservedNonce uint64 `protobuf:"varint,2,opt,name=last_observed_nonce,json=lastObservedNonce,proto3" json:"last_observed_nonce,omitempty"`
-	// the last valset nonce we have slashed, to prevent double slashing
-	LastSlashedValsetNonce uint64 `protobuf:"varint,3,opt,name=last_slashed_valset_nonce,json=lastSlashedValsetNonce,proto3" json:"last_slashed_valset_nonce,omitempty"`
+	LastObservedNonce uint64 `protobuf:"varint,1,opt,name=last_observed_nonce,json=lastObservedNonce,proto3" json:"last_observed_nonce,omitempty"`
 	// the last batch Cosmos chain block that batch slashing has completed for
 	// there is an individual batch nonce for each token type so this removes
 	// the need to store them all
-	LastSlashedBatchBlock uint64 `protobuf:"varint,4,opt,name=last_slashed_batch_block,json=lastSlashedBatchBlock,proto3" json:"last_slashed_batch_block,omitempty"`
-	// the last cosmos block that logic call slashing has completed for
-	LastSlashedLogicCallBlock uint64 `protobuf:"varint,5,opt,name=last_slashed_logic_call_block,json=lastSlashedLogicCallBlock,proto3" json:"last_slashed_logic_call_block,omitempty"`
+	LastSlashedBatchBlock uint64 `protobuf:"varint,2,opt,name=last_slashed_batch_block,json=lastSlashedBatchBlock,proto3" json:"last_slashed_batch_block,omitempty"`
 	// the last transaction id from the Gravity TX pool, this prevents ID
 	// duplication during chain upgrades
-	LastTxPoolId uint64 `protobuf:"varint,6,opt,name=last_tx_pool_id,json=lastTxPoolId,proto3" json:"last_tx_pool_id,omitempty"`
+	LastTxPoolId uint64 `protobuf:"varint,3,opt,name=last_tx_pool_id,json=lastTxPoolId,proto3" json:"last_tx_pool_id,omitempty"`
 	// the last batch id from the Gravity batch pool, this prevents ID duplication
 	// during chain upgrades
-	LastBatchId uint64 `protobuf:"varint,7,opt,name=last_batch_id,json=lastBatchId,proto3" json:"last_batch_id,omitempty"`
+	LastBatchId uint64 `protobuf:"varint,4,opt,name=last_batch_id,json=lastBatchId,proto3" json:"last_batch_id,omitempty"`
 }
 
 func (m *GravityNonces) Reset()         { *m = GravityNonces{} }
@@ -418,13 +264,6 @@ func (m *GravityNonces) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GravityNonces proto.InternalMessageInfo
 
-func (m *GravityNonces) GetLatestValsetNonce() uint64 {
-	if m != nil {
-		return m.LatestValsetNonce
-	}
-	return 0
-}
-
 func (m *GravityNonces) GetLastObservedNonce() uint64 {
 	if m != nil {
 		return m.LastObservedNonce
@@ -432,23 +271,9 @@ func (m *GravityNonces) GetLastObservedNonce() uint64 {
 	return 0
 }
 
-func (m *GravityNonces) GetLastSlashedValsetNonce() uint64 {
-	if m != nil {
-		return m.LastSlashedValsetNonce
-	}
-	return 0
-}
-
 func (m *GravityNonces) GetLastSlashedBatchBlock() uint64 {
 	if m != nil {
 		return m.LastSlashedBatchBlock
-	}
-	return 0
-}
-
-func (m *GravityNonces) GetLastSlashedLogicCallBlock() uint64 {
-	if m != nil {
-		return m.LastSlashedLogicCallBlock
 	}
 	return 0
 }
@@ -478,86 +303,58 @@ func init() {
 }
 
 var fileDescriptor_251e5f09dc76aa70 = []byte{
-	// 1258 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x56, 0x5f, 0x6f, 0x1b, 0x45,
-	0x10, 0x8f, 0x9b, 0x34, 0xa9, 0xd7, 0x76, 0xd2, 0x6c, 0x92, 0xb2, 0x49, 0xa9, 0x6b, 0x05, 0xb5,
-	0x18, 0xd1, 0x9c, 0xd3, 0x20, 0x40, 0xad, 0x84, 0x44, 0x9c, 0xfe, 0x21, 0x2a, 0xa5, 0xc5, 0xb1,
-	0x0a, 0x82, 0x87, 0xed, 0xde, 0xdd, 0xe6, 0xbc, 0xca, 0xf9, 0xd6, 0xba, 0x5d, 0xbb, 0xc9, 0x1b,
-	0xdf, 0x00, 0xbe, 0x14, 0x52, 0x1f, 0xfb, 0x88, 0x10, 0xaa, 0x50, 0xfb, 0x05, 0xf8, 0x08, 0x68,
-	0x67, 0xf7, 0xce, 0xe7, 0x50, 0xdc, 0x28, 0x4f, 0xb1, 0xf6, 0xf7, 0x67, 0x26, 0xb3, 0x33, 0x73,
-	0x8b, 0x9a, 0x03, 0x16, 0xcb, 0x3e, 0x0b, 0x7a, 0x4c, 0x24, 0x2d, 0xfb, 0xbb, 0x15, 0xa5, 0x6c,
-	0x24, 0xf4, 0x49, 0x2b, 0xe2, 0x09, 0x57, 0x42, 0x79, 0x83, 0x54, 0x6a, 0x89, 0x37, 0x0a, 0x4c,
-	0xcf, 0xfe, 0xf6, 0x1c, 0x73, 0x63, 0x35, 0x92, 0x91, 0x04, 0x5a, 0xcb, 0xfc, 0xb2, 0x8a, 0x8d,
-	0x9b, 0x53, 0xbc, 0xf5, 0xc9, 0x80, 0x3b, 0xe7, 0x8d, 0x1b, 0x53, 0x78, 0x7d, 0x15, 0xa9, 0x33,
-	0xd8, 0xf9, 0x4c, 0x07, 0x3d, 0xc7, 0xbb, 0x35, 0x85, 0xc7, 0xb4, 0xe6, 0x4a, 0x33, 0x2d, 0x64,
-	0xe2, 0xd8, 0xf5, 0x40, 0xaa, 0xbe, 0x54, 0x2d, 0x9f, 0x29, 0xde, 0x1a, 0xdd, 0xf6, 0xb9, 0x66,
-	0xb7, 0x5b, 0x81, 0x14, 0x0e, 0xdf, 0xfc, 0xbd, 0x8c, 0xe6, 0x9f, 0xb2, 0x94, 0xf5, 0x15, 0xbe,
-	0x86, 0x90, 0xf3, 0xa1, 0x22, 0x24, 0xa5, 0x46, 0xa9, 0x59, 0xee, 0x94, 0xdd, 0xc9, 0x7e, 0x88,
-	0xb7, 0xd1, 0x6a, 0x20, 0x13, 0x9d, 0xb2, 0x40, 0x53, 0x25, 0x87, 0x69, 0xc0, 0x69, 0x8f, 0xa9,
-	0x1e, 0xb9, 0x00, 0x44, 0x9c, 0x61, 0x07, 0x00, 0x7d, 0xc3, 0x54, 0x0f, 0x7f, 0x81, 0x3e, 0xf0,
-	0x53, 0x11, 0x46, 0x9c, 0x72, 0xdd, 0xe3, 0x29, 0x1f, 0xf6, 0x29, 0x0b, 0xc3, 0x94, 0x2b, 0x45,
-	0xe6, 0x40, 0xb4, 0x66, 0xe1, 0xfb, 0x0e, 0xdd, 0xb5, 0x20, 0xbe, 0x89, 0x96, 0x9c, 0x0e, 0xfe,
-	0x49, 0x93, 0xcd, 0xc5, 0x46, 0xa9, 0x39, 0xd7, 0xa9, 0xd9, 0xe3, 0x3d, 0x73, 0xba, 0x1f, 0xe2,
-	0x1d, 0xb4, 0xa6, 0x44, 0x94, 0xf0, 0x90, 0x8e, 0x58, 0xac, 0xb8, 0x56, 0xf4, 0x85, 0x48, 0x42,
-	0xf9, 0x82, 0xcc, 0x03, 0x7b, 0xc5, 0x82, 0xcf, 0x2c, 0xf6, 0x03, 0x40, 0x05, 0x0d, 0xd4, 0x94,
-	0xe7, 0x9a, 0x85, 0xa2, 0xa6, 0x6d, 0x31, 0xa7, 0xb9, 0x83, 0xd6, 0x9d, 0x26, 0x96, 0x91, 0x08,
-	0x68, 0xc0, 0xe2, 0x38, 0xd7, 0x5d, 0x02, 0xdd, 0x15, 0x4b, 0xf8, 0xd6, 0xe0, 0x7b, 0x06, 0x76,
-	0xd2, 0x6d, 0xb4, 0xaa, 0x59, 0x1a, 0x71, 0x6d, 0xc3, 0x51, 0x2d, 0xfa, 0x5c, 0x0e, 0x35, 0x29,
-	0x83, 0x0a, 0x5b, 0x0c, 0xa2, 0x75, 0x2d, 0x82, 0x6f, 0x21, 0xcc, 0x46, 0x3c, 0x65, 0x11, 0xa7,
-	0x7e, 0x2c, 0x83, 0x23, 0x90, 0x10, 0x04, 0xfc, 0xcb, 0x0e, 0x69, 0x1b, 0xc0, 0x08, 0xf0, 0x57,
-	0xe8, 0x6a, 0xc6, 0xce, 0x6b, 0x5c, 0x90, 0x55, 0x40, 0x46, 0x1c, 0x25, 0xab, 0xf3, 0x58, 0xee,
-	0xa3, 0x35, 0x15, 0x33, 0xd5, 0xa3, 0x87, 0xe6, 0xea, 0x84, 0x4c, 0x5c, 0x25, 0x49, 0xb5, 0x51,
-	0x6a, 0x56, 0xdb, 0xde, 0xcb, 0xd7, 0xd7, 0x67, 0xfe, 0x7c, 0x7d, 0xfd, 0x66, 0x24, 0x74, 0x6f,
-	0xe8, 0x7b, 0x81, 0xec, 0xb7, 0x5c, 0x3f, 0xd9, 0x3f, 0x5b, 0x2a, 0x3c, 0x72, 0xbd, 0x7e, 0x8f,
-	0x07, 0x9d, 0x15, 0x30, 0x7b, 0xe0, 0xbc, 0x6c, 0xe1, 0xf1, 0x73, 0xb4, 0x7a, 0x2a, 0x06, 0x94,
-	0x82, 0xd4, 0xce, 0x15, 0x02, 0x4f, 0x84, 0x80, 0xca, 0x61, 0x81, 0xd6, 0x4f, 0x45, 0x18, 0xdf,
-	0x13, 0x59, 0x3c, 0x57, 0x98, 0x2b, 0x13, 0x61, 0xf2, 0x6b, 0xc5, 0x7b, 0xa8, 0x3e, 0x4c, 0x7c,
-	0x99, 0x84, 0x14, 0x08, 0x22, 0x89, 0x4e, 0xf7, 0xde, 0x12, 0x94, 0xfc, 0xaa, 0x65, 0x1d, 0x38,
-	0xd2, 0x64, 0x0f, 0x8e, 0x50, 0xe3, 0x3f, 0x15, 0x09, 0xcd, 0xfd, 0x51, 0xd3, 0x45, 0x4c, 0x0f,
-	0x53, 0x4e, 0x2e, 0x9f, 0x2b, 0xed, 0x0f, 0x4f, 0x55, 0x27, 0xbc, 0xaf, 0x7b, 0x07, 0x99, 0x27,
-	0xbe, 0x87, 0x6a, 0x36, 0x59, 0x9a, 0xf2, 0x17, 0x2c, 0x0d, 0xc9, 0x72, 0xa3, 0xd4, 0xac, 0xec,
-	0xac, 0x7b, 0xd6, 0xcb, 0x33, 0x3b, 0xc2, 0x73, 0x3b, 0xc2, 0xdb, 0x93, 0x22, 0x69, 0xcf, 0x99,
-	0xf8, 0x9d, 0xaa, 0x55, 0x75, 0x40, 0x84, 0x3f, 0x42, 0x6e, 0x0c, 0xa9, 0x89, 0x32, 0xe2, 0x04,
-	0x37, 0x4a, 0xcd, 0x4b, 0x9d, 0xaa, 0x3d, 0xdc, 0x85, 0x33, 0xbc, 0x85, 0x70, 0xa1, 0x1f, 0x59,
-	0x70, 0x14, 0x0b, 0xa5, 0xc9, 0x4a, 0x63, 0xb6, 0x59, 0xee, 0x2c, 0xf3, 0xbc, 0x0f, 0x1d, 0x80,
-	0xef, 0xa2, 0x8d, 0xbe, 0x48, 0xdc, 0xb8, 0x1f, 0x72, 0x4e, 0x7d, 0xa6, 0x84, 0xa2, 0x03, 0x29,
-	0x12, 0xad, 0xc8, 0xaa, 0x1d, 0xb1, 0xbe, 0x48, 0x60, 0xf2, 0x1f, 0x70, 0xde, 0x36, 0xf0, 0x53,
-	0x40, 0xef, 0xce, 0xfd, 0xf2, 0x57, 0x63, 0x66, 0xf3, 0xd7, 0x32, 0xaa, 0x3e, 0xb4, 0x0b, 0xfd,
-	0x40, 0x33, 0xcd, 0xf1, 0x5d, 0x34, 0x3f, 0x80, 0xbd, 0x06, 0x9b, 0xac, 0xb2, 0xb3, 0xe9, 0xfd,
-	0xff, 0x82, 0xf7, 0xec, 0x06, 0xec, 0x38, 0x05, 0x7e, 0x86, 0x16, 0xb3, 0x4d, 0x98, 0xc8, 0x24,
-	0xe0, 0x0a, 0x96, 0x5c, 0x65, 0xe7, 0x93, 0x69, 0x1e, 0x0f, 0xed, 0xdf, 0xef, 0x40, 0xe0, 0x2a,
-	0x57, 0x8b, 0x8a, 0x87, 0xb8, 0x8d, 0x16, 0x5c, 0xb7, 0x90, 0xd9, 0xc6, 0xec, 0xfb, 0x92, 0xb2,
-	0x4d, 0xe3, 0x9c, 0x32, 0x21, 0xfe, 0x19, 0x2d, 0xb9, 0x4b, 0x0c, 0x64, 0x72, 0x28, 0xd2, 0xbe,
-	0x59, 0xa6, 0xc6, 0xeb, 0xd6, 0x34, 0xaf, 0xc7, 0xca, 0xf5, 0xe0, 0x9e, 0x15, 0x39, 0xd7, 0xc5,
-	0x51, 0xf1, 0x50, 0xe1, 0x47, 0x68, 0xc1, 0xad, 0x45, 0x72, 0x11, 0x4c, 0x3f, 0x9d, 0x66, 0xfa,
-	0x64, 0xa8, 0x23, 0x29, 0x92, 0xa8, 0x7b, 0x0c, 0x73, 0x98, 0x65, 0xea, 0x1c, 0xf0, 0x8f, 0x68,
-	0xd1, 0x2e, 0xbd, 0x3c, 0xd1, 0xf9, 0xf7, 0x7b, 0x3e, 0x56, 0x51, 0x96, 0x62, 0xc1, 0xb3, 0x06,
-	0x46, 0x79, 0x9a, 0x5d, 0x54, 0x29, 0x6c, 0x62, 0xb2, 0x00, 0xb6, 0x5b, 0x67, 0x49, 0x35, 0x9f,
-	0x64, 0x67, 0x8c, 0xe2, 0x7c, 0x63, 0x63, 0x8e, 0x56, 0xc6, 0xae, 0xe3, 0xa4, 0x2f, 0x81, 0x7b,
-	0xeb, 0x6c, 0x49, 0x9f, 0xf6, 0x5f, 0xce, 0xfd, 0xf3, 0xe4, 0xbf, 0x47, 0xd5, 0xc2, 0x67, 0x5a,
-	0x91, 0x32, 0xf8, 0x7f, 0x3c, 0xcd, 0x7f, 0x77, 0xcc, 0xcf, 0x46, 0xb2, 0x68, 0x81, 0x9f, 0xa3,
-	0x5a, 0xc8, 0x63, 0x1e, 0x31, 0xcd, 0xe9, 0x11, 0x3f, 0x51, 0x04, 0x81, 0xe7, 0xe7, 0xef, 0xc9,
-	0xf9, 0x80, 0xeb, 0x27, 0xa9, 0xb9, 0x2a, 0x9d, 0x32, 0x2d, 0x53, 0xf7, 0xf9, 0xcd, 0x22, 0x64,
-	0x8e, 0x8f, 0xf8, 0x89, 0x99, 0x88, 0x25, 0x9e, 0x06, 0x3b, 0xdb, 0x54, 0x4b, 0x1a, 0xf2, 0x44,
-	0xf6, 0x15, 0xa9, 0x40, 0x8c, 0xe6, 0xb4, 0x18, 0xf7, 0x3b, 0x7b, 0x3b, 0xdb, 0x5d, 0x79, 0xcf,
-	0x08, 0xb2, 0x9b, 0x04, 0x1b, 0x77, 0x06, 0x35, 0x1f, 0x26, 0xb6, 0x61, 0x42, 0xaa, 0x53, 0x96,
-	0xa8, 0x43, 0x9e, 0x2a, 0x52, 0x05, 0x6f, 0xef, 0x4c, 0xcd, 0xe7, 0x44, 0xdd, 0x63, 0x17, 0x01,
-	0xe7, 0x86, 0x19, 0xa4, 0x70, 0x8a, 0xd6, 0x07, 0x3c, 0x09, 0xcd, 0xba, 0x16, 0x7e, 0x40, 0xd9,
-	0x50, 0x4b, 0x7a, 0x28, 0x53, 0xb3, 0xcf, 0x14, 0xa9, 0x41, 0xb0, 0xdb, 0x53, 0xf7, 0x83, 0x15,
-	0xef, 0xfb, 0xc1, 0xee, 0x50, 0xcb, 0x07, 0x56, 0xe9, 0xe2, 0x5d, 0x19, 0xbc, 0x0b, 0x54, 0x9b,
-	0xff, 0x5c, 0x40, 0xb5, 0x89, 0x9d, 0x80, 0x3d, 0xb4, 0x12, 0x33, 0x73, 0x6d, 0xee, 0x9b, 0x61,
-	0x97, 0x0b, 0xec, 0xa7, 0xb9, 0xce, 0xb2, 0x85, 0xec, 0x94, 0x82, 0xc0, 0xf2, 0x95, 0xa6, 0xd2,
-	0x57, 0x3c, 0x1d, 0xf1, 0xd0, 0xf1, 0x2f, 0x64, 0x7c, 0xa5, 0x9f, 0x38, 0xc4, 0xf2, 0xef, 0xa0,
-	0x75, 0xe0, 0xc3, 0x47, 0x20, 0x7f, 0x15, 0x39, 0xd5, 0xac, 0x5d, 0xa2, 0x86, 0x70, 0x60, 0xf1,
-	0x62, 0xa8, 0x2f, 0x11, 0x99, 0x90, 0xda, 0xc1, 0x85, 0x97, 0x04, 0xbc, 0xd5, 0xe6, 0x3a, 0x6b,
-	0x05, 0xa5, 0x1d, 0x4d, 0x03, 0xe2, 0xaf, 0xd1, 0xb5, 0x09, 0x61, 0x61, 0x82, 0xac, 0xda, 0xbe,
-	0xdc, 0xd6, 0x0b, 0xea, 0xf1, 0x8c, 0x80, 0xc3, 0x0d, 0xb4, 0x04, 0x0e, 0xfa, 0x98, 0x0e, 0xa4,
-	0x8c, 0xcd, 0x6b, 0xcf, 0xbe, 0xdf, 0xaa, 0xe6, 0xb8, 0x7b, 0xfc, 0x54, 0xca, 0x78, 0x3f, 0xc4,
-	0x9b, 0xa8, 0x06, 0x34, 0x9b, 0x99, 0x08, 0xdd, 0x83, 0xad, 0x62, 0x0e, 0x21, 0x9f, 0xfd, 0xb0,
-	0xfd, 0xf0, 0xe5, 0x9b, 0x7a, 0xe9, 0xd5, 0x9b, 0x7a, 0xe9, 0xef, 0x37, 0xf5, 0xd2, 0x6f, 0x6f,
-	0xeb, 0x33, 0xaf, 0xde, 0xd6, 0x67, 0xfe, 0x78, 0x5b, 0x9f, 0xf9, 0x69, 0xab, 0xf0, 0x01, 0x7d,
-	0xc7, 0xfb, 0xf9, 0x78, 0xf2, 0xe1, 0xee, 0xcf, 0xc3, 0xe3, 0xf8, 0xb3, 0x7f, 0x03, 0x00, 0x00,
-	0xff, 0xff, 0x4b, 0xb2, 0xf1, 0xa0, 0x3f, 0x0c, 0x00, 0x00,
+	// 812 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x95, 0x4f, 0x6f, 0xe3, 0x44,
+	0x18, 0xc6, 0x63, 0x6a, 0x52, 0x3a, 0x49, 0xb6, 0x30, 0x6d, 0x85, 0x15, 0x50, 0x36, 0x8a, 0xb4,
+	0x25, 0x88, 0x5d, 0xbb, 0x1b, 0x24, 0x90, 0x56, 0xe2, 0xb0, 0xe9, 0x96, 0x52, 0x21, 0xd8, 0xc5,
+	0x89, 0x16, 0xc4, 0x65, 0x18, 0x7b, 0xa6, 0xb6, 0xb5, 0xb1, 0x27, 0x9a, 0x99, 0xa4, 0xe9, 0x8d,
+	0x8f, 0xc0, 0x77, 0xe2, 0xd2, 0x0b, 0x52, 0x8f, 0x08, 0x50, 0x85, 0xda, 0x2f, 0x82, 0xfc, 0xce,
+	0xb8, 0x4d, 0xf9, 0x13, 0xaa, 0x3d, 0xc5, 0x9a, 0xe7, 0x79, 0x7e, 0xe3, 0xf7, 0xf5, 0x3b, 0x13,
+	0xd4, 0x9f, 0xd2, 0x89, 0xc8, 0x69, 0x9c, 0xd2, 0xac, 0x08, 0xcc, 0x73, 0x90, 0x48, 0x3a, 0xcf,
+	0xf4, 0x69, 0x90, 0xf0, 0x82, 0xab, 0x4c, 0xf9, 0x53, 0x29, 0xb4, 0xc0, 0xed, 0x25, 0xa7, 0x6f,
+	0x9e, 0x7d, 0xeb, 0x6c, 0x6f, 0x27, 0x22, 0x11, 0x60, 0x0b, 0xca, 0x27, 0x93, 0x68, 0xef, 0xae,
+	0x60, 0xeb, 0xd3, 0x29, 0xb7, 0xe4, 0xf6, 0x83, 0x15, 0xbe, 0x5c, 0x25, 0xea, 0x0e, 0xb8, 0x88,
+	0xea, 0x38, 0xb5, 0xbe, 0x87, 0x2b, 0x7c, 0x54, 0x6b, 0xae, 0x34, 0xd5, 0x99, 0x28, 0xac, 0xbb,
+	0x13, 0x0b, 0x95, 0x0b, 0x15, 0x44, 0x54, 0xf1, 0x60, 0xfe, 0x38, 0xe2, 0x9a, 0x3e, 0x0e, 0x62,
+	0x91, 0x59, 0xbd, 0xf7, 0x8b, 0x8b, 0xea, 0x2f, 0xa8, 0xa4, 0xb9, 0xc2, 0x7b, 0x68, 0x3b, 0x16,
+	0x85, 0x96, 0x34, 0xd6, 0x44, 0x89, 0x99, 0x8c, 0x39, 0x49, 0xa9, 0x4a, 0x3d, 0xa7, 0xeb, 0xf4,
+	0x37, 0x42, 0x5c, 0x69, 0x23, 0x90, 0xbe, 0xa0, 0x2a, 0xc5, 0x9f, 0xa0, 0x77, 0x23, 0x99, 0xb1,
+	0x84, 0x13, 0xae, 0x53, 0x2e, 0xf9, 0x2c, 0x27, 0x94, 0x31, 0xc9, 0x95, 0xf2, 0xde, 0x80, 0xd0,
+	0x8e, 0x91, 0x0f, 0xac, 0xfa, 0xd4, 0x88, 0x78, 0x17, 0x6d, 0xda, 0x1c, 0x54, 0x41, 0x32, 0xe6,
+	0xad, 0x75, 0x9d, 0xbe, 0x1b, 0xb6, 0xcc, 0xf2, 0x7e, 0xb9, 0x7a, 0xc4, 0xf0, 0x00, 0xed, 0xa8,
+	0x2c, 0x29, 0x38, 0x23, 0xd0, 0x00, 0xae, 0xc8, 0x49, 0x56, 0x30, 0x71, 0xe2, 0xb9, 0xe0, 0xde,
+	0x32, 0xe2, 0xd0, 0x68, 0xdf, 0x82, 0x54, 0x56, 0xa1, 0xa9, 0x4c, 0xb8, 0x36, 0x19, 0xa2, 0xb3,
+	0x9c, 0x8b, 0x99, 0xf6, 0xde, 0x84, 0x08, 0x36, 0x1a, 0x44, 0xc6, 0x46, 0xc1, 0x0f, 0x11, 0xa6,
+	0x73, 0x2e, 0x69, 0xc2, 0x49, 0x34, 0x11, 0xf1, 0x2b, 0x88, 0x78, 0x75, 0xf0, 0xbf, 0x6d, 0x95,
+	0x61, 0x29, 0x94, 0x01, 0xfc, 0x19, 0x7a, 0xaf, 0x72, 0x5f, 0x17, 0xbd, 0x14, 0x5b, 0x87, 0x98,
+	0x67, 0x2d, 0x55, 0xe1, 0x37, 0xf1, 0x1f, 0xd0, 0xb6, 0x9a, 0x50, 0x95, 0x92, 0xe3, 0xb2, 0x97,
+	0x99, 0x28, 0xcc, 0x6b, 0x7a, 0x6f, 0x75, 0x9d, 0x7e, 0x73, 0xe8, 0x9f, 0x5d, 0xdc, 0xaf, 0xfd,
+	0x76, 0x71, 0x7f, 0x37, 0xc9, 0x74, 0x3a, 0x8b, 0xfc, 0x58, 0xe4, 0x81, 0xfd, 0x80, 0xe6, 0xe7,
+	0x91, 0x62, 0xaf, 0xec, 0x70, 0x3d, 0xe3, 0x71, 0x88, 0x81, 0xf5, 0xb9, 0x45, 0x41, 0x55, 0x78,
+	0x8e, 0xba, 0xff, 0xd8, 0x81, 0x95, 0xef, 0x4a, 0xca, 0x76, 0x51, 0x3d, 0x93, 0xdc, 0xdb, 0x78,
+	0xad, 0xdd, 0xde, 0xff, 0xdb, 0x6e, 0xec, 0x40, 0xa7, 0xa3, 0x8a, 0xf9, 0xc4, 0xfd, 0xf1, 0x8f,
+	0x6e, 0xad, 0xf7, 0xbb, 0x8b, 0x9a, 0x87, 0xe6, 0x60, 0x8d, 0x34, 0xd5, 0x1c, 0x3f, 0x41, 0xf5,
+	0x29, 0xcc, 0x17, 0xcc, 0x51, 0x63, 0xd0, 0xf3, 0xff, 0xfb, 0xa0, 0xf9, 0x66, 0x12, 0x43, 0x9b,
+	0xc0, 0x2f, 0xd1, 0x3d, 0xab, 0x90, 0x42, 0x14, 0x31, 0x37, 0x63, 0xd5, 0x18, 0x7c, 0xb8, 0x8a,
+	0x71, 0x68, 0x7e, 0xbf, 0x86, 0xc0, 0xd0, 0x2d, 0x6b, 0x0c, 0x5b, 0xc9, 0xf2, 0x22, 0xfe, 0x12,
+	0xad, 0xdb, 0x81, 0xf2, 0xd6, 0xba, 0x6b, 0xfd, 0xc6, 0xe0, 0xa3, 0x55, 0xc0, 0xe7, 0x33, 0x9d,
+	0x88, 0xac, 0x48, 0xc6, 0x0b, 0x68, 0xb0, 0x45, 0x56, 0x04, 0xfc, 0x1d, 0xba, 0x67, 0x26, 0x2d,
+	0x16, 0xc5, 0x71, 0x26, 0x73, 0xe5, 0xb9, 0xff, 0xcf, 0xfc, 0x4a, 0x25, 0xfb, 0xc6, 0xbe, 0xcc,
+	0x6c, 0x01, 0xc8, 0x0a, 0x0a, 0x7f, 0x83, 0x9a, 0x4b, 0x07, 0x5a, 0x79, 0xeb, 0xc0, 0xfd, 0x60,
+	0x15, 0xf7, 0xe9, 0x8d, 0xdf, 0x32, 0x6f, 0x21, 0xf0, 0x4b, 0xb4, 0xc9, 0x65, 0x3c, 0xd8, 0x23,
+	0x5a, 0x10, 0xc6, 0x0b, 0x91, 0x2b, 0x6f, 0x03, 0xa8, 0xfd, 0x55, 0xd4, 0x83, 0x70, 0x7f, 0xb0,
+	0x37, 0x16, 0xcf, 0xca, 0x40, 0xf5, 0xaa, 0x80, 0xb1, 0x6b, 0x0a, 0x73, 0xb4, 0x35, 0x2b, 0x4c,
+	0x47, 0x18, 0xd1, 0x92, 0x16, 0xea, 0x98, 0x4b, 0xe5, 0x21, 0x60, 0xfb, 0x77, 0xea, 0xae, 0x0d,
+	0x8d, 0x17, 0x76, 0x07, 0x7c, 0x0d, 0xac, 0x24, 0xd5, 0xfb, 0xd9, 0x41, 0xad, 0x5b, 0xdf, 0x17,
+	0xfb, 0x68, 0x6b, 0x42, 0x95, 0x26, 0x22, 0x52, 0x5c, 0xce, 0x39, 0x33, 0x83, 0x02, 0xb3, 0xe6,
+	0x86, 0xef, 0x94, 0xd2, 0x73, 0xab, 0x40, 0x00, 0x7f, 0x8a, 0x3c, 0xf0, 0xc3, 0x28, 0x57, 0x17,
+	0x8b, 0x39, 0xc0, 0x30, 0x5c, 0x6e, 0xb8, 0x53, 0xea, 0x23, 0x23, 0x9b, 0x8f, 0x53, 0x8a, 0xf8,
+	0x01, 0xda, 0x84, 0xa0, 0x5e, 0x90, 0xa9, 0x10, 0x93, 0x9b, 0x3b, 0xab, 0x59, 0x2e, 0x8f, 0x17,
+	0x2f, 0x84, 0x98, 0x1c, 0x31, 0xdc, 0x43, 0x2d, 0xb0, 0x19, 0x6e, 0xc6, 0xec, 0x55, 0xd5, 0x28,
+	0x17, 0x81, 0x76, 0xc4, 0x86, 0x87, 0x67, 0x97, 0x1d, 0xe7, 0xfc, 0xb2, 0xe3, 0xfc, 0x79, 0xd9,
+	0x71, 0x7e, 0xba, 0xea, 0xd4, 0xce, 0xaf, 0x3a, 0xb5, 0x5f, 0xaf, 0x3a, 0xb5, 0xef, 0x1f, 0x2d,
+	0x9d, 0xc4, 0x7f, 0xb9, 0xe6, 0x17, 0xb7, 0xff, 0x5f, 0xa2, 0x3a, 0xdc, 0xe1, 0x1f, 0xff, 0x15,
+	0x00, 0x00, 0xff, 0xff, 0x56, 0x77, 0x10, 0x9a, 0xe6, 0x06, 0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -580,48 +377,6 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.MinChainFeeBasisPoints != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.MinChainFeeBasisPoints))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0xa0
-	}
-	if len(m.EthereumBlacklist) > 0 {
-		for iNdEx := len(m.EthereumBlacklist) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.EthereumBlacklist[iNdEx])
-			copy(dAtA[i:], m.EthereumBlacklist[iNdEx])
-			i = encodeVarintGenesis(dAtA, i, uint64(len(m.EthereumBlacklist[iNdEx])))
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0x9a
-		}
-	}
-	if m.BridgeActive {
-		i--
-		if m.BridgeActive {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0x90
-	}
-	{
-		size, err := m.ValsetReward.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarintGenesis(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x1
-	i--
-	dAtA[i] = 0x8a
 	{
 		size := m.SlashFractionBadEthSignature.Size()
 		i -= size
@@ -631,24 +386,7 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintGenesis(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x1
-	i--
-	dAtA[i] = 0x82
-	if m.UnbondSlashingValsetsWindow != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.UnbondSlashingValsetsWindow))
-		i--
-		dAtA[i] = 0x78
-	}
-	{
-		size := m.SlashFractionLogicCall.Size()
-		i -= size
-		if _, err := m.SlashFractionLogicCall.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintGenesis(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x72
+	dAtA[i] = 0x4a
 	{
 		size := m.SlashFractionBatch.Size()
 		i -= size
@@ -658,70 +396,43 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintGenesis(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x6a
-	{
-		size := m.SlashFractionValset.Size()
-		i -= size
-		if _, err := m.SlashFractionValset.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintGenesis(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x62
+	dAtA[i] = 0x42
 	if m.AverageEthereumBlockTime != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.AverageEthereumBlockTime))
 		i--
-		dAtA[i] = 0x58
+		dAtA[i] = 0x38
 	}
 	if m.AverageBlockTime != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.AverageBlockTime))
 		i--
-		dAtA[i] = 0x50
+		dAtA[i] = 0x30
 	}
 	if m.TargetBatchTimeout != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.TargetBatchTimeout))
 		i--
-		dAtA[i] = 0x48
-	}
-	if m.SignedLogicCallsWindow != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.SignedLogicCallsWindow))
-		i--
-		dAtA[i] = 0x40
+		dAtA[i] = 0x28
 	}
 	if m.SignedBatchesWindow != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.SignedBatchesWindow))
 		i--
-		dAtA[i] = 0x38
-	}
-	if m.SignedValsetsWindow != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.SignedValsetsWindow))
-		i--
-		dAtA[i] = 0x30
+		dAtA[i] = 0x20
 	}
 	if m.BridgeChainId != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.BridgeChainId))
 		i--
-		dAtA[i] = 0x28
+		dAtA[i] = 0x18
 	}
 	if len(m.BridgeEthereumAddress) > 0 {
 		i -= len(m.BridgeEthereumAddress)
 		copy(dAtA[i:], m.BridgeEthereumAddress)
 		i = encodeVarintGenesis(dAtA, i, uint64(len(m.BridgeEthereumAddress)))
 		i--
-		dAtA[i] = 0x22
+		dAtA[i] = 0x12
 	}
 	if len(m.ContractSourceHash) > 0 {
 		i -= len(m.ContractSourceHash)
 		copy(dAtA[i:], m.ContractSourceHash)
 		i = encodeVarintGenesis(dAtA, i, uint64(len(m.ContractSourceHash)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.GravityId) > 0 {
-		i -= len(m.GravityId)
-		copy(dAtA[i:], m.GravityId)
-		i = encodeVarintGenesis(dAtA, i, uint64(len(m.GravityId)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -748,20 +459,6 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.PendingIbcAutoForwards) > 0 {
-		for iNdEx := len(m.PendingIbcAutoForwards) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.PendingIbcAutoForwards[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x6a
-		}
-	}
 	if len(m.UnbatchedTransfers) > 0 {
 		for iNdEx := len(m.UnbatchedTransfers) - 1; iNdEx >= 0; iNdEx-- {
 			{
@@ -773,7 +470,7 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintGenesis(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x62
+			dAtA[i] = 0x52
 		}
 	}
 	if len(m.Erc20ToDenoms) > 0 {
@@ -787,55 +484,13 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintGenesis(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x5a
-		}
-	}
-	if len(m.DelegateKeys) > 0 {
-		for iNdEx := len(m.DelegateKeys) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.DelegateKeys[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x52
+			dAtA[i] = 0x4a
 		}
 	}
 	if len(m.Attestations) > 0 {
 		for iNdEx := len(m.Attestations) - 1; iNdEx >= 0; iNdEx-- {
 			{
 				size, err := m.Attestations[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x4a
-		}
-	}
-	if len(m.LogicCallConfirms) > 0 {
-		for iNdEx := len(m.LogicCallConfirms) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.LogicCallConfirms[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x42
-		}
-	}
-	if len(m.LogicCalls) > 0 {
-		for iNdEx := len(m.LogicCalls) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.LogicCalls[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -857,41 +512,13 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintGenesis(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x32
+			dAtA[i] = 0x22
 		}
 	}
 	if len(m.Batches) > 0 {
 		for iNdEx := len(m.Batches) - 1; iNdEx >= 0; iNdEx-- {
 			{
 				size, err := m.Batches[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x2a
-		}
-	}
-	if len(m.ValsetConfirms) > 0 {
-		for iNdEx := len(m.ValsetConfirms) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.ValsetConfirms[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x22
-		}
-	}
-	if len(m.Valsets) > 0 {
-		for iNdEx := len(m.Valsets) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Valsets[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -950,35 +577,20 @@ func (m *GravityNonces) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if m.LastBatchId != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.LastBatchId))
 		i--
-		dAtA[i] = 0x38
+		dAtA[i] = 0x20
 	}
 	if m.LastTxPoolId != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.LastTxPoolId))
 		i--
-		dAtA[i] = 0x30
-	}
-	if m.LastSlashedLogicCallBlock != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.LastSlashedLogicCallBlock))
-		i--
-		dAtA[i] = 0x28
+		dAtA[i] = 0x18
 	}
 	if m.LastSlashedBatchBlock != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.LastSlashedBatchBlock))
 		i--
-		dAtA[i] = 0x20
-	}
-	if m.LastSlashedValsetNonce != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.LastSlashedValsetNonce))
-		i--
-		dAtA[i] = 0x18
+		dAtA[i] = 0x10
 	}
 	if m.LastObservedNonce != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.LastObservedNonce))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.LatestValsetNonce != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.LatestValsetNonce))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -1002,10 +614,6 @@ func (m *Params) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.GravityId)
-	if l > 0 {
-		n += 1 + l + sovGenesis(uint64(l))
-	}
 	l = len(m.ContractSourceHash)
 	if l > 0 {
 		n += 1 + l + sovGenesis(uint64(l))
@@ -1017,14 +625,8 @@ func (m *Params) Size() (n int) {
 	if m.BridgeChainId != 0 {
 		n += 1 + sovGenesis(uint64(m.BridgeChainId))
 	}
-	if m.SignedValsetsWindow != 0 {
-		n += 1 + sovGenesis(uint64(m.SignedValsetsWindow))
-	}
 	if m.SignedBatchesWindow != 0 {
 		n += 1 + sovGenesis(uint64(m.SignedBatchesWindow))
-	}
-	if m.SignedLogicCallsWindow != 0 {
-		n += 1 + sovGenesis(uint64(m.SignedLogicCallsWindow))
 	}
 	if m.TargetBatchTimeout != 0 {
 		n += 1 + sovGenesis(uint64(m.TargetBatchTimeout))
@@ -1035,31 +637,10 @@ func (m *Params) Size() (n int) {
 	if m.AverageEthereumBlockTime != 0 {
 		n += 1 + sovGenesis(uint64(m.AverageEthereumBlockTime))
 	}
-	l = m.SlashFractionValset.Size()
-	n += 1 + l + sovGenesis(uint64(l))
 	l = m.SlashFractionBatch.Size()
 	n += 1 + l + sovGenesis(uint64(l))
-	l = m.SlashFractionLogicCall.Size()
-	n += 1 + l + sovGenesis(uint64(l))
-	if m.UnbondSlashingValsetsWindow != 0 {
-		n += 1 + sovGenesis(uint64(m.UnbondSlashingValsetsWindow))
-	}
 	l = m.SlashFractionBadEthSignature.Size()
-	n += 2 + l + sovGenesis(uint64(l))
-	l = m.ValsetReward.Size()
-	n += 2 + l + sovGenesis(uint64(l))
-	if m.BridgeActive {
-		n += 3
-	}
-	if len(m.EthereumBlacklist) > 0 {
-		for _, s := range m.EthereumBlacklist {
-			l = len(s)
-			n += 2 + l + sovGenesis(uint64(l))
-		}
-	}
-	if m.MinChainFeeBasisPoints != 0 {
-		n += 2 + sovGenesis(uint64(m.MinChainFeeBasisPoints))
-	}
+	n += 1 + l + sovGenesis(uint64(l))
 	return n
 }
 
@@ -1075,18 +656,6 @@ func (m *GenesisState) Size() (n int) {
 	}
 	l = m.GravityNonces.Size()
 	n += 1 + l + sovGenesis(uint64(l))
-	if len(m.Valsets) > 0 {
-		for _, e := range m.Valsets {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
-	if len(m.ValsetConfirms) > 0 {
-		for _, e := range m.ValsetConfirms {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
 	if len(m.Batches) > 0 {
 		for _, e := range m.Batches {
 			l = e.Size()
@@ -1099,26 +668,8 @@ func (m *GenesisState) Size() (n int) {
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
-	if len(m.LogicCalls) > 0 {
-		for _, e := range m.LogicCalls {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
-	if len(m.LogicCallConfirms) > 0 {
-		for _, e := range m.LogicCallConfirms {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
 	if len(m.Attestations) > 0 {
 		for _, e := range m.Attestations {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
-	if len(m.DelegateKeys) > 0 {
-		for _, e := range m.DelegateKeys {
 			l = e.Size()
 			n += 1 + l + sovGenesis(uint64(l))
 		}
@@ -1135,12 +686,6 @@ func (m *GenesisState) Size() (n int) {
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
-	if len(m.PendingIbcAutoForwards) > 0 {
-		for _, e := range m.PendingIbcAutoForwards {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
 	return n
 }
 
@@ -1150,20 +695,11 @@ func (m *GravityNonces) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.LatestValsetNonce != 0 {
-		n += 1 + sovGenesis(uint64(m.LatestValsetNonce))
-	}
 	if m.LastObservedNonce != 0 {
 		n += 1 + sovGenesis(uint64(m.LastObservedNonce))
 	}
-	if m.LastSlashedValsetNonce != 0 {
-		n += 1 + sovGenesis(uint64(m.LastSlashedValsetNonce))
-	}
 	if m.LastSlashedBatchBlock != 0 {
 		n += 1 + sovGenesis(uint64(m.LastSlashedBatchBlock))
-	}
-	if m.LastSlashedLogicCallBlock != 0 {
-		n += 1 + sovGenesis(uint64(m.LastSlashedLogicCallBlock))
 	}
 	if m.LastTxPoolId != 0 {
 		n += 1 + sovGenesis(uint64(m.LastTxPoolId))
@@ -1211,38 +747,6 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field GravityId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.GravityId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ContractSourceHash", wireType)
 			}
 			var stringLen uint64
@@ -1273,7 +777,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			}
 			m.ContractSourceHash = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 4:
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BridgeEthereumAddress", wireType)
 			}
@@ -1305,7 +809,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			}
 			m.BridgeEthereumAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 5:
+		case 3:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BridgeChainId", wireType)
 			}
@@ -1324,26 +828,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SignedValsetsWindow", wireType)
-			}
-			m.SignedValsetsWindow = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SignedValsetsWindow |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
+		case 4:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SignedBatchesWindow", wireType)
 			}
@@ -1362,26 +847,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 8:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SignedLogicCallsWindow", wireType)
-			}
-			m.SignedLogicCallsWindow = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SignedLogicCallsWindow |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 9:
+		case 5:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TargetBatchTimeout", wireType)
 			}
@@ -1400,7 +866,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 10:
+		case 6:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field AverageBlockTime", wireType)
 			}
@@ -1419,7 +885,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 11:
+		case 7:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field AverageEthereumBlockTime", wireType)
 			}
@@ -1438,40 +904,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 12:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionValset", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.SlashFractionValset.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 13:
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionBatch", wireType)
 			}
@@ -1504,59 +937,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 14:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionLogicCall", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.SlashFractionLogicCall.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 15:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field UnbondSlashingValsetsWindow", wireType)
-			}
-			m.UnbondSlashingValsetsWindow = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.UnbondSlashingValsetsWindow |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 16:
+		case 9:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionBadEthSignature", wireType)
 			}
@@ -1589,110 +970,6 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 17:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValsetReward", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.ValsetReward.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 18:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BridgeActive", wireType)
-			}
-			var v int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				v |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			m.BridgeActive = bool(v != 0)
-		case 19:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EthereumBlacklist", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.EthereumBlacklist = append(m.EthereumBlacklist, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
-		case 20:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MinChainFeeBasisPoints", wireType)
-			}
-			m.MinChainFeeBasisPoints = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.MinChainFeeBasisPoints |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipGenesis(dAtA[iNdEx:])
@@ -1814,74 +1091,6 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Valsets", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Valsets = append(m.Valsets, Valset{})
-			if err := m.Valsets[len(m.Valsets)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValsetConfirms", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ValsetConfirms = append(m.ValsetConfirms, MsgValsetConfirm{})
-			if err := m.ValsetConfirms[len(m.ValsetConfirms)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Batches", wireType)
 			}
 			var msglen int
@@ -1914,7 +1123,7 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 6:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BatchConfirms", wireType)
 			}
@@ -1950,74 +1159,6 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 7:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LogicCalls", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.LogicCalls = append(m.LogicCalls, OutgoingLogicCall{})
-			if err := m.LogicCalls[len(m.LogicCalls)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 8:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LogicCallConfirms", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.LogicCallConfirms = append(m.LogicCallConfirms, MsgConfirmLogicCall{})
-			if err := m.LogicCallConfirms[len(m.LogicCallConfirms)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 9:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Attestations", wireType)
 			}
 			var msglen int
@@ -2050,41 +1191,7 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 10:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DelegateKeys", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.DelegateKeys = append(m.DelegateKeys, MsgSetOrchestratorAddress{})
-			if err := m.DelegateKeys[len(m.DelegateKeys)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 11:
+		case 9:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Erc20ToDenoms", wireType)
 			}
@@ -2118,7 +1225,7 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 12:
+		case 10:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field UnbatchedTransfers", wireType)
 			}
@@ -2149,40 +1256,6 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			}
 			m.UnbatchedTransfers = append(m.UnbatchedTransfers, OutgoingTransferTx{})
 			if err := m.UnbatchedTransfers[len(m.UnbatchedTransfers)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 13:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PendingIbcAutoForwards", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.PendingIbcAutoForwards = append(m.PendingIbcAutoForwards, PendingIbcAutoForward{})
-			if err := m.PendingIbcAutoForwards[len(m.PendingIbcAutoForwards)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2238,25 +1311,6 @@ func (m *GravityNonces) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LatestValsetNonce", wireType)
-			}
-			m.LatestValsetNonce = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LatestValsetNonce |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LastObservedNonce", wireType)
 			}
 			m.LastObservedNonce = 0
@@ -2274,26 +1328,7 @@ func (m *GravityNonces) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LastSlashedValsetNonce", wireType)
-			}
-			m.LastSlashedValsetNonce = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LastSlashedValsetNonce |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
+		case 2:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LastSlashedBatchBlock", wireType)
 			}
@@ -2312,26 +1347,7 @@ func (m *GravityNonces) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LastSlashedLogicCallBlock", wireType)
-			}
-			m.LastSlashedLogicCallBlock = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LastSlashedLogicCallBlock |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
+		case 3:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LastTxPoolId", wireType)
 			}
@@ -2350,7 +1366,7 @@ func (m *GravityNonces) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 7:
+		case 4:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LastBatchId", wireType)
 			}

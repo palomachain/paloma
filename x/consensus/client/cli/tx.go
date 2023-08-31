@@ -21,9 +21,7 @@ func GetTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(CmdAddMessagesSignatures())
 	cmd.AddCommand(CmdDeleteJob())
-	cmd.AddCommand(CmdAddEvidence())
 	cmd.AddCommand(CmdSetPublicAccessData())
 
 	return cmd

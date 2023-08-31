@@ -174,7 +174,10 @@ var _ = g.Describe("attest router", func() {
 				sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))
 				Expect(err).To(BeNil())
 
-				dep, _ := k.getSmartContractDeploying(ctx, sc.GetId(), newChain.GetChainReferenceID())
+				err = k.SetAsCompassContract(ctx, sc)
+				Expect(err).To(BeNil())
+
+				dep, _ := k.getSmartContractDeployment(ctx, sc.GetId(), newChain.GetChainReferenceID())
 				Expect(dep).NotTo(BeNil())
 			}
 

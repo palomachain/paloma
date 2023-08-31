@@ -17,10 +17,9 @@ func (k msgServer) CreateJob(goCtx context.Context, msg *types.MsgCreateJob) (*t
 		return nil, err
 	}
 
-	addr, err := k.AddNewJob(ctx, job)
-	if err != nil {
+	if err = k.AddNewJob(ctx, job); err != nil {
 		return nil, err
 	}
 
-	return &types.MsgCreateJobResponse{JobAddress: addr}, nil
+	return &types.MsgCreateJobResponse{}, nil
 }

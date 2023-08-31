@@ -14,34 +14,21 @@ option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
 // Query defines the gRPC querier service
 service Query {
-  // Deployments queries deployments
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {}
-  rpc CurrentValset(QueryCurrentValsetRequest) returns (QueryCurrentValsetResponse) {}
-  rpc ValsetRequest(QueryValsetRequestRequest) returns (QueryValsetRequestResponse) {}
-  rpc ValsetConfirm(QueryValsetConfirmRequest) returns (QueryValsetConfirmResponse) {}
-  rpc ValsetConfirmsByNonce(QueryValsetConfirmsByNonceRequest) returns (QueryValsetConfirmsByNonceResponse) {}
-  rpc LastValsetRequests(QueryLastValsetRequestsRequest) returns (QueryLastValsetRequestsResponse) {}
-  rpc LastPendingValsetRequestByAddr(QueryLastPendingValsetRequestByAddrRequest) returns (QueryLastPendingValsetRequestByAddrResponse) {}
   rpc LastPendingBatchRequestByAddr(QueryLastPendingBatchRequestByAddrRequest) returns (QueryLastPendingBatchRequestByAddrResponse) {}
-  rpc LastPendingLogicCallByAddr(QueryLastPendingLogicCallByAddrRequest) returns (QueryLastPendingLogicCallByAddrResponse) {}
   rpc LastEventNonceByAddr(QueryLastEventNonceByAddrRequest) returns (QueryLastEventNonceByAddrResponse) {}
-  rpc BatchFees(QueryBatchFeeRequest) returns (QueryBatchFeeResponse) {}
   rpc OutgoingTxBatches(QueryOutgoingTxBatchesRequest) returns (QueryOutgoingTxBatchesResponse) {}
-  rpc OutgoingLogicCalls(QueryOutgoingLogicCallsRequest) returns (QueryOutgoingLogicCallsResponse) {}
   rpc BatchRequestByNonce(QueryBatchRequestByNonceRequest) returns (QueryBatchRequestByNonceResponse) {}
   rpc BatchConfirms(QueryBatchConfirmsRequest) returns (QueryBatchConfirmsResponse) {}
-  rpc LogicConfirms(QueryLogicConfirmsRequest) returns (QueryLogicConfirmsResponse) {}
   rpc ERC20ToDenom(QueryERC20ToDenomRequest) returns (QueryERC20ToDenomResponse) {}
   rpc DenomToERC20(QueryDenomToERC20Request) returns (QueryDenomToERC20Response) {}
   rpc GetLastObservedEthBlock(QueryLastObservedEthBlockRequest) returns (QueryLastObservedEthBlockResponse) {}
   rpc GetLastObservedEthNonce(QueryLastObservedEthNonceRequest) returns (QueryLastObservedEthNonceResponse) {}
   rpc GetAttestations(QueryAttestationsRequest) returns (QueryAttestationsResponse) {}
-  rpc GetDelegateKeyByValidator(QueryDelegateKeysByValidatorAddress) returns (QueryDelegateKeysByValidatorAddressResponse) {}
-  rpc GetDelegateKeyByEth(QueryDelegateKeysByEthAddress) returns (QueryDelegateKeysByEthAddressResponse) {}
-  rpc GetDelegateKeyByOrchestrator(QueryDelegateKeysByOrchestratorAddress) returns (QueryDelegateKeysByOrchestratorAddressResponse) {}
+
+  rpc GetErc20ToDenoms(QueryErc20ToDenoms) returns (QueryErc20ToDenomsResponse) {}
 
   rpc GetPendingSendToEth(QueryPendingSendToEth) returns (QueryPendingSendToEthResponse) {}
-  rpc GetPendingIbcAutoForwards(QueryPendingIbcAutoForwards) returns (QueryPendingIbcAutoForwardsResponse) {}
 }
 
 message QueryParamsRequest {}
@@ -49,67 +36,19 @@ message QueryParamsResponse {
   Params params = 1 [(gogoproto.nullable) = false];
 }
 
-message QueryCurrentValsetRequest {}
-message QueryCurrentValsetResponse {
-  Valset valset = 1 [(gogoproto.nullable) = false];
-}
-
-message QueryValsetRequestRequest {
-  uint64 nonce = 1;
-}
-message QueryValsetRequestResponse {
-  Valset valset = 1;
-}
-
-message QueryValsetConfirmRequest {
-  uint64 nonce   = 1;
-  string address = 2;
-}
-message QueryValsetConfirmResponse {
-  MsgValsetConfirm confirm = 1;
-}
-
-message QueryValsetConfirmsByNonceRequest {
-  uint64 nonce = 1;
-}
-message QueryValsetConfirmsByNonceResponse {
-  repeated MsgValsetConfirm confirms = 1 [(gogoproto.nullable) = false];
-}
-
-message QueryLastValsetRequestsRequest {}
-message QueryLastValsetRequestsResponse {
-  repeated Valset valsets = 1 [(gogoproto.nullable) = false];
-}
-
-message QueryLastPendingValsetRequestByAddrRequest {
-  string address = 1;
-}
-message QueryLastPendingValsetRequestByAddrResponse {
-  repeated Valset valsets = 1 [(gogoproto.nullable) = false];
-}
-message QueryBatchFeeRequest {}
-message QueryBatchFeeResponse {
-  repeated BatchFees batch_fees = 1 [(gogoproto.nullable) = false];
-}
 message QueryLastPendingBatchRequestByAddrRequest {
   string address = 1;
 }
 message QueryLastPendingBatchRequestByAddrResponse {
   repeated OutgoingTxBatch batch = 1 [(gogoproto.nullable) = false];
 }
-message QueryLastPendingLogicCallByAddrRequest {
-  string address = 1;
+message QueryOutgoingTxBatchesRequest {
+  string chain_reference_id = 1;
+  string assignee = 2;
 }
-message QueryLastPendingLogicCallByAddrResponse {
-  repeated OutgoingLogicCall call = 1 [(gogoproto.nullable) = false];
-}
-message QueryOutgoingTxBatchesRequest {}
+
 message QueryOutgoingTxBatchesResponse {
   repeated OutgoingTxBatch batches = 1 [(gogoproto.nullable) = false];
-}
-message QueryOutgoingLogicCallsRequest {}
-message QueryOutgoingLogicCallsResponse {
-  repeated OutgoingLogicCall calls = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryBatchRequestByNonceRequest {
@@ -128,14 +67,6 @@ message QueryBatchConfirmsResponse {
   repeated MsgConfirmBatch confirms = 1 [(gogoproto.nullable) = false];
 }
 
-message QueryLogicConfirmsRequest {
-  bytes  invalidation_id    = 1;
-  uint64 invalidation_nonce = 2;
-}
-message QueryLogicConfirmsResponse {
-  repeated MsgConfirmLogicCall confirms = 1 [(gogoproto.nullable) = false];
-}
-
 message QueryLastEventNonceByAddrRequest {
   string address = 1;
 }
@@ -145,18 +76,18 @@ message QueryLastEventNonceByAddrResponse {
 
 message QueryERC20ToDenomRequest {
   string erc20 = 1;
+  string chain_reference_id = 2;
 }
 message QueryERC20ToDenomResponse {
   string denom             = 1;
-  bool   cosmos_originated = 2;
 }
 
 message QueryDenomToERC20Request {
   string denom = 1;
+  string chain_reference_id = 2;
 }
 message QueryDenomToERC20Response {
   string erc20             = 1;
-  bool   cosmos_originated = 2;
 }
 
 // QueryLastObservedEthBlockRequest defines the request for getting the height of the
@@ -218,28 +149,9 @@ message QueryAttestationsResponse {
   repeated Attestation attestations = 1 [(gogoproto.nullable) = false];
 }
 
-message QueryDelegateKeysByValidatorAddress {
-  string validator_address = 1;
-}
-message QueryDelegateKeysByValidatorAddressResponse {
-  string eth_address          = 1;
-  string orchestrator_address = 2;
-}
-
-message QueryDelegateKeysByEthAddress {
-  string eth_address = 1;
-}
-message QueryDelegateKeysByEthAddressResponse {
-  string validator_address    = 1;
-  string orchestrator_address = 2;
-}
-
-message QueryDelegateKeysByOrchestratorAddress {
-  string orchestrator_address = 1;
-}
-message QueryDelegateKeysByOrchestratorAddressResponse {
-  string validator_address = 1;
-  string eth_address       = 2;
+message QueryErc20ToDenoms {}
+message QueryErc20ToDenomsResponse {
+  repeated ERC20ToDenom erc20_to_denom = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryPendingSendToEth {
@@ -248,13 +160,4 @@ message QueryPendingSendToEth {
 message QueryPendingSendToEthResponse {
   repeated OutgoingTransferTx transfers_in_batches = 1 [(gogoproto.nullable) = false];
   repeated OutgoingTransferTx unbatched_transfers  = 2 [(gogoproto.nullable) = false];
-}
-
-message QueryPendingIbcAutoForwards{
-  // limit defines the number of pending forwards to return, in order of their SendToCosmos.EventNonce
-  uint64 limit = 1;
-}
-
-message QueryPendingIbcAutoForwardsResponse{
-  repeated PendingIbcAutoForward pending_ibc_auto_forwards = 1;
 }

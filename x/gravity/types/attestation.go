@@ -52,16 +52,10 @@ func ClaimTypeToTypeUrl(claimType ClaimType) string {
 	switch claimType {
 	case CLAIM_TYPE_UNSPECIFIED:
 		return "unspecified"
-	case CLAIM_TYPE_SEND_TO_COSMOS:
-		msgName = proto.MessageName(&MsgSendToCosmosClaim{})
+	case CLAIM_TYPE_SEND_TO_PALOMA:
+		msgName = proto.MessageName(&MsgSendToPalomaClaim{})
 	case CLAIM_TYPE_BATCH_SEND_TO_ETH:
 		msgName = proto.MessageName(&MsgBatchSendToEthClaim{})
-	case CLAIM_TYPE_ERC20_DEPLOYED:
-		msgName = proto.MessageName(&MsgERC20DeployedClaim{})
-	case CLAIM_TYPE_LOGIC_CALL_EXECUTED:
-		msgName = proto.MessageName(&MsgLogicCallExecutedClaim{})
-	case CLAIM_TYPE_VALSET_UPDATED:
-		msgName = proto.MessageName(&MsgValsetUpdatedClaim{})
 	}
 
 	return "/" + msgName

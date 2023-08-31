@@ -31,7 +31,12 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govv1beta1type
 			return k.RemoveSupportForChain(ctx, c)
 
 		case *types.DeployNewSmartContractProposal:
-			_, err := k.SaveNewSmartContract(ctx, c.GetAbiJSON(), c.Bytecode())
+			sc, err := k.SaveNewSmartContract(ctx, c.GetAbiJSON(), c.Bytecode())
+			if err != nil {
+				return err
+			}
+
+			err = k.SetAsCompassContract(ctx, sc)
 			return err
 
 		case *types.ChangeMinOnChainBalanceProposal:

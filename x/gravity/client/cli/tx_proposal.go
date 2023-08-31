@@ -1,18 +1,12 @@
 package cli
 
 import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"strings"
-
+	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/spf13/cobra"
@@ -24,106 +18,62 @@ func CmdGravityProposalHandler() *cobra.Command {
 		Short: "Gravity proposals",
 	}
 	cmd.AddCommand([]*cobra.Command{
-		CmdGovIbcMetadataProposal(),
+		CmdSetErc20ToDenom(),
 	}...)
 
 	return cmd
 }
 
-// CmdGovIbcMetadataProposal enables users to easily submit json file proposals for IBC Metadata registration, needed to
-// send Cosmos tokens over to Ethereum
-func CmdGovIbcMetadataProposal() *cobra.Command {
+func applyFlags(cmd *cobra.Command) {
+	flags.AddTxFlagsToCmd(cmd)
+
+	cmd.Flags().String(cli.FlagTitle, "", "title of proposal")
+	cmd.Flags().String(cli.FlagDescription, "", "description of proposal")
+	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
+}
+
+func getDeposit(cmd *cobra.Command) (sdk.Coins, error) {
+	depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+	whoops.Assert(err)
+	return sdk.ParseCoinsNormalized(depositStr)
+}
+
+func CmdSetErc20ToDenom() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "gov-ibc-metadata [path-to-proposal-json] [initial-deposit]",
-		Short: "Creates a governance proposal to set the Metadata of the given IBC token. Once the metadata is set this token can be moved to Ethereum using Gravity Bridge",
-		Args:  cobra.ExactArgs(2),
+		Use:   "set-erc20-to-denom [chain-reference-id] [denom] [erc20]",
+		Short: "Sets an association between a denom and an erc20 token for a given chain",
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-			cosmosAddr := cliCtx.GetFromAddress()
+			return whoops.Try(func() {
+				cliCtx, err := client.GetClientTxContext(cmd)
+				whoops.Assert(err)
 
-			initialDeposit, err := sdk.ParseCoinsNormalized(args[1])
-			if err != nil {
-				return sdkerrors.Wrap(err, "bad initial deposit amount")
-			}
+				chainReferenceID := args[0]
+				denom := args[1]
+				erc20 := args[2]
 
-			if len(initialDeposit) != 1 {
-				return fmt.Errorf("unexpected coin amounts, expecting just 1 coin amount for initialDeposit")
-			}
+				setERC20ToDenomProposal := &types.SetERC20ToDenomProposal{
+					Title:            whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
+					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					ChainReferenceId: chainReferenceID,
+					Erc20:            erc20,
+					Denom:            denom,
+				}
 
-			proposalFile := args[0]
+				from := cliCtx.GetFromAddress()
 
-			contents, err := os.ReadFile(proposalFile)
-			if err != nil {
-				return sdkerrors.Wrap(err, "failed to read proposal json file")
-			}
+				deposit, err := getDeposit(cmd)
+				whoops.Assert(err)
 
-			proposal := &types.IBCMetadataProposal{}
-			err = json.Unmarshal(contents, proposal)
-			if err != nil {
-				return sdkerrors.Wrap(err, "proposal json file is not valid json")
-			}
-			if proposal.IbcDenom == "" ||
-				proposal.Title == "" ||
-				proposal.Description == "" ||
-				proposal.Metadata.Base == "" ||
-				proposal.Metadata.Name == "" ||
-				proposal.Metadata.Display == "" ||
-				proposal.Metadata.Symbol == "" {
-				return fmt.Errorf("proposal json file is not valid, please check example json in docs")
-			}
+				msg, err := govv1beta1types.NewMsgSubmitProposal(setERC20ToDenomProposal, deposit, from)
+				whoops.Assert(err)
 
-			// checks if the provided token denom is a proper IBC token, not a native token.
-			if !strings.HasPrefix(proposal.IbcDenom, "ibc/") && !strings.HasPrefix(proposal.IbcDenom, "IBC/") {
-				return sdkerrors.Wrap(types.ErrInvalid, "Target denom is not an IBC token")
-			}
-
-			// check that our base unit is the IBC token name on this chain. This makes setting/loading denom
-			// metadata work out, as SetDenomMetadata uses the base denom as an index
-			if proposal.Metadata.Base != proposal.IbcDenom {
-				return sdkerrors.Wrap(types.ErrInvalid, "Metadata base must be the same as the IBC denom!")
-			}
-
-			metadataErr := proposal.Metadata.Validate()
-			if metadataErr != nil {
-				return sdkerrors.Wrap(metadataErr, "invalid metadata or proposal details!")
-			}
-
-			queryClientBank := banktypes.NewQueryClient(cliCtx)
-			_, err = queryClientBank.DenomMetadata(cmd.Context(), &banktypes.QueryDenomMetadataRequest{Denom: proposal.IbcDenom})
-			if err == nil {
-				return sdkerrors.Wrap(metadataErr, "Attempting to set the metadata for a token that already has metadata!")
-			}
-
-			supply, err := queryClientBank.SupplyOf(cmd.Context(), &banktypes.QuerySupplyOfRequest{Denom: proposal.IbcDenom})
-			if err != nil {
-				return sdkerrors.Wrap(types.ErrInternal, "Failed to get supply data?")
-			}
-			if supply.GetAmount().Amount.Equal(sdk.ZeroInt()) {
-				return sdkerrors.Wrap(types.ErrInvalid, "This ibc hash does not seem to exist on Gravity, are you sure you have the right one?")
-			}
-
-			proposalAny, err := codectypes.NewAnyWithValue(proposal)
-			if err != nil {
-				return sdkerrors.Wrap(err, "invalid metadata or proposal details!")
-			}
-
-			// Make the message
-			msg := govv1beta1types.MsgSubmitProposal{
-				Proposer:       cosmosAddr.String(),
-				InitialDeposit: initialDeposit,
-				Content:        proposalAny,
-			}
-			if err := msg.ValidateBasic(); err != nil {
-				return sdkerrors.Wrap(err, "Your proposal.json is not valid, please correct it")
-			}
-			// Send it
-			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), &msg)
+				err = tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msg)
+				whoops.Assert(err)
+			})
 		},
 	}
-	flags.AddTxFlagsToCmd(cmd)
+	applyFlags(cmd)
 	return cmd
 }

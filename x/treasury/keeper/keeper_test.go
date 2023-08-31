@@ -342,7 +342,7 @@ func TestGetFees(t *testing.T) {
 					mock.Anything,
 					mock.Anything,
 					mock.Anything,
-				).Return(&types.Fees{}, keeperutil.ErrNotFound)
+				).Return(&types.Fees{}, keeperutil.ErrNotFound.Format(&types.Fees{}, ""))
 
 				store := mocks.NewTreasuryStore(t)
 				store.On("TreasuryStore", mock.Anything).Return(nil)

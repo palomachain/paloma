@@ -43,6 +43,32 @@ func (_m *ValsetKeeper) FindSnapshotByID(ctx types.Context, id uint64) (*valsett
 	return r0, r1
 }
 
+// GetAllChainInfos provides a mock function with given fields: ctx
+func (_m *ValsetKeeper) GetAllChainInfos(ctx types.Context) ([]*valsettypes.ValidatorExternalAccounts, error) {
+	ret := _m.Called(ctx)
+
+	var r0 []*valsettypes.ValidatorExternalAccounts
+	var r1 error
+	if rf, ok := ret.Get(0).(func(types.Context) ([]*valsettypes.ValidatorExternalAccounts, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(types.Context) []*valsettypes.ValidatorExternalAccounts); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*valsettypes.ValidatorExternalAccounts)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(types.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetCurrentSnapshot provides a mock function with given fields: ctx
 func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snapshot, error) {
 	ret := _m.Called(ctx)
@@ -88,6 +114,32 @@ func (_m *ValsetKeeper) GetLatestSnapshotOnChain(ctx types.Context, chainReferen
 
 	if rf, ok := ret.Get(1).(func(types.Context, string) error); ok {
 		r1 = rf(ctx, chainReferenceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetValidatorChainInfos provides a mock function with given fields: ctx, valAddr
+func (_m *ValsetKeeper) GetValidatorChainInfos(ctx types.Context, valAddr types.ValAddress) ([]*valsettypes.ExternalChainInfo, error) {
+	ret := _m.Called(ctx, valAddr)
+
+	var r0 []*valsettypes.ExternalChainInfo
+	var r1 error
+	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) ([]*valsettypes.ExternalChainInfo, error)); ok {
+		return rf(ctx, valAddr)
+	}
+	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) []*valsettypes.ExternalChainInfo); ok {
+		r0 = rf(ctx, valAddr)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*valsettypes.ExternalChainInfo)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(types.Context, types.ValAddress) error); ok {
+		r1 = rf(ctx, valAddr)
 	} else {
 		r1 = ret.Error(1)
 	}

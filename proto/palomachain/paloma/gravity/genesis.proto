@@ -11,19 +11,11 @@ import "cosmos/base/v1beta1/coin.proto";
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
 // Params represent the Gravity genesis and store parameters
-// gravity_id:
-// a random 32 byte value to prevent signature reuse, for example if the
-// cosmos validators decided to use the same Ethereum keys for another chain
-// also running Gravity we would not want it to be possible to play a deposit
-// from chain A back on chain B's Gravity. This value IS USED ON ETHEREUM so
-// it must be set in your genesis.json before launch and not changed after
-// deploying Gravity
-//
 // contract_hash:
 // the code hash of a known good version of the Gravity contract
 // solidity code. This can be used to verify the correct version
 // of the contract has been deployed. This is a reference value for
-// goernance action only it is never read by any Gravity code
+// governance action only it is never read by any Gravity code
 //
 // bridge_ethereum_address:
 // is address of the bridge contract on the Ethereum side, this is a
@@ -34,25 +26,23 @@ option go_package = "github.com/palomachain/paloma/x/gravity/types";
 // the unique identifier of the Ethereum chain, this is a reference value
 // only and is not actually used by any Gravity code
 //
-// These reference values may be used by future Gravity client implemetnations
-// to allow for saftey features or convenience features like the Gravity address
+// These reference values may be used by future Gravity client implementations
+// to allow for safety features or convenience features like the Gravity address
 // in your relayer. A relayer would require a configured Gravity address if
 // governance had not set the address on the chain it was relaying for.
 //
-// signed_valsets_window
 // signed_batches_window
-// signed_logiccall_window
 // signed_claims_window
 //
 // These values represent the time in blocks that a validator has to submit
-// a signature for a batch or valset, or to submit a claim for a particular
+// a signature for a batch, or to submit a claim for a particular
 // attestation nonce. In the case of attestations this clock starts when the
 // attestation is created, but only allows for slashing once the event has passed
 //
 // target_batch_timeout:
 //
-// This is the 'target' value for when batches time out, this is a target becuase
-// Ethereum is a probabalistic chain and you can't say for sure what the block
+// This is the 'target' value for when batches time out, this is a target because
+// Ethereum is a probabilistic chain and you can't say for sure what the block
 // frequency is ahead of time.
 //
 // average_block_time
@@ -63,7 +53,6 @@ option go_package = "github.com/palomachain/paloma/x/gravity/types";
 // governance updates these in case of any major, prolonged change in the time it takes
 // to produce a block
 
-// slash_fraction_valset
 // slash_fraction_batch
 // slash_fraction_claim
 // slash_fraction_conflicting_claim
@@ -71,113 +60,49 @@ option go_package = "github.com/palomachain/paloma/x/gravity/types";
 // The slashing fractions for the various gravity related slashing conditions. The first three
 // refer to not submitting a particular message, the third for submitting a different claim
 // for the same Ethereum event
-//
-// unbond_slashing_valsets_window
-//
-// The unbond slashing valsets window is used to determine how many blocks after starting to unbond
-// a validator needs to continue signing blocks. The goal of this paramater is that when a validator leaves
-// the set, if their leaving creates enough change in the validator set to justify an update they will sign
-// a validator set update for the Ethereum bridge that does not include themselves. Allowing us to remove them
-// from the Ethereum bridge and replace them with the new set gracefully.
-//
-// valset_reward
-//
-// These parameters allow for the bridge oracle to resolve a fork on the Ethereum chain without halting
-// the chain. Once set reset bridge state will roll back events to the nonce provided in reset_bridge_nonce
-// if and only if those events have not yet been observed (executed on the Cosmos chain). This allows for easy
-// handling of cases where for example an Ethereum hardfork has occured and more than 1/3 of the vlaidtor set
-// disagrees with the rest. Normally this would require a chain halt, manual genesis editing and restar to resolve
-// with this feature a governance proposal can be used instead
-//
-// bridge_active
-//
-// This boolean flag can be used by governance to temporarily halt the bridge due to a vulnerability or other issue
-// In this context halting the bridge means prevent the execution of any oracle events from Ethereum and preventing
-// the creation of new batches that may be relayed to Ethereum.
-// This does not prevent the creation of validator sets
-// or slashing for not submitting validator set signatures as either of these might allow key signers to leave the validator
-// set and steal funds on Ethereum without consequence.
-// The practical outcome of this flag being set to 'false' is that deposits from Ethereum will not show up and withdraws from
-// Cosmos will not execute on Ethereum.
-//
-// min_chain_fee_basis_points
-//
-// The minimum SendToEth `chain_fee` amount, in terms of basis points. e.g. 10% fee = 1000, and 0.02% fee = 2
 message Params {
   option (gogoproto.stringer) = false;
 
-  string gravity_id                  = 1;
-  string contract_source_hash        = 2;
-  string bridge_ethereum_address     = 4;
-  uint64 bridge_chain_id             = 5;
-  uint64 signed_valsets_window       = 6;
-  uint64 signed_batches_window       = 7;
-  uint64 signed_logic_calls_window   = 8;
-  uint64 target_batch_timeout        = 9;
-  uint64 average_block_time          = 10;
-  uint64 average_ethereum_block_time = 11;
-  bytes  slash_fraction_valset       = 12 [
+  string contract_source_hash        = 1;
+  string bridge_ethereum_address     = 2;
+  uint64 bridge_chain_id             = 3;
+  uint64 signed_batches_window       = 4;
+  uint64 target_batch_timeout        = 5;
+  uint64 average_block_time          = 6;
+  uint64 average_ethereum_block_time = 7;
+  bytes slash_fraction_batch = 8 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
-  bytes slash_fraction_batch = 13 [
+  bytes slash_fraction_bad_eth_signature = 9 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
-  bytes slash_fraction_logic_call = 14 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable)   = false
-  ];
-  uint64 unbond_slashing_valsets_window = 15;
-  bytes slash_fraction_bad_eth_signature = 16 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable)   = false
-  ];
-  cosmos.base.v1beta1.Coin valset_reward = 17 [
-    (gogoproto.nullable)   = false
-  ];
-  bool bridge_active = 18;
-  // addresses on this blacklist are forbidden from depositing or withdrawing
-  // from Ethereum to the bridge
-  repeated string ethereum_blacklist = 19;
-  uint64 min_chain_fee_basis_points = 20;
 }
 
 // GenesisState struct, containing all persistant data required by the Gravity module
 message GenesisState {
   Params                             params              = 1;
   GravityNonces                      gravity_nonces      = 2 [(gogoproto.nullable) = false];
-  repeated Valset                    valsets             = 3 [(gogoproto.nullable) = false];
-  repeated MsgValsetConfirm          valset_confirms     = 4 [(gogoproto.nullable) = false];
-  repeated OutgoingTxBatch           batches             = 5 [(gogoproto.nullable) = false];
-  repeated MsgConfirmBatch           batch_confirms      = 6 [(gogoproto.nullable) = false];
-  repeated OutgoingLogicCall         logic_calls         = 7 [(gogoproto.nullable) = false];
-  repeated MsgConfirmLogicCall       logic_call_confirms = 8 [(gogoproto.nullable) = false];
-  repeated Attestation               attestations        = 9 [(gogoproto.nullable) = false];
-  repeated MsgSetOrchestratorAddress delegate_keys       = 10 [(gogoproto.nullable) = false];
-  repeated ERC20ToDenom              erc20_to_denoms     = 11 [(gogoproto.nullable) = false];
-  repeated OutgoingTransferTx        unbatched_transfers = 12 [(gogoproto.nullable) = false];
-  repeated PendingIbcAutoForward     pending_ibc_auto_forwards = 13 [(gogoproto.nullable) = false];
+  repeated OutgoingTxBatch           batches             = 3 [(gogoproto.nullable) = false];
+  repeated MsgConfirmBatch           batch_confirms      = 4 [(gogoproto.nullable) = false];
+  repeated Attestation               attestations        = 7 [(gogoproto.nullable) = false];
+  repeated ERC20ToDenom              erc20_to_denoms     = 9 [(gogoproto.nullable) = false];
+  repeated OutgoingTransferTx        unbatched_transfers = 10 [(gogoproto.nullable) = false];
 }
 
 // GravityCounters contains the many noces and counters required to maintain the bridge state in the genesis
 message GravityNonces {
-  // the nonce of the last generated validator set
-  uint64 latest_valset_nonce = 1;
   // the last observed Gravity.sol contract event nonce
-  uint64 last_observed_nonce = 2;
-  // the last valset nonce we have slashed, to prevent double slashing
-  uint64 last_slashed_valset_nonce = 3;
+  uint64 last_observed_nonce = 1;
   // the last batch Cosmos chain block that batch slashing has completed for
   // there is an individual batch nonce for each token type so this removes
   // the need to store them all
-  uint64 last_slashed_batch_block = 4;
-  // the last cosmos block that logic call slashing has completed for
-  uint64 last_slashed_logic_call_block = 5;
+  uint64 last_slashed_batch_block = 2;
   // the last transaction id from the Gravity TX pool, this prevents ID
   // duplication during chain upgrades
-  uint64 last_tx_pool_id = 6;
+  uint64 last_tx_pool_id = 3;
   // the last batch id from the Gravity batch pool, this prevents ID duplication
   // during chain upgrades
-  uint64 last_batch_id = 7;
+  uint64 last_batch_id = 4;
 }

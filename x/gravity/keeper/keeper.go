@@ -2,14 +2,13 @@ package keeper
 
 import (
 	"fmt"
-	"sort"
 
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -17,19 +16,19 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
-	"github.com/ethereum/go-ethereum/common"
-	bech32ibckeeper "github.com/palomachain/paloma/x/bech32ibc/keeper"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
 // Check that our expected keeper types are implemented
-var _ types.StakingKeeper = (*stakingkeeper.Keeper)(nil)
-var _ types.SlashingKeeper = (*slashingkeeper.Keeper)(nil)
-var _ types.DistributionKeeper = (*distrkeeper.Keeper)(nil)
+var (
+	_ types.StakingKeeper      = (*stakingkeeper.Keeper)(nil)
+	_ types.SlashingKeeper     = (*slashingkeeper.Keeper)(nil)
+	_ types.DistributionKeeper = (*distrkeeper.Keeper)(nil)
+)
 
 // Keeper maintains the link to storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	storeKey   storetypes.StoreKey // Unexposed key to access store from sdk.Context
 	paramSpace paramtypes.Subspace
 
 	cdc               codec.BinaryCodec // The wire codec for binary encoding/decoding.
@@ -39,7 +38,9 @@ type Keeper struct {
 	DistKeeper        types.DistributionKeeper
 	accountKeeper     types.AccountKeeper
 	ibcTransferKeeper ibctransferkeeper.Keeper
-	bech32IbcKeeper   bech32ibckeeper.Keeper
+	evmKeeper         types.EVMKeeper
+
+	storeGetter keeperutil.StoreGetter
 
 	AttestationHandler interface {
 		Handle(sdk.Context, types.Attestation, types.EthereumClaim) error
@@ -48,8 +49,7 @@ type Keeper struct {
 
 // NewKeeper returns a new instance of the gravity keeper
 func NewKeeper(
-	cdc codec.BinaryCodec, // TODO TYLER : Switch back to Codec?
-	storeKey storetypes.StoreKey,
+	cdc codec.BinaryCodec,
 	paramSpace paramtypes.Subspace,
 	accKeeper types.AccountKeeper,
 	stakingKeeper types.StakingKeeper,
@@ -57,7 +57,8 @@ func NewKeeper(
 	slashingKeeper types.SlashingKeeper,
 	distributionKeeper types.DistributionKeeper,
 	ibcTransferKeeper ibctransferkeeper.Keeper,
-	bech32IbcKeeper bech32ibckeeper.Keeper,
+	evmKeeper types.EVMKeeper,
+	storeGetter keeperutil.StoreGetter,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !paramSpace.HasKeyTable() {
@@ -65,7 +66,6 @@ func NewKeeper(
 	}
 
 	k := Keeper{
-		storeKey:   storeKey,
 		paramSpace: paramSpace,
 
 		cdc:                cdc,
@@ -75,7 +75,8 @@ func NewKeeper(
 		DistKeeper:         distributionKeeper,
 		accountKeeper:      accKeeper,
 		ibcTransferKeeper:  ibcTransferKeeper,
-		bech32IbcKeeper:    bech32IbcKeeper,
+		evmKeeper:          evmKeeper,
+		storeGetter:        storeGetter,
 		AttestationHandler: nil,
 	}
 	attestationHandler := AttestationHandler{keeper: &k}
@@ -89,7 +90,7 @@ func NewKeeper(
 /////// HELPERS ////////
 ////////////////////////
 
-// SendToCommunityPool handles incorrect SendToCosmos calls to the community pool, since the calls
+// SendToCommunityPool handles incorrect SendToPaloma calls to the community pool, since the calls
 // have already been made on Ethereum there's nothing we can do to reverse them, and we should at least
 // make use of the tokens which would otherwise be lost
 func (k Keeper) SendToCommunityPool(ctx sdk.Context, coins sdk.Coins) error {
@@ -112,7 +113,7 @@ func (k Keeper) SendToCommunityPool(ctx sdk.Context, coins sdk.Coins) error {
 func (k Keeper) GetParamsIfSet(ctx sdk.Context) (params types.Params, err error) {
 	for _, pair := range params.ParamSetPairs() {
 		if !k.paramSpace.Has(ctx, pair.Key) {
-			return types.Params{}, sdkerrors.Wrapf(sdkerrors.ErrNotFound, "the param key %s has not been set", string(pair.Key))
+			return types.Params{}, sdkerrors.Wrapf(sdkerrortypes.ErrNotFound, "the param key %s has not been set", string(pair.Key))
 		}
 		k.paramSpace.Get(ctx, pair.Key, pair.Value)
 	}
@@ -132,14 +133,14 @@ func (k Keeper) SetParams(ctx sdk.Context, ps types.Params) {
 }
 
 // GetBridgeContractAddress returns the bridge contract address on ETH
-func (k Keeper) GetBridgeContractAddress(ctx sdk.Context) *types.EthAddress {
+func (k Keeper) GetBridgeContractAddress(ctx sdk.Context) (*types.EthAddress, error) {
 	var a string
 	k.paramSpace.Get(ctx, types.ParamsStoreKeyBridgeEthereumAddress, &a)
 	addr, err := types.NewEthAddress(a)
 	if err != nil {
-		panic(sdkerrors.Wrapf(err, "found invalid bridge contract address in store: %v", a))
+		return nil, sdkerrors.Wrapf(err, "found invalid bridge contract address in store: %v", a)
 	}
-	return addr
+	return addr, nil
 }
 
 // GetBridgeChainID returns the chain id of the ETH chain we are running against
@@ -147,36 +148,6 @@ func (k Keeper) GetBridgeChainID(ctx sdk.Context) uint64 {
 	var a uint64
 	k.paramSpace.Get(ctx, types.ParamsStoreKeyBridgeContractChainID, &a)
 	return a
-}
-
-// GetGravityID returns the GravityID the GravityID is essentially a salt value
-// for bridge signatures, provided each chain running Gravity has a unique ID
-// it won't be possible to play back signatures from one bridge onto another
-// even if they share a validator set.
-//
-// The lifecycle of the GravityID is that it is set in the Genesis file
-// read from the live chain for the contract deployment, once a Gravity contract
-// is deployed the GravityID CAN NOT BE CHANGED. Meaning that it can't just be the
-// same as the chain id since the chain id may be changed many times with each
-// successive chain in charge of the same bridge
-func (k Keeper) GetGravityID(ctx sdk.Context) string {
-	var a string
-	k.paramSpace.Get(ctx, types.ParamsStoreKeyGravityID, &a)
-	return a
-}
-
-// Set GravityID sets the GravityID the GravityID is essentially a salt value
-// for bridge signatures, provided each chain running Gravity has a unique ID
-// it won't be possible to play back signatures from one bridge onto another
-// even if they share a validator set.
-//
-// The lifecycle of the GravityID is that it is set in the Genesis file
-// read from the live chain for the contract deployment, once a Gravity contract
-// is deployed the GravityID CAN NOT BE CHANGED. Meaning that it can't just be the
-// same as the chain id since the chain id may be changed many times with each
-// successive chain in charge of the same bridge
-func (k Keeper) SetGravityID(ctx sdk.Context, v string) {
-	k.paramSpace.Set(ctx, types.ParamsStoreKeyGravityID, v)
 }
 
 // Logger returns a module-specific Logger.
@@ -194,193 +165,6 @@ func (k Keeper) UnpackAttestationClaim(att *types.Attestation) (types.EthereumCl
 	}
 }
 
-// GetDelegateKeys iterates both the EthAddress and Orchestrator address indexes to produce
-// a vector of MsgSetOrchestratorAddress entires containing all the delegate keys for state
-// export / import. This may seem at first glance to be excessively complicated, why not combine
-// the EthAddress and Orchestrator address indexes and simply iterate one thing? The answer is that
-// even though we set the Eth and Orchestrator address in the same place we use them differently we
-// always go from Orchestrator address to Validator address and from validator address to Ethereum address
-// we want to keep looking up the validator address for various reasons, so a direct Orchestrator to Ethereum
-// address mapping will mean having to keep two of the same data around just to provide lookups.
-//
-// For the time being this will serve
-func (k Keeper) GetDelegateKeys(ctx sdk.Context) []types.MsgSetOrchestratorAddress {
-	store := ctx.KVStore(k.storeKey)
-	prefix := types.EthAddressByValidatorKey
-	iter := store.Iterator(prefixRange(prefix))
-	defer iter.Close()
-
-	ethAddresses := make(map[string]common.Address)
-
-	for ; iter.Valid(); iter.Next() {
-		// the 'key' contains both the prefix and the value, so we need
-		// to cut off the starting bytes, if you don't do this a valid
-		// cosmos key will be made out of EthAddressByValidatorKey + the starting bytes
-		// of the actual key
-		key := iter.Key()[len(types.EthAddressByValidatorKey):]
-		value := iter.Value()
-		ethAddress, err := types.NewEthAddressFromBytes(value)
-		if err != nil {
-			panic(sdkerrors.Wrapf(err, "found invalid ethAddress %v under key %v", string(value), key))
-		}
-		valAddress := sdk.ValAddress(key)
-		if err := sdk.VerifyAddressFormat(valAddress); err != nil {
-			panic(sdkerrors.Wrapf(err, "invalid valAddress in key %v", valAddress))
-		}
-		ethAddresses[valAddress.String()] = ethAddress.GetAddress()
-	}
-
-	store = ctx.KVStore(k.storeKey)
-	prefix = types.KeyOrchestratorAddress
-	iter = store.Iterator(prefixRange(prefix))
-	defer iter.Close()
-
-	orchAddresses := make(map[string]string)
-
-	for ; iter.Valid(); iter.Next() {
-		key := iter.Key()[len(types.KeyOrchestratorAddress):]
-		value := iter.Value()
-		orchAddress := sdk.AccAddress(key)
-		if err := sdk.VerifyAddressFormat(orchAddress); err != nil {
-			panic(sdkerrors.Wrapf(err, "invalid orchAddress in key %v", orchAddresses))
-		}
-		valAddress := sdk.ValAddress(value)
-		if err := sdk.VerifyAddressFormat(valAddress); err != nil {
-			panic(sdkerrors.Wrapf(err, "invalid val address stored for orchestrator %s", valAddress.String()))
-		}
-
-		orchAddresses[valAddress.String()] = orchAddress.String()
-	}
-
-	var result []types.MsgSetOrchestratorAddress
-
-	for valAddr, ethAddr := range ethAddresses {
-		orch, ok := orchAddresses[valAddr]
-		if !ok {
-			// this should never happen unless the store
-			// is somehow inconsistent
-			panic("Can't find address")
-		}
-		result = append(result, types.MsgSetOrchestratorAddress{
-			Orchestrator: orch,
-			Validator:    valAddr,
-			EthAddress:   ethAddr.Hex(),
-		})
-
-	}
-
-	// we iterated over a map, so now we have to sort to ensure the
-	// output here is deterministic, eth address chosen for no particular
-	// reason
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].EthAddress < result[j].EthAddress
-	})
-
-	return result
-}
-
-// IterateEthAddressesByValidator executes the given callback cb with every value stored under EthAddressByValidatorKey
-// cb should return true if iteration must stop, false if it should continue
-func (k Keeper) IterateEthAddressesByValidator(ctx sdk.Context, cb func(key []byte, value types.EthAddress) (stop bool)) {
-	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.EthAddressByValidatorKey)
-	iter := prefixStore.Iterator(nil, nil)
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		key := iter.Key()
-		val := iter.Value()
-		value, err := types.NewEthAddressFromBytes(val)
-		if err != nil {
-			panic(fmt.Sprintf("Unable to unmarshal EthAddress for validator with key %v and bytes %v", key, val))
-		}
-
-		if cb(key, *value) {
-			break
-		}
-	}
-}
-
-// IterateValidatorsByEthAddress executes the given callback cb with every value stored under ValidatorByEthAddressKey
-// cb should return true if iteration must stop, false if it should continue
-func (k Keeper) IterateValidatorsByEthAddress(ctx sdk.Context, cb func(key []byte, value sdk.ValAddress) (stop bool)) {
-	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.ValidatorByEthAddressKey)
-	iter := prefixStore.Iterator(nil, nil)
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		key := iter.Key()
-		val := iter.Value()
-		value := sdk.ValAddress(val)
-
-		if cb(key, value) {
-			break
-		}
-	}
-}
-
-// IterateValidatorsByOrchestratorAddress executes the given callback cb with every value stored under KeyOrchestratorAddress
-// cb should return true if iteration must stop, false if it should continue
-func (k Keeper) IterateValidatorsByOrchestratorAddress(ctx sdk.Context, cb func(key []byte, value sdk.ValAddress) (stop bool)) {
-	prefixStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyOrchestratorAddress)
-	iter := prefixStore.Iterator(nil, nil)
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		key := iter.Key()
-		val := iter.Value()
-		value := sdk.ValAddress(val)
-
-		if cb(key, value) {
-			break
-		}
-	}
-}
-
-/////////////////////////////
-//// Logic Call Slashing ////
-/////////////////////////////
-
-// SetLastSlashedLogicCallBlock returns true if the last slashed logic call block
-// has been set in the store
-func (k Keeper) HasLastSlashedLogicCallBlock(ctx sdk.Context) bool {
-	store := ctx.KVStore(k.storeKey)
-	return store.Has(types.LastSlashedLogicCallBlock)
-}
-
-// SetLastSlashedLogicCallBlock sets the latest slashed logic call block height
-func (k Keeper) SetLastSlashedLogicCallBlock(ctx sdk.Context, blockHeight uint64) {
-
-	if k.HasLastSlashedLogicCallBlock(ctx) && k.GetLastSlashedLogicCallBlock(ctx) > blockHeight {
-		panic("Attempted to decrement LastSlashedBatchBlock")
-	}
-
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.LastSlashedLogicCallBlock, types.UInt64Bytes(blockHeight))
-}
-
-// GetLastSlashedLogicCallBlock returns the latest slashed logic call block
-func (k Keeper) GetLastSlashedLogicCallBlock(ctx sdk.Context) uint64 {
-	store := ctx.KVStore(k.storeKey)
-	bytes := store.Get(types.LastSlashedLogicCallBlock)
-
-	if len(bytes) == 0 {
-		panic("Last slashed logic call block not initialized in genesis")
-	}
-	return types.UInt64FromBytesUnsafe(bytes)
-}
-
-// GetUnSlashedLogicCalls returns all the unslashed logic calls in state
-func (k Keeper) GetUnSlashedLogicCalls(ctx sdk.Context, maxHeight uint64) (out []types.OutgoingLogicCall) {
-	lastSlashedLogicCallBlock := k.GetLastSlashedLogicCallBlock(ctx)
-	calls := k.GetOutgoingLogicCalls(ctx)
-	for _, call := range calls {
-		if call.CosmosBlockCreated > lastSlashedLogicCallBlock {
-			out = append(out, call)
-		}
-	}
-	return
-}
-
 /////////////////////////////
 //////// Parameters /////////
 /////////////////////////////
@@ -393,13 +177,13 @@ func (k Keeper) GetUnSlashedLogicCalls(ctx sdk.Context, maxHeight uint64) (out [
 // In case of an overflow the end is set to nil.
 // Example: []byte{255, 255, 255, 255} becomes nil
 // MARK finish-batches: this is where some crazy shit happens
-func prefixRange(prefix []byte) ([]byte, []byte) {
+func prefixRange(prefix []byte) ([]byte, []byte, error) {
 	if prefix == nil {
-		panic("nil key not allowed")
+		return nil, nil, fmt.Errorf("nil key not allowed")
 	}
 	// special case: no prefix is whole range
 	if len(prefix) == 0 {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	// copy the prefix and update last byte
@@ -418,7 +202,7 @@ func prefixRange(prefix []byte) ([]byte, []byte) {
 	if l == 0 && end[0] == 0 {
 		end = nil
 	}
-	return prefix, end
+	return prefix, end, nil
 }
 
 // DeserializeValidatorIterator returns validators from the validator iterator.
@@ -431,30 +215,29 @@ func (k Keeper) DeserializeValidatorIterator(vals []byte) stakingtypes.ValAddres
 	return validators
 }
 
-// Checks if the provided Ethereum address is on the Governance blacklist
-func (k Keeper) IsOnBlacklist(ctx sdk.Context, addr types.EthAddress) bool {
-	params := k.GetParams(ctx)
-	// Checks the address if it's inside the blacklisted address list and marks
-	// if it's inside the list.
-	for index := 0; index < len(params.EthereumBlacklist); index++ {
-		baddr, err := types.NewEthAddress(params.EthereumBlacklist[index])
-		if err != nil {
-			// this should not be possible we validate on genesis load
-			panic("unvalidated black list address!")
-		}
-		if *baddr == addr {
-			return true
-		}
-	}
-	return false
-}
-
-// Returns true if the provided address is invalid to send to Ethereum this could be
+// InvalidSendToEthAddress Returns true if the provided address is invalid to send to Ethereum this could be
 // for one of several reasons. (1) it is invalid in general like the Zero address, (2)
-// it is invalid for a subset of ERC20 addresses or (3) it is on the governance deposit/withdraw
-// blacklist. (2) is not yet implemented
+// it is invalid for a subset of ERC20 addresses. (2) is not yet implemented
 // Blocking some addresses is technically motivated, if any ERC20 transfers in a batch fail the entire batch
 // becomes impossible to execute.
 func (k Keeper) InvalidSendToEthAddress(ctx sdk.Context, addr types.EthAddress, _erc20Addr types.EthAddress) bool {
-	return k.IsOnBlacklist(ctx, addr) || addr == types.ZeroAddress()
+	return addr == types.ZeroAddress()
+}
+
+func (k Keeper) GetStore(ctx sdk.Context) sdk.KVStore {
+	return k.storeGetter.Store(ctx)
+}
+
+type GravityStoreGetter struct {
+	storeKey storetypes.StoreKey
+}
+
+func NewGravityStoreGetter(storeKey storetypes.StoreKey) GravityStoreGetter {
+	return GravityStoreGetter{
+		storeKey: storeKey,
+	}
+}
+
+func (gsg GravityStoreGetter) Store(ctx sdk.Context) sdk.KVStore {
+	return ctx.KVStore(gsg.storeKey)
 }

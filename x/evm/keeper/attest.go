@@ -110,7 +110,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	case *types.Message_UploadSmartContract:
 		defer func() {
 			// regardless of the outcome, this upload/deployment should be removed
-			k.RemoveSmartContractDeployment(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
+			k.DeleteSmartContractDeployment(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
 		}()
 		switch winner := evidence.(type) {
 		case *types.TxExecutedProof:
@@ -148,7 +148,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				return err
 			}
 
-			deployingSmartContract, _ := k.getSmartContractDeploying(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
+			deployingSmartContract, _ := k.getSmartContractDeployment(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
 			if deployingSmartContract == nil {
 				return ErrCannotActiveSmartContractThatIsNotDeploying
 			}

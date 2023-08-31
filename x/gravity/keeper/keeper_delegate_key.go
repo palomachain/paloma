@@ -1,11 +1,9 @@
 package keeper
 
 import (
-	"time"
+	"fmt"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -14,221 +12,41 @@ import (
 //// ADDRESS DELEGATION ///
 ///////////////////////////
 
-// SetOrchestratorValidator sets the Orchestrator key for a given validator
-func (k Keeper) SetOrchestratorValidator(ctx sdk.Context, val sdk.ValAddress, orch sdk.AccAddress) {
-	if err := sdk.VerifyAddressFormat(val); err != nil {
-		panic(sdkerrors.Wrap(err, "invalid val address"))
-	}
-	if err := sdk.VerifyAddressFormat(orch); err != nil {
-		panic(sdkerrors.Wrap(err, "invalid orch address"))
-	}
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.GetOrchestratorAddressKey(orch), val.Bytes())
-}
-
 // GetOrchestratorValidator returns the validator key associated with an orchestrator key
-func (k Keeper) GetOrchestratorValidator(ctx sdk.Context, orch sdk.AccAddress) (validator stakingtypes.Validator, found bool) {
-	valAddr, foundValAddr := k.GetOrchestratorValidatorAddr(ctx, orch)
-	if err := sdk.VerifyAddressFormat(orch); err != nil {
-		ctx.Logger().Error("invalid orch address")
-		return validator, false
-	}
-
-	if !foundValAddr && valAddr == nil {
-		return stakingtypes.Validator{
-			OperatorAddress: "",
-			ConsensusPubkey: &codectypes.Any{
-				TypeUrl:              "",
-				Value:                []byte{},
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     []byte{},
-				XXX_sizecache:        0,
-			},
-			Jailed:          false,
-			Status:          0,
-			Tokens:          sdk.Int{},
-			DelegatorShares: sdk.Dec{},
-			Description: stakingtypes.Description{
-				Moniker:         "",
-				Identity:        "",
-				Website:         "",
-				SecurityContact: "",
-				Details:         "",
-			},
-			UnbondingHeight: 0,
-			UnbondingTime:   time.Time{},
-			Commission: stakingtypes.Commission{
-				CommissionRates: stakingtypes.CommissionRates{
-					Rate:          sdk.Dec{},
-					MaxRate:       sdk.Dec{},
-					MaxChangeRate: sdk.Dec{},
-				},
-				UpdateTime: time.Time{},
-			},
-			MinSelfDelegation: sdk.Int{},
-		}, false
-	}
-	validator, found = k.StakingKeeper.GetValidator(ctx, valAddr)
-	if !found {
-		return stakingtypes.Validator{
-			OperatorAddress: "",
-			ConsensusPubkey: &codectypes.Any{
-				TypeUrl:              "",
-				Value:                []byte{},
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     []byte{},
-				XXX_sizecache:        0,
-			},
-			Jailed:          false,
-			Status:          0,
-			Tokens:          sdk.Int{},
-			DelegatorShares: sdk.Dec{},
-			Description: stakingtypes.Description{
-				Moniker:         "",
-				Identity:        "",
-				Website:         "",
-				SecurityContact: "",
-				Details:         "",
-			},
-			UnbondingHeight: 0,
-			UnbondingTime:   time.Time{},
-			Commission: stakingtypes.Commission{
-				CommissionRates: stakingtypes.CommissionRates{
-					Rate:          sdk.Dec{},
-					MaxRate:       sdk.Dec{},
-					MaxChangeRate: sdk.Dec{},
-				},
-				UpdateTime: time.Time{},
-			},
-			MinSelfDelegation: sdk.Int{},
-		}, false
-	}
-
-	return validator, true
-}
-
-// GetOrchestratorValidatorAddr returns the validator address associated with an orchestrator key.
-// Getting a result from this function means that the validator existed at some point and sent a SetOrchestratorAddress
-// message. It does not mean that the validator is in the current validator set, for that use GetOrchestratorValidator.
-// This will hold true as long as we never delete any delegate keys.
-func (k Keeper) GetOrchestratorValidatorAddr(ctx sdk.Context, orch sdk.AccAddress) (validator sdk.ValAddress, found bool) {
-	if err := sdk.VerifyAddressFormat(orch); err != nil {
-		ctx.Logger().Error("invalid orch address")
-		return validator, false
-	}
-	store := ctx.KVStore(k.storeKey)
-	valAddr := store.Get([]byte(types.GetOrchestratorAddressKey(orch)))
+func (k Keeper) GetOrchestratorValidator(ctx sdk.Context, orch sdk.AccAddress) (validator stakingtypes.Validator, found bool, err error) {
+	valAddr := sdk.ValAddress(orch)
 	if valAddr == nil {
-		return sdk.ValAddress{}, false
+		return validator, false, fmt.Errorf("nil valAddr")
 	}
-	return valAddr, true
+
+	if err := sdk.VerifyAddressFormat(orch); err != nil {
+		ctx.Logger().Error("invalid orch address")
+		return validator, false, err
+	}
+
+	validator, found = k.StakingKeeper.GetValidator(ctx, valAddr)
+
+	return validator, true, nil
 }
 
 /////////////////////////////
 // ETH ADDRESS       //
 /////////////////////////////
 
-// SetEthAddress sets the ethereum address for a given validator
-func (k Keeper) SetEthAddressForValidator(ctx sdk.Context, validator sdk.ValAddress, ethAddr types.EthAddress) {
-	if err := sdk.VerifyAddressFormat(validator); err != nil {
-		panic(sdkerrors.Wrap(err, "invalid validator address"))
-	}
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.GetEthAddressByValidatorKey(validator), ethAddr.GetAddress().Bytes())
-	store.Set(types.GetValidatorByEthAddressKey(ethAddr), []byte(validator))
-}
-
 // GetEthAddressByValidator returns the eth address for a given gravity validator
-func (k Keeper) GetEthAddressByValidator(ctx sdk.Context, validator sdk.ValAddress) (ethAddress *types.EthAddress, found bool) {
-	if err := sdk.VerifyAddressFormat(validator); err != nil {
-		panic(sdkerrors.Wrap(err, "invalid validator address"))
-	}
-	store := ctx.KVStore(k.storeKey)
-	ethAddr := store.Get(types.GetEthAddressByValidatorKey(validator))
-	if ethAddr == nil {
-		return nil, false
-	}
-
-	addr, err := types.NewEthAddressFromBytes(ethAddr)
-	if err != nil {
-		return nil, false
-	}
-	return addr, true
+func (k Keeper) GetEthAddressByValidator(ctx sdk.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *types.EthAddress, found bool, err error) {
+	return k.evmKeeper.GetEthAddressByValidator(ctx, validator, chainReferenceId)
 }
 
 // GetValidatorByEthAddress returns the validator for a given eth address
-func (k Keeper) GetValidatorByEthAddress(ctx sdk.Context, ethAddr types.EthAddress) (validator stakingtypes.Validator, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	valAddr := store.Get([]byte(types.GetValidatorByEthAddressKey(ethAddr)))
+func (k Keeper) GetValidatorByEthAddress(ctx sdk.Context, ethAddr types.EthAddress, chainReferenceId string) (validator stakingtypes.Validator, found bool, err error) {
+	valAddr, found, err := k.evmKeeper.GetValidatorAddressByEthAddress(ctx, ethAddr, chainReferenceId)
+	if err != nil {
+		return validator, false, err
+	}
 	if valAddr == nil {
-		return stakingtypes.Validator{
-			OperatorAddress: "",
-			ConsensusPubkey: &codectypes.Any{
-				TypeUrl:              "",
-				Value:                []byte{},
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     []byte{},
-				XXX_sizecache:        0,
-			},
-			Jailed:          false,
-			Status:          0,
-			Tokens:          sdk.Int{},
-			DelegatorShares: sdk.Dec{},
-			Description: stakingtypes.Description{
-				Moniker:         "",
-				Identity:        "",
-				Website:         "",
-				SecurityContact: "",
-				Details:         "",
-			},
-			UnbondingHeight: 0,
-			UnbondingTime:   time.Time{},
-			Commission: stakingtypes.Commission{
-				CommissionRates: stakingtypes.CommissionRates{
-					Rate:          sdk.Dec{},
-					MaxRate:       sdk.Dec{},
-					MaxChangeRate: sdk.Dec{},
-				},
-				UpdateTime: time.Time{},
-			},
-			MinSelfDelegation: sdk.Int{},
-		}, false
+		return validator, false, nil
 	}
 	validator, found = k.StakingKeeper.GetValidator(ctx, valAddr)
-	if !found {
-		return stakingtypes.Validator{
-			OperatorAddress: "",
-			ConsensusPubkey: &codectypes.Any{
-				TypeUrl:              "",
-				Value:                []byte{},
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     []byte{},
-				XXX_sizecache:        0,
-			},
-			Jailed:          false,
-			Status:          0,
-			Tokens:          sdk.Int{},
-			DelegatorShares: sdk.Dec{},
-			Description: stakingtypes.Description{
-				Moniker:         "",
-				Identity:        "",
-				Website:         "",
-				SecurityContact: "",
-				Details:         "",
-			},
-			UnbondingHeight: 0,
-			UnbondingTime:   time.Time{},
-			Commission: stakingtypes.Commission{
-				CommissionRates: stakingtypes.CommissionRates{
-					Rate:          sdk.Dec{},
-					MaxRate:       sdk.Dec{},
-					MaxChangeRate: sdk.Dec{},
-				},
-				UpdateTime: time.Time{},
-			},
-			MinSelfDelegation: sdk.Int{},
-		}, false
-	}
-
-	return validator, true
+	return validator, found, nil
 }

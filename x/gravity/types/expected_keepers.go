@@ -10,6 +10,8 @@ import (
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	xchain "github.com/palomachain/paloma/internal/x-chain"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 )
 
 // StakingKeeper defines the expected staking keeper methods
@@ -63,4 +65,11 @@ type DistributionKeeper interface {
 	FundCommunityPool(ctx sdk.Context, amount sdk.Coins, sender sdk.AccAddress) error
 	GetFeePool(ctx sdk.Context) (feePool distributiontypes.FeePool)
 	SetFeePool(ctx sdk.Context, feePool distributiontypes.FeePool)
+}
+
+type EVMKeeper interface {
+	GetChainInfo(ctx sdk.Context, targetChainReferenceID string) (*evmtypes.ChainInfo, error)
+	PickValidatorForMessage(ctx sdk.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error)
+	GetEthAddressByValidator(ctx sdk.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *EthAddress, found bool, err error)
+	GetValidatorAddressByEthAddress(ctx sdk.Context, ethAddr EthAddress, chainReferenceId string) (valAddr sdk.ValAddress, found bool, err error)
 }

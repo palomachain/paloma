@@ -8,7 +8,6 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,101 +20,74 @@ type testInitStruct struct {
 
 func TestConfirmHandlerCommon(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
-
-	privKey, err := crypto.GenerateKey()
-	require.NoError(t, err)
-
-	ethAddress, err := types.NewEthAddress(crypto.PubkeyToAddress(privKey.PublicKey).String())
-	require.NoError(t, err)
-
-	input.GravityKeeper.SetEthAddressForValidator(ctx, ValAddrs[0], *ethAddress)
-	input.GravityKeeper.SetOrchestratorValidator(ctx, ValAddrs[0], AccAddrs[0])
+	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	batch := types.OutgoingTxBatch{
 		BatchNonce:         0,
 		BatchTimeout:       420,
 		Transactions:       []types.OutgoingTransferTx{},
 		TokenContract:      "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",
-		CosmosBlockCreated: 0,
+		PalomaBlockCreated: 0,
+		ChainReferenceId:   "test-chain",
 	}
 
-	checkpoint := batch.GetCheckpoint(input.GravityKeeper.GetGravityID(ctx))
+	checkpoint, err := batch.GetCheckpoint("test-turnstone-id")
+	require.NoError(t, err)
 
-	ethSignature, err := types.NewEthereumSignature(checkpoint, privKey)
+	ethSignature, err := types.NewEthereumSignature(checkpoint, EthPrivKeys[0])
 	require.NoError(t, err)
 
 	sv := msgServer{input.GravityKeeper}
-	err = sv.confirmHandlerCommon(input.Context, ethAddress.GetAddress().Hex(), AccAddrs[0], hex.EncodeToString(ethSignature), checkpoint)
-	assert.Nil(t, err)
+	err = sv.confirmHandlerCommon(input.Context, EthAddrs[0].Hex(), AccAddrs[0], hex.EncodeToString(ethSignature), checkpoint, "test-chain")
+	require.NoError(t, err)
 }
+
 func confirmHandlerCommonWithAddress(t *testing.T, address string, testVar testInitStruct) error {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	privKey := testVar.privKey
 
-	ethAddress, err := types.NewEthAddress(testVar.ethAddress)
-	require.NoError(t, err)
-
-	input.GravityKeeper.SetEthAddressForValidator(ctx, ValAddrs[0], *ethAddress)
-	input.GravityKeeper.SetOrchestratorValidator(ctx, ValAddrs[0], AccAddrs[0])
-
 	batch := types.OutgoingTxBatch{
 		BatchNonce:         0,
 		BatchTimeout:       420,
 		Transactions:       []types.OutgoingTransferTx{},
 		TokenContract:      "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",
-		CosmosBlockCreated: 0,
+		PalomaBlockCreated: 0,
+		ChainReferenceId:   "test-chain",
 	}
 
-	checkpoint := batch.GetCheckpoint(input.GravityKeeper.GetGravityID(ctx))
+	checkpoint, err := batch.GetCheckpoint("test-turnstone-id")
+	require.NoError(t, err)
 
 	ethSignature, err := types.NewEthereumSignature(checkpoint, privKey)
 	require.NoError(t, err)
 
 	sv := msgServer{input.GravityKeeper}
 
-	err = sv.confirmHandlerCommon(input.Context, address, AccAddrs[0], hex.EncodeToString(ethSignature), checkpoint)
+	err = sv.confirmHandlerCommon(input.Context, address, AccAddrs[0], hex.EncodeToString(ethSignature), checkpoint, "test-chain")
 
 	return err
 }
+
 func TestConfirmHandlerCommonWithLowercaseAddress(t *testing.T) {
-	privKey, err := crypto.GenerateKey()
-	require.NoError(t, err)
+	initVar := testInitStruct{privKey: EthPrivKeys[0], ethAddress: EthAddrs[0].String()}
 
-	ethAddress := crypto.PubkeyToAddress(privKey.PublicKey).String()
-	require.NoError(t, err)
-
-	initVar := testInitStruct{privKey: privKey, ethAddress: ethAddress}
-
-	ret_err := confirmHandlerCommonWithAddress(t, strings.ToLower(ethAddress), initVar)
+	ret_err := confirmHandlerCommonWithAddress(t, strings.ToLower(EthAddrs[0].String()), initVar)
 	assert.Nil(t, ret_err)
-
 }
+
 func TestConfirmHandlerCommonWithUppercaseAddress(t *testing.T) {
-	privKey, err := crypto.GenerateKey()
-	require.NoError(t, err)
+	initVar := testInitStruct{privKey: EthPrivKeys[0], ethAddress: EthAddrs[0].String()}
 
-	ethAddress := crypto.PubkeyToAddress(privKey.PublicKey).String()
-
-	initVar := testInitStruct{privKey: privKey, ethAddress: ethAddress}
-
-	ret_err := confirmHandlerCommonWithAddress(t, strings.ToUpper(ethAddress), initVar)
+	ret_err := confirmHandlerCommonWithAddress(t, strings.ToUpper(EthAddrs[0].String()), initVar)
 	assert.Nil(t, ret_err)
 }
+
 func TestConfirmHandlerCommonWithMixedCaseAddress(t *testing.T) {
-	privKey, err := crypto.GenerateKey()
-	require.NoError(t, err)
+	initVar := testInitStruct{privKey: EthPrivKeys[0], ethAddress: EthAddrs[0].String()}
 
-	ethString := crypto.PubkeyToAddress(privKey.PublicKey).String()
-
-	initVar := testInitStruct{privKey: privKey, ethAddress: ethString}
-
-	ethAddress, err := types.NewEthAddress(ethString)
-	require.NoError(t, err)
-
-	mixedCase := []rune(ethAddress.GetAddress().Hex())
+	mixedCase := []rune(EthAddrs[0].Hex())
 	for i := range mixedCase {
 		if rand.Float64() > 0.5 {
 			mixedCase[i] = unicode.ToLower(mixedCase[i])

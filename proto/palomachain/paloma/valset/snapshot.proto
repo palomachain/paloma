@@ -60,6 +60,7 @@ message ExternalChainInfo {
   bytes pubkey = 4;
 
   string balance = 5;
+  repeated string traits = 6;
 }
 
 enum ValidatorState {
