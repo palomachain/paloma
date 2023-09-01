@@ -119,7 +119,7 @@ func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddres
 		return err
 	}
 
-	allExistingChainAccounts, err := k.getAllChainInfos(ctx)
+	allExistingChainAccounts, err := k.GetAllChainInfos(ctx)
 	if err != nil {
 		return err
 	}
@@ -482,7 +482,7 @@ func (k Keeper) GetValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) 
 	return info.ExternalChainInfo, nil
 }
 
-func (k Keeper) getAllChainInfos(ctx sdk.Context) ([]*types.ValidatorExternalAccounts, error) {
+func (k Keeper) GetAllChainInfos(ctx sdk.Context) ([]*types.ValidatorExternalAccounts, error) {
 	chainInfoStore := k._externalChainInfoStore(ctx)
 	iter := chainInfoStore.Iterator(nil, nil)
 

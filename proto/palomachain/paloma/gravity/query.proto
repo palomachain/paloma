@@ -1,333 +1,163 @@
 syntax = "proto3";
 package palomachain.paloma.gravity;
 
-import "cosmos/base/query/v1beta1/pagination.proto";
-import "cosmos/base/v1beta1/coin.proto";
+import "palomachain/paloma/gravity/pool.proto";
+import "palomachain/paloma/gravity/batch.proto";
+import "palomachain/paloma/gravity/attestation.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "palomachain/paloma/gravity/genesis.proto";
-import "palomachain/paloma/gravity/gravity.proto";
+import "palomachain/paloma/gravity/types.proto";
 import "palomachain/paloma/gravity/msgs.proto";
 
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
 // Query defines the gRPC querier service
 service Query {
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {}
+  rpc LastPendingBatchRequestByAddr(QueryLastPendingBatchRequestByAddrRequest) returns (QueryLastPendingBatchRequestByAddrResponse) {}
+  rpc LastEventNonceByAddr(QueryLastEventNonceByAddrRequest) returns (QueryLastEventNonceByAddrResponse) {}
+  rpc OutgoingTxBatches(QueryOutgoingTxBatchesRequest) returns (QueryOutgoingTxBatchesResponse) {}
+  rpc BatchRequestByNonce(QueryBatchRequestByNonceRequest) returns (QueryBatchRequestByNonceResponse) {}
+  rpc BatchConfirms(QueryBatchConfirmsRequest) returns (QueryBatchConfirmsResponse) {}
+  rpc ERC20ToDenom(QueryERC20ToDenomRequest) returns (QueryERC20ToDenomResponse) {}
+  rpc DenomToERC20(QueryDenomToERC20Request) returns (QueryDenomToERC20Response) {}
+  rpc GetLastObservedEthBlock(QueryLastObservedEthBlockRequest) returns (QueryLastObservedEthBlockResponse) {}
+  rpc GetLastObservedEthNonce(QueryLastObservedEthNonceRequest) returns (QueryLastObservedEthNonceResponse) {}
+  rpc GetAttestations(QueryAttestationsRequest) returns (QueryAttestationsResponse) {}
 
-  // Module parameters query
-  rpc Params(ParamsRequest) returns (ParamsResponse) {
-    // option (google.api.http).get = "/gravity/v1/params";
-  }
+  rpc GetErc20ToDenoms(QueryErc20ToDenoms) returns (QueryErc20ToDenomsResponse) {}
 
-  // get info on individual outgoing data
-  rpc SignerSetTx(SignerSetTxRequest) returns (SignerSetTxResponse) {
-    // option (google.api.http).get = "/gravity/v1/signer_set";
-  }
-  rpc LatestSignerSetTx(LatestSignerSetTxRequest)
-      returns (SignerSetTxResponse) {
-    // option (google.api.http).get = "/gravity/v1/signer_set/latest";
-  }
-  rpc BatchTx(BatchTxRequest) returns (BatchTxResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/batch_txs/{token_contract}/{nonce}";
-  }
-  rpc ContractCallTx(ContractCallTxRequest) returns (ContractCallTxResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/contract_call_txs/{invalidation_id}/{invalidation_nonce}";
-  }
-
-  // get collections of outgoing traffic from the bridge
-  rpc SignerSetTxs(SignerSetTxsRequest) returns (SignerSetTxsResponse) {
-    // option (google.api.http).get = "/gravity/v1/signer_sets";
-  }
-  rpc BatchTxs(BatchTxsRequest) returns (BatchTxsResponse) {
-    // option (google.api.http).get = "/gravity/v1/batch/batch_txs";
-  }
-  rpc ContractCallTxs(ContractCallTxsRequest)
-      returns (ContractCallTxsResponse) {
-    // option (google.api.http).get = "/gravity/v1/batch/contract_call_txs";
-  }
-
-  // ethereum signature queries so validators can construct valid etherum
-  // transactions
-
-  // TODO: can/should we group these into one endpoint?
-  rpc SignerSetTxConfirmations(SignerSetTxConfirmationsRequest)
-      returns (SignerSetTxConfirmationsResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/signer_sets/ethereum_signatures";
-  }
-  rpc BatchTxConfirmations(BatchTxConfirmationsRequest)
-      returns (BatchTxConfirmationsResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/batch_txs/ethereum_signatures";
-  }
-  rpc ContractCallTxConfirmations(ContractCallTxConfirmationsRequest)
-      returns (ContractCallTxConfirmationsResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/logic_calls/ethereum_signatures";
-  }
-
-  // ^^^^^^^^^^^^ seem okay for now ^^^^^^
-
-  // pending ethereum signature queries for orchestrators to figure out which
-  // signatures they are missing
-  // TODO: can/should we group this into one endpoint?
-  rpc UnsignedSignerSetTxs(UnsignedSignerSetTxsRequest)
-      returns (UnsignedSignerSetTxsResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/SignerSetTxs/{address}/pending";
-  }
-  rpc UnsignedBatchTxs(UnsignedBatchTxsRequest)
-      returns (UnsignedBatchTxsResponse) {
-    // option (google.api.http).get = "/gravity/v1/batches/{address}/pending";
-  }
-  rpc UnsignedContractCallTxs(UnsignedContractCallTxsRequest)
-      returns (UnsignedContractCallTxsResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/ContractCallTxs/{address}/pending";
-  }
-
-  rpc LastSubmittedEthereumEvent(LastSubmittedEthereumEventRequest)
-      returns (LastSubmittedEthereumEventResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/oracle/event_nonce/{address}";
-  }
-
-  // Queries the fees for all pending batches, results are returned in sdk.Coin
-  // (fee_amount_int)(contract_address) style
-  rpc BatchTxFees(BatchTxFeesRequest) returns (BatchTxFeesResponse) {
-    // option (google.api.http).get = "/gravity/v1/batches/fees";
-  }
-
-  // Query for info about denoms tracked by gravity
-  rpc ERC20ToDenom(ERC20ToDenomRequest) returns (ERC20ToDenomResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/cosmos_originated/erc20_to_denom";
-  }
-
-  // DenomToERC20Params implements a query that allows ERC-20 parameter
-  // information to be retrieved by a Cosmos base denomination.
-  rpc DenomToERC20Params(DenomToERC20ParamsRequest)
-      returns (DenomToERC20ParamsResponse) {}
-
-  // Query for info about denoms tracked by gravity
-  rpc DenomToERC20(DenomToERC20Request) returns (DenomToERC20Response) {
-    // option (google.api.http).get =
-    // "/gravity/v1/cosmos_originated/denom_to_erc20";
-  }
-  // Query for batch send to ethereums
-  rpc BatchedSendToEthereums(BatchedSendToEthereumsRequest)
-      returns (BatchedSendToEthereumsResponse) {
-    // option (google.api.http).get = "/gravity/v1/query_batched_send_to_eth";
-  }
-  // Query for unbatched send to ethereums
-  rpc UnbatchedSendToEthereums(UnbatchedSendToEthereumsRequest)
-      returns (UnbatchedSendToEthereumsResponse) {
-    // option (google.api.http).get = "/gravity/v1/query_unbatched_send_to_eth";
-  }
-
-  // delegate keys
-  rpc DelegateKeysByValidator(DelegateKeysByValidatorRequest)
-      returns (DelegateKeysByValidatorResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/delegate_keys/validator/{validator}";
-  }
-  rpc DelegateKeysByEthereumSigner(DelegateKeysByEthereumSignerRequest)
-      returns (DelegateKeysByEthereumSignerResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/delegate_keys/ethereum/{ethereum_signer}";
-  }
-  rpc DelegateKeysByOrchestrator(DelegateKeysByOrchestratorRequest)
-      returns (DelegateKeysByOrchestratorResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/delegate_keys/orchestrator/{orchestrator}";
-  }
-
-  rpc DelegateKeys(DelegateKeysRequest) returns (DelegateKeysResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/delegate_keys";
-  }
-
-  rpc LastObservedEthereumHeight(LastObservedEthereumHeightRequest)
-      returns (LastObservedEthereumHeightResponse) {
-    // option (google.api.http).get =
-    // "/gravity/v1/last_observed_ethereum_height"
-  }
+  rpc GetPendingSendToEth(QueryPendingSendToEth) returns (QueryPendingSendToEthResponse) {}
 }
 
-//  rpc Params
-message ParamsRequest {}
-message ParamsResponse { Params params = 1 [ (gogoproto.nullable) = false ]; }
-
-//  rpc SignerSetTx
-message SignerSetTxRequest { uint64 signer_set_nonce = 1; }
-message LatestSignerSetTxRequest {}
-message SignerSetTxResponse { SignerSetTx signer_set = 1; }
-
-//  rpc BatchTx
-message BatchTxRequest {
-  string token_contract = 1;
-  uint64 batch_nonce = 2;
-}
-message BatchTxResponse { BatchTx batch = 1; }
-
-//  rpc ContractCallTx
-message ContractCallTxRequest {
-  bytes invalidation_scope = 1;
-  uint64 invalidation_nonce = 2;
-}
-message ContractCallTxResponse { ContractCallTx logic_call = 1; }
-
-// rpc SignerSetTxConfirmations
-message SignerSetTxConfirmationsRequest { uint64 signer_set_nonce = 1; }
-message SignerSetTxConfirmationsResponse {
-  repeated SignerSetTxConfirmation signatures = 1;
+message QueryParamsRequest {}
+message QueryParamsResponse {
+  Params params = 1 [(gogoproto.nullable) = false];
 }
 
-//  rpc SignerSetTxs
-message SignerSetTxsRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
-message SignerSetTxsResponse {
-  repeated SignerSetTx signer_sets = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-//  rpc BatchTxs
-message BatchTxsRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
-message BatchTxsResponse {
-  repeated BatchTx batches = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-//  rpc ContractCallTxs
-message ContractCallTxsRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
-message ContractCallTxsResponse {
-  repeated ContractCallTx calls = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-// NOTE(levi) pending queries: this is my address; what do I need to sign??
-// why orchestrator key? hot, signing thing all the time so validator key can be
-// safer
-
-// rpc UnsignedSignerSetTxs
-message UnsignedSignerSetTxsRequest {
-  // NOTE: this is an sdk.AccAddress and can represent either the
-  // orchestrator address or the corresponding validator address
+message QueryLastPendingBatchRequestByAddrRequest {
   string address = 1;
 }
-message UnsignedSignerSetTxsResponse { repeated SignerSetTx signer_sets = 1; }
+message QueryLastPendingBatchRequestByAddrResponse {
+  repeated OutgoingTxBatch batch = 1 [(gogoproto.nullable) = false];
+}
+message QueryOutgoingTxBatchesRequest {
+  string chain_reference_id = 1;
+  string assignee = 2;
+}
 
-message UnsignedBatchTxsRequest {
-  // NOTE: this is an sdk.AccAddress and can represent either the
-  // orchestrator address or the corresponding validator address
+message QueryOutgoingTxBatchesResponse {
+  repeated OutgoingTxBatch batches = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryBatchRequestByNonceRequest {
+  uint64 nonce            = 1;
+  string contract_address = 2;
+}
+message QueryBatchRequestByNonceResponse {
+  OutgoingTxBatch batch = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryBatchConfirmsRequest {
+  uint64 nonce            = 1;
+  string contract_address = 2;
+}
+message QueryBatchConfirmsResponse {
+  repeated MsgConfirmBatch confirms = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryLastEventNonceByAddrRequest {
   string address = 1;
 }
-message UnsignedBatchTxsResponse {
-  // Note these are returned with the signature empty
-  repeated BatchTx batches = 1;
+message QueryLastEventNonceByAddrResponse {
+  uint64 event_nonce = 1;
 }
 
-//  rpc UnsignedContractCallTxs
-message UnsignedContractCallTxsRequest { string address = 1; }
-message UnsignedContractCallTxsResponse { repeated ContractCallTx calls = 1; }
-
-message BatchTxFeesRequest {}
-message BatchTxFeesResponse {
-  repeated cosmos.base.v1beta1.Coin fees = 1 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
-}
-
-message ContractCallTxConfirmationsRequest {
-  bytes invalidation_scope = 1;
-  uint64 invalidation_nonce = 2;
-}
-message ContractCallTxConfirmationsResponse {
-  repeated ContractCallTxConfirmation signatures = 1;
-}
-
-message BatchTxConfirmationsRequest {
-  uint64 batch_nonce = 1;
-  string token_contract = 2;
-}
-message BatchTxConfirmationsResponse {
-  repeated BatchTxConfirmation signatures = 1;
-}
-
-message LastSubmittedEthereumEventRequest { string address = 1; }
-message LastSubmittedEthereumEventResponse { uint64 event_nonce = 1; }
-
-message ERC20ToDenomRequest { string erc20 = 1; }
-message ERC20ToDenomResponse {
-  string denom = 1;
-  bool cosmos_originated = 2;
-}
-
-message DenomToERC20ParamsRequest { string denom = 1; }
-message DenomToERC20ParamsResponse {
-  string base_denom = 1;
-  string erc20_name = 2;
-  string erc20_symbol = 3;
-  uint64 erc20_decimals = 4;
-}
-
-message DenomToERC20Request { string denom = 1; }
-message DenomToERC20Response {
+message QueryERC20ToDenomRequest {
   string erc20 = 1;
-  bool cosmos_originated = 2;
+  string chain_reference_id = 2;
+}
+message QueryERC20ToDenomResponse {
+  string denom             = 1;
 }
 
-message DelegateKeysByValidatorRequest { string validator_address = 1; }
-message DelegateKeysByValidatorResponse {
-  string eth_address = 1;
-  string orchestrator_address = 2;
+message QueryDenomToERC20Request {
+  string denom = 1;
+  string chain_reference_id = 2;
+}
+message QueryDenomToERC20Response {
+  string erc20             = 1;
 }
 
-message DelegateKeysByEthereumSignerRequest { string ethereum_signer = 1; }
-message DelegateKeysByEthereumSignerResponse {
-  string validator_address = 1;
-  string orchestrator_address = 2;
+// QueryLastObservedEthBlockRequest defines the request for getting the height of the
+// last applied Ethereum Event on the bridge. This is expected to lag the actual
+// Ethereum block height significantly due to 1. Ethereum Finality and
+//  2. Consensus mirroring the state on Ethereum
+message QueryLastObservedEthBlockRequest{
+  // indicates whether to search for store data using the old Gravity v1 key "LastObservedEthereumBlockHeightKey"
+  // Note that queries before the Mercury upgrade at height 1282013 must set this to true
+  bool use_v1_key = 1;
+}
+message QueryLastObservedEthBlockResponse{
+  // a response of 0 indicates that no Ethereum events have been observed, and thus
+  // the bridge is inactive
+  uint64 block = 1;
 }
 
-message DelegateKeysByOrchestratorRequest { string orchestrator_address = 1; }
-message DelegateKeysByOrchestratorResponse {
-  string validator_address = 1;
-  string ethereum_signer = 2;
+// QueryLastObservedEthNonceRequest defines the request for getting the event nonce
+// of the last applied Ethereum Event on the bridge.
+// Note that this is likely to lag the last executed event a little
+// due to 1. Ethereum Finality and 2. Consensus mirroring the Ethereum state
+message QueryLastObservedEthNonceRequest{
+  // indicates whether to search for store data using the old Gravity v1 key "LastObservedEventNonceKey"
+  // Note that queries before the Mercury upgrade at height 1282013 must set this to true
+  bool use_v1_key = 1;
+}
+message QueryLastObservedEthNonceResponse{
+  // a response of 0 indicates that no Ethereum events have been observed, and thus
+  // the bridge is inactive
+  uint64 nonce = 1;
 }
 
-message DelegateKeysRequest {}
-message DelegateKeysResponse { repeated MsgDelegateKeys delegate_keys = 1; }
+// QueryAttestationsRequest defines the request structure for getting recent
+// attestations with optional query parameters. By default, a limited set of
+// recent attestations will be returned, defined by 'limit'. These attestations
+// can be ordered ascending or descending by nonce, that defaults to ascending.
+// Filtering criteria may also be provided, including nonce, claim type, and
+// height. Note, that an attestation will be returned if it matches ANY of the
+// filter query parameters provided.
+message QueryAttestationsRequest {
+  // limit defines how many attestations to limit in the response.
+  uint64 limit = 1;
+  // order_by provides ordering of atteststions by nonce in the response. Either
+  // 'asc' or 'desc' can be provided. If no value is provided, it defaults to
+  // 'asc'.
+  string order_by = 2;
+  // claim_type allows filtering attestations by Ethereum claim type.
+  string claim_type = 3;
+  // nonce allows filtering attestations by Ethereum claim nonce.
+  uint64 nonce = 4;
+  // height allows filtering attestations by Ethereum claim height.
+  uint64 height = 5;
+  // indicates whether to search for store data using the old Gravity v1 key "OracleAttestationKey"
+  // Note that queries before the Mercury upgrade at height 1282013 must set this to true
+  bool use_v1_key = 6;
+}
 
-// NOTE: if there is no sender address, return all
-message BatchedSendToEthereumsRequest {
+message QueryAttestationsResponse {
+  repeated Attestation attestations = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryErc20ToDenoms {}
+message QueryErc20ToDenomsResponse {
+  repeated ERC20ToDenom erc20_to_denom = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryPendingSendToEth {
   string sender_address = 1;
-  // todo: figure out how to paginate given n Batches with m Send To Ethereums
-  //  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
-message BatchedSendToEthereumsResponse {
-  repeated SendToEthereum send_to_ethereums = 1;
-  //  cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-message UnbatchedSendToEthereumsRequest {
-  string sender_address = 1;
-  cosmos.base.query.v1beta1.PageRequest pagination = 2;
-}
-
-message UnbatchedSendToEthereumsResponse {
-  repeated SendToEthereum send_to_ethereums = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-message LastObservedEthereumHeightRequest {}
-message LastObservedEthereumHeightResponse {
-  LatestEthereumBlockHeight last_observed_ethereum_height = 1;
+message QueryPendingSendToEthResponse {
+  repeated OutgoingTransferTx transfers_in_batches = 1 [(gogoproto.nullable) = false];
+  repeated OutgoingTransferTx unbatched_transfers  = 2 [(gogoproto.nullable) = false];
 }

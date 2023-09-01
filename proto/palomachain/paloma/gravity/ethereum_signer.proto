@@ -1,0 +1,19 @@
+syntax = "proto3";
+package palomachain.paloma.gravity;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/gravity/types";
+
+// SignType defines messages that have been signed by an orchestrator
+enum SignType {
+  option (gogoproto.goproto_enum_prefix)   = false;
+  option (gogoproto.goproto_enum_stringer) = false;
+
+  // An unspecified type
+  SIGN_TYPE_UNSPECIFIED                          = 0;
+  // A type for multi-sig updates
+  SIGN_TYPE_ORCHESTRATOR_SIGNED_MULTI_SIG_UPDATE = 1;
+  // A type for batches
+  SIGN_TYPE_ORCHESTRATOR_SIGNED_WITHDRAW_BATCH   = 2;
+}

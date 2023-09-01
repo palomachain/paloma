@@ -22,6 +22,7 @@ import (
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
+	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -730,4 +731,37 @@ func (k Keeper) GetRelayWeights(ctx sdk.Context, chainReferenceID string) (*type
 	}
 
 	return chainInfo.RelayWeights, nil
+}
+
+func (k Keeper) GetEthAddressByValidator(ctx sdk.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *gravitymoduletypes.EthAddress, found bool, err error) {
+	chainInfos, err := k.Valset.GetValidatorChainInfos(ctx, validator)
+	if err != nil {
+		return ethAddress, false, err
+	}
+	for _, chainInfo := range chainInfos {
+		if chainInfo.GetChainReferenceID() == chainReferenceId {
+			ethAddress = &gravitymoduletypes.EthAddress{}
+			err = ethAddress.SetAddress(chainInfo.GetAddress())
+			if err != nil {
+				return ethAddress, false, err
+			}
+			return ethAddress, true, nil
+		}
+	}
+	return ethAddress, false, nil
+}
+
+func (k Keeper) GetValidatorAddressByEthAddress(ctx sdk.Context, ethAddr gravitymoduletypes.EthAddress, chainReferenceId string) (valAddr sdk.ValAddress, found bool, err error) {
+	validatorsExternalAccounts, err := k.Valset.GetAllChainInfos(ctx)
+	if err != nil {
+		return valAddr, false, err
+	}
+	for _, validatorExternalAccounts := range validatorsExternalAccounts {
+		for _, chainInfo := range validatorExternalAccounts.ExternalChainInfo {
+			if chainInfo.GetChainReferenceID() == chainReferenceId && ethAddr.GetAddress().String() == chainInfo.GetAddress() {
+				return validatorExternalAccounts.Address, true, nil
+			}
+		}
+	}
+	return
 }

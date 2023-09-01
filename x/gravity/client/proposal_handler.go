@@ -5,5 +5,4 @@ import (
 	"github.com/palomachain/paloma/x/gravity/client/cli"
 )
 
-// ProposalHandler is the community Ethereum spend proposal handler.
-var ProposalHandler = govclient.NewProposalHandler(cli.CmdSubmitCommunityPoolEthereumSpendProposal)
+var ProposalHandler = govclient.NewProposalHandler(cli.CmdGravityProposalHandler)

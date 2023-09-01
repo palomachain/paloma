@@ -5,7 +5,7 @@ package types
 
 import (
 	fmt "fmt"
-	types "github.com/cosmos/cosmos-sdk/codec/types"
+	_ "github.com/cosmos/cosmos-sdk/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
@@ -25,84 +25,19 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Params represent the Gravity genesis and store parameters
-// gravity_id:
-// a random 32 byte value to prevent signature reuse, for example if the
-// cosmos validators decided to use the same Ethereum keys for another chain
-// also running Gravity we would not want it to be possible to play a deposit
-// from chain A back on chain B's Gravity. This value IS USED ON ETHEREUM so
-// it must be set in your genesis.json before launch and not changed after
-// deploying Gravity
-//
-// contract_hash:
-// the code hash of a known good version of the Gravity contract
-// solidity code. This can be used to verify the correct version
-// of the contract has been deployed. This is a reference value for
-// goernance action only it is never read by any Gravity code
-//
-// bridge_ethereum_address:
-// is address of the bridge contract on the Ethereum side, this is a
-// reference value for governance only and is not actually used by any
-// Gravity code
-//
-// bridge_chain_id:
-// the unique identifier of the Ethereum chain, this is a reference value
-// only and is not actually used by any Gravity code
-//
-// These reference values may be used by future Gravity client implemetnations
-// to allow for saftey features or convenience features like the Gravity address
-// in your relayer. A relayer would require a configured Gravity address if
-// governance had not set the address on the chain it was relaying for.
-//
-// signed_signer_set_txs_window
-// signed_batches_window
-// signed_ethereum_signatures_window
-//
-// These values represent the time in blocks that a validator has to submit
-// a signature for a batch or valset, or to submit a ethereum_signature for a
-// particular attestation nonce. In the case of attestations this clock starts
-// when the attestation is created, but only allows for slashing once the event
-// has passed
-//
-// target_eth_tx_timeout:
-//
-// This is the 'target' value for when ethereum transactions time out, this is a
-// target because Ethereum is a probabilistic chain and you can't say for sure
-// what the block frequency is ahead of time.
-//
-// average_block_time
-// average_ethereum_block_time
-//
-// These values are the average Cosmos block time and Ethereum block time
-// respectively and they are used to compute what the target batch timeout is.
-// It is important that governance updates these in case of any major, prolonged
-// change in the time it takes to produce a block
-//
-// slash_fraction_signer_set_tx
-// slash_fraction_batch
-// slash_fraction_ethereum_signature
-// slash_fraction_conflicting_ethereum_signature
-//
-// The slashing fractions for the various gravity related slashing conditions.
-// The first three refer to not submitting a particular message, the third for
-// submitting a different ethereum_signature for the same Ethereum event
+// The slashing fractions for the various gravity related slashing conditions. The first three
+// refer to not submitting a particular message, the third for submitting a different claim
+// for the same Ethereum event
 type Params struct {
-	GravityId                string `protobuf:"bytes,1,opt,name=gravity_id,json=gravityId,proto3" json:"gravity_id,omitempty"`
-	ContractSourceHash       string `protobuf:"bytes,2,opt,name=contract_source_hash,json=contractSourceHash,proto3" json:"contract_source_hash,omitempty"`
-	BridgeEthereumAddress    string `protobuf:"bytes,4,opt,name=bridge_ethereum_address,json=bridgeEthereumAddress,proto3" json:"bridge_ethereum_address,omitempty"`
-	BridgeChainId            uint64 `protobuf:"varint,5,opt,name=bridge_chain_id,json=bridgeChainId,proto3" json:"bridge_chain_id,omitempty"`
-	SignedSignerSetTxsWindow uint64 `protobuf:"varint,6,opt,name=signed_signer_set_txs_window,json=signedSignerSetTxsWindow,proto3" json:"signed_signer_set_txs_window,omitempty"`
-	SignedBatchesWindow      uint64 `protobuf:"varint,7,opt,name=signed_batches_window,json=signedBatchesWindow,proto3" json:"signed_batches_window,omitempty"`
-	EthereumSignaturesWindow uint64 `protobuf:"varint,8,opt,name=ethereum_signatures_window,json=ethereumSignaturesWindow,proto3" json:"ethereum_signatures_window,omitempty"`
-	TargetEthTxTimeout       uint64 `protobuf:"varint,10,opt,name=target_eth_tx_timeout,json=targetEthTxTimeout,proto3" json:"target_eth_tx_timeout,omitempty"`
-	AverageBlockTime         uint64 `protobuf:"varint,11,opt,name=average_block_time,json=averageBlockTime,proto3" json:"average_block_time,omitempty"`
-	AverageEthereumBlockTime uint64 `protobuf:"varint,12,opt,name=average_ethereum_block_time,json=averageEthereumBlockTime,proto3" json:"average_ethereum_block_time,omitempty"`
-	// TODO: slash fraction for contract call txs too
-	SlashFractionSignerSetTx                  github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,13,opt,name=slash_fraction_signer_set_tx,json=slashFractionSignerSetTx,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_signer_set_tx"`
-	SlashFractionBatch                        github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,14,opt,name=slash_fraction_batch,json=slashFractionBatch,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_batch"`
-	SlashFractionEthereumSignature            github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,15,opt,name=slash_fraction_ethereum_signature,json=slashFractionEthereumSignature,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_ethereum_signature"`
-	SlashFractionConflictingEthereumSignature github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,16,opt,name=slash_fraction_conflicting_ethereum_signature,json=slashFractionConflictingEthereumSignature,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_conflicting_ethereum_signature"`
-	UnbondSlashingSignerSetTxsWindow          uint64                                 `protobuf:"varint,17,opt,name=unbond_slashing_signer_set_txs_window,json=unbondSlashingSignerSetTxsWindow,proto3" json:"unbond_slashing_signer_set_txs_window,omitempty"`
+	ContractSourceHash           string                                 `protobuf:"bytes,1,opt,name=contract_source_hash,json=contractSourceHash,proto3" json:"contract_source_hash,omitempty"`
+	BridgeEthereumAddress        string                                 `protobuf:"bytes,2,opt,name=bridge_ethereum_address,json=bridgeEthereumAddress,proto3" json:"bridge_ethereum_address,omitempty"`
+	BridgeChainId                uint64                                 `protobuf:"varint,3,opt,name=bridge_chain_id,json=bridgeChainId,proto3" json:"bridge_chain_id,omitempty"`
+	SignedBatchesWindow          uint64                                 `protobuf:"varint,4,opt,name=signed_batches_window,json=signedBatchesWindow,proto3" json:"signed_batches_window,omitempty"`
+	TargetBatchTimeout           uint64                                 `protobuf:"varint,5,opt,name=target_batch_timeout,json=targetBatchTimeout,proto3" json:"target_batch_timeout,omitempty"`
+	AverageBlockTime             uint64                                 `protobuf:"varint,6,opt,name=average_block_time,json=averageBlockTime,proto3" json:"average_block_time,omitempty"`
+	AverageEthereumBlockTime     uint64                                 `protobuf:"varint,7,opt,name=average_ethereum_block_time,json=averageEthereumBlockTime,proto3" json:"average_ethereum_block_time,omitempty"`
+	SlashFractionBatch           github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,8,opt,name=slash_fraction_batch,json=slashFractionBatch,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_batch"`
+	SlashFractionBadEthSignature github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,9,opt,name=slash_fraction_bad_eth_signature,json=slashFractionBadEthSignature,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_bad_eth_signature"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
@@ -138,13 +73,6 @@ func (m *Params) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Params proto.InternalMessageInfo
 
-func (m *Params) GetGravityId() string {
-	if m != nil {
-		return m.GravityId
-	}
-	return ""
-}
-
 func (m *Params) GetContractSourceHash() string {
 	if m != nil {
 		return m.ContractSourceHash
@@ -166,13 +94,6 @@ func (m *Params) GetBridgeChainId() uint64 {
 	return 0
 }
 
-func (m *Params) GetSignedSignerSetTxsWindow() uint64 {
-	if m != nil {
-		return m.SignedSignerSetTxsWindow
-	}
-	return 0
-}
-
 func (m *Params) GetSignedBatchesWindow() uint64 {
 	if m != nil {
 		return m.SignedBatchesWindow
@@ -180,16 +101,9 @@ func (m *Params) GetSignedBatchesWindow() uint64 {
 	return 0
 }
 
-func (m *Params) GetEthereumSignaturesWindow() uint64 {
+func (m *Params) GetTargetBatchTimeout() uint64 {
 	if m != nil {
-		return m.EthereumSignaturesWindow
-	}
-	return 0
-}
-
-func (m *Params) GetTargetEthTxTimeout() uint64 {
-	if m != nil {
-		return m.TargetEthTxTimeout
+		return m.TargetBatchTimeout
 	}
 	return 0
 }
@@ -208,25 +122,15 @@ func (m *Params) GetAverageEthereumBlockTime() uint64 {
 	return 0
 }
 
-func (m *Params) GetUnbondSlashingSignerSetTxsWindow() uint64 {
-	if m != nil {
-		return m.UnbondSlashingSignerSetTxsWindow
-	}
-	return 0
-}
-
-// GenesisState struct
-// TODO: this need to be audited and potentially simplified using the new
-// interfaces
+// GenesisState struct, containing all persistant data required by the Gravity module
 type GenesisState struct {
-	Params                     *Params                    `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
-	LastObservedEventNonce     uint64                     `protobuf:"varint,2,opt,name=last_observed_event_nonce,json=lastObservedEventNonce,proto3" json:"last_observed_event_nonce,omitempty"`
-	OutgoingTxs                []*types.Any               `protobuf:"bytes,3,rep,name=outgoing_txs,json=outgoingTxs,proto3" json:"outgoing_txs,omitempty"`
-	Confirmations              []*types.Any               `protobuf:"bytes,4,rep,name=confirmations,proto3" json:"confirmations,omitempty"`
-	EthereumEventVoteRecords   []*EthereumEventVoteRecord `protobuf:"bytes,9,rep,name=ethereum_event_vote_records,json=ethereumEventVoteRecords,proto3" json:"ethereum_event_vote_records,omitempty"`
-	DelegateKeys               []*MsgDelegateKeys         `protobuf:"bytes,10,rep,name=delegate_keys,json=delegateKeys,proto3" json:"delegate_keys,omitempty"`
-	Erc20ToDenoms              []*ERC20ToDenom            `protobuf:"bytes,11,rep,name=erc20_to_denoms,json=erc20ToDenoms,proto3" json:"erc20_to_denoms,omitempty"`
-	UnbatchedSendToEthereumTxs []*SendToEthereum          `protobuf:"bytes,12,rep,name=unbatched_send_to_ethereum_txs,json=unbatchedSendToEthereumTxs,proto3" json:"unbatched_send_to_ethereum_txs,omitempty"`
+	Params             *Params              `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+	GravityNonces      GravityNonces        `protobuf:"bytes,2,opt,name=gravity_nonces,json=gravityNonces,proto3" json:"gravity_nonces"`
+	Batches            []OutgoingTxBatch    `protobuf:"bytes,3,rep,name=batches,proto3" json:"batches"`
+	BatchConfirms      []MsgConfirmBatch    `protobuf:"bytes,4,rep,name=batch_confirms,json=batchConfirms,proto3" json:"batch_confirms"`
+	Attestations       []Attestation        `protobuf:"bytes,7,rep,name=attestations,proto3" json:"attestations"`
+	Erc20ToDenoms      []ERC20ToDenom       `protobuf:"bytes,9,rep,name=erc20_to_denoms,json=erc20ToDenoms,proto3" json:"erc20_to_denoms"`
+	UnbatchedTransfers []OutgoingTransferTx `protobuf:"bytes,10,rep,name=unbatched_transfers,json=unbatchedTransfers,proto3" json:"unbatched_transfers"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -269,74 +173,76 @@ func (m *GenesisState) GetParams() *Params {
 	return nil
 }
 
-func (m *GenesisState) GetLastObservedEventNonce() uint64 {
+func (m *GenesisState) GetGravityNonces() GravityNonces {
 	if m != nil {
-		return m.LastObservedEventNonce
+		return m.GravityNonces
 	}
-	return 0
+	return GravityNonces{}
 }
 
-func (m *GenesisState) GetOutgoingTxs() []*types.Any {
+func (m *GenesisState) GetBatches() []OutgoingTxBatch {
 	if m != nil {
-		return m.OutgoingTxs
-	}
-	return nil
-}
-
-func (m *GenesisState) GetConfirmations() []*types.Any {
-	if m != nil {
-		return m.Confirmations
+		return m.Batches
 	}
 	return nil
 }
 
-func (m *GenesisState) GetEthereumEventVoteRecords() []*EthereumEventVoteRecord {
+func (m *GenesisState) GetBatchConfirms() []MsgConfirmBatch {
 	if m != nil {
-		return m.EthereumEventVoteRecords
+		return m.BatchConfirms
 	}
 	return nil
 }
 
-func (m *GenesisState) GetDelegateKeys() []*MsgDelegateKeys {
+func (m *GenesisState) GetAttestations() []Attestation {
 	if m != nil {
-		return m.DelegateKeys
+		return m.Attestations
 	}
 	return nil
 }
 
-func (m *GenesisState) GetErc20ToDenoms() []*ERC20ToDenom {
+func (m *GenesisState) GetErc20ToDenoms() []ERC20ToDenom {
 	if m != nil {
 		return m.Erc20ToDenoms
 	}
 	return nil
 }
 
-func (m *GenesisState) GetUnbatchedSendToEthereumTxs() []*SendToEthereum {
+func (m *GenesisState) GetUnbatchedTransfers() []OutgoingTransferTx {
 	if m != nil {
-		return m.UnbatchedSendToEthereumTxs
+		return m.UnbatchedTransfers
 	}
 	return nil
 }
 
-// This records the relationship between an ERC20 token and the denom
-// of the corresponding Cosmos originated asset
-type ERC20ToDenom struct {
-	Erc20 string `protobuf:"bytes,1,opt,name=erc20,proto3" json:"erc20,omitempty"`
-	Denom string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+// GravityCounters contains the many noces and counters required to maintain the bridge state in the genesis
+type GravityNonces struct {
+	// the last observed Gravity.sol contract event nonce
+	LastObservedNonce uint64 `protobuf:"varint,1,opt,name=last_observed_nonce,json=lastObservedNonce,proto3" json:"last_observed_nonce,omitempty"`
+	// the last batch Cosmos chain block that batch slashing has completed for
+	// there is an individual batch nonce for each token type so this removes
+	// the need to store them all
+	LastSlashedBatchBlock uint64 `protobuf:"varint,2,opt,name=last_slashed_batch_block,json=lastSlashedBatchBlock,proto3" json:"last_slashed_batch_block,omitempty"`
+	// the last transaction id from the Gravity TX pool, this prevents ID
+	// duplication during chain upgrades
+	LastTxPoolId uint64 `protobuf:"varint,3,opt,name=last_tx_pool_id,json=lastTxPoolId,proto3" json:"last_tx_pool_id,omitempty"`
+	// the last batch id from the Gravity batch pool, this prevents ID duplication
+	// during chain upgrades
+	LastBatchId uint64 `protobuf:"varint,4,opt,name=last_batch_id,json=lastBatchId,proto3" json:"last_batch_id,omitempty"`
 }
 
-func (m *ERC20ToDenom) Reset()         { *m = ERC20ToDenom{} }
-func (m *ERC20ToDenom) String() string { return proto.CompactTextString(m) }
-func (*ERC20ToDenom) ProtoMessage()    {}
-func (*ERC20ToDenom) Descriptor() ([]byte, []int) {
+func (m *GravityNonces) Reset()         { *m = GravityNonces{} }
+func (m *GravityNonces) String() string { return proto.CompactTextString(m) }
+func (*GravityNonces) ProtoMessage()    {}
+func (*GravityNonces) Descriptor() ([]byte, []int) {
 	return fileDescriptor_251e5f09dc76aa70, []int{2}
 }
-func (m *ERC20ToDenom) XXX_Unmarshal(b []byte) error {
+func (m *GravityNonces) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *ERC20ToDenom) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *GravityNonces) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_ERC20ToDenom.Marshal(b, m, deterministic)
+		return xxx_messageInfo_GravityNonces.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -346,36 +252,50 @@ func (m *ERC20ToDenom) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return b[:n], nil
 	}
 }
-func (m *ERC20ToDenom) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ERC20ToDenom.Merge(m, src)
+func (m *GravityNonces) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GravityNonces.Merge(m, src)
 }
-func (m *ERC20ToDenom) XXX_Size() int {
+func (m *GravityNonces) XXX_Size() int {
 	return m.Size()
 }
-func (m *ERC20ToDenom) XXX_DiscardUnknown() {
-	xxx_messageInfo_ERC20ToDenom.DiscardUnknown(m)
+func (m *GravityNonces) XXX_DiscardUnknown() {
+	xxx_messageInfo_GravityNonces.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_ERC20ToDenom proto.InternalMessageInfo
+var xxx_messageInfo_GravityNonces proto.InternalMessageInfo
 
-func (m *ERC20ToDenom) GetErc20() string {
+func (m *GravityNonces) GetLastObservedNonce() uint64 {
 	if m != nil {
-		return m.Erc20
+		return m.LastObservedNonce
 	}
-	return ""
+	return 0
 }
 
-func (m *ERC20ToDenom) GetDenom() string {
+func (m *GravityNonces) GetLastSlashedBatchBlock() uint64 {
 	if m != nil {
-		return m.Denom
+		return m.LastSlashedBatchBlock
 	}
-	return ""
+	return 0
+}
+
+func (m *GravityNonces) GetLastTxPoolId() uint64 {
+	if m != nil {
+		return m.LastTxPoolId
+	}
+	return 0
+}
+
+func (m *GravityNonces) GetLastBatchId() uint64 {
+	if m != nil {
+		return m.LastBatchId
+	}
+	return 0
 }
 
 func init() {
 	proto.RegisterType((*Params)(nil), "palomachain.paloma.gravity.Params")
 	proto.RegisterType((*GenesisState)(nil), "palomachain.paloma.gravity.GenesisState")
-	proto.RegisterType((*ERC20ToDenom)(nil), "palomachain.paloma.gravity.ERC20ToDenom")
+	proto.RegisterType((*GravityNonces)(nil), "palomachain.paloma.gravity.GravityNonces")
 }
 
 func init() {
@@ -383,64 +303,58 @@ func init() {
 }
 
 var fileDescriptor_251e5f09dc76aa70 = []byte{
-	// 907 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x55, 0x5d, 0x6f, 0x1b, 0x45,
-	0x14, 0xb5, 0x69, 0x12, 0x9a, 0xb1, 0x4d, 0xca, 0xe0, 0xc0, 0xd6, 0x2d, 0xae, 0x89, 0xd4, 0xca,
-	0x7c, 0x64, 0x1d, 0x5c, 0x09, 0x44, 0x04, 0x48, 0xcd, 0x07, 0xa5, 0x42, 0xd0, 0x68, 0x6d, 0x81,
-	0xc4, 0xcb, 0x30, 0xde, 0xb9, 0x59, 0xaf, 0xe2, 0x9d, 0x89, 0x66, 0x66, 0x5d, 0xfb, 0x0d, 0xf1,
-	0x0b, 0xfa, 0x9b, 0x78, 0xea, 0x63, 0x1f, 0x11, 0x42, 0x15, 0x4a, 0xfe, 0x48, 0x35, 0x1f, 0x76,
-	0x6c, 0x27, 0xf1, 0x43, 0x9e, 0x76, 0x67, 0xcf, 0x39, 0xf7, 0x9e, 0xb9, 0x77, 0xe7, 0x0e, 0x6a,
-	0x9e, 0xd2, 0x81, 0xc8, 0x68, 0xdc, 0xa7, 0x29, 0x6f, 0xb9, 0xf7, 0x56, 0x22, 0xe9, 0x30, 0xd5,
-	0xe3, 0x56, 0x02, 0x1c, 0x54, 0xaa, 0xc2, 0x53, 0x29, 0xb4, 0xc0, 0xb5, 0x19, 0x66, 0xe8, 0xde,
-	0x43, 0xcf, 0xac, 0x55, 0x13, 0x91, 0x08, 0x4b, 0x6b, 0x99, 0x37, 0xa7, 0xa8, 0x2d, 0x8d, 0xed,
-	0x9e, 0x9e, 0xf9, 0x70, 0x09, 0x33, 0x53, 0x89, 0xb7, 0x50, 0xbb, 0x9b, 0x08, 0x91, 0x0c, 0xa0,
-	0x65, 0x57, 0xbd, 0xfc, 0xb8, 0x45, 0xb9, 0x8f, 0xb0, 0xf5, 0xf7, 0x6d, 0xb4, 0x76, 0x44, 0x25,
-	0xcd, 0x14, 0xfe, 0x18, 0x21, 0xaf, 0x25, 0x29, 0x0b, 0x8a, 0x8d, 0x62, 0x73, 0x3d, 0x5a, 0xf7,
-	0x5f, 0x9e, 0x31, 0xbc, 0x83, 0xaa, 0xb1, 0xe0, 0x5a, 0xd2, 0x58, 0x13, 0x25, 0x72, 0x19, 0x03,
-	0xe9, 0x53, 0xd5, 0x0f, 0xde, 0xb1, 0x44, 0x3c, 0xc1, 0x3a, 0x16, 0xfa, 0x91, 0xaa, 0x3e, 0xfe,
-	0x0a, 0x7d, 0xd4, 0x93, 0x29, 0x4b, 0x80, 0x80, 0xee, 0x83, 0x84, 0x3c, 0x23, 0x94, 0x31, 0x09,
-	0x4a, 0x05, 0x2b, 0x56, 0xb4, 0xe9, 0xe0, 0x43, 0x8f, 0x3e, 0x71, 0x20, 0x7e, 0x84, 0x36, 0xbc,
-	0xce, 0x6e, 0xcc, 0xb8, 0x59, 0x6d, 0x14, 0x9b, 0x2b, 0x51, 0xc5, 0x7d, 0xde, 0x37, 0x5f, 0x9f,
-	0x31, 0xfc, 0x3d, 0xba, 0xaf, 0xd2, 0x84, 0x03, 0x23, 0xf6, 0x21, 0x89, 0x02, 0x4d, 0xf4, 0x48,
-	0x91, 0x17, 0x29, 0x67, 0xe2, 0x45, 0xb0, 0x66, 0x45, 0x81, 0xe3, 0x74, 0x2c, 0xa5, 0x03, 0xba,
-	0x3b, 0x52, 0xbf, 0x59, 0x1c, 0xb7, 0xd1, 0xa6, 0xd7, 0xf7, 0xa8, 0x8e, 0xfb, 0x30, 0x15, 0xbe,
-	0x6b, 0x85, 0x1f, 0x38, 0x70, 0xcf, 0x61, 0x5e, 0xf3, 0x2d, 0xaa, 0x4d, 0x37, 0x63, 0x70, 0xaa,
-	0x73, 0x79, 0x21, 0xbc, 0xed, 0x32, 0x4e, 0x18, 0x9d, 0x29, 0xc1, 0xab, 0xbf, 0x44, 0x9b, 0x9a,
-	0xca, 0x04, 0xb4, 0xa9, 0x08, 0xd1, 0x23, 0xa2, 0xd3, 0x0c, 0x44, 0xae, 0x03, 0x64, 0x85, 0xd8,
-	0x81, 0x87, 0xba, 0xdf, 0x1d, 0x75, 0x1d, 0x82, 0xbf, 0x40, 0x98, 0x0e, 0x41, 0xd2, 0x04, 0x48,
-	0x6f, 0x20, 0xe2, 0x13, 0x2b, 0x09, 0x4a, 0x96, 0x7f, 0xc7, 0x23, 0x7b, 0x06, 0x30, 0x02, 0xfc,
-	0x1d, 0xba, 0x37, 0x61, 0x4f, 0x6d, 0xce, 0xc8, 0xca, 0xce, 0x9f, 0xa7, 0x4c, 0xea, 0x7e, 0x21,
-	0xe7, 0xe8, 0xbe, 0x1a, 0x50, 0xd5, 0x27, 0xc7, 0xa6, 0x95, 0xa9, 0xe0, 0xf3, 0x95, 0x0d, 0x2a,
-	0x8d, 0x62, 0xb3, 0xbc, 0x17, 0xbe, 0x7a, 0xf3, 0xa0, 0xf0, 0xef, 0x9b, 0x07, 0x8f, 0x92, 0x54,
-	0xf7, 0xf3, 0x5e, 0x18, 0x8b, 0xac, 0x15, 0x0b, 0x95, 0x09, 0xe5, 0x1f, 0xdb, 0x8a, 0x9d, 0xb4,
-	0xf4, 0xf8, 0x14, 0x54, 0x78, 0x00, 0x71, 0x14, 0xd8, 0x98, 0x3f, 0xf8, 0x90, 0x33, 0x8d, 0xc0,
-	0x7f, 0xa0, 0xea, 0x42, 0x3e, 0xdb, 0x89, 0xe0, 0xbd, 0x1b, 0xe5, 0xc1, 0x73, 0x79, 0x6c, 0xdf,
-	0xf0, 0x18, 0x7d, 0xb2, 0x90, 0xe1, 0x72, 0xfb, 0x82, 0x8d, 0x1b, 0xa5, 0xab, 0xcf, 0xa5, 0x3b,
-	0x5c, 0xec, 0x39, 0x7e, 0x59, 0x44, 0xdb, 0x0b, 0xb9, 0x63, 0xc1, 0x8f, 0x07, 0x69, 0xac, 0x53,
-	0x9e, 0x5c, 0xe5, 0xe3, 0xce, 0x8d, 0x7c, 0x7c, 0x3a, 0xe7, 0x63, 0xff, 0x22, 0xc5, 0x65, 0x4b,
-	0xcf, 0xd1, 0xc3, 0x9c, 0xf7, 0x04, 0x67, 0xc4, 0x6a, 0x8c, 0x8d, 0xab, 0x8f, 0xce, 0xfb, 0xf6,
-	0x47, 0x69, 0x38, 0x72, 0xc7, 0x73, 0x2f, 0x1f, 0xa1, 0xdd, 0x95, 0x3f, 0xff, 0x6b, 0x14, 0xb6,
-	0xfe, 0x5a, 0x45, 0xe5, 0xa7, 0x6e, 0xe8, 0x75, 0x34, 0xd5, 0x80, 0x77, 0xd1, 0xda, 0xa9, 0x1d,
-	0x2a, 0x76, 0x8c, 0x94, 0xda, 0x5b, 0xe1, 0xf5, 0x43, 0x30, 0x74, 0xe3, 0x27, 0xf2, 0x0a, 0xfc,
-	0x0d, 0xba, 0x3b, 0xa0, 0x4a, 0x13, 0xd1, 0x53, 0x20, 0x87, 0xc0, 0x08, 0x0c, 0x81, 0x6b, 0xc2,
-	0x05, 0x8f, 0xc1, 0x0e, 0x9b, 0x95, 0xe8, 0x43, 0x43, 0x78, 0xee, 0xf1, 0x43, 0x03, 0xff, 0x62,
-	0x50, 0xfc, 0x35, 0x2a, 0x8b, 0x5c, 0x27, 0xc2, 0xec, 0x4b, 0x8f, 0x54, 0x70, 0xab, 0x71, 0xab,
-	0x59, 0x6a, 0x57, 0x43, 0x37, 0xfe, 0xc2, 0xc9, 0xf8, 0x0b, 0x9f, 0xf0, 0x71, 0x54, 0x9a, 0x30,
-	0xbb, 0x23, 0x85, 0x77, 0x51, 0xc5, 0xb4, 0x26, 0x95, 0x19, 0x35, 0x35, 0x34, 0xf3, 0xe9, 0x7a,
-	0xe5, 0x3c, 0x15, 0x4b, 0x74, 0x6f, 0xda, 0x4a, 0x67, 0x75, 0x28, 0x34, 0x10, 0x09, 0xb1, 0x90,
-	0x4c, 0x05, 0xeb, 0x36, 0xd2, 0xe3, 0x65, 0x05, 0x98, 0xf4, 0xc9, 0xee, 0xe4, 0x57, 0xa1, 0x21,
-	0xb2, 0xda, 0x8b, 0x39, 0xb2, 0x00, 0x28, 0x7c, 0x84, 0x2a, 0x0c, 0x06, 0x90, 0x50, 0x0d, 0xe4,
-	0x04, 0xc6, 0x2a, 0x40, 0x36, 0xcb, 0xe7, 0xcb, 0xb2, 0xfc, 0xac, 0x92, 0x03, 0xaf, 0xf9, 0x09,
-	0xc6, 0x2a, 0x2a, 0xb3, 0x99, 0x15, 0x3e, 0x42, 0x1b, 0x20, 0xe3, 0xf6, 0x0e, 0xd1, 0x82, 0x30,
-	0xe0, 0x22, 0x53, 0x41, 0xc9, 0xc6, 0x6c, 0x2e, 0x75, 0x1e, 0xed, 0xb7, 0x77, 0xba, 0xe2, 0xc0,
-	0x08, 0xa2, 0x8a, 0x0d, 0xe0, 0x57, 0x0a, 0x73, 0x54, 0xcf, 0xb9, 0x1b, 0xac, 0x8c, 0x28, 0xe0,
-	0xcc, 0x84, 0x9e, 0x56, 0xca, 0xb4, 0xa7, 0x6c, 0x13, 0x7c, 0xb6, 0x2c, 0x41, 0x07, 0x38, 0xeb,
-	0x8a, 0x49, 0x81, 0xa2, 0xda, 0x34, 0xe2, 0x3c, 0xd0, 0x1d, 0xa9, 0xad, 0x5d, 0x54, 0x9e, 0xb5,
-	0x83, 0xab, 0x68, 0xd5, 0x1a, 0xf2, 0x37, 0x99, 0x5b, 0x98, 0xaf, 0x76, 0x7b, 0xfe, 0xda, 0x72,
-	0x8b, 0xbd, 0xa7, 0xaf, 0xce, 0xea, 0xc5, 0xd7, 0x67, 0xf5, 0xe2, 0xff, 0x67, 0xf5, 0xe2, 0xcb,
-	0xf3, 0x7a, 0xe1, 0xf5, 0x79, 0xbd, 0xf0, 0xcf, 0x79, 0xbd, 0xf0, 0xfb, 0xf6, 0xcc, 0x21, 0xbc,
-	0xe2, 0xb2, 0x1d, 0x4d, 0xaf, 0x5b, 0x7b, 0x1e, 0x7b, 0x6b, 0xf6, 0x4f, 0x79, 0xfc, 0x36, 0x00,
-	0x00, 0xff, 0xff, 0xb8, 0xb2, 0x2e, 0x7f, 0x1f, 0x08, 0x00, 0x00,
+	// 812 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x95, 0x4f, 0x6f, 0xe3, 0x44,
+	0x18, 0xc6, 0x63, 0x6a, 0x52, 0x3a, 0x49, 0xb6, 0x30, 0x6d, 0x85, 0x15, 0x50, 0x36, 0x8a, 0xb4,
+	0x25, 0x88, 0x5d, 0xbb, 0x1b, 0x24, 0x90, 0x56, 0xe2, 0xb0, 0xe9, 0x96, 0x52, 0x21, 0xd8, 0xc5,
+	0x89, 0x16, 0xc4, 0x65, 0x18, 0x7b, 0xa6, 0xb6, 0xb5, 0xb1, 0x27, 0x9a, 0x99, 0xa4, 0xe9, 0x8d,
+	0x8f, 0xc0, 0x77, 0xe2, 0xd2, 0x0b, 0x52, 0x8f, 0x08, 0x50, 0x85, 0xda, 0x2f, 0x82, 0xfc, 0xce,
+	0xb8, 0x4d, 0xf9, 0x13, 0xaa, 0x3d, 0xc5, 0x9a, 0xe7, 0x79, 0x7e, 0xe3, 0xf7, 0xf5, 0x3b, 0x13,
+	0xd4, 0x9f, 0xd2, 0x89, 0xc8, 0x69, 0x9c, 0xd2, 0xac, 0x08, 0xcc, 0x73, 0x90, 0x48, 0x3a, 0xcf,
+	0xf4, 0x69, 0x90, 0xf0, 0x82, 0xab, 0x4c, 0xf9, 0x53, 0x29, 0xb4, 0xc0, 0xed, 0x25, 0xa7, 0x6f,
+	0x9e, 0x7d, 0xeb, 0x6c, 0x6f, 0x27, 0x22, 0x11, 0x60, 0x0b, 0xca, 0x27, 0x93, 0x68, 0xef, 0xae,
+	0x60, 0xeb, 0xd3, 0x29, 0xb7, 0xe4, 0xf6, 0x83, 0x15, 0xbe, 0x5c, 0x25, 0xea, 0x0e, 0xb8, 0x88,
+	0xea, 0x38, 0xb5, 0xbe, 0x87, 0x2b, 0x7c, 0x54, 0x6b, 0xae, 0x34, 0xd5, 0x99, 0x28, 0xac, 0xbb,
+	0x13, 0x0b, 0x95, 0x0b, 0x15, 0x44, 0x54, 0xf1, 0x60, 0xfe, 0x38, 0xe2, 0x9a, 0x3e, 0x0e, 0x62,
+	0x91, 0x59, 0xbd, 0xf7, 0x8b, 0x8b, 0xea, 0x2f, 0xa8, 0xa4, 0xb9, 0xc2, 0x7b, 0x68, 0x3b, 0x16,
+	0x85, 0x96, 0x34, 0xd6, 0x44, 0x89, 0x99, 0x8c, 0x39, 0x49, 0xa9, 0x4a, 0x3d, 0xa7, 0xeb, 0xf4,
+	0x37, 0x42, 0x5c, 0x69, 0x23, 0x90, 0xbe, 0xa0, 0x2a, 0xc5, 0x9f, 0xa0, 0x77, 0x23, 0x99, 0xb1,
+	0x84, 0x13, 0xae, 0x53, 0x2e, 0xf9, 0x2c, 0x27, 0x94, 0x31, 0xc9, 0x95, 0xf2, 0xde, 0x80, 0xd0,
+	0x8e, 0x91, 0x0f, 0xac, 0xfa, 0xd4, 0x88, 0x78, 0x17, 0x6d, 0xda, 0x1c, 0x54, 0x41, 0x32, 0xe6,
+	0xad, 0x75, 0x9d, 0xbe, 0x1b, 0xb6, 0xcc, 0xf2, 0x7e, 0xb9, 0x7a, 0xc4, 0xf0, 0x00, 0xed, 0xa8,
+	0x2c, 0x29, 0x38, 0x23, 0xd0, 0x00, 0xae, 0xc8, 0x49, 0x56, 0x30, 0x71, 0xe2, 0xb9, 0xe0, 0xde,
+	0x32, 0xe2, 0xd0, 0x68, 0xdf, 0x82, 0x54, 0x56, 0xa1, 0xa9, 0x4c, 0xb8, 0x36, 0x19, 0xa2, 0xb3,
+	0x9c, 0x8b, 0x99, 0xf6, 0xde, 0x84, 0x08, 0x36, 0x1a, 0x44, 0xc6, 0x46, 0xc1, 0x0f, 0x11, 0xa6,
+	0x73, 0x2e, 0x69, 0xc2, 0x49, 0x34, 0x11, 0xf1, 0x2b, 0x88, 0x78, 0x75, 0xf0, 0xbf, 0x6d, 0x95,
+	0x61, 0x29, 0x94, 0x01, 0xfc, 0x19, 0x7a, 0xaf, 0x72, 0x5f, 0x17, 0xbd, 0x14, 0x5b, 0x87, 0x98,
+	0x67, 0x2d, 0x55, 0xe1, 0x37, 0xf1, 0x1f, 0xd0, 0xb6, 0x9a, 0x50, 0x95, 0x92, 0xe3, 0xb2, 0x97,
+	0x99, 0x28, 0xcc, 0x6b, 0x7a, 0x6f, 0x75, 0x9d, 0x7e, 0x73, 0xe8, 0x9f, 0x5d, 0xdc, 0xaf, 0xfd,
+	0x76, 0x71, 0x7f, 0x37, 0xc9, 0x74, 0x3a, 0x8b, 0xfc, 0x58, 0xe4, 0x81, 0xfd, 0x80, 0xe6, 0xe7,
+	0x91, 0x62, 0xaf, 0xec, 0x70, 0x3d, 0xe3, 0x71, 0x88, 0x81, 0xf5, 0xb9, 0x45, 0x41, 0x55, 0x78,
+	0x8e, 0xba, 0xff, 0xd8, 0x81, 0x95, 0xef, 0x4a, 0xca, 0x76, 0x51, 0x3d, 0x93, 0xdc, 0xdb, 0x78,
+	0xad, 0xdd, 0xde, 0xff, 0xdb, 0x6e, 0xec, 0x40, 0xa7, 0xa3, 0x8a, 0xf9, 0xc4, 0xfd, 0xf1, 0x8f,
+	0x6e, 0xad, 0xf7, 0xbb, 0x8b, 0x9a, 0x87, 0xe6, 0x60, 0x8d, 0x34, 0xd5, 0x1c, 0x3f, 0x41, 0xf5,
+	0x29, 0xcc, 0x17, 0xcc, 0x51, 0x63, 0xd0, 0xf3, 0xff, 0xfb, 0xa0, 0xf9, 0x66, 0x12, 0x43, 0x9b,
+	0xc0, 0x2f, 0xd1, 0x3d, 0xab, 0x90, 0x42, 0x14, 0x31, 0x37, 0x63, 0xd5, 0x18, 0x7c, 0xb8, 0x8a,
+	0x71, 0x68, 0x7e, 0xbf, 0x86, 0xc0, 0xd0, 0x2d, 0x6b, 0x0c, 0x5b, 0xc9, 0xf2, 0x22, 0xfe, 0x12,
+	0xad, 0xdb, 0x81, 0xf2, 0xd6, 0xba, 0x6b, 0xfd, 0xc6, 0xe0, 0xa3, 0x55, 0xc0, 0xe7, 0x33, 0x9d,
+	0x88, 0xac, 0x48, 0xc6, 0x0b, 0x68, 0xb0, 0x45, 0x56, 0x04, 0xfc, 0x1d, 0xba, 0x67, 0x26, 0x2d,
+	0x16, 0xc5, 0x71, 0x26, 0x73, 0xe5, 0xb9, 0xff, 0xcf, 0xfc, 0x4a, 0x25, 0xfb, 0xc6, 0xbe, 0xcc,
+	0x6c, 0x01, 0xc8, 0x0a, 0x0a, 0x7f, 0x83, 0x9a, 0x4b, 0x07, 0x5a, 0x79, 0xeb, 0xc0, 0xfd, 0x60,
+	0x15, 0xf7, 0xe9, 0x8d, 0xdf, 0x32, 0x6f, 0x21, 0xf0, 0x4b, 0xb4, 0xc9, 0x65, 0x3c, 0xd8, 0x23,
+	0x5a, 0x10, 0xc6, 0x0b, 0x91, 0x2b, 0x6f, 0x03, 0xa8, 0xfd, 0x55, 0xd4, 0x83, 0x70, 0x7f, 0xb0,
+	0x37, 0x16, 0xcf, 0xca, 0x40, 0xf5, 0xaa, 0x80, 0xb1, 0x6b, 0x0a, 0x73, 0xb4, 0x35, 0x2b, 0x4c,
+	0x47, 0x18, 0xd1, 0x92, 0x16, 0xea, 0x98, 0x4b, 0xe5, 0x21, 0x60, 0xfb, 0x77, 0xea, 0xae, 0x0d,
+	0x8d, 0x17, 0x76, 0x07, 0x7c, 0x0d, 0xac, 0x24, 0xd5, 0xfb, 0xd9, 0x41, 0xad, 0x5b, 0xdf, 0x17,
+	0xfb, 0x68, 0x6b, 0x42, 0x95, 0x26, 0x22, 0x52, 0x5c, 0xce, 0x39, 0x33, 0x83, 0x02, 0xb3, 0xe6,
+	0x86, 0xef, 0x94, 0xd2, 0x73, 0xab, 0x40, 0x00, 0x7f, 0x8a, 0x3c, 0xf0, 0xc3, 0x28, 0x57, 0x17,
+	0x8b, 0x39, 0xc0, 0x30, 0x5c, 0x6e, 0xb8, 0x53, 0xea, 0x23, 0x23, 0x9b, 0x8f, 0x53, 0x8a, 0xf8,
+	0x01, 0xda, 0x84, 0xa0, 0x5e, 0x90, 0xa9, 0x10, 0x93, 0x9b, 0x3b, 0xab, 0x59, 0x2e, 0x8f, 0x17,
+	0x2f, 0x84, 0x98, 0x1c, 0x31, 0xdc, 0x43, 0x2d, 0xb0, 0x19, 0x6e, 0xc6, 0xec, 0x55, 0xd5, 0x28,
+	0x17, 0x81, 0x76, 0xc4, 0x86, 0x87, 0x67, 0x97, 0x1d, 0xe7, 0xfc, 0xb2, 0xe3, 0xfc, 0x79, 0xd9,
+	0x71, 0x7e, 0xba, 0xea, 0xd4, 0xce, 0xaf, 0x3a, 0xb5, 0x5f, 0xaf, 0x3a, 0xb5, 0xef, 0x1f, 0x2d,
+	0x9d, 0xc4, 0x7f, 0xb9, 0xe6, 0x17, 0xb7, 0xff, 0x5f, 0xa2, 0x3a, 0xdc, 0xe1, 0x1f, 0xff, 0x15,
+	0x00, 0x00, 0xff, 0xff, 0x56, 0x77, 0x10, 0x9a, 0xe6, 0x06, 0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -463,35 +377,16 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.UnbondSlashingSignerSetTxsWindow != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.UnbondSlashingSignerSetTxsWindow))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0x88
-	}
 	{
-		size := m.SlashFractionConflictingEthereumSignature.Size()
+		size := m.SlashFractionBadEthSignature.Size()
 		i -= size
-		if _, err := m.SlashFractionConflictingEthereumSignature.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.SlashFractionBadEthSignature.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintGenesis(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x1
-	i--
-	dAtA[i] = 0x82
-	{
-		size := m.SlashFractionEthereumSignature.Size()
-		i -= size
-		if _, err := m.SlashFractionEthereumSignature.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintGenesis(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x7a
+	dAtA[i] = 0x4a
 	{
 		size := m.SlashFractionBatch.Size()
 		i -= size
@@ -501,70 +396,43 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintGenesis(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x72
-	{
-		size := m.SlashFractionSignerSetTx.Size()
-		i -= size
-		if _, err := m.SlashFractionSignerSetTx.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintGenesis(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x6a
+	dAtA[i] = 0x42
 	if m.AverageEthereumBlockTime != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.AverageEthereumBlockTime))
 		i--
-		dAtA[i] = 0x60
+		dAtA[i] = 0x38
 	}
 	if m.AverageBlockTime != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.AverageBlockTime))
 		i--
-		dAtA[i] = 0x58
+		dAtA[i] = 0x30
 	}
-	if m.TargetEthTxTimeout != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.TargetEthTxTimeout))
+	if m.TargetBatchTimeout != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.TargetBatchTimeout))
 		i--
-		dAtA[i] = 0x50
-	}
-	if m.EthereumSignaturesWindow != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.EthereumSignaturesWindow))
-		i--
-		dAtA[i] = 0x40
+		dAtA[i] = 0x28
 	}
 	if m.SignedBatchesWindow != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.SignedBatchesWindow))
 		i--
-		dAtA[i] = 0x38
-	}
-	if m.SignedSignerSetTxsWindow != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.SignedSignerSetTxsWindow))
-		i--
-		dAtA[i] = 0x30
+		dAtA[i] = 0x20
 	}
 	if m.BridgeChainId != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.BridgeChainId))
 		i--
-		dAtA[i] = 0x28
+		dAtA[i] = 0x18
 	}
 	if len(m.BridgeEthereumAddress) > 0 {
 		i -= len(m.BridgeEthereumAddress)
 		copy(dAtA[i:], m.BridgeEthereumAddress)
 		i = encodeVarintGenesis(dAtA, i, uint64(len(m.BridgeEthereumAddress)))
 		i--
-		dAtA[i] = 0x22
+		dAtA[i] = 0x12
 	}
 	if len(m.ContractSourceHash) > 0 {
 		i -= len(m.ContractSourceHash)
 		copy(dAtA[i:], m.ContractSourceHash)
 		i = encodeVarintGenesis(dAtA, i, uint64(len(m.ContractSourceHash)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.GravityId) > 0 {
-		i -= len(m.GravityId)
-		copy(dAtA[i:], m.GravityId)
-		i = encodeVarintGenesis(dAtA, i, uint64(len(m.GravityId)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -591,10 +459,10 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.UnbatchedSendToEthereumTxs) > 0 {
-		for iNdEx := len(m.UnbatchedSendToEthereumTxs) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.UnbatchedTransfers) > 0 {
+		for iNdEx := len(m.UnbatchedTransfers) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.UnbatchedSendToEthereumTxs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.UnbatchedTransfers[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -602,7 +470,7 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintGenesis(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x62
+			dAtA[i] = 0x52
 		}
 	}
 	if len(m.Erc20ToDenoms) > 0 {
@@ -616,41 +484,27 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintGenesis(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x5a
-		}
-	}
-	if len(m.DelegateKeys) > 0 {
-		for iNdEx := len(m.DelegateKeys) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.DelegateKeys[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x52
-		}
-	}
-	if len(m.EthereumEventVoteRecords) > 0 {
-		for iNdEx := len(m.EthereumEventVoteRecords) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.EthereumEventVoteRecords[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
 			dAtA[i] = 0x4a
 		}
 	}
-	if len(m.Confirmations) > 0 {
-		for iNdEx := len(m.Confirmations) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.Attestations) > 0 {
+		for iNdEx := len(m.Attestations) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.Confirmations[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Attestations[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	if len(m.BatchConfirms) > 0 {
+		for iNdEx := len(m.BatchConfirms) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.BatchConfirms[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -661,10 +515,10 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x22
 		}
 	}
-	if len(m.OutgoingTxs) > 0 {
-		for iNdEx := len(m.OutgoingTxs) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.Batches) > 0 {
+		for iNdEx := len(m.Batches) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.OutgoingTxs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Batches[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -675,11 +529,16 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x1a
 		}
 	}
-	if m.LastObservedEventNonce != 0 {
-		i = encodeVarintGenesis(dAtA, i, uint64(m.LastObservedEventNonce))
-		i--
-		dAtA[i] = 0x10
+	{
+		size, err := m.GravityNonces.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0x12
 	if m.Params != nil {
 		{
 			size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
@@ -695,7 +554,7 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *ERC20ToDenom) Marshal() (dAtA []byte, err error) {
+func (m *GravityNonces) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -705,29 +564,35 @@ func (m *ERC20ToDenom) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *ERC20ToDenom) MarshalTo(dAtA []byte) (int, error) {
+func (m *GravityNonces) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *ERC20ToDenom) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GravityNonces) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Denom) > 0 {
-		i -= len(m.Denom)
-		copy(dAtA[i:], m.Denom)
-		i = encodeVarintGenesis(dAtA, i, uint64(len(m.Denom)))
+	if m.LastBatchId != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.LastBatchId))
 		i--
-		dAtA[i] = 0x12
+		dAtA[i] = 0x20
 	}
-	if len(m.Erc20) > 0 {
-		i -= len(m.Erc20)
-		copy(dAtA[i:], m.Erc20)
-		i = encodeVarintGenesis(dAtA, i, uint64(len(m.Erc20)))
+	if m.LastTxPoolId != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.LastTxPoolId))
 		i--
-		dAtA[i] = 0xa
+		dAtA[i] = 0x18
+	}
+	if m.LastSlashedBatchBlock != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.LastSlashedBatchBlock))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.LastObservedNonce != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.LastObservedNonce))
+		i--
+		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -749,10 +614,6 @@ func (m *Params) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.GravityId)
-	if l > 0 {
-		n += 1 + l + sovGenesis(uint64(l))
-	}
 	l = len(m.ContractSourceHash)
 	if l > 0 {
 		n += 1 + l + sovGenesis(uint64(l))
@@ -764,17 +625,11 @@ func (m *Params) Size() (n int) {
 	if m.BridgeChainId != 0 {
 		n += 1 + sovGenesis(uint64(m.BridgeChainId))
 	}
-	if m.SignedSignerSetTxsWindow != 0 {
-		n += 1 + sovGenesis(uint64(m.SignedSignerSetTxsWindow))
-	}
 	if m.SignedBatchesWindow != 0 {
 		n += 1 + sovGenesis(uint64(m.SignedBatchesWindow))
 	}
-	if m.EthereumSignaturesWindow != 0 {
-		n += 1 + sovGenesis(uint64(m.EthereumSignaturesWindow))
-	}
-	if m.TargetEthTxTimeout != 0 {
-		n += 1 + sovGenesis(uint64(m.TargetEthTxTimeout))
+	if m.TargetBatchTimeout != 0 {
+		n += 1 + sovGenesis(uint64(m.TargetBatchTimeout))
 	}
 	if m.AverageBlockTime != 0 {
 		n += 1 + sovGenesis(uint64(m.AverageBlockTime))
@@ -782,17 +637,10 @@ func (m *Params) Size() (n int) {
 	if m.AverageEthereumBlockTime != 0 {
 		n += 1 + sovGenesis(uint64(m.AverageEthereumBlockTime))
 	}
-	l = m.SlashFractionSignerSetTx.Size()
-	n += 1 + l + sovGenesis(uint64(l))
 	l = m.SlashFractionBatch.Size()
 	n += 1 + l + sovGenesis(uint64(l))
-	l = m.SlashFractionEthereumSignature.Size()
+	l = m.SlashFractionBadEthSignature.Size()
 	n += 1 + l + sovGenesis(uint64(l))
-	l = m.SlashFractionConflictingEthereumSignature.Size()
-	n += 2 + l + sovGenesis(uint64(l))
-	if m.UnbondSlashingSignerSetTxsWindow != 0 {
-		n += 2 + sovGenesis(uint64(m.UnbondSlashingSignerSetTxsWindow))
-	}
 	return n
 }
 
@@ -806,29 +654,22 @@ func (m *GenesisState) Size() (n int) {
 		l = m.Params.Size()
 		n += 1 + l + sovGenesis(uint64(l))
 	}
-	if m.LastObservedEventNonce != 0 {
-		n += 1 + sovGenesis(uint64(m.LastObservedEventNonce))
-	}
-	if len(m.OutgoingTxs) > 0 {
-		for _, e := range m.OutgoingTxs {
+	l = m.GravityNonces.Size()
+	n += 1 + l + sovGenesis(uint64(l))
+	if len(m.Batches) > 0 {
+		for _, e := range m.Batches {
 			l = e.Size()
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
-	if len(m.Confirmations) > 0 {
-		for _, e := range m.Confirmations {
+	if len(m.BatchConfirms) > 0 {
+		for _, e := range m.BatchConfirms {
 			l = e.Size()
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
-	if len(m.EthereumEventVoteRecords) > 0 {
-		for _, e := range m.EthereumEventVoteRecords {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
-	if len(m.DelegateKeys) > 0 {
-		for _, e := range m.DelegateKeys {
+	if len(m.Attestations) > 0 {
+		for _, e := range m.Attestations {
 			l = e.Size()
 			n += 1 + l + sovGenesis(uint64(l))
 		}
@@ -839,8 +680,8 @@ func (m *GenesisState) Size() (n int) {
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
-	if len(m.UnbatchedSendToEthereumTxs) > 0 {
-		for _, e := range m.UnbatchedSendToEthereumTxs {
+	if len(m.UnbatchedTransfers) > 0 {
+		for _, e := range m.UnbatchedTransfers {
 			l = e.Size()
 			n += 1 + l + sovGenesis(uint64(l))
 		}
@@ -848,19 +689,23 @@ func (m *GenesisState) Size() (n int) {
 	return n
 }
 
-func (m *ERC20ToDenom) Size() (n int) {
+func (m *GravityNonces) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Erc20)
-	if l > 0 {
-		n += 1 + l + sovGenesis(uint64(l))
+	if m.LastObservedNonce != 0 {
+		n += 1 + sovGenesis(uint64(m.LastObservedNonce))
 	}
-	l = len(m.Denom)
-	if l > 0 {
-		n += 1 + l + sovGenesis(uint64(l))
+	if m.LastSlashedBatchBlock != 0 {
+		n += 1 + sovGenesis(uint64(m.LastSlashedBatchBlock))
+	}
+	if m.LastTxPoolId != 0 {
+		n += 1 + sovGenesis(uint64(m.LastTxPoolId))
+	}
+	if m.LastBatchId != 0 {
+		n += 1 + sovGenesis(uint64(m.LastBatchId))
 	}
 	return n
 }
@@ -902,38 +747,6 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field GravityId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.GravityId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ContractSourceHash", wireType)
 			}
 			var stringLen uint64
@@ -964,7 +777,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			}
 			m.ContractSourceHash = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 4:
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BridgeEthereumAddress", wireType)
 			}
@@ -996,7 +809,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			}
 			m.BridgeEthereumAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 5:
+		case 3:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BridgeChainId", wireType)
 			}
@@ -1015,26 +828,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SignedSignerSetTxsWindow", wireType)
-			}
-			m.SignedSignerSetTxsWindow = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SignedSignerSetTxsWindow |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
+		case 4:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SignedBatchesWindow", wireType)
 			}
@@ -1053,11 +847,11 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 8:
+		case 5:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EthereumSignaturesWindow", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TargetBatchTimeout", wireType)
 			}
-			m.EthereumSignaturesWindow = 0
+			m.TargetBatchTimeout = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowGenesis
@@ -1067,31 +861,12 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.EthereumSignaturesWindow |= uint64(b&0x7F) << shift
+				m.TargetBatchTimeout |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-		case 10:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TargetEthTxTimeout", wireType)
-			}
-			m.TargetEthTxTimeout = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TargetEthTxTimeout |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 11:
+		case 6:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field AverageBlockTime", wireType)
 			}
@@ -1110,7 +885,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 12:
+		case 7:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field AverageEthereumBlockTime", wireType)
 			}
@@ -1129,40 +904,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 13:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionSignerSetTx", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.SlashFractionSignerSetTx.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 14:
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionBatch", wireType)
 			}
@@ -1195,9 +937,9 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 15:
+		case 9:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionEthereumSignature", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionBadEthSignature", wireType)
 			}
 			var byteLen int
 			for shift := uint(0); ; shift += 7 {
@@ -1224,62 +966,10 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.SlashFractionEthereumSignature.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.SlashFractionBadEthSignature.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
-		case 16:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionConflictingEthereumSignature", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.SlashFractionConflictingEthereumSignature.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 17:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field UnbondSlashingSignerSetTxsWindow", wireType)
-			}
-			m.UnbondSlashingSignerSetTxsWindow = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.UnbondSlashingSignerSetTxsWindow |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipGenesis(dAtA[iNdEx:])
@@ -1367,27 +1057,8 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			}
 			iNdEx = postIndex
 		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LastObservedEventNonce", wireType)
-			}
-			m.LastObservedEventNonce = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LastObservedEventNonce |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OutgoingTxs", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field GravityNonces", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1414,14 +1085,47 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OutgoingTxs = append(m.OutgoingTxs, &types.Any{})
-			if err := m.OutgoingTxs[len(m.OutgoingTxs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.GravityNonces.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Batches", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Batches = append(m.Batches, OutgoingTxBatch{})
+			if err := m.Batches[len(m.Batches)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Confirmations", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field BatchConfirms", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1448,80 +1152,46 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Confirmations = append(m.Confirmations, &types.Any{})
-			if err := m.Confirmations[len(m.Confirmations)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.BatchConfirms = append(m.BatchConfirms, MsgConfirmBatch{})
+			if err := m.BatchConfirms[len(m.BatchConfirms)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Attestations", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Attestations = append(m.Attestations, Attestation{})
+			if err := m.Attestations[len(m.Attestations)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 9:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EthereumEventVoteRecords", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.EthereumEventVoteRecords = append(m.EthereumEventVoteRecords, &EthereumEventVoteRecord{})
-			if err := m.EthereumEventVoteRecords[len(m.EthereumEventVoteRecords)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 10:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DelegateKeys", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.DelegateKeys = append(m.DelegateKeys, &MsgDelegateKeys{})
-			if err := m.DelegateKeys[len(m.DelegateKeys)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 11:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Erc20ToDenoms", wireType)
 			}
@@ -1550,14 +1220,14 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Erc20ToDenoms = append(m.Erc20ToDenoms, &ERC20ToDenom{})
+			m.Erc20ToDenoms = append(m.Erc20ToDenoms, ERC20ToDenom{})
 			if err := m.Erc20ToDenoms[len(m.Erc20ToDenoms)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
-		case 12:
+		case 10:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field UnbatchedSendToEthereumTxs", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field UnbatchedTransfers", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1584,8 +1254,8 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.UnbatchedSendToEthereumTxs = append(m.UnbatchedSendToEthereumTxs, &SendToEthereum{})
-			if err := m.UnbatchedSendToEthereumTxs[len(m.UnbatchedSendToEthereumTxs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.UnbatchedTransfers = append(m.UnbatchedTransfers, OutgoingTransferTx{})
+			if err := m.UnbatchedTransfers[len(m.UnbatchedTransfers)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1610,7 +1280,7 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *ERC20ToDenom) Unmarshal(dAtA []byte) error {
+func (m *GravityNonces) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1633,17 +1303,17 @@ func (m *ERC20ToDenom) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: ERC20ToDenom: wiretype end group for non-group")
+			return fmt.Errorf("proto: GravityNonces: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ERC20ToDenom: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GravityNonces: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Erc20", wireType)
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LastObservedNonce", wireType)
 			}
-			var stringLen uint64
+			m.LastObservedNonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowGenesis
@@ -1653,29 +1323,16 @@ func (m *ERC20ToDenom) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				m.LastObservedNonce |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Erc20 = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LastSlashedBatchBlock", wireType)
 			}
-			var stringLen uint64
+			m.LastSlashedBatchBlock = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowGenesis
@@ -1685,24 +1342,49 @@ func (m *ERC20ToDenom) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				m.LastSlashedBatchBlock |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthGenesis
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LastTxPoolId", wireType)
 			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
+			m.LastTxPoolId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LastTxPoolId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LastBatchId", wireType)
 			}
-			m.Denom = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
+			m.LastBatchId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LastBatchId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipGenesis(dAtA[iNdEx:])

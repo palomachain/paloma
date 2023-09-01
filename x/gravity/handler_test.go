@@ -1,390 +1,170 @@
-package gravity_test
+package gravity
 
 import (
-	"bytes"
+	"math/big"
 	"testing"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	ethCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/palomachain/paloma/x/gravity"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var MaxAddrLen = 20
-
-func TestHandleMsgSendToEthereum(t *testing.T) {
+// nolint: exhaustruct
+func TestHandleMsgSendToEth(t *testing.T) {
 	var (
-		userCosmosAddr, _               = sdk.AccAddressFromBech32("cosmos1990z7dqsvh8gthw9pa5sn4wuy2xrsd80mg5z6y")
-		blockTime                       = time.Date(2020, 9, 14, 15, 20, 10, 0, time.UTC)
-		blockHeight           int64     = 200
-		denom                           = types.GravityDenom(common.HexToAddress("0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e"))
-		startingCoinAmount, _           = sdk.NewIntFromString("150000000000000000000") // 150 ETH worth, required to reach above u64 limit (which is about 18 ETH)
-		sendAmount, _                   = sdk.NewIntFromString("50000000000000000000")  // 50 ETH
-		feeAmount, _                    = sdk.NewIntFromString("5000000000000000000")   // 5 ETH
-		startingCoins         sdk.Coins = sdk.Coins{sdk.NewCoin(denom, startingCoinAmount)}
-		sendingCoin           sdk.Coin  = sdk.NewCoin(denom, sendAmount)
-		feeCoin               sdk.Coin  = sdk.NewCoin(denom, feeAmount)
-		ethDestination                  = common.HexToAddress("0x3c9289da00b02dC623d0D8D907619890301D26d4").Hex()
+		userCosmosAddr, e1               = sdk.AccAddressFromBech32("paloma1l2j8vaykh03zenzytntj3cza6zfxwlj68dd0l3")
+		blockTime                        = time.Date(2020, 9, 14, 15, 20, 10, 0, time.UTC)
+		blockHeight            int64     = 200
+		testDenom                        = "ugrain"
+		startingCoinAmount, _            = sdk.NewIntFromString("150000000000000000000")
+		sendAmount, _                    = sdk.NewIntFromString("60000000000000000000")
+		startingCoins          sdk.Coins = sdk.Coins{sdk.NewCoin(testDenom, startingCoinAmount)}
+		sendingCoin            sdk.Coin  = sdk.NewCoin(testDenom, sendAmount)
+		ethDestination                   = "0x3c9289da00b02dC623d0D8D907619890301D26d4"
+		invalidEthDestinations           = []string{"obviously invalid", "0x3c9289da00b02dC623d0D8D907", "0x3c9289da00b02dC623d0D8D907dC623d0D8D907619890", "0x3c9289da00b02dC623d0D8D907619890301D26dU"}
 	)
+	require.NoError(t, e1)
 
 	// we start by depositing some funds into the users balance to send
 	input := keeper.CreateTestEnv(t)
+	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+
 	ctx := input.Context
-	h := gravity.NewHandler(input.GravityKeeper)
-	input.BankKeeper.MintCoins(ctx, types.ModuleName, startingCoins)
-	input.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, userCosmosAddr, startingCoins) // 150
+	h := NewHandler(input.GravityKeeper)
+	require.NoError(t, input.BankKeeper.MintCoins(ctx, types.ModuleName, startingCoins))
+	require.NoError(t, input.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, userCosmosAddr, startingCoins))
 	balance1 := input.BankKeeper.GetAllBalances(ctx, userCosmosAddr)
-	require.Equal(t, sdk.Coins{sdk.NewCoin(denom, startingCoinAmount)}, balance1) // 150
+	assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, startingCoinAmount)}, balance1)
 
 	// send some coins
-	msg := &types.MsgSendToEthereum{
-		Sender:            userCosmosAddr.String(),
-		EthereumRecipient: ethDestination,
-		Amount:            sendingCoin,
-		BridgeFee:         feeCoin,
+	msg := &types.MsgSendToEth{
+		Sender:           userCosmosAddr.String(),
+		EthDest:          ethDestination,
+		Amount:           sendingCoin,
+		ChainReferenceId: "test-chain",
 	}
 	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
-	_, err := h(ctx, msg) // send 55
+	_, err := h(ctx, msg)
 	require.NoError(t, err)
 	balance2 := input.BankKeeper.GetAllBalances(ctx, userCosmosAddr)
-	require.Equal(t, sdk.Coins{sdk.NewCoin(denom, startingCoinAmount.Sub(sendAmount).Sub(feeAmount))}, balance2)
+	assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, startingCoinAmount.Sub(sendAmount))}, balance2)
 
 	// do the same thing again and make sure it works twice
-	msg1 := &types.MsgSendToEthereum{
-		Sender:            userCosmosAddr.String(),
-		EthereumRecipient: ethDestination,
-		Amount:            sendingCoin,
-		BridgeFee:         feeCoin,
+	msg1 := &types.MsgSendToEth{
+		Sender:           userCosmosAddr.String(),
+		EthDest:          ethDestination,
+		Amount:           sendingCoin,
+		ChainReferenceId: "test-chain",
 	}
 	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
-	_, err1 := h(ctx, msg1) // send 55
+	_, err1 := h(ctx, msg1)
 	require.NoError(t, err1)
 	balance3 := input.BankKeeper.GetAllBalances(ctx, userCosmosAddr)
-	finalAmount3 := startingCoinAmount.Sub(sendAmount).Sub(sendAmount).Sub(feeAmount).Sub(feeAmount)
-	require.Equal(t, sdk.Coins{sdk.NewCoin(denom, finalAmount3)}, balance3)
+	finalAmount3 := startingCoinAmount.Sub(sendAmount).Sub(sendAmount)
+	assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, finalAmount3)}, balance3)
 
 	// now we should be out of coins and error
-	msg2 := &types.MsgSendToEthereum{
-		Sender:            userCosmosAddr.String(),
-		EthereumRecipient: ethDestination,
-		Amount:            sendingCoin,
-		BridgeFee:         feeCoin,
+	msg2 := &types.MsgSendToEth{
+		Sender:           userCosmosAddr.String(),
+		EthDest:          ethDestination,
+		Amount:           sendingCoin,
+		ChainReferenceId: "test-chain",
 	}
 	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
-	_, err2 := h(ctx, msg2) // send 55
+	_, err2 := h(ctx, msg2)
 	require.Error(t, err2)
 	balance4 := input.BankKeeper.GetAllBalances(ctx, userCosmosAddr)
-	require.Equal(t, sdk.Coins{sdk.NewCoin(denom, finalAmount3)}, balance4)
+	assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, finalAmount3)}, balance4)
+
+	// these should all produce an error
+	for _, val := range invalidEthDestinations {
+		msg := &types.MsgSendToEth{
+			Sender:           userCosmosAddr.String(),
+			EthDest:          val,
+			Amount:           sendingCoin,
+			ChainReferenceId: "test-chain",
+		}
+		ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
+		_, err := h(ctx, msg)
+		require.Error(t, err)
+		balance := input.BankKeeper.GetAllBalances(ctx, userCosmosAddr)
+		assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, finalAmount3)}, balance)
+	}
 }
 
-func TestMsgSubmitEthreumEventSendToCosmosSingleValidator(t *testing.T) {
-	var (
-		myOrchestratorAddr sdk.AccAddress = make([]byte, MaxAddrLen)
-		myCosmosAddr, _                   = sdk.AccAddressFromBech32("cosmos16ahjkfqxpp6lvfy9fpfnfjg39xr96qett0alj5")
-		myValAddr                         = sdk.ValAddress(myOrchestratorAddr) // revisit when proper mapping is impl in keeper
-		myNonce                           = uint64(1)
-		anyETHAddr                        = common.HexToAddress("0xf9613b532673Cc223aBa451dFA8539B87e1F666D")
-		tokenETHAddr                      = common.HexToAddress("0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e")
-		denom                             = types.GravityDenom(tokenETHAddr)
-		myBlockTime                       = time.Date(2020, 9, 14, 15, 20, 10, 0, time.UTC)
-		amountA, _                        = sdk.NewIntFromString("50000000000000000000")  // 50 ETH
-		amountB, _                        = sdk.NewIntFromString("100000000000000000000") // 100 ETH
-	)
-	input := keeper.CreateTestEnv(t)
-	ctx := input.Context
-	gk := input.GravityKeeper
-	bk := input.BankKeeper
-	gk.StakingKeeper = keeper.NewStakingKeeperMock(myValAddr)
-	gk.SetOrchestratorValidatorAddress(ctx, myValAddr, myOrchestratorAddr)
-	h := gravity.NewHandler(gk)
+const biggestInt = "115792089237316195423570985008687907853269984665640564039457584007913129639935" // 2^256 - 1
 
-	myErc20 := types.ERC20Token{
-		Amount:   amountA,
-		Contract: tokenETHAddr.Hex(),
-	}
-
-	sendToCosmosEvent := &types.SendToCosmosEvent{
-		EventNonce:     myNonce,
-		TokenContract:  myErc20.Contract,
-		Amount:         myErc20.Amount,
-		EthereumSender: anyETHAddr.Hex(),
-		CosmosReceiver: myCosmosAddr.String(),
-	}
-
-	eva, err := types.PackEvent(sendToCosmosEvent)
-	require.NoError(t, err)
-
-	msgSubmitEvent := &types.MsgSubmitEthereumEvent{Event: eva, Signer: myOrchestratorAddr.String()}
-	// when
-	ctx = ctx.WithBlockTime(myBlockTime)
-	_, err = h(ctx, msgSubmitEvent)
-	gravity.EndBlocker(ctx, gk)
-	require.NoError(t, err)
-
-	// and attestation persisted
-	a := gk.GetEthereumEventVoteRecord(ctx, myNonce, sendToCosmosEvent.Hash())
-	require.NotNil(t, a)
-	// and vouchers added to the account
-
-	balance := bk.GetAllBalances(ctx, myCosmosAddr)
-	require.Equal(t, sdk.Coins{sdk.NewCoin(denom, amountA)}, balance)
-
-	// Test to reject duplicate deposit
-	// when
-	ctx = ctx.WithBlockTime(myBlockTime)
-	_, err = h(ctx, msgSubmitEvent)
-	gravity.EndBlocker(ctx, gk)
-	// then
-	require.Error(t, err)
-	balance = bk.GetAllBalances(ctx, myCosmosAddr)
-	require.Equal(t, sdk.Coins{sdk.NewCoin(denom, amountA)}, balance)
-
-	// Test to reject skipped nonce
-
-	sendToCosmosEvent = &types.SendToCosmosEvent{
-		EventNonce:     uint64(3),
-		TokenContract:  myErc20.Contract,
-		Amount:         myErc20.Amount,
-		EthereumSender: anyETHAddr.Hex(),
-		CosmosReceiver: myCosmosAddr.String(),
-	}
-
-	eva, err = types.PackEvent(sendToCosmosEvent)
-	require.NoError(t, err)
-
-	msgSubmitEvent = &types.MsgSubmitEthereumEvent{Event: eva, Signer: myOrchestratorAddr.String()}
-
-	// when
-	ctx = ctx.WithBlockTime(myBlockTime)
-	_, err = h(ctx, msgSubmitEvent)
-	require.Error(t, err)
-
-	gravity.EndBlocker(ctx, gk)
-	// then
-	balance = bk.GetAllBalances(ctx, myCosmosAddr)
-	require.Equal(t, sdk.Coins{sdk.NewCoin(denom, amountA)}, balance)
-
-	// Test to finally accept consecutive nonce
-	sendToCosmosEvent = &types.SendToCosmosEvent{
-		EventNonce:     uint64(2),
-		TokenContract:  myErc20.Contract,
-		Amount:         myErc20.Amount,
-		EthereumSender: anyETHAddr.Hex(),
-		CosmosReceiver: myCosmosAddr.String(),
-	}
-
-	eva, err = types.PackEvent(sendToCosmosEvent)
-	require.NoError(t, err)
-
-	msgSubmitEvent = &types.MsgSubmitEthereumEvent{Event: eva, Signer: myOrchestratorAddr.String()}
-	// when
-	ctx = ctx.WithBlockTime(myBlockTime)
-	_, err = h(ctx, msgSubmitEvent)
-	gravity.EndBlocker(ctx, gk)
-
-	// then
-	require.NoError(t, err)
-	balance = bk.GetAllBalances(ctx, myCosmosAddr)
-	require.Equal(t, sdk.Coins{sdk.NewCoin(denom, amountB)}, balance)
+// We rely on BitLen() to detect Uint256 overflow, here we ensure BitLen() returns what we expect
+func TestUint256BitLen(t *testing.T) {
+	biggestBigInt, _ := new(big.Int).SetString(biggestInt, 10)
+	require.Equal(t, 256, biggestBigInt.BitLen(), "expected 2^256 - 1 to be represented in 256 bits")
+	biggerThanUint256 := biggestBigInt.Add(biggestBigInt, new(big.Int).SetInt64(1)) // add 1 to the max value of Uint256
+	require.Equal(t, 257, biggerThanUint256.BitLen(), "expected 2^256 to be represented in 257 bits")
 }
 
-func TestMsgSubmitEthreumEventSendToCosmosMultiValidator(t *testing.T) {
-	var (
-		orchestratorAddr1, _ = sdk.AccAddressFromBech32("cosmos1dg55rtevlfxh46w88yjpdd08sqhh5cc3xhkcej")
-		orchestratorAddr2, _ = sdk.AccAddressFromBech32("cosmos164knshrzuuurf05qxf3q5ewpfnwzl4gj4m4dfy")
-		orchestratorAddr3, _ = sdk.AccAddressFromBech32("cosmos193fw83ynn76328pty4yl7473vg9x86alq2cft7")
-		myCosmosAddr, _      = sdk.AccAddressFromBech32("cosmos16ahjkfqxpp6lvfy9fpfnfjg39xr96qett0alj5")
-		valAddr1             = sdk.ValAddress(orchestratorAddr1) // revisit when proper mapping is impl in keeper
-		valAddr2             = sdk.ValAddress(orchestratorAddr2) // revisit when proper mapping is impl in keeper
-		valAddr3             = sdk.ValAddress(orchestratorAddr3) // revisit when proper mapping is impl in keeper
-		myNonce              = uint64(1)
-		anyETHAddr           = common.HexToAddress("0xf9613b532673Cc223aBa451dFA8539B87e1F666D")
-		tokenETHAddr         = common.HexToAddress("0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e")
-		denom                = types.GravityDenom(tokenETHAddr)
-		myBlockTime          = time.Date(2020, 9, 14, 15, 20, 10, 0, time.UTC)
-	)
-	input := keeper.CreateTestEnv(t)
-	ctx := input.Context
-	input.GravityKeeper.StakingKeeper = keeper.NewStakingKeeperMock(valAddr1, valAddr2, valAddr3)
-	input.GravityKeeper.SetOrchestratorValidatorAddress(ctx, valAddr1, orchestratorAddr1)
-	input.GravityKeeper.SetOrchestratorValidatorAddress(ctx, valAddr2, orchestratorAddr2)
-	input.GravityKeeper.SetOrchestratorValidatorAddress(ctx, valAddr3, orchestratorAddr3)
-	h := gravity.NewHandler(input.GravityKeeper)
-
-	myErc20 := types.ERC20Token{
-		Amount:   sdk.NewInt(12),
-		Contract: tokenETHAddr.Hex(),
-	}
-
-	ethClaim1 := &types.SendToCosmosEvent{
-		EventNonce:     myNonce,
-		TokenContract:  myErc20.Contract,
-		Amount:         myErc20.Amount,
-		EthereumSender: anyETHAddr.Hex(),
-		CosmosReceiver: myCosmosAddr.String(),
-	}
-	ethClaim1a, err := types.PackEvent(ethClaim1)
-	require.NoError(t, err)
-	ethClaim1Msg := &types.MsgSubmitEthereumEvent{Event: ethClaim1a, Signer: orchestratorAddr1.String()}
-	ethClaim2 := &types.SendToCosmosEvent{
-		EventNonce:     myNonce,
-		TokenContract:  myErc20.Contract,
-		Amount:         myErc20.Amount,
-		EthereumSender: anyETHAddr.Hex(),
-		CosmosReceiver: myCosmosAddr.String(),
-	}
-	ethClaim2a, err := types.PackEvent(ethClaim2)
-	require.NoError(t, err)
-	ethClaim2Msg := &types.MsgSubmitEthereumEvent{Event: ethClaim2a, Signer: orchestratorAddr2.String()}
-	ethClaim3 := &types.SendToCosmosEvent{
-		EventNonce:     myNonce,
-		TokenContract:  myErc20.Contract,
-		Amount:         myErc20.Amount,
-		EthereumSender: anyETHAddr.Hex(),
-		CosmosReceiver: myCosmosAddr.String(),
-	}
-	ethClaim3a, err := types.PackEvent(ethClaim3)
-	require.NoError(t, err)
-	ethClaim3Msg := &types.MsgSubmitEthereumEvent{Event: ethClaim3a, Signer: orchestratorAddr3.String()}
-
-	// when
-	ctx = ctx.WithBlockTime(myBlockTime)
-	_, err = h(ctx, ethClaim1Msg)
-	gravity.EndBlocker(ctx, input.GravityKeeper)
-	require.NoError(t, err)
-	// and attestation persisted
-	a1 := input.GravityKeeper.GetEthereumEventVoteRecord(ctx, myNonce, ethClaim1.Hash())
-	require.NotNil(t, a1)
-	// and vouchers not yet added to the account
-	balance1 := input.BankKeeper.GetAllBalances(ctx, myCosmosAddr)
-	require.NotEqual(t, sdk.Coins{sdk.NewInt64Coin(denom, 12)}, balance1)
-
-	// when
-	ctx = ctx.WithBlockTime(myBlockTime)
-	_, err = h(ctx, ethClaim2Msg)
-	gravity.EndBlocker(ctx, input.GravityKeeper)
-	require.NoError(t, err)
-
-	// and attestation persisted
-	a2 := input.GravityKeeper.GetEthereumEventVoteRecord(ctx, myNonce, ethClaim2.Hash())
-	require.NotNil(t, a2)
-	// and vouchers now added to the account
-	balance2 := input.BankKeeper.GetAllBalances(ctx, myCosmosAddr)
-	require.Equal(t, sdk.Coins{sdk.NewInt64Coin(denom, 12)}, balance2)
-
-	// when
-	ctx = ctx.WithBlockTime(myBlockTime)
-	_, err = h(ctx, ethClaim3Msg)
-	gravity.EndBlocker(ctx, input.GravityKeeper)
-	require.NoError(t, err)
-
-	// and attestation persisted
-	a3 := input.GravityKeeper.GetEthereumEventVoteRecord(ctx, myNonce, ethClaim3.Hash())
-	require.NotNil(t, a3)
-	// and no additional added to the account
-	balance3 := input.BankKeeper.GetAllBalances(ctx, myCosmosAddr)
-	require.Equal(t, sdk.Coins{sdk.NewInt64Coin(denom, 12)}, balance3)
-}
-
-func TestMsgSetDelegateAddresses(t *testing.T) {
-	ethPrivKey, err := ethCrypto.GenerateKey()
-	ethPrivKey2, err := ethCrypto.GenerateKey()
-
-	var (
-		ethAddress                    = crypto.PubkeyToAddress(ethPrivKey.PublicKey)
-		cosmosAddress  sdk.AccAddress = bytes.Repeat([]byte{0x1}, MaxAddrLen)
-		ethAddress2                   = crypto.PubkeyToAddress(ethPrivKey2.PublicKey)
-		cosmosAddress2 sdk.AccAddress = bytes.Repeat([]byte{0x2}, MaxAddrLen)
-		cosmosAddress3 sdk.AccAddress = bytes.Repeat([]byte{0x3}, MaxAddrLen)
-
-		valAddress   sdk.ValAddress = bytes.Repeat([]byte{0x3}, MaxAddrLen)
-		blockTime                   = time.Date(2020, 9, 14, 15, 20, 10, 0, time.UTC)
-		blockTime2                  = time.Date(2020, 9, 15, 15, 20, 10, 0, time.UTC)
-		blockHeight  int64          = 200
-		blockHeight2 int64          = 210
-	)
-
-	input := keeper.CreateTestEnv(t)
-	input.GravityKeeper.StakingKeeper = keeper.NewStakingKeeperMock(valAddress)
-	ctx := input.Context
-	wctx := sdk.WrapSDKContext(ctx)
-
-	acc := input.AccountKeeper.NewAccountWithAddress(ctx, cosmosAddress)
-	acc2 := input.AccountKeeper.NewAccountWithAddress(ctx, cosmosAddress2)
-	acc3 := input.AccountKeeper.NewAccountWithAddress(ctx, cosmosAddress3)
-
-	// Set the sequence to 1 because the antehandler will do this in the full
-	// chain.
-	acc.SetSequence(1)
-	acc2.SetSequence(1)
-	acc3.SetSequence(1)
-
-	input.AccountKeeper.SetAccount(ctx, acc)
-	input.AccountKeeper.SetAccount(ctx, acc2)
-	input.AccountKeeper.SetAccount(ctx, acc3)
-
-	ethMsg := types.DelegateKeysSignMsg{
-		ValidatorAddress: valAddress.String(),
-		Nonce:            0,
-	}
-	signMsgBz := input.Marshaler.MustMarshal(&ethMsg)
-	hash := crypto.Keccak256Hash(signMsgBz).Bytes()
-	sig, err := types.NewEthereumSignature(hash, ethPrivKey)
-	require.NoError(t, err)
-
-	k := input.GravityKeeper
-	h := gravity.NewHandler(input.GravityKeeper)
-	ctx = ctx.WithBlockTime(blockTime)
-
-	msg := types.NewMsgDelegateKeys(valAddress, cosmosAddress, ethAddress.String(), sig)
-	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
-	_, err = h(ctx, msg)
-	require.NoError(t, err)
-
-	require.Equal(t, ethAddress.String(), k.GetValidatorEthereumAddress(ctx, valAddress).Hex())
-	require.Equal(t, valAddress, k.GetOrchestratorValidatorAddress(ctx, cosmosAddress))
-	require.Equal(t, cosmosAddress, k.GetEthereumOrchestratorAddress(ctx, common.HexToAddress(ethAddress.String())))
-
-	_, err = k.DelegateKeysByOrchestrator(wctx, &types.DelegateKeysByOrchestratorRequest{OrchestratorAddress: cosmosAddress.String()})
-	require.NoError(t, err)
-
-	_, err = k.DelegateKeysByEthereumSigner(wctx, &types.DelegateKeysByEthereumSignerRequest{EthereumSigner: ethAddress.String()})
-	require.NoError(t, err)
-
-	_, err = k.DelegateKeysByValidator(wctx, &types.DelegateKeysByValidatorRequest{ValidatorAddress: valAddress.String()})
-	require.NoError(t, err)
-
-	// delegate new orch and eth addrs for same validator
-	ethMsg = types.DelegateKeysSignMsg{
-		ValidatorAddress: valAddress.String(),
-		Nonce:            0,
-	}
-	signMsgBz = input.Marshaler.MustMarshal(&ethMsg)
-	hash = crypto.Keccak256Hash(signMsgBz).Bytes()
-
-	sig, err = types.NewEthereumSignature(hash, ethPrivKey2)
-	require.NoError(t, err)
-
-	msg = types.NewMsgDelegateKeys(valAddress, cosmosAddress2, ethAddress2.String(), sig)
-	ctx = ctx.WithBlockTime(blockTime2).WithBlockHeight(blockHeight2)
-	_, err = h(ctx, msg)
-	require.NoError(t, err)
-
-	require.Equal(t, ethAddress2.String(), k.GetValidatorEthereumAddress(ctx, valAddress).Hex())
-	require.Equal(t, valAddress, k.GetOrchestratorValidatorAddress(ctx, cosmosAddress2))
-	require.Equal(t, cosmosAddress2, k.GetEthereumOrchestratorAddress(ctx, common.HexToAddress(ethAddress2.String())))
-
-	_, err = k.DelegateKeysByOrchestrator(wctx, &types.DelegateKeysByOrchestratorRequest{OrchestratorAddress: cosmosAddress2.String()})
-	require.NoError(t, err)
-
-	_, err = k.DelegateKeysByEthereumSigner(wctx, &types.DelegateKeysByEthereumSignerRequest{EthereumSigner: ethAddress2.String()})
-	require.NoError(t, err)
-
-	_, err = k.DelegateKeysByValidator(wctx, &types.DelegateKeysByValidatorRequest{ValidatorAddress: valAddress.String()})
-	require.NoError(t, err)
-}
+// nolint: exhaustruct
+//func TestMsgSetOrchestratorAddresses(t *testing.T) {
+//	var (
+//		ethAddress, e1                 = types.NewEthAddress("0xb462864E395d88d6bc7C5dd5F3F5eb4cc2599255")
+//		cosmosAddress   sdk.AccAddress = bytes.Repeat([]byte{0x1}, 20)
+//		ethAddress2, e2                = types.NewEthAddress("0x26126048c706fB45a5a6De8432F428e794d0b952")
+//		cosmosAddress2  sdk.AccAddress = bytes.Repeat([]byte{0x2}, 20)
+//		blockTime                      = time.Date(2020, 9, 14, 15, 20, 10, 0, time.UTC)
+//		blockTime2                     = time.Date(2020, 9, 15, 15, 20, 10, 0, time.UTC)
+//		blockHeight     int64          = 200
+//		blockHeight2    int64          = 210
+//	)
+//	require.NoError(t, e1)
+//	require.NoError(t, e2)
+//	input, ctx := keeper.SetupTestChain(t, []uint64{1000000000}, false)
+//	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+//
+//	wctx := sdk.WrapSDKContext(ctx)
+//	k := input.GravityKeeper
+//	h := NewHandler(input.GravityKeeper)
+//	ctx = ctx.WithBlockTime(blockTime)
+//	valAddress, err := sdk.ValAddressFromBech32(input.StakingKeeper.GetValidators(ctx, 10)[0].OperatorAddress)
+//	require.NoError(t, err)
+//
+//	// test setting keys
+//	msg := types.NewMsgSetOrchestratorAddress(valAddress, cosmosAddress, *ethAddress)
+//	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
+//	_, err = h(ctx, msg)
+//	require.NoError(t, err)
+//
+//	// test all lookup methods
+//
+//	// individual lookups
+//	ethLookup, found, err := k.GetEthAddressByValidator(ctx, valAddress)
+//	require.NoError(t, err)
+//	assert.True(t, found)
+//	assert.Equal(t, ethLookup, ethAddress)
+//
+//	valLookup, found, err := k.GetOrchestratorValidator(ctx, cosmosAddress)
+//	require.NoError(t, err)
+//	assert.True(t, found)
+//	assert.Equal(t, valLookup.GetOperator(), valAddress)
+//
+//	// query endpoints
+//	queryO := types.QueryDelegateKeysByOrchestratorAddress{
+//		OrchestratorAddress: cosmosAddress.String(),
+//	}
+//	_, err = k.GetDelegateKeyByOrchestrator(wctx, &queryO)
+//	require.NoError(t, err)
+//
+//	queryE := types.QueryDelegateKeysByEthAddress{
+//		EthAddress: ethAddress.GetAddress().Hex(),
+//	}
+//	_, err = k.GetDelegateKeyByEth(wctx, &queryE)
+//	require.NoError(t, err)
+//
+//	// try to set values again. This should fail see issue #344 for why allowing this
+//	// would require keeping a history of all validators delegate keys forever
+//	msg = types.NewMsgSetOrchestratorAddress(valAddress, cosmosAddress2, *ethAddress2)
+//	ctx = ctx.WithBlockTime(blockTime2).WithBlockHeight(blockHeight2)
+//	_, err = h(ctx, msg)
+//	require.Error(t, err)
+//}

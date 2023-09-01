@@ -4,13 +4,10 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"strconv"
 
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -24,276 +21,297 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
-var _ types.MsgServer = msgServer{}
-
-func (k msgServer) SetDelegateKeys(c context.Context, msg *types.MsgDelegateKeys) (*types.MsgDelegateKeysResponse, error) {
+// SendToEth handles MsgSendToEth
+func (k msgServer) SendToEth(c context.Context, msg *types.MsgSendToEth) (*types.MsgSendToEthResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-
-	valAddr, err := sdk.ValAddressFromBech32(msg.ValidatorAddress)
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return nil, err
+		return nil, sdkerrors.Wrap(err, "invalid sender")
 	}
 
-	orchAddr, err := sdk.AccAddressFromBech32(msg.OrchestratorAddress)
+	dest, err := types.NewEthAddress(msg.EthDest)
 	if err != nil {
-		return nil, err
+		return nil, sdkerrors.Wrap(err, "invalid eth dest")
 	}
 
-	ethAddr := common.HexToAddress(msg.EthereumAddress)
-
-	// ensure that the validator exists
-	if k.Keeper.StakingKeeper.Validator(ctx, valAddr) == nil {
-		return nil, sdkerrors.Wrap(stakingtypes.ErrNoValidatorFound, valAddr.String())
-	}
-
-	// check if the Ethereum address is currently not used
-	if k.validatorForEthAddressExists(ctx, ethAddr) {
-		return nil, sdkerrors.Wrapf(types.ErrDelegateKeys, "ethereum address %s in use", ethAddr)
-	}
-
-	// check if the orchestrator address is currently not used
-	if k.ethAddressForOrchestratorExists(ctx, orchAddr) {
-		return nil, sdkerrors.Wrapf(types.ErrDelegateKeys, "orchestrator address %s in use", orchAddr)
-	}
-
-	valAccAddr := sdk.AccAddress(valAddr)
-	valAccSeq, err := k.accountKeeper.GetSequence(ctx, valAccAddr)
+	erc20, err := k.GetERC20OfDenom(ctx, msg.GetChainReferenceId(), msg.Amount.Denom)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrDelegateKeys, "failed to get sequence for validator account %s", valAccAddr)
+		return nil, sdkerrors.Wrap(err, "invalid denom")
 	}
 
-	var nonce uint64
-	if valAccSeq > 0 {
-		nonce = valAccSeq - 1
+	if k.InvalidSendToEthAddress(ctx, *dest, *erc20) {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "destination address is invalid")
 	}
 
-	signMsgBz := k.cdc.MustMarshal(&types.DelegateKeysSignMsg{
-		ValidatorAddress: valAddr.String(),
-		// We decrement since we process the message after the ante-handler which
-		// increments the nonce.
-		Nonce: nonce,
-	})
-
-	hash := crypto.Keccak256Hash(signMsgBz).Bytes()
-
-	if err = types.ValidateEthereumSignature(hash, msg.EthSignature, ethAddr); err != nil {
-		return nil, sdkerrors.Wrapf(
-			types.ErrDelegateKeys,
-			"failed to validate delegate keys signature for Ethereum address %X; %s ;%d",
-			ethAddr, err, nonce,
-		)
+	txID, err := k.AddToOutgoingPool(ctx, sender, *dest, msg.Amount, msg.GetChainReferenceId())
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "Could not add to outgoing pool")
 	}
 
-	k.SetOrchestratorValidatorAddress(ctx, valAddr, orchAddr)
-	k.setValidatorEthereumAddress(ctx, valAddr, ethAddr)
-	k.setEthereumOrchestratorAddress(ctx, ethAddr, orchAddr)
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, msg.Type()),
-			sdk.NewAttribute(types.AttributeKeySetOrchestratorAddr, orchAddr.String()),
-			sdk.NewAttribute(types.AttributeKeySetEthereumAddr, ethAddr.Hex()),
-			sdk.NewAttribute(types.AttributeKeyValidatorAddr, valAddr.String()),
-		),
+	return &types.MsgSendToEthResponse{}, ctx.EventManager().EmitTypedEvent(
+		&types.EventOutgoingTxId{
+			Message: msg.Type(),
+			TxId:    fmt.Sprint(txID),
+		},
 	)
-
-	return &types.MsgDelegateKeysResponse{}, nil
 }
 
-// SubmitEthereumTxConfirmation handles MsgSubmitEthereumTxConfirmation
-func (k msgServer) SubmitEthereumTxConfirmation(c context.Context, msg *types.MsgSubmitEthereumTxConfirmation) (*types.MsgSubmitEthereumTxConfirmationResponse, error) {
+// ConfirmBatch handles MsgConfirmBatch
+func (k msgServer) ConfirmBatch(c context.Context, msg *types.MsgConfirmBatch) (*types.MsgConfirmBatchResponse, error) {
+	err := msg.ValidateBasic()
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "invalid MsgConfirmBatch")
+	}
+	contract, err := types.NewEthAddress(msg.TokenContract)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "eth address invalid")
+	}
 	ctx := sdk.UnwrapSDKContext(c)
 
-	confirmation, err := types.UnpackConfirmation(msg.Confirmation)
+	// fetch the outgoing batch given the nonce
+	batch, err := k.GetOutgoingTXBatch(ctx, *contract, msg.Nonce)
+	if err != nil {
+		return nil, err
+	}
+	if batch == nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "couldn't find batch")
+	}
+
+	ci, err := k.evmKeeper.GetChainInfo(ctx, batch.ChainReferenceID)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "couldn't find chain info")
+	}
+	checkpoint, err := batch.GetCheckpoint(string(ci.SmartContractUniqueID))
 	if err != nil {
 		return nil, err
 	}
 
-	val, err := k.getSignerValidator(ctx, msg.Signer)
+	orchaddr, err := sdk.AccAddressFromBech32(msg.Orchestrator)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "acc address invalid")
+	}
+
+	err = k.confirmHandlerCommon(ctx, msg.EthSigner, orchaddr, msg.Signature, checkpoint, batch.ChainReferenceID)
 	if err != nil {
 		return nil, err
 	}
 
-	otx := k.GetOutgoingTx(ctx, confirmation.GetStoreIndex())
-	if otx == nil {
-		k.Logger(ctx).Error(
-			"no outgoing tx",
-			"store index", fmt.Sprintf("%x", confirmation.GetStoreIndex()),
-		)
-		return nil, sdkerrors.Wrap(types.ErrInvalid, "couldn't find outgoing tx")
+	// check if we already have this confirm
+	batchConfirms, err := k.GetBatchConfirm(ctx, msg.Nonce, *contract, orchaddr)
+	if err != nil {
+		return nil, err
+	}
+	if batchConfirms != nil {
+		return nil, sdkerrors.Wrap(types.ErrDuplicate, "duplicate signature")
+	}
+	key, err := k.SetBatchConfirm(ctx, msg)
+	if err != nil {
+		return nil, err
 	}
 
-	gravityID := k.getGravityID(ctx)
-	checkpoint := otx.GetCheckpoint([]byte(gravityID))
-
-	ethAddress := k.GetValidatorEthereumAddress(ctx, val)
-	if ethAddress != confirmation.GetSigner() {
-		return nil, sdkerrors.Wrap(types.ErrInvalid, "eth address does not match signer eth address")
-	}
-
-	if err = types.ValidateEthereumSignature(checkpoint, confirmation.GetSignature(), ethAddress); err != nil {
-		k.Logger(ctx).Error("error validating signature",
-			"eth addr", ethAddress.String(),
-			"gravityID", gravityID,
-			"checkpoint", hex.EncodeToString(checkpoint),
-			"type url", msg.Confirmation.TypeUrl,
-			"signature", hex.EncodeToString(confirmation.GetSignature()),
-			"error", err)
-		return nil, sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf(
-			"signature verification failed ethAddress %s gravityID %s checkpoint %s typeURL %s signature %s err %s",
-			ethAddress.Hex(),
-			gravityID,
-			hex.EncodeToString(checkpoint),
-			msg.Confirmation.TypeUrl,
-			hex.EncodeToString(confirmation.GetSignature()),
-			err,
-		))
-	}
-	// TODO: should validators be able to overwrite their signatures?
-	if k.getEthereumSignature(ctx, confirmation.GetStoreIndex(), val) != nil {
-		return nil, sdkerrors.Wrap(types.ErrInvalid, "signature duplicate")
-	}
-
-	key := k.SetEthereumSignature(ctx, confirmation, val)
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, msg.Type()),
-			sdk.NewAttribute(types.AttributeKeyEthereumSignatureKey, string(key)),
-		),
+	return &types.MsgConfirmBatchResponse{}, ctx.EventManager().EmitTypedEvent(
+		&types.EventBatchConfirmKey{
+			Message:         msg.Type(),
+			BatchConfirmKey: string(key),
+		},
 	)
-	return &types.MsgSubmitEthereumTxConfirmationResponse{}, nil
 }
 
-// SubmitEthereumEvent handles MsgSubmitEthereumEvent
-func (k msgServer) SubmitEthereumEvent(c context.Context, msg *types.MsgSubmitEthereumEvent) (*types.MsgSubmitEthereumEventResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-
-	event, err := types.UnpackEvent(msg.Event)
+// checkOrchestratorValidatorInSet checks that the orchestrator refers to a validator that is
+// currently in the set
+func (k msgServer) checkOrchestratorValidatorInSet(ctx sdk.Context, orchestrator string) error {
+	orchaddr, err := sdk.AccAddressFromBech32(orchestrator)
 	if err != nil {
-		return nil, err
+		return sdkerrors.Wrap(types.ErrInvalid, "acc address invalid")
+	}
+	validator, found, err := k.GetOrchestratorValidator(ctx, orchaddr)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return sdkerrors.Wrap(types.ErrUnknown, "validator")
 	}
 
 	// return an error if the validator isn't in the active set
-	val, err := k.getSignerValidator(ctx, msg.Signer)
+	val := k.StakingKeeper.Validator(ctx, validator.GetOperator())
+	if val == nil || !val.IsBonded() {
+		return sdkerrors.Wrap(sdkerrors.ErrorInvalidSigner, "validator not in active set")
+	}
+
+	return nil
+}
+
+// claimHandlerCommon is an internal function that provides common code for processing claims once they are
+// translated from the message to the Ethereum claim interface
+func (k msgServer) claimHandlerCommon(ctx sdk.Context, msgAny *codectypes.Any, msg types.EthereumClaim) error {
+	// Add the claim to the store
+	_, err := k.Attest(ctx, msg, msgAny)
+	if err != nil {
+		return sdkerrors.Wrap(err, "create attestation")
+	}
+	hash, err := msg.ClaimHash()
+	if err != nil {
+		return sdkerrors.Wrap(err, "unable to compute claim hash")
+	}
+
+	// Emit the handle message event
+	return ctx.EventManager().EmitTypedEvent(
+		&types.EventClaim{
+			Message:       string(msg.GetType()),
+			ClaimHash:     string(hash),
+			AttestationId: string(types.GetAttestationKey(msg.GetEventNonce(), hash)),
+		},
+	)
+}
+
+// confirmHandlerCommon is an internal function that provides common code for processing claim messages
+func (k msgServer) confirmHandlerCommon(ctx sdk.Context, ethAddress string, orchestrator sdk.AccAddress, signature string, checkpoint []byte, chainReferenceId string) error {
+	sigBytes, err := hex.DecodeString(signature)
+	if err != nil {
+		return sdkerrors.Wrap(types.ErrInvalid, "signature decoding")
+	}
+
+	submittedEthAddress, err := types.NewEthAddress(ethAddress)
+	if err != nil {
+		return sdkerrors.Wrap(types.ErrInvalid, "invalid eth address")
+	}
+
+	validator, found, err := k.GetOrchestratorValidator(ctx, orchestrator)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return sdkerrors.Wrap(types.ErrUnknown, "validator")
+	}
+
+	if !validator.IsBonded() && !validator.IsUnbonding() {
+		// We must only accept confirms from bonded or unbonding validators
+		return sdkerrors.Wrap(types.ErrInvalid, "validator is unbonded")
+	}
+
+	if err := sdk.VerifyAddressFormat(validator.GetOperator()); err != nil {
+		return sdkerrors.Wrapf(err, "discovered invalid validator address for orchestrator %v", orchestrator)
+	}
+
+	ethAddressFromStore, found, err := k.GetEthAddressByValidator(ctx, validator.GetOperator(), chainReferenceId)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return sdkerrors.Wrap(types.ErrEmpty, "no eth address set for validator")
+	}
+
+	if *ethAddressFromStore != *submittedEthAddress {
+		return sdkerrors.Wrap(types.ErrInvalid, "submitted eth address does not match delegate eth address")
+	}
+
+	err = types.ValidateEthereumSignature(checkpoint, sigBytes, *ethAddressFromStore)
+	if err != nil {
+		return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("signature verification failed expected sig by %s with checkpoint %s found %s", ethAddress, hex.EncodeToString(checkpoint), signature))
+	}
+
+	return nil
+}
+
+func (k msgServer) SendToPalomaClaim(c context.Context, msg *types.MsgSendToPalomaClaim) (*types.MsgSendToPalomaClaimResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+
+	err := k.checkOrchestratorValidatorInSet(ctx, msg.Orchestrator)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "Could not check orchstrator validator inset")
+	}
+	any, err := codectypes.NewAnyWithValue(msg)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "Could not check Any value")
+	}
+	err = k.claimHandlerCommon(ctx, any, msg)
 	if err != nil {
 		return nil, err
 	}
 
-	// Add the claim to the store
-	_, err = k.recordEventVote(ctx, event, val)
-	if err != nil {
-		return nil, sdkerrors.Wrap(err, "create event vote record")
-	}
-
-	// Emit the handle message event
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, fmt.Sprintf("%T", event)),
-			// TODO: maybe return something better here? is this the right string representation?
-			sdk.NewAttribute(types.AttributeKeyEthereumEventVoteRecordID, string(types.MakeEthereumEventVoteRecordKey(event.GetEventNonce(), event.Hash()))),
-		),
-	)
-
-	return &types.MsgSubmitEthereumEventResponse{}, nil
+	return &types.MsgSendToPalomaClaimResponse{}, nil
 }
 
-// SendToEthereum handles MsgSendToEthereum
-func (k msgServer) SendToEthereum(c context.Context, msg *types.MsgSendToEthereum) (*types.MsgSendToEthereumResponse, error) {
+func (k msgServer) BatchSendToEthClaim(c context.Context, msg *types.MsgBatchSendToEthClaim) (*types.MsgBatchSendToEthClaimResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+
+	err := k.checkOrchestratorValidatorInSet(ctx, msg.Orchestrator)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "Could not check orchestrator validator")
+	}
+
+	/* Perform some additional checks on the input to determine if it is valid before allowing it on the chain
+	   Note that because of the gas meter we must avoid calls which consume gas, like fetching data from the keeper
+	*/
+	err = additionalPatchChecks(ctx, k, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	msgAny, err := codectypes.NewAnyWithValue(msg)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "Could not check Any value")
+	}
+
+	err = k.claimHandlerCommon(ctx, msgAny, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgBatchSendToEthClaimResponse{}, nil
+}
+
+// Performs additional checks on msg to determine if it is valid
+func additionalPatchChecks(ctx sdk.Context, k msgServer, msg *types.MsgBatchSendToEthClaim) error {
+	contractAddress, err := types.NewEthAddress(msg.TokenContract)
+	if err != nil {
+		return sdkerrors.Wrap(err, "Invalid TokenContract on MsgBatchSendToEthClaim")
+	}
+
+	// Replicate the following but without using a gas meter
+	b, err := k.GetOutgoingTXBatch(ctx, *contractAddress, msg.BatchNonce)
+	if err != nil {
+		return err
+	}
+	if b == nil {
+		// Batch deleted, just add the vote to the stored attestation
+		return nil
+	}
+
+	if b.BatchTimeout <= msg.EthBlockHeight {
+		return fmt.Errorf("batch with nonce %d submitted after it timed out (submission %d >= timeout %d)", msg.BatchNonce, msg.EthBlockHeight, b.BatchTimeout)
+	}
+
+	return nil
+}
+
+func (k msgServer) CancelSendToEth(c context.Context, msg *types.MsgCancelSendToEth) (*types.MsgCancelSendToEthResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
-
-	// ensure the denoms provided in the message will map correctly if they are gravity denoms
-	types.NormalizeCoinDenom(&msg.Amount)
-	types.NormalizeCoinDenom(&msg.BridgeFee)
-
-	txID, err := k.createSendToEthereum(ctx, sender, msg.EthereumRecipient, msg.Amount, msg.BridgeFee)
+	err = k.RemoveFromOutgoingPoolAndRefund(ctx, msg.TransactionId, sender)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvents([]sdk.Event{
-		sdk.NewEvent(
-			types.EventTypeBridgeWithdrawalReceived,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeKeyContract, k.getBridgeContractAddress(ctx)),
-			sdk.NewAttribute(types.AttributeKeyBridgeChainID, strconv.Itoa(int(k.getBridgeChainID(ctx)))),
-			sdk.NewAttribute(types.AttributeKeyOutgoingTXID, strconv.Itoa(int(txID))),
-			sdk.NewAttribute(types.AttributeKeyNonce, fmt.Sprint(txID)),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, msg.Type()),
-			sdk.NewAttribute(types.AttributeKeyOutgoingTXID, fmt.Sprint(txID)),
-		),
-	})
-
-	return &types.MsgSendToEthereumResponse{Id: txID}, nil
+	return &types.MsgCancelSendToEthResponse{}, nil
 }
 
-func (k msgServer) CancelSendToEthereum(c context.Context, msg *types.MsgCancelSendToEthereum) (*types.MsgCancelSendToEthereumResponse, error) {
+func (k msgServer) SubmitBadSignatureEvidence(c context.Context, msg *types.MsgSubmitBadSignatureEvidence) (*types.MsgSubmitBadSignatureEvidenceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
-	err := k.Keeper.cancelSendToEthereum(ctx, msg.Id, msg.Sender)
+	err := k.CheckBadSignatureEvidence(ctx, msg, msg.GetChainReferenceId())
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvents([]sdk.Event{
-		sdk.NewEvent(
-			types.EventTypeBridgeWithdrawCanceled,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeKeyContract, k.getBridgeContractAddress(ctx)),
-			sdk.NewAttribute(types.AttributeKeyBridgeChainID, strconv.Itoa(int(k.getBridgeChainID(ctx)))),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, msg.Type()),
-			sdk.NewAttribute(types.AttributeKeyOutgoingTXID, fmt.Sprint(msg.Id)),
-		),
-	})
-
-	return &types.MsgCancelSendToEthereumResponse{}, nil
-}
-
-func (k msgServer) SubmitEthereumHeightVote(c context.Context, msg *types.MsgEthereumHeightVote) (*types.MsgEthereumHeightVoteResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-
-	val, err := k.getSignerValidator(ctx, msg.Signer)
-	if err != nil {
-		return nil, err
-	}
-
-	k.Keeper.SetEthereumHeightVote(ctx, val, msg.EthereumHeight)
-
-	return &types.MsgEthereumHeightVoteResponse{}, nil
-}
-
-// getSignerValidator takes an sdk.AccAddress that represents either a validator or orchestrator address and returns
-// the associated validator address
-func (k Keeper) getSignerValidator(ctx sdk.Context, signerString string) (sdk.ValAddress, error) {
-	signer, err := sdk.AccAddressFromBech32(signerString)
-	if err != nil {
-		return nil, sdkerrors.Wrap(types.ErrInvalid, "signer address")
-	}
-	var validatorI stakingtypes.ValidatorI
-	if validator := k.GetOrchestratorValidatorAddress(ctx, signer); validator == nil {
-		validatorI = k.StakingKeeper.Validator(ctx, sdk.ValAddress(signer))
-	} else {
-		validatorI = k.StakingKeeper.Validator(ctx, validator)
-	}
-
-	if validatorI == nil {
-		return nil, sdkerrors.Wrap(types.ErrInvalid, "not orchestrator or validator")
-	} else if !validatorI.IsBonded() {
-		return nil, sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("validator is not bonded: %s", validatorI.GetOperator()))
-	}
-
-	return validatorI.GetOperator(), nil
+	return &types.MsgSubmitBadSignatureEvidenceResponse{}, ctx.EventManager().EmitTypedEvent(
+		&types.EventBadSignatureEvidence{
+			Message:                fmt.Sprint(msg.Type()),
+			BadEthSignature:        fmt.Sprint(msg.Signature),
+			BadEthSignatureSubject: fmt.Sprint(msg.Subject),
+		},
+	)
 }

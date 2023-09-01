@@ -152,8 +152,8 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
 		evmclient.ProposalHandler,
-		treasuryclient.ProposalHandler,
 		gravityclient.ProposalHandler,
+		treasuryclient.ProposalHandler,
 	}
 }
 
@@ -204,6 +204,7 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
+		gravitymoduletypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		ibcfeetypes.ModuleName:         nil,
 		icatypes.ModuleName:            nil,
@@ -453,7 +454,8 @@ func New(
 	// set the governance module account as the authority for conducting upgrades
 	homePath := cast.ToString(appOpts.Get(flags.FlagHome))
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(
-		skipUpgradeHeights, keys[upgradetypes.StoreKey],
+		skipUpgradeHeights,
+		keys[upgradetypes.StoreKey],
 		appCodec,
 		homePath,
 		app.BaseApp,
@@ -557,16 +559,15 @@ func New(
 
 	app.GravityKeeper = gravitymodulekeeper.NewKeeper(
 		appCodec,
-		keys[gravitymoduletypes.StoreKey],
 		app.GetSubspace(gravitymoduletypes.ModuleName),
 		app.AccountKeeper,
 		app.StakingKeeper,
 		app.BankKeeper,
 		app.SlashingKeeper,
 		app.DistrKeeper,
-		sdk.DefaultPowerReduction,
-		map[string]string{},
-		map[string]string{},
+		app.TransferKeeper,
+		app.EvmKeeper,
+		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
 	)
 
 	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
@@ -624,7 +625,7 @@ func New(
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
-		AddRoute(gravitymoduletypes.RouterKey, gravitymodule.NewCommunityPoolEthereumSpendProposalHandler(app.GravityKeeper)).
+		AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
 		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
 
 	// Example of setting gov params:

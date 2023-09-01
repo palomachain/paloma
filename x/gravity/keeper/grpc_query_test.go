@@ -1,236 +1,475 @@
 package keeper
 
 import (
+	"bytes"
 	"testing"
+	"time"
 
-	"github.com/cometbft/cometbft/libs/bytes"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestKeeper_Params(t *testing.T) {
-	env := CreateTestEnv(t)
-	ctx := sdk.WrapSDKContext(env.Context)
-	gk := env.GravityKeeper
+// nolint: exhaustruct
+func TestLastPendingBatchRequest(t *testing.T) {
+	specs := map[string]struct {
+		expResp types.QueryLastPendingBatchRequestByAddrResponse
+	}{
+		"find batch": {
+			expResp: types.QueryLastPendingBatchRequestByAddrResponse{
+				Batch: []types.OutgoingTxBatch{
+					{
+						BatchNonce: 1,
+						Transactions: []types.OutgoingTransferTx{
+							{
+								Id:          4,
+								Sender:      "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
+								DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
+								Erc20Token: types.ERC20Token{
+									Amount:           sdk.NewInt(103),
+									Contract:         testERC20Address,
+									ChainReferenceId: "test-chain",
+								},
+							},
+							{
+								Id:          3,
+								Sender:      "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
+								DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
+								Erc20Token: types.ERC20Token{
+									Amount:           sdk.NewInt(102),
+									Contract:         testERC20Address,
+									ChainReferenceId: "test-chain",
+								},
+							},
+						},
+						TokenContract:      testERC20Address,
+						PalomaBlockCreated: 1235067,
+						ChainReferenceId:   "test-chain",
+					},
+				},
+			},
+		},
+	}
+	// any lower than this and a validator won't be created
+	const minStake = 1000000
+	input, _ := SetupTestChain(t, []uint64{minStake, minStake, minStake, minStake, minStake})
+	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
-	req := &types.ParamsRequest{}
-	res, err := gk.Params(ctx, req)
+	ctx := sdk.WrapSDKContext(input.Context)
+	var valAddr sdk.AccAddress = bytes.Repeat([]byte{byte(1)}, 20)
+	createTestBatch(t, input, 2)
+	for msg, spec := range specs {
+		t.Run(msg, func(t *testing.T) {
+			req := new(types.QueryLastPendingBatchRequestByAddrRequest)
+			req.Address = valAddr.String()
+			got, err := input.GravityKeeper.LastPendingBatchRequestByAddr(ctx, req)
+			require.NoError(t, err)
+
+			// Don't bother comparing some computed values
+			got.Batch[0].BatchTimeout = 0
+			got.Batch[0].BytesToSign = nil
+			got.Batch[0].Assignee = ""
+
+			assert.Equal(t, &spec.expResp, got, got)
+		})
+	}
+}
+
+// nolint: exhaustruct
+func createTestBatch(t *testing.T, input TestInput, maxTxElements uint) {
+	var (
+		mySender   = bytes.Repeat([]byte{1}, 20)
+		myReceiver = "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934"
+		now        = time.Now().UTC()
+	)
+	receiver, err := types.NewEthAddress(myReceiver)
 	require.NoError(t, err)
-	require.NotNil(t, res)
+	tokenContract, err := types.NewEthAddress(testERC20Address)
+	require.NoError(t, err)
+	// mint some voucher first
+	token, err := types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+	require.NoError(t, err)
+	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, token.Amount)}
+	err = input.BankKeeper.MintCoins(input.Context, types.ModuleName, allVouchers)
+	require.NoError(t, err)
+
+	// set senders balance
+	input.AccountKeeper.NewAccountWithAddress(input.Context, mySender)
+	err = input.BankKeeper.SendCoinsFromModuleToAccount(input.Context, types.ModuleName, mySender, allVouchers)
+	require.NoError(t, err)
+
+	// add some TX to the pool
+	for i := 0; i < 4; i++ {
+		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), testERC20Address, "test-chain")
+		require.NoError(t, err)
+		amount := sdk.NewCoin(testDenom, amountToken.Amount)
+		_, err = input.GravityKeeper.AddToOutgoingPool(input.Context, mySender, *receiver, amount, "test-chain")
+		require.NoError(t, err)
+		// Should create:
+		// 1: amount 100
+		// 2: amount 101
+		// 3: amount 102
+		// 4: amount 103
+	}
+	// when
+	input.Context = input.Context.WithBlockTime(now)
+
+	// tx batch size is 2, so that some of them stay behind
+	_, err = input.GravityKeeper.BuildOutgoingTXBatch(input.Context, "test-chain", *tokenContract, maxTxElements)
+	require.NoError(t, err)
+	// Should have 2 and 3 from above
+	// 1 and 4 should be unbatched
 }
 
-func TestKeeper_LatestSignerSetTx(t *testing.T) {
-	t.Run("read before there's anything in state", func(t *testing.T) {
-		env := CreateTestEnv(t)
-		ctx := env.Context
-		gk := env.GravityKeeper
+// nolint: exhaustruct
+func TestQueryAllBatchConfirms(t *testing.T) {
+	input, ctx := SetupFiveValChain(t)
+	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
-		req := &types.LatestSignerSetTxRequest{}
-		res, err := gk.LatestSignerSetTx(sdk.WrapSDKContext(ctx), req)
-		require.Error(t, err)
-		require.Nil(t, res)
+	sdkCtx := input.Context
+	k := input.GravityKeeper
+
+	var (
+		tokenContract      = "0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B"
+		validatorAddr, err = sdk.AccAddressFromBech32("paloma1mgamdcs9dah0vn0gqupl05up7pedg2mvyy5e9j")
+	)
+	require.NoError(t, err)
+
+	_, err = input.GravityKeeper.SetBatchConfirm(sdkCtx, &types.MsgConfirmBatch{
+		Nonce:         1,
+		TokenContract: tokenContract,
+		EthSigner:     "0xf35e2cc8e6523d683ed44870f5b7cc785051a77d",
+		Orchestrator:  validatorAddr.String(),
+		Signature:     "d34db33f",
 	})
-	t.Run("read after there's something in state", func(t *testing.T) {
-		env := CreateTestEnv(t)
-		ctx := env.Context
-		gk := env.GravityKeeper
-		{ // setup
-			sstx := gk.CreateSignerSetTx(env.Context)
-			require.NotNil(t, sstx)
-		}
-		{ // validate
-			req := &types.LatestSignerSetTxRequest{}
-			res, err := gk.LatestSignerSetTx(sdk.WrapSDKContext(ctx), req)
-			require.NoError(t, err)
-			require.NotNil(t, res)
-		}
-	})
+	require.NoError(t, err)
+
+	batchConfirms, err := k.BatchConfirms(ctx, &types.QueryBatchConfirmsRequest{Nonce: 1, ContractAddress: tokenContract})
+	require.NoError(t, err)
+
+	expectedRes := types.QueryBatchConfirmsResponse{
+		Confirms: []types.MsgConfirmBatch{
+			{
+				Nonce:         1,
+				TokenContract: "0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B",
+				EthSigner:     "0xf35e2cc8e6523d683ed44870f5b7cc785051a77d",
+				Orchestrator:  "paloma1mgamdcs9dah0vn0gqupl05up7pedg2mvyy5e9j",
+				Signature:     "d34db33f",
+			},
+		},
+	}
+
+	assert.Equal(t, &expectedRes, batchConfirms, "json is equal")
 }
 
-func TestKeeper_SignerSetTx(t *testing.T) {
-	t.Run("read after there's something in state", func(t *testing.T) {
-		env := CreateTestEnv(t)
-		ctx := env.Context
-		gk := env.GravityKeeper
+// nolint: exhaustruct
+// Check with multiple nonces and tokenContracts
+func TestQueryBatch(t *testing.T) {
+	input, ctx := SetupFiveValChain(t)
+	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
-		var signerSetNonce uint64
-		{ // setup
-			sstx := gk.CreateSignerSetTx(env.Context)
-			require.NotNil(t, sstx)
-			signerSetNonce = sstx.Nonce
-		}
-		{ // validate
-			req := &types.SignerSetTxRequest{SignerSetNonce: signerSetNonce}
-			res, err := gk.SignerSetTx(sdk.WrapSDKContext(ctx), req)
-			require.NoError(t, err)
-			require.NotNil(t, res)
-			require.NotNil(t, res.SignerSet)
-		}
-	})
+	k := input.GravityKeeper
+
+	createTestBatch(t, input, 2)
+
+	batch, err := k.BatchRequestByNonce(ctx, &types.QueryBatchRequestByNonceRequest{Nonce: 1, ContractAddress: testERC20Address})
+	require.NoError(t, err)
+
+	expectedRes := types.QueryBatchRequestByNonceResponse{
+		Batch: types.OutgoingTxBatch{
+			BatchTimeout: 0,
+			Transactions: []types.OutgoingTransferTx{
+				{
+					DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
+					Erc20Token: types.ERC20Token{
+						Amount:           sdk.NewInt(103),
+						Contract:         testERC20Address,
+						ChainReferenceId: "test-chain",
+					},
+					Sender: "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
+					Id:     4,
+				},
+				{
+					DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
+					Erc20Token: types.ERC20Token{
+						Amount:           sdk.NewInt(102),
+						Contract:         testERC20Address,
+						ChainReferenceId: "test-chain",
+					},
+					Sender: "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
+					Id:     3,
+				},
+			},
+			BatchNonce:         1,
+			PalomaBlockCreated: 1234567,
+			TokenContract:      testERC20Address,
+			ChainReferenceId:   "test-chain",
+		},
+	}
+
+	// Don't bother comparing some computed values
+	batch.Batch.BatchTimeout = 0
+	batch.Batch.BytesToSign = nil
+	batch.Batch.Assignee = ""
+
+	assert.Equal(t, &expectedRes, batch, batch)
 }
 
-func TestKeeper_BatchTx(t *testing.T) {
-	t.Run("read after there's something in state", func(t *testing.T) {
-		env := CreateTestEnv(t)
-		ctx := env.Context
-		gk := env.GravityKeeper
+// nolint: exhaustruct
+func TestLastBatchesRequest(t *testing.T) {
+	input, ctx := SetupFiveValChain(t)
+	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
-		const (
-			batchNonce    = 55
-			tokenContract = "0x835973768750b3ED2D5c3EF5AdcD5eDb44d12aD4"
-		)
+	k := input.GravityKeeper
 
-		{ // setup
-			gk.SetOutgoingTx(ctx, &types.BatchTx{
-				BatchNonce:    batchNonce,
-				Timeout:       1000,
-				Transactions:  nil,
-				TokenContract: tokenContract,
-				Height:        100,
-			})
-		}
-		{ // validate
-			req := &types.BatchTxRequest{
-				BatchNonce:    batchNonce,
-				TokenContract: tokenContract,
-			}
+	createTestBatch(t, input, 2)
+	createTestBatch(t, input, 3)
 
-			res, err := gk.BatchTx(sdk.WrapSDKContext(ctx), req)
-			require.NoError(t, err)
-			require.NotNil(t, res)
-			require.NotNil(t, res.Batch)
-		}
-	})
+	lastBatches, err := k.OutgoingTxBatches(ctx, &types.QueryOutgoingTxBatchesRequest{})
+	require.NoError(t, err)
+
+	expectedRes := types.QueryOutgoingTxBatchesResponse{
+		Batches: []types.OutgoingTxBatch{
+			{
+				Transactions: []types.OutgoingTransferTx{
+					{
+						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
+						Erc20Token: types.ERC20Token{
+							Amount:           sdk.NewInt(103),
+							Contract:         testERC20Address,
+							ChainReferenceId: "test-chain",
+						},
+						Sender: "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
+						Id:     8,
+					},
+					{
+						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
+						Erc20Token: types.ERC20Token{
+							Amount:           sdk.NewInt(102),
+							Contract:         testERC20Address,
+							ChainReferenceId: "test-chain",
+						},
+						Sender: "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
+						Id:     7,
+					},
+					{
+						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
+						Erc20Token: types.ERC20Token{
+							Amount:           sdk.NewInt(101),
+							Contract:         testERC20Address,
+							ChainReferenceId: "test-chain",
+						},
+						Sender: "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
+						Id:     6,
+					},
+				},
+				BatchNonce:         2,
+				PalomaBlockCreated: 1234567,
+				TokenContract:      testERC20Address,
+				ChainReferenceId:   "test-chain",
+			},
+			{
+				Transactions: []types.OutgoingTransferTx{
+					{
+						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
+						Erc20Token: types.ERC20Token{
+							Amount:           sdk.NewInt(103),
+							Contract:         testERC20Address,
+							ChainReferenceId: "test-chain",
+						},
+						Sender: "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
+						Id:     4,
+					},
+					{
+						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
+						Erc20Token: types.ERC20Token{
+							Amount:           sdk.NewInt(102),
+							Contract:         testERC20Address,
+							ChainReferenceId: "test-chain",
+						},
+						Sender: "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
+						Id:     3,
+					},
+				},
+				BatchNonce:         1,
+				PalomaBlockCreated: 1234567,
+				TokenContract:      testERC20Address,
+				ChainReferenceId:   "test-chain",
+			},
+		},
+	}
+
+	// Don't bother comparing some computed values
+	lastBatches.Batches[0].BatchTimeout = 0
+	lastBatches.Batches[0].BytesToSign = nil
+	lastBatches.Batches[0].Assignee = ""
+	lastBatches.Batches[1].BatchTimeout = 0
+	lastBatches.Batches[1].BytesToSign = nil
+	lastBatches.Batches[1].Assignee = ""
+
+	assert.Equal(t, &expectedRes, lastBatches, "json is equal")
 }
 
-func TestKeeper_ContractCallTx(t *testing.T) {
-	t.Run("read after there's something in state", func(t *testing.T) {
-		env := CreateTestEnv(t)
-		ctx := env.Context
-		gk := env.GravityKeeper
+// nolint: exhaustruct
+func TestQueryERC20ToDenom(t *testing.T) {
+	var (
+		chainReferenceID = "test-chain"
+		erc20, err       = types.NewEthAddress(testERC20Address)
+	)
+	require.NoError(t, err)
+	response := types.QueryERC20ToDenomResponse{
+		Denom: testDenom,
+	}
+	input := CreateTestEnv(t)
+	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
-		const (
-			invalidationNonce = 100
-			invalidationScope = "an-invalidation-scope"
-		)
+	sdkCtx := input.Context
+	ctx := sdk.WrapSDKContext(input.Context)
+	k := input.GravityKeeper
+	err = input.GravityKeeper.setDenomToERC20(sdkCtx, chainReferenceID, testDenom, *erc20)
+	require.NoError(t, err)
 
-		{ // setup
-			gk.SetOutgoingTx(ctx, &types.ContractCallTx{
-				InvalidationNonce: invalidationNonce,
-				InvalidationScope: bytes.HexBytes(invalidationScope),
-			})
-		}
-		{ // validate
-			req := &types.ContractCallTxRequest{
-				InvalidationNonce: invalidationNonce,
-				InvalidationScope: bytes.HexBytes(invalidationScope),
-			}
-
-			res, err := gk.ContractCallTx(sdk.WrapSDKContext(ctx), req)
-			require.NoError(t, err)
-			require.NotNil(t, res)
-			require.NotNil(t, res.LogicCall)
-		}
+	queriedDenom, err := k.ERC20ToDenom(ctx, &types.QueryERC20ToDenomRequest{
+		Erc20:            erc20.GetAddress().Hex(),
+		ChainReferenceId: chainReferenceID,
 	})
+	require.NoError(t, err)
+
+	assert.Equal(t, &response, queriedDenom)
 }
 
-func TestKeeper_SignerSetTxs(t *testing.T) {
-	t.Run("read after there's something in state", func(t *testing.T) {
-		env := CreateTestEnv(t)
-		ctx := env.Context
-		gk := env.GravityKeeper
+// nolint: exhaustruct
+func TestQueryDenomToERC20(t *testing.T) {
+	var (
+		chainReferenceID = "test-chain"
+		erc20, err       = types.NewEthAddress(testERC20Address)
+	)
+	require.NoError(t, err)
+	response := types.QueryDenomToERC20Response{
+		Erc20: erc20.GetAddress().Hex(),
+	}
+	input := CreateTestEnv(t)
+	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
-		{ // setup
-			require.NotNil(t, gk.CreateSignerSetTx(env.Context))
-			require.NotNil(t, gk.CreateSignerSetTx(env.Context))
-		}
-		{ // validate
-			req := &types.SignerSetTxsRequest{}
-			res, err := gk.SignerSetTxs(sdk.WrapSDKContext(ctx), req)
-			require.NoError(t, err)
-			require.NotNil(t, res)
-			require.Len(t, res.SignerSets, 2)
-		}
+	sdkCtx := input.Context
+	ctx := sdk.WrapSDKContext(input.Context)
+	k := input.GravityKeeper
+
+	err = input.GravityKeeper.setDenomToERC20(sdkCtx, chainReferenceID, testDenom, *erc20)
+	require.NoError(t, err)
+
+	queriedERC20, err := k.DenomToERC20(ctx, &types.QueryDenomToERC20Request{
+		Denom:            testDenom,
+		ChainReferenceId: chainReferenceID,
 	})
+	require.NoError(t, err)
+
+	assert.Equal(t, &response, queriedERC20)
 }
 
-func TestKeeper_BatchTxs(t *testing.T) {
-	t.Run("read after there's something in state", func(t *testing.T) {
-		env := CreateTestEnv(t)
-		ctx := env.Context
-		gk := env.GravityKeeper
+// nolint: exhaustruct
+func TestQueryPendingSendToEth(t *testing.T) {
+	input, ctx := SetupFiveValChain(t)
+	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
-		{ // setup
-			gk.SetOutgoingTx(ctx, &types.BatchTx{
-				BatchNonce:    1000,
-				Timeout:       1000,
-				Transactions:  nil,
-				TokenContract: "0x835973768750b3ED2D5c3EF5AdcD5eDb44d12aD4",
-				Height:        1000,
-			})
-			gk.SetOutgoingTx(ctx, &types.BatchTx{
-				BatchNonce:    1001,
-				Timeout:       1000,
-				Transactions:  nil,
-				TokenContract: "0x835973768750b3ED2D5c3EF5AdcD5eDb44d12aD4",
-				Height:        1001,
-			})
-		}
-		{ // validate
-			req := &types.BatchTxsRequest{}
-			got, err := gk.BatchTxs(sdk.WrapSDKContext(ctx), req)
-			require.NoError(t, err)
-			require.NotNil(t, got)
-			require.Len(t, got.Batches, 2)
-		}
-	})
+	sdkCtx := input.Context
+	k := input.GravityKeeper
+	var (
+		now            = time.Now().UTC()
+		mySender, err1 = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
+		myReceiver     = "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7"
+		token, err2    = types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+		allVouchers    = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
+	)
+	require.NoError(t, err1)
+	require.NoError(t, err2)
+	receiver, err := types.NewEthAddress(myReceiver)
+	require.NoError(t, err)
+	tokenContract, err := types.NewEthAddress(testERC20Address)
+	require.NoError(t, err)
+
+	// mint some voucher first
+	require.NoError(t, input.BankKeeper.MintCoins(sdkCtx, types.ModuleName, allVouchers))
+	// set senders balance
+	input.AccountKeeper.NewAccountWithAddress(sdkCtx, mySender)
+	require.NoError(t, input.BankKeeper.SendCoinsFromModuleToAccount(sdkCtx, types.ModuleName, mySender, allVouchers))
+
+	// CREATE FIRST BATCH
+	// ==================
+
+	// add some TX to the pool
+	for i := 0; i < 4; i++ {
+		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), testERC20Address, "test-chain")
+		require.NoError(t, err)
+		amount := sdk.NewCoin(testDenom, amountToken.Amount)
+		_, err = input.GravityKeeper.AddToOutgoingPool(sdkCtx, mySender, *receiver, amount, "test-chain")
+		require.NoError(t, err)
+		// Should create:
+		// 1: amount 100
+		// 2: amount 101
+		// 3: amount 102
+		// 4: amount 104
+	}
+
+	// when
+	sdkCtx = sdkCtx.WithBlockTime(now)
+
+	// tx batch size is 2, so that some of them stay behind
+	// Should contain 2 and 3 from above
+	_, err = input.GravityKeeper.BuildOutgoingTXBatch(sdkCtx, "test-chain", *tokenContract, 2)
+	require.NoError(t, err)
+
+	// Should receive 1 and 4 unbatched, 2 and 3 batched in response
+	response, err := k.GetPendingSendToEth(ctx, &types.QueryPendingSendToEth{SenderAddress: mySender.String()})
+	require.NoError(t, err)
+	expectedRes := types.QueryPendingSendToEthResponse{
+		TransfersInBatches: []types.OutgoingTransferTx{
+			{
+				Id:          4,
+				Sender:      "paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk",
+				DestAddress: "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",
+				Erc20Token: types.ERC20Token{
+					Contract:         testERC20Address,
+					Amount:           sdk.NewInt(103),
+					ChainReferenceId: "test-chain",
+				},
+			},
+			{
+				Id:          3,
+				Sender:      "paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk",
+				DestAddress: "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",
+				Erc20Token: types.ERC20Token{
+					Contract:         testERC20Address,
+					Amount:           sdk.NewInt(102),
+					ChainReferenceId: "test-chain",
+				},
+			},
+		},
+
+		UnbatchedTransfers: []types.OutgoingTransferTx{
+			{
+				Id:          2,
+				Sender:      "paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk",
+				DestAddress: "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",
+				Erc20Token: types.ERC20Token{
+					Contract:         testERC20Address,
+					Amount:           sdk.NewInt(101),
+					ChainReferenceId: "test-chain",
+				},
+			},
+			{
+				Id:          1,
+				Sender:      "paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk",
+				DestAddress: "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",
+				Erc20Token: types.ERC20Token{
+					Contract:         testERC20Address,
+					Amount:           sdk.NewInt(100),
+					ChainReferenceId: "test-chain",
+				},
+			},
+		},
+	}
+
+	assert.Equal(t, &expectedRes, response, "json is equal")
 }
-
-func TestKeeper_ContractCallTxs(t *testing.T) {
-	t.Run("read after there's something in state", func(t *testing.T) {
-		env := CreateTestEnv(t)
-		ctx := env.Context
-		gk := env.GravityKeeper
-
-		{ // setup
-			gk.SetOutgoingTx(ctx, &types.ContractCallTx{
-				InvalidationNonce: 5,
-				InvalidationScope: []byte("an-invalidation-scope"),
-				// TODO
-			})
-			gk.SetOutgoingTx(ctx, &types.ContractCallTx{
-				InvalidationNonce: 6,
-				InvalidationScope: []byte("an-invalidation-scope"),
-			})
-		}
-		{ // validate
-			req := &types.ContractCallTxsRequest{}
-			got, err := gk.ContractCallTxs(sdk.WrapSDKContext(ctx), req)
-			require.NoError(t, err)
-			require.NotNil(t, got)
-			require.Len(t, got.Calls, 2)
-		}
-	})
-}
-
-// TODO(levi) ensure coverage for:
-// ContractCallTx(context.Context, *ContractCallTxRequest) (*ContractCallTxResponse, error)
-// ContractCallTxs(context.Context, *ContractCallTxsRequest) (*ContractCallTxsResponse, error)
-
-// SignerSetTxConfirmations(context.Context, *SignerSetTxConfirmationsRequest) (*SignerSetTxConfirmationsResponse, error)
-// BatchTxConfirmations(context.Context, *BatchTxConfirmationsRequest) (*BatchTxConfirmationsResponse, error)
-// ContractCallTxConfirmations(context.Context, *ContractCallTxConfirmationsRequest) (*ContractCallTxConfirmationsResponse, error)
-
-// UnsignedSignerSetTxs(context.Context, *UnsignedSignerSetTxsRequest) (*UnsignedSignerSetTxsResponse, error)
-// UnsignedBatchTxs(context.Context, *UnsignedBatchTxsRequest) (*UnsignedBatchTxsResponse, error)
-// UnsignedContractCallTxs(context.Context, *UnsignedContractCallTxsRequest) (*UnsignedContractCallTxsResponse, error)
-
-// BatchTxFees(context.Context, *BatchTxFeesRequest) (*BatchTxFeesResponse, error)
-// ERC20ToDenom(context.Context, *ERC20ToDenomRequest) (*ERC20ToDenomResponse, error)
-// DenomToERC20(context.Context, *DenomToERC20Request) (*DenomToERC20Response, error)
-// BatchedSendToEthereums(context.Context, *BatchedSendToEthereumsRequest) (*BatchedSendToEthereumsResponse, error)
-// UnbatchedSendToEthereums(context.Context, *UnbatchedSendToEthereumsRequest) (*UnbatchedSendToEthereumsResponse, error)
-// DelegateKeysByValidator(context.Context, *DelegateKeysByValidatorRequest) (*DelegateKeysByValidatorResponse, error)
-// DelegateKeysByEthereumSigner(context.Context, *DelegateKeysByEthereumSignerRequest) (*DelegateKeysByEthereumSignerResponse, error)
-// DelegateKeysByOrchestrator(context.Context, *DelegateKeysByOrchestratorRequest) (*DelegateKeysByOrchestratorResponse, error)
