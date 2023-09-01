@@ -252,5 +252,4 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		// configure store loader that checks if version == upgradeHeight and applies store upgrades
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
-
 }
