@@ -237,8 +237,6 @@ func (i InternalOutgoingTxBatch) GetCheckpoint(turnstoneID string) ([]byte, erro
 		{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
 		// deadline
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
-		// methodName
-		//{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
 	}
 
 	var turnstoneBytes32 [32]byte
