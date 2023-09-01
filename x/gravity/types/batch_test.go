@@ -1,53 +1,45 @@
 package types
 
-//// TODO: making these test work (with a new hash from compass) will prove useful
-//
-//import (
-//	"encoding/hex"
-//	"testing"
-//
-//	sdk "github.com/cosmos/cosmos-sdk/types"
-//	"github.com/stretchr/testify/assert"
-//	"github.com/stretchr/testify/require"
-//)
-//
-//// TODO : Come back and fix this test once I have checkpointing done
-//// TestOutgoingTxBatchCheckpointGold1 tests an outgoing tx batch checkpoint
-//// nolint: exhaustruct
-//func TestOutgoingTxBatchCheckpoint(t *testing.T) {
-//	senderAddr, err := sdk.AccAddressFromHexUnsafe("527FBEE652609AB150F0AEE9D61A2F76CFC4A73E")
-//	require.NoError(t, err)
-//	var (
-//		erc20Addr = "0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e"
-//	)
-//	erc20Address, err := NewEthAddress(erc20Addr)
-//	require.NoError(t, err)
-//	destAddress, err := NewEthAddress("0x9FC9C2DfBA3b6cF204C37a5F690619772b926e39")
-//	require.NoError(t, err)
-//	src := OutgoingTxBatch{
-//		BatchNonce:   1,
-//		BatchTimeout: 2111,
-//		Transactions: []OutgoingTransferTx{
-//			{
-//				Id:          0x1,
-//				Sender:      senderAddr.String(),
-//				DestAddress: destAddress.GetAddress().Hex(),
-//				Erc20Token: ERC20Token{
-//					Amount:           sdk.NewInt(0x1),
-//					Contract:         erc20Address.GetAddress().Hex(),
-//					ChainReferenceId: "test-chain",
-//				},
-//			},
-//		},
-//		TokenContract: erc20Address.GetAddress().Hex(),
-//	}
-//
-//	ourHash := src.GetCheckpoint("foo")
-//
-//	// hash from bridge contract
-//	goldHash := "0xa3a7ee0a363b8ad2514e7ee8f110d7449c0d88f3b0913c28c1751e6e0079a9b2"[2:]
-//	// The function used to compute the "gold hash" above is in /solidity/test/updateValsetAndSubmitBatch.ts
-//	// Be aware that every time that you run the above .ts file, it will use a different tokenContractAddress and thus compute
-//	// a different hash.
-//	assert.Equal(t, goldHash, hex.EncodeToString(ourHash))
-//}
+import (
+	"encoding/hex"
+	"testing"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+// TestOutgoingTxBatchCheckpointGold1 tests an outgoing tx batch checkpoint
+// nolint: exhaustruct
+func TestOutgoingTxBatchCheckpoint(t *testing.T) {
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("paloma", "pub")
+	config.SetBech32PrefixForValidator("palomavaloper", "valoperpub")
+
+	src := OutgoingTxBatch{
+		BatchNonce:   10,
+		BatchTimeout: 1693598120,
+		Transactions: []OutgoingTransferTx{
+			{
+				Id:          4,
+				Sender:      "paloma1rxdhpk85wju9z9kqf6m0wq0rkty7gpjhey4wd2",
+				DestAddress: "0xE3cD54d29CBf35648EDcf53D6a344bd4B88DA059",
+				Erc20Token: ERC20Token{
+					Amount:           sdk.NewInt(10000000),
+					Contract:         "0x28E9e9bfedEd29747FCc33ccA25b4B75f05E434B",
+					ChainReferenceId: "bnb-main",
+				},
+			},
+		},
+		TokenContract: "0x28E9e9bfedEd29747FCc33ccA25b4B75f05E434B",
+	}
+
+	actualHash, err := src.GetCheckpoint("5270")
+	require.NoError(t, err)
+
+	actualHashHex := hex.EncodeToString(actualHash)
+	// hash from bridge contract
+	expectedHash := "0xcab79faf47d1556c5b273afb063ab1889461e35bc6403e410af240cefdb0fd8e"[2:]
+
+	assert.Equal(t, expectedHash, actualHashHex)
+}

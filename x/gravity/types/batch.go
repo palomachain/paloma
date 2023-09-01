@@ -237,12 +237,12 @@ func (i InternalOutgoingTxBatch) GetCheckpoint(turnstoneID string) ([]byte, erro
 		{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
 		// deadline
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
-		// methodName
-		{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
 	}
 
 	var turnstoneBytes32 [32]byte
 	copy(turnstoneBytes32[:], turnstoneID)
+
+	method := abi.NewMethod("batch_call", "batch_call", abi.Function, "", false, false, arguments, abi.Arguments{})
 
 	methodNameBytes := []uint8("batch_call")
 	var batchMethodName [32]uint8
@@ -257,7 +257,7 @@ func (i InternalOutgoingTxBatch) GetCheckpoint(turnstoneID string) ([]byte, erro
 	}
 
 	args := struct {
-		Receiver []gethcommon.Address `json:"receiver"`
+		Receiver []gethcommon.Address
 		Amount   []*big.Int
 	}{
 		Receiver: txDestinations,
@@ -270,7 +270,6 @@ func (i InternalOutgoingTxBatch) GetCheckpoint(turnstoneID string) ([]byte, erro
 		big.NewInt(int64(i.BatchNonce)),
 		turnstoneBytes32,
 		big.NewInt(int64(i.BatchTimeout)),
-		batchMethodName,
 	)
 	// this should never happen outside of test since any case that could crash on encoding
 	// should be filtered above.
@@ -278,8 +277,7 @@ func (i InternalOutgoingTxBatch) GetCheckpoint(turnstoneID string) ([]byte, erro
 		return nil, sdkerrors.Wrap(err, fmt.Sprintf("Error packing checkpoint! %s/n", err))
 	}
 
-	// we hash the resulting encoded bytes discarding the first 4 bytes these 4 bytes are the constant
-	// method name 'checkpoint'. If you were to replace the checkpoint constant in this code you would
-	// then need to adjust how many bytes you truncate off the front to get the output of abi.encode()
-	return crypto.Keccak256Hash(abiEncodedBatch[4:]).Bytes(), nil
+	abiEncodedBatch = append(method.ID[:], abiEncodedBatch...)
+
+	return crypto.Keccak256(abiEncodedBatch), nil
 }
