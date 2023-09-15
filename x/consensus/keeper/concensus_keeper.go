@@ -4,6 +4,7 @@ import (
 	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
@@ -346,36 +347,31 @@ func (k Keeper) SetMessagePublicAccessData(
 	valAddr sdk.ValAddress,
 	msg *types.MsgSetPublicAccessData,
 ) error {
-	err := whoops.Try(func() {
-		cq := whoops.Must(
-			k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
-		)
-
-		whoops.Assert(
-			cq.SetPublicAccessData(
-				ctx,
-				msg.GetMessageID(),
-				&types.PublicAccessData{
-					ValAddress: valAddr,
-					Data:       msg.GetData(),
-				},
-			),
-		)
-		chainType, chainReferenceID := cq.ChainInfo()
-		k.Logger(ctx).Info("added message public access data",
-			"message-id", msg.GetMessageID(),
-			"queue-type-name", msg.GetQueueTypeName(),
-			"chain-type", chainType,
-			"chain-reference-id", chainReferenceID,
-		)
-	})
+	cq, err := k.getConsensusQueue(ctx, msg.GetQueueTypeName())
 	if err != nil {
-		k.Logger(ctx).Error("error while adding message public access data",
-			"err", err,
-		)
+		return err
 	}
 
-	return err
+	payload := &types.PublicAccessData{
+		ValAddress: valAddr,
+		Data:       msg.GetData(),
+	}
+	err = cq.SetPublicAccessData(ctx, msg.GetMessageID(), payload)
+	if err != nil {
+		k.Logger(ctx).Error("error while adding message public access data", "err", err)
+		return err
+	}
+
+	chainType, chainReferenceID := cq.ChainInfo()
+	k.Logger(ctx).Info("added message public access data",
+		"message-id", msg.GetMessageID(),
+		"queue-type-name", msg.GetQueueTypeName(),
+		"chain-type", chainType,
+		"chain-reference-id", chainReferenceID,
+		"public-access-data", hexutil.Encode(payload.Data),
+	)
+
+	return nil
 }
 
 func (k Keeper) SetMessageErrorData(
@@ -383,36 +379,31 @@ func (k Keeper) SetMessageErrorData(
 	valAddr sdk.ValAddress,
 	msg *types.MsgSetErrorData,
 ) error {
-	err := whoops.Try(func() {
-		cq := whoops.Must(
-			k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
-		)
-
-		whoops.Assert(
-			cq.SetErrorData(
-				ctx,
-				msg.GetMessageID(),
-				&types.ErrorData{
-					ValAddress: valAddr,
-					Data:       msg.GetData(),
-				},
-			),
-		)
-		chainType, chainReferenceID := cq.ChainInfo()
-		k.Logger(ctx).Info("added error data",
-			"message-id", msg.GetMessageID(),
-			"queue-type-name", msg.GetQueueTypeName(),
-			"chain-type", chainType,
-			"chain-reference-id", chainReferenceID,
-		)
-	})
+	cq, err := k.getConsensusQueue(ctx, msg.GetQueueTypeName())
 	if err != nil {
-		k.Logger(ctx).Error("error while adding error data",
-			"err", err,
-		)
+		return err
 	}
 
-	return err
+	payload := &types.ErrorData{
+		ValAddress: valAddr,
+		Data:       msg.GetData(),
+	}
+	err = cq.SetErrorData(ctx, msg.GetMessageID(), payload)
+	if err != nil {
+		k.Logger(ctx).Error("error while adding error data", "err", err)
+		return err
+	}
+
+	chainType, chainReferenceID := cq.ChainInfo()
+	k.Logger(ctx).Info("added error data",
+		"message-id", msg.GetMessageID(),
+		"queue-type-name", msg.GetQueueTypeName(),
+		"chain-type", chainType,
+		"chain-reference-id", chainReferenceID,
+		"error-data", hexutil.Encode(payload.Data),
+	)
+
+	return nil
 }
 
 func nonceFromID(id uint64) []byte {
