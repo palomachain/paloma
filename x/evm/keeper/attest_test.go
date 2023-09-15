@@ -2,8 +2,8 @@ package keeper
 
 import (
 	"errors"
-	"io/ioutil"
 	"math/big"
+	"os"
 	"sync"
 
 	"github.com/VolumeFi/whoops"
@@ -23,10 +23,10 @@ import (
 )
 
 var (
-	contractAbi         = string(whoops.Must(ioutil.ReadFile("testdata/sample-abi.json")))
-	contractBytecodeStr = string(whoops.Must(ioutil.ReadFile("testdata/sample-bytecode.out")))
+	contractAbi         = string(whoops.Must(os.ReadFile("testdata/sample-abi.json")))
+	contractBytecodeStr = string(whoops.Must(os.ReadFile("testdata/sample-bytecode.out")))
 
-	sampleTx1RawBytes = common.FromHex(string(whoops.Must(ioutil.ReadFile("testdata/sample-tx-raw.hex"))))
+	sampleTx1RawBytes = common.FromHex(string(whoops.Must(os.ReadFile("testdata/sample-tx-raw.hex"))))
 
 	sampleTx1 = func() *ethcoretypes.Transaction {
 		tx := new(ethcoretypes.Transaction)
@@ -246,7 +246,7 @@ var _ = g.Describe("attest router", func() {
 				})
 
 				successfulProcess := func() {
-					g.It("processees it successfully", g.Offset(1), func() {
+					g.It("processes it successfully", g.Offset(1), func() {
 						setupChainSupport()
 						Expect(subject()).To(BeNil())
 					})

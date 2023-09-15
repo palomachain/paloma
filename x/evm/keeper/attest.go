@@ -58,29 +58,36 @@ func (c *consensusPower) consensus() bool {
 	)
 }
 
-func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
-	k.Logger(ctx).Debug("attest-router", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
+	logger := k.Logger(ctx).With("component", "attest-router")
+	logger.Debug("attest-router", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+
 	if len(msg.GetEvidence()) == 0 {
 		return nil
 	}
 
 	ctx, writeCache := ctx.CacheContext()
 	defer func() {
-		if retErr == nil {
-			writeCache()
+		if err != nil {
+			logger.With("error", err).Error("failed to attest. Skipping writeback.")
+			return
 		}
+		writeCache()
 	}()
 
 	consensusMsg, err := msg.ConsensusMsg(k.cdc)
 	if err != nil {
+		logger.With("error", err).Error("failed to cast to consensus message")
 		return err
 	}
 
 	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
+			logger.With("error", err).Error("consensus not achieved")
 			return nil
 		}
+		logger.With("error", err).Error("failed to find evidence")
 		return err
 	}
 
@@ -88,7 +95,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
 		if err := q.Remove(ctx, msg.GetId()); err != nil {
-			k.Logger(ctx).Error("error removing message, attestRouter", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+			logger.Error("error removing message, attestRouter", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
 		}
 	}()
 
@@ -110,7 +117,9 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	case *types.Message_UploadSmartContract:
 		defer func() {
 			// regardless of the outcome, this upload/deployment should be removed
-			k.DeleteSmartContractDeployment(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
+			id := origMsg.UploadSmartContract.GetId()
+			logger.With("deployment-id", id, "chain-reference-id", chainReferenceID).Debug("removing deployment.")
+			k.DeleteSmartContractDeployment(ctx, id, chainReferenceID)
 		}()
 		switch winner := evidence.(type) {
 		case *types.TxExecutedProof:
@@ -195,7 +204,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		err := k.Valset.SetSnapshotOnChain(ctx, origMsg.UpdateValset.Valset.ValsetID, chainReferenceID)
 		if err != nil {
 			// We don't want to break here, so we'll just log the error and continue
-			k.Logger(ctx).Error("Failed to set snapshot as active for chain",
+			logger.Error("Failed to set snapshot as active for chain",
 				"err", err,
 				"valsetID", origMsg.UpdateValset.Valset.ValsetID,
 				"chainReferenceID", chainReferenceID,
@@ -218,7 +227,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			if _, ok := (actionMsg.(*types.Message).GetAction()).(*types.Message_UpdateValset); ok {
 				if oldMessage.GetId() < msg.GetId() {
 					if err := q.Remove(ctx, oldMessage.GetId()); err != nil {
-						k.Logger(ctx).Error("error removing old message, attestRouter", "msg-id", oldMessage.GetId(), "msg-nonce", oldMessage.Nonce())
+						logger.Error("error removing old message, attestRouter", "msg-id", oldMessage.GetId(), "msg-nonce", oldMessage.Nonce())
 					}
 				}
 			}
