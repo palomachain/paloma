@@ -58,7 +58,7 @@ func (c *consensusPower) consensus() bool {
 	)
 }
 
-func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
+func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
 	k.Logger(ctx).Debug("attest-router", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
 	if len(msg.GetEvidence()) == 0 {
 		return nil
@@ -66,21 +66,24 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 
 	ctx, writeCache := ctx.CacheContext()
 	defer func() {
-		if retErr == nil {
+		if err != nil {
 			writeCache()
 		}
 	}()
 
 	consensusMsg, err := msg.ConsensusMsg(k.cdc)
 	if err != nil {
+		k.Logger(ctx).With("error", err).Error("failed to cast to consensus message")
 		return err
 	}
 
 	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
+			k.Logger(ctx).With("error", err).Error("consensus not achieved")
 			return nil
 		}
+		k.Logger(ctx).With("error", err).Error("failed to find evidence")
 		return err
 	}
 
@@ -110,7 +113,9 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	case *types.Message_UploadSmartContract:
 		defer func() {
 			// regardless of the outcome, this upload/deployment should be removed
-			k.DeleteSmartContractDeployment(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
+			id := origMsg.UploadSmartContract.GetId()
+			k.Logger(ctx).With("deployment-id", id, "chain-reference-id", chainReferenceID).Debug("removing deployment.")
+			k.DeleteSmartContractDeployment(ctx, id, chainReferenceID)
 		}()
 		switch winner := evidence.(type) {
 		case *types.TxExecutedProof:
