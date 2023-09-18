@@ -2,9 +2,13 @@ package keeper
 
 import (
 	"context"
+	"os"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/paloma/types"
 )
+
+const cPigeonStatusUpdateFF = "PALOMA_FF_PIGEON_STATUS_UPDATE"
 
 type msgServer struct {
 	Keeper
@@ -20,6 +24,12 @@ var _ types.MsgServer = msgServer{}
 
 func (k msgServer) AddStatusUpdate(goCtx context.Context, msg *types.MsgAddStatusUpdate) (*types.EmptyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Avoid log spamming
+	_, ok := os.LookupEnv(cPigeonStatusUpdateFF)
+	if !ok {
+		return &types.EmptyResponse{}, nil
+	}
 
 	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
 	valAddr := sdk.ValAddress(creator.Bytes())
