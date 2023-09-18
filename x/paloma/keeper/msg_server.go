@@ -45,7 +45,8 @@ func (k msgServer) AddStatusUpdate(goCtx context.Context, msg *types.MsgAddStatu
 		logFn = k.Logger(ctx).Error
 	}
 
-	logFn("Pigeon status update",
+	logFn(status,
+		"component", "pigeon-status-update",
 		"status", status,
 		"sender", valAddr)
 
