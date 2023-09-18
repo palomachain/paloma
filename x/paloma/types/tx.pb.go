@@ -9,7 +9,11 @@ import (
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
+	io "io"
 	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -23,20 +27,160 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+type MsgAddStatusUpdate_Level int32
+
+const (
+	MsgAddStatusUpdate_LEVEL_DEBUG MsgAddStatusUpdate_Level = 0
+	MsgAddStatusUpdate_LEVEL_INFO  MsgAddStatusUpdate_Level = 1
+	MsgAddStatusUpdate_LEVEL_ERROR MsgAddStatusUpdate_Level = 2
+)
+
+var MsgAddStatusUpdate_Level_name = map[int32]string{
+	0: "LEVEL_DEBUG",
+	1: "LEVEL_INFO",
+	2: "LEVEL_ERROR",
+}
+
+var MsgAddStatusUpdate_Level_value = map[string]int32{
+	"LEVEL_DEBUG": 0,
+	"LEVEL_INFO":  1,
+	"LEVEL_ERROR": 2,
+}
+
+func (x MsgAddStatusUpdate_Level) String() string {
+	return proto.EnumName(MsgAddStatusUpdate_Level_name, int32(x))
+}
+
+func (MsgAddStatusUpdate_Level) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_8dc46060aeb172a8, []int{0, 0}
+}
+
+type MsgAddStatusUpdate struct {
+	Creator string                   `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Status  string                   `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Level   MsgAddStatusUpdate_Level `protobuf:"varint,3,opt,name=level,proto3,enum=palomachain.paloma.paloma.MsgAddStatusUpdate_Level" json:"level,omitempty"`
+}
+
+func (m *MsgAddStatusUpdate) Reset()         { *m = MsgAddStatusUpdate{} }
+func (m *MsgAddStatusUpdate) String() string { return proto.CompactTextString(m) }
+func (*MsgAddStatusUpdate) ProtoMessage()    {}
+func (*MsgAddStatusUpdate) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8dc46060aeb172a8, []int{0}
+}
+func (m *MsgAddStatusUpdate) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgAddStatusUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgAddStatusUpdate.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgAddStatusUpdate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgAddStatusUpdate.Merge(m, src)
+}
+func (m *MsgAddStatusUpdate) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgAddStatusUpdate) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgAddStatusUpdate.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgAddStatusUpdate proto.InternalMessageInfo
+
+func (m *MsgAddStatusUpdate) GetCreator() string {
+	if m != nil {
+		return m.Creator
+	}
+	return ""
+}
+
+func (m *MsgAddStatusUpdate) GetStatus() string {
+	if m != nil {
+		return m.Status
+	}
+	return ""
+}
+
+func (m *MsgAddStatusUpdate) GetLevel() MsgAddStatusUpdate_Level {
+	if m != nil {
+		return m.Level
+	}
+	return MsgAddStatusUpdate_LEVEL_DEBUG
+}
+
+type EmptyResponse struct {
+}
+
+func (m *EmptyResponse) Reset()         { *m = EmptyResponse{} }
+func (m *EmptyResponse) String() string { return proto.CompactTextString(m) }
+func (*EmptyResponse) ProtoMessage()    {}
+func (*EmptyResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8dc46060aeb172a8, []int{1}
+}
+func (m *EmptyResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EmptyResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EmptyResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EmptyResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EmptyResponse.Merge(m, src)
+}
+func (m *EmptyResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *EmptyResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_EmptyResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EmptyResponse proto.InternalMessageInfo
+
+func init() {
+	proto.RegisterEnum("palomachain.paloma.paloma.MsgAddStatusUpdate_Level", MsgAddStatusUpdate_Level_name, MsgAddStatusUpdate_Level_value)
+	proto.RegisterType((*MsgAddStatusUpdate)(nil), "palomachain.paloma.paloma.MsgAddStatusUpdate")
+	proto.RegisterType((*EmptyResponse)(nil), "palomachain.paloma.paloma.EmptyResponse")
+}
+
 func init() {
 	proto.RegisterFile("palomachain/paloma/paloma/tx.proto", fileDescriptor_8dc46060aeb172a8)
 }
 
 var fileDescriptor_8dc46060aeb172a8 = []byte{
-	// 120 bytes of a gzipped FileDescriptorProto
+	// 284 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x2a, 0x48, 0xcc, 0xc9,
 	0xcf, 0x4d, 0x4c, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x87, 0xb0, 0x61, 0x54, 0x49, 0x85, 0x5e, 0x41,
-	0x51, 0x7e, 0x49, 0xbe, 0x90, 0x24, 0x92, 0x1a, 0x3d, 0x08, 0x1b, 0x4a, 0x19, 0xb1, 0x72, 0x31,
-	0xfb, 0x16, 0xa7, 0x3b, 0xb9, 0x9d, 0x78, 0x24, 0xc7, 0x78, 0xe1, 0x91, 0x1c, 0xe3, 0x83, 0x47,
-	0x72, 0x8c, 0x13, 0x1e, 0xcb, 0x31, 0x5c, 0x78, 0x2c, 0xc7, 0x70, 0xe3, 0xb1, 0x1c, 0x43, 0x94,
-	0x4e, 0x7a, 0x66, 0x49, 0x46, 0x69, 0x92, 0x5e, 0x72, 0x7e, 0xae, 0x3e, 0x16, 0xab, 0x2a, 0xe0,
-	0x96, 0x55, 0x16, 0xa4, 0x16, 0x27, 0xb1, 0x81, 0x2d, 0x34, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff,
-	0x0b, 0xe4, 0x42, 0xbf, 0x96, 0x00, 0x00, 0x00,
+	0x51, 0x7e, 0x49, 0xbe, 0x90, 0x24, 0x92, 0x1a, 0x3d, 0x08, 0x1b, 0x4a, 0x29, 0x9d, 0x61, 0xe4,
+	0x12, 0xf2, 0x2d, 0x4e, 0x77, 0x4c, 0x49, 0x09, 0x2e, 0x49, 0x2c, 0x29, 0x2d, 0x0e, 0x2d, 0x48,
+	0x49, 0x2c, 0x49, 0x15, 0x92, 0xe0, 0x62, 0x4f, 0x2e, 0x4a, 0x4d, 0x2c, 0xc9, 0x2f, 0x92, 0x60,
+	0x54, 0x60, 0xd4, 0xe0, 0x0c, 0x82, 0x71, 0x85, 0xc4, 0xb8, 0xd8, 0x8a, 0xc1, 0x2a, 0x25, 0x98,
+	0xc0, 0x12, 0x50, 0x9e, 0x90, 0x27, 0x17, 0x6b, 0x4e, 0x6a, 0x59, 0x6a, 0x8e, 0x04, 0xb3, 0x02,
+	0xa3, 0x06, 0x9f, 0x91, 0xb1, 0x1e, 0x4e, 0x3b, 0xf5, 0x30, 0xed, 0xd3, 0xf3, 0x01, 0x69, 0x0d,
+	0x82, 0x98, 0xa0, 0x64, 0xc9, 0xc5, 0x0a, 0xe6, 0x0b, 0xf1, 0x73, 0x71, 0xfb, 0xb8, 0x86, 0xb9,
+	0xfa, 0xc4, 0xbb, 0xb8, 0x3a, 0x85, 0xba, 0x0b, 0x30, 0x08, 0xf1, 0x71, 0x71, 0x41, 0x04, 0x3c,
+	0xfd, 0xdc, 0xfc, 0x05, 0x18, 0x11, 0x0a, 0x5c, 0x83, 0x82, 0xfc, 0x83, 0x04, 0x98, 0x94, 0xf8,
+	0xb9, 0x78, 0x5d, 0x73, 0x0b, 0x4a, 0x2a, 0x83, 0x52, 0x8b, 0x0b, 0xf2, 0xf3, 0x8a, 0x53, 0x8d,
+	0x0a, 0xb9, 0x98, 0x7d, 0x8b, 0xd3, 0x85, 0xb2, 0xb8, 0xf8, 0xd1, 0xbd, 0xa8, 0x4b, 0x92, 0x0b,
+	0xa5, 0x34, 0xf0, 0x28, 0x47, 0xb1, 0xd2, 0xc9, 0xed, 0xc4, 0x23, 0x39, 0xc6, 0x0b, 0x8f, 0xe4,
+	0x18, 0x1f, 0x3c, 0x92, 0x63, 0x9c, 0xf0, 0x58, 0x8e, 0xe1, 0xc2, 0x63, 0x39, 0x86, 0x1b, 0x8f,
+	0xe5, 0x18, 0xa2, 0x74, 0xd2, 0x33, 0x4b, 0x32, 0x4a, 0x93, 0xf4, 0x92, 0xf3, 0x73, 0xf5, 0xb1,
+	0x44, 0x5b, 0x05, 0x3c, 0xe2, 0x2a, 0x0b, 0x52, 0x8b, 0x93, 0xd8, 0xc0, 0x91, 0x67, 0x0c, 0x08,
+	0x00, 0x00, 0xff, 0xff, 0x9d, 0xeb, 0xa2, 0x4d, 0xe2, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -51,6 +195,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
+	AddStatusUpdate(ctx context.Context, in *MsgAddStatusUpdate, opts ...grpc.CallOption) (*EmptyResponse, error)
 }
 
 type msgClient struct {
@@ -61,22 +206,438 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
 }
 
+func (c *msgClient) AddStatusUpdate(ctx context.Context, in *MsgAddStatusUpdate, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.paloma.Msg/AddStatusUpdate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
+	AddStatusUpdate(context.Context, *MsgAddStatusUpdate) (*EmptyResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
+func (*UnimplementedMsgServer) AddStatusUpdate(ctx context.Context, req *MsgAddStatusUpdate) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddStatusUpdate not implemented")
+}
+
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 	s.RegisterService(&_Msg_serviceDesc, srv)
+}
+
+func _Msg_AddStatusUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAddStatusUpdate)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).AddStatusUpdate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/palomachain.paloma.paloma.Msg/AddStatusUpdate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).AddStatusUpdate(ctx, req.(*MsgAddStatusUpdate))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "palomachain.paloma.paloma.Msg",
 	HandlerType: (*MsgServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "palomachain/paloma/paloma/tx.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AddStatusUpdate",
+			Handler:    _Msg_AddStatusUpdate_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "palomachain/paloma/paloma/tx.proto",
 }
+
+func (m *MsgAddStatusUpdate) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgAddStatusUpdate) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgAddStatusUpdate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Level != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Level))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Status) > 0 {
+		i -= len(m.Status)
+		copy(dAtA[i:], m.Status)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Status)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EmptyResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EmptyResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EmptyResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
+	offset -= sovTx(v)
+	base := offset
+	for v >= 1<<7 {
+		dAtA[offset] = uint8(v&0x7f | 0x80)
+		v >>= 7
+		offset++
+	}
+	dAtA[offset] = uint8(v)
+	return base
+}
+func (m *MsgAddStatusUpdate) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Status)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Level != 0 {
+		n += 1 + sovTx(uint64(m.Level))
+	}
+	return n
+}
+
+func (m *EmptyResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func sovTx(x uint64) (n int) {
+	return (math_bits.Len64(x|1) + 6) / 7
+}
+func sozTx(x uint64) (n int) {
+	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *MsgAddStatusUpdate) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgAddStatusUpdate: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgAddStatusUpdate: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Status = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Level", wireType)
+			}
+			m.Level = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Level |= MsgAddStatusUpdate_Level(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EmptyResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EmptyResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EmptyResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func skipTx(dAtA []byte) (n int, err error) {
+	l := len(dAtA)
+	iNdEx := 0
+	depth := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return 0, ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return 0, io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		wireType := int(wire & 0x7)
+		switch wireType {
+		case 0:
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return 0, ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return 0, io.ErrUnexpectedEOF
+				}
+				iNdEx++
+				if dAtA[iNdEx-1] < 0x80 {
+					break
+				}
+			}
+		case 1:
+			iNdEx += 8
+		case 2:
+			var length int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return 0, ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return 0, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				length |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if length < 0 {
+				return 0, ErrInvalidLengthTx
+			}
+			iNdEx += length
+		case 3:
+			depth++
+		case 4:
+			if depth == 0 {
+				return 0, ErrUnexpectedEndOfGroupTx
+			}
+			depth--
+		case 5:
+			iNdEx += 4
+		default:
+			return 0, fmt.Errorf("proto: illegal wireType %d", wireType)
+		}
+		if iNdEx < 0 {
+			return 0, ErrInvalidLengthTx
+		}
+		if depth == 0 {
+			return iNdEx, nil
+		}
+	}
+	return 0, io.ErrUnexpectedEOF
+}
+
+var (
+	ErrInvalidLengthTx        = fmt.Errorf("proto: negative length found during unmarshaling")
+	ErrIntOverflowTx          = fmt.Errorf("proto: integer overflow")
+	ErrUnexpectedEndOfGroupTx = fmt.Errorf("proto: unexpected end of group")
+)

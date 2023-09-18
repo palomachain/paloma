@@ -7,6 +7,7 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
+	cdc.RegisterConcrete(&MsgAddStatusUpdate{}, "paloma/AddStatusUpdate", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

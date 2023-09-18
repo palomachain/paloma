@@ -3,5 +3,22 @@ package palomachain.paloma.paloma;
 
 option go_package = "github.com/palomachain/paloma/x/paloma/types";
 
-// Msg defines the Msg service.
-service Msg {}
+service Msg {
+  rpc AddStatusUpdate(MsgAddStatusUpdate)
+    returns (EmptyResponse);
+}
+
+
+message MsgAddStatusUpdate {
+  enum Level {
+    LEVEL_DEBUG = 0;
+    LEVEL_INFO = 1;
+    LEVEL_ERROR = 2;
+  }
+  string creator = 1;
+  string status = 2;
+  Level level = 3;
+}
+
+message EmptyResponse {}
+
