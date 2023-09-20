@@ -23,6 +23,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	cmd.AddCommand(CmdValidatorInfo())
 
 	cmd.AddCommand(CmdGetSnapshotByID())
+	cmd.AddCommand(CmdGetLatestPublishedSnapshot())
 
 	cmd.AddCommand(CmdGetValidatorAliveUntil())
 
