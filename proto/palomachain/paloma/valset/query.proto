@@ -30,6 +30,10 @@ service Query {
         "/palomachain/paloma/valset/get_snapshot_by_id/{snapshotId}";
   }
 
+  // Queries the most recent published snapshot for a chain.
+  rpc GetLatestPublishedSnapshot(QueryGetLatestPublishedSnapshotRequest)
+      returns (QueryGetLatestPublishedSnapshotResponse) {}
+
   // Queries a list of GetValidatorAliveUntil items.
   rpc GetValidatorAliveUntil(QueryGetValidatorAliveUntilRequest)
       returns (QueryGetValidatorAliveUntilResponse) {
@@ -74,6 +78,14 @@ message QueryGetSnapshotByIDRequest {
 }
 
 message QueryGetSnapshotByIDResponse {
+  Snapshot snapshot = 1;
+}
+
+message QueryGetLatestPublishedSnapshotRequest {
+  string chainReferenceID = 1;
+}
+
+message QueryGetLatestPublishedSnapshotResponse {
   Snapshot snapshot = 1;
 }
 
