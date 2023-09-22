@@ -40,6 +40,32 @@ func (_m *QueryServer) GetAlivePigeons(_a0 context.Context, _a1 *types.QueryGetA
 	return r0, r1
 }
 
+// GetLatestPublishedSnapshot provides a mock function with given fields: _a0, _a1
+func (_m *QueryServer) GetLatestPublishedSnapshot(_a0 context.Context, _a1 *types.QueryGetLatestPublishedSnapshotRequest) (*types.QueryGetLatestPublishedSnapshotResponse, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *types.QueryGetLatestPublishedSnapshotResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryGetLatestPublishedSnapshotRequest) (*types.QueryGetLatestPublishedSnapshotResponse, error)); ok {
+		return rf(_a0, _a1)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryGetLatestPublishedSnapshotRequest) *types.QueryGetLatestPublishedSnapshotResponse); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.QueryGetLatestPublishedSnapshotResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *types.QueryGetLatestPublishedSnapshotRequest) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetSnapshotByID provides a mock function with given fields: _a0, _a1
 func (_m *QueryServer) GetSnapshotByID(_a0 context.Context, _a1 *types.QueryGetSnapshotByIDRequest) (*types.QueryGetSnapshotByIDResponse, error) {
 	ret := _m.Called(_a0, _a1)
