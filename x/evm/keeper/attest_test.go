@@ -13,14 +13,13 @@ import (
 	ethcoretypes "github.com/ethereum/go-ethereum/core/types"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/mock"
-
 	"github.com/palomachain/paloma/util/slice"
 	consensusmocks "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/stretchr/testify/mock"
 )
 
 var (
