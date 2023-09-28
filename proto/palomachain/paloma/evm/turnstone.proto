@@ -24,6 +24,7 @@ message SubmitLogicCall {
   bytes senderAddress = 5;
   bytes contractAddress = 6;
   ExecutionRequirements executionRequirements = 7 [(gogoproto.nullable) = false];
+  uint32 retries = 8;
 }
 
 message UpdateValset {
