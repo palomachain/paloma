@@ -13,12 +13,15 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 )
+
+const cMaxSubmitLogicCallRetries uint32 = 2
 
 func hashSha256(data []byte) []byte {
 	h := sha256.New()
@@ -137,9 +140,6 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				// passed in transaction doesn't seem to be created from this smart contract
 				return err
 			}
-			if err != nil {
-				return err
-			}
 
 			smartContract, err := k.getSmartContract(ctx, origMsg.UploadSmartContract.GetId())
 			if err != nil {
@@ -152,10 +152,6 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			}
 
 			smartContractAddr := crypto.CreateAddress(ethMsg.From, tx.Nonce()).Hex()
-
-			if err != nil {
-				return err
-			}
 
 			deployingSmartContract, _ := k.getSmartContractDeployment(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
 			if deployingSmartContract == nil {
@@ -243,6 +239,23 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				types.SmartContractExecutionFailedError.With(winner.GetErrorMessage()),
 				types.SmartContractExecutionMessageType.With(fmt.Sprintf("%T", origMsg)),
 			)
+
+			rawMsg, ok := consensusMsg.(*types.Message)
+			if !ok {
+				return nil
+			}
+
+			slc := origMsg.SubmitLogicCall
+			if slc.Retries < cMaxSubmitLogicCallRetries {
+				slc.Retries++
+				logger.Info("retrying failed SubmitLogicCall message",
+					"message-id", msg.GetId(),
+					"retries", slc.Retries,
+					"chain-reference-id", chainReferenceID)
+				if err := k.AddSmartContractExecutionToConsensus(ctx, chainReferenceID, rawMsg.GetTurnstoneID(), slc); err != nil {
+					logger.With("error", err).Error("Failed to retry SubmitLogicCall")
+				}
+			}
 		default:
 			return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
 		}

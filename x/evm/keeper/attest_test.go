@@ -13,13 +13,14 @@ import (
 	ethcoretypes "github.com/ethereum/go-ethereum/core/types"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
+
 	"github.com/palomachain/paloma/util/slice"
 	consensusmocks "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
-	"github.com/stretchr/testify/mock"
 )
 
 var (
@@ -263,6 +264,37 @@ var _ = g.Describe("attest router", func() {
 						}
 					})
 					successfulProcess()
+
+					g.When("message has not been retried", func() {
+						g.BeforeEach(func() {
+							consensusMsg.Action = &types.Message_SubmitLogicCall{
+								SubmitLogicCall: &types.SubmitLogicCall{
+									Retries: uint32(0),
+								},
+							}
+							consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+						})
+
+						g.It("should attempt to retry", func() {
+							setupChainSupport()
+							Expect(subject()).To(BeNil())
+						})
+					})
+
+					g.When("message has been retried too many times", func() {
+						g.BeforeEach(func() {
+							consensusMsg.Action = &types.Message_SubmitLogicCall{
+								SubmitLogicCall: &types.SubmitLogicCall{
+									Retries: uint32(2),
+								},
+							}
+						})
+
+						g.It("should attempt to retry", func() {
+							setupChainSupport()
+							Expect(subject()).To(BeNil())
+						})
+					})
 				})
 
 				g.When("message is UpdateValset", func() {
