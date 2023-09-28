@@ -55,7 +55,6 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 * Testnet `paloma-testnet-15` (January 20, 2023)
 * Mainnet `messenger` (February 2, 2023)
 
-
 ## Join an active Network
 
 > #### Note:
@@ -65,10 +64,10 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 
 
 ### Install the correct version of libwasm
-The current required version of libwasm is `1.3.0`. If you're upgrading from a prior version it is recommended to remove the cache to avoid errors. If you're already have `palomad` running, you will need to stop it before doing these steps.
+The current required version of libwasm is `1.4.0`. If you're upgrading from a prior version it is recommended to remove the cache to avoid errors. If you're already have `palomad` running, you will need to stop it before doing these steps.
 
 ```
-wget https://github.com/CosmWasm/wasmvm/releases/download/v1.3.0/libwasmvm.x86_64.so
+wget https://github.com/CosmWasm/wasmvm/releases/download/v1.4.0/libwasmvm.x86_64.so
 sudo mv libwasmvm.x86_64.so /usr/lib/
 
 rm -r ~/.paloma/data/wasm/cache
@@ -77,7 +76,7 @@ rm -r ~/.paloma/data/wasm/cache
 ### To get the latest prebuilt `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v1.8.2/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v1.9.0/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 ```
@@ -87,7 +86,7 @@ sudo chmod +x /usr/local/bin/palomad
 ```shell
 git clone https://github.com/palomachain/paloma.git
 cd paloma
-git checkout v1.8.2
+git checkout v1.9.0
 make build
 sudo mv ./build/palomad /usr/local/bin/palomad
 ```
