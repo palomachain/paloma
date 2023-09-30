@@ -67,7 +67,7 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 The current required version of libwasm is `1.4.0`. If you're upgrading from a prior version it is recommended to remove the cache to avoid errors. If you're already have `palomad` running, you will need to stop it before doing these steps.
 
 ```
-wget https://github.com/CosmWasm/wasmvm/releases/download/v1.4.0/libwasmvm.x86_64.so
+wget https://github.com/CosmWasm/wasmvm/releases/download/v1.3.0/libwasmvm.x86_64.so
 sudo mv libwasmvm.x86_64.so /usr/lib/
 
 rm -r ~/.paloma/data/wasm/cache
