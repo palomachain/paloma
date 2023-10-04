@@ -62,8 +62,11 @@ func (c *consensusPower) consensus() bool {
 }
 
 func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
-	logger := k.Logger(ctx).With("component", "attest-router")
-	logger.Debug("attest-router", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+	logger := k.Logger(ctx).WithFields(
+		"component", "attest-router",
+		"msg-id", msg.GetId(),
+		"msg-nonce", msg.Nonce())
+	logger.Debug("attest-router")
 
 	if len(msg.GetEvidence()) == 0 {
 		return nil
@@ -72,7 +75,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	ctx, writeCache := ctx.CacheContext()
 	defer func() {
 		if err != nil {
-			logger.With("error", err).Error("failed to attest. Skipping writeback.")
+			logger.WithError(err).Error("failed to attest. Skipping writeback.")
 			return
 		}
 		writeCache()
@@ -80,17 +83,17 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 
 	consensusMsg, err := msg.ConsensusMsg(k.cdc)
 	if err != nil {
-		logger.With("error", err).Error("failed to cast to consensus message")
+		logger.WithError(err).Error("failed to cast to consensus message")
 		return err
 	}
 
 	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
-			logger.With("error", err).Error("consensus not achieved")
+			logger.WithError(err).Error("consensus not achieved")
 			return nil
 		}
-		logger.With("error", err).Error("failed to find evidence")
+		logger.WithError(err).Error("failed to find evidence")
 		return err
 	}
 
@@ -98,7 +101,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
 		if err := q.Remove(ctx, msg.GetId()); err != nil {
-			logger.Error("error removing message, attestRouter", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+			logger.WithError(err).Error("error removing message, attestRouter")
 		}
 	}()
 
@@ -115,13 +118,14 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	// If we got up to here it means that the enough evidence was provided
 	actionMsg := consensusMsg.(*types.Message).GetAction()
 	_, chainReferenceID := q.ChainInfo()
+	logger = logger.WithFields("chain-reference-id", chainReferenceID)
 
 	switch origMsg := actionMsg.(type) {
 	case *types.Message_UploadSmartContract:
 		defer func() {
 			// regardless of the outcome, this upload/deployment should be removed
 			id := origMsg.UploadSmartContract.GetId()
-			logger.With("deployment-id", id, "chain-reference-id", chainReferenceID).Debug("removing deployment.")
+			logger.With("deployment-id", id).Debug("removing deployment.")
 			k.DeleteSmartContractDeployment(ctx, id, chainReferenceID)
 		}()
 		switch winner := evidence.(type) {
@@ -200,11 +204,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		err := k.Valset.SetSnapshotOnChain(ctx, origMsg.UpdateValset.Valset.ValsetID, chainReferenceID)
 		if err != nil {
 			// We don't want to break here, so we'll just log the error and continue
-			logger.Error("Failed to set snapshot as active for chain",
-				"err", err,
-				"valsetID", origMsg.UpdateValset.Valset.ValsetID,
-				"chainReferenceID", chainReferenceID,
-			)
+			logger.WithError(err).Error("Failed to set snapshot as active for chain", "valsetID", origMsg.UpdateValset.Valset.ValsetID)
 		}
 
 		// now remove all older update valsets given that new one was uploaded.
@@ -223,7 +223,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			if _, ok := (actionMsg.(*types.Message).GetAction()).(*types.Message_UpdateValset); ok {
 				if oldMessage.GetId() < msg.GetId() {
 					if err := q.Remove(ctx, oldMessage.GetId()); err != nil {
-						logger.Error("error removing old message, attestRouter", "msg-id", oldMessage.GetId(), "msg-nonce", oldMessage.Nonce())
+						logger.WithError(err).Error("error removing old message, attestRouter", "msg-id", oldMessage.GetId(), "msg-nonce", oldMessage.Nonce())
 					}
 				}
 			}
@@ -253,7 +253,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 					"retries", slc.Retries,
 					"chain-reference-id", chainReferenceID)
 				if err := k.AddSmartContractExecutionToConsensus(ctx, chainReferenceID, rawMsg.GetTurnstoneID(), slc); err != nil {
-					logger.With("error", err).Error("Failed to retry SubmitLogicCall")
+					logger.WithError(err).Error("Failed to retry SubmitLogicCall")
 				}
 			}
 		default:
