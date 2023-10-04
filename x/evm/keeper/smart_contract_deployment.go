@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -46,13 +47,30 @@ func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID 
 	return
 }
 
-func (k Keeper) DeleteSmartContractDeployment(ctx sdk.Context, smartContractID uint64, chainReferenceID string) {
-	_, key := k.getSmartContractDeployment(ctx, smartContractID, chainReferenceID)
+func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx sdk.Context, smartContractID uint64, chainReferenceID string) {
+	_, key := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
 	if key == nil {
 		return
 	}
 	k.Logger(ctx).Info("removing a smart contract deployment", "smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID)
 	k.provideSmartContractDeploymentStore(ctx).Delete(key)
+}
+
+func (k Keeper) SetSmartContractDeploymentStatusByContractID(ctx sdk.Context, smartContractID uint64, chainReferenceID string, status types.SmartContractDeployment_Status) error {
+	logger := k.Logger(ctx).WithFields("smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID, "new-smart-contract-status", status)
+	v, key := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
+	if key == nil {
+		return keeperutil.ErrNotFound
+	}
+
+	v.Status = status
+	if err := keeperutil.Save(k.provideSmartContractDeploymentStore(ctx), k.cdc, key, v); err != nil {
+		logger.WithError(err).Error("failed to update smart contract deployment record")
+		return err
+	}
+
+	logger.Debug("updated contract deployment state")
+	return nil
 }
 
 func (k Keeper) GetLastCompassContract(ctx sdk.Context) (*types.SmartContract, error) {
@@ -168,7 +186,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	}
 
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
-	var totalShares sdk.Int
+	var totalShares sdkmath.Int
 	if snapshot != nil {
 		totalShares = snapshot.TotalShares
 	}
@@ -179,15 +197,15 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		"total-shares", totalShares,
 	)
 
-	switch {
-	case err == nil:
-		// does nothing
-	case errors.Is(err, keeperutil.ErrNotFound):
-		// can't deploy as there is no consensus
-		return nil
-	default:
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			logger.With("error", err).Info("cannot deploy due to no consensus")
+			return nil
+		}
+
 		return err
 	}
+
 	valset := transformSnapshotToCompass(snapshot, chainInfo.GetChainReferenceID(), logger)
 	logger.Info("returning valset info for deploy smart contract to chain",
 		"valset-id", valset.ValsetID,
@@ -316,10 +334,11 @@ func (k Keeper) createSmartContractDeployment(
 	chainInfo *types.ChainInfo,
 	uniqueID []byte,
 ) *types.SmartContractDeployment {
-	if foundItem, _ := k.getSmartContractDeployment(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID()); foundItem != nil {
+	if foundItem, _ := k.getSmartContractDeploymentByContractID(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID()); foundItem != nil {
 		k.Logger(ctx).Error(
 			"smart contract is already deploying",
 			"smart-contract-id", smartContract.GetId(),
+			"smart-contract-status", foundItem.GetStatus(),
 			"chain-reference-id", chainInfo.GetChainReferenceID(),
 		)
 		return foundItem
@@ -328,6 +347,7 @@ func (k Keeper) createSmartContractDeployment(
 	item := &types.SmartContractDeployment{
 		SmartContractID:  smartContract.GetId(),
 		ChainReferenceID: chainInfo.GetChainReferenceID(),
+		Status:           types.SmartContractDeployment_IN_FLIGHT,
 		UniqueID:         uniqueID,
 	}
 
@@ -347,7 +367,7 @@ func (k Keeper) createSmartContractDeployment(
 	return item
 }
 
-func (k Keeper) getSmartContractDeployment(ctx sdk.Context, smartContractID uint64, chainReferenceID string) (res *types.SmartContractDeployment, key []byte) {
+func (k Keeper) getSmartContractDeploymentByContractID(ctx sdk.Context, smartContractID uint64, chainReferenceID string) (res *types.SmartContractDeployment, key []byte) {
 	if err := keeperutil.IterAllFnc(
 		k.provideSmartContractDeploymentStore(ctx),
 		k.cdc,

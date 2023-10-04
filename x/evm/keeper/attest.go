@@ -11,6 +11,8 @@ import (
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -121,13 +123,66 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	logger = logger.WithFields("chain-reference-id", chainReferenceID)
 
 	switch origMsg := actionMsg.(type) {
-	case *types.Message_UploadSmartContract:
+	case *types.Message_TransferERC20Ownership:
 		defer func() {
 			// regardless of the outcome, this upload/deployment should be removed
-			id := origMsg.UploadSmartContract.GetId()
-			logger.With("deployment-id", id).Debug("removing deployment.")
-			k.DeleteSmartContractDeployment(ctx, id, chainReferenceID)
+			id := origMsg.TransferERC20Ownership.GetSmartContractID()
+			logger.With("smart-contract-id", id).Debug("removing deployment.")
+			k.DeleteSmartContractDeploymentByContractID(ctx, id, chainReferenceID)
 		}()
+		switch winner := evidence.(type) {
+		case *types.TxExecutedProof:
+			tx, err := winner.GetTX()
+			if err != nil {
+				return err
+			}
+			if k.isTxProcessed(ctx, tx) {
+				// somebody submitted the old transaction that was already processed?
+				// punish those validators!!
+				return ErrUnexpectedError.WrapS("transaction %s is already processed", tx.Hash())
+			}
+			err = origMsg.TransferERC20Ownership.VerifyAgainstTX(tx)
+			if err != nil {
+				// passed in transaction doesn't seem to be created from this smart contract
+				return err
+			}
+
+			deployment, _ := k.getSmartContractDeploymentByContractID(ctx, origMsg.TransferERC20Ownership.SmartContractID, chainReferenceID)
+			if deployment == nil {
+				return ErrCannotActiveSmartContractThatIsNotDeploying
+			}
+			if deployment.GetStatus() != types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER {
+				return ErrCannotActiveSmartContractThatIsNotDeploying
+			}
+
+			smartContract, err := k.getSmartContract(ctx, deployment.GetSmartContractID())
+			if err != nil {
+				return err
+			}
+
+			smartContractAddr := common.Address(origMsg.TransferERC20Ownership.NewCompassAddress).Hex()
+			err = k.ActivateChainReferenceID(
+				ctx,
+				chainReferenceID,
+				smartContract,
+				smartContractAddr,
+				deployment.GetUniqueID(),
+			)
+			if err != nil {
+				return err
+			}
+
+		case *types.SmartContractExecutionErrorProof:
+			keeperutil.EmitEvent(k, ctx, types.SmartContractExecutionFailedKey,
+				types.SmartContractExecutionFailedMessageID.With(fmt.Sprintf("%d", msg.GetId())),
+				types.SmartContractExecutionFailedChainReferenceID.With(chainReferenceID),
+				types.SmartContractExecutionFailedError.With(winner.GetErrorMessage()),
+				types.SmartContractExecutionMessageType.With(fmt.Sprintf("%T", origMsg)),
+			)
+		default:
+			return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
+		}
+	case *types.Message_UploadSmartContract:
 		switch winner := evidence.(type) {
 		case *types.TxExecutedProof:
 			tx, err := winner.GetTX()
@@ -145,32 +200,38 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				return err
 			}
 
-			smartContract, err := k.getSmartContract(ctx, origMsg.UploadSmartContract.GetId())
-			if err != nil {
-				return err
-			}
-
 			ethMsg, err := core.TransactionToMessage(tx, ethtypes.NewLondonSigner(tx.ChainId()), big.NewInt(0))
 			if err != nil {
 				return err
 			}
 
-			smartContractAddr := crypto.CreateAddress(ethMsg.From, tx.Nonce()).Hex()
-
-			deployingSmartContract, _ := k.getSmartContractDeployment(ctx, origMsg.UploadSmartContract.GetId(), chainReferenceID)
-			if deployingSmartContract == nil {
+			smartContractID := origMsg.UploadSmartContract.GetId()
+			deployment, _ := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
+			if deployment == nil {
 				return ErrCannotActiveSmartContractThatIsNotDeploying
 			}
 
-			err = k.ActivateChainReferenceID(
+			if deployment.GetStatus() != types.SmartContractDeployment_IN_FLIGHT {
+				return ErrCannotActiveSmartContractThatIsNotDeploying
+			}
+
+			turnstoneID := consensusMsg.(*types.Message).GetTurnstoneID()
+			newCompassAddr := crypto.CreateAddress(ethMsg.From, tx.Nonce())
+			err = k.initiateERC20TokenOwnershipTransfer(
 				ctx,
 				chainReferenceID,
-				smartContract,
-				smartContractAddr,
-				deployingSmartContract.GetUniqueID(),
-			)
-
+				turnstoneID,
+				&types.TransferERC20Ownership{
+					SmartContractID:   smartContractID,
+					NewCompassAddress: newCompassAddr.Bytes(),
+				})
 			if err != nil {
+				return err
+			}
+
+			err = k.SetSmartContractDeploymentStatusByContractID(ctx, smartContractID, chainReferenceID, types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER)
+			if err != nil {
+				logger.WithError(err).Error("failed to update deployment status!")
 				return err
 			}
 
@@ -347,6 +408,34 @@ func (k Keeper) findEvidenceThatWon(
 	}
 
 	return nil, ErrConsensusNotAchieved
+}
+
+func (k Keeper) initiateERC20TokenOwnershipTransfer(
+	ctx sdk.Context,
+	chainReferenceID,
+	turnstoneID string,
+	transfer *types.TransferERC20Ownership,
+) error {
+	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID, nil)
+	if err != nil {
+		return err
+	}
+
+	return k.ConsensusKeeper.PutMessageInQueue(
+		ctx,
+		consensustypes.Queue(
+			ConsensusTurnstoneMessage,
+			xchainType,
+			chainReferenceID,
+		),
+		&types.Message{
+			ChainReferenceID: chainReferenceID,
+			TurnstoneID:      turnstoneID,
+			Action: &types.Message_TransferERC20Ownership{
+				TransferERC20Ownership: transfer,
+			},
+			Assignee: assignee,
+		}, nil)
 }
 
 func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) sdk.KVStore {

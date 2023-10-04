@@ -80,7 +80,7 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 	err = k.SetAsCompassContract(ctx, sc)
 	require.NoError(t, err)
 
-	dep, _ := k.getSmartContractDeployment(ctx, sc.GetId(), "test-chain")
+	dep, _ := k.getSmartContractDeploymentByContractID(ctx, sc.GetId(), "test-chain")
 	require.NotNil(t, dep)
 
 	err = k.ActivateChainReferenceID(
@@ -107,7 +107,7 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 	err = k.SetAsCompassContract(ctx, sc)
 	require.NoError(t, err)
 
-	dep, _ = k.getSmartContractDeployment(ctx, sc.GetId(), "test-chain")
+	dep, _ = k.getSmartContractDeploymentByContractID(ctx, sc.GetId(), "test-chain")
 	require.NotNil(t, dep)
 
 	err = k.ActivateChainReferenceID(

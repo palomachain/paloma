@@ -8,6 +8,6 @@ import (
 )
 
 func (k Keeper) RemoveSmartContractDeployment(ctx context.Context, req *types.MsgRemoveSmartContractDeploymentRequest) (*types.RemoveSmartContractDeploymentResponse, error) {
-	k.DeleteSmartContractDeployment(sdk.UnwrapSDKContext(ctx), req.SmartContractID, req.ChainReferenceID)
+	k.DeleteSmartContractDeploymentByContractID(sdk.UnwrapSDKContext(ctx), req.SmartContractID, req.ChainReferenceID)
 	return &types.RemoveSmartContractDeploymentResponse{}, nil
 }

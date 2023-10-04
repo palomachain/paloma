@@ -59,4 +59,16 @@ message SmartContractDeployment {
   // disallow those that to not match)
   bytes uniqueID = 3;
 
+  // Since we need to update ERC20 token ownership to the new compass contract
+  // the deployment process is split into three steps:
+  // 1. Deploy the contract
+  // 2. Transfer ERC20 token ownership to the new contract
+  // 3. Set the new contract as current in Paloma
+  // The status field gives information on the current state of the deployment.
+  enum Status {
+    PENDING = 0;
+    IN_FLIGHT = 1;
+    WAITING_FOR_ERC20_OWNERSHIP_TRANSFER = 2;
+  }
+  Status status = 4;
 }
