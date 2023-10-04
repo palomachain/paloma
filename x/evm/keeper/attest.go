@@ -159,7 +159,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				return err
 			}
 
-			smartContractAddr := common.Address(origMsg.TransferERC20Ownership.NewCompassAddress).Hex()
+			smartContractAddr := common.BytesToAddress(origMsg.TransferERC20Ownership.NewCompassAddress).Hex()
 			err = k.ActivateChainReferenceID(
 				ctx,
 				chainReferenceID,
