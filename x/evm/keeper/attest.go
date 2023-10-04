@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -29,16 +30,16 @@ func hashSha256(data []byte) []byte {
 }
 
 type consensusPower struct {
-	runningSum sdk.Int
-	totalPower sdk.Int
+	runningSum sdkmath.Int
+	totalPower sdkmath.Int
 }
 
-func (c *consensusPower) setTotal(total sdk.Int) {
+func (c *consensusPower) setTotal(total sdkmath.Int) {
 	c.totalPower = total
 }
 
-func (c *consensusPower) add(power sdk.Int) {
-	var zero sdk.Int
+func (c *consensusPower) add(power sdkmath.Int) {
+	var zero sdkmath.Int
 	if c.runningSum == zero {
 		c.runningSum = sdk.NewInt(0)
 	}
@@ -46,7 +47,7 @@ func (c *consensusPower) add(power sdk.Int) {
 }
 
 func (c *consensusPower) consensus() bool {
-	var zero sdk.Int
+	var zero sdkmath.Int
 	if c.runningSum == zero {
 		return false
 	}
