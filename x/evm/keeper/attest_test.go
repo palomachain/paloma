@@ -44,6 +44,7 @@ var _ = g.Describe("attest router", func() {
 	var msg *consensustypes.QueuedSignedMessage
 	var consensusMsg *types.Message
 	var evidence []*consensustypes.Evidence
+	var isGoodcase bool
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "eth-main",
 		Title:             "bla",
@@ -69,6 +70,7 @@ var _ = g.Describe("attest router", func() {
 		v = ms.ValsetKeeper
 		consensukeeper = ms.ConsensusKeeper
 		q = consensusmocks.NewQueuer(t)
+		isGoodcase = true
 	})
 
 	g.BeforeEach(func() {
@@ -177,7 +179,7 @@ var _ = g.Describe("attest router", func() {
 				err = k.SetAsCompassContract(ctx, sc)
 				Expect(err).To(BeNil())
 
-				dep, _ := k.getSmartContractDeployment(ctx, sc.GetId(), newChain.GetChainReferenceID())
+				dep, _ := k.getSmartContractDeploymentByContractID(ctx, sc.GetId(), newChain.GetChainReferenceID())
 				Expect(dep).NotTo(BeNil())
 			}
 
@@ -336,18 +338,55 @@ var _ = g.Describe("attest router", func() {
 						}
 					})
 
-					successfulProcess()
+					g.It("updates the info about smart contract to chain deployment", func() {
+						setupChainSupport()
+						Expect(subject()).To(BeNil())
+						v, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+						Expect(v.Status).To(Equal(types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER))
+					})
+				})
 
-					// g.It("removes the info about smart contract to chain deployment")
+				g.When("message is TransferERC20Ownership", func() {
+					g.BeforeEach(func() {
+						consensusMsg.Action = &types.Message_TransferERC20Ownership{
+							TransferERC20Ownership: &types.TransferERC20Ownership{
+								SmartContractID:   1,
+								NewCompassAddress: sdk.ValAddress("12345678901234567890"),
+							},
+						}
+					})
+
+					g.When("contract not actively deploying", func() {
+						g.It("returns an error", func() {
+							isGoodcase = false
+							setupChainSupport()
+							Expect(subject()).To(MatchError("trying to activate a smart contract that is not currently deploying"))
+						})
+					})
+
+					g.When("transfer is done", func() {
+						g.It("must remove the deployment from deployment store", func() {
+							setupChainSupport()
+							k.SetSmartContractDeploymentStatusByContractID(ctx, uint64(1), newChain.ChainReferenceID, types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER)
+							Expect(subject()).To(BeNil())
+							v, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+							Expect(v).To(BeNil())
+						})
+					})
 				})
 
 				g.JustAfterEach(func() {
-					g.By("there is no error when processing evidence")
-					Expect(subject()).To(BeNil())
+					if isGoodcase {
+						g.By("there is no error when processing evidence")
+						Expect(subject()).To(BeNil())
+					} else {
+						g.By("there is an error when processing evidence")
+						Expect(subject()).To(Not(BeNil()))
+					}
 				})
 
 				g.JustAfterEach(func() {
-					Expect(k.isTxProcessed(ctx, sampleTx1)).To(BeTrue())
+					Expect(k.isTxProcessed(ctx, sampleTx1)).To(Equal(isGoodcase))
 				})
 			})
 		})

@@ -47,6 +47,7 @@ message Message {
     SubmitLogicCall submitLogicCall = 3;
     UpdateValset updateValset = 4;
     UploadSmartContract uploadSmartContract = 5;
+    TransferERC20Ownership transferERC20Ownership = 8;
   }
 
   string compassAddr = 6;
@@ -61,4 +62,7 @@ message SmartContractExecutionErrorProof {
   string errorMessage = 1;
 }
 
-
+message TransferERC20Ownership {
+  uint64 smartContractID = 1;
+  bytes newCompassAddress = 2;
+}

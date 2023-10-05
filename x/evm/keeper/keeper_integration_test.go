@@ -823,7 +823,7 @@ var _ = Describe("evm", func() {
 					})
 
 					By("removing a smart deployment for chain1 - it means that it was successfully uploaded", func() {
-						a.EvmKeeper.DeleteSmartContractDeployment(ctx, smartContract.GetId(), chain1.GetChainReferenceID())
+						a.EvmKeeper.DeleteSmartContractDeploymentByContractID(ctx, smartContract.GetId(), chain1.GetChainReferenceID())
 						Expect(
 							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
 						).To(BeFalse())
