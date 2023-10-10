@@ -49,7 +49,7 @@ func TestIfValidatorCanBeAccepted(t *testing.T) {
 
 func TestRegisteringPigeon(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
-	ctx = ctx.WithBlockHeight(1000)
+	ctx = ctx.WithBlockHeight(3000)
 	val := sdk.ValAddress("validator")
 	val2 := sdk.ValAddress("validator2")
 	nonExistingVal := sdk.ValAddress("i dont exist")
