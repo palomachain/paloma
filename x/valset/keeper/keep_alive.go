@@ -19,17 +19,15 @@ import (
 const (
 	cValidatorJailedErrorMessage         = "validator is jailed"
 	cValidatorNotBondedErrorMessage      = "validator is not bonded"
-	cJailingDefaultKeepAliveBlockHeight  = 185 // calculated against current block speed of 1.612 seconds
-	cJailingImminentThresholdBlockHeight = 60  // publish warning if less than 60 blocks worth of TTL remaining
-	cJailingGracePeriodBlockHeight       = 30  // don't jail a validator during the first 30 blocks after unjailing
+	cJailingDefaultKeepAliveBlockHeight  = 2000 // ca. 50 minutes at 1.62s block speed
+	cJailingImminentThresholdBlockHeight = 60   // publish warning if less than 60 blocks worth of TTL remaining
+	cJailingGracePeriodBlockHeight       = 30   // don't jail a validator during the first 30 blocks after unjailing
 	cUnjailedSnapshotStoreKey            = "unjailed-validators-snapshot"
 )
 
 type keepAliveData struct {
-	ValAddr     sdk.ValAddress
-	ContactedAt time.Time
-	// Deprecated. Remove after https://github.com/VolumeFi/paloma/issues/707 is deployed on all nets
-	AliveUntil            time.Time
+	ContactedAt           time.Time
+	ValAddr               sdk.ValAddress
 	AliveUntilBlockHeight int64
 }
 
@@ -72,16 +70,6 @@ func (k Keeper) ValidatorAliveUntil(ctx sdk.Context, valAddr sdk.ValAddress) (in
 	err := json.Unmarshal(dataBz, &data)
 	if err != nil {
 		return 0, err
-	}
-
-	// hack hack hack
-	// To ensure a smooth migration to block based Pigeon TTL, we're going to pretend we received a valid
-	// future block height as long as the AliveUntil time is still valid.
-	// remove this once https://github.com/VolumeFi/paloma/issues/709 has been deployed to all nets
-	if data.AliveUntilBlockHeight == 0 {
-		if ctx.BlockTime().Before(data.AliveUntil) {
-			data.AliveUntilBlockHeight = ctx.BlockHeight() + cJailingDefaultKeepAliveBlockHeight
-		}
 	}
 
 	if data.AliveUntilBlockHeight-ctx.BlockHeight() <= cJailingImminentThresholdBlockHeight {
