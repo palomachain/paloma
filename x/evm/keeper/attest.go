@@ -199,6 +199,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		logger.Debug("Processing upload smart contract message attestation.")
 		switch winner := evidence.(type) {
 		case *types.TxExecutedProof:
+			logger.Debug("TX proof attestation")
 			tx, err := winner.GetTX()
 			if err != nil {
 				logger.WithError(err).Error("Failed to get TX")
