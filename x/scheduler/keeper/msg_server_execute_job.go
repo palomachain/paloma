@@ -4,38 +4,24 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
 func (msgSrv msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJob) (*types.MsgExecuteJobResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := liblog.FromSDKLogger(msgSrv.Logger(ctx)).WithFields("job-id", msg.GetJobID())
+	logger.Debug("Received ExecuteJob message.")
 
 	// Find the public key of the sender
 	senderAddress := msgSrv.GetAccount(ctx, msg.GetSigners()[0]).GetAddress()
 
-	job, err := msgSrv.GetJob(ctx, msg.GetJobID())
+	err := msgSrv.Keeper.ExecuteJob(ctx, msg.GetJobID(), msg.GetPayload(), senderAddress, nil)
 	if err != nil {
-		msgSrv.Logger(ctx).Error("couldn't get job's id",
-			"err", err,
-			"job_id", msg.GetJobID(),
-		)
+		logger.WithError(err).Error("Failed to trigger job execution.")
 		return nil, err
 	}
 
-	// Hook to trigger a valset update attempt
-	err = msgSrv.PreJobExecution(ctx, job)
-	if err != nil {
-		// If we have an error here, don't exit.  Go ahead and schedule the job
-		msgSrv.Logger(ctx).Error("Error in PreJobExecution hook",
-			"err", err,
-			"job_id", msg.GetJobID(),
-		)
-	}
-
-	err = msgSrv.ScheduleNow(ctx, msg.GetJobID(), msg.GetPayload(), senderAddress, nil)
-	if err != nil {
-		return nil, err
-	}
-
+	logger.Debug("Job execution triggered.")
 	return &types.MsgExecuteJobResponse{}, nil
 }

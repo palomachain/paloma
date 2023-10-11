@@ -14,6 +14,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/scheduler/types"
 )
@@ -149,6 +150,24 @@ func (k Keeper) GetJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 	}
 
 	return job, nil
+}
+
+func (k Keeper) ExecuteJob(ctx sdk.Context, jobID string, payload []byte, senderAddress sdk.AccAddress, contractAddr sdk.AccAddress) error {
+	job, err := k.GetJob(ctx, jobID)
+	if err != nil {
+		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields("job-id", jobID).Error("Job not found.")
+		return err
+	}
+
+	// Hook to trigger a valset update attempt
+	err = k.PreJobExecution(ctx, job)
+	if err != nil {
+		// If we have an error here, don't exit.  Go ahead and schedule the job.
+		// Paloma will try to push the valset update again with the next job.
+		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields("job-id", jobID).Error("failed to run PreJobExecution hook")
+	}
+
+	return k.ScheduleNow(ctx, jobID, payload, senderAddress, contractAddr)
 }
 
 func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error {

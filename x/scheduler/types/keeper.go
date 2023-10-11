@@ -14,4 +14,5 @@ type Keeper interface {
 	Logger(ctx sdk.Context) log.Logger
 	PreJobExecution(ctx sdk.Context, job *Job) error
 	ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error
+	ExecuteJob(ctx sdk.Context, jobID string, payload []byte, senderAddress sdk.AccAddress, contractAddr sdk.AccAddress) error
 }

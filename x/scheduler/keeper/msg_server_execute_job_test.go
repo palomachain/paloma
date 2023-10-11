@@ -28,91 +28,13 @@ func TestExecuteJob(t *testing.T) {
 				mockAccount := authmocks.NewAccountI(t)
 				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
 
-				schedulerKeeper.On("GetAccount",
-					mock.Anything,
-					mock.Anything,
-				).Return(mockAccount)
-
-				schedulerKeeper.On("GetJob",
-					mock.Anything,
-					mock.Anything,
-				).Return(nil, nil)
-
-				schedulerKeeper.On("PreJobExecution",
-					mock.Anything,
-					mock.Anything,
-				).Return(nil)
-
-				schedulerKeeper.On("ScheduleNow",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(nil)
-
-				msgServer := msgServer{
-					schedulerKeeper,
-				}
-
-				return msgServer
-			},
-			expected:      &types.MsgExecuteJobResponse{},
-			expectedError: nil,
-		},
-		{
-			name: "error getting job.  returns the error",
-			msgServer: func() msgServer {
-				schedulerKeeper := mocks.NewKeeper(t)
-				mockAccount := authmocks.NewAccountI(t)
-				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
-
-				schedulerKeeper.On("GetAccount",
-					mock.Anything,
-					mock.Anything,
-				).Return(mockAccount)
-
-				schedulerKeeper.On("GetJob",
-					mock.Anything,
-					mock.Anything,
-				).Return(nil, errors.New("error-1"))
-
 				schedulerKeeper.On("Logger", mock.Anything).Return(log.NewNopLogger())
-
-				msgServer := msgServer{
-					schedulerKeeper,
-				}
-
-				return msgServer
-			},
-			expected:      nil,
-			expectedError: errors.New("error-1"),
-		},
-		{
-			name: "error in PreJobExecution hook.  continues on to schedule job",
-			msgServer: func() msgServer {
-				schedulerKeeper := mocks.NewKeeper(t)
-				mockAccount := authmocks.NewAccountI(t)
-				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
-
 				schedulerKeeper.On("GetAccount",
 					mock.Anything,
 					mock.Anything,
 				).Return(mockAccount)
 
-				schedulerKeeper.On("GetJob",
-					mock.Anything,
-					mock.Anything,
-				).Return(nil, nil)
-
-				schedulerKeeper.On("PreJobExecution",
-					mock.Anything,
-					mock.Anything,
-				).Return(errors.New("error-2"))
-
-				schedulerKeeper.On("Logger", mock.Anything).Return(log.NewNopLogger())
-
-				schedulerKeeper.On("ScheduleNow",
+				schedulerKeeper.On("ExecuteJob",
 					mock.Anything,
 					mock.Anything,
 					mock.Anything,
@@ -136,22 +58,13 @@ func TestExecuteJob(t *testing.T) {
 				mockAccount := authmocks.NewAccountI(t)
 				mockAccount.On("GetAddress").Return(sdk.AccAddress("test-address"))
 
+				schedulerKeeper.On("Logger", mock.Anything).Return(log.NewNopLogger())
 				schedulerKeeper.On("GetAccount",
 					mock.Anything,
 					mock.Anything,
 				).Return(mockAccount)
 
-				schedulerKeeper.On("GetJob",
-					mock.Anything,
-					mock.Anything,
-				).Return(nil, nil)
-
-				schedulerKeeper.On("PreJobExecution",
-					mock.Anything,
-					mock.Anything,
-				).Return(nil)
-
-				schedulerKeeper.On("ScheduleNow",
+				schedulerKeeper.On("ExecuteJob",
 					mock.Anything,
 					mock.Anything,
 					mock.Anything,
