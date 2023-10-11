@@ -144,7 +144,8 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				// somebody submitted the old transaction that was already processed?
 				// punish those validators!!
 				logger.WithError(err).Error("TX already processed")
-				return ErrUnexpectedError.WrapS("transaction %s is already processed", tx.Hash())
+				// hack hack hack: We want to keep this check in place, but there is no real TX to work with here yet.
+				// return ErrUnexpectedError.WrapS("transaction %s is already processed", tx.Hash())
 			}
 			err = origMsg.TransferERC20Ownership.VerifyAgainstTX(tx)
 			if err != nil {

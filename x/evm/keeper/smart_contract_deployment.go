@@ -309,6 +309,8 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 	for _, chainInfo := range chainInfos {
 		k.Logger(ctx).Info("trying to deploy smart contract to EVM chain", "smart-contract-id", smartContract.GetId(), "chain-reference-id", chainInfo.GetChainReferenceID())
 		if k.HasAnySmartContractDeployment(ctx, chainInfo.GetChainReferenceID()) {
+			// TODO: Only wait if the status is IN_FLIGHT
+			// TODO: We probably want to still delete the deployment in case of error AS LONG as we haven't sent a move ownership message
 			// we are already deploying to this chain. Lets wait it out.
 			continue
 		}
