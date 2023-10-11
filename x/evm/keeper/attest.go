@@ -258,6 +258,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			logger.Debug("attestation successful")
 
 		case *types.SmartContractExecutionErrorProof:
+			logger.Debug("smart contract execution error proof", "smart-contract-error", winner.GetErrorMessage())
 			keeperutil.EmitEvent(k, ctx, types.SmartContractExecutionFailedKey,
 				types.SmartContractExecutionFailedMessageID.With(fmt.Sprintf("%d", msg.GetId())),
 				types.SmartContractExecutionFailedChainReferenceID.With(chainReferenceID),
@@ -265,6 +266,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				types.SmartContractExecutionMessageType.With(fmt.Sprintf("%T", origMsg)),
 			)
 		default:
+			logger.Error("unknown type %t when attesting", winner)
 			return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
 		}
 
