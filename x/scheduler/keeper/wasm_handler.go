@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/VolumeFi/whoops"
@@ -59,13 +60,13 @@ func (k Keeper) ExecuteWasmJobEventListener() wasmutil.MessengerFnc {
 			return nil, nil, whoops.Wrap(err, types.ErrWasmExecuteMessageNotValid)
 		}
 
-		err = k.ExecuteJob(ctx, executeMsg.JobID, executeMsg.Payload, nil, contractAddr)
+		msgID, err := k.ExecuteJob(ctx, executeMsg.JobID, executeMsg.Payload, nil, contractAddr)
 		if err != nil {
 			logger.WithError(err).Error("Failed to trigger job execution.")
 			return nil, nil, err
 		}
 
-		logger.Debug("Job execution triggered.")
+		logger.WithFields("msg-id", strconv.FormatUint(msgID, 10)).Debug("Job execution triggered.")
 		return nil, nil, nil
 	}
 }

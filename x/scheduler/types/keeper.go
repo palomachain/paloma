@@ -13,6 +13,6 @@ type Keeper interface {
 	GetJob(ctx sdk.Context, jobID string) (*Job, error)
 	Logger(ctx sdk.Context) log.Logger
 	PreJobExecution(ctx sdk.Context, job *Job) error
-	ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error
-	ExecuteJob(ctx sdk.Context, jobID string, payload []byte, senderAddress sdk.AccAddress, contractAddr sdk.AccAddress) error
+	ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) (uint64, error)
+	ExecuteJob(ctx sdk.Context, jobID string, payload []byte, senderAddress sdk.AccAddress, contractAddr sdk.AccAddress) (uint64, error)
 }

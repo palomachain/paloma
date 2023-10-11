@@ -14,17 +14,27 @@ type Bridge struct {
 }
 
 // ExecuteJob provides a mock function with given fields: ctx, jcfg
-func (_m *Bridge) ExecuteJob(ctx types.Context, jcfg *xchain.JobConfiguration) error {
+func (_m *Bridge) ExecuteJob(ctx types.Context, jcfg *xchain.JobConfiguration) (uint64, error) {
 	ret := _m.Called(ctx, jcfg)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, *xchain.JobConfiguration) error); ok {
+	var r0 uint64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(types.Context, *xchain.JobConfiguration) (uint64, error)); ok {
+		return rf(ctx, jcfg)
+	}
+	if rf, ok := ret.Get(0).(func(types.Context, *xchain.JobConfiguration) uint64); ok {
 		r0 = rf(ctx, jcfg)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(uint64)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(types.Context, *xchain.JobConfiguration) error); ok {
+		r1 = rf(ctx, jcfg)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // VerifyJob provides a mock function with given fields: ctx, definition, payload, refID

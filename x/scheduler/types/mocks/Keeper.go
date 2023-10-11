@@ -30,17 +30,27 @@ func (_m *Keeper) AddNewJob(ctx types.Context, job *schedulertypes.Job) error {
 }
 
 // ExecuteJob provides a mock function with given fields: ctx, jobID, payload, senderAddress, contractAddr
-func (_m *Keeper) ExecuteJob(ctx types.Context, jobID string, payload []byte, senderAddress types.AccAddress, contractAddr types.AccAddress) error {
+func (_m *Keeper) ExecuteJob(ctx types.Context, jobID string, payload []byte, senderAddress types.AccAddress, contractAddr types.AccAddress) (uint64, error) {
 	ret := _m.Called(ctx, jobID, payload, senderAddress, contractAddr)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, string, []byte, types.AccAddress, types.AccAddress) error); ok {
+	var r0 uint64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(types.Context, string, []byte, types.AccAddress, types.AccAddress) (uint64, error)); ok {
+		return rf(ctx, jobID, payload, senderAddress, contractAddr)
+	}
+	if rf, ok := ret.Get(0).(func(types.Context, string, []byte, types.AccAddress, types.AccAddress) uint64); ok {
 		r0 = rf(ctx, jobID, payload, senderAddress, contractAddr)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(uint64)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(types.Context, string, []byte, types.AccAddress, types.AccAddress) error); ok {
+		r1 = rf(ctx, jobID, payload, senderAddress, contractAddr)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetAccount provides a mock function with given fields: ctx, addr
@@ -116,17 +126,27 @@ func (_m *Keeper) PreJobExecution(ctx types.Context, job *schedulertypes.Job) er
 }
 
 // ScheduleNow provides a mock function with given fields: ctx, jobID, in, senderAddress, contractAddress
-func (_m *Keeper) ScheduleNow(ctx types.Context, jobID string, in []byte, senderAddress types.AccAddress, contractAddress types.AccAddress) error {
+func (_m *Keeper) ScheduleNow(ctx types.Context, jobID string, in []byte, senderAddress types.AccAddress, contractAddress types.AccAddress) (uint64, error) {
 	ret := _m.Called(ctx, jobID, in, senderAddress, contractAddress)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, string, []byte, types.AccAddress, types.AccAddress) error); ok {
+	var r0 uint64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(types.Context, string, []byte, types.AccAddress, types.AccAddress) (uint64, error)); ok {
+		return rf(ctx, jobID, in, senderAddress, contractAddress)
+	}
+	if rf, ok := ret.Get(0).(func(types.Context, string, []byte, types.AccAddress, types.AccAddress) uint64); ok {
 		r0 = rf(ctx, jobID, in, senderAddress, contractAddress)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(uint64)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(types.Context, string, []byte, types.AccAddress, types.AccAddress) error); ok {
+		r1 = rf(ctx, jobID, in, senderAddress, contractAddress)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // NewKeeper creates a new instance of Keeper. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

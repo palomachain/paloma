@@ -16,12 +16,14 @@ func (msgSrv msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJ
 	// Find the public key of the sender
 	senderAddress := msgSrv.GetAccount(ctx, msg.GetSigners()[0]).GetAddress()
 
-	err := msgSrv.Keeper.ExecuteJob(ctx, msg.GetJobID(), msg.GetPayload(), senderAddress, nil)
+	msgID, err := msgSrv.Keeper.ExecuteJob(ctx, msg.GetJobID(), msg.GetPayload(), senderAddress, nil)
 	if err != nil {
 		logger.WithError(err).Error("Failed to trigger job execution.")
 		return nil, err
 	}
 
 	logger.Debug("Job execution triggered.")
-	return &types.MsgExecuteJobResponse{}, nil
+	return &types.MsgExecuteJobResponse{
+		MessageID: msgID,
+	}, nil
 }

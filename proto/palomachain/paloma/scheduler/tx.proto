@@ -25,4 +25,7 @@ message MsgExecuteJob {
   bytes  payload = 3;
 }
 
-message MsgExecuteJobResponse {}
+message MsgExecuteJobResponse {
+  // points to the ID of the consensus queue message created from the job execution
+  uint64 messageID = 1;
+}

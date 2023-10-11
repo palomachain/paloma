@@ -16,6 +16,7 @@ import (
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -312,9 +313,21 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 					"message-id", msg.GetId(),
 					"retries", slc.Retries,
 					"chain-reference-id", chainReferenceID)
-				if err := k.AddSmartContractExecutionToConsensus(ctx, chainReferenceID, rawMsg.GetTurnstoneID(), slc); err != nil {
+				newMsgID, err := k.AddSmartContractExecutionToConsensus(ctx, chainReferenceID, rawMsg.GetTurnstoneID(), slc)
+				if err != nil {
 					logger.WithError(err).Error("Failed to retry SubmitLogicCall")
+				} else {
+					logger.Info("retried failed SubmitLogicCall message",
+						"message-id", msg.GetId(),
+						"new-message-id", newMsgID,
+						"retries", slc.Retries,
+						"chain-reference-id", chainReferenceID)
 				}
+			} else {
+				logger.Error("max retries for message reached",
+					"message-id", msg.GetId(),
+					"retries", slc.Retries,
+					"chain-reference-id", chainReferenceID)
 			}
 		default:
 			return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
@@ -420,7 +433,7 @@ func (k Keeper) initiateERC20TokenOwnershipTransfer(
 		return err
 	}
 
-	return k.ConsensusKeeper.PutMessageInQueue(
+	msgID, err := k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
 			ConsensusTurnstoneMessage,
@@ -435,6 +448,12 @@ func (k Keeper) initiateERC20TokenOwnershipTransfer(
 			},
 			Assignee: assignee,
 		}, nil)
+	if err != nil {
+		return err
+	}
+
+	liblog.FromSDKLogger(k.Logger(ctx)).WithFields("new-message-id", msgID).Debug("initiateERC20TokenOwnershipTransfer triggered")
+	return nil
 }
 
 func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) sdk.KVStore {

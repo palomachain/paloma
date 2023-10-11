@@ -40,7 +40,7 @@ func TestExecuteJob(t *testing.T) {
 					mock.Anything,
 					mock.Anything,
 					mock.Anything,
-				).Return(nil)
+				).Return(uint64(10), nil)
 
 				msgServer := msgServer{
 					schedulerKeeper,
@@ -48,7 +48,9 @@ func TestExecuteJob(t *testing.T) {
 
 				return msgServer
 			},
-			expected:      &types.MsgExecuteJobResponse{},
+			expected: &types.MsgExecuteJobResponse{
+				MessageID: uint64(10),
+			},
 			expectedError: nil,
 		},
 		{
@@ -70,7 +72,7 @@ func TestExecuteJob(t *testing.T) {
 					mock.Anything,
 					mock.Anything,
 					mock.Anything,
-				).Return(errors.New("error-3"))
+				).Return(uint64(0), errors.New("error-3"))
 
 				msgServer := msgServer{
 					schedulerKeeper,

@@ -161,7 +161,7 @@ var _ = g.Describe("attest router", func() {
 
 		g.When("there is enough power to reach a consensus", func() {
 			setupChainSupport := func() {
-				consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil)
 
 				err := k.AddSupportForNewChain(
 					ctx,
@@ -273,7 +273,7 @@ var _ = g.Describe("attest router", func() {
 									Retries: uint32(0),
 								},
 							}
-							consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+							consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil)
 						})
 
 						g.It("should attempt to retry", func() {

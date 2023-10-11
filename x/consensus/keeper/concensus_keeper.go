@@ -62,23 +62,23 @@ func (k Keeper) RemoveConsensusQueue(ctx sdk.Context, queueTypeName string) erro
 	return nil
 }
 
-func (k Keeper) PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg, opts *consensus.PutOptions) error {
+func (k Keeper) PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg, opts *consensus.PutOptions) (uint64, error) {
 	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting consensus queue", "error", err)
-		return err
+		return 0, err
 	}
 	msgID, err := cq.Put(ctx, msg, opts)
 	if err != nil {
 		k.Logger(ctx).Error("error while putting message into queue", "error", err)
-		return err
+		return 0, err
 	}
 	k.Logger(ctx).Info(
 		"put message into consensus queue",
 		"queue-type-name", queueTypeName,
 		"message-id", msgID,
 	)
-	return nil
+	return msgID, nil
 }
 
 // GetMessagesForSigning returns messages for a single validator that needs to be signed.

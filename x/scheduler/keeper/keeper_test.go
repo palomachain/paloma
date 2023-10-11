@@ -283,18 +283,27 @@ var _ = Describe("jobs!", func() {
 				})
 
 				It("schedules both jobs with the default payload", func() {
-					bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-					Expect(k.ScheduleNow(ctx, job.GetID(), nil, nil, nil)).To(BeNil())
-					Expect(k.ScheduleNow(ctx, jobPayloadModifiable.GetID(), nil, nil, nil)).To(BeNil())
+					bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil)
+
+					mid, err := k.ScheduleNow(ctx, job.GetID(), nil, nil, nil)
+					Expect(mid).To(Equal(uint64(10)))
+					Expect(err).To(BeNil())
+
+					mid, err = k.ScheduleNow(ctx, jobPayloadModifiable.GetID(), nil, nil, nil)
+					Expect(mid).To(Equal(uint64(10)))
+					Expect(err).To(BeNil())
 				})
 
 				Context("modifying payload", func() {
 					It("returns an error", func() {
-						Expect(k.ScheduleNow(ctx, job.GetID(), []byte("new payload"), nil, nil)).To(MatchError(types.ErrCannotModifyJobPayload))
+						_, err := k.ScheduleNow(ctx, job.GetID(), []byte("new payload"), nil, nil)
+						Expect(err).To(MatchError(types.ErrCannotModifyJobPayload))
 					})
 					It("doesn't return an error", func() {
-						bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-						Expect(k.ScheduleNow(ctx, jobPayloadModifiable.GetID(), []byte("new payload"), nil, nil)).To(BeNil())
+						bm.On("ExecuteJob", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil)
+						mid, err := k.ScheduleNow(ctx, jobPayloadModifiable.GetID(), []byte("new payload"), nil, nil)
+						Expect(mid).To(Equal(uint64(10)))
+						Expect(err).To(BeNil())
 					})
 				})
 			})

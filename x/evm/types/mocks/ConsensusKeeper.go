@@ -55,17 +55,27 @@ func (_m *ConsensusKeeper) GetMessagesFromQueue(ctx types.Context, queueTypeName
 }
 
 // PutMessageInQueue provides a mock function with given fields: ctx, queueTypeName, msg, opts
-func (_m *ConsensusKeeper) PutMessageInQueue(ctx types.Context, queueTypeName string, msg consensustypes.ConsensusMsg, opts *consensus.PutOptions) error {
+func (_m *ConsensusKeeper) PutMessageInQueue(ctx types.Context, queueTypeName string, msg consensustypes.ConsensusMsg, opts *consensus.PutOptions) (uint64, error) {
 	ret := _m.Called(ctx, queueTypeName, msg, opts)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, string, consensustypes.ConsensusMsg, *consensus.PutOptions) error); ok {
+	var r0 uint64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(types.Context, string, consensustypes.ConsensusMsg, *consensus.PutOptions) (uint64, error)); ok {
+		return rf(ctx, queueTypeName, msg, opts)
+	}
+	if rf, ok := ret.Get(0).(func(types.Context, string, consensustypes.ConsensusMsg, *consensus.PutOptions) uint64); ok {
 		r0 = rf(ctx, queueTypeName, msg, opts)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(uint64)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(types.Context, string, consensustypes.ConsensusMsg, *consensus.PutOptions) error); ok {
+		r1 = rf(ctx, queueTypeName, msg, opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // RemoveConsensusQueue provides a mock function with given fields: ctx, queueTypeName

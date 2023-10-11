@@ -42,22 +42,22 @@ func TestDeleteOldMessages(t *testing.T) {
 
 				// Add a message at block 1
 				ctx = ctx.WithBlockHeight(1)
-				err := k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
+				_, err := k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
 				require.NoError(t, err)
 
 				// Add a message at block 10
 				ctx = ctx.WithBlockHeight(10)
-				err = k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
+				_, err = k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
 				require.NoError(t, err)
 
 				// Add a message at block 15
 				ctx = ctx.WithBlockHeight(15)
-				err = k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
+				_, err = k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
 				require.NoError(t, err)
 
 				// Add a message at block 20
 				ctx = ctx.WithBlockHeight(20)
-				err = k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
+				_, err = k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
 				require.NoError(t, err)
 
 				// Advance to block 61
