@@ -137,13 +137,13 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	chainReferenceID,
 	turnstoneID string,
 	logicCall *types.SubmitLogicCall,
-) error {
+) (uint64, error) {
 	requirements := &xchain.JobRequirements{
 		EnforceMEVRelay: logicCall.ExecutionRequirements.EnforceMEVRelay,
 	}
 	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID, requirements)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	return k.ConsensusKeeper.PutMessageInQueue(
@@ -263,7 +263,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		return err
 	}
 
-	return k.ConsensusKeeper.PutMessageInQueue(
+	_, err = k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
 			ConsensusTurnstoneMessage,
@@ -282,6 +282,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 			},
 			Assignee: assignee,
 		}, nil)
+	return err
 }
 
 func (k Keeper) getSmartContract(ctx sdk.Context, id uint64) (*types.SmartContract, error) {
@@ -308,6 +309,8 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 	for _, chainInfo := range chainInfos {
 		k.Logger(ctx).Info("trying to deploy smart contract to EVM chain", "smart-contract-id", smartContract.GetId(), "chain-reference-id", chainInfo.GetChainReferenceID())
 		if k.HasAnySmartContractDeployment(ctx, chainInfo.GetChainReferenceID()) {
+			// TODO: Only wait if the status is IN_FLIGHT
+			// TODO: We probably want to still delete the deployment in case of error AS LONG as we haven't sent a move ownership message
 			// we are already deploying to this chain. Lets wait it out.
 			continue
 		}

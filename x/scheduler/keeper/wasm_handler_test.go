@@ -88,7 +88,7 @@ var _ = Describe("wasm message handler", func() {
 				subjectMsg.JobID = jobID
 			})
 			BeforeEach(func() {
-				bm.On("ExecuteJob", mock.Anything, mock.Anything).Return(nil)
+				bm.On("ExecuteJob", mock.Anything, mock.Anything).Return(uint64(1), nil)
 			})
 
 			It("schedules the job", func() {

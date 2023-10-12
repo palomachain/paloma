@@ -588,7 +588,7 @@ func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.Chain
 	}
 
 	// put update valset message into the queue
-	err = m.ConsensusKeeper.PutMessageInQueue(
+	msgID, err := m.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID())),
 		&types.Message{
@@ -606,6 +606,8 @@ func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.Chain
 		m.Logger(ctx).Error("unable to put message in the queue", "err", err)
 		return err
 	}
+
+	m.Logger(ctx).With("new-message-id", msgID).Debug("Valset update message added to consensus queue.")
 	return nil
 }
 
@@ -637,7 +639,7 @@ func (k Keeper) CheckExternalBalancesForChain(ctx sdk.Context, chainReferenceID 
 	if len(msg.ValAddresses) == 0 {
 		return nil
 	}
-	return k.ConsensusKeeper.PutMessageInQueue(
+	_, err = k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(ConsensusGetValidatorBalances, xchainType, chainReferenceID),
 		&msg,
@@ -646,6 +648,8 @@ func (k Keeper) CheckExternalBalancesForChain(ctx sdk.Context, chainReferenceID 
 			PublicAccessData:  []byte{1}, // anything because pigeon cares if public access data exists to be able to provide evidence
 		},
 	)
+
+	return err
 }
 
 func isEnoughToReachConsensus(val types.Valset) bool {

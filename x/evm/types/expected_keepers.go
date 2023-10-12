@@ -24,7 +24,7 @@ type BankKeeper interface {
 
 //go:generate mockery --name=ConsensusKeeper
 type ConsensusKeeper interface {
-	PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg, opts *consensus.PutOptions) error
+	PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg, opts *consensus.PutOptions) (uint64, error)
 	RemoveConsensusQueue(ctx sdk.Context, queueTypeName string) error
 	GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n int) (msgs []consensustypes.QueuedSignedMessageI, err error)
 	DeleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error)

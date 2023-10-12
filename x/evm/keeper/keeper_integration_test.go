@@ -91,7 +91,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	require.NoError(t, err)
 
 	smartContractAddr := common.BytesToAddress(rand.Bytes(5))
-	err = a.EvmKeeper.AddSmartContractExecutionToConsensus(
+	_, err = a.EvmKeeper.AddSmartContractExecutionToConsensus(
 		ctx,
 		chainReferenceID,
 		"",

@@ -12,23 +12,23 @@ func (k Keeper) CollectJobFundEvents(ctx sdk.Context) error {
 	return whoops.Try(func() {
 		var g whoops.Group
 		for _, ci := range whoops.Must(k.GetAllChainInfos(ctx)) {
-			g.Add(
-				k.ConsensusKeeper.PutMessageInQueue(
-					ctx,
-					consensustypes.Queue(
-						ConsensusCollectFundEvents,
-						xchainType,
-						ci.GetChainReferenceID(),
-					),
-					&types.CollectFunds{
-						// ChainReferenceID: ci.GetChainReferenceID(),
-						// FromBlockTime:    ci.GetBlockHeight(),
-						// ToBlockTime:      ci.GetBlockHeight(),
-					},
-					nil,
+			_, err := k.ConsensusKeeper.PutMessageInQueue(
+				ctx,
+				consensustypes.Queue(
+					ConsensusCollectFundEvents,
+					xchainType,
+					ci.GetChainReferenceID(),
 				),
+				&types.CollectFunds{
+					// ChainReferenceID: ci.GetChainReferenceID(),
+					// FromBlockTime:    ci.GetBlockHeight(),
+					// ToBlockTime:      ci.GetBlockHeight(),
+				},
+				nil,
 			)
+			g.Add(err)
 		}
+
 		whoops.Assert(g.Return())
 	})
 }

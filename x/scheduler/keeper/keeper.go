@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/VolumeFi/whoops"
 	"github.com/cometbft/cometbft/libs/log"
@@ -14,6 +15,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/scheduler/types"
 )
@@ -151,11 +153,29 @@ func (k Keeper) GetJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 	return job, nil
 }
 
-func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error {
+func (k Keeper) ExecuteJob(ctx sdk.Context, jobID string, payload []byte, senderAddress sdk.AccAddress, contractAddr sdk.AccAddress) (uint64, error) {
+	job, err := k.GetJob(ctx, jobID)
+	if err != nil {
+		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields("job-id", jobID).Error("Job not found.")
+		return 0, err
+	}
+
+	// Hook to trigger a valset update attempt
+	err = k.PreJobExecution(ctx, job)
+	if err != nil {
+		// If we have an error here, don't exit.  Go ahead and schedule the job.
+		// Paloma will try to push the valset update again with the next job.
+		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields("job-id", jobID).Error("failed to run PreJobExecution hook")
+	}
+
+	return k.ScheduleNow(ctx, jobID, payload, senderAddress, contractAddr)
+}
+
+func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) (uint64, error) {
 	job, err := k.GetJob(ctx, jobID)
 	if err != nil {
 		k.Logger(ctx).Error("couldn't schedule a job", "job_id", jobID, "err", err)
-		return err
+		return 0, err
 	}
 
 	router := job.GetRouting()
@@ -177,7 +197,7 @@ func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddr
 			"job_id", jobID,
 			"err", err,
 		)
-		return types.ErrCannotModifyJobPayload.Wrapf("jobID: %s", jobID)
+		return 0, types.ErrCannotModifyJobPayload.Wrapf("jobID: %s", jobID)
 	}
 
 	if job.GetIsPayloadModifiable() && in != nil {
@@ -194,25 +214,24 @@ func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddr
 			EnforceMEVRelay: job.EnforceMEVRelay,
 		},
 	}
-	err = chain.ExecuteJob(ctx, jcfg)
 
-	if err == nil {
-		keeperutil.EmitEvent(k, ctx, "JobScheduler",
-			sdk.NewAttribute("job_id", jobID),
-			sdk.NewAttribute("chainType", router.GetChainType()),
-			sdk.NewAttribute("chainReferenceID", router.GetChainReferenceID()),
-		)
-	} else {
-		k.Logger(ctx).Error(
-			"couldn't execute a job",
+	msgID, err := chain.ExecuteJob(ctx, jcfg)
+	if err != nil {
+		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields(
 			"job_id", jobID,
-			"err", err,
 			"payload", payload,
 			"chain_type", router.GetChainType(),
 			"chain_reference_id", router.GetChainReferenceID(),
 			"enforce_mev_relay", job.EnforceMEVRelay,
-		)
+		).Error("couldn't execute a job")
+		return 0, err
 	}
 
-	return err
+	keeperutil.EmitEvent(k, ctx, "JobScheduler",
+		sdk.NewAttribute("job-id", jobID),
+		sdk.NewAttribute("msg-id", strconv.FormatUint(msgID, 10)),
+		sdk.NewAttribute("chainType", router.GetChainType()),
+		sdk.NewAttribute("chainReferenceID", router.GetChainReferenceID()),
+	)
+	return msgID, nil
 }

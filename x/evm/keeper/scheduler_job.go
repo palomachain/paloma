@@ -57,14 +57,14 @@ func (k Keeper) VerifyJob(ctx sdk.Context, definition, payload []byte, chainRefe
 }
 
 // ExecuteJob schedules the definition and payload for execution via consensus queue
-func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) error {
+func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) (uint64, error) {
 	def, load, err := k.unmarshalJob(jcfg.Definition, jcfg.Payload, jcfg.RefID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	ci, err := k.GetChainInfo(ctx, jcfg.RefID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	var hexBytes []byte
@@ -72,19 +72,19 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) error
 	case jcfg.SenderAddress != nil:
 		hexBytes, err = hex.DecodeString(addressToHex(jcfg.SenderAddress))
 		if err != nil {
-			return err
+			return 0, err
 		}
 	case jcfg.ContractAddress != nil:
 		hexBytes, err = hex.DecodeString(addressToHex(jcfg.ContractAddress))
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
 	// zero pad our byte array to 32 bytes
 	appendSenderBytes, err := zeroPadBytes(hexBytes, 32)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	modifiedPayload := append(common.FromHex(load.GetHexPayload()), appendSenderBytes...)

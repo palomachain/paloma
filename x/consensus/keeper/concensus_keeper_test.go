@@ -26,7 +26,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 	keeper, _, ctx := newConsensusKeeper(t)
 
 	t.Run("it returns a message if type is not registered with the queue", func(t *testing.T) {
-		err := keeper.PutMessageInQueue(ctx, "i don't exist", &types.SimpleMessage{
+		_, err := keeper.PutMessageInQueue(ctx, "i don't exist", &types.SimpleMessage{
 			Sender: "bob",
 			Hello:  "hello",
 			World:  "mars",
@@ -61,7 +61,7 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 	})
 
 	t.Run("it successfully puts message into the queue", func(t *testing.T) {
-		err := keeper.PutMessageInQueue(ctx, queue, &types.SimpleMessage{
+		_, err := keeper.PutMessageInQueue(ctx, queue, &types.SimpleMessage{
 			Sender: "bob",
 			Hello:  "hello",
 			World:  "mars",
@@ -124,7 +124,7 @@ func TestGetMessagesFromQueue(t *testing.T) {
 	}
 	addMessages := func(ctx sdk.Context, k Keeper, queue string, numMessages int) {
 		for i := 0; i < numMessages; i++ {
-			err := k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
+			_, err := k.PutMessageInQueue(ctx, queue, &types.SimpleMessage{}, nil)
 			require.NoError(t, err)
 		}
 	}
@@ -239,7 +239,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 			name: "with a single signature only which is not enough it returns nothing",
 			preRun: func(t *testing.T, sd setupData) {
 				msg := &types.SimpleMessage{}
-				err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
+				_, err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
 				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val1"), "evm", "test", "bob").Return(
 					[]byte("signing-key"),
@@ -268,7 +268,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 			expMsgsLen: 1,
 			preRun: func(t *testing.T, sd setupData) {
 				msg := &types.SimpleMessage{}
-				err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
+				_, err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
 
 				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val3"), "evm", "test", "bob3").Return(
@@ -312,8 +312,8 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 			expMsgsLen: 1,
 			preRun: func(t *testing.T, sd setupData) {
 				msg := &types.SimpleMessage{}
-				err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
-				err = sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
+				_, err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
+				_, err = sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
 
 				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val3"), "evm", "test", "bob3").Return(
@@ -370,9 +370,9 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 			expMsgsLen: 2,
 			preRun: func(t *testing.T, sd setupData) {
 				msg := &types.SimpleMessage{}
-				err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
+				_, err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
-				err = sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
+				_, err = sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
 
 				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val2"), "evm", "test", "bob2").Return(
@@ -451,7 +451,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 			name: "if it's signed by a validator which is not in the snapshot it skips it",
 			preRun: func(t *testing.T, sd setupData) {
 				msg := &types.SimpleMessage{}
-				err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
+				_, err := sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
 
 				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("404"), "evm", "test", "404").Return(
@@ -541,7 +541,7 @@ func TestAddingSignatures(t *testing.T) {
 		},
 	)
 
-	err := keeper.PutMessageInQueue(ctx, queue, &types.SimpleMessage{
+	_, err := keeper.PutMessageInQueue(ctx, queue, &types.SimpleMessage{
 		Sender: "bob",
 		Hello:  "hello",
 		World:  "mars",
