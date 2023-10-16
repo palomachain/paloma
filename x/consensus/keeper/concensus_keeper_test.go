@@ -217,7 +217,7 @@ func TestGetMessagesForRelaying(t *testing.T) {
 	require.NoError(t, err)
 
 	// message for test validator on other chain
-	_, err = k.PutMessageInQueue(ctx, queueWithValsetUpdatesPending, &evmtypes.Message{
+	origID, err := k.PutMessageInQueue(ctx, queueWithValsetUpdatesPending, &evmtypes.Message{
 		TurnstoneID:      "abc",
 		ChainReferenceID: "pending-chain",
 		Assignee:         val.String(),
@@ -247,9 +247,18 @@ func TestGetMessagesForRelaying(t *testing.T) {
 	}, nil)
 	require.NoError(t, err)
 
+	// message for test validator on other chain, AFTER the valset update
+	_, err = k.PutMessageInQueue(ctx, queueWithValsetUpdatesPending, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: "pending-chain",
+		Assignee:         val.String(),
+	}, nil)
+	require.NoError(t, err)
+
 	msgs, err = k.GetMessagesForRelaying(ctx, queueWithValsetUpdatesPending, val)
 	require.NoError(t, err)
-	require.Empty(t, msgs, "validator should not get any messages due to blocking update valset message")
+	require.Len(t, msgs, 1, "validator should get exactly 1 message, second message is blocked by valset update")
+	require.Equal(t, origID, msgs[0].GetId(), "should match ID of first message, not second")
 }
 
 func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
