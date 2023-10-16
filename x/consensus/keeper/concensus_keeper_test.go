@@ -233,7 +233,7 @@ func TestGetMessagesForRelaying(t *testing.T) {
 	require.Len(t, msgs, 1, "validator should get exactly 1 message")
 
 	// update valset message on other chain
-	_, err = k.PutMessageInQueue(ctx, queueWithValsetUpdatesPending, &evmtypes.Message{
+	vuID, err := k.PutMessageInQueue(ctx, queueWithValsetUpdatesPending, &evmtypes.Message{
 		TurnstoneID:      "abc",
 		ChainReferenceID: "pending-chain",
 		Assignee:         val.String(),
@@ -257,8 +257,9 @@ func TestGetMessagesForRelaying(t *testing.T) {
 
 	msgs, err = k.GetMessagesForRelaying(ctx, queueWithValsetUpdatesPending, val)
 	require.NoError(t, err)
-	require.Len(t, msgs, 1, "validator should get exactly 1 message, second message is blocked by valset update")
+	require.Len(t, msgs, 2, "validator should get exactly 2 messages, orig SLC & valset update, last message is blocked by valset update")
 	require.Equal(t, origID, msgs[0].GetId(), "should match ID of first message, not second")
+	require.Equal(t, vuID, msgs[1].GetId(), "should match ID of first message, not second")
 }
 
 func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {

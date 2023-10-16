@@ -163,7 +163,7 @@ func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, va
 
 		// Looks like there is a valset update for the target chain,
 		// only return true if this message is younger than the valset update
-		return msg.GetId() < vuMid
+		return msg.GetId() <= vuMid
 	})
 
 	// Filter down to just messages assigned to this validator
