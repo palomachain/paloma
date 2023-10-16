@@ -14,6 +14,7 @@ import (
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/consensus/types/mocks"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,6 +38,7 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 	appCodec := codec.NewProtoCodec(registry)
 
 	types.RegisterInterfaces(registry)
+	evmtypes.RegisterInterfaces(registry)
 
 	registry.RegisterImplementations((*types.ConsensusMsg)(nil),
 		&types.SimpleMessage{},

@@ -5,6 +5,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
@@ -111,6 +112,47 @@ func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, va
 	if err != nil {
 		return nil, err
 	}
+
+	// Check for existing valset update messages on any target chains
+	valsetUpdatesOnChainLkUp := make(map[string]struct{})
+	for _, v := range msgs {
+		cm, err := v.ConsensusMsg(k.cdc)
+		if err != nil {
+			liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("Failed to get consensus msg")
+			continue
+		}
+
+		m, ok := cm.(*evmtypes.Message)
+		if !ok {
+			continue
+		}
+
+		action := m.GetAction()
+		_, ok = action.(*evmtypes.Message_UpdateValset)
+		if ok {
+			valsetUpdatesOnChainLkUp[m.GetChainReferenceID()] = struct{}{}
+		}
+	}
+
+	// Filter down to just messages for target chains without pending valset updates on them
+	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
+		cm, err := msg.ConsensusMsg(k.cdc)
+		if err != nil {
+			// NO cross chain message, just return true
+			liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("Failed to get consensus msg")
+			return true
+		}
+
+		m, ok := cm.(*evmtypes.Message)
+		if !ok {
+			// NO cross chain message, just return true
+			return true
+		}
+
+		// Cross chain message for relaying, return only if no pending valset update on target chain
+		_, found := valsetUpdatesOnChainLkUp[m.GetChainReferenceID()]
+		return !found
+	})
 
 	// Filter down to just messages assigned to this validator
 	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {

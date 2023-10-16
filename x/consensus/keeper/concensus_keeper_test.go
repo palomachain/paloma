@@ -9,6 +9,7 @@ import (
 	consensusmock "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	"github.com/palomachain/paloma/x/consensus/types"
 	consensustypemocks "github.com/palomachain/paloma/x/consensus/types/mocks"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -157,6 +158,98 @@ func TestGetMessagesFromQueue(t *testing.T) {
 			asserter.Equal(tt.expectedCount, len(msgsInQueue))
 		})
 	}
+}
+
+func TestGetMessagesForRelaying(t *testing.T) {
+	k, _, ctx := newConsensusKeeper(t)
+	queue := types.Queue(defaultQueueName, chainType, chainReferenceID)
+	queueWithValsetUpdatesPending := types.Queue(defaultQueueName, chainType, "pending-chain")
+
+	uvType := &evmtypes.Message{}
+
+	types.RegisterInterfaces(types.ModuleCdc.InterfaceRegistry())
+	evmtypes.RegisterInterfaces(types.ModuleCdc.InterfaceRegistry())
+
+	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*types.ConsensusMsg)(nil), &evmtypes.Message{})
+	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*evmtypes.TurnstoneMsg)(nil), &evmtypes.Message{})
+
+	k.registry.Add(
+		queueSupporter{
+			opt: consensus.ApplyOpts(nil,
+				consensus.WithQueueTypeName(queue),
+				consensus.WithStaticTypeCheck(uvType),
+				consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte { return []byte{} }),
+				consensus.WithChainInfo(chainType, chainReferenceID),
+				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
+					return true
+				}),
+			),
+		},
+		queueSupporter{
+			opt: consensus.ApplyOpts(nil,
+				consensus.WithQueueTypeName(queueWithValsetUpdatesPending),
+				consensus.WithStaticTypeCheck(uvType),
+				consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte { return []byte{} }),
+				consensus.WithChainInfo(chainType, "pending-chain"),
+				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
+					return true
+				}),
+			),
+		},
+	)
+
+	val := sdk.ValAddress("validator-1")
+
+	// message for other validator
+	_, err := k.PutMessageInQueue(ctx, queue, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: chainReferenceID,
+		Assignee:         sdk.ValAddress("other-validator").String(),
+	}, nil)
+	require.NoError(t, err)
+
+	// message for test validator
+	_, err = k.PutMessageInQueue(ctx, queue, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: chainReferenceID,
+		Assignee:         val.String(),
+	}, nil)
+	require.NoError(t, err)
+
+	// message for test validator on other chain
+	_, err = k.PutMessageInQueue(ctx, queueWithValsetUpdatesPending, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: "pending-chain",
+		Assignee:         val.String(),
+	}, nil)
+	require.NoError(t, err)
+
+	msgs, err := k.GetMessagesForRelaying(ctx, queue, val)
+	require.NoError(t, err)
+	require.Len(t, msgs, 1, "validator should get exactly 1 message")
+
+	msgs, err = k.GetMessagesForRelaying(ctx, queueWithValsetUpdatesPending, val)
+	require.NoError(t, err)
+	require.Len(t, msgs, 1, "validator should get exactly 1 message")
+
+	// update valset message on other chain
+	_, err = k.PutMessageInQueue(ctx, queueWithValsetUpdatesPending, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: "pending-chain",
+		Assignee:         val.String(),
+		Action: &evmtypes.Message_UpdateValset{
+			UpdateValset: &evmtypes.UpdateValset{
+				Valset: &evmtypes.Valset{
+					ValsetID: 777,
+				},
+			},
+		},
+	}, nil)
+	require.NoError(t, err)
+
+	msgs, err = k.GetMessagesForRelaying(ctx, queueWithValsetUpdatesPending, val)
+	require.NoError(t, err)
+	require.Empty(t, msgs, "validator should not get any messages due to blocking update valset message")
 }
 
 func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
