@@ -5,6 +5,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
@@ -111,6 +112,59 @@ func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, va
 	if err != nil {
 		return nil, err
 	}
+
+	// Check for existing valset update messages on any target chains
+	valsetUpdatesOnChainLkUp := make(map[string]uint64)
+	for _, v := range msgs {
+		cm, err := v.ConsensusMsg(k.cdc)
+		if err != nil {
+			liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("Failed to get consensus msg")
+			continue
+		}
+
+		m, ok := cm.(*evmtypes.Message)
+		if !ok {
+			continue
+		}
+
+		action := m.GetAction()
+		_, ok = action.(*evmtypes.Message_UpdateValset)
+		if ok {
+			if _, found := valsetUpdatesOnChainLkUp[m.GetChainReferenceID()]; found {
+				// Looks like we already have a pending valset update for this chain,
+				// we want to keep the earlierst message ID for a valset update we found,
+				// so we can skip here.
+				continue
+			}
+			valsetUpdatesOnChainLkUp[m.GetChainReferenceID()] = v.GetId()
+		}
+	}
+
+	// Filter down to just messages for target chains without pending valset updates on them
+	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
+		cm, err := msg.ConsensusMsg(k.cdc)
+		if err != nil {
+			// NO cross chain message, just return true
+			liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("Failed to get consensus msg")
+			return true
+		}
+
+		m, ok := cm.(*evmtypes.Message)
+		if !ok {
+			// NO cross chain message, just return true
+			return true
+		}
+
+		// Cross chain message for relaying, return only if no pending valset update on target chain
+		vuMid, found := valsetUpdatesOnChainLkUp[m.GetChainReferenceID()]
+		if !found {
+			return true
+		}
+
+		// Looks like there is a valset update for the target chain,
+		// only return true if this message is younger than the valset update
+		return msg.GetId() <= vuMid
+	})
 
 	// Filter down to just messages assigned to this validator
 	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
