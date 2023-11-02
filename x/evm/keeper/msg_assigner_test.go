@@ -550,12 +550,27 @@ func TestPickValidatorForMessage(t *testing.T) {
 					Validators: []valsettypes.Validator{
 						{
 							Address: sdk.ValAddress("testvalidator1"),
+							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+								{
+									ChainReferenceID: "test-chain",
+								},
+							},
 						},
 						{
 							Address: sdk.ValAddress("testvalidator2"),
+							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+								{
+									ChainReferenceID: "test-chain",
+								},
+							},
 						},
 						{
 							Address: sdk.ValAddress("testvalidator3"),
+							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+								{
+									ChainReferenceID: "test-chain",
+								},
+							},
 						},
 					},
 				}
@@ -571,6 +586,7 @@ func TestPickValidatorForMessage(t *testing.T) {
 				Uptime:        "0.5",
 				Fee:           "0.5",
 			},
+			chainID:      "test-chain",
 			expected: sdk.ValAddress("testvalidator1").String(),
 		},
 		{
@@ -617,12 +633,27 @@ func TestPickValidatorForMessage(t *testing.T) {
 					Validators: []valsettypes.Validator{
 						{
 							Address: sdk.ValAddress("testvalidator1"),
+							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+								{
+									ChainReferenceID: "test-chain",
+								},
+							},
 						},
 						{
 							Address: sdk.ValAddress("testvalidator2"),
+							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+								{
+									ChainReferenceID: "test-chain",
+								},
+							},
 						},
 						{
 							Address: sdk.ValAddress("testvalidator3"),
+							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+								{
+									ChainReferenceID: "test-chain",
+								},
+							},
 						},
 					},
 				}
@@ -632,6 +663,7 @@ func TestPickValidatorForMessage(t *testing.T) {
 
 				return msgAssigner
 			},
+			chainID:      "test-chain",
 			expected: sdk.ValAddress("testvalidator1").String(),
 		},
 		{
@@ -648,6 +680,11 @@ func TestPickValidatorForMessage(t *testing.T) {
 					Validators: []valsettypes.Validator{
 						{
 							Address: sdk.ValAddress("testvalidator1"),
+							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+								{
+									ChainReferenceID: "test-chain",
+								},
+							},
 						},
 						{
 							Address: sdk.ValAddress("testvalidator2"),
@@ -657,6 +694,11 @@ func TestPickValidatorForMessage(t *testing.T) {
 						},
 						{
 							Address: sdk.ValAddress("testvalidator3"),
+							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+								{
+									ChainReferenceID: "test-chain",
+								},
+							},
 						},
 					},
 				}
@@ -689,8 +731,8 @@ func TestPickValidatorForMessage(t *testing.T) {
 
 			actual, actualErr := messageAssigner.PickValidatorForMessage(ctx, tt.weights, tt.chainID, tt.requirements)
 
-			asserter.Equal(tt.expected, actual)
-			asserter.Equal(tt.expectedErr, actualErr)
+			asserter.Equal(tt.expected, actual, tt.name)
+			asserter.Equal(tt.expectedErr, actualErr, tt.name)
 		})
 	}
 }
@@ -700,12 +742,27 @@ func TestFilterAssignableValidators(t *testing.T) {
 	defaultValidators := []valsettypes.Validator{
 		{
 			Address: sdk.ValAddress("validator-1"),
+			ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+				{
+					ChainReferenceID: "test-chain",
+				},
+			},
 		},
 		{
 			Address: sdk.ValAddress("validator-2"),
+			ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+				{
+					ChainReferenceID: "test-chain",
+				},
+			},
 		},
 		{
 			Address: sdk.ValAddress("validator-3"),
+			ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+				{
+					ChainReferenceID: "test-chain",
+				},
+			},
 		},
 	}
 	tests := []struct {
@@ -720,7 +777,7 @@ func TestFilterAssignableValidators(t *testing.T) {
 			name:         "with empty validator slice",
 			expectedStr:  "should return empty slice",
 			validators:   []valsettypes.Validator{},
-			expected:     []valsettypes.Validator{},
+			expected:     []valsettypes.Validator(nil),
 			requirements: nil,
 			chainID:      chainID,
 		},
@@ -814,6 +871,54 @@ func TestFilterAssignableValidators(t *testing.T) {
 				},
 			},
 			requirements: &xchain.JobRequirements{EnforceMEVRelay: true},
+			chainID:      chainID,
+		},
+		{
+			name:        "with validators not supporting required chain ID",
+			expectedStr: "should remove validators without full chain support from result set",
+			validators: []valsettypes.Validator{
+				{
+					Address: sdk.ValAddress("validator-1"),
+					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+						{
+							ChainReferenceID: "other-chain",
+						},
+					},
+				},
+				{
+					Address: sdk.ValAddress("validator-2"),
+					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+						{
+							ChainReferenceID: "other-chain",
+						},
+						{
+							ChainReferenceID: chainID,
+						},
+					},
+				},
+				{
+					Address: sdk.ValAddress("validator-3"),
+					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+						{
+							ChainReferenceID: "other-chain",
+						},
+					},
+				},
+			},
+			expected: []valsettypes.Validator{
+				{
+					Address: sdk.ValAddress("validator-2"),
+					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
+						{
+							ChainReferenceID: "other-chain",
+						},
+						{
+							ChainReferenceID: chainID,
+						},
+					},
+				},
+			},
+			requirements: nil,
 			chainID:      chainID,
 		},
 	}

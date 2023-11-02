@@ -17,14 +17,14 @@ type MsgAssigner struct {
 }
 
 func filterAssignableValidators(validators []valsettypes.Validator, chainID string, req *xchain.JobRequirements) []valsettypes.Validator {
-	if req == nil || req.EnforceMEVRelay == false {
-		return validators
-	}
-
 	return slice.Filter(validators, func(val valsettypes.Validator) bool {
 		for _, v := range val.ExternalChainInfos {
 			if v.ChainReferenceID != chainID {
 				continue
+			}
+
+			if req == nil || !req.EnforceMEVRelay {
+				return true
 			}
 
 			for _, t := range v.Traits {
