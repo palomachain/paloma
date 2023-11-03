@@ -7,6 +7,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
+	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -142,6 +143,10 @@ func TestQueryAllBatchConfirms(t *testing.T) {
 		EthSigner:     "0xf35e2cc8e6523d683ed44870f5b7cc785051a77d",
 		Orchestrator:  validatorAddr.String(),
 		Signature:     "d34db33f",
+		Metadata: vtypes.MsgMetadata{
+			Creator: validatorAddr.String(),
+			Signers: []string{validatorAddr.String()},
+		},
 	})
 	require.NoError(t, err)
 
@@ -156,6 +161,10 @@ func TestQueryAllBatchConfirms(t *testing.T) {
 				EthSigner:     "0xf35e2cc8e6523d683ed44870f5b7cc785051a77d",
 				Orchestrator:  "paloma1mgamdcs9dah0vn0gqupl05up7pedg2mvyy5e9j",
 				Signature:     "d34db33f",
+				Metadata: vtypes.MsgMetadata{
+					Creator: "paloma1mgamdcs9dah0vn0gqupl05up7pedg2mvyy5e9j",
+					Signers: []string{"paloma1mgamdcs9dah0vn0gqupl05up7pedg2mvyy5e9j"},
+				},
 			},
 		},
 	}

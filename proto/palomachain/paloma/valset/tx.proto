@@ -1,7 +1,9 @@
 syntax = "proto3";
 package palomachain.paloma.valset;
 
+import "gogoproto/gogo.proto";
 import "palomachain/paloma/valset/snapshot.proto";
+import "palomachain/paloma/valset/common.proto";
 
 option go_package = "github.com/palomachain/paloma/x/valset/types";
 
@@ -13,15 +15,17 @@ service Msg {
 }
 
 message MsgAddExternalChainInfoForValidator {
-  string                     creator    = 1;
+  string                     creator    = 1 [deprecated = true];
   repeated ExternalChainInfo chainInfos = 2;
+  palomachain.paloma.valset.MsgMetadata metadata = 3 [(gogoproto.nullable) = false];
 }
 
 message MsgAddExternalChainInfoForValidatorResponse {}
 
 message MsgKeepAlive {
-  string creator = 1;
+  string creator = 1 [deprecated = true];
   string pigeonVersion = 2;
+  palomachain.paloma.valset.MsgMetadata metadata = 3 [(gogoproto.nullable) = false];
 }
 
 message MsgKeepAliveResponse {}

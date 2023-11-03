@@ -5,6 +5,7 @@ import (
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/testutil/sample"
+	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,12 +19,20 @@ func TestMsgAddEvidence_ValidateBasic(t *testing.T) {
 			name: "invalid address",
 			msg: MsgAddEvidence{
 				Creator: "invalid_address",
+				Metadata: types.MsgMetadata{
+					Creator: "invalid_address",
+					Signers: []string{"invalid_address"},
+				},
 			},
 			err: sdkerrors.ErrInvalidAddress,
 		}, {
 			name: "valid address",
 			msg: MsgAddEvidence{
 				Creator: sample.AccAddress(),
+				Metadata: types.MsgMetadata{
+					Creator: sample.AccAddress(),
+					Signers: []string{sample.AccAddress()},
+				},
 			},
 		},
 	}

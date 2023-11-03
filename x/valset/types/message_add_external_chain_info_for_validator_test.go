@@ -18,12 +18,20 @@ func TestMsgAddExternalChainInfoForValidator_ValidateBasic(t *testing.T) {
 			name: "invalid address",
 			msg: MsgAddExternalChainInfoForValidator{
 				Creator: "invalid_address",
+				Metadata: MsgMetadata{
+					Creator: "invalid_address",
+					Signers: []string{"invalid_address"},
+				},
 			},
 			err: sdkerrors.ErrInvalidAddress,
 		}, {
 			name: "valid address",
 			msg: MsgAddExternalChainInfoForValidator{
 				Creator: sample.AccAddress(),
+				Metadata: MsgMetadata{
+					Creator: sample.AccAddress(),
+					Signers: []string{sample.AccAddress()},
+				},
 			},
 		},
 	}

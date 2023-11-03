@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/x/gravity/types"
+	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cobra"
 )
 
@@ -60,6 +61,10 @@ func CmdSendToEth() *cobra.Command {
 				EthDest:          ethDest,
 				Amount:           amount[0],
 				ChainReferenceId: chainReferenceID,
+				Metadata: vtypes.MsgMetadata{
+					Creator: cosmosAddr.String(),
+					Signers: []string{cosmosAddr.String()},
+				},
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -96,6 +101,10 @@ func CmdCancelSendToEth() *cobra.Command {
 			msg := types.MsgCancelSendToEth{
 				Sender:        cosmosAddr.String(),
 				TransactionId: txId,
+				Metadata: vtypes.MsgMetadata{
+					Creator: cosmosAddr.String(),
+					Signers: []string{cosmosAddr.String()},
+				},
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err

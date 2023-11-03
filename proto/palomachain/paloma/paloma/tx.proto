@@ -1,6 +1,9 @@
 syntax = "proto3";
 package palomachain.paloma.paloma;
 
+import "gogoproto/gogo.proto";
+import "palomachain/paloma/valset/common.proto";
+
 option go_package = "github.com/palomachain/paloma/x/paloma/types";
 
 service Msg {
@@ -8,16 +11,16 @@ service Msg {
     returns (EmptyResponse);
 }
 
-
 message MsgAddStatusUpdate {
   enum Level {
     LEVEL_DEBUG = 0;
     LEVEL_INFO = 1;
     LEVEL_ERROR = 2;
   }
-  string creator = 1;
+  string creator = 1 [deprecated = true];
   string status = 2;
   Level level = 3;
+  palomachain.paloma.valset.MsgMetadata metadata = 4 [(gogoproto.nullable) = false];
 }
 
 message EmptyResponse {}

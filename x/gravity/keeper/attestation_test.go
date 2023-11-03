@@ -8,6 +8,7 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/gravity/types"
+	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -98,6 +99,10 @@ func createAttestations(t *testing.T, length int, k Keeper, ctx sdktypes.Context
 			EthereumSender: sender,
 			PalomaReceiver: receiver,
 			Orchestrator:   orch,
+			Metadata: vtypes.MsgMetadata{
+				Creator: receiver,
+				Signers: []string{receiver},
+			},
 		}
 		msgs = append(msgs, msg)
 
@@ -219,6 +224,10 @@ func TestInvalidHeight(t *testing.T) {
 		TokenContract:    tokenContract,
 		ChainReferenceId: "test-chain",
 		Orchestrator:     sender.String(),
+		Metadata: vtypes.MsgMetadata{
+			Creator: sender.String(),
+			Signers: []string{sender.String()},
+		},
 	}
 	context := sdktypes.WrapSDKContext(ctx)
 	log.Info("Submitting bad eth claim from orchestrator 0", "sender", sender.String(), "val", val0.String())
@@ -242,6 +251,10 @@ func TestInvalidHeight(t *testing.T) {
 			TokenContract:    tokenContract,
 			ChainReferenceId: "test-chain",
 			Orchestrator:     orch.String(),
+			Metadata: vtypes.MsgMetadata{
+				Creator: orch.String(),
+				Signers: []string{orch.String()},
+			},
 		}
 		_, err := msgServer.BatchSendToEthClaim(context, &good)
 		require.NoError(t, err)
