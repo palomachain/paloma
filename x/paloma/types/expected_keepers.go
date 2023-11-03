@@ -1,8 +1,11 @@
 package types
 
 import (
+	context "context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -32,4 +35,8 @@ type ExternalChainSupporterKeeper interface {
 
 type UpgradeKeeper interface {
 	GetLastCompletedUpgrade(ctx sdk.Context) (string, int64)
+}
+
+type FeegrantKeeper interface {
+	AllowancesByGranter(ctx context.Context, req *feegrant.QueryAllowancesByGranterRequest) (*feegrant.QueryAllowancesByGranterResponse, error)
 }
