@@ -1,6 +1,8 @@
 syntax = "proto3";
 
+import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
+import "palomachain/paloma/valset/common.proto";
 package palomachain.paloma.consensus;
 
 option go_package = "github.com/palomachain/paloma/x/consensus/types";
@@ -18,8 +20,9 @@ service Msg {
 }
 
 message MsgAddMessagesSignatures {
-  string                             creator        = 1;
-  repeated ConsensusMessageSignature signedMessages = 2;
+  string                                creator        = 1 [deprecated = true];
+  repeated ConsensusMessageSignature    signedMessages = 2;
+  palomachain.paloma.valset.MsgMetadata metadata       = 3 [(gogoproto.nullable) = false];
 }
 
 message ConsensusMessageSignature {
@@ -32,36 +35,40 @@ message ConsensusMessageSignature {
 message MsgAddMessagesSignaturesResponse {}
 
 message MsgDeleteJob {
-  string creator       = 1;
-  string queueTypeName = 2;
-  uint64 messageID     = 3;
+  string                                creator        = 1 [deprecated = true];
+  string                                queueTypeName  = 2;
+  uint64                                messageID      = 3;
+  palomachain.paloma.valset.MsgMetadata metadata       = 4 [(gogoproto.nullable) = false];
 }
 
 message MsgDeleteJobResponse {}
 
 message MsgAddEvidence {
-  string              creator       = 1;
-  google.protobuf.Any proof         = 2;
-  uint64              messageID     = 3;
-  string              queueTypeName = 4;
+  string                                creator        = 1 [deprecated = true];
+  google.protobuf.Any                   proof          = 2;
+  uint64                                messageID      = 3;
+  string                                queueTypeName  = 4;
+  palomachain.paloma.valset.MsgMetadata metadata       = 5 [(gogoproto.nullable) = false];
 }
 
 message MsgAddEvidenceResponse {}
 
 message MsgSetPublicAccessData {
-  string creator       = 1;
-  uint64 messageID     = 2;
-  string queueTypeName = 3;
-  bytes  data          = 4;
+  string                                creator       = 1 [deprecated = true];
+  uint64                                messageID     = 2;
+  string                                queueTypeName = 3;
+  bytes                                 data          = 4;
+  palomachain.paloma.valset.MsgMetadata metadata      = 5 [(gogoproto.nullable) = false];
 }
 
 message MsgSetPublicAccessDataResponse {}
 
 message MsgSetErrorData {
-  string creator       = 1;
-  uint64 messageID     = 2;
-  string queueTypeName = 3;
-  bytes  data          = 4;
+  string                                creator       = 1 [deprecated = true];
+  uint64                                messageID     = 2;
+  string                                queueTypeName = 3;
+  bytes                                 data          = 4;
+  palomachain.paloma.valset.MsgMetadata metadata      = 5 [(gogoproto.nullable) = false];
 }
 
 message MsgSetErrorDataResponse {}

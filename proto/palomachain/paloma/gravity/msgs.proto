@@ -4,6 +4,7 @@ package palomachain.paloma.gravity;
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos_proto/cosmos.proto";
 import "palomachain/paloma/gravity/types.proto";
+import "palomachain/paloma/valset/common.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/any.proto";
@@ -29,12 +30,13 @@ service Msg {
 // the coin to send across the bridge, note the restriction that this is a
 // single coin not a set of coins that is normal in other Cosmos messages
 message MsgSendToEth {
-  string                   sender   = 1;
+  string                   sender   = 1 [deprecated = true];
   string                   eth_dest = 2;
   cosmos.base.v1beta1.Coin amount   = 3 [
     (gogoproto.nullable) = false
   ];
   string chain_reference_id = 4;
+  palomachain.paloma.valset.MsgMetadata metadata       = 5 [(gogoproto.nullable) = false];
 }
 
 message MsgSendToEthResponse {}
@@ -53,6 +55,7 @@ message MsgConfirmBatch {
   string eth_signer     = 3;
   string orchestrator   = 4;
   string signature      = 5;
+  palomachain.paloma.valset.MsgMetadata metadata       = 6 [(gogoproto.nullable) = false];
 }
 
 message MsgConfirmBatchResponse {}
@@ -74,6 +77,7 @@ message MsgSendToPalomaClaim {
   string paloma_receiver = 6;
   string orchestrator    = 7;
   string chain_reference_id = 8;
+  palomachain.paloma.valset.MsgMetadata metadata       = 9 [(gogoproto.nullable) = false];
 }
 
 message MsgSendToPalomaClaimResponse {}
@@ -87,6 +91,7 @@ message MsgBatchSendToEthClaim {
   string token_contract = 4;
   string chain_reference_id = 5;
   string orchestrator   = 6;
+  palomachain.paloma.valset.MsgMetadata metadata       = 7 [(gogoproto.nullable) = false];
 }
 
 message MsgBatchSendToEthClaimResponse {}
@@ -96,7 +101,8 @@ message MsgBatchSendToEthClaimResponse {}
 // of the tokens
 message MsgCancelSendToEth {
   uint64 transaction_id = 1;
-  string sender         = 2;
+  string sender         = 2 [deprecated = true];
+  palomachain.paloma.valset.MsgMetadata metadata       = 3 [(gogoproto.nullable) = false];
 }
 
 message MsgCancelSendToEthResponse {}
@@ -109,8 +115,9 @@ message MsgSubmitBadSignatureEvidence {
   google.protobuf.Any subject = 1
       [ (cosmos_proto.accepts_interface) = "EthereumSigned" ];
   string              signature = 2;
-  string              sender    = 3;
+  string              sender    = 3 [deprecated = true];
   string chain_reference_id = 4;
+  palomachain.paloma.valset.MsgMetadata metadata       = 5 [(gogoproto.nullable) = false];
 }
 
 message MsgSubmitBadSignatureEvidenceResponse {}
