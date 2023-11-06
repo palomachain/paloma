@@ -157,9 +157,9 @@ func (k msgServer) claimHandlerCommon(ctx sdk.Context, msgAny *codectypes.Any, m
 	// Emit the handle message event
 	return ctx.EventManager().EmitTypedEvent(
 		&types.EventClaim{
-			Message:       string(msg.GetType()),
-			ClaimHash:     string(hash),
-			AttestationId: string(types.GetAttestationKey(msg.GetEventNonce(), hash)),
+			Message:       msg.GetType().String(),
+			ClaimHash:     fmt.Sprintf("%x", hash),
+			AttestationId: fmt.Sprintf("%x", types.GetAttestationKey(msg.GetEventNonce(), hash)),
 		},
 	)
 }
