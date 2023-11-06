@@ -12,13 +12,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.21.3'
       - name: Run tests
         run: go test -v ./...
       - name: Go lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.51.2
+          version: v1.55.2
           args: --verbose
           # Optional: if set to true then the all caching functionality will be complete disabled,
           #           takes precedence over all other caching options.

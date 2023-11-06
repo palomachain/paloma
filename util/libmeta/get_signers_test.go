@@ -41,7 +41,7 @@ func Test_GetSigners(t *testing.T) {
 	}{
 		{
 			name:    "with one valid signer",
-			signers: []string{sdk.AccAddress("addres-1").String()},
+			signers: []string{sdk.AccAddress("address-1").String()},
 			creator: "",
 			panics:  false,
 		},
@@ -53,13 +53,13 @@ func Test_GetSigners(t *testing.T) {
 		},
 		{
 			name:    "with multiple valid signers",
-			signers: []string{sdk.AccAddress("addres-1").String(), sdk.AccAddress("addres-2").String(), sdk.AccAddress("addres-3").String()},
+			signers: []string{sdk.AccAddress("address-1").String(), sdk.AccAddress("address-2").String(), sdk.AccAddress("address-3").String()},
 			creator: "",
 			panics:  false,
 		},
 		{
 			name:    "with an invalid signer among multiple valid signers",
-			signers: []string{"foo", sdk.AccAddress("addres-2").String(), sdk.AccAddress("addres-3").String()},
+			signers: []string{"foo", sdk.AccAddress("address-2").String(), sdk.AccAddress("address-3").String()},
 			creator: "",
 			panics:  true,
 		},

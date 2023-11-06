@@ -913,7 +913,7 @@ func New(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 
-	anteHandler, err := ante.NewAnteHandler(
+	baseAnteHandler, err := ante.NewAnteHandler(
 		ante.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
@@ -925,6 +925,17 @@ func New(
 	if err != nil {
 		panic(err)
 	}
+	anteDecorators := []sdk.AnteDecorator{
+		palomamodule.NewAnteHandlerDecorator(baseAnteHandler),
+	}
+	anteDecorators = append(anteDecorators,
+		palomamodule.NewLogMsgDecorator(app.appCodec),
+		palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
+	)
+
+	anteHandler := sdk.ChainAnteDecorators(
+		anteDecorators...,
+	)
 
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
