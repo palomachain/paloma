@@ -586,7 +586,7 @@ func TestPickValidatorForMessage(t *testing.T) {
 				Uptime:        "0.5",
 				Fee:           "0.5",
 			},
-			chainID:      "test-chain",
+			chainID:  "test-chain",
 			expected: sdk.ValAddress("testvalidator1").String(),
 		},
 		{
@@ -620,7 +620,9 @@ func TestPickValidatorForMessage(t *testing.T) {
 			expectedErr: errors.New("no snapshot found"),
 		},
 		{
-			name: "assigns a consistent pseudo-random validator in the happy path when no weights exist (cold start)",
+			chainID:  "test-chain",
+			expected: sdk.ValAddress("testvalidator1").String(),
+			name:     "assigns a consistent pseudo-random validator in the happy path when no weights exist (cold start)",
 			setup: func() MsgAssigner {
 				msgAssigner := MsgAssigner{}
 
@@ -663,8 +665,6 @@ func TestPickValidatorForMessage(t *testing.T) {
 
 				return msgAssigner
 			},
-			chainID:      "test-chain",
-			expected: sdk.ValAddress("testvalidator1").String(),
 		},
 		{
 			name: "applies validator filtering based on job requirements",
