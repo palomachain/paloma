@@ -119,10 +119,10 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 				continue
 			}
 
+			logger(ctx).Debug("found allowanec", "granter", v.GetGranter(), "grantee", v.GetGrantee())
 			grantsLkUp[v.GetGrantee()] = *v
 		}
 
-		logger(ctx).Debug("grant lookup built", "map", grantsLkUp)
 		grantees := make([]string, 0, len(signers))
 		for _, signer := range signers {
 			if v, found := grantsLkUp[signer.String()]; found {
