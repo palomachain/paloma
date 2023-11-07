@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/palomachain/paloma/x/evm/types"
+	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cobra"
 )
 
@@ -29,10 +30,15 @@ func CmdRemoveSmartContractDeployment() *cobra.Command {
 			}
 			chainReferenceID := args[1]
 
+			creator := clientCtx.GetFromAddress().String()
 			msg := &types.MsgRemoveSmartContractDeploymentRequest{
-				Sender:           clientCtx.GetFromAddress().String(),
+				Sender:           creator,
 				SmartContractID:  uint64(smartContractID),
 				ChainReferenceID: chainReferenceID,
+				Metadata: vtypes.MsgMetadata{
+					Creator: creator,
+					Signers: []string{creator},
+				},
 			}
 
 			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)

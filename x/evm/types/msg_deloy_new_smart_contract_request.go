@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/libmeta"
+	types "github.com/palomachain/paloma/x/valset/types"
 )
 
 const TypeMsgDeployNewSmartContractRequest = "deploy_new_smart_contract_request"
@@ -14,6 +15,10 @@ func NewMsgDeployNewSmartContractRequest(creator sdk.AccAddress, title string, d
 		Description: description,
 		AbiJSON:     abiJSON,
 		BytecodeHex: bytecode,
+		Metadata: types.MsgMetadata{
+			Creator: creator.String(),
+			Signers: []string{creator.String()},
+		},
 	}
 }
 

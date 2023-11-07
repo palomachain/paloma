@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/libmeta"
+	types "github.com/palomachain/paloma/x/valset/types"
 )
 
 const TypeMsgDeleteJob = "delete_job"
@@ -14,6 +15,10 @@ func NewMsgDeleteJob(creator string, queueTypeName string, messageID uint64) *Ms
 		Creator:       creator,
 		QueueTypeName: queueTypeName,
 		MessageID:     messageID,
+		Metadata: types.MsgMetadata{
+			Creator: creator,
+			Signers: []string{creator},
+		},
 	}
 }
 
