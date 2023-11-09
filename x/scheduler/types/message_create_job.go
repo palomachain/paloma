@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/palomachain/paloma/util/libmeta"
 )
 
 const TypeMsgCreateJob = "create_job"
@@ -24,11 +24,7 @@ func (msg *MsgCreateJob) Type() string {
 }
 
 func (msg *MsgCreateJob) GetSigners() []sdk.AccAddress {
-	creator, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		panic(err)
-	}
-	return []sdk.AccAddress{creator}
+	return libmeta.GetSigners(msg)
 }
 
 func (msg *MsgCreateJob) GetSignBytes() []byte {
@@ -37,9 +33,5 @@ func (msg *MsgCreateJob) GetSignBytes() []byte {
 }
 
 func (msg *MsgCreateJob) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
-	}
-	return msg.Job.ValidateBasic()
+	return libmeta.ValidateBasic(msg)
 }

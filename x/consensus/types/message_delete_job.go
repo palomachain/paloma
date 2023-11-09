@@ -2,7 +2,8 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/palomachain/paloma/util/libmeta"
+	types "github.com/palomachain/paloma/x/valset/types"
 )
 
 const TypeMsgDeleteJob = "delete_job"
@@ -14,6 +15,10 @@ func NewMsgDeleteJob(creator string, queueTypeName string, messageID uint64) *Ms
 		Creator:       creator,
 		QueueTypeName: queueTypeName,
 		MessageID:     messageID,
+		Metadata: types.MsgMetadata{
+			Creator: creator,
+			Signers: []string{creator},
+		},
 	}
 }
 
@@ -26,11 +31,7 @@ func (msg *MsgDeleteJob) Type() string {
 }
 
 func (msg *MsgDeleteJob) GetSigners() []sdk.AccAddress {
-	creator, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		panic(err)
-	}
-	return []sdk.AccAddress{creator}
+	return libmeta.GetSigners(msg)
 }
 
 func (msg *MsgDeleteJob) GetSignBytes() []byte {
@@ -39,9 +40,5 @@ func (msg *MsgDeleteJob) GetSignBytes() []byte {
 }
 
 func (msg *MsgDeleteJob) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
-	}
-	return nil
+	return libmeta.ValidateBasic(msg)
 }

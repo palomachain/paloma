@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/palomachain/paloma/util/libmeta"
 )
 
 const TypeMsgAddEvidence = "add_evidence"
@@ -18,11 +18,7 @@ func (msg *MsgAddEvidence) Type() string {
 }
 
 func (msg *MsgAddEvidence) GetSigners() []sdk.AccAddress {
-	creator, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		panic(err)
-	}
-	return []sdk.AccAddress{creator}
+	return libmeta.GetSigners(msg)
 }
 
 func (msg *MsgAddEvidence) GetSignBytes() []byte {
@@ -31,9 +27,5 @@ func (msg *MsgAddEvidence) GetSignBytes() []byte {
 }
 
 func (msg *MsgAddEvidence) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
-	}
-	return nil
+	return libmeta.ValidateBasic(msg)
 }

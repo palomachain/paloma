@@ -6,6 +6,7 @@ import (
 	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
+	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -60,6 +61,10 @@ func TestAttestationIterator(t *testing.T) {
 		EthereumSender: EthAddrs[0].String(),
 		PalomaReceiver: AccAddrs[0].String(),
 		Orchestrator:   AccAddrs[0].String(),
+		Metadata: vtypes.MsgMetadata{
+			Creator: AccAddrs[0].String(),
+			Signers: []string{AccAddrs[0].String()},
+		},
 	}
 	ne1, err := codecTypes.NewAnyWithValue(claim1)
 	require.NoError(t, err)
@@ -76,6 +81,10 @@ func TestAttestationIterator(t *testing.T) {
 		EthereumSender: EthAddrs[0].String(),
 		PalomaReceiver: AccAddrs[0].String(),
 		Orchestrator:   AccAddrs[0].String(),
+		Metadata: vtypes.MsgMetadata{
+			Creator: AccAddrs[0].String(),
+			Signers: []string{AccAddrs[0].String()},
+		},
 	}
 	ne2, err := codecTypes.NewAnyWithValue(claim2)
 	require.NoError(t, err)

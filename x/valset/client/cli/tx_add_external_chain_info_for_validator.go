@@ -26,12 +26,17 @@ func CmdAddExternalChainInfoForValidator() *cobra.Command {
 				return err
 			}
 
+			creator := clientCtx.GetFromAddress().String()
 			msg := &types.MsgAddExternalChainInfoForValidator{
 				ChainInfos: []*types.ExternalChainInfo{
 					{
 						ChainReferenceID: argChainReferenceID,
 						Address:          argAddress,
 					},
+				},
+				Metadata: types.MsgMetadata{
+					Creator: creator,
+					Signers: []string{creator},
 				},
 			}
 			if err := msg.ValidateBasic(); err != nil {

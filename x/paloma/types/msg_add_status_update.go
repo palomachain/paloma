@@ -1,9 +1,8 @@
 package types
 
 import (
-	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdker "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/palomachain/paloma/util/libmeta"
 )
 
 const TypeMsgAddStatusUpdate = "add_status_update"
@@ -19,11 +18,7 @@ func (msg *MsgAddStatusUpdate) Type() string {
 }
 
 func (msg *MsgAddStatusUpdate) GetSigners() []sdk.AccAddress {
-	creator, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		panic(err)
-	}
-	return []sdk.AccAddress{creator}
+	return libmeta.GetSigners(msg)
 }
 
 func (msg *MsgAddStatusUpdate) GetSignBytes() []byte {
@@ -32,9 +27,5 @@ func (msg *MsgAddStatusUpdate) GetSignBytes() []byte {
 }
 
 func (msg *MsgAddStatusUpdate) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		return sdkerrors.Wrapf(sdker.ErrInvalidAddress, "invalid creator address (%s)", err)
-	}
-	return nil
+	return libmeta.ValidateBasic(msg)
 }

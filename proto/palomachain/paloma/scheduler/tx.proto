@@ -2,6 +2,7 @@ syntax = "proto3";
 package palomachain.paloma.scheduler;
 
 import "palomachain/paloma/scheduler/job.proto";
+import "palomachain/paloma/valset/common.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
@@ -13,16 +14,18 @@ service Msg {
 }
 
 message MsgCreateJob {
-  string creator = 1;
+  string creator = 1 [deprecated = true];
   Job    job     = 2;
+  palomachain.paloma.valset.MsgMetadata metadata = 3 [(gogoproto.nullable) = false];
 }
 
 message MsgCreateJobResponse {}
 
 message MsgExecuteJob {
-  string creator = 1;
+  string creator = 1 [deprecated = true];
   string jobID   = 2;
   bytes  payload = 3;
+  palomachain.paloma.valset.MsgMetadata metadata = 4 [(gogoproto.nullable) = false];
 }
 
 message MsgExecuteJobResponse {

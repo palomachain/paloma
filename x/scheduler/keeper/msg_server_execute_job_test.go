@@ -10,6 +10,7 @@ import (
 	authmocks "github.com/palomachain/paloma/testutil/third_party_mocks/cosmos/cosmos-sdk/x/auth/types/mocks"
 	"github.com/palomachain/paloma/x/scheduler/types"
 	"github.com/palomachain/paloma/x/scheduler/types/mocks"
+	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -89,10 +90,15 @@ func TestExecuteJob(t *testing.T) {
 	for _, tt := range testcases {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+			creator := "cosmos1l2j8vaykh03zenzytntj3cza6zfxwlj6lgqvd5"
 			msg := types.MsgExecuteJob{
-				Creator: "cosmos1l2j8vaykh03zenzytntj3cza6zfxwlj6lgqvd5",
+				Creator: creator,
 				JobID:   "test_job_1",
 				Payload: []byte(``),
+				Metadata: vtypes.MsgMetadata{
+					Creator: creator,
+					Signers: []string{creator},
+				},
 			}
 
 			actual, actualErr := tt.msgServer().ExecuteJob(ctx, &msg)

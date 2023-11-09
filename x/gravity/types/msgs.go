@@ -7,6 +7,7 @@ import (
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/palomachain/paloma/util/libmeta"
 )
 
 // nolint: exhaustruct
@@ -38,8 +39,8 @@ func (msg MsgSendToEth) Type() string { return "send_to_eth" }
 // ValidateBasic runs stateless checks on the message
 // Checks if the Eth address is valid
 func (msg MsgSendToEth) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Sender)
+	if err := libmeta.ValidateBasic(&msg); err != nil {
+		return err
 	}
 
 	if !msg.Amount.IsValid() || msg.Amount.IsZero() {
@@ -59,12 +60,7 @@ func (msg MsgSendToEth) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgSendToEth) GetSigners() []sdk.AccAddress {
-	acc, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		panic(err)
-	}
-
-	return []sdk.AccAddress{acc}
+	return libmeta.GetSigners(&msg)
 }
 
 // Route should return the name of the module
@@ -75,9 +71,10 @@ func (msg MsgConfirmBatch) Type() string { return "confirm_batch" }
 
 // ValidateBasic performs stateless checks
 func (msg MsgConfirmBatch) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(msg.Orchestrator); err != nil {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Orchestrator)
+	if err := libmeta.ValidateBasic(&msg); err != nil {
+		return err
 	}
+
 	if err := ValidateEthAddress(msg.EthSigner); err != nil {
 		return sdkerrors.Wrap(err, "eth signer")
 	}
@@ -98,11 +95,7 @@ func (msg MsgConfirmBatch) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgConfirmBatch) GetSigners() []sdk.AccAddress {
-	acc, err := sdk.AccAddressFromBech32(msg.Orchestrator)
-	if err != nil {
-		panic(err)
-	}
-	return []sdk.AccAddress{acc}
+	return libmeta.GetSigners(&msg)
 }
 
 // EthereumClaim represents a claim on ethereum state
@@ -149,14 +142,14 @@ func (msg *MsgSendToPalomaClaim) GetType() ClaimType {
 
 // ValidateBasic performs stateless checks
 func (msg *MsgSendToPalomaClaim) ValidateBasic() error {
+	if err := libmeta.ValidateBasic(msg); err != nil {
+		return err
+	}
 	if err := ValidateEthAddress(msg.EthereumSender); err != nil {
 		return sdkerrors.Wrap(err, "eth sender")
 	}
 	if err := ValidateEthAddress(msg.TokenContract); err != nil {
 		return sdkerrors.Wrap(err, "erc20 token")
-	}
-	if _, err := sdk.AccAddressFromBech32(msg.Orchestrator); err != nil {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "orchestrator")
 	}
 	// note the destination address is intentionally not validated here, since
 	// MsgSendToEth has it's destination as a string many invalid inputs are possible
@@ -193,12 +186,7 @@ func (msg MsgSendToPalomaClaim) GetClaimer() sdk.AccAddress {
 
 // GetSigners defines whose signature is required
 func (msg MsgSendToPalomaClaim) GetSigners() []sdk.AccAddress {
-	acc, err := sdk.AccAddressFromBech32(msg.Orchestrator)
-	if err != nil {
-		panic(err)
-	}
-
-	return []sdk.AccAddress{acc}
+	return libmeta.GetSigners(&msg)
 }
 
 // Type should return the action
@@ -232,6 +220,9 @@ func (msg *MsgBatchSendToEthClaim) GetType() ClaimType {
 
 // ValidateBasic performs stateless checks
 func (e *MsgBatchSendToEthClaim) ValidateBasic() error {
+	if err := libmeta.ValidateBasic(e); err != nil {
+		return err
+	}
 	if e.EventNonce == 0 {
 		return fmt.Errorf("event_nonce == 0")
 	}
@@ -240,9 +231,6 @@ func (e *MsgBatchSendToEthClaim) ValidateBasic() error {
 	}
 	if err := ValidateEthAddress(e.TokenContract); err != nil {
 		return sdkerrors.Wrap(err, "erc20 token")
-	}
-	if _, err := sdk.AccAddressFromBech32(e.Orchestrator); err != nil {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, e.Orchestrator)
 	}
 	return nil
 }
@@ -272,12 +260,7 @@ func (msg MsgBatchSendToEthClaim) GetClaimer() sdk.AccAddress {
 
 // GetSigners defines whose signature is required
 func (msg MsgBatchSendToEthClaim) GetSigners() []sdk.AccAddress {
-	acc, err := sdk.AccAddressFromBech32(msg.Orchestrator)
-	if err != nil {
-		panic(err)
-	}
-
-	return []sdk.AccAddress{acc}
+	return libmeta.GetSigners(&msg)
 }
 
 // Route should return the name of the module
@@ -306,11 +289,7 @@ func (msg *MsgCancelSendToEth) Type() string { return "cancel_send_to_eth" }
 
 // ValidateBasic performs stateless checks
 func (msg *MsgCancelSendToEth) ValidateBasic() (err error) {
-	_, err = sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return err
-	}
-	return nil
+	return libmeta.ValidateBasic(msg)
 }
 
 // GetSignBytes encodes the message for signing
@@ -320,11 +299,7 @@ func (msg *MsgCancelSendToEth) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg *MsgCancelSendToEth) GetSigners() []sdk.AccAddress {
-	acc, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		panic(err)
-	}
-	return []sdk.AccAddress{acc}
+	return libmeta.GetSigners(msg)
 }
 
 // MsgSubmitBadSignatureEvidence
@@ -332,11 +307,7 @@ func (msg *MsgCancelSendToEth) GetSigners() []sdk.AccAddress {
 
 // ValidateBasic performs stateless checks
 func (e *MsgSubmitBadSignatureEvidence) ValidateBasic() (err error) {
-	_, err = sdk.AccAddressFromBech32(e.Sender)
-	if err != nil {
-		return err
-	}
-	return nil
+	return libmeta.ValidateBasic(e)
 }
 
 // GetSignBytes encodes the message for signing

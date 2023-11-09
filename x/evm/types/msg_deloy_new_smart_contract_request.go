@@ -2,7 +2,8 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/palomachain/paloma/util/libmeta"
+	types "github.com/palomachain/paloma/x/valset/types"
 )
 
 const TypeMsgDeployNewSmartContractRequest = "deploy_new_smart_contract_request"
@@ -14,6 +15,10 @@ func NewMsgDeployNewSmartContractRequest(creator sdk.AccAddress, title string, d
 		Description: description,
 		AbiJSON:     abiJSON,
 		BytecodeHex: bytecode,
+		Metadata: types.MsgMetadata{
+			Creator: creator.String(),
+			Signers: []string{creator.String()},
+		},
 	}
 }
 
@@ -26,11 +31,7 @@ func (msg *MsgDeployNewSmartContractRequest) Type() string {
 }
 
 func (msg *MsgDeployNewSmartContractRequest) GetSigners() []sdk.AccAddress {
-	creator, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		panic(err)
-	}
-	return []sdk.AccAddress{creator}
+	return libmeta.GetSigners(msg)
 }
 
 func (msg *MsgDeployNewSmartContractRequest) GetSignBytes() []byte {
@@ -39,10 +40,5 @@ func (msg *MsgDeployNewSmartContractRequest) GetSignBytes() []byte {
 }
 
 func (msg *MsgDeployNewSmartContractRequest) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
-	}
-
-	return nil
+	return libmeta.ValidateBasic(msg)
 }

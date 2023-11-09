@@ -7,6 +7,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
+	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -120,6 +121,10 @@ func TestBatches(t *testing.T) {
 			EthSigner:     ethAddr.GetAddress().Hex(),
 			Orchestrator:  orch.String(),
 			Signature:     "1234",
+			Metadata: vtypes.MsgMetadata{
+				Creator: orch.String(),
+				Signers: []string{orch.String()},
+			},
 		}
 
 		_, err = input.GravityKeeper.SetBatchConfirm(ctx, conf)
@@ -210,6 +215,10 @@ func TestBatches(t *testing.T) {
 			EthSigner:     ethAddr.GetAddress().Hex(),
 			Orchestrator:  orch.String(),
 			Signature:     "1234",
+			Metadata: vtypes.MsgMetadata{
+				Creator: orch.String(),
+				Signers: []string{orch.String()},
+			},
 		}
 
 		_, err = input.GravityKeeper.SetBatchConfirm(ctx, conf)
@@ -237,6 +246,10 @@ func TestBatches(t *testing.T) {
 		BatchNonce:       secondBatch.BatchNonce,
 		TokenContract:    secondBatch.TokenContract.GetAddress().String(),
 		ChainReferenceId: secondBatch.GetChainReferenceID(),
+		Metadata: vtypes.MsgMetadata{
+			Creator: OrchAddrs[0].String(),
+			Signers: []string{OrchAddrs[0].String()},
+		},
 	}
 	err = input.GravityKeeper.OutgoingTxBatchExecuted(ctx, secondBatch.TokenContract, msg)
 	require.NoError(t, err)
