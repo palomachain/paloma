@@ -14,7 +14,7 @@ func (msgSrv msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJ
 	logger.Debug("Received ExecuteJob message.")
 
 	// Find the public key of the sender
-	senderAddress := msgSrv.GetAccount(ctx, msg.GetSigners()[0]).GetAddress()
+	senderAddress := msgSrv.GetAccount(ctx, sdk.AccAddress(msg.GetMetadata().Creator)).GetAddress()
 
 	msgID, err := msgSrv.Keeper.ExecuteJob(ctx, msg.GetJobID(), msg.GetPayload(), senderAddress, nil)
 	if err != nil {
