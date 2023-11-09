@@ -119,7 +119,7 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 				continue
 			}
 
-			logger(ctx).Debug("found allowanec", "granter", v.GetGranter(), "grantee", v.GetGrantee())
+			logger(ctx).Debug("found allowance", "granter", v.GetGranter(), "grantee", v.GetGrantee())
 			grantsLkUp[v.GetGrantee()] = *v
 		}
 
