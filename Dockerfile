@@ -1,7 +1,7 @@
 ###########################
 ####     Base image    ####
 ###########################
-FROM golang:1.20-buster AS base
+FROM golang:1.21-buster AS base
 
 # TODO add non-root user
 
