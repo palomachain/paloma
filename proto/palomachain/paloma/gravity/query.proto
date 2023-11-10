@@ -16,7 +16,8 @@ option go_package = "github.com/palomachain/paloma/x/gravity/types";
 service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {}
   rpc LastPendingBatchRequestByAddr(QueryLastPendingBatchRequestByAddrRequest) returns (QueryLastPendingBatchRequestByAddrResponse) {}
-  rpc LastEventNonceByAddr(QueryLastEventNonceByAddrRequest) returns (QueryLastEventNonceByAddrResponse) {}
+  rpc LastEventNonce(QueryLastEventNonceRequest) returns (QueryLastEventNonceResponse) {}
+  rpc LastEventNonceByAddr(QueryLastEventNonceByAddrRequest) returns (QueryLastEventNonceResponse) {}
   rpc OutgoingTxBatches(QueryOutgoingTxBatchesRequest) returns (QueryOutgoingTxBatchesResponse) {}
   rpc BatchRequestByNonce(QueryBatchRequestByNonceRequest) returns (QueryBatchRequestByNonceResponse) {}
   rpc BatchConfirms(QueryBatchConfirmsRequest) returns (QueryBatchConfirmsResponse) {}
@@ -67,10 +68,11 @@ message QueryBatchConfirmsResponse {
   repeated MsgConfirmBatch confirms = 1 [(gogoproto.nullable) = false];
 }
 
+message QueryLastEventNonceRequest {}
 message QueryLastEventNonceByAddrRequest {
   string address = 1;
 }
-message QueryLastEventNonceByAddrResponse {
+message QueryLastEventNonceResponse {
   uint64 event_nonce = 1;
 }
 

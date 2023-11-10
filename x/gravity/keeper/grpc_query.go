@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/x/gravity/types"
@@ -32,7 +33,7 @@ func (k Keeper) LastPendingBatchRequestByAddr(
 ) (*types.QueryLastPendingBatchRequestByAddrResponse, error) {
 	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "address invalid")
+		return nil, errors.Wrap(sdkerrors.ErrInvalidRequest, "address invalid")
 	}
 
 	var pendingBatchReq types.InternalOutgoingTxBatches
@@ -101,7 +102,7 @@ func (k Keeper) BatchRequestByNonce(
 ) (*types.QueryBatchRequestByNonceResponse, error) {
 	addr, err := types.NewEthAddress(req.ContractAddress)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, err.Error())
+		return nil, errors.Wrap(sdkerrors.ErrUnknownRequest, err.Error())
 	}
 
 	foundBatch, err := k.GetOutgoingTXBatch(sdk.UnwrapSDKContext(c), *addr, req.Nonce)
@@ -109,7 +110,7 @@ func (k Keeper) BatchRequestByNonce(
 		return nil, err
 	}
 	if foundBatch == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "cannot find tx batch")
+		return nil, errors.Wrap(sdkerrors.ErrUnknownRequest, "cannot find tx batch")
 	}
 
 	return &types.QueryBatchRequestByNonceResponse{Batch: foundBatch.ToExternal()}, nil
@@ -123,7 +124,7 @@ func (k Keeper) BatchConfirms(
 	var confirms []types.MsgConfirmBatch
 	contract, err := types.NewEthAddress(req.ContractAddress)
 	if err != nil {
-		return nil, sdkerrors.Wrap(err, "invalid contract address in request")
+		return nil, errors.Wrap(err, "invalid contract address in request")
 	}
 	err = k.IterateBatchConfirmByNonceAndTokenContract(sdk.UnwrapSDKContext(c),
 		req.Nonce, *contract, func(_ []byte, c types.MsgConfirmBatch) bool {
@@ -136,27 +137,42 @@ func (k Keeper) BatchConfirms(
 	return &types.QueryBatchConfirmsResponse{Confirms: confirms}, nil
 }
 
+// LastEventNonce returns the last event nonce observed by Paloma.
+func (k Keeper) LastEventNonce(
+	c context.Context,
+	req *types.QueryLastEventNonceRequest,
+) (*types.QueryLastEventNonceResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	var ret types.QueryLastEventNonceResponse
+	lastEventNonce, err := k.GetLastObservedEventNonce(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ret.EventNonce = lastEventNonce
+	return &ret, nil
+}
+
 // LastEventNonceByAddr returns the last event nonce for the given validator address,
 // this allows eth oracles to figure out where they left off
 func (k Keeper) LastEventNonceByAddr(
 	c context.Context,
 	req *types.QueryLastEventNonceByAddrRequest,
-) (*types.QueryLastEventNonceByAddrResponse, error) {
+) (*types.QueryLastEventNonceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	var ret types.QueryLastEventNonceByAddrResponse
+	var ret types.QueryLastEventNonceResponse
 	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, req.Address)
+		return nil, errors.Wrap(sdkerrors.ErrInvalidAddress, req.Address)
 	}
 	validator, found, err := k.GetOrchestratorValidator(ctx, addr)
 	if err != nil {
 		return nil, err
 	}
 	if !found {
-		return nil, sdkerrors.Wrap(types.ErrUnknown, "address")
+		return nil, errors.Wrap(types.ErrUnknown, "address")
 	}
 	if err := sdk.VerifyAddressFormat(validator.GetOperator()); err != nil {
-		return nil, sdkerrors.Wrap(err, "invalid validator address")
+		return nil, errors.Wrap(err, "invalid validator address")
 	}
 	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, validator.GetOperator())
 	if err != nil {
@@ -174,7 +190,7 @@ func (k Keeper) DenomToERC20(
 	ctx := sdk.UnwrapSDKContext(c)
 	erc20, err := k.GetERC20OfDenom(ctx, req.GetChainReferenceId(), req.GetDenom())
 	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "invalid denom (%v) queried", req.Denom)
+		return nil, errors.Wrapf(err, "invalid denom (%v) queried", req.Denom)
 	}
 	var ret types.QueryDenomToERC20Response
 	ret.Erc20 = erc20.GetAddress().Hex()
@@ -190,11 +206,11 @@ func (k Keeper) ERC20ToDenom(
 	ctx := sdk.UnwrapSDKContext(c)
 	ethAddr, err := types.NewEthAddress(req.Erc20)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "invalid Erc20 in request: %s", req.Erc20)
+		return nil, errors.Wrapf(err, "invalid Erc20 in request: %s", req.Erc20)
 	}
 	name, err := k.GetDenomOfERC20(ctx, req.GetChainReferenceId(), *ethAddr)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "invalid erc20 (%v) queried", req.Erc20)
+		return nil, errors.Wrapf(err, "invalid erc20 (%v) queried", req.Erc20)
 	}
 	var ret types.QueryERC20ToDenomResponse
 	ret.Denom = name
@@ -258,7 +274,7 @@ func (k Keeper) GetAttestations(
 	err := iterator(ctx, reverse, func(_ []byte, att types.Attestation) (abort bool) {
 		claim, err := k.UnpackAttestationClaim(&att)
 		if err != nil {
-			iterErr = sdkerrors.Wrap(sdkerrors.ErrUnpackAny, "failed to unmarshal Ethereum claim")
+			iterErr = errors.Wrap(sdkerrors.ErrUnpackAny, "failed to unmarshal Ethereum claim")
 			return true
 		}
 
