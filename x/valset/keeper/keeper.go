@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
+	"time"
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
@@ -27,6 +28,14 @@ const (
 	cJailingNetworkShareProtection  = 0.25
 )
 
+var jailSentences = []time.Duration{
+	time.Minute,
+	time.Minute * 5,
+	time.Minute * 15,
+	time.Hour,
+	time.Hour * 24,
+}
+
 type Keeper struct {
 	EvmKeeper         types.EvmKeeper
 	SnapshotListeners []types.OnSnapshotBuiltListener
@@ -38,7 +47,10 @@ type Keeper struct {
 	paramstore           paramtypes.Subspace
 	powerReduction       sdkmath.Int
 	staking              types.StakingKeeper
+	slashing             types.SlashingKeeper
 	storeKey             storetypes.StoreKey
+
+	jailLog *keeperutil.KVStoreWrapper[*types.JailRecord]
 }
 
 func NewKeeper(
@@ -47,6 +59,7 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	staking types.StakingKeeper,
+	slashing types.SlashingKeeper,
 	minimumPigeonVersion string,
 	powerReduction sdkmath.Int,
 ) *Keeper {
@@ -61,8 +74,10 @@ func NewKeeper(
 		memKey:               memKey,
 		paramstore:           ps,
 		staking:              staking,
+		slashing:             slashing,
 		minimumPigeonVersion: minimumPigeonVersion,
 		powerReduction:       powerReduction,
+		jailLog:              keeperutil.NewKvStoreWrapper[*types.JailRecord](jailLogProviderFactory(storeKey), cdc),
 	}
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx sdk.Context) sdk.KVStore {
 		return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("IDs"))
@@ -74,12 +89,6 @@ func NewKeeper(
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
-
-// TODO: not required now
-func (k Keeper) PunishValidator(ctx sdk.Context) {}
-
-// TODO: not required now
-func (k Keeper) Heartbeat(ctx sdk.Context) {}
 
 // addExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
 // we can attribute rewards for running the jobs.
@@ -521,7 +530,9 @@ func (k Keeper) IsJailed(ctx sdk.Context, val sdk.ValAddress) bool {
 }
 
 func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error {
+	jailTime := ctx.BlockTime()
 	val := k.staking.Validator(ctx, valAddr)
+
 	if val == nil {
 		return ErrValidatorWithAddrNotFound.Format(valAddr)
 	}
@@ -568,17 +579,77 @@ func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) err
 				panic(r)
 			}
 		}()
-		k.staking.Jail(ctx, cons)
-		return
-	}()
 
+		k.slashing.Jail(ctx, cons)
+		r, err := k.jailLog.Get(ctx, cons)
+		if err != nil {
+			if !errors.Is(err, keeperutil.ErrNotFound) {
+				return err
+			}
+		}
+
+		if r == nil {
+			// not found, create dummy record
+			r = &types.JailRecord{
+				Address:  cons.Bytes(),
+				Duration: time.Minute * 1,
+				JailedAt: time.Time{},
+			}
+		}
+
+		var sentence time.Duration
+		threshold := calculateJailSentenceResetThreshold(r.Duration)
+		if ctx.BlockTime().Sub(r.JailedAt) < threshold {
+			// Extend their sentence
+			sentence = deriveJailSentence(r.Duration)
+		} else {
+			// Reset their sentence
+			sentence = deriveJailSentence(time.Duration(0))
+		}
+
+		r = &types.JailRecord{
+			Address:  cons.Bytes(),
+			Duration: sentence,
+			JailedAt: ctx.BlockTime(),
+		}
+
+		if err := k.jailLog.Set(ctx, cons, r); err != nil {
+			return fmt.Errorf("failed to set jail log: %w", err)
+		}
+
+		jailTime = ctx.BlockTime().Add(sentence)
+		k.slashing.JailUntil(ctx, cons, jailTime)
+		return nil
+	}()
 	if err != nil {
 		return err
 	}
 
-	k.Logger(ctx).Info("jailing a validator", "val-addr", valAddr, "reason", reason)
+	k.Logger(ctx).Info("jailing a validator", "val-addr", valAddr, "reason", reason, "jail-time", jailTime)
 	k.jailReasonStore(ctx).Set(valAddr, []byte(reason))
 	return nil
+}
+
+// calculateJailSentenceResetThreshold returns
+// 30 minutes, or the last
+// sentence duration + 20 percect of it, whichever
+// value is higher.
+// The longer you got jailed, the longer you will
+// have to behave in order to get reset.
+func calculateJailSentenceResetThreshold(d time.Duration) time.Duration {
+	return max(time.Minute*30, d+time.Duration(d/20))
+}
+
+// deriveJailSentence returns the next highest jail sentence that is greater
+// than the give duration. Caps at the max jail sentence.
+func deriveJailSentence(d time.Duration) time.Duration {
+	for _, sentence := range jailSentences {
+		if d < sentence {
+			return sentence
+		}
+	}
+
+	return jailSentences[len(jailSentences)-1]
 }
 
 func (k Keeper) jailReasonStore(ctx sdk.Context) sdk.KVStore {
@@ -618,4 +689,10 @@ func (k Keeper) snapshotStore(ctx sdk.Context) sdk.KVStore {
 func (k Keeper) SaveModifiedSnapshot(ctx sdk.Context, snapshot *types.Snapshot) error {
 	snapStore := k.snapshotStore(ctx)
 	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(snapshot.GetId()), snapshot)
+}
+
+func jailLogProviderFactory(storeKey storetypes.StoreKey) func(ctx sdk.Context) sdk.KVStore {
+	return func(ctx sdk.Context) sdk.KVStore {
+		return prefix.NewStore(ctx.KVStore(storeKey), types.KeyPrefix(types.JailLogKey))
+	}
 }

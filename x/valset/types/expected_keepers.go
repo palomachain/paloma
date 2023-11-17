@@ -1,6 +1,8 @@
 package types
 
 import (
+	time "time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -23,7 +25,14 @@ type BankKeeper interface {
 type StakingKeeper interface {
 	Validator(ctx sdk.Context, addr sdk.ValAddress) stakingtypes.ValidatorI
 	IterateValidators(ctx sdk.Context, fn func(index int64, validator stakingtypes.ValidatorI) (stop bool))
+	// Deprecated: use SlashingKeeper instead.
 	Jail(ctx sdk.Context, consAddr sdk.ConsAddress)
+}
+
+//go:generate mockery --name=SlashingKeeper
+type SlashingKeeper interface {
+	Jail(sdk.Context, sdk.ConsAddress)
+	JailUntil(sdk.Context, sdk.ConsAddress, time.Time)
 }
 
 type OnSnapshotBuiltListener interface {

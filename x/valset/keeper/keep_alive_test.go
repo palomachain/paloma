@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -29,7 +31,8 @@ func TestJailingInactiveValidators(t *testing.T) {
 		consAddr := sdk.ConsAddress(val)
 		if toBeJailed {
 			vali.On("GetConsAddr").Return(consAddr, nil)
-			ms.StakingKeeper.On("Jail", mock.Anything, consAddr)
+			ms.SlashingKeeper.On("Jail", mock.Anything, consAddr)
+			ms.SlashingKeeper.On("JailUntil", mock.Anything, mock.Anything, mock.Anything)
 		} else {
 			err := k.KeepValidatorAlive(ctx.WithBlockHeight(ctx.BlockHeight()-(cJailingDefaultKeepAliveBlockHeight/2)), val, "v1.4.0")
 			require.NoError(t, err)
@@ -186,5 +189,101 @@ func TestUpdateGracePeriod(t *testing.T) {
 		}
 		x := int64(sdk.BigEndianToUint64(k.gracePeriodStore(ctx).Get(a2)))
 		require.Equal(t, ctx.BlockHeight(), x)
+	})
+}
+
+func TestJailBackoff(t *testing.T) {
+	k, ms, ctx := newValsetKeeper(t)
+	ctx = ctx.WithBlockHeight(1000).WithBlockTime(time.Date(2020, 1, 1, 12, 30, 0, 0, time.UTC))
+
+	valBuild := func(id int) (*mocks.StakingValidatorI, sdk.ValAddress) {
+		valAddr := sdk.ValAddress(fmt.Sprintf("validator_%d", id))
+		val := mocks.NewStakingValidatorI(t)
+		val.On("IsJailed").Return(false)
+		val.On("IsBonded").Return(true)
+		val.On("GetConsensusPower", k.powerReduction).Return(int64(10000))
+		return val, valAddr
+	}
+
+	v1, _ := valBuild(1)
+	v2, _ := valBuild(2)
+	v3, _ := valBuild(3)
+
+	ms.StakingKeeper.On("IterateValidators", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		callback := args.Get(1).(func(int64, stakingtypes.ValidatorI) bool)
+		callback(0, v1)
+		callback(0, v2)
+		callback(0, v3)
+	}).Return(false).Maybe()
+
+	// Should reset jail backoff if recovered
+	t.Run("with non-recovering validator", func(t *testing.T) {
+		for i, v := range jailSentences {
+			t.Run(fmt.Sprintf("[%d] Paloma should increase the jail sentence with every occurrance", i), func(t *testing.T) {
+				val, valAddr := valBuild(10 + i)
+				consAddr := sdk.ConsAddress(valAddr)
+				ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(val)
+				val.On("IsBonded").Unset()
+				val.On("GetConsensusPower", k.powerReduction).Unset()
+				val.On("GetConsensusPower", k.powerReduction).Return(int64(100))
+				val.On("GetConsAddr").Return(consAddr, nil)
+				ms.SlashingKeeper.On("Jail", mock.Anything, consAddr)
+				ms.SlashingKeeper.On("JailUntil", mock.Anything, consAddr, ctx.BlockTime().Add(v))
+				if i > 0 {
+					k.jailLog.Set(ctx, consAddr, &types.JailRecord{
+						Address:  consAddr.Bytes(),
+						Duration: jailSentences[i-1],
+						JailedAt: ctx.BlockTime().Add(-1 * jailSentences[i-1]),
+					})
+				}
+				err := k.Jail(ctx, valAddr, "foobar")
+				require.NoError(t, err)
+			})
+		}
+
+		t.Run("Paloma should cap the jail sentence at max sentence level", func(t *testing.T) {
+			val, valAddr := valBuild(30)
+			consAddr := sdk.ConsAddress(valAddr)
+			ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(val)
+			val.On("IsBonded").Unset()
+			val.On("GetConsensusPower", k.powerReduction).Unset()
+			val.On("GetConsensusPower", k.powerReduction).Return(int64(100))
+			val.On("GetConsAddr").Return(consAddr, nil)
+			ms.SlashingKeeper.On("Jail", mock.Anything, consAddr)
+			ms.SlashingKeeper.On("JailUntil", mock.Anything, consAddr, ctx.BlockTime().Add(jailSentences[len(jailSentences)-1]))
+			k.jailLog.Set(ctx, consAddr, &types.JailRecord{
+				Address:  consAddr.Bytes(),
+				Duration: jailSentences[len(jailSentences)-1],
+				JailedAt: ctx.BlockTime().Add(-1 * jailSentences[len(jailSentences)-1]),
+			})
+			err := k.Jail(ctx, valAddr, "foobar")
+			require.NoError(t, err)
+		})
+	})
+
+	// Should reset jail backoff if recovered
+	t.Run("with recovered validator", func(t *testing.T) {
+		for i := range jailSentences {
+			t.Run(fmt.Sprintf("[%d] Paloma should reset the jail sentence, no matter the last duration", i), func(t *testing.T) {
+				val, valAddr := valBuild(50 + i)
+				consAddr := sdk.ConsAddress(valAddr)
+				ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(val)
+				val.On("IsBonded").Unset()
+				val.On("GetConsensusPower", k.powerReduction).Unset()
+				val.On("GetConsensusPower", k.powerReduction).Return(int64(100))
+				val.On("GetConsAddr").Return(consAddr, nil)
+				ms.SlashingKeeper.On("Jail", mock.Anything, consAddr)
+				ms.SlashingKeeper.On("JailUntil", mock.Anything, consAddr, ctx.BlockTime().Add(jailSentences[0]))
+				if i > 0 {
+					k.jailLog.Set(ctx, consAddr, &types.JailRecord{
+						Address:  consAddr.Bytes(),
+						Duration: jailSentences[i-1],
+						JailedAt: ctx.BlockTime().Add(-1 * jailSentences[i-1]).Add(-1 * time.Hour * 48),
+					})
+				}
+				err := k.Jail(ctx, valAddr, "foobar")
+				require.NoError(t, err)
+			})
+		}
 	})
 }

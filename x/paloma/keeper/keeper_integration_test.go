@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"math/big"
 	"testing"
+	"time"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	. "github.com/onsi/ginkgo/v2"
@@ -47,6 +49,12 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 		for _, val := range vals {
 			a.StakingKeeper.SetValidator(ctx, val)
 			a.StakingKeeper.SetValidatorByConsAddr(ctx, val)
+		}
+
+		for _, val := range a.ValsetKeeper.GetUnjailedValidators(ctx) {
+			addr, err := val.GetConsAddr()
+			Expect(err).To(BeNil())
+			a.SlashingKeeper.SetValidatorSigningInfo(ctx, addr, types.NewValidatorSigningInfo(addr, 0, 0, time.Time{}, false, 0))
 		}
 	})
 

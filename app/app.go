@@ -529,6 +529,7 @@ func New(
 		memKeys[valsetmoduletypes.MemStoreKey],
 		app.GetSubspace(valsetmoduletypes.ModuleName),
 		app.StakingKeeper,
+		app.SlashingKeeper,
 		minimumPigeonVersion,
 		sdk.DefaultPowerReduction,
 	)
