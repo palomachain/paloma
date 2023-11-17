@@ -14,7 +14,13 @@ func (msgSrv msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJ
 	logger.Debug("Received ExecuteJob message.")
 
 	// Find the public key of the sender
-	senderAddress := msgSrv.GetAccount(ctx, sdk.AccAddress(msg.GetMetadata().Creator)).GetAddress()
+	creator, err := sdk.AccAddressFromBech32(msg.GetMetadata().GetCreator())
+	if err != nil {
+		logger.WithError(err).Error("Failed to parse message creator.")
+		return nil, err
+	}
+
+	senderAddress := msgSrv.GetAccount(ctx, creator).GetAddress()
 
 	msgID, err := msgSrv.Keeper.ExecuteJob(ctx, msg.GetJobID(), msg.GetPayload(), senderAddress, nil)
 	if err != nil {
