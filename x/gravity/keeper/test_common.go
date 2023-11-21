@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/store"
+	storetypes "cosmossdk.io/store/types"
 	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -18,8 +20,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	ccrypto "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/std"
-	"github.com/cosmos/cosmos-sdk/store"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -30,7 +30,6 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/capability"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
@@ -56,12 +55,11 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
-	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
-	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
+
+	// ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
+	// ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	// ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	gravityparams "github.com/palomachain/paloma/app/params"
@@ -256,19 +254,19 @@ var (
 
 // TestInput stores the various keepers required to test gravity
 type TestInput struct {
-	GravityKeeper     Keeper
-	AccountKeeper     authkeeper.AccountKeeper
-	StakingKeeper     stakingkeeper.Keeper
-	ValsetKeeper      valsetkeeper.Keeper
-	SlashingKeeper    slashingkeeper.Keeper
-	DistKeeper        distrkeeper.Keeper
-	BankKeeper        bankkeeper.BaseKeeper
-	GovKeeper         govkeeper.Keeper
-	IbcTransferKeeper ibctransferkeeper.Keeper
-	Context           sdk.Context
-	Marshaler         codec.Codec
-	LegacyAmino       *codec.LegacyAmino
-	GravityStoreKey   *storetypes.KVStoreKey
+	GravityKeeper  Keeper
+	AccountKeeper  authkeeper.AccountKeeper
+	StakingKeeper  stakingkeeper.Keeper
+	ValsetKeeper   valsetkeeper.Keeper
+	SlashingKeeper slashingkeeper.Keeper
+	DistKeeper     distrkeeper.Keeper
+	BankKeeper     bankkeeper.BaseKeeper
+	GovKeeper      govkeeper.Keeper
+	// IbcTransferKeeper ibctransferkeeper.Keeper
+	Context         sdk.Context
+	Marshaler       codec.Codec
+	LegacyAmino     *codec.LegacyAmino
+	GravityStoreKey *storetypes.KVStoreKey
 }
 
 func addValidators(t *testing.T, input *TestInput, count int) {
@@ -422,8 +420,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 	keySlashing := sdk.NewKVStoreKey(slashingtypes.StoreKey)
 	keyCapability := sdk.NewKVStoreKey(capabilitytypes.StoreKey)
 	keyUpgrade := sdk.NewKVStoreKey(upgradetypes.StoreKey)
-	keyIbc := sdk.NewKVStoreKey(ibcexported.StoreKey)
-	keyIbcTransfer := sdk.NewKVStoreKey(ibctransfertypes.StoreKey)
+	// keyIbc := sdk.NewKVStoreKey(ibcexported.StoreKey)
+	// keyIbcTransfer := sdk.NewKVStoreKey(ibctransfertypes.StoreKey)
 
 	keyValset := sdk.NewKVStoreKey(valsettypes.StoreKey)
 	memKeyValset := sdk.NewKVStoreKey(valsettypes.MemStoreKey)
@@ -446,8 +444,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 	ms.MountStoreWithDB(keySlashing, storetypes.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyCapability, storetypes.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyUpgrade, storetypes.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyIbc, storetypes.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyIbcTransfer, storetypes.StoreTypeIAVL, db)
+	// ms.MountStoreWithDB(keyIbc, storetypes.StoreTypeIAVL, db)
+	// ms.MountStoreWithDB(keyIbcTransfer, storetypes.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyValset, storetypes.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(memKeyValset, storetypes.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyConsensus, storetypes.StoreTypeIAVL, db)
@@ -495,8 +493,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 	paramsKeeper.Subspace(govtypes.ModuleName)
 	paramsKeeper.Subspace(types.DefaultParamspace)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
-	paramsKeeper.Subspace(ibcexported.ModuleName)
-	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
+	// paramsKeeper.Subspace(ibcexported.ModuleName)
+	// paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(valsettypes.ModuleName)
 	paramsKeeper.Subspace(consensustypes.ModuleName)
 	paramsKeeper.Subspace(evmtypes.ModuleName)
@@ -509,7 +507,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		types.ModuleName:               {authtypes.Minter, authtypes.Burner},
-		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		// ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -611,38 +609,38 @@ func CreateTestEnv(t *testing.T) TestInput {
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	upgradeKeeper := upgradekeeper.NewKeeper(
-		make(map[int64]bool),
-		keyUpgrade,
-		marshaler,
-		"",
-		&bApp,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
+	// upgradeKeeper := upgradekeeper.NewKeeper(
+	// 	make(map[int64]bool),
+	// 	keyUpgrade,
+	// 	marshaler,
+	// 	"",
+	// 	&bApp,
+	// 	authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	// )
 
-	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
-	capabilityKeeper := *capabilitykeeper.NewKeeper(
-		marshaler,
-		keyCapability,
-		memKeys[capabilitytypes.MemStoreKey],
-	)
+	// memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+	// capabilityKeeper := *capabilitykeeper.NewKeeper(
+	// 	marshaler,
+	// 	keyCapability,
+	// 	memKeys[capabilitytypes.MemStoreKey],
+	// )
 
-	scopedIbcKeeper := capabilityKeeper.ScopeToModule(ibcexported.ModuleName)
-	ibcKeeper := *ibckeeper.NewKeeper(
-		marshaler,
-		keyIbc,
-		getSubspace(paramsKeeper, ibcexported.ModuleName),
-		stakingKeeper,
-		upgradeKeeper,
-		scopedIbcKeeper,
-	)
+	// scopedIbcKeeper := capabilityKeeper.ScopeToModule(ibcexported.ModuleName)
+	// ibcKeeper := *ibckeeper.NewKeeper(
+	// 	marshaler,
+	// 	keyIbc,
+	// 	getSubspace(paramsKeeper, ibcexported.ModuleName),
+	// 	stakingKeeper,
+	// 	upgradeKeeper,
+	// 	scopedIbcKeeper,
+	// )
 
-	scopedTransferKeeper := capabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	ibcTransferKeeper := ibctransferkeeper.NewKeeper(
-		marshaler, keyIbcTransfer, getSubspace(paramsKeeper, ibctransfertypes.ModuleName),
-		ibcKeeper.ChannelKeeper, ibcKeeper.ChannelKeeper, &ibcKeeper.PortKeeper,
-		accountKeeper, bankKeeper, scopedTransferKeeper,
-	)
+	// scopedTransferKeeper := capabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+	// ibcTransferKeeper := ibctransferkeeper.NewKeeper(
+	// 	marshaler, keyIbcTransfer, getSubspace(paramsKeeper, ibctransfertypes.ModuleName),
+	// 	ibcKeeper.ChannelKeeper, ibcKeeper.ChannelKeeper, &ibcKeeper.PortKeeper,
+	// 	accountKeeper, bankKeeper, scopedTransferKeeper,
+	// )
 
 	valsetKeeper := valsetkeeper.NewKeeper(
 		marshaler,
@@ -693,7 +691,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		bankKeeper,
 		slashingKeeper,
 		distKeeper,
-		ibcTransferKeeper,
+		nil,
 		evmKeeper,
 		NewGravityStoreGetter(gravityKey),
 	)
@@ -758,18 +756,18 @@ func CreateTestEnv(t *testing.T) TestInput {
 	//require.NoError(t, err)
 
 	testInput := TestInput{
-		GravityKeeper:     k,
-		AccountKeeper:     accountKeeper,
-		StakingKeeper:     *stakingKeeper,
-		SlashingKeeper:    slashingKeeper,
-		ValsetKeeper:      *valsetKeeper,
-		DistKeeper:        distKeeper,
-		BankKeeper:        bankKeeper,
-		GovKeeper:         *govKeeper,
-		IbcTransferKeeper: ibcTransferKeeper,
-		Context:           ctx,
-		Marshaler:         marshaler,
-		LegacyAmino:       cdc,
+		GravityKeeper:  k,
+		AccountKeeper:  accountKeeper,
+		StakingKeeper:  *stakingKeeper,
+		SlashingKeeper: slashingKeeper,
+		ValsetKeeper:   *valsetKeeper,
+		DistKeeper:     distKeeper,
+		BankKeeper:     bankKeeper,
+		GovKeeper:      *govKeeper,
+		// IbcTransferKeeper: ibcTransferKeeper,
+		Context:     ctx,
+		Marshaler:   marshaler,
+		LegacyAmino: cdc,
 	}
 
 	// check invariants before starting

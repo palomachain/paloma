@@ -10,6 +10,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+
 	ethcoretypes "github.com/ethereum/go-ethereum/core/types"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

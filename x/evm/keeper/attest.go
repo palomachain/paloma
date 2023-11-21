@@ -10,7 +10,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 
-	// "github.com/cosmos/cosmos-sdk/store/prefix"
+	// "cosmossdk.io/store/prefix"
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"

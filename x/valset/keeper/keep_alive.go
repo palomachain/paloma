@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
+	"cosmossdk.io/store/prefix"
 	"github.com/VolumeFi/whoops"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/palomachain/paloma/util/libvalid"

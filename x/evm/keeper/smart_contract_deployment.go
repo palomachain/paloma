@@ -9,7 +9,7 @@ import (
 	"cosmossdk.io/store/prefix"
 	"github.com/VolumeFi/whoops"
 
-	// "github.com/cosmos/cosmos-sdk/store/prefix"
+	// "cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	xchain "github.com/palomachain/paloma/internal/x-chain"

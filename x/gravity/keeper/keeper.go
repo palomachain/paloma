@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
@@ -15,7 +15,8 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
+
+	// ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -31,14 +32,14 @@ var (
 type Keeper struct {
 	paramSpace paramtypes.Subspace
 
-	cdc               codec.BinaryCodec // The wire codec for binary encoding/decoding.
-	bankKeeper        types.BankKeeper
-	StakingKeeper     types.StakingKeeper
-	SlashingKeeper    types.SlashingKeeper
-	DistKeeper        types.DistributionKeeper
-	accountKeeper     types.AccountKeeper
-	ibcTransferKeeper ibctransferkeeper.Keeper
-	evmKeeper         types.EVMKeeper
+	cdc            codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	bankKeeper     types.BankKeeper
+	StakingKeeper  types.StakingKeeper
+	SlashingKeeper types.SlashingKeeper
+	DistKeeper     types.DistributionKeeper
+	accountKeeper  types.AccountKeeper
+	// ibcTransferKeeper ibctransferkeeper.Keeper
+	evmKeeper types.EVMKeeper
 
 	storeGetter keeperutil.StoreGetter
 
@@ -56,7 +57,7 @@ func NewKeeper(
 	bankKeeper types.BankKeeper,
 	slashingKeeper types.SlashingKeeper,
 	distributionKeeper types.DistributionKeeper,
-	ibcTransferKeeper ibctransferkeeper.Keeper,
+	// ibcTransferKeeper ibctransferkeeper.Keeper,
 	evmKeeper types.EVMKeeper,
 	storeGetter keeperutil.StoreGetter,
 ) Keeper {
@@ -68,13 +69,13 @@ func NewKeeper(
 	k := Keeper{
 		paramSpace: paramSpace,
 
-		cdc:                cdc,
-		bankKeeper:         bankKeeper,
-		StakingKeeper:      stakingKeeper,
-		SlashingKeeper:     slashingKeeper,
-		DistKeeper:         distributionKeeper,
-		accountKeeper:      accKeeper,
-		ibcTransferKeeper:  ibcTransferKeeper,
+		cdc:            cdc,
+		bankKeeper:     bankKeeper,
+		StakingKeeper:  stakingKeeper,
+		SlashingKeeper: slashingKeeper,
+		DistKeeper:     distributionKeeper,
+		accountKeeper:  accKeeper,
+		// ibcTransferKeeper:  ibcTransferKeeper,
 		evmKeeper:          evmKeeper,
 		storeGetter:        storeGetter,
 		AttestationHandler: nil,

@@ -12,10 +12,10 @@ import (
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	// "github.com/cosmos/cosmos-sdk/store/prefix"
+	// "cosmossdk.io/store/prefix"
 	"cosmossdk.io/store/prefix"
 
-	// storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	// storetypes "cosmossdk.io/store/types"
 	storetypes "cosmossdk.io/store/types"
 	paramtypes "cosmossdk.io/x/params/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
