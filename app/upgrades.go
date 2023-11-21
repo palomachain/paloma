@@ -2,6 +2,7 @@ package app
 
 import (
 	storetypes "cosmossdk.io/store/types"
+
 	// wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -26,6 +27,7 @@ import (
 	// icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	// ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
 	// ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
+	"github.com/cosmos/cosmos-sdk/types"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
 	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
@@ -35,15 +37,15 @@ import (
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 )
 
-var minCommissionRate = sdk.MustNewDecFromStr("0.05")
+var minCommissionRate = types.newdecfro("0.05")
 
 // UpdateMinCommissionRate update minimum commission rate param.
-func UpdateMinCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper) (sdk.Dec, error) {
-	params := keeper.GetParams(ctx)
+func UpdateMinCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper) (types.DecCoin, error) {
+	params, _ := keeper.GetParams(ctx)
 	params.MinCommissionRate = minCommissionRate
 
 	if err := keeper.SetParams(ctx, params); err != nil {
-		return sdk.Dec{}, err
+		return types.DecCoin{}, err
 	}
 
 	return minCommissionRate, nil
@@ -51,12 +53,12 @@ func UpdateMinCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper) (sdk.
 
 // SetMinimumCommissionRate updates the commission rate for validators
 // whose current commission rate is lower than the new minimum commission rate.
-func SetMinimumCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper, minCommissionRate sdk.Dec) error {
-	validators := keeper.GetAllValidators(ctx)
+func SetMinimumCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper, minCommissionRate math.Dec) error {
+	validators, _ := keeper.GetAllValidators(ctx)
 
 	for _, validator := range validators {
 		if validator.Commission.Rate.IsNil() || validator.Commission.Rate.LT(minCommissionRate) {
-			if err := keeper.Hooks().BeforeValidatorModified(ctx, validator.GetOperator()); err != nil {
+			if err := keeper.Hooks().BeforeValidatorModified(ctx, sdk.ValAddress(validator.GetOperator())); err != nil {
 				return err
 			}
 
