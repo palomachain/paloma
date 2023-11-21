@@ -3,9 +3,9 @@ package types
 import (
 	context "context"
 
+	"cosmossdk.io/x/feegrant"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"

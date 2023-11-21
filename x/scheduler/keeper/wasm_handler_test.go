@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
+	// wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "github.com/onsi/ginkgo/v2"
@@ -33,9 +33,7 @@ var _ = Describe("wasm message handler", func() {
 	var serializedSubjectMessage []byte
 
 	subject := func() error {
-		_, _, err := a.SchedulerKeeper.ExecuteWasmJobEventListener()(ctx, sdk.AccAddress("contract-addr"), "ibc-port", wasmvmtypes.CosmosMsg{
-			Custom: serializedSubjectMessage,
-		})
+		_, _, err := a.SchedulerKeeper.ExecuteWasmJobEventListener()(ctx, sdk.AccAddress("contract-addr"), "ibc-port")
 		return err
 	}
 

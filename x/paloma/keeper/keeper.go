@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	storetypes "cosmossdk.io/store/types"
+	paramtypes "cosmossdk.io/x/params/types"
 	"github.com/VolumeFi/whoops"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/paloma/types"
 	"golang.org/x/mod/semver"
 )

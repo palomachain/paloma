@@ -12,16 +12,18 @@ import (
 	// "github.com/CosmWasm/wasmd/x/wasm"
 	// wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 
-	dbm "github.com/cometbft/cometbft-db"
+	// "cosmossdk.io/x/auth"
+	"cosmossdk.io/log"
+	dbm "github.com/cosmos/cosmos-db"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmjson "github.com/cometbft/cometbft/libs/json"
-	"github.com/cometbft/cometbft/libs/log"
 	tmos "github.com/cometbft/cometbft/libs/os"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/grpc/cmtservice"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
-	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -31,9 +33,19 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
+
+	// consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
+
+	// consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
+	// evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	// gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
+	// schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
+	// valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
+
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -42,9 +54,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/capability"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+
+	"github.com/cosmos/ibc-go/modules/capability"
+
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+
 	consensus "github.com/cosmos/cosmos-sdk/x/consensus"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
@@ -54,20 +69,24 @@ import (
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	
-	"github.com/cosmos/cosmos-sdk/x/evidence"
-	evidencekeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
-	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
-	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
+
+	"cosmossdk.io/x/evidence"
+	evidencekeeper "cosmossdk.io/x/evidence/keeper"
+	evidencetypes "cosmossdk.io/x/evidence/types"
+	"cosmossdk.io/x/feegrant"
+	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
+	feegrantmodule "cosmossdk.io/x/feegrant/module"
+	"cosmossdk.io/x/upgrade"
+
+	// upgradeclient "cosmossdk.io/x/upgrade/client"
+	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -82,11 +101,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
-	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
+
 	// icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 
 	// ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
@@ -111,33 +126,33 @@ import (
 	// ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	// ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	// ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
-	palomamempool "github.com/palomachain/paloma/app/mempool"
-	appparams "github.com/palomachain/paloma/app/params"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
-	consensusmodule "github.com/palomachain/paloma/x/consensus"
-	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
-	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
-	"github.com/palomachain/paloma/x/evm"
-	evmclient "github.com/palomachain/paloma/x/evm/client"
-	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
-	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
-	gravitymodule "github.com/palomachain/paloma/x/gravity"
-	gravityclient "github.com/palomachain/paloma/x/gravity/client"
-	gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
-	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
-	palomamodule "github.com/palomachain/paloma/x/paloma"
-	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
-	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
-	schedulermodule "github.com/palomachain/paloma/x/scheduler"
-	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
-	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
-	treasurymodule "github.com/palomachain/paloma/x/treasury"
-	treasuryclient "github.com/palomachain/paloma/x/treasury/client"
-	treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
-	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
-	valsetmodule "github.com/palomachain/paloma/x/valset"
-	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
-	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
+	// palomamempool "github.com/palomachain/paloma/app/mempool"
+	// appparams "github.com/palomachain/paloma/app/params"
+	// xchain "github.com/palomachain/paloma/internal/x-chain"
+	// consensusmodule "github.com/palomachain/paloma/x/consensus"
+	// consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
+	// consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
+	// "github.com/palomachain/paloma/x/evm"
+	// evmclient "github.com/palomachain/paloma/x/evm/client"
+	// evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
+	// evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	// gravitymodule "github.com/palomachain/paloma/x/gravity"
+	// gravityclient "github.com/palomachain/paloma/x/gravity/client"
+	// gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
+	// gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
+	// palomamodule "github.com/palomachain/paloma/x/paloma"
+	// palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
+	// palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
+	// schedulermodule "github.com/palomachain/paloma/x/scheduler"
+	// schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
+	// schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
+	// treasurymodule "github.com/palomachain/paloma/x/treasury"
+	// treasuryclient "github.com/palomachain/paloma/x/treasury/client"
+	// treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
+	// treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
+	// valsetmodule "github.com/palomachain/paloma/x/valset"
+	// valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
+	// valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cast"
 )
 
@@ -156,9 +171,9 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		upgradeclient.LegacyCancelProposalHandler,
 		// ibcclientclient.UpdateClientProposalHandler,
 		// ibcclientclient.UpgradeProposalHandler,
-		evmclient.ProposalHandler,
-		gravityclient.ProposalHandler,
-		treasuryclient.ProposalHandler,
+		// evmclient.ProposalHandler,
+		// gravityclient.ProposalHandler,
+		// treasuryclient.ProposalHandler,
 	}
 }
 
@@ -185,16 +200,16 @@ var (
 		upgrade.AppModuleBasic{},
 		evidence.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-		schedulermodule.AppModuleBasic{},
-		consensusmodule.AppModuleBasic{},
-		valsetmodule.AppModuleBasic{},
+		// schedulermodule.AppModuleBasic{},
+		// consensusmodule.AppModuleBasic{},
+		// valsetmodule.AppModuleBasic{},
 		// wasm.AppModuleBasic{},
-		evm.AppModuleBasic{},
-		gravitymodule.AppModuleBasic{},
-		palomamodule.AppModuleBasic{},
-		treasurymodule.AppModuleBasic{},
-		consensus.AppModuleBasic{},
-		transfer.AppModuleBasic{},
+		// evm.AppModuleBasic{},
+		// gravitymodule.AppModuleBasic{},
+		// palomamodule.AppModuleBasic{},
+		// treasurymodule.AppModuleBasic{},
+		// consensus.AppModuleBasic{},
+		// transfer.AppModuleBasic{},
 		// ibc.AppModuleBasic{},
 		// ibctm.AppModuleBasic{},
 		// ica.AppModuleBasic{},
@@ -209,12 +224,12 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
-		gravitymoduletypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
+		// gravitymoduletypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
 		// ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		// ibcfeetypes.ModuleName:         nil,
 		// icatypes.ModuleName: nil,
 		// wasm.ModuleName:                {authtypes.Burner},
-		treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
+		// treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -272,14 +287,14 @@ type App struct {
 	// ICAControllerKeeper       icacontrollerkeeper.Keeper
 	// ICAHostKeeper             icahostkeeper.Keeper
 	// TransferKeeper            ibctransferkeeper.Keeper
-
-	SchedulerKeeper schedulermodulekeeper.Keeper
-	ConsensusKeeper consensusmodulekeeper.Keeper
-	ValsetKeeper    valsetmodulekeeper.Keeper
-	PalomaKeeper    palomamodulekeeper.Keeper
-	TreasuryKeeper  treasurymodulekeeper.Keeper
-	EvmKeeper       evmmodulekeeper.Keeper
-	GravityKeeper   gravitymodulekeeper.Keeper
+	//
+	// SchedulerKeeper schedulermodulekeeper.Keeper
+	// ConsensusKeeper consensusmodulekeeper.Keeper
+	// ValsetKeeper    valsetmodulekeeper.Keeper
+	// PalomaKeeper    palomamodulekeeper.Keeper
+	// TreasuryKeeper  treasurymodulekeeper.Keeper
+	// EvmKeeper       evmmodulekeeper.Keeper
+	// GravityKeeper   gravitymodulekeeper.Keeper
 	// wasmKeeper      wasm.Keeper
 
 	// mm is the module manager
@@ -336,25 +351,25 @@ func New(
 		// icahosttypes.StoreKey,
 		// icacontrollertypes.StoreKey,
 		capabilitytypes.StoreKey,
-		schedulermoduletypes.StoreKey,
-		consensusmoduletypes.StoreKey,
-		valsetmoduletypes.StoreKey,
-		treasurymoduletypes.StoreKey,
-		// wasm.StoreKey,
-		evmmoduletypes.StoreKey,
-		gravitymoduletypes.StoreKey,
-		consensusparamtypes.StoreKey,
+		// schedulermoduletypes.StoreKey,
+		// consensusmoduletypes.StoreKey,
+		// valsetmoduletypes.StoreKey,
+		// treasurymoduletypes.StoreKey,
+		// // // wasm.StoreKey,
+		// evmmoduletypes.StoreKey,
+		// gravitymoduletypes.StoreKey,
+		// consensusparamtypes.StoreKey,
 		crisistypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(
 		capabilitytypes.MemStoreKey,
-		valsetmoduletypes.MemStoreKey,
-		consensusmoduletypes.MemStoreKey,
-		evmmoduletypes.MemStoreKey,
-		schedulermoduletypes.MemStoreKey,
-		treasurymoduletypes.MemStoreKey,
-		palomamoduletypes.MemStoreKey,
+		// valsetmoduletypes.MemStoreKey,
+		// consensusmoduletypes.MemStoreKey,
+		// evmmoduletypes.MemStoreKey,
+		// schedulermoduletypes.MemStoreKey,
+		// treasurymoduletypes.MemStoreKey,
+		// palomamoduletypes.MemStoreKey,
 	)
 
 	app := &App{
@@ -388,7 +403,7 @@ func New(
 	// scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	// scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	// scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
-	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
+	// scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 
 	app.CapabilityKeeper.Seal()
 
@@ -528,66 +543,67 @@ func New(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
-		appCodec,
-		keys[valsetmoduletypes.StoreKey],
-		memKeys[valsetmoduletypes.MemStoreKey],
-		app.GetSubspace(valsetmoduletypes.ModuleName),
-		app.StakingKeeper,
-		minimumPigeonVersion,
-		sdk.DefaultPowerReduction,
-	)
+	// app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[valsetmoduletypes.StoreKey],
+	// 	memKeys[valsetmoduletypes.MemStoreKey],
+	// 	app.GetSubspace(valsetmoduletypes.ModuleName),
+	// 	app.StakingKeeper,
+	// 	minimumPigeonVersion,
+	// 	sdk.DefaultPowerReduction,
+	// )
 
 	consensusRegistry := consensusmodulekeeper.NewRegistry()
 
-	app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
-		appCodec,
-		keys[consensusmoduletypes.StoreKey],
-		memKeys[consensusmoduletypes.MemStoreKey],
-		app.GetSubspace(consensusmoduletypes.ModuleName),
-		app.ValsetKeeper,
-		consensusRegistry,
-	)
+	// app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[consensusmoduletypes.StoreKey],
+	// 	memKeys[consensusmoduletypes.MemStoreKey],
+	// 	app.GetSubspace(consensusmoduletypes.ModuleName),
+	// 	app.ValsetKeeper,
+	// 	consensusRegistry,
+	// )
 
-	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
-		appCodec,
-		keys[evmmoduletypes.StoreKey],
-		memKeys[evmmoduletypes.MemStoreKey],
-		app.GetSubspace(evmmoduletypes.ModuleName),
-		app.ConsensusKeeper,
-		app.ValsetKeeper,
-	)
-	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
-		app.EvmKeeper,
-	}
-	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
+	// app.EvmKeeper = *evmmodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[evmmoduletypes.StoreKey],
+	// 	memKeys[evmmoduletypes.MemStoreKey],
+	// 	app.GetSubspace(evmmoduletypes.ModuleName),
+	// 	app.ConsensusKeeper,
+	// 	app.ValsetKeeper,
+	// )
+	// app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
+	// 	app.EvmKeeper,
+	// }
+	// app.ValsetKeeper.EvmKeeper = app.EvmKeeper
 
-	app.GravityKeeper = gravitymodulekeeper.NewKeeper(
-		appCodec,
-		app.GetSubspace(gravitymoduletypes.ModuleName),
-		app.AccountKeeper,
-		app.StakingKeeper,
-		app.BankKeeper,
-		app.SlashingKeeper,
-		app.DistrKeeper,
-		app.TransferKeeper,
-		app.EvmKeeper,
-		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
-	)
+	// app.GravityKeeper = gravitymodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	app.GetSubspace(gravitymoduletypes.ModuleName),
+	// 	app.AccountKeeper,
+	// 	app.StakingKeeper,
+	// 	app.BankKeeper,
+	// 	app.SlashingKeeper,
+	// 	app.DistrKeeper,
+	// 	nil,
+	// 	// app.TransferKeeper,
+	// 	app.EvmKeeper,
+	// 	gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
+	// )
 
-	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
-		appCodec,
-		keys[palomamoduletypes.StoreKey],
-		memKeys[palomamoduletypes.MemStoreKey],
-		app.GetSubspace(palomamoduletypes.ModuleName),
-		semverVersion,
-		app.ValsetKeeper,
-		app.UpgradeKeeper,
-	)
+	// app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[palomamoduletypes.StoreKey],
+	// 	memKeys[palomamoduletypes.MemStoreKey],
+	// 	app.GetSubspace(palomamoduletypes.ModuleName),
+	// 	semverVersion,
+	// 	app.ValsetKeeper,
+	// 	app.UpgradeKeeper,
+	// )
 
-	app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
-		app.EvmKeeper,
-	}
+	// app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
+	// 	app.EvmKeeper,
+	// }
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -599,27 +615,27 @@ func New(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
-	app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
-		appCodec,
-		keys[schedulermoduletypes.StoreKey],
-		memKeys[schedulermoduletypes.MemStoreKey],
-		app.GetSubspace(schedulermoduletypes.ModuleName),
-		app.AccountKeeper,
-		app.EvmKeeper,
-		[]xchain.Bridge{
-			app.EvmKeeper,
-		},
-	)
+	// app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[schedulermoduletypes.StoreKey],
+	// 	memKeys[schedulermoduletypes.MemStoreKey],
+	// 	app.GetSubspace(schedulermoduletypes.ModuleName),
+	// 	app.AccountKeeper,
+	// 	app.EvmKeeper,
+	// 	[]xchain.Bridge{
+	// 		app.EvmKeeper,
+	// 	},
+	// )
 
-	app.TreasuryKeeper = *treasurymodulekeeper.NewKeeper(
-		appCodec,
-		keys[treasurymoduletypes.StoreKey],
-		memKeys[treasurymoduletypes.MemStoreKey],
-		app.GetSubspace(schedulermoduletypes.ModuleName),
-		app.BankKeeper,
-		app.AccountKeeper,
-		app.SchedulerKeeper,
-	)
+	// app.TreasuryKeeper = *treasurymodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[treasurymoduletypes.StoreKey],
+	// 	memKeys[treasurymoduletypes.MemStoreKey],
+	// 	app.GetSubspace(schedulermoduletypes.ModuleName),
+	// 	app.BankKeeper,
+	// 	app.AccountKeeper,
+	// 	app.SchedulerKeeper,
+	// )
 
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
 
@@ -627,15 +643,13 @@ func New(
 	govRouter.
 		AddRoute(govtypes.RouterKey, govv1beta1types.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
+		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
 		// AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
-		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
-		AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
-		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
+		// AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
+		// AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
+		// AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
 
 	// Example of setting gov params:
-	// govConfig.MaxMetadataLen = 10000
-	govConfig := govtypes.DefaultConfig()
 	govKeeper := govkeeper.NewKeeper(
 		appCodec,
 		keys[govtypes.StoreKey],
@@ -740,13 +754,13 @@ func New(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 
-	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
-	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
-	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
-	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
-	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
-	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
-	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
+	// evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
+	// consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
+	// valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
+	// schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
+	// palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
+	// gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
+	// treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	app.mm = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,
@@ -768,13 +782,13 @@ func New(
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
-		schedulerModule,
-		consensusModule,
-		valsetModule,
-		evmModule,
-		gravityModule,
-		palomaModule,
-		treasuryModule,
+		// schedulerModule,
+		// consensusModule,
+		// valsetModule,
+		// evmModule,
+		// gravityModule,
+		// palomaModule,
+		// treasuryModule,
 		// wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		// ibc.NewAppModule(app.IBCKeeper),
 		// transfer.NewAppModule(app.TransferKeeper),
@@ -796,8 +810,8 @@ func New(
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
 		feegrant.ModuleName,
-		schedulermoduletypes.ModuleName,
-		consensusmoduletypes.ModuleName,
+		// schedulermoduletypes.ModuleName,
+		// consensusmoduletypes.ModuleName,
 		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		banktypes.ModuleName,
@@ -805,12 +819,12 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
-		valsetmoduletypes.ModuleName,
-		palomamoduletypes.ModuleName,
+		// valsetmoduletypes.ModuleName,
+		// palomamoduletypes.ModuleName,
 		// wasm.ModuleName,
-		evmmoduletypes.ModuleName,
-		gravitymoduletypes.ModuleName,
-		treasurymoduletypes.ModuleName,
+		// evmmoduletypes.ModuleName,
+		// gravitymoduletypes.ModuleName,
+		// treasurymoduletypes.ModuleName,
 		// ibctransfertypes.ModuleName,
 		// ibcexported.ModuleName,
 		// icatypes.ModuleName,
@@ -822,7 +836,7 @@ func New(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
-		schedulermoduletypes.ModuleName,
+		// schedulermoduletypes.ModuleName,
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
@@ -830,24 +844,24 @@ func New(
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
 		feegrant.ModuleName,
-		consensusmoduletypes.ModuleName,
+		// consensusmoduletypes.ModuleName,
 		crisistypes.ModuleName,
 		banktypes.ModuleName,
 		paramstypes.ModuleName,
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
-		valsetmoduletypes.ModuleName,
-		palomamoduletypes.ModuleName,
+		// valsetmoduletypes.ModuleName,
+		// palomamoduletypes.ModuleName,
 		// wasm.ModuleName,
-		evmmoduletypes.ModuleName,
-		gravitymoduletypes.ModuleName,
+		// evmmoduletypes.ModuleName,
+		// gravitymoduletypes.ModuleName,
 		// ibctransfertypes.ModuleName,
 		// ibcexported.ModuleName,
 		// icatypes.ModuleName,
 		// ibcfeetypes.ModuleName,
-		treasurymoduletypes.ModuleName,
-		consensusparamtypes.ModuleName,
+		// treasurymoduletypes.ModuleName,
+		// consensusparamtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -872,19 +886,19 @@ func New(
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		// ibctransfertypes.ModuleName,
-		schedulermoduletypes.ModuleName,
-		consensusmoduletypes.ModuleName,
-		valsetmoduletypes.ModuleName,
-		palomamoduletypes.ModuleName,
+		// schedulermoduletypes.ModuleName,
+		// consensusmoduletypes.ModuleName,
+		// valsetmoduletypes.ModuleName,
+		// palomamoduletypes.ModuleName,
 		// ibctransfertypes.ModuleName,
 		// ibcexported.ModuleName,
 		// icatypes.ModuleName,
 		// ibcfeetypes.ModuleName,
 		// wasm.ModuleName,
-		evmmoduletypes.ModuleName,
-		gravitymoduletypes.ModuleName,
-		treasurymoduletypes.ModuleName,
-		consensusparamtypes.ModuleName,
+		// evmmoduletypes.ModuleName,
+		// gravitymoduletypes.ModuleName,
+		// treasurymoduletypes.ModuleName,
+		// consensusparamtypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(app.CrisisKeeper)
@@ -931,12 +945,10 @@ func New(
 		panic(err)
 	}
 	anteDecorators := []sdk.AnteDecorator{
-		palomamodule.NewAnteHandlerDecorator(baseAnteHandler),
+		// palomamodule.NewAnteHandlerDecorator(baseAnteHandler),
 	}
-	anteDecorators = append(anteDecorators,
-		palomamodule.NewLogMsgDecorator(app.appCodec),
-		palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
-	)
+	anteDecorators = append(anteDecorators) // palomamodule.NewLogMsgDecorator(app.appCodec),
+	// palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
 
 	anteHandler := sdk.ChainAnteDecorators(
 		anteDecorators...,
@@ -964,9 +976,9 @@ func New(
 		}
 	}
 
-	consensusRegistry.Add(
-		app.EvmKeeper,
-	)
+	// consensusRegistry.Add(
+	// 	app.EvmKeeper,
+	// )
 
 	return app
 }
@@ -1071,7 +1083,7 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register new tendermint queries routes from grpc-gateway.
-	tmservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+	cmtservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register node gRPC service for grpc-gateway.
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
@@ -1087,7 +1099,7 @@ func (app *App) RegisterTxService(clientCtx client.Context) {
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
 func (app *App) RegisterTendermintService(clientCtx client.Context) {
-	tmservice.RegisterTendermintService(
+	cmtservice.RegisterTendermintService(
 		clientCtx,
 		app.BaseApp.GRPCQueryRouter(),
 		app.interfaceRegistry,
@@ -1120,12 +1132,12 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	// paramsKeeper.Subspace(ibcexported.ModuleName)
 	// paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	// paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
-	paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
-	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
-	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
-	// paramsKeeper.Subspace(wasm.ModuleName)
-	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
-	paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
+	// paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
+	// paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
+	// paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
+	// // paramsKeeper.Subspace(wasm.ModuleName)
+	// paramsKeeper.Subspace(evmmoduletypes.ModuleName)
+	// paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
 
 	return paramsKeeper
 }

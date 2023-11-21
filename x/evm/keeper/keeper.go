@@ -20,7 +20,7 @@ import (
 	paramtypes "cosmossdk.io/x/params/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	// paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	// paramtypes "cosmossdk.io/x/params/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"

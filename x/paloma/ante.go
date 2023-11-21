@@ -3,10 +3,10 @@ package paloma
 import (
 	"fmt"
 
+	"cosmossdk.io/x/feegrant"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/gogo/protobuf/proto"
 	"github.com/palomachain/paloma/util/libmeta"
 	"github.com/palomachain/paloma/x/paloma/types"

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
+	// wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/liblog"
@@ -45,9 +45,9 @@ func (k Keeper) UnmarshallJob(msg []byte) (ExecuteJobWasmEvent, error) {
 }
 
 func (k Keeper) ExecuteWasmJobEventListener() wasmutil.MessengerFnc {
-	return func(ctx sdk.Context, contractAddr sdk.AccAddress, _ string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, error) {
+	return func(ctx sdk.Context, contractAddr sdk.AccAddress, _ string) ([]sdk.Event, [][]byte, error) {
 		logger := liblog.FromSDKLogger(k.Logger(ctx))
-		executeMsg, err := k.UnmarshallJob(msg.Custom)
+		executeMsg, err := k.UnmarshallJob(nil)
 		if err != nil {
 			logger.WithError(err).Error("Failed to unmarshal job.")
 			return nil, nil, err

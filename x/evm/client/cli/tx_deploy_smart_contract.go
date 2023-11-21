@@ -3,10 +3,10 @@ package cli
 import (
 	"fmt"
 
+	"cosmossdk.io/x/gov/client/cli"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/spf13/cobra"
 )

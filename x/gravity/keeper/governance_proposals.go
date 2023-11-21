@@ -1,9 +1,9 @@
 package keeper
 
 import (
+	govv1beta1types "cosmossdk.io/x/gov/types/v1beta1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
