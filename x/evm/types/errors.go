@@ -4,7 +4,8 @@ package types
 
 import (
 	"github.com/VolumeFi/whoops"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	// sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 )
 
 // x/evm module sentinel errors

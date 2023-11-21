@@ -9,7 +9,9 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+
+	// "github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
@@ -43,7 +45,7 @@ func (c *consensusPower) setTotal(total sdkmath.Int) {
 func (c *consensusPower) add(power sdkmath.Int) {
 	var zero sdkmath.Int
 	if c.runningSum == zero {
-		c.runningSum = sdk.NewInt(0)
+		c.runningSum = sdkmath.NewInt(0)
 	}
 	c.runningSum = c.runningSum.Add(power)
 }
@@ -58,8 +60,8 @@ func (c *consensusPower) consensus() bool {
 		===
 		3 * sum >= totalPower * 2
 	*/
-	return c.runningSum.Mul(sdk.NewInt(3)).GTE(
-		c.totalPower.Mul(sdk.NewInt(2)),
+	return c.runningSum.Mul(sdkmath.NewInt(3)).GTE(
+		c.totalPower.Mul(sdkmath.NewInt(2)),
 	)
 }
 
@@ -482,7 +484,7 @@ func (k Keeper) initiateERC20TokenOwnershipTransfer(
 	return nil
 }
 
-func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) sdk.KVStore {
+func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) prefix.Store {
 	kv := ctx.KVStore(k.storeKey)
 	return prefix.NewStore(kv, []byte("tx-processed"))
 }

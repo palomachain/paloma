@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/VolumeFi/whoops"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -41,9 +40,7 @@ func genValidators(numValidators, totalConsPower int) []stakingtypes.Validator {
 func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	chainType, chainReferenceID := consensustypes.ChainTypeEVM, "eth-main"
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-	})
+	ctx := a.NewContext(false)
 
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "eth-main",
@@ -152,10 +149,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 
 func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-		Time:   time.Now(),
-	})
+	ctx := a.NewContext(false)
 
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "bob",
@@ -214,10 +208,7 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-		Time:   time.Now(),
-	})
+	ctx := a.NewContext(false)
 
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "bob",
@@ -312,10 +303,7 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-		Time:   time.Now(),
-	})
+	ctx := a.NewContext(false)
 
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "bob",
@@ -412,9 +400,7 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-	})
+	ctx := a.NewContext(false)
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
@@ -432,9 +418,7 @@ func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 
 func TestAddingSupportForNewChain(t *testing.T) {
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-	})
+	ctx := a.NewContext(false)
 
 	t.Run("with happy path there are no errors", func(t *testing.T) {
 		newChain := &types.AddChainProposal{
@@ -646,9 +630,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 	for _, tt := range testcases {
 		t.Run(tt.name, func(t *testing.T) {
 			a := app.NewTestApp(t, false)
-			ctx := a.NewContext(false, tmproto.Header{
-				Height: 5,
-			})
+			ctx := a.NewContext(false)
 
 			validatorAddress := tt.setup(ctx, a)
 
@@ -690,9 +672,7 @@ var _ = Describe("evm", func() {
 
 	BeforeEach(func() {
 		a = app.NewTestApp(GinkgoT(), false)
-		ctx = a.NewContext(false, tmproto.Header{
-			Height: 5,
-		})
+		ctx = a.NewContext(false)
 	})
 
 	Context("multiple chains and smart contracts", func() {
@@ -1116,9 +1096,7 @@ var _ = Describe("change min on chain balance", func() {
 
 	BeforeEach(func() {
 		a = app.NewTestApp(GinkgoT(), false)
-		ctx = a.NewContext(false, tmproto.Header{
-			Height: 5,
-		})
+		ctx = a.NewContext(false)
 	})
 
 	When("chain info exists", func() {
@@ -1168,9 +1146,7 @@ var _ = Describe("change relay weights", func() {
 
 	BeforeEach(func() {
 		a = app.NewTestApp(GinkgoT(), false)
-		ctx = a.NewContext(false, tmproto.Header{
-			Height: 5,
-		})
+		ctx = a.NewContext(false)
 	})
 
 	When("chain info exists", func() {

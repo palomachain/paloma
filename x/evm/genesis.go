@@ -1,6 +1,7 @@
 package evm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -15,7 +16,7 @@ import (
 
 // InitGenesis initializes the capability module's state from a provided genesis
 // state.
-func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
+func InitGenesis(ctx context.Context, k keeper.Keeper, genState types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 
 	for _, chainInfo := range genState.GetChains() {
@@ -26,8 +27,9 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 		if !ok {
 			panic("cannot parse balance " + chainInfo.GetMinOnChainBalance())
 		}
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		err := k.AddSupportForNewChain(
-			ctx,
+			sdkCtx,
 			chainInfo.GetChainReferenceID(),
 			chainInfo.GetChainID(),
 			chainInfo.GetBlockHeight(),
@@ -39,7 +41,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 		}
 
 		err = k.SetRelayWeights(
-			ctx,
+			sdkCtx,
 			chainInfo.GetChainReferenceID(),
 			&types.RelayWeights{
 				Fee:           "1.0",
@@ -52,28 +54,29 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 			panic(err)
 		}
 	}
-
+	sdkctx := sdk.UnwrapSDKContext(ctx)
 	sc := genState.GetSmartContract()
 	if sc != nil {
 		b := common.FromHex(sc.GetBytecodeHex())
-		nsc, err := k.SaveNewSmartContract(ctx, sc.GetAbiJson(), b)
+		nsc, err := k.SaveNewSmartContract(sdkctx, sc.GetAbiJson(), b)
 		if err != nil {
 			panic(fmt.Errorf("failed to save new compass contract: %w", err))
 		}
-		if err := k.SetAsCompassContract(ctx, nsc); err != nil {
+		if err := k.SetAsCompassContract(sdkctx, nsc); err != nil {
 			panic(fmt.Errorf("failed to set as compass contract: %w", err))
 		}
 	}
 }
 
 // ExportGenesis returns the capability module's exported genesis.
-func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
+func ExportGenesis(ctx context.Context, k keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetParams(ctx)
 
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	var genesisChainInfos []*types.GenesisChainInfo
 
-	for _, chainInfo := range whoops.Must(k.GetAllChainInfos(ctx)) {
+	for _, chainInfo := range whoops.Must(k.GetAllChainInfos(sdkCtx)) {
 		if !chainInfo.IsActive() {
 			continue
 		}
@@ -83,12 +86,12 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 			BlockHeight:       chainInfo.GetReferenceBlockHeight(),
 			BlockHashAtHeight: chainInfo.GetReferenceBlockHash(),
 			MinOnChainBalance: whoops.Must(chainInfo.GetMinOnChainBalanceBigInt()).Text(10),
-			RelayWeights:      whoops.Must(k.GetRelayWeights(ctx, chainInfo.GetChainReferenceID())),
+			RelayWeights:      whoops.Must(k.GetRelayWeights(sdkCtx, chainInfo.GetChainReferenceID())),
 		})
 	}
 	genesis.Chains = genesisChainInfos
 
-	sc, err := k.GetLastCompassContract(ctx)
+	sc, err := k.GetLastCompassContract(sdkCtx)
 	switch {
 	case err == nil:
 		genesis.SmartContract = &types.GenesisSmartContract{

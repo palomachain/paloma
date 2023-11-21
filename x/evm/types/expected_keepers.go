@@ -3,8 +3,10 @@ package types
 import (
 	"math/big"
 
+	"cosmossdk.io/x/auth/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
+
+	// "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"

@@ -4,7 +4,9 @@ import (
 	"math/big"
 	"testing"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -15,7 +17,7 @@ import (
 func addDeploymentToKeeper(t *testing.T, ctx sdk.Context, k *Keeper, mockServices mockedServices) {
 	unpublishedSnapshot := &valsettypes.Snapshot{
 		Id:          1,
-		TotalShares: sdk.NewInt(75000),
+		TotalShares: sdkmath.NewInt(75000),
 		Validators: getValidators(
 			3,
 			[]validatorChainInfo{
