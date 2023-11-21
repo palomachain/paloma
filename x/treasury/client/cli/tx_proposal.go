@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"regexp"
 
-	"cosmossdk.io/x/gov/client/cli"
-	govv1beta1types "cosmossdk.io/x/gov/types/v1beta1"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
+	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/palomachain/paloma/x/treasury/types"
 	"github.com/spf13/cobra"
 )

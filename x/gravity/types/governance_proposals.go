@@ -1,7 +1,7 @@
 package types
 
 import (
-	govv1beta1types "cosmossdk.io/x/gov/types/v1beta1"
+	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 )
 
 const (
