@@ -8,6 +8,22 @@ import (
 	"path/filepath"
 	"strings"
 
+	// storetypes "cosmossdk.io/store/types"
+	// "github.com/CosmWasm/wasmd/x/wasm"
+	// wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+
+	"cosmossdk.io/log"
+	// "github.com/CosmWasm/wasmd/x/wasm"
+	// "github.com/CosmWasm/wasmd/x/wasm"
+	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/gogoproto/proto"
+
+	// xchain "github.com/palomachain/paloma/internal/x-chain"
+	// "github.com/palomachain/paloma/x/evm"
+
+	"github.com/cosmos/cosmos-sdk/std"
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+
 	"cosmossdk.io/log"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -327,13 +343,13 @@ type App struct {
 	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
-	ScopedWasmKeeper          capabilitykeeper.ScopedKeeper
-	ScopedConsensusKeeper     capabilitykeeper.ScopedKeeper
-	IBCKeeper                 *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	IBCFeeKeeper              ibcfeekeeper.Keeper
-	ICAControllerKeeper       icacontrollerkeeper.Keeper
-	ICAHostKeeper             icahostkeeper.Keeper
-	TransferKeeper            ibctransferkeeper.Keeper
+	// ScopedWasmKeeper          capabilitykeeper.ScopedKeeper
+	ScopedConsensusKeeper capabilitykeeper.ScopedKeeper
+	IBCKeeper             *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	IBCFeeKeeper          ibcfeekeeper.Keeper
+	ICAControllerKeeper   icacontrollerkeeper.Keeper
+	ICAHostKeeper         icahostkeeper.Keeper
+	TransferKeeper        ibctransferkeeper.Keeper
 
 	// SchedulerKeeper schedulermodulekeeper.Keeper
 	// ConsensusKeeper consensusmodulekeeper.Keeper
@@ -858,11 +874,11 @@ func New(
 		),
 	)
 
-	wasmDir := filepath.Join(homePath, "data")
-	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
-	if err != nil {
-		panic("error while reading wasm config: " + err.Error())
-	}
+	// wasmDir := filepath.Join(homePath, "data")
+	// wasmConfig, err := wasm.ReadWasmConfig(appOpts)
+	// if err != nil {
+	// 	panic("error while reading wasm config: " + err.Error())
+	// }
 
 	app.wasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
@@ -919,9 +935,9 @@ func New(
 	icaHostStack = ibcfee.NewIBCMiddleware(icaHostStack, app.IBCFeeKeeper)
 
 	// Create fee enabled wasm ibc Stack
-	var wasmStack porttypes.IBCModule
-	wasmStack = wasm.NewIBCHandler(app.wasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper)
-	wasmStack = ibcfee.NewIBCMiddleware(wasmStack, app.IBCFeeKeeper)
+	// var wasmStack porttypes.IBCModule
+	// wasmStack = wasm.NewIBCHandler(app.wasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper)
+	// wasmStack = ibcfee.NewIBCMiddleware(wasmStack, app.IBCFeeKeeper)
 
 	// Create static IBC router, add app routes, then set and seal it
 	ibcRouter := porttypes.NewRouter().
@@ -933,7 +949,7 @@ func New(
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
-	app.ScopedWasmKeeper = scopedWasmKeeper
+	// app.ScopedWasmKeeper = scopedWasmKeeper
 	app.ScopedICAHostKeeper = scopedICAHostKeeper
 	app.ScopedICAControllerKeeper = scopedICAControllerKeeper
 
@@ -1162,16 +1178,16 @@ func New(
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
-	app.ScopedWasmKeeper = scopedWasmKeeper
+	// app.ScopedWasmKeeper = scopedWasmKeeper
 	app.ScopedICAHostKeeper = scopedICAHostKeeper
 	app.ScopedICAControllerKeeper = scopedICAControllerKeeper
 
-	if mngr := app.SnapshotManager(); mngr != nil {
-		err := mngr.RegisterExtensions(wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.wasmKeeper))
-		if err != nil {
-			panic(fmt.Errorf("failed to register snapshot extension: %w", err))
-		}
-	}
+	// if mngr := app.SnapshotManager(); mngr != nil {
+	// 	err := mngr.RegisterExtensions(wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.wasmKeeper))
+	// 	if err != nil {
+	// 		panic(fmt.Errorf("failed to register snapshot extension: %w", err))
+	// 	}
+	// }
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
