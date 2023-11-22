@@ -12,9 +12,6 @@ import (
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 	palomaapp "github.com/palomachain/paloma/app"
 	"github.com/stretchr/testify/require"
-
-	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-
 )
 
 func init() {
@@ -48,7 +45,7 @@ func BenchmarkSimulation(b *testing.B) {
 
 	encCfg := palomaapp.MakeEncodingConfig()
 
-	appOptions := make(servertypes.op, 0)
+	appOptions := make(simtestutil.AppOptionsMap, 0)
 	appOptions[flags.FlagHome] = palomaapp.DefaultNodeHome
 	appOptions[server.FlagInvCheckPeriod] = 0
 

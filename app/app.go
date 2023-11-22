@@ -131,7 +131,8 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	palomamempool "github.com/palomachain/paloma/app/mempool"
-	// appparams "github.com/palomachain/paloma/app/params"
+	appparams "github.com/palomachain/paloma/app/params"
+
 	// xchain "github.com/palomachain/paloma/internal/x-chain"
 	// consensusmodule "github.com/palomachain/paloma/x/consensus"
 	// consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
@@ -317,7 +318,7 @@ func New(
 	db dbm.DB,
 	traceStore io.Writer,
 	loadLatest bool,
-	// encodingCfg appparams.EncodingConfig,
+	encodingCfg appparams.EncodingConfig,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
@@ -939,7 +940,7 @@ func New(
 	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
 	// Make sure it's called after `app.ModuleManager` and `app.configurator` are
 	// set.
-	app.RegisterUpgradeHandlers(semverVersion)
+	// app.RegisterUpgradeHandlers(semverVersion)
 
 	// Create the simulation manager and define the order of the modules for
 	// deterministic simulations.

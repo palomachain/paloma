@@ -92,7 +92,7 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 		db,
 		nil,
 		true,
-
+		encCfg,
 		appOptions,
 	)
 
@@ -105,7 +105,7 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 		}
 
 		app.InitChain(
-			abci.RequestInitChain{
+			&abci.RequestInitChain{
 				Validators:      []abci.ValidatorUpdate{},
 				ConsensusParams: DefaultConsensusParams,
 				AppStateBytes:   stateBytes,
@@ -154,7 +154,7 @@ func genesisStateWithValSet(t testing,
 			MinSelfDelegation: sdkmath.ZeroInt(),
 		}
 		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec()))
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress().String(), val.Address.String(), sdkmath.LegacyOneDec()))
 
 	}
 	// set validators and delegations

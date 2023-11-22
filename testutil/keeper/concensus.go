@@ -4,9 +4,11 @@ import (
 	"testing"
 
 	"cosmossdk.io/store"
+	dbm "github.com/cosmos/cosmos-db"
+
+	"cosmossdk.io/log"
+	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-	tmdb "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -20,11 +22,11 @@ import (
 func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	logger := log.NewNopLogger()
 
-	storeKey := sdk.NewKVStoreKey(types.StoreKey)
+	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
-	db := tmdb.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db)
+	db := dbm.NewMemDB()
+	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
 	stateStore.MountStoreWithDB(memStoreKey, storetypes.StoreTypeMemory, nil)
 	require.NoError(t, stateStore.LoadLatestVersion())
