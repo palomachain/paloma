@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/evm/types/mocks"
@@ -33,7 +34,7 @@ func getValidators(num int, chains []validatorChainInfo) []valsettypes.Validator
 		}
 		validators[i] = valsettypes.Validator{
 			State:              valsettypes.ValidatorState_ACTIVE,
-			ShareCount:         sdk.NewInt(25000),
+			ShareCount:         sdkmath.NewInt(25000),
 			ExternalChainInfos: chainInfos,
 		}
 	}
@@ -45,7 +46,7 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 
 	unpublishedSnapshot := &valsettypes.Snapshot{
 		Id:          1,
-		TotalShares: sdk.NewInt(75000),
+		TotalShares: sdkmath.NewInt(75000),
 		Validators: getValidators(
 			3,
 			[]validatorChainInfo{
@@ -138,11 +139,11 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 
 				unpublishedSnapshot := &valsettypes.Snapshot{
 					Id:          1,
-					TotalShares: sdk.NewInt(75000),
+					TotalShares: sdkmath.NewInt(75000),
 					Validators: []valsettypes.Validator{
 						{
 							State:      valsettypes.ValidatorState_ACTIVE,
-							ShareCount: sdk.NewInt(25000),
+							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
@@ -152,7 +153,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 						},
 						{
 							State:      valsettypes.ValidatorState_ACTIVE,
-							ShareCount: sdk.NewInt(25000),
+							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
@@ -162,7 +163,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 						},
 						{
 							State:      valsettypes.ValidatorState_ACTIVE,
-							ShareCount: sdk.NewInt(25000),
+							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
@@ -212,11 +213,11 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 				publishedSnapshot := &valsettypes.Snapshot{
 					Id:          1,
 					Chains:      []string{"test-chain"},
-					TotalShares: sdk.NewInt(75000),
+					TotalShares: sdkmath.NewInt(75000),
 					Validators: []valsettypes.Validator{
 						{
 							State:      valsettypes.ValidatorState_ACTIVE,
-							ShareCount: sdk.NewInt(25000),
+							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
@@ -226,7 +227,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 						},
 						{
 							State:      valsettypes.ValidatorState_ACTIVE,
-							ShareCount: sdk.NewInt(25000),
+							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
@@ -236,7 +237,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 						},
 						{
 							State:      valsettypes.ValidatorState_ACTIVE,
-							ShareCount: sdk.NewInt(25000),
+							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
@@ -263,11 +264,11 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 
 				unpublishedSnapshot := &valsettypes.Snapshot{
 					Id:          1,
-					TotalShares: sdk.NewInt(75000),
+					TotalShares: sdkmath.NewInt(75000),
 					Validators: []valsettypes.Validator{
 						{
 							State:      valsettypes.ValidatorState_ACTIVE,
-							ShareCount: sdk.NewInt(25000),
+							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
@@ -277,7 +278,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 						},
 						{
 							State:      valsettypes.ValidatorState_ACTIVE,
-							ShareCount: sdk.NewInt(25000),
+							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
@@ -287,7 +288,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 						},
 						{
 							State:      valsettypes.ValidatorState_ACTIVE,
-							ShareCount: sdk.NewInt(25000),
+							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
@@ -488,7 +489,7 @@ func TestKeeper_PublishSnapshotToAllChains(t *testing.T) {
 				publishedSnapshot := &valsettypes.Snapshot{
 					Id:          1,
 					Chains:      []string{"test-chain"},
-					TotalShares: sdk.NewInt(75000),
+					TotalShares: sdkmath.NewInt(75000),
 					Validators:  validators,
 					CreatedAt:   time.Now().Add(time.Duration(-28*24) * time.Hour), // 28 days ago
 				}
@@ -516,7 +517,7 @@ func TestKeeper_PublishSnapshotToAllChains(t *testing.T) {
 				publishedSnapshot := &valsettypes.Snapshot{
 					Id:          1,
 					Chains:      []string{"test-chain"},
-					TotalShares: sdk.NewInt(75000),
+					TotalShares: sdkmath.NewInt(75000),
 					Validators:  validators,
 					CreatedAt:   time.Now().Add(time.Duration(-28*24) * time.Hour), // 28 days ago
 				}
@@ -538,7 +539,7 @@ func TestKeeper_PublishSnapshotToAllChains(t *testing.T) {
 			ctx = ctx.WithBlockTime(time.Now())
 			newSnapshot := &valsettypes.Snapshot{
 				Id:          2,
-				TotalShares: sdk.NewInt(75000),
+				TotalShares: sdkmath.NewInt(75000),
 				Validators: getValidators(
 					3,
 					[]validatorChainInfo{

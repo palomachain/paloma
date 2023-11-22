@@ -6,8 +6,9 @@ import (
 	"strings"
 
 	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/VolumeFi/whoops"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
@@ -57,7 +58,7 @@ func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx sdk.Context, smart
 }
 
 func (k Keeper) SetSmartContractDeploymentStatusByContractID(ctx sdk.Context, smartContractID uint64, chainReferenceID string, status types.SmartContractDeployment_Status) error {
-	logger := k.Logger(ctx).WithFields("smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID, "new-smart-contract-status", status)
+	logger := k.Logger(ctx).With("smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID, "new-smart-contract-status", status)
 	v, key := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
 	if key == nil {
 		return keeperutil.ErrNotFound
@@ -65,7 +66,7 @@ func (k Keeper) SetSmartContractDeploymentStatusByContractID(ctx sdk.Context, sm
 
 	v.Status = status
 	if err := keeperutil.Save(k.provideSmartContractDeploymentStore(ctx), k.cdc, key, v); err != nil {
-		logger.WithError(err).Error("failed to update smart contract deployment record")
+		logger.With(err).Error("failed to update smart contract deployment record")
 		return err
 	}
 
@@ -393,14 +394,14 @@ func (k Keeper) getSmartContractDeploymentByContractID(ctx sdk.Context, smartCon
 	return
 }
 
-func (k Keeper) provideSmartContractDeploymentStore(ctx sdk.Context) sdk.KVStore {
+func (k Keeper) provideSmartContractDeploymentStore(ctx sdk.Context) storetypes.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("smart-contract-deployment"))
 }
 
-func (k Keeper) provideSmartContractStore(ctx sdk.Context) sdk.KVStore {
+func (k Keeper) provideSmartContractStore(ctx sdk.Context) storetypes.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("smart-contracts"))
 }
 
-func (k Keeper) provideLastCompassContractStore(ctx sdk.Context) sdk.KVStore {
+func (k Keeper) provideLastCompassContractStore(ctx sdk.Context) storetypes.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("latest-smart-contract"))
 }

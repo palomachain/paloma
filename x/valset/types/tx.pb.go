@@ -6,24 +6,21 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -43,11 +40,9 @@ func (*MsgAddExternalChainInfoForValidator) ProtoMessage()    {}
 func (*MsgAddExternalChainInfoForValidator) Descriptor() ([]byte, []int) {
 	return fileDescriptor_ade79cb2279aed8e, []int{0}
 }
-
 func (m *MsgAddExternalChainInfoForValidator) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgAddExternalChainInfoForValidator) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAddExternalChainInfoForValidator.Marshal(b, m, deterministic)
@@ -60,15 +55,12 @@ func (m *MsgAddExternalChainInfoForValidator) XXX_Marshal(b []byte, deterministi
 		return b[:n], nil
 	}
 }
-
 func (m *MsgAddExternalChainInfoForValidator) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAddExternalChainInfoForValidator.Merge(m, src)
 }
-
 func (m *MsgAddExternalChainInfoForValidator) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgAddExternalChainInfoForValidator) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAddExternalChainInfoForValidator.DiscardUnknown(m)
 }
@@ -97,12 +89,12 @@ func (m *MsgAddExternalChainInfoForValidator) GetMetadata() MsgMetadata {
 	return MsgMetadata{}
 }
 
-type MsgAddExternalChainInfoForValidatorResponse struct{}
+type MsgAddExternalChainInfoForValidatorResponse struct {
+}
 
 func (m *MsgAddExternalChainInfoForValidatorResponse) Reset() {
 	*m = MsgAddExternalChainInfoForValidatorResponse{}
 }
-
 func (m *MsgAddExternalChainInfoForValidatorResponse) String() string {
 	return proto.CompactTextString(m)
 }
@@ -110,11 +102,9 @@ func (*MsgAddExternalChainInfoForValidatorResponse) ProtoMessage() {}
 func (*MsgAddExternalChainInfoForValidatorResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_ade79cb2279aed8e, []int{1}
 }
-
 func (m *MsgAddExternalChainInfoForValidatorResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgAddExternalChainInfoForValidatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAddExternalChainInfoForValidatorResponse.Marshal(b, m, deterministic)
@@ -127,15 +117,12 @@ func (m *MsgAddExternalChainInfoForValidatorResponse) XXX_Marshal(b []byte, dete
 		return b[:n], nil
 	}
 }
-
 func (m *MsgAddExternalChainInfoForValidatorResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAddExternalChainInfoForValidatorResponse.Merge(m, src)
 }
-
 func (m *MsgAddExternalChainInfoForValidatorResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgAddExternalChainInfoForValidatorResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAddExternalChainInfoForValidatorResponse.DiscardUnknown(m)
 }
@@ -154,11 +141,9 @@ func (*MsgKeepAlive) ProtoMessage()    {}
 func (*MsgKeepAlive) Descriptor() ([]byte, []int) {
 	return fileDescriptor_ade79cb2279aed8e, []int{2}
 }
-
 func (m *MsgKeepAlive) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgKeepAlive) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgKeepAlive.Marshal(b, m, deterministic)
@@ -171,15 +156,12 @@ func (m *MsgKeepAlive) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return b[:n], nil
 	}
 }
-
 func (m *MsgKeepAlive) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgKeepAlive.Merge(m, src)
 }
-
 func (m *MsgKeepAlive) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgKeepAlive) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgKeepAlive.DiscardUnknown(m)
 }
@@ -208,7 +190,8 @@ func (m *MsgKeepAlive) GetMetadata() MsgMetadata {
 	return MsgMetadata{}
 }
 
-type MsgKeepAliveResponse struct{}
+type MsgKeepAliveResponse struct {
+}
 
 func (m *MsgKeepAliveResponse) Reset()         { *m = MsgKeepAliveResponse{} }
 func (m *MsgKeepAliveResponse) String() string { return proto.CompactTextString(m) }
@@ -216,11 +199,9 @@ func (*MsgKeepAliveResponse) ProtoMessage()    {}
 func (*MsgKeepAliveResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_ade79cb2279aed8e, []int{3}
 }
-
 func (m *MsgKeepAliveResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgKeepAliveResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgKeepAliveResponse.Marshal(b, m, deterministic)
@@ -233,15 +214,12 @@ func (m *MsgKeepAliveResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-
 func (m *MsgKeepAliveResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgKeepAliveResponse.Merge(m, src)
 }
-
 func (m *MsgKeepAliveResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgKeepAliveResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgKeepAliveResponse.DiscardUnknown(m)
 }
@@ -289,10 +267,8 @@ var fileDescriptor_ade79cb2279aed8e = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -339,12 +315,12 @@ type MsgServer interface {
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
-type UnimplementedMsgServer struct{}
+type UnimplementedMsgServer struct {
+}
 
 func (*UnimplementedMsgServer) AddExternalChainInfoForValidator(ctx context.Context, req *MsgAddExternalChainInfoForValidator) (*MsgAddExternalChainInfoForValidatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddExternalChainInfoForValidator not implemented")
 }
-
 func (*UnimplementedMsgServer) KeepAlive(ctx context.Context, req *MsgKeepAlive) (*MsgKeepAliveResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method KeepAlive not implemented")
 }
@@ -564,7 +540,6 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *MsgAddExternalChainInfoForValidator) Size() (n int) {
 	if m == nil {
 		return 0
@@ -626,11 +601,9 @@ func (m *MsgKeepAliveResponse) Size() (n int) {
 func sovTx(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *MsgAddExternalChainInfoForValidator) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -780,7 +753,6 @@ func (m *MsgAddExternalChainInfoForValidator) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *MsgAddExternalChainInfoForValidatorResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -831,7 +803,6 @@ func (m *MsgAddExternalChainInfoForValidatorResponse) Unmarshal(dAtA []byte) err
 	}
 	return nil
 }
-
 func (m *MsgKeepAlive) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -979,7 +950,6 @@ func (m *MsgKeepAlive) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *MsgKeepAliveResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1030,7 +1000,6 @@ func (m *MsgKeepAliveResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipTx(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

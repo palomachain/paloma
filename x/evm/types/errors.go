@@ -3,8 +3,8 @@ package types
 // DONTCOVER
 
 import (
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/VolumeFi/whoops"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // x/evm module sentinel errors
