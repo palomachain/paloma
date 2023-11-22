@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 
+	sdkmath "cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -87,7 +89,7 @@ type CrisisModule struct {
 // DefaultGenesis returns custom Paloma x/crisis module genesis state.
 func (CrisisModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(&crisistypes.GenesisState{
-		ConstantFee: sdk.NewCoin(BondDenom, sdk.NewInt(1000)),
+		ConstantFee: sdk.NewCoin(BondDenom, sdkmath.NewInt(1000)),
 	})
 }
 
