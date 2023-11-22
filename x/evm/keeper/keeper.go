@@ -8,18 +8,20 @@ import (
 	"strings"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/VolumeFi/whoops"
-	"github.com/cometbft/cometbft/libs/log"
+
+	// "github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -146,8 +148,9 @@ func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string
 	return k.msgAssigner.PickValidatorForMessage(ctx, weights, chainReferenceID, requirements)
 }
 
-func (k Keeper) Logger(ctx sdk.Context) liblog.Logr {
-	return liblog.FromSDKLogger(ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName)))
+func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+
 }
 
 func (k Keeper) ChangeMinOnChainBalance(ctx sdk.Context, chainReferenceID string, balance *big.Int) error {
@@ -375,7 +378,7 @@ func (k Keeper) RemoveSupportForChain(ctx sdk.Context, proposal *types.RemoveCha
 	return nil
 }
 
-func (k Keeper) chainInfoStore(ctx sdk.Context) sdk.KVStore {
+func (k Keeper) chainInfoStore(ctx sdk.Context) storetypes.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("chain-info"))
 }
 
@@ -662,7 +665,7 @@ func isEnoughToReachConsensus(val types.Valset) bool {
 }
 
 func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID string, logger log.Logger) types.Valset {
-	var totalShares sdk.Int
+	var totalShares sdkmath.Int
 	if snapshot != nil {
 		totalShares = snapshot.TotalShares
 	}
@@ -680,7 +683,7 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 		return validators[i].ShareCount.GTE(validators[j].ShareCount)
 	})
 
-	totalPowerInt := sdk.NewInt(0)
+	totalPowerInt := sdkmath.NewInt(0)
 	for _, val := range validators {
 		totalPowerInt = totalPowerInt.Add(val.ShareCount)
 	}
