@@ -5,9 +5,10 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/gogoproto/proto"
+	// "github.com/cosmos/cosmos-sdk/codec"
 )
 
-func IterAll[T proto.Message](store storetypes.KVStore, pu proto.Unmarshaler) ([][]byte, []T, error) {
+func IterAll[T proto.Message](store storetypes.KVStore, pu ProtoUnmarshaler) ([][]byte, []T, error) {
 	res := []T{}
 	keys := [][]byte{}
 	err := IterAllFnc(store, pu, func(key []byte, val T) bool {
@@ -21,7 +22,7 @@ func IterAll[T proto.Message](store storetypes.KVStore, pu proto.Unmarshaler) ([
 	return keys, res, nil
 }
 
-func IterAllRaw(store storetypes.KVStore, pu proto.Unmarshaler) (keys [][]byte, values [][]byte, _err error) {
+func IterAllRaw(store storetypes.KVStore, pu ProtoUnmarshaler) (keys [][]byte, values [][]byte, _err error) {
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
@@ -31,7 +32,7 @@ func IterAllRaw(store storetypes.KVStore, pu proto.Unmarshaler) (keys [][]byte, 
 	return
 }
 
-func IterAllFnc[T proto.Message](store storetypes.KVStore, pu proto.Unmarshaler, fnc func([]byte, T) bool) error {
+func IterAllFnc[T proto.Message](store storetypes.KVStore, pu ProtoUnmarshaler, fnc func([]byte, T) bool) error {
 	res := []T{}
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
@@ -45,7 +46,7 @@ func IterAllFnc[T proto.Message](store storetypes.KVStore, pu proto.Unmarshaler,
 		v := reflect.New(va.Type().Elem())
 		va.Set(v)
 
-		if err := pu.Unmarshal(iterData); err != nil {
+		if err := pu.Unmarshal(iterData, val); err != nil {
 			return err
 		}
 		if !fnc(iterator.Key(), val) {
