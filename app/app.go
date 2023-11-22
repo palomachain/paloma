@@ -19,8 +19,8 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 
 	// xchain "github.com/palomachain/paloma/internal/x-chain"
-	// "github.com/palomachain/paloma/x/evm"
 
+	// "github.com/palomachain/paloma/x/evm"
 	"github.com/cosmos/cosmos-sdk/std"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
@@ -137,10 +137,11 @@ import (
 	// consensusmodule "github.com/palomachain/paloma/x/consensus"
 	// consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	// consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
-	// "github.com/palomachain/paloma/x/evm"
-	// evmclient "github.com/palomachain/paloma/x/evm/client"
-	// evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
-	// evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/x/evm"
+	evmclient "github.com/palomachain/paloma/x/evm/client"
+	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
+	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+
 	// gravitymodule "github.com/palomachain/paloma/x/gravity"
 	// gravityclient "github.com/palomachain/paloma/x/gravity/client"
 	// gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
@@ -176,7 +177,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		// upgradeclient.LegacyCancelProposalHandler,
 		// ibcclient.UpdateClientProposalHandler,
 		// ibcclientclient.UpgradeProposalHandler,
-		// evmclient.ProposalHandler,
+		evmclient.ProposalHandler,
 		// gravityclient.ProposalHandler,
 		// treasuryclient.ProposalHandler,
 	}
@@ -209,7 +210,7 @@ var (
 		// consensusmodule.AppModuleBasic{},
 		// valsetmodule.AppModuleBasic{},
 		// wasm.AppModuleBasic{},
-		// evm.AppModuleBasic{},
+		evm.AppModuleBasic{},
 		// gravitymodule.AppModuleBasic{},
 		// palomamodule.AppModuleBasic{},
 		// treasurymodule.AppModuleBasic{},
@@ -298,7 +299,7 @@ type App struct {
 	// ValsetKeeper    valsetmodulekeeper.Keeper
 	// PalomaKeeper    palomamodulekeeper.Keeper
 	// TreasuryKeeper  treasurymodulekeeper.Keeper
-	// EvmKeeper       evmmodulekeeper.Keeper
+	EvmKeeper evmmodulekeeper.Keeper
 	// GravityKeeper   gravitymodulekeeper.Keeper
 	// wasmKeeper      wasm.Keeper
 
@@ -376,7 +377,7 @@ func New(
 		// valsetmoduletypes.StoreKey,
 		// treasurymoduletypes.StoreKey,
 		// // wasm.StoreKey,
-		// evmmoduletypes.StoreKey,
+		evmmoduletypes.StoreKey,
 		// gravitymoduletypes.StoreKey,
 		// consensusparamtypes.StoreKey,
 		crisistypes.StoreKey,
@@ -386,7 +387,7 @@ func New(
 		capabilitytypes.MemStoreKey,
 		// valsetmoduletypes.MemStoreKey,
 		// consensusmoduletypes.MemStoreKey,
-		// evmmoduletypes.MemStoreKey,
+		evmmoduletypes.MemStoreKey,
 		// schedulermoduletypes.MemStoreKey,
 		// treasurymoduletypes.MemStoreKey,
 		// palomamoduletypes.MemStoreKey,
@@ -595,14 +596,16 @@ func New(
 	// 	consensusRegistry,
 	// )
 
-	// app.EvmKeeper = *evmmodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[evmmoduletypes.StoreKey],
-	// 	memKeys[evmmoduletypes.MemStoreKey],
-	// 	app.GetSubspace(evmmoduletypes.ModuleName),
-	// 	app.ConsensusKeeper,
-	// 	app.ValsetKeeper,
-	// )
+	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
+		appCodec,
+		keys[evmmoduletypes.StoreKey],
+		memKeys[evmmoduletypes.MemStoreKey],
+		app.GetSubspace(evmmoduletypes.ModuleName),
+		// app.ConsensusKeeper,
+		nil,
+		nil,
+		// app.ValsetKeeper,
+	)
 	// app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 	// 	app.EvmKeeper,
 	// }
@@ -674,9 +677,9 @@ func New(
 	govRouter := govv1beta1.NewRouter()
 	govRouter.
 		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
-		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper))
-	// AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
-	// AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
+		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
+		// AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper))
 	// AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
 	// AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
 
@@ -786,7 +789,7 @@ func New(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 
-	// evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
+	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
 	// consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 	// valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	// schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
@@ -817,7 +820,7 @@ func New(
 		// schedulerModule,
 		// consensusModule,
 		// valsetModule,
-		// evmModule,
+		evmModule,
 		// gravityModule,
 		// palomaModule,
 		// treasuryModule,
@@ -854,7 +857,7 @@ func New(
 		// valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
 		// wasm.ModuleName,
-		// evmmoduletypes.ModuleName,
+		evmmoduletypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
 		// treasurymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -886,7 +889,7 @@ func New(
 		// valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
 		// wasm.ModuleName,
-		// evmmoduletypes.ModuleName,
+		evmmoduletypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
@@ -927,7 +930,7 @@ func New(
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		// wasm.ModuleName,
-		// evmmoduletypes.ModuleName,
+		evmmoduletypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
 		// treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
@@ -1174,7 +1177,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	// paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(wasm.ModuleName)
-	// paramsKeeper.Subspace(evmmoduletypes.ModuleName)
+	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
 
 	return paramsKeeper

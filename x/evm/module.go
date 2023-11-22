@@ -29,6 +29,9 @@ var (
 // AppModuleBasic
 // ----------------------------------------------------------------------------
 
+func (m AppModule) IsOnePerModuleType() {}
+func (m AppModule) IsAppModule()        {}
+
 // AppModuleBasic implements the AppModuleBasic interface for the capability module.
 type AppModuleBasic struct {
 	cdc codec.BinaryCodec
