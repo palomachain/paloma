@@ -3,12 +3,13 @@ package keeper
 import (
 	"testing"
 
+	storetypes "cosmossdk.io/store/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 )
 
-func newCtx(store sdk.MultiStore) sdk.Context {
+func newCtx(store storetypes.MultiStore) sdk.Context {
 	return sdk.NewContext(store, tmproto.Header{}, false, nil)
 }
 

@@ -1,13 +1,21 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/pprof"
 	"os"
 	"strings"
 	"time"
+
+	cosmoslog "cosmossdk.io/log"
+	"cosmossdk.io/tools/confix/cmd"
+	dbm "github.com/cosmos/cosmos-db"
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/spf13/viper"
 
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
@@ -185,28 +193,83 @@ func rootPreRunE(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// appExport creates a new simapp (optionally at a given height) and exports state.
+func appExport(
+	logger cosmoslog.Logger,
+	db dbm.DB,
+	traceStore io.Writer,
+	height int64,
+	forZeroHeight bool,
+	jailAllowedAddrs []string,
+	appOpts servertypes.AppOptions,
+	modulesToExport []string,
+) (servertypes.ExportedApp, error) {
+	// this check is necessary as we use the flag in x/upgrade.
+	// we can exit more gracefully by checking the flag here.
+	homePath, ok := appOpts.Get(flags.FlagHome).(string)
+	if !ok || homePath == "" {
+		return servertypes.ExportedApp{}, errors.New("application home not set")
+	}
+
+	viperAppOpts, ok := appOpts.(*viper.Viper)
+	if !ok {
+		return servertypes.ExportedApp{}, errors.New("appOpts is not viper.Viper")
+	}
+
+	// overwrite the FlagInvCheckPeriod
+	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
+	appOpts = viperAppOpts
+
+	var App *app.App
+	if height != -1 {
+		App = app.New(logger, db, traceStore, false, params.EncodingConfig{}, nil)
+
+		if err := App.LoadHeight(height); err != nil {
+			return servertypes.ExportedApp{}, err
+		}
+	} else {
+		App = app.New(logger, db, traceStore, true, params.EncodingConfig{}, nil)
+	}
+
+	return App.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+}
+
+// newApp creates the application
+func newApp(
+	logger cosmoslog.Logger,
+	db dbm.DB,
+	traceStore io.Writer,
+	appOpts servertypes.AppOptions,
+) servertypes.Application {
+	//baseappOptions := server.DefaultBaseappOptions(appOpts)
+
+	return app.New(
+		logger, db, traceStore, true,
+		params.EncodingConfig{}, nil,
+	)
+}
+
 func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(ac.moduleManager, palomaapp.DefaultNodeHome),
 		genesisCommand(ac.encCfg),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
-		config.Cmd(),
+		cmd.ConfigCommand(),
 	)
 
-	application := ac.newApp
-	server.AddCommands(rootCmd, palomaapp.DefaultNodeHome, application, ac.appExport, addModuleInitFlags)
+	server.AddCommands(rootCmd, palomaapp.DefaultNodeHome, newApp, appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
-		rpc.StatusCommand(),
+		server.StatusCommand(),
 		queryCommand(ac.moduleManager),
 		txCommand(ac.moduleManager),
-		keys.Commands(palomaapp.DefaultNodeHome),
+		keys.Commands(),
 	)
 
 	rootCmd.AddCommand(
-		snapshot.Cmd(application),
+		snapshot.Cmd(newApp),
 	)
 }
 
@@ -235,9 +298,9 @@ func queryCommand(mm module.BasicManager) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		authcmd.GetAccountCmd(),
+		rpc.QueryEventForTxCmd(),
 		rpc.ValidatorCommand(),
-		rpc.BlockCommand(),
+		server.QueryBlocksCmd(),
 		authcmd.QueryTxsByEventsCmd(),
 		authcmd.QueryTxCmd(),
 	)
