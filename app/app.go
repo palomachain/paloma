@@ -170,10 +170,6 @@ const (
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	return []govclient.ProposalHandler{
 		paramsclient.ProposalHandler,
-		// upgradeclient.LegacyProposalHandler,
-		// upgradeclient.LegacyCancelProposalHandler,
-		// ibcclient.UpdateClientProposalHandler,
-		// ibcclientclient.UpgradeProposalHandler,
 		// evmclient.ProposalHandler,
 		// gravityclient.ProposalHandler,
 		// treasuryclient.ProposalHandler,
