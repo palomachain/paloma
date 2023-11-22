@@ -16,7 +16,7 @@ import (
 // file.
 func (app *App) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs, modulesToExport []string) (servertypes.ExportedApp, error) {
 	// as if they could withdraw from the start of the next block
-	ctx := app.NewContext(true /*tmproto.Header{Height: app.LastBlockHeight()}*/)
+	ctx := app.NewContext(true)
 
 	// We export at last height + 1, because that's the height at which
 	// Tendermint will start InitChain.
@@ -28,7 +28,7 @@ func (app *App) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs
 
 	genState, err := app.mm.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
 	if err != nil {
-		println("error")
+		panic(err)
 	}
 
 	appState, err := json.MarshalIndent(genState, "", "  ")

@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	// storetypes "cosmossdk.io/store/types"
 	// "github.com/CosmWasm/wasmd/x/wasm"
 	// wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 
@@ -57,7 +56,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/cosmos/ibc-go/modules/capability"
-	// ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
 
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
