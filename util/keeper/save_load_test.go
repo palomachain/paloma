@@ -17,10 +17,10 @@ func TestSaveAndLoad(t *testing.T) {
 	ms, kv, _ := keeper.SampleStore("store", "mem")
 	store := ms.GetKVStore(kv)
 
-	err := keeper.Save(store, types.ModuleCdc, []byte("key"), inData)
+	err := keeper.Save(store, nil, []byte("key"), inData)
 	assert.NoError(t, err)
 
-	ret, err := keeper.Load[*types.SimpleMessage](store, types.ModuleCdc, []byte("key"))
+	ret, err := keeper.Load[*types.SimpleMessage](store, nil, []byte("key"))
 	assert.NoError(t, err)
 	assert.Equal(t, inData, ret)
 }
@@ -28,6 +28,6 @@ func TestSaveAndLoad(t *testing.T) {
 func TestSaveAndLoadWithInvalidKey(t *testing.T) {
 	ms, kv, _ := keeper.SampleStore("store", "mem")
 	store := ms.GetKVStore(kv)
-	_, err := keeper.Load[*types.SimpleMessage](store, types.ModuleCdc, []byte("i don't exist"))
+	_, err := keeper.Load[*types.SimpleMessage](store, nil, []byte("i don't exist"))
 	assert.Error(t, err)
 }
