@@ -8,10 +8,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	// storetypes "cosmossdk.io/store/types"
+	// "github.com/CosmWasm/wasmd/x/wasm"
+	// wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+
 	"cosmossdk.io/log"
-	"github.com/CosmWasm/wasmd/x/wasm"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	// "github.com/CosmWasm/wasmd/x/wasm"
+	// "github.com/CosmWasm/wasmd/x/wasm"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
 
@@ -28,8 +31,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/grpc/cmtservice"
+	"github.com/cosmos/cosmos-sdk/client/grpc/cmtservice"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -40,9 +45,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 
+
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+
 
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
@@ -54,6 +61,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/cosmos/ibc-go/modules/capability"
+	// ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
 
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
@@ -67,6 +75,19 @@ import (
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+
+	"cosmossdk.io/x/evidence"
+	evidencekeeper "cosmossdk.io/x/evidence/keeper"
+	evidencetypes "cosmossdk.io/x/evidence/types"
+	"cosmossdk.io/x/feegrant"
+	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
+	feegrantmodule "cosmossdk.io/x/feegrant/module"
+	"cosmossdk.io/x/tx/signing"
+	"cosmossdk.io/x/upgrade"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+
+	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 
 	"cosmossdk.io/x/evidence"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
@@ -126,8 +147,60 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
+
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+
+	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
+
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
+	icacontroller "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
+	icahost "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host"
+	icahostkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/keeper"
+	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
+	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
+	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
+	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
+	transfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v8/modules/core"
+	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+
 	palomamempool "github.com/palomachain/paloma/app/mempool"
 	appparams "github.com/palomachain/paloma/app/params"
+
+	// xchain "github.com/palomachain/paloma/internal/x-chain"
+	// consensusmodule "github.com/palomachain/paloma/x/consensus"
+	// consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
+	// consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
+	// "github.com/palomachain/paloma/x/evm"
+	// evmclient "github.com/palomachain/paloma/x/evm/client"
+	// evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
+	// evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	// gravitymodule "github.com/palomachain/paloma/x/gravity"
+	// gravityclient "github.com/palomachain/paloma/x/gravity/client"
+	// gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
+	// gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
+	// palomamodule "github.com/palomachain/paloma/x/paloma"
+	// palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
+	// palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
+	// schedulermodule "github.com/palomachain/paloma/x/scheduler"
+	// schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
+	// schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
+	// treasurymodule "github.com/palomachain/paloma/x/treasury"
+	// treasuryclient "github.com/palomachain/paloma/x/treasury/client"
+	// treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
+	// treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
+	// valsetmodule "github.com/palomachain/paloma/x/valset"
+	// valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
+	// valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 
 	// xchain "github.com/palomachain/paloma/internal/x-chain"
 	// consensusmodule "github.com/palomachain/paloma/x/consensus"
@@ -168,6 +241,10 @@ const (
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	return []govclient.ProposalHandler{
 		paramsclient.ProposalHandler,
+		// upgradeclient.LegacyProposalHandler,
+		// upgradeclient.LegacyCancelProposalHandler,
+		// ibcclient.UpdateClientProposalHandler,
+		// ibcclientclient.UpgradeProposalHandler,
 		// evmclient.ProposalHandler,
 		// gravityclient.ProposalHandler,
 		// treasuryclient.ProposalHandler,
@@ -206,6 +283,15 @@ var (
 		// palomamodule.AppModuleBasic{},
 		// treasurymodule.AppModuleBasic{},
 		// consensus.AppModuleBasic{},
+		// schedulermodule.AppModuleBasic{},
+		// consensusmodule.AppModuleBasic{},
+		// valsetmodule.AppModuleBasic{},
+		// wasm.AppModuleBasic{},
+		// evm.AppModuleBasic{},
+		// gravitymodule.AppModuleBasic{},
+		// palomamodule.AppModuleBasic{},
+		// treasurymodule.AppModuleBasic{},
+		// consensus.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		ibc.AppModuleBasic{},
 		ibctm.AppModuleBasic{},
@@ -221,6 +307,12 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
+		// gravitymoduletypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
+		ibctransfertypes.ModuleName: {authtypes.Minter, authtypes.Burner},
+		ibcfeetypes.ModuleName:      nil,
+		icatypes.ModuleName:         nil,
+		// wasm.ModuleName:                {authtypes.Burner},
+		// treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
 		// gravitymoduletypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
 		ibctransfertypes.ModuleName: {authtypes.Minter, authtypes.Burner},
 		ibcfeetypes.ModuleName:      nil,
@@ -247,6 +339,7 @@ func init() {
 type App struct {
 	*baseapp.BaseApp
 
+	legacyAmino       *codec.LegacyAmino
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry
@@ -277,13 +370,13 @@ type App struct {
 	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
-	ScopedWasmKeeper          capabilitykeeper.ScopedKeeper
-	ScopedConsensusKeeper     capabilitykeeper.ScopedKeeper
-	IBCKeeper                 *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	IBCFeeKeeper              ibcfeekeeper.Keeper
-	ICAControllerKeeper       icacontrollerkeeper.Keeper
-	ICAHostKeeper             icahostkeeper.Keeper
-	TransferKeeper            ibctransferkeeper.Keeper
+	// ScopedWasmKeeper          capabilitykeeper.ScopedKeeper
+	ScopedConsensusKeeper capabilitykeeper.ScopedKeeper
+	IBCKeeper             *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	IBCFeeKeeper          ibcfeekeeper.Keeper
+	ICAControllerKeeper   icacontrollerkeeper.Keeper
+	ICAHostKeeper         icahostkeeper.Keeper
+	TransferKeeper        ibctransferkeeper.Keeper
 
 	// SchedulerKeeper schedulermodulekeeper.Keeper
 	// ConsensusKeeper consensusmodulekeeper.Keeper
@@ -292,10 +385,11 @@ type App struct {
 	// TreasuryKeeper  treasurymodulekeeper.Keeper
 	// EvmKeeper       evmmodulekeeper.Keeper
 	// GravityKeeper   gravitymodulekeeper.Keeper
-	wasmKeeper wasmkeeper.Keeper
+	// wasmKeeper      wasm.Keeper
 
 	// mm is the module manager
 	mm *module.Manager
+	bm module.BasicManager
 	bm module.BasicManager
 
 	// sm is the simulation manager
@@ -334,6 +428,26 @@ func New(
 	std.RegisterInterfaces(interfaceRegistry)
 	bApp := baseapp.NewBaseApp(Name, logger, db, txConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetTxEncoder(txConfig.TxEncoder())
+
+	interfaceRegistry, _ := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
+		ProtoFiles: proto.HybridResolver,
+		SigningOptions: signing.Options{
+			AddressCodec: address.Bech32Codec{
+				Bech32Prefix: sdk.GetConfig().GetBech32AccountAddrPrefix(),
+			},
+			ValidatorAddressCodec: address.Bech32Codec{
+				Bech32Prefix: sdk.GetConfig().GetBech32ValidatorAddrPrefix(),
+			},
+		},
+	})
+	appCodec := codec.NewProtoCodec(interfaceRegistry)
+	legacyAmino := codec.NewLegacyAmino()
+	txConfig := tx.NewTxConfig(appCodec, tx.DefaultSignModes)
+
+	std.RegisterLegacyAminoCodec(legacyAmino)
+	std.RegisterInterfaces(interfaceRegistry)
+	bApp := baseapp.NewBaseApp(Name, logger, db, txConfig.TxDecoder(), baseAppOptions...)
+	bApp.SetTxEncoder(txConfig.TxEncoder())
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
@@ -345,6 +459,7 @@ func New(
 	bApp.SetPrepareProposal(abciPropHandler.PrepareProposalHandler())
 	bApp.SetProcessProposal(abciPropHandler.ProcessProposalHandler())
 
+	keys := storetypes.NewKVStoreKeys(
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey,
 		banktypes.StoreKey,
@@ -367,7 +482,7 @@ func New(
 		// consensusmoduletypes.StoreKey,
 		// valsetmoduletypes.StoreKey,
 		// treasurymoduletypes.StoreKey,
-		wasmtypes.StoreKey,
+		// // wasm.StoreKey,
 		// evmmoduletypes.StoreKey,
 		// gravitymoduletypes.StoreKey,
 		// consensusparamtypes.StoreKey,
@@ -375,7 +490,15 @@ func New(
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(
+	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
+	memKeys := storetypes.NewMemoryStoreKeys(
 		capabilitytypes.MemStoreKey,
+		// valsetmoduletypes.MemStoreKey,
+		// consensusmoduletypes.MemStoreKey,
+		// evmmoduletypes.MemStoreKey,
+		// schedulermoduletypes.MemStoreKey,
+		// treasurymoduletypes.MemStoreKey,
+		// palomamoduletypes.MemStoreKey,
 		// valsetmoduletypes.MemStoreKey,
 		// consensusmoduletypes.MemStoreKey,
 		// evmmoduletypes.MemStoreKey,
@@ -387,6 +510,7 @@ func New(
 	app := &App{
 		BaseApp:           bApp,
 		legacyAmino:       legacyAmino,
+		legacyAmino:       legacyAmino,
 		appCodec:          appCodec,
 		interfaceRegistry: interfaceRegistry,
 		keys:              keys,
@@ -395,14 +519,18 @@ func New(
 	}
 
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
+	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
 	// set the BaseApp's parameter store
 	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]),
+		runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		runtime.EventService{},
+		runtime.EventService{},
 	)
+	bApp.SetParamStore(app.ConsensusParamsKeeper.ParamsStore)
 	bApp.SetParamStore(app.ConsensusParamsKeeper.ParamsStore)
 
 	app.CapabilityKeeper = capabilitykeeper.NewKeeper(
@@ -415,7 +543,7 @@ func New(
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
+	// scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
 	// scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 
 	app.CapabilityKeeper.Seal()
@@ -423,8 +551,11 @@ func New(
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
+		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
+		authcodec.NewBech32Codec(sdk.Bech32MainPrefix),
+		sdk.Bech32MainPrefix,
 		authcodec.NewBech32Codec(sdk.Bech32MainPrefix),
 		sdk.Bech32MainPrefix,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -432,21 +563,28 @@ func New(
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
+		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		app.AccountKeeper,
 		BlockedAddresses(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		logger,
+		logger,
 	)
 	app.StakingKeeper = stakingkeeper.NewKeeper(
 		appCodec,
+		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		app.StakingKeeper.ValidatorAddressCodec(),
 		app.StakingKeeper.ConsensusAddressCodec(),
+		app.StakingKeeper.ValidatorAddressCodec(),
+		app.StakingKeeper.ConsensusAddressCodec(),
 	)
 	app.MintKeeper = mintkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[minttypes.StoreKey]),
 		appCodec,
 		runtime.NewKVStoreService(keys[minttypes.StoreKey]),
 		app.StakingKeeper, app.AccountKeeper,
@@ -456,6 +594,7 @@ func New(
 	)
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec,
+		runtime.NewKVStoreService(keys[distrtypes.StoreKey]),
 		runtime.NewKVStoreService(keys[distrtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
@@ -467,6 +606,8 @@ func New(
 		appCodec,
 		legacyAmino,
 		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
+		legacyAmino,
+		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
 		app.StakingKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -475,13 +616,16 @@ func New(
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[crisistypes.StoreKey]),
+		runtime.NewKVStoreService(keys[crisistypes.StoreKey]),
 		app.invCheckPeriod,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		app.AccountKeeper.AddressCodec(),
+		app.AccountKeeper.AddressCodec(),
 	)
 
+	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[feegrant.StoreKey]), app.AccountKeeper)
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[feegrant.StoreKey]), app.AccountKeeper)
 
 	// get skipUpgradeHeights from the app options
@@ -494,6 +638,7 @@ func New(
 	homePath := cast.ToString(appOpts.Get(flags.FlagHome))
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(
 		skipUpgradeHeights,
+		runtime.NewKVStoreService(keys[upgradetypes.StoreKey]),
 		runtime.NewKVStoreService(keys[upgradetypes.StoreKey]),
 		appCodec,
 		homePath,
@@ -509,12 +654,14 @@ func New(
 		app.UpgradeKeeper,
 		scopedIBCKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(
 		appCodec,
 		keys[ibcfeetypes.StoreKey],
 		app.IBCKeeper.ChannelKeeper, // may be replaced with IBC middleware
 		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.PortKeeper,
 		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
 		app.BankKeeper,
@@ -526,9 +673,11 @@ func New(
 		app.IBCFeeKeeper, // ISC4 Wrapper: fee IBC middleware
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
 		app.BankKeeper,
 		scopedTransferKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
@@ -538,9 +687,11 @@ func New(
 		app.IBCFeeKeeper, // use ics29 fee as ics4Wrapper in middleware stack
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
 		scopedICAHostKeeper,
 		app.MsgServiceRouter(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
@@ -550,8 +701,10 @@ func New(
 		app.IBCFeeKeeper, // use ics29 fee as ics4Wrapper in middleware stack
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper,
 		app.MsgServiceRouter(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
@@ -575,7 +728,17 @@ func New(
 	// 	minimumPigeonVersion,
 	// 	sdk.DefaultPowerReduction,
 	// )
+	// app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[valsetmoduletypes.StoreKey],
+	// 	memKeys[valsetmoduletypes.MemStoreKey],
+	// 	app.GetSubspace(valsetmoduletypes.ModuleName),
+	// 	app.StakingKeeper,
+	// 	minimumPigeonVersion,
+	// 	sdk.DefaultPowerReduction,
+	// )
 
+	// consensusRegistry := consensusmodulekeeper.NewRegistry()
 	// consensusRegistry := consensusmodulekeeper.NewRegistry()
 
 	// app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
@@ -586,7 +749,27 @@ func New(
 	// 	app.ValsetKeeper,
 	// 	consensusRegistry,
 	// )
+	// app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[consensusmoduletypes.StoreKey],
+	// 	memKeys[consensusmoduletypes.MemStoreKey],
+	// 	app.GetSubspace(consensusmoduletypes.ModuleName),
+	// 	app.ValsetKeeper,
+	// 	consensusRegistry,
+	// )
 
+	// app.EvmKeeper = *evmmodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[evmmoduletypes.StoreKey],
+	// 	memKeys[evmmoduletypes.MemStoreKey],
+	// 	app.GetSubspace(evmmoduletypes.ModuleName),
+	// 	app.ConsensusKeeper,
+	// 	app.ValsetKeeper,
+	// )
+	// app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
+	// 	app.EvmKeeper,
+	// }
+	// app.ValsetKeeper.EvmKeeper = app.EvmKeeper
 	// app.EvmKeeper = *evmmodulekeeper.NewKeeper(
 	// 	appCodec,
 	// 	keys[evmmoduletypes.StoreKey],
@@ -612,7 +795,28 @@ func New(
 	// 	app.TransferKeeper,
 	// 	gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
 	// )
+	// app.GravityKeeper = gravitymodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	app.GetSubspace(gravitymoduletypes.ModuleName),
+	// 	app.AccountKeeper,
+	// 	app.StakingKeeper,
+	// 	app.BankKeeper,
+	// 	app.SlashingKeeper,
+	// 	app.DistrKeeper,
+	// 	app.EvmKeeper,
+	// 	app.TransferKeeper,
+	// 	gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
+	// )
 
+	// app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[palomamoduletypes.StoreKey],
+	// 	memKeys[palomamoduletypes.MemStoreKey],
+	// 	app.GetSubspace(palomamoduletypes.ModuleName),
+	// 	semverVersion,
+	// 	app.ValsetKeeper,
+	// 	app.PalomaKeeper.Upgrade,
+	// )
 	// app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
 	// 	appCodec,
 	// 	keys[palomamoduletypes.StoreKey],
@@ -626,19 +830,36 @@ func New(
 	// app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
 	// 	app.EvmKeeper,
 	// }
+	// app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
+	// 	app.EvmKeeper,
+	// }
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[evidencetypes.StoreKey]),
+		runtime.NewKVStoreService(keys[evidencetypes.StoreKey]),
 		app.StakingKeeper,
 		app.SlashingKeeper,
+		app.AccountKeeper.AddressCodec(),
+		nil,
 		app.AccountKeeper.AddressCodec(),
 		nil,
 	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
+	// app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[schedulermoduletypes.StoreKey],
+	// 	memKeys[schedulermoduletypes.MemStoreKey],
+	// 	app.GetSubspace(schedulermoduletypes.ModuleName),
+	// 	app.AccountKeeper,
+	// 	app.EvmKeeper,
+	// 	[]xchain.Bridge{
+	// 		app.EvmKeeper,
+	// 	},
+	// )
 	// app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
 	// 	appCodec,
 	// 	keys[schedulermoduletypes.StoreKey],
@@ -660,11 +881,28 @@ func New(
 	// 	app.AccountKeeper,
 	// 	app.SchedulerKeeper,
 	// )
+	// app.TreasuryKeeper = *treasurymodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[treasurymoduletypes.StoreKey],
+	// 	memKeys[treasurymoduletypes.MemStoreKey],
+	// 	app.GetSubspace(schedulermoduletypes.ModuleName),
+	// 	app.BankKeeper,
+	// 	app.AccountKeeper,
+	// 	app.SchedulerKeeper,
+	// )
 
+	// app.ScopedConsensusKeeper = scopedConsensusKeeper
 	// app.ScopedConsensusKeeper = scopedConsensusKeeper
 
 	govRouter := govv1beta1.NewRouter()
+	govRouter := govv1beta1.NewRouter()
 	govRouter.
+		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
+		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper))
+	// AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+	// AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
+	// AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
+	// AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
 		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper))
 	// AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
@@ -676,11 +914,14 @@ func New(
 	govKeeper := govkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[govtypes.StoreKey]),
+		runtime.NewKVStoreService(keys[govtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.StakingKeeper,
 		app.DistrKeeper,
+		app.DistrKeeper,
 		app.MsgServiceRouter(),
+		govtypes.Config{},
 		govtypes.Config{},
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -694,37 +935,37 @@ func New(
 		),
 	)
 
-	wasmDir := filepath.Join(homePath, "data")
-	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
-	if err != nil {
-		panic("error while reading wasm config: " + err.Error())
-	}
+	// wasmDir := filepath.Join(homePath, "data")
+	// wasmConfig, err := wasm.ReadWasmConfig(appOpts)
+	// if err != nil {
+	// 	panic("error while reading wasm config: " + err.Error())
+	// }
 
-	app.wasmKeeper = wasmkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.StakingKeeper,
-		distrkeeper.NewQuerier(app.DistrKeeper),
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
-		scopedWasmKeeper,
-		app.TransferKeeper,
-		app.MsgServiceRouter(),
-		app.GRPCQueryRouter(),
-		wasmDir,
-		wasmConfig,
-		wasmAvailableCapabilities,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		//wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
-		//	return wasmkeeper.NewMessageHandlerChain(
-		//		old,
-		//		app.SchedulerKeeper.ExecuteWasmJobEventListener(),
-		//	)
-		//}),
-	)
+	// app.wasmKeeper = wasm.NewKeeper(
+	// 	appCodec,
+	// 	keys[wasm.StoreKey],
+	// 	app.AccountKeeper,
+	// 	app.BankKeeper,
+	// 	app.StakingKeeper,
+	// 	distrkeeper.NewQuerier(app.DistrKeeper),
+	// 	// app.IBCKeeper.ChannelKeeper,
+	// 	// app.IBCKeeper.ChannelKeeper,
+	// 	// &app.IBCKeeper.PortKeeper,
+	// 	scopedWasmKeeper,
+	// 	// app.TransferKeeper,
+	// 	app.MsgServiceRouter(),
+	// 	app.GRPCQueryRouter(),
+	// 	wasmDir,
+	// 	wasmConfig,
+	// 	wasmAvailableCapabilities,
+	// 	authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	// 	wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
+	// 		return wasmkeeper.NewMessageHandlerChain(
+	// 			old,
+	// 			app.SchedulerKeeper.ExecuteWasmJobEventListener(),
+	// 		)
+	// 	}),
+	// )
 
 	// register wasm gov proposal types
 	// enabledProposals := GetEnabledProposals()
@@ -755,21 +996,21 @@ func New(
 	icaHostStack = ibcfee.NewIBCMiddleware(icaHostStack, app.IBCFeeKeeper)
 
 	// Create fee enabled wasm ibc Stack
-	var wasmStack porttypes.IBCModule
-	wasmStack = wasm.NewIBCHandler(app.wasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper)
-	wasmStack = ibcfee.NewIBCMiddleware(wasmStack, app.IBCFeeKeeper)
+	// var wasmStack porttypes.IBCModule
+	// wasmStack = wasm.NewIBCHandler(app.wasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper)
+	// wasmStack = ibcfee.NewIBCMiddleware(wasmStack, app.IBCFeeKeeper)
 
 	// Create static IBC router, add app routes, then set and seal it
 	ibcRouter := porttypes.NewRouter().
 		AddRoute(ibctransfertypes.ModuleName, transferStack).
-		AddRoute(wasmtypes.ModuleName, wasmStack).
+		// AddRoute(wasm.ModuleName, wasmStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
-	app.ScopedWasmKeeper = scopedWasmKeeper
+	// app.ScopedWasmKeeper = scopedWasmKeeper
 	app.ScopedICAHostKeeper = scopedICAHostKeeper
 	app.ScopedICAControllerKeeper = scopedICAControllerKeeper
 
@@ -785,10 +1026,19 @@ func New(
 	// palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	// gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	// treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
+	// evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
+	// consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
+	// valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
+	// schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
+	// palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
+	// gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
+	// treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	app.mm = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,
 			app.StakingKeeper,
+			app,
+			txConfig,
 			app,
 			txConfig,
 		),
@@ -801,8 +1051,10 @@ func New(
 		gov.NewAppModule(appCodec, &app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
+		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(distrtypes.ModuleName)),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
+		upgrade.NewAppModule(app.UpgradeKeeper, app.AccountKeeper.AddressCodec()),
 		upgrade.NewAppModule(app.UpgradeKeeper, app.AccountKeeper.AddressCodec()),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
@@ -813,7 +1065,7 @@ func New(
 		// gravityModule,
 		// palomaModule,
 		// treasuryModule,
-		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
+		// wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		ibc.NewAppModule(app.IBCKeeper),
 		transfer.NewAppModule(app.TransferKeeper),
 		ibcfee.NewAppModule(app.IBCFeeKeeper),
@@ -836,6 +1088,8 @@ func New(
 		feegrant.ModuleName,
 		// schedulermoduletypes.ModuleName,
 		// consensusmoduletypes.ModuleName,
+		// schedulermoduletypes.ModuleName,
+		// consensusmoduletypes.ModuleName,
 		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		banktypes.ModuleName,
@@ -845,7 +1099,7 @@ func New(
 		genutiltypes.ModuleName,
 		// valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
-		wasmtypes.ModuleName,
+		// wasm.ModuleName,
 		// evmmoduletypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
 		// treasurymoduletypes.ModuleName,
@@ -861,6 +1115,7 @@ func New(
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		// schedulermoduletypes.ModuleName,
+		// schedulermoduletypes.ModuleName,
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
@@ -868,6 +1123,7 @@ func New(
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
 		feegrant.ModuleName,
+		// consensusmoduletypes.ModuleName,
 		// consensusmoduletypes.ModuleName,
 		crisistypes.ModuleName,
 		banktypes.ModuleName,
@@ -877,13 +1133,14 @@ func New(
 		genutiltypes.ModuleName,
 		// valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
-		wasmtypes.ModuleName,
+		// wasm.ModuleName,
 		// evmmoduletypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
+		// treasurymoduletypes.ModuleName,
 		// treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
@@ -914,11 +1171,15 @@ func New(
 		// consensusmoduletypes.ModuleName,
 		// valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
+		// schedulermoduletypes.ModuleName,
+		// consensusmoduletypes.ModuleName,
+		// valsetmoduletypes.ModuleName,
+		// palomamoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
-		wasmtypes.ModuleName,
+		// wasm.ModuleName,
 		// evmmoduletypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
 		// treasurymoduletypes.ModuleName,
@@ -932,6 +1193,7 @@ func New(
 	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
 	// Make sure it's called after `app.ModuleManager` and `app.configurator` are
 	// set.
+	// app.RegisterUpgradeHandlers(semverVersion)
 	// app.RegisterUpgradeHandlers(semverVersion)
 
 	// Create the simulation manager and define the order of the modules for
@@ -957,10 +1219,11 @@ func New(
 	app.SetBeginBlocker(app.BeginBlocker)
 
 	/*baseAnteHandler*/
-	_, err = ante.NewAnteHandler(
+	_, err := ante.NewAnteHandler(
 		ante.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
+			SignModeHandler: txConfig.SignModeHandler(),
 			SignModeHandler: txConfig.SignModeHandler(),
 			FeegrantKeeper:  app.FeeGrantKeeper,
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
@@ -971,7 +1234,11 @@ func New(
 	}
 	anteDecorators := []sdk.AnteDecorator{
 		// palomamodule.NewAnteHandlerDecorator(baseAnteHandler),
+		// palomamodule.NewAnteHandlerDecorator(baseAnteHandler),
 	}
+	anteDecorators = append(anteDecorators)
+	// palomamodule.NewLogMsgDecorator(app.appCodec),
+	// 	palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
 	anteDecorators = append(anteDecorators)
 	// palomamodule.NewLogMsgDecorator(app.appCodec),
 	// 	palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
@@ -985,16 +1252,16 @@ func New(
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
-	app.ScopedWasmKeeper = scopedWasmKeeper
+	// app.ScopedWasmKeeper = scopedWasmKeeper
 	app.ScopedICAHostKeeper = scopedICAHostKeeper
 	app.ScopedICAControllerKeeper = scopedICAControllerKeeper
 
-	if mngr := app.SnapshotManager(); mngr != nil {
-		err := mngr.RegisterExtensions(wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.wasmKeeper))
-		if err != nil {
-			panic(fmt.Errorf("failed to register snapshot extension: %w", err))
-		}
-	}
+	// if mngr := app.SnapshotManager(); mngr != nil {
+	// 	err := mngr.RegisterExtensions(wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.wasmKeeper))
+	// 	if err != nil {
+	// 		panic(fmt.Errorf("failed to register snapshot extension: %w", err))
+	// 	}
+	// }
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
@@ -1002,6 +1269,9 @@ func New(
 		}
 	}
 
+	// consensusRegistry.Add(
+	// 	app.EvmKeeper,
+	// )
 	// consensusRegistry.Add(
 	// 	app.EvmKeeper,
 	// )
@@ -1019,7 +1289,13 @@ func (app *App) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.
 	return app.mm.PreBlock(ctx)
 }
 
+func (app *App) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	return app.mm.PreBlock(ctx)
+}
+
 // BeginBlocker application updates every begin block
+func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
+	return app.mm.BeginBlock(ctx)
 func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
 	return app.mm.BeginBlock(ctx)
 }
@@ -1027,9 +1303,12 @@ func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
 // EndBlocker application updates every end block
 func (app *App) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
 	return app.mm.EndBlock(ctx)
+func (app *App) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
+	return app.mm.EndBlock(ctx)
 }
 
 // InitChainer application update at chain initialization
+func (app *App) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 func (app *App) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState GenesisState
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
@@ -1060,6 +1339,7 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
 func (app *App) LegacyAmino() *codec.LegacyAmino {
+	return app.legacyAmino
 	return app.legacyAmino
 }
 
@@ -1114,6 +1394,7 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 
 	// Register new tendermint queries routes from grpc-gateway.
 	cmtservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+	cmtservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register node gRPC service for grpc-gateway.
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
@@ -1129,6 +1410,7 @@ func (app *App) RegisterTxService(clientCtx client.Context) {
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
 func (app *App) RegisterTendermintService(clientCtx client.Context) {
+	cmtservice.RegisterTendermintService(
 	cmtservice.RegisterTendermintService(
 		clientCtx,
 		app.BaseApp.GRPCQueryRouter(),
@@ -1165,7 +1447,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	// paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
 	// paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
-	paramsKeeper.Subspace(wasmtypes.ModuleName)
+	// paramsKeeper.Subspace(wasm.ModuleName)
 	// paramsKeeper.Subspace(evmmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
 
@@ -1182,6 +1464,8 @@ func (app *App) DefaultGenesis() map[string]json.RawMessage {
 	return ModuleBasics.DefaultGenesis(app.appCodec)
 }
 
+func (app *App) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
+	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 func (app *App) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 }
