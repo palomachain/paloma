@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"cosmossdk.io/log"
+	cosmoslog "cosmossdk.io/log"
 	"cosmossdk.io/tools/confix/cmd"
 	dbm "github.com/cosmos/cosmos-db"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -194,7 +194,7 @@ func rootPreRunE(cmd *cobra.Command, args []string) error {
 
 // appExport creates a new simapp (optionally at a given height) and exports state.
 func appExport(
-	logger log.Logger,
+	logger cosmoslog.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	height int64,
@@ -235,7 +235,7 @@ func appExport(
 
 // newApp creates the application
 func newApp(
-	logger log.Logger,
+	logger cosmoslog.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
@@ -255,19 +255,24 @@ func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		cmd.ConfigCommand(),
+		cmd.ConfigCommand(),
 	)
 
+	server.AddCommands(rootCmd, palomaapp.DefaultNodeHome, newApp, appExport, addModuleInitFlags)
 	server.AddCommands(rootCmd, palomaapp.DefaultNodeHome, newApp, appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
 		server.StatusCommand(),
+		server.StatusCommand(),
 		queryCommand(ac.moduleManager),
 		txCommand(ac.moduleManager),
+		keys.Commands(),
 		keys.Commands(),
 	)
 
 	rootCmd.AddCommand(
+		snapshot.Cmd(newApp),
 		snapshot.Cmd(newApp),
 	)
 }
@@ -298,7 +303,9 @@ func queryCommand(mm module.BasicManager) *cobra.Command {
 
 	cmd.AddCommand(
 		rpc.QueryEventForTxCmd(),
+		rpc.QueryEventForTxCmd(),
 		rpc.ValidatorCommand(),
+		server.QueryBlocksCmd(),
 		server.QueryBlocksCmd(),
 		authcmd.QueryTxsByEventsCmd(),
 		authcmd.QueryTxCmd(),
