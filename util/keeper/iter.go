@@ -5,7 +5,6 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/gogoproto/proto"
-	// "github.com/cosmos/cosmos-sdk/codec"
 )
 
 func IterAll[T proto.Message](store storetypes.KVStore, pu ProtoUnmarshaler) ([][]byte, []T, error) {
@@ -46,7 +45,7 @@ func IterAllFnc[T proto.Message](store storetypes.KVStore, pu ProtoUnmarshaler, 
 		v := reflect.New(va.Type().Elem())
 		va.Set(v)
 
-		if err := pu.Unmarshal(iterData, val); err != nil {
+		if err := pu.Unmarshal(iterData); err != nil {
 			return err
 		}
 		if !fnc(iterator.Key(), val) {

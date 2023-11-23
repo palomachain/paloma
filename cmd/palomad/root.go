@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"cosmossdk.io/log"
+	cosmoslog "cosmossdk.io/log"
 	"cosmossdk.io/tools/confix/cmd"
 	dbm "github.com/cosmos/cosmos-db"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
