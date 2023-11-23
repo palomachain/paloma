@@ -6,10 +6,11 @@ import (
 	"strconv"
 
 	sdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -27,7 +28,7 @@ func (k Keeper) Attest(
 		return nil, fmt.Errorf("could not find ValAddr for delegate key, should be checked by now")
 	}
 	valAddr := val.GetOperator()
-	if err := sdk.VerifyAddressFormat(valAddr); err != nil {
+	if err := sdk.VerifyAddressFormat([]byte(valAddr)); err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid orchestrator validator address")
 	}
 	// Check that the nonce of this event is exactly one higher than the last nonce stored by this validator.
@@ -101,8 +102,8 @@ func (k Keeper) TryAttestation(ctx sdk.Context, att *types.Attestation) error {
 		// Sum the current powers of all validators who have voted and see if it passes the current threshold
 		// TODO: The different integer types and math here needs a careful review
 		totalPower := k.StakingKeeper.GetLastTotalPower(ctx)
-		requiredPower := types.AttestationVotesPowerThreshold.Mul(totalPower).Quo(sdk.NewInt(100))
-		attestationPower := sdk.NewInt(0)
+		requiredPower := types.AttestationVotesPowerThreshold.Mul(totalPower).Quo(math.NewInt(100))
+		attestationPower := math.NewInt(0)
 		for _, validator := range att.Votes {
 			val, err := sdk.ValAddressFromBech32(validator)
 			if err != nil {
@@ -110,7 +111,7 @@ func (k Keeper) TryAttestation(ctx sdk.Context, att *types.Attestation) error {
 			}
 			validatorPower := k.StakingKeeper.GetLastValidatorPower(ctx, val)
 			// Add it to the attestation power's sum
-			attestationPower = attestationPower.Add(sdk.NewInt(validatorPower))
+			attestationPower = attestationPower.Add(math.NewInt(validatorPower))
 			// If the power of all the validators that have voted on the attestation is higher or equal to the threshold,
 			// process the attestation, set Observed to true, and break
 			if attestationPower.GT(requiredPower) {

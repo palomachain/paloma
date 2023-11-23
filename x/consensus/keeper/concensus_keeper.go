@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,7 +44,7 @@ func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consen
 		}
 
 		if opts.Cdc == nil {
-			opts.Cdc = k.cdc
+			opts.Cdc = k.Cdc
 		}
 
 		if opts.Batched {
@@ -265,7 +266,7 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 		}
 		snapshot := whoops.Must(k.valset.GetCurrentSnapshot(ctx))
 
-		if len(snapshot.Validators) == 0 || snapshot.TotalShares.Equal(sdk.ZeroInt()) {
+		if len(snapshot.Validators) == 0 || snapshot.TotalShares.Equal(math.ZeroInt()) {
 			return
 		}
 
@@ -275,7 +276,7 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 		}
 
 		for _, msg := range msgs {
-			msgTotal := sdk.ZeroInt()
+			msgTotal := math.ZeroInt()
 			// add shares of validators that have signed the message
 			for _, signData := range msg.GetSignData() {
 				signedValidator, ok := validatorMap[signData.ValAddress.String()]
@@ -295,7 +296,7 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 			// could lose precision using floating point arithmetic.
 			// If we multiply both sides with 3, we don't need to do division.
 			// 3 * msgTotal >= 2 * snapshotTotal
-			if msgTotal.Mul(sdk.NewInt(3)).GTE(snapshot.TotalShares.Mul(sdk.NewInt(2))) {
+			if msgTotal.Mul(math.NewInt(3)).GTE(snapshot.TotalShares.Mul(math.NewInt(2))) {
 				// consensus has been reached
 				consensusReached = append(consensusReached, msg)
 			}

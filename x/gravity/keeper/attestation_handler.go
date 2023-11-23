@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
+	sdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -210,7 +211,7 @@ func (a AttestationHandler) assertNothingSent(ctx sdk.Context, moduleAddr sdk.Ac
 
 // assertSentAmount performs a runtime assertion that the actual sent amount of `denom` equals the MsgSendToPaloma
 // claim's amount to send
-func (a AttestationHandler) assertSentAmount(ctx sdk.Context, moduleAddr sdk.AccAddress, preSendBalance sdk.Coin, denom string, amount sdk.Int) error {
+func (a AttestationHandler) assertSentAmount(ctx sdk.Context, moduleAddr sdk.AccAddress, preSendBalance sdk.Coin, denom string, amount math.Int) error {
 	postSendBalance := a.keeper.bankKeeper.GetBalance(ctx, moduleAddr, denom)
 	if !preSendBalance.Sub(postSendBalance).Amount.Equal(amount) {
 		return fmt.Errorf(
