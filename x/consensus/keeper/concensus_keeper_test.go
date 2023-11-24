@@ -3,6 +3,7 @@ package keeper
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -265,23 +266,23 @@ func TestGetMessagesForRelaying(t *testing.T) {
 func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 	testValidators := []valsettypes.Validator{
 		{
-			ShareCount: sdk.NewInt(2),
+			ShareCount: math.NewInt(2),
 			Address:    sdk.ValAddress("val1"),
 		},
 		{
-			ShareCount: sdk.NewInt(3),
+			ShareCount: math.NewInt(3),
 			Address:    sdk.ValAddress("val2"),
 		},
 		{
-			ShareCount: sdk.NewInt(6),
+			ShareCount: math.NewInt(6),
 			Address:    sdk.ValAddress("val3"),
 		},
 		{
-			ShareCount: sdk.NewInt(7),
+			ShareCount: math.NewInt(7),
 			Address:    sdk.ValAddress("val4"),
 		},
 	}
-	total := sdk.NewInt(18)
+	total := math.NewInt(18)
 
 	_ = testValidators
 	_ = total

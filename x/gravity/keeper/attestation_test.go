@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"testing"
 
+	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -95,7 +96,7 @@ func createAttestations(t *testing.T, length int, k Keeper, ctx sdktypes.Context
 			EventNonce:     nonce,
 			EthBlockHeight: 1,
 			TokenContract:  contract,
-			Amount:         sdktypes.NewInt(10000000000 + int64(i)),
+			Amount:         math.NewInt(10000000000 + int64(i)),
 			EthereumSender: sender,
 			PalomaReceiver: receiver,
 			Orchestrator:   orch,
@@ -203,7 +204,7 @@ func TestInvalidHeight(t *testing.T) {
 			DestAddress: receiver.String(),
 			Erc20Token: types.ERC20Token{
 				Contract: tokenContract,
-				Amount:   sdktypes.NewInt(1),
+				Amount:   math.NewInt(1),
 			},
 		}},
 		TokenContract:      tokenContract,

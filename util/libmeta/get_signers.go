@@ -13,7 +13,7 @@ type MsgWithMetadata[T Metadata] interface {
 	GetMetadata() T
 }
 
-func GetSigners[E Metadata, T MsgWithMetadata[E]](msg T) []sdk.AccAddress {
+func GetSigners[K Metadata, T MsgWithMetadata[K]](msg T) []sdk.AccAddress {
 	md := msg.GetMetadata()
 	signers := make([]sdk.AccAddress, len(md.GetSigners()))
 	for i, v := range md.GetSigners() {

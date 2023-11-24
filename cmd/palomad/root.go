@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"cosmossdk.io/log"
+	cosmoslog "cosmossdk.io/log"
 	"cosmossdk.io/tools/confix/cmd"
 	dbm "github.com/cosmos/cosmos-db"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -194,7 +194,7 @@ func rootPreRunE(cmd *cobra.Command, args []string) error {
 
 // appExport creates a new simapp (optionally at a given height) and exports state.
 func appExport(
-	logger log.Logger,
+	logger cosmoslog.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	height int64,
@@ -235,7 +235,7 @@ func appExport(
 
 // newApp creates the application
 func newApp(
-	logger log.Logger,
+	logger cosmoslog.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
