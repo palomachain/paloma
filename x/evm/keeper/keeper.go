@@ -22,6 +22,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -148,8 +149,8 @@ func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string
 	return k.msgAssigner.PickValidatorForMessage(ctx, weights, chainReferenceID, requirements)
 }
 
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+func (k Keeper) Logger(ctx sdk.Context) liblog.Logr {
+	return liblog.FromSDKLogger(ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName)))
 
 }
 

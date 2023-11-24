@@ -12,8 +12,13 @@ import (
 	// wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 
 	"cosmossdk.io/log"
+	// "github.com/CosmWasm/wasmd/x/wasm"
+	// "github.com/CosmWasm/wasmd/x/wasm"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
+
+	// xchain "github.com/palomachain/paloma/internal/x-chain"
+	// "github.com/palomachain/paloma/x/evm"
 
 	"github.com/cosmos/cosmos-sdk/std"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -149,6 +154,7 @@ import (
 	// treasuryclient "github.com/palomachain/paloma/x/treasury/client"
 	// treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
 	// treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
+
 	// valsetmodule "github.com/palomachain/paloma/x/valset"
 	// valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
 	// valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
@@ -167,8 +173,6 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 	return []govclient.ProposalHandler{
 		paramsclient.ProposalHandler,
 		evmclient.ProposalHandler,
-		// gravityclient.ProposalHandler,
-		// treasuryclient.ProposalHandler,
 	}
 }
 
@@ -219,15 +223,10 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
-		// gravitymoduletypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
-		ibctransfertypes.ModuleName: {authtypes.Minter, authtypes.Burner},
-		ibcfeetypes.ModuleName:      nil,
-		icatypes.ModuleName:         nil,
-		// wasm.ModuleName:                {authtypes.Burner},
-		// treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
-		// gravitymoduletypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
-		// wasm.ModuleName:                {authtypes.Burner},
-		// treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
+		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		ibcfeetypes.ModuleName:         nil,
+		icatypes.ModuleName:            nil,
+		evmmoduletypes.ModuleName:      {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -247,6 +246,7 @@ func init() {
 // capabilities aren't needed for testing.
 type App struct {
 	*baseapp.BaseApp
+
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry
@@ -278,7 +278,6 @@ type App struct {
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
 	// ScopedWasmKeeper          capabilitykeeper.ScopedKeeper
-
 	ScopedConsensusKeeper capabilitykeeper.ScopedKeeper
 	IBCKeeper             *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 	IBCFeeKeeper          ibcfeekeeper.Keeper
@@ -290,7 +289,7 @@ type App struct {
 	// ConsensusKeeper consensusmodulekeeper.Keeper
 	// ValsetKeeper    valsetmodulekeeper.Keeper
 	// PalomaKeeper    palomamodulekeeper.Keeper
-	// TreasuryKeeper  treasurymodulekeeper.Keeper
+	// TreasuryKeeper treasurymodulekeeper.Keeper
 	EvmKeeper evmmodulekeeper.Keeper
 	// GravityKeeper   gravitymodulekeeper.Keeper
 	// wasmKeeper      wasm.Keeper
@@ -334,10 +333,6 @@ func New(
 	std.RegisterLegacyAminoCodec(legacyAmino)
 	std.RegisterInterfaces(interfaceRegistry)
 	bApp := baseapp.NewBaseApp(Name, logger, db, txConfig.TxDecoder(), baseAppOptions...)
-	bApp.SetTxEncoder(txConfig.TxEncoder())
-
-	std.RegisterLegacyAminoCodec(legacyAmino)
-	std.RegisterInterfaces(interfaceRegistry)
 	bApp.SetTxEncoder(txConfig.TxEncoder())
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
@@ -400,7 +395,6 @@ func New(
 	}
 
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
-	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
 	// set the BaseApp's parameter store
 	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
@@ -409,7 +403,6 @@ func New(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		runtime.EventService{},
 	)
-	bApp.SetParamStore(app.ConsensusParamsKeeper.ParamsStore)
 	bApp.SetParamStore(app.ConsensusParamsKeeper.ParamsStore)
 
 	app.CapabilityKeeper = capabilitykeeper.NewKeeper(
@@ -422,8 +415,6 @@ func New(
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	// scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
-	// scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 	// scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
 	// scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 
@@ -522,7 +513,7 @@ func New(
 	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(
 		appCodec,
 		keys[ibcfeetypes.StoreKey],
-		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper, // may be replaced with IBC middleware
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -596,16 +587,14 @@ func New(
 	// 	consensusRegistry,
 	// )
 
-	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
-		appCodec,
-		keys[evmmoduletypes.StoreKey],
-		memKeys[evmmoduletypes.MemStoreKey],
-		app.GetSubspace(evmmoduletypes.ModuleName),
-		// app.ConsensusKeeper,
-		nil,
-		nil,
-		// app.ValsetKeeper,
-	)
+	// app.EvmKeeper = *evmmodulekeeper.NewKeeper(
+	// 	appCodec,
+	// 	keys[evmmoduletypes.StoreKey],
+	// 	memKeys[evmmoduletypes.MemStoreKey],
+	// 	app.GetSubspace(evmmoduletypes.ModuleName),
+	// 	app.ConsensusKeeper,
+	// 	app.ValsetKeeper,
+	// )
 	// app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 	// 	app.EvmKeeper,
 	// }
@@ -666,10 +655,10 @@ func New(
 	// 	appCodec,
 	// 	keys[treasurymoduletypes.StoreKey],
 	// 	memKeys[treasurymoduletypes.MemStoreKey],
-	// 	app.GetSubspace(schedulermoduletypes.ModuleName),
+	// 	app.GetSubspace("" /*schedulermoduletypes.ModuleName*/),
 	// 	app.BankKeeper,
 	// 	app.AccountKeeper,
-	// 	app.SchedulerKeeper,
+	// 	nil, // app.SchedulerKeeper,
 	// )
 
 	// app.ScopedConsensusKeeper = scopedConsensusKeeper
@@ -678,10 +667,7 @@ func New(
 	govRouter.
 		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		// AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper))
-	// AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
-	// AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
 
 	// Example of setting gov params:
 	govKeeper := govkeeper.NewKeeper(
@@ -1177,7 +1163,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	// paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(wasm.ModuleName)
-	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
+	// paramsKeeper.Subspace(evmmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
 
 	return paramsKeeper

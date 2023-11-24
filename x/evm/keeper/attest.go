@@ -17,6 +17,7 @@ import (
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -64,7 +65,7 @@ func (c *consensusPower) consensus() bool {
 }
 
 func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
-	logger := k.Logger(ctx).With(
+	logger := k.Logger(ctx).WithFields(
 		"component", "attest-router",
 		"msg-id", msg.GetId(),
 		"msg-nonce", msg.Nonce())
@@ -92,10 +93,10 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
-			logger.With(err).Error("consensus not achieved")
+			logger.WithError(err).Error("consensus not achieved")
 			return nil
 		}
-		logger.With(err).Error("failed to find evidence")
+		logger.WithError(err).Error("failed to find evidence")
 		return err
 	}
 
@@ -120,11 +121,11 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	// If we got up to here it means that the enough evidence was provided
 	actionMsg := consensusMsg.(*types.Message).GetAction()
 	_, chainReferenceID := q.ChainInfo()
-	logger = logger.With("chain-reference-id", chainReferenceID)
+	logger = logger.WithFields("chain-reference-id", chainReferenceID)
 
 	switch origMsg := actionMsg.(type) {
 	case *types.Message_TransferERC20Ownership:
-		logger = logger.With("action-msg", "Message_TransferERC20Ownership")
+		logger = logger.WithFields("action-msg", "Message_TransferERC20Ownership")
 		logger.Debug("Processing attestation.")
 		defer func() {
 			// regardless of the outcome, this upload/deployment should be removed
@@ -196,7 +197,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
 		}
 	case *types.Message_UploadSmartContract:
-		logger = logger.With("action-msg", "Message_UploadSmartContract")
+		logger = logger.WithFields("action-msg", "Message_UploadSmartContract")
 		logger.Debug("Processing upload smart contract message attestation.")
 		switch winner := evidence.(type) {
 		case *types.TxExecutedProof:
@@ -478,7 +479,7 @@ func (k Keeper) initiateERC20TokenOwnershipTransfer(
 		return err
 	}
 
-	k.Logger(ctx).With("new-message-id", msgID).Debug("initiateERC20TokenOwnershipTransfer triggered")
+	liblog.FromSDKLogger(k.Logger(ctx)).WithFields("new-message-id", msgID).Debug("initiateERC20TokenOwnershipTransfer triggered")
 	return nil
 }
 
