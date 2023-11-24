@@ -3,6 +3,7 @@ package evm_test
 import (
 	"testing"
 
+	cmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -44,7 +45,7 @@ var _ = g.Describe("genesis", func() {
 	g.BeforeEach(func() {
 		t := g.GinkgoT()
 		a = app.NewTestApp(t, false)
-		ctx = a.NewContext(false)
+		ctx = a.NewUncachedContext(false, cmproto.Header{Height: 5})
 		k = &a.EvmKeeper
 	})
 
