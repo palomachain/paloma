@@ -1,7 +1,7 @@
 package liblog
 
 import (
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
 )
 
 type Logr interface {
@@ -12,6 +12,9 @@ type Logr interface {
 
 func FromSDKLogger(l log.Logger) Logr {
 	return &lgwr{l: l}
+}
+func (l *lgwr) Impl() interface{} {
+	return l
 }
 
 type lgwr struct {
