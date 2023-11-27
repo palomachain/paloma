@@ -12,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/evm/types/mocks"
@@ -40,13 +39,6 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 
 	types.RegisterInterfaces(registry)
 
-	paramsSubspace := typesparams.NewSubspace(appCodec,
-		types.Amino,
-		storeKey,
-		memStoreKey,
-		"EvmParams",
-	)
-
 	ms := mockedServices{
 		ConsensusKeeper: mocks.NewConsensusKeeper(t),
 		ValsetKeeper:    mocks.NewValsetKeeper(t),
@@ -56,9 +48,9 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 		appCodec,
 		storeKey,
 		memStoreKey,
-		paramsSubspace,
 		ms.ConsensusKeeper,
 		ms.ValsetKeeper,
+		"authority",
 	)
 
 	k.msgSender = ms.MsgSender

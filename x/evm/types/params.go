@@ -17,10 +17,10 @@ func NewParams() Params {
 	return Params{}
 }
 
-// DefaultParams returns a default set of parameters
-func DefaultParams() Params {
-	return NewParams()
-}
+// // DefaultParams returns a default set of parameters
+// func DefaultParams() Params {
+// 	return NewParams()
+// }
 
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
@@ -36,4 +36,8 @@ func (p Params) Validate() error {
 func (p Params) String() string {
 	out, _ := yaml.Marshal(p)
 	return string(out)
+}
+
+func DefaultParams() Params {
+	return NewParams()
 }

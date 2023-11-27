@@ -17,7 +17,6 @@ import (
 	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
@@ -94,37 +93,30 @@ func init() {
 var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
 type Keeper struct {
-	cdc        codec.BinaryCodec
-	storeKey   storetypes.StoreKey
-	memKey     storetypes.StoreKey
-	paramstore paramtypes.Subspace
-
+	cdc             codec.BinaryCodec
+	storeKey        storetypes.StoreKey
+	memKey          storetypes.StoreKey
 	ConsensusKeeper types.ConsensusKeeper
 	SchedulerKeeper types.SchedulerKeeper
 	Valset          types.ValsetKeeper
 	ider            keeperutil.IDGenerator
 	msgSender       types.MsgSender
 	msgAssigner     types.MsgAssigner
+	authority       string
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
 	memKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
 	consensusKeeper types.ConsensusKeeper,
 	valsetKeeper types.ValsetKeeper,
+	authority string,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
-
 	k := &Keeper{
 		cdc:             cdc,
 		storeKey:        storeKey,
 		memKey:          memKey,
-		paramstore:      ps,
 		ConsensusKeeper: consensusKeeper,
 		Valset:          valsetKeeper,
 		msgSender: msgSender{
@@ -134,6 +126,7 @@ func NewKeeper(
 		msgAssigner: MsgAssigner{
 			valsetKeeper,
 		},
+		authority: authority,
 	}
 
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.provideSmartContractStore), []byte("id-key"))
