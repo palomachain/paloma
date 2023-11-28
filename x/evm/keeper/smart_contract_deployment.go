@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 
 	sdkmath "cosmossdk.io/math"
@@ -229,8 +230,13 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 
 	k.createSmartContractDeployment(ctx, smartContract, chainInfo, uniqueID[:])
 
+	lastEventNonce, err := k.Gravity.GetLastObservedEventNonce(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get last observed event nonce: %w", err)
+	}
+
 	// set the smart contract constructor arguments
-	input, err := contractABI.Pack("", uniqueID, types.TransformValsetToABIValset(valset))
+	input, err := contractABI.Pack("", uniqueID, (&big.Int{}).SetUint64(lastEventNonce), types.TransformValsetToABIValset(valset))
 
 	logger.Info(
 		"transform valset to abi valset",

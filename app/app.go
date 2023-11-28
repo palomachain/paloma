@@ -570,6 +570,9 @@ func New(
 		app.EvmKeeper,
 		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
 	)
+	// TODO: Use proper dependency resolution instead of
+	// this abomination
+	app.EvmKeeper.Gravity = app.GravityKeeper
 
 	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
 		appCodec,
