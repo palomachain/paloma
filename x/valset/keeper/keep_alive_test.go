@@ -219,7 +219,7 @@ func TestJailBackoff(t *testing.T) {
 	// Should reset jail backoff if recovered
 	t.Run("with non-recovering validator", func(t *testing.T) {
 		for i, v := range jailSentences {
-			t.Run(fmt.Sprintf("[%d] Paloma should increase the jail sentence with every occurrance", i), func(t *testing.T) {
+			t.Run(fmt.Sprintf("[%d] Paloma should increase the jail sentence with every occurrence", i), func(t *testing.T) {
 				val, valAddr := valBuild(10 + i)
 				consAddr := sdk.ConsAddress(valAddr)
 				ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(val)
