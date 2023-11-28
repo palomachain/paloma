@@ -29,6 +29,7 @@ func addDeploymentToKeeper(t *testing.T, ctx sdk.Context, k *Keeper, mockService
 	// test-chain mocks
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil)
+	mockServices.GravityKeeper.On("GetLastObservedEventNonce", mock.Anything).Return(uint64(100), nil)
 
 	// Add a new chains for our test to use
 	err := k.AddSupportForNewChain(

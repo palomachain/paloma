@@ -2,8 +2,8 @@ package keeper_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math/big"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -30,8 +30,8 @@ import (
 )
 
 var (
-	contractAbi         = string(whoops.Must(ioutil.ReadFile("testdata/sample-abi.json")))
-	contractBytecodeStr = string(whoops.Must(ioutil.ReadFile("testdata/sample-bytecode.out")))
+	contractAbi         = string(whoops.Must(os.ReadFile("testdata/sample-abi.json")))
+	contractBytecodeStr = string(whoops.Must(os.ReadFile("testdata/sample-bytecode.out")))
 )
 
 func genValidators(numValidators, totalConsPower int) []stakingtypes.Validator {

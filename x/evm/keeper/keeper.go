@@ -99,6 +99,7 @@ type Keeper struct {
 	ConsensusKeeper types.ConsensusKeeper
 	SchedulerKeeper types.SchedulerKeeper
 	Valset          types.ValsetKeeper
+	Gravity         types.GravityKeeper
 	ider            keeperutil.IDGenerator
 	msgSender       types.MsgSender
 	msgAssigner     types.MsgAssigner
