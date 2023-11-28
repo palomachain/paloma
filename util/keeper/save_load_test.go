@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/palomachain/paloma/util/keeper"
@@ -8,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSaveAndLoad(t *testing.T) {
+func Test_SaveAndLoad(t *testing.T) {
 	inData := &types.SimpleMessage{
 		Sender: "1",
 		Hello:  "hello",
@@ -25,9 +26,10 @@ func TestSaveAndLoad(t *testing.T) {
 	assert.Equal(t, inData, ret)
 }
 
-func TestSaveAndLoadWithInvalidKey(t *testing.T) {
+func Test_SaveAndLoadWithInvalidKey(t *testing.T) {
 	ms, kv, _ := keeper.SampleStore("store", "mem")
 	store := ms.GetKVStore(kv)
 	_, err := keeper.Load[*types.SimpleMessage](store, types.ModuleCdc, []byte("i don't exist"))
 	assert.Error(t, err)
+	assert.True(t, errors.Is(err, keeper.ErrNotFound))
 }
