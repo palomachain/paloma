@@ -17,11 +17,6 @@ func NewParams() Params {
 	return Params{}
 }
 
-// // DefaultParams returns a default set of parameters
-// func DefaultParams() Params {
-// 	return NewParams()
-// }
-
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{}

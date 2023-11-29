@@ -2,7 +2,6 @@ package keeper
 
 import (
 	tmdb "github.com/cosmos/cosmos-db"
-	// "github.com/cometbft/cometbft/libs/log"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
