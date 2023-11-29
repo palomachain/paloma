@@ -1,9 +1,5 @@
 package types
 
-var (
-	ParamsKey = []byte{0x00}
-)
-
 const (
 	// ModuleName defines the module name
 	ModuleName = "evm"

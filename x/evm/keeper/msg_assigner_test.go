@@ -6,7 +6,6 @@ import (
 	"math"
 	"testing"
 
-	// "github.com/cometbft/cometbft/libs/log"
 	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"

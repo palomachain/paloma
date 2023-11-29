@@ -78,7 +78,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	ctx, writeCache := ctx.CacheContext()
 	defer func() {
 		if err != nil {
-			logger.With(err).Error("failed to attest. Skipping writeback.")
+			logger.WithError(err).Error("failed to attest. Skipping writeback.")
 			return
 		}
 		writeCache()
@@ -86,7 +86,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 
 	consensusMsg, err := msg.ConsensusMsg(k.cdc)
 	if err != nil {
-		logger.With(err).Error("failed to cast to consensus message")
+		logger.WithError(err).Error("failed to cast to consensus message")
 		return err
 	}
 
@@ -104,7 +104,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
 		if err := q.Remove(ctx, msg.GetId()); err != nil {
-			logger.With(err).Error("error removing message, attestRouter")
+			logger.WithError(err).Error("error removing message, attestRouter")
 		}
 	}()
 
@@ -138,36 +138,36 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			logger.Debug("TX Execution Proof")
 			tx, err := winner.GetTX()
 			if err != nil {
-				logger.With(err).Error("Failed to get TX")
+				logger.WithError(err).Error("Failed to get TX")
 				return err
 			}
 			if k.isTxProcessed(ctx, tx) {
 				// somebody submitted the old transaction that was already processed?
 				// punish those validators!!
-				logger.With(err).Error("TX already processed")
+				logger.WithError(err).Error("TX already processed")
 				// hack hack hack: We want to keep this check in place, but there is no real TX to work with here yet.
 				// return ErrUnexpectedError.WrapS("transaction %s is already processed", tx.Hash())
 			}
 			err = origMsg.TransferERC20Ownership.VerifyAgainstTX(tx)
 			if err != nil {
 				// passed in transaction doesn't seem to be created from this smart contract
-				logger.With(err).Error("TX failed to verify")
+				logger.WithError(err).Error("TX failed to verify")
 				return err
 			}
 
 			deployment, _ := k.getSmartContractDeploymentByContractID(ctx, origMsg.TransferERC20Ownership.SmartContractID, chainReferenceID)
 			if deployment == nil {
-				logger.With(err).Error("Deployment not found")
+				logger.WithError(err).Error("Deployment not found")
 				return ErrCannotActiveSmartContractThatIsNotDeploying
 			}
 			if deployment.GetStatus() != types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER {
-				logger.With(err).Error("Deployment not awaiting transfer")
+				logger.WithError(err).Error("Deployment not awaiting transfer")
 				return ErrCannotActiveSmartContractThatIsNotDeploying
 			}
 
 			smartContract, err := k.getSmartContract(ctx, deployment.GetSmartContractID())
 			if err != nil {
-				logger.With(err).Error("Failed to get contract")
+				logger.WithError(err).Error("Failed to get contract")
 				return err
 			}
 
@@ -180,7 +180,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				deployment.GetUniqueID(),
 			)
 			if err != nil {
-				logger.With(err).Error("Failed to activate chain")
+				logger.WithError(err).Error("Failed to activate chain")
 				return err
 			}
 			logger.Debug("attestation successful")
@@ -204,37 +204,37 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			logger.Debug("TX proof attestation")
 			tx, err := winner.GetTX()
 			if err != nil {
-				logger.With(err).Error("Failed to get TX")
+				logger.WithError(err).Error("Failed to get TX")
 				return err
 			}
 			if k.isTxProcessed(ctx, tx) {
 				// somebody submitted the old transaction that was already processed?
 				// punish those validators!!
-				logger.With(err).Error("TX already processed")
+				logger.WithError(err).Error("TX already processed")
 				return ErrUnexpectedError.WrapS("transaction %s is already processed", tx.Hash())
 			}
 			err = origMsg.UploadSmartContract.VerifyAgainstTX(tx)
 			if err != nil {
 				// passed in transaction doesn't seem to be created from this smart contract
-				logger.With(err).Error("Failed to verify TX")
+				logger.WithError(err).Error("Failed to verify TX")
 				return err
 			}
 
 			ethMsg, err := core.TransactionToMessage(tx, ethtypes.NewLondonSigner(tx.ChainId()), big.NewInt(0))
 			if err != nil {
-				logger.With(err).Error("Failed to extract ethMsg")
+				logger.WithError(err).Error("Failed to extract ethMsg")
 				return err
 			}
 
 			smartContractID := origMsg.UploadSmartContract.GetId()
 			deployment, _ := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
 			if deployment == nil {
-				logger.With(err).With("smart-contract-id", smartContractID).Error("Smart contract not found")
+				logger.WithError(err).WithFields("smart-contract-id", smartContractID).Error("Smart contract not found")
 				return ErrCannotActiveSmartContractThatIsNotDeploying
 			}
 
 			if deployment.GetStatus() != types.SmartContractDeployment_IN_FLIGHT {
-				logger.With(err).Error("deployment not in right state")
+				logger.WithError(err).Error("deployment not in right state")
 				return ErrCannotActiveSmartContractThatIsNotDeploying
 			}
 
@@ -249,13 +249,13 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 					NewCompassAddress: newCompassAddr.Bytes(),
 				})
 			if err != nil {
-				logger.With(err).Error("failed to initiateERC20TokenOwnershipTransfer")
+				logger.WithError(err).Error("failed to initiateERC20TokenOwnershipTransfer")
 				return err
 			}
 
 			err = k.SetSmartContractDeploymentStatusByContractID(ctx, smartContractID, chainReferenceID, types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER)
 			if err != nil {
-				logger.With(err).Error("failed to update deployment status!")
+				logger.WithError(err).Error("failed to update deployment status!")
 				return err
 			}
 			logger.Debug("attestation successful")
@@ -292,7 +292,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		err := k.Valset.SetSnapshotOnChain(ctx, origMsg.UpdateValset.Valset.ValsetID, chainReferenceID)
 		if err != nil {
 			// We don't want to break here, so we'll just log the error and continue
-			logger.With(err).Error("Failed to set snapshot as active for chain", "valsetID", origMsg.UpdateValset.Valset.ValsetID)
+			logger.WithError(err).Error("Failed to set snapshot as active for chain", "valsetID", origMsg.UpdateValset.Valset.ValsetID)
 		}
 
 		// now remove all older update valsets given that new one was uploaded.
@@ -311,7 +311,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			if _, ok := (actionMsg.(*types.Message).GetAction()).(*types.Message_UpdateValset); ok {
 				if oldMessage.GetId() < msg.GetId() {
 					if err := q.Remove(ctx, oldMessage.GetId()); err != nil {
-						logger.With(err).Error("error removing old message, attestRouter", "msg-id", oldMessage.GetId(), "msg-nonce", oldMessage.Nonce())
+						logger.WithError(err).Error("error removing old message, attestRouter", "msg-id", oldMessage.GetId(), "msg-nonce", oldMessage.Nonce())
 					}
 				}
 			}
@@ -342,7 +342,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 					"chain-reference-id", chainReferenceID)
 				newMsgID, err := k.AddSmartContractExecutionToConsensus(ctx, chainReferenceID, rawMsg.GetTurnstoneID(), slc)
 				if err != nil {
-					logger.With(err).Error("Failed to retry SubmitLogicCall")
+					logger.WithError(err).Error("Failed to retry SubmitLogicCall")
 				} else {
 					logger.Info("retried failed SubmitLogicCall message",
 						"message-id", msg.GetId(),
