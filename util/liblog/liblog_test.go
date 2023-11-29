@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,6 +12,10 @@ import (
 type mock struct {
 	invocations []string
 	args        []interface{}
+}
+
+func (m *mock) Impl() interface{} {
+	return m
 }
 
 func (m *mock) Debug(msg string, keyvals ...interface{}) {
