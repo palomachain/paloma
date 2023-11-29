@@ -13,13 +13,9 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	dbm "github.com/cosmos/cosmos-db"
-	"github.com/cosmos/gogoproto/proto"
-
-	// xchain "github.com/palomachain/paloma/internal/x-chain"
-	// "github.com/palomachain/paloma/x/evm"
-
 	"github.com/cosmos/cosmos-sdk/std"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"github.com/cosmos/gogoproto/proto"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmjson "github.com/cometbft/cometbft/libs/json"
@@ -587,14 +583,14 @@ func New(
 	// 	consensusRegistry,
 	// )
 
-	// app.EvmKeeper = *evmmodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[evmmoduletypes.StoreKey],
-	// 	memKeys[evmmoduletypes.MemStoreKey],
-	// 	app.GetSubspace(evmmoduletypes.ModuleName),
-	// 	app.ConsensusKeeper,
-	// 	app.ValsetKeeper,
-	// )
+	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
+		appCodec,
+		keys[evmmoduletypes.StoreKey],
+		memKeys[evmmoduletypes.MemStoreKey],
+		nil,
+		nil,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
 	// app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 	// 	app.EvmKeeper,
 	// }
