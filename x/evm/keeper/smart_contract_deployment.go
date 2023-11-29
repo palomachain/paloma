@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 )
@@ -58,7 +59,7 @@ func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx sdk.Context, smart
 }
 
 func (k Keeper) SetSmartContractDeploymentStatusByContractID(ctx sdk.Context, smartContractID uint64, chainReferenceID string, status types.SmartContractDeployment_Status) error {
-	logger := k.Logger(ctx).With("smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID, "new-smart-contract-status", status)
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithFields("smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID, "new-smart-contract-status", status)
 	v, key := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
 	if key == nil {
 		return keeperutil.ErrNotFound
@@ -66,7 +67,7 @@ func (k Keeper) SetSmartContractDeploymentStatusByContractID(ctx sdk.Context, sm
 
 	v.Status = status
 	if err := keeperutil.Save(k.provideSmartContractDeploymentStore(ctx), k.cdc, key, v); err != nil {
-		logger.With(err).Error("failed to update smart contract deployment record")
+		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("failed to update smart contract deployment record")
 		return err
 	}
 
