@@ -58,7 +58,7 @@ func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx sdk.Context, smart
 }
 
 func (k Keeper) SetSmartContractDeploymentStatusByContractID(ctx sdk.Context, smartContractID uint64, chainReferenceID string, status types.SmartContractDeployment_Status) error {
-	logger := k.Logger(ctx).With("smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID, "new-smart-contract-status", status)
+	logger := k.Logger(ctx).WithFields("smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID, "new-smart-contract-status", status)
 	v, key := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
 	if key == nil {
 		return keeperutil.ErrNotFound
@@ -66,7 +66,7 @@ func (k Keeper) SetSmartContractDeploymentStatusByContractID(ctx sdk.Context, sm
 
 	v.Status = status
 	if err := keeperutil.Save(k.provideSmartContractDeploymentStore(ctx), k.cdc, key, v); err != nil {
-		logger.With(err).Error("failed to update smart contract deployment record")
+		logger.WithError(err).Error("failed to update smart contract deployment record")
 		return err
 	}
 
@@ -200,7 +200,7 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 
 	if err != nil {
 		if errors.Is(err, keeperutil.ErrNotFound) {
-			logger.With("error", err).Info("cannot deploy due to no consensus")
+			logger.WithFields("error", err).Info("cannot deploy due to no consensus")
 			return nil
 		}
 
