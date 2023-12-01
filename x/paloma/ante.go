@@ -78,7 +78,7 @@ func NewVerifyAuthorisedSignatureDecorator(fk types.FeegrantKeeper) VerifyAuthor
 // AnteHandle verifies that the message is signed by at least one signature that has
 // active fee grant from the creator address, IF the message contains metadata.
 func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	if simulate || ctx.IsCheckTx() {
+	if simulate {
 		return next(ctx, tx, simulate)
 	}
 
