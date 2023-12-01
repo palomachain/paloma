@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	corestore "cosmossdk.io/core/store"
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -93,7 +94,7 @@ var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
 type Keeper struct {
 	cdc             codec.BinaryCodec
-	storeKey        storetypes.StoreKey
+	storeKey        corestore.KVStoreService
 	memKey          storetypes.StoreKey
 	ConsensusKeeper types.ConsensusKeeper
 	SchedulerKeeper types.SchedulerKeeper
@@ -106,7 +107,7 @@ type Keeper struct {
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey,
+	storeService corestore.KVStoreService,
 	memKey storetypes.StoreKey,
 	consensusKeeper types.ConsensusKeeper,
 	valsetKeeper types.ValsetKeeper,
@@ -114,7 +115,7 @@ func NewKeeper(
 ) *Keeper {
 	k := &Keeper{
 		cdc:             cdc,
-		storeKey:        storeKey,
+		storeKey:        storeService,
 		memKey:          memKey,
 		ConsensusKeeper: consensusKeeper,
 		Valset:          valsetKeeper,
@@ -372,7 +373,7 @@ func (k Keeper) RemoveSupportForChain(ctx sdk.Context, proposal *types.RemoveCha
 }
 
 func (k Keeper) chainInfoStore(ctx sdk.Context) storetypes.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("chain-info"))
+	return prefix.NewStore(ctx.KVStore(k.memKey), []byte("chain-info"))
 }
 
 func (k Keeper) PreJobExecution(ctx sdk.Context, job *schedulertypes.Job) error {

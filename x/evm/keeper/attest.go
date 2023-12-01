@@ -484,7 +484,7 @@ func (k Keeper) initiateERC20TokenOwnershipTransfer(
 }
 
 func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) storetypes.KVStore {
-	kv := ctx.KVStore(k.storeKey)
+	kv := ctx.KVStore(k.memKey)
 	return prefix.NewStore(kv, []byte("tx-processed"))
 }
 

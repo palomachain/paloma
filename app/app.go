@@ -585,7 +585,7 @@ func New(
 
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
 		appCodec,
-		keys[evmmoduletypes.StoreKey],
+		runtime.NewKVStoreService(keys[evmmoduletypes.StoreKey]),
 		memKeys[evmmoduletypes.MemStoreKey],
 		nil,
 		nil,
