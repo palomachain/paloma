@@ -554,7 +554,7 @@ func New(
 		app.ValsetKeeper,
 	)
 	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
-		app.EvmKeeper,
+		&app.EvmKeeper,
 	}
 	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
 
@@ -571,7 +571,9 @@ func New(
 		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
 	)
 	// TODO: Use proper dependency resolution instead of
-	// this abomination
+	// this abomination.
+	// TODO: Refactor app to use pointer values only instead
+	// of keeping value copies and blowing up the stack.
 	app.EvmKeeper.Gravity = app.GravityKeeper
 
 	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
@@ -739,7 +741,7 @@ func New(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 
-	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
+	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper)
 	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
