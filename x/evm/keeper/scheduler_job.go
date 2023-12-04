@@ -58,6 +58,7 @@ func (k Keeper) VerifyJob(ctx sdk.Context, definition, payload []byte, chainRefe
 
 // ExecuteJob schedules the definition and payload for execution via consensus queue
 func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) (uint64, error) {
+
 	def, load, err := k.unmarshalJob(jcfg.Definition, jcfg.Payload, jcfg.RefID)
 	if err != nil {
 		return 0, err

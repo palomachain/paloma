@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -11,6 +12,7 @@ import (
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/VolumeFi/whoops"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
@@ -64,8 +66,9 @@ func (c *consensusPower) consensus() bool {
 	)
 }
 
-func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
-	logger := k.Logger(ctx).WithFields(
+func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx).WithFields(
 		"component", "attest-router",
 		"msg-id", msg.GetId(),
 		"msg-nonce", msg.Nonce())
@@ -75,7 +78,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return nil
 	}
 
-	ctx, writeCache := ctx.CacheContext()
+	ctx, writeCache := sdkCtx.CacheContext()
 	defer func() {
 		if err != nil {
 			logger.WithError(err).Error("failed to attest. Skipping writeback.")
@@ -90,7 +93,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return err
 	}
 
-	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
+	evidence, err := k.findEvidenceThatWon(sdkCtx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			logger.WithError(err).Error("consensus not achieved")
@@ -103,7 +106,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	defer func() {
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
-		if err := q.Remove(ctx, msg.GetId()); err != nil {
+		if err := q.Remove(sdkCtx, msg.GetId()); err != nil {
 			logger.WithError(err).Error("error removing message, attestRouter")
 		}
 	}()
@@ -114,7 +117,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		case *types.TxExecutedProof:
 			tx, err := winner.GetTX()
 			if err == nil {
-				k.setTxAsAlreadyProcessed(ctx, tx)
+				k.setTxAsAlreadyProcessed(sdkCtx, tx)
 			}
 		}
 	}()
@@ -131,7 +134,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			// regardless of the outcome, this upload/deployment should be removed
 			id := origMsg.TransferERC20Ownership.GetSmartContractID()
 			logger.With("smart-contract-id", id).Debug("removing deployment.")
-			k.DeleteSmartContractDeploymentByContractID(ctx, id, chainReferenceID)
+			k.DeleteSmartContractDeploymentByContractID(sdkCtx, id, chainReferenceID)
 		}()
 		switch winner := evidence.(type) {
 		case *types.TxExecutedProof:
@@ -141,7 +144,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				logger.WithError(err).Error("Failed to get TX")
 				return err
 			}
-			if k.isTxProcessed(ctx, tx) {
+			if k.isTxProcessed(sdkCtx, tx) {
 				// somebody submitted the old transaction that was already processed?
 				// punish those validators!!
 				logger.WithError(err).Error("TX already processed")
@@ -155,7 +158,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				return err
 			}
 
-			deployment, _ := k.getSmartContractDeploymentByContractID(ctx, origMsg.TransferERC20Ownership.SmartContractID, chainReferenceID)
+			deployment, _ := k.getSmartContractDeploymentByContractID(sdkCtx, origMsg.TransferERC20Ownership.SmartContractID, chainReferenceID)
 			if deployment == nil {
 				logger.WithError(err).Error("Deployment not found")
 				return ErrCannotActiveSmartContractThatIsNotDeploying
@@ -165,7 +168,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				return ErrCannotActiveSmartContractThatIsNotDeploying
 			}
 
-			smartContract, err := k.getSmartContract(ctx, deployment.GetSmartContractID())
+			smartContract, err := k.getSmartContract(sdkCtx, deployment.GetSmartContractID())
 			if err != nil {
 				logger.WithError(err).Error("Failed to get contract")
 				return err
@@ -187,7 +190,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 
 		case *types.SmartContractExecutionErrorProof:
 			logger.Debug("Error Proof")
-			keeperutil.EmitEvent(k, ctx, types.SmartContractExecutionFailedKey,
+			keeperutil.EmitEvent(k, sdkCtx, types.SmartContractExecutionFailedKey,
 				types.SmartContractExecutionFailedMessageID.With(fmt.Sprintf("%d", msg.GetId())),
 				types.SmartContractExecutionFailedChainReferenceID.With(chainReferenceID),
 				types.SmartContractExecutionFailedError.With(winner.GetErrorMessage()),
@@ -207,7 +210,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 				logger.WithError(err).Error("Failed to get TX")
 				return err
 			}
-			if k.isTxProcessed(ctx, tx) {
+			if k.isTxProcessed(sdkCtx, tx) {
 				// somebody submitted the old transaction that was already processed?
 				// punish those validators!!
 				logger.WithError(err).Error("TX already processed")
@@ -241,7 +244,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			turnstoneID := consensusMsg.(*types.Message).GetTurnstoneID()
 			newCompassAddr := crypto.CreateAddress(ethMsg.From, tx.Nonce())
 			err = k.initiateERC20TokenOwnershipTransfer(
-				ctx,
+				sdkCtx,
 				chainReferenceID,
 				turnstoneID,
 				&types.TransferERC20Ownership{
@@ -262,7 +265,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 
 		case *types.SmartContractExecutionErrorProof:
 			logger.Debug("smart contract execution error proof", "smart-contract-error", winner.GetErrorMessage())
-			keeperutil.EmitEvent(k, ctx, types.SmartContractExecutionFailedKey,
+			keeperutil.EmitEvent(k, sdkCtx, types.SmartContractExecutionFailedKey,
 				types.SmartContractExecutionFailedMessageID.With(fmt.Sprintf("%d", msg.GetId())),
 				types.SmartContractExecutionFailedChainReferenceID.With(chainReferenceID),
 				types.SmartContractExecutionFailedError.With(winner.GetErrorMessage()),
@@ -278,7 +281,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		case *types.TxExecutedProof:
 		// check if the correct valset was updated
 		case *types.SmartContractExecutionErrorProof:
-			keeperutil.EmitEvent(k, ctx, types.SmartContractExecutionFailedKey,
+			keeperutil.EmitEvent(k, sdkCtx, types.SmartContractExecutionFailedKey,
 				types.SmartContractExecutionFailedMessageID.With(fmt.Sprintf("%d", msg.GetId())),
 				types.SmartContractExecutionFailedChainReferenceID.With(chainReferenceID),
 				types.SmartContractExecutionFailedError.With(winner.GetErrorMessage()),
@@ -297,8 +300,8 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 
 		// now remove all older update valsets given that new one was uploaded.
 		// if there are any, that is.
-		keeperutil.EmitEvent(k, ctx, types.AttestingUpdateValsetRemoveOldMessagesKey)
-		msgs, err := q.GetAll(ctx)
+		keeperutil.EmitEvent(k, sdkCtx, types.AttestingUpdateValsetRemoveOldMessagesKey)
+		msgs, err := q.GetAll(sdkCtx)
 		if err != nil {
 			return err
 		}
@@ -310,7 +313,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			}
 			if _, ok := (actionMsg.(*types.Message).GetAction()).(*types.Message_UpdateValset); ok {
 				if oldMessage.GetId() < msg.GetId() {
-					if err := q.Remove(ctx, oldMessage.GetId()); err != nil {
+					if err := q.Remove(sdkCtx, oldMessage.GetId()); err != nil {
 						logger.WithError(err).Error("error removing old message, attestRouter", "msg-id", oldMessage.GetId(), "msg-nonce", oldMessage.Nonce())
 					}
 				}
@@ -321,7 +324,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		case *types.TxExecutedProof:
 		// check if correct thing was called
 		case *types.SmartContractExecutionErrorProof:
-			keeperutil.EmitEvent(k, ctx, types.SmartContractExecutionFailedKey,
+			keeperutil.EmitEvent(k, sdkCtx, types.SmartContractExecutionFailedKey,
 				types.SmartContractExecutionFailedMessageID.With(fmt.Sprintf("%d", msg.GetId())),
 				types.SmartContractExecutionFailedChainReferenceID.With(chainReferenceID),
 				types.SmartContractExecutionFailedError.With(winner.GetErrorMessage()),
@@ -365,7 +368,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 }
 
 func (k Keeper) findEvidenceThatWon(
-	ctx sdk.Context,
+	ctx context.Context,
 	evidences []*consensustypes.Evidence,
 ) (any, error) {
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
@@ -484,8 +487,8 @@ func (k Keeper) initiateERC20TokenOwnershipTransfer(
 }
 
 func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) storetypes.KVStore {
-	kv := ctx.KVStore(k.memKey)
-	return prefix.NewStore(kv, []byte("tx-processed"))
+	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(s, []byte("tx-processed"))
 }
 
 func (k Keeper) setTxAsAlreadyProcessed(ctx sdk.Context, tx *ethtypes.Transaction) {

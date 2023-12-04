@@ -33,6 +33,7 @@ type mockConstructorTestingTNewMsgSender interface {
 	Cleanup(func())
 }
 
+
 // NewMsgSender creates a new instance of MsgSender. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 func NewMsgSender(t mockConstructorTestingTNewMsgSender) *MsgSender {
 	mock := &MsgSender{}

@@ -1,7 +1,7 @@
 package types
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import "context"
 
 type MsgSender interface {
-	SendValsetMsgForChain(ctx sdk.Context, chainInfo *ChainInfo, valset Valset, assignee string) error
+	SendValsetMsgForChain(ctx context.Context, chainInfo *ChainInfo, valset Valset, assignee string) error
 }
