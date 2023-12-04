@@ -88,7 +88,7 @@ func init() {
 	}
 }
 
-var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
+var _ valsettypes.OnSnapshotBuiltListener = &Keeper{}
 
 type Keeper struct {
 	cdc        codec.BinaryCodec
@@ -534,7 +534,7 @@ func (k Keeper) PublishSnapshotToAllChains(ctx sdk.Context, snapshot *valsettype
 	return nil
 }
 
-func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
+func (k *Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
 	err := k.PublishSnapshotToAllChains(ctx, snapshot, false)
 	if err != nil {
 		panic(err)

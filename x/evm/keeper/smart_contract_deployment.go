@@ -174,6 +174,11 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 			args = append(args, "err", retErr)
 		}
 
+		if r := recover(); r != nil {
+			args = append(args, "panic", r)
+			k.Logger(ctx).Error("recovered panic! Error adding a message to deploy smart contract to chain", args...)
+		}
+
 		if retErr != nil {
 			k.Logger(ctx).Error("error adding a message to deploy smart contract to chain", args...)
 		} else {
@@ -229,21 +234,19 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	uniqueID := generateSmartContractID(ctx)
 
 	k.createSmartContractDeployment(ctx, smartContract, chainInfo, uniqueID[:])
-
 	lastEventNonce, err := k.Gravity.GetLastObservedEventNonce(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get last observed event nonce: %w", err)
 	}
 
 	// set the smart contract constructor arguments
-	input, err := contractABI.Pack("", uniqueID, (&big.Int{}).SetUint64(lastEventNonce), types.TransformValsetToABIValset(valset))
-
 	logger.Info(
 		"transform valset to abi valset",
 		"valset-id", valset.GetValsetID(),
 		"validators-size", len(valset.GetValidators()),
 		"power-size", len(valset.GetPowers()),
 	)
+	input, err := contractABI.Pack("", uniqueID, (&big.Int{}).SetUint64(lastEventNonce), types.TransformValsetToABIValset(valset))
 	if err != nil {
 		return err
 	}
