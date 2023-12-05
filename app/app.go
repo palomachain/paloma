@@ -120,7 +120,6 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	palomamempool "github.com/palomachain/paloma/app/mempool"
 	appparams "github.com/palomachain/paloma/app/params"
@@ -176,38 +175,38 @@ var (
 
 	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration
-	// and genesis verification.
-	ModuleBasics = module.NewBasicManager(
-		auth.AppModuleBasic{},
-		genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-		BankModule{},
-		capability.AppModuleBasic{},
-		StakingModule{},
-		MintModule{},
-		distr.AppModuleBasic{},
-		GovModule{gov.NewAppModuleBasic(getGovProposalHandlers())},
-		params.AppModuleBasic{},
-		CrisisModule{},
-		slashing.AppModule{},
-		feegrantmodule.AppModuleBasic{},
-		upgrade.AppModuleBasic{},
-		evidence.AppModuleBasic{},
-		vesting.AppModuleBasic{},
-		// schedulermodule.AppModuleBasic{},
-		// consensusmodule.AppModuleBasic{},
-		// valsetmodule.AppModuleBasic{},
-		// wasm.AppModuleBasic{},
-		evm.AppModuleBasic{},
-		// gravitymodule.AppModuleBasic{},
-		// palomamodule.AppModuleBasic{},
-		// treasurymodule.AppModuleBasic{},
-		// consensus.AppModuleBasic{},
-		transfer.AppModuleBasic{},
-		ibc.AppModuleBasic{},
-		ibctm.AppModuleBasic{},
-		ica.AppModuleBasic{},
-		ibcfee.AppModuleBasic{},
-	)
+	// // and genesis verification.
+	// ModuleBasics = module.NewBasicManager(
+	// 	auth.AppModuleBasic{},
+	// 	genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+	// 	BankModule{},
+	// 	capability.AppModuleBasic{},
+	// 	StakingModule{},
+	// 	MintModule{},
+	// 	distr.AppModuleBasic{},
+	// 	GovModule{gov.NewAppModuleBasic(getGovProposalHandlers())},
+	// 	params.AppModuleBasic{},
+	// 	CrisisModule{},
+	// 	slashing.AppModule{},
+	// 	feegrantmodule.AppModuleBasic{},
+	// 	upgrade.AppModuleBasic{},
+	// 	evidence.AppModuleBasic{},
+	// 	vesting.AppModuleBasic{},
+	// 	// schedulermodule.AppModuleBasic{},
+	// 	// consensusmodule.AppModuleBasic{},
+	// 	// valsetmodule.AppModuleBasic{},
+	// 	// wasm.AppModuleBasic{},
+	// 	evm.AppModuleBasic{},
+	// 	// gravitymodule.AppModuleBasic{},
+	// 	// palomamodule.AppModuleBasic{},
+	// 	// treasurymodule.AppModuleBasic{},
+	// 	// consensus.AppModuleBasic{},
+	// 	transfer.AppModuleBasic{},
+	// 	ibc.AppModuleBasic{},
+	// 	ibctm.AppModuleBasic{},
+	// 	ica.AppModuleBasic{},
+	// 	ibcfee.AppModuleBasic{},
+	// )
 
 	// module account permissions
 	maccPerms = map[string][]string{
@@ -586,8 +585,8 @@ func New(
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[evmmoduletypes.StoreKey]),
-		nil,
-		nil,
+		nil, //TODO
+		nil, //TODO
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	// app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
@@ -813,6 +812,18 @@ func New(
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 	)
 
+	app.bm = module.NewBasicManagerFromManager(
+		app.mm,
+		map[string]module.AppModuleBasic{
+			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+			govtypes.ModuleName: gov.NewAppModuleBasic(
+				[]govclient.ProposalHandler{
+					paramsclient.ProposalHandler,
+				},
+			),
+		})
+	app.bm.RegisterLegacyAminoCodec(legacyAmino)
+	app.bm.RegisterInterfaces(interfaceRegistry)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
@@ -953,6 +964,8 @@ func New(
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
+	app.SetPreBlocker(app.PreBlocker)
+	app.SetEndBlocker(app.EndBlocker)
 
 	/*baseAnteHandler*/
 	_, err = ante.NewAnteHandler(
@@ -1117,7 +1130,7 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register grpc-gateway routes for all modules.
-	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+	app.bm.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
@@ -1177,7 +1190,7 @@ func (app *App) SimulationManager() *module.SimulationManager {
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
 func (app *App) DefaultGenesis() map[string]json.RawMessage {
-	return ModuleBasics.DefaultGenesis(app.appCodec)
+	return app.bm.DefaultGenesis(app.appCodec)
 }
 
 func (app *App) RegisterNodeService(clientCtx client.Context, cfg config.Config) {

@@ -92,7 +92,7 @@ func NewRootCmd() *cobra.Command {
 
 	ac := appCreator{
 		encCfg:        encCfg,
-		moduleManager: palomaapp.ModuleBasics,
+		moduleManager: nil, //TODO
 	}
 	initRootCmd(rootCmd, ac)
 
