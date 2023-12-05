@@ -33,7 +33,7 @@ func (k msgServer) AddStatusUpdate(goCtx context.Context, msg *types.MsgAddStatu
 		return &types.EmptyResponse{}, nil
 	}
 
-	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	creator, err := sdk.AccAddressFromBech32(msg.GetMetadata().GetCreator())
 	if err != nil {
 		err = fmt.Errorf("failed to parse creator address: %w", err)
 		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields("component", "pigeon-status-update").Error("Failed to parse creator from message")
