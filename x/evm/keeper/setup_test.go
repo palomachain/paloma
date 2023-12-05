@@ -48,7 +48,6 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 	k := NewKeeper(
 		appCodec,
 		storeService,
-		memStoreKey,
 		ms.ConsensusKeeper,
 		ms.ValsetKeeper,
 		"authority",

@@ -109,7 +109,6 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService corestore.KVStoreService,
-	memKey storetypes.StoreKey,
 	consensusKeeper types.ConsensusKeeper,
 	valsetKeeper types.ValsetKeeper,
 	authority string,
