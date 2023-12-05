@@ -17,10 +17,15 @@ message MsgAddStatusUpdate {
     LEVEL_INFO = 1;
     LEVEL_ERROR = 2;
   }
+  message KeyValuePair {
+      string key = 1;
+      string value = 2;
+  }
   string creator = 1 [deprecated = true];
   string status = 2;
   Level level = 3;
   palomachain.paloma.valset.MsgMetadata metadata = 4 [(gogoproto.nullable) = false];
+  repeated KeyValuePair args = 5 [(gogoproto.nullable) = false];
 }
 
 message EmptyResponse {}

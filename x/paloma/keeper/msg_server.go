@@ -2,9 +2,11 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/paloma/types"
 )
 
@@ -38,17 +40,24 @@ func (k msgServer) AddStatusUpdate(goCtx context.Context, msg *types.MsgAddStatu
 	var logFn func(string, ...interface{})
 	switch msg.Level {
 	case types.MsgAddStatusUpdate_LEVEL_DEBUG:
-		logFn = k.Logger(ctx).Debug
+		logFn = liblog.FromSDKLogger(k.Logger(ctx)).Debug
 	case types.MsgAddStatusUpdate_LEVEL_INFO:
-		logFn = k.Logger(ctx).Info
+		logFn = liblog.FromSDKLogger(k.Logger(ctx)).Info
 	case types.MsgAddStatusUpdate_LEVEL_ERROR:
-		logFn = k.Logger(ctx).Error
+		logFn = liblog.FromSDKLogger(k.Logger(ctx)).Error
 	}
 
-	logFn(status,
+	args := make([]interface{}, 0, len(msg.GetArgs())*2+6) // len: (k+v) + 6 for static appends
+	for _, v := range msg.GetArgs() {
+		args = append(args, fmt.Sprintf("msg.args.%s", v.GetKey()), v.GetValue())
+	}
+
+	args = append(args,
 		"component", "pigeon-status-update",
 		"status", status,
 		"sender", valAddr)
+
+	logFn(status, args...)
 
 	return &types.EmptyResponse{}, nil
 }
