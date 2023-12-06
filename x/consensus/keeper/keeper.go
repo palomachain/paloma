@@ -13,6 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -57,7 +58,7 @@ func NewKeeper(
 
 func (k Keeper) Logger(ctx context.Context) log.Logger {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return sdkCtx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+	return liblog.FromSDKLogger(k.Logger(sdkCtx)).With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 func (k Keeper) Store(ctx context.Context) storetypes.KVStore {
