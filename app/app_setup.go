@@ -97,7 +97,7 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 	)
 
 	if !isCheckTx {
-		genesisState := app.NewDefaultGenesisState(encCfg.Codec)
+		genesisState := app.DefaultGenesis()
 		genesisState = genesisStateWithValSet(t, app, genesisState, valSet, []authtypes.GenesisAccount{acc}, balance)
 		stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 		if err != nil {

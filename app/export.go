@@ -26,7 +26,7 @@ func (app *App) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs
 		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
 
-	genState, err := app.mm.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
+	genState, err := app.ModuleManager.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
 	if err != nil {
 		panic(err)
 	}

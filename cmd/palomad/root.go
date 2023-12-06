@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -12,27 +11,13 @@ import (
 	"time"
 
 	cosmoslog "cosmossdk.io/log"
-	"cosmossdk.io/tools/confix/cmd"
-	dbm "github.com/cosmos/cosmos-db"
-	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/spf13/viper"
-
-	tmcfg "github.com/cometbft/cometbft/config"
-	tmcli "github.com/cometbft/cometbft/libs/cli"
+	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
-	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/keys"
-	"github.com/cosmos/cosmos-sdk/client/rpc"
-	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/palomachain/paloma/app"
 	palomaapp "github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/app/params"
@@ -43,8 +28,9 @@ import (
 func NewRootCmd() *cobra.Command {
 	// set Bech32 address configuration
 	params.SetAddressConfig()
-
 	encCfg := palomaapp.MakeEncodingConfig()
+
+	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, encCfg, db.OptionsMap{})
 	initClientCtx := client.Context{}.
 		WithCodec(encCfg.Codec).
 		WithInterfaceRegistry(encCfg.InterfaceRegistry).
@@ -80,7 +66,7 @@ func NewRootCmd() *cobra.Command {
 			}
 
 			customAppTemplate, customAppConfig := initAppConfig()
-			customTMConfig := initTendermintConfig()
+			customTMConfig := initCometBFTConfig()
 
 			if err := server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customTMConfig); err != nil {
 				return err
@@ -89,12 +75,7 @@ func NewRootCmd() *cobra.Command {
 			return applyForcedConfigOptions(cmd)
 		},
 	}
-
-	ac := appCreator{
-		encCfg:        encCfg,
-		moduleManager: nil, //TODO
-	}
-	initRootCmd(rootCmd, ac)
+	initRootCmd(rootCmd, encCfg, encCfg.InterfaceRegistry, encCfg, tempApp.BasicModuleManager)
 
 	if err := overwriteFlagDefaults(rootCmd, map[string]string{
 		flags.FlagChainID:        palomaapp.Name,
@@ -156,16 +137,6 @@ func applyForcedConfigOptions(cmd *cobra.Command) error {
 	return server.SetCmdServerContext(cmd, serverCtx)
 }
 
-func initTendermintConfig() *tmcfg.Config {
-	cfg := tmcfg.DefaultConfig()
-
-	// these values put a higher strain on node memory
-	// cfg.P2P.MaxNumInboundPeers = 100
-	// cfg.P2P.MaxNumOutboundPeers = 40
-
-	return cfg
-}
-
 func rootPreRunE(cmd *cobra.Command, args []string) error {
 	go func() {
 		pprofListen := os.Getenv("PPROF_LISTEN")
@@ -191,148 +162,4 @@ func rootPreRunE(cmd *cobra.Command, args []string) error {
 	}()
 
 	return nil
-}
-
-// appExport creates a new simapp (optionally at a given height) and exports state.
-func appExport(
-	logger cosmoslog.Logger,
-	db dbm.DB,
-	traceStore io.Writer,
-	height int64,
-	forZeroHeight bool,
-	jailAllowedAddrs []string,
-	appOpts servertypes.AppOptions,
-	modulesToExport []string,
-) (servertypes.ExportedApp, error) {
-	// this check is necessary as we use the flag in x/upgrade.
-	// we can exit more gracefully by checking the flag here.
-	homePath, ok := appOpts.Get(flags.FlagHome).(string)
-	if !ok || homePath == "" {
-		return servertypes.ExportedApp{}, errors.New("application home not set")
-	}
-
-	viperAppOpts, ok := appOpts.(*viper.Viper)
-	if !ok {
-		return servertypes.ExportedApp{}, errors.New("appOpts is not viper.Viper")
-	}
-
-	// overwrite the FlagInvCheckPeriod
-	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
-	appOpts = viperAppOpts
-
-	var App *app.App
-	if height != -1 {
-		App = app.New(logger, db, traceStore, false, params.EncodingConfig{}, nil)
-
-		if err := App.LoadHeight(height); err != nil {
-			return servertypes.ExportedApp{}, err
-		}
-	} else {
-		App = app.New(logger, db, traceStore, true, params.EncodingConfig{}, nil)
-	}
-
-	return App.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
-}
-
-// newApp creates the application
-func newApp(
-	logger cosmoslog.Logger,
-	db dbm.DB,
-	traceStore io.Writer,
-	appOpts servertypes.AppOptions,
-) servertypes.Application {
-	//baseappOptions := server.DefaultBaseappOptions(appOpts)
-
-	return app.New(
-		logger, db, traceStore, true,
-		params.EncodingConfig{}, nil,
-	)
-}
-
-func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
-	rootCmd.AddCommand(
-		genutilcli.InitCmd(ac.moduleManager, palomaapp.DefaultNodeHome),
-		genesisCommand(ac.encCfg),
-		tmcli.NewCompletionCmd(rootCmd, true),
-		debug.Cmd(),
-		cmd.ConfigCommand(),
-	)
-
-	server.AddCommands(rootCmd, palomaapp.DefaultNodeHome, newApp, appExport, addModuleInitFlags)
-
-	// add keybase, auxiliary RPC, query, and tx child commands
-	rootCmd.AddCommand(
-		server.StatusCommand(),
-		queryCommand(ac.moduleManager),
-		txCommand(ac.moduleManager),
-		keys.Commands(),
-	)
-
-	rootCmd.AddCommand(
-		snapshot.Cmd(newApp),
-	)
-}
-
-// genesisCommand builds genesis-related `palomad genesis` command. Users may provide application specific commands as a parameter
-func genesisCommand(encodingConfig params.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
-	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, palomaapp.ModuleBasics, palomaapp.DefaultNodeHome)
-
-	for _, sub_cmd := range cmds {
-		cmd.AddCommand(sub_cmd)
-	}
-	return cmd
-}
-
-func addModuleInitFlags(startCmd *cobra.Command) {
-	crisis.AddModuleInitFlags(startCmd)
-}
-
-func queryCommand(mm module.BasicManager) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:                        "query",
-		Aliases:                    []string{"q"},
-		Short:                      "Querying subcommands",
-		DisableFlagParsing:         true,
-		SuggestionsMinimumDistance: 2,
-		RunE:                       client.ValidateCmd,
-	}
-
-	cmd.AddCommand(
-		rpc.QueryEventForTxCmd(),
-		rpc.ValidatorCommand(),
-		server.QueryBlocksCmd(),
-		authcmd.QueryTxsByEventsCmd(),
-		authcmd.QueryTxCmd(),
-	)
-
-	mm.AddQueryCommands(cmd)
-	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
-
-	return cmd
-}
-
-func txCommand(mm module.BasicManager) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:                        "tx",
-		Short:                      "Transactions sub-commands",
-		DisableFlagParsing:         false,
-		SuggestionsMinimumDistance: 2,
-		RunE:                       client.ValidateCmd,
-	}
-
-	cmd.AddCommand(
-		authcmd.GetSignCommand(),
-		authcmd.GetSignBatchCommand(),
-		authcmd.GetMultiSignCommand(),
-		authcmd.GetMultiSignBatchCmd(),
-		authcmd.GetValidateSignaturesCommand(),
-		authcmd.GetBroadcastCommand(),
-		authcmd.GetEncodeCommand(),
-		authcmd.GetDecodeCommand(),
-	)
-
-	mm.AddTxCommands(cmd)
-	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
-
-	return cmd
 }
