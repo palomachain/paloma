@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -16,7 +17,7 @@ type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
 		Cdc        types.CodecMarshaler
-		storeKey   storetypes.StoreKey
+		storeKey   store.KVStoreService
 		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
 
@@ -30,16 +31,12 @@ type (
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey,
+	storeKey store.KVStoreService,
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	valsetKeeper types.ValsetKeeper,
 	reg *registry,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
 
 	k := &Keeper{
 		cdc:        cdc,
@@ -60,5 +57,5 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 func (k Keeper) Store(ctx sdk.Context) storetypes.KVStore {
-	return ctx.KVStore(k.storeKey)
+	return ctx.KVStore(k.memKey)
 }

@@ -114,6 +114,11 @@ func NewAppModule(
 	}
 }
 
+// This Function is required by cosmos-sdk but unused. https://github.com/cosmos/cosmos-sdk/blob/7d5c2dbae68530bc9070983ce0b2c8a1efe23412/x/bank/module.go#L100
+func (am AppModule) IsOnePerModuleType() {}
+
+func (am AppModule) IsAppModule() {}
+
 // Name returns the capability module's name.
 func (am AppModule) Name() string {
 	return am.AppModuleBasic.Name()
