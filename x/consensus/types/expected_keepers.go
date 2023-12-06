@@ -21,8 +21,8 @@ type BankKeeper interface {
 
 //go:generate mockery --name=ValsetKeeper
 type ValsetKeeper interface {
-	GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType, chainReferenceID, signedByAddress string) ([]byte, error)
-	GetCurrentSnapshot(ctx sdk.Context) (*valsettypes.Snapshot, error)
-	CanAcceptValidator(ctx sdk.Context, valAddr sdk.ValAddress) error
-	KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress, pigeonVersion string) error
+	GetSigningKey(ctx context.Context, valAddr sdk.ValAddress, chainType, chainReferenceID, signedByAddress string) ([]byte, error)
+	GetCurrentSnapshot(ctx context.Context) (*valsettypes.Snapshot, error)
+	CanAcceptValidator(ctx context.Context, valAddr sdk.ValAddress) error
+	KeepValidatorAlive(ctx context.Context, valAddr sdk.ValAddress, pigeonVersion string) error
 }

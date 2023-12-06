@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"context"
+
 	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -17,9 +19,10 @@ import (
 var defaultResponseMessageCount = 1000
 
 // getConsensusQueue gets the consensus queue for the given type.
-func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consensus.Queuer, error) {
+func (k Keeper) getConsensusQueue(ctx context.Context, queueTypeName string) (consensus.Queuer, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	for _, q := range k.registry.slice {
-		supportedQueues, err := q.SupportedQueues(ctx)
+		supportedQueues, err := q.SupportedQueues(sdkCtx)
 		if err != nil {
 			return nil, err
 		}
@@ -55,27 +58,29 @@ func (k Keeper) getConsensusQueue(ctx sdk.Context, queueTypeName string) (consen
 	return nil, ErrConsensusQueueNotImplemented.Format(queueTypeName)
 }
 
-func (k Keeper) RemoveConsensusQueue(ctx sdk.Context, queueTypeName string) error {
-	cq, err := k.getConsensusQueue(ctx, queueTypeName)
+func (k Keeper) RemoveConsensusQueue(ctx context.Context, queueTypeName string) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
 	if err != nil {
 		return err
 	}
-	consensus.RemoveQueueCompletely(ctx, cq)
+	consensus.RemoveQueueCompletely(sdkCtx, cq)
 	return nil
 }
 
-func (k Keeper) PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg, opts *consensus.PutOptions) (uint64, error) {
-	cq, err := k.getConsensusQueue(ctx, queueTypeName)
+func (k Keeper) PutMessageInQueue(ctx context.Context, queueTypeName string, msg consensus.ConsensusMsg, opts *consensus.PutOptions) (uint64, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
 	if err != nil {
-		k.Logger(ctx).Error("error while getting consensus queue", "error", err)
+		k.Logger(sdkCtx).Error("error while getting consensus queue", "error", err)
 		return 0, err
 	}
-	msgID, err := cq.Put(ctx, msg, opts)
+	msgID, err := cq.Put(sdkCtx, msg, opts)
 	if err != nil {
-		k.Logger(ctx).Error("error while putting message into queue", "error", err)
+		k.Logger(sdkCtx).Error("error while putting message into queue", "error", err)
 		return 0, err
 	}
-	k.Logger(ctx).Info(
+	k.Logger(sdkCtx).Info(
 		"put message into consensus queue",
 		"queue-type-name", queueTypeName,
 		"message-id", msgID,
@@ -84,8 +89,9 @@ func (k Keeper) PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg con
 }
 
 // GetMessagesForSigning returns messages for a single validator that needs to be signed.
-func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 0)
+func (k Keeper) GetMessagesForSigning(ctx context.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msgs, err = k.GetMessagesFromQueue(sdkCtx, queueTypeName, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -108,8 +114,9 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val
 }
 
 // GetMessagesForRelaying returns messages for a single validator to relay.
-func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 0)
+func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msgs, err = k.GetMessagesFromQueue(sdkCtx, queueTypeName, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +126,7 @@ func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, va
 	for _, v := range msgs {
 		cm, err := v.ConsensusMsg(k.cdc)
 		if err != nil {
-			liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("Failed to get consensus msg")
+			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("Failed to get consensus msg")
 			continue
 		}
 
@@ -146,7 +153,7 @@ func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, va
 		cm, err := msg.ConsensusMsg(k.cdc)
 		if err != nil {
 			// NO cross chain message, just return true
-			liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("Failed to get consensus msg")
+			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("Failed to get consensus msg")
 			return true
 		}
 
@@ -171,7 +178,7 @@ func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, va
 	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
 		var unpackedMsg evmtypes.TurnstoneMsg
 		if err := k.cdc.UnpackAny(msg.GetMsg(), &unpackedMsg); err != nil {
-			k.Logger(ctx).With("err", err).Error("Failed to unpack message")
+			k.Logger(sdkCtx).With("err", err).Error("Failed to unpack message")
 			return false
 		}
 
@@ -191,8 +198,9 @@ func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, va
 }
 
 // GetMessagesForAttesting returns messages for a single validator to attest.
-func (k Keeper) GetMessagesForAttesting(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 0)
+func (k Keeper) GetMessagesForAttesting(ctx context.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msgs, err = k.GetMessagesFromQueue(sdkCtx, queueTypeName, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -221,16 +229,17 @@ func (k Keeper) GetMessagesForAttesting(ctx sdk.Context, queueTypeName string, v
 }
 
 // GetMessagesFromQueue gets N messages from the queue.
-func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n int) (msgs []types.QueuedSignedMessageI, err error) {
-	cq, err := k.getConsensusQueue(ctx, queueTypeName)
+func (k Keeper) GetMessagesFromQueue(ctx context.Context, queueTypeName string, n int) (msgs []types.QueuedSignedMessageI, err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
 	if err != nil {
-		k.Logger(ctx).Error("error while getting consensus queue", "err", err)
+		k.Logger(sdkCtx).Error("error while getting consensus queue", "err", err)
 		return nil, err
 	}
-	msgs, err = cq.GetAll(ctx)
+	msgs, err = cq.GetAll(sdkCtx)
 
 	if err != nil {
-		k.Logger(ctx).Error("error while getting all messages from queue", "err", err)
+		k.Logger(sdkCtx).Error("error while getting all messages from queue", "err", err)
 		return nil, err
 	}
 
@@ -241,30 +250,32 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 	return
 }
 
-func (k Keeper) DeleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
-	cq, err := k.getConsensusQueue(ctx, queueTypeName)
+func (k Keeper) DeleteJob(ctx context.Context, queueTypeName string, id uint64) (err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
 	if err != nil {
-		k.Logger(ctx).Error("error while getting consensus queue", "err", err)
+		k.Logger(sdkCtx).Error("error while getting consensus queue", "err", err)
 		return err
 	}
-	return cq.Remove(ctx, id)
+	return cq.Remove(sdkCtx, id)
 }
 
 // GetMessagesThatHaveReachedConsensus returns messages from a given
 // queueTypeName that have reached consensus based on the latest snapshot
 // available.
-func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeName string) ([]types.QueuedSignedMessageI, error) {
+func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx context.Context, queueTypeName string) ([]types.QueuedSignedMessageI, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	var consensusReached []types.QueuedSignedMessageI
 
 	err := whoops.Try(func() {
-		cq, err := k.getConsensusQueue(ctx, queueTypeName)
+		cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
 		whoops.Assert(err)
 
-		msgs := whoops.Must(cq.GetAll(ctx))
+		msgs := whoops.Must(cq.GetAll(sdkCtx))
 		if len(msgs) == 0 {
 			return
 		}
-		snapshot := whoops.Must(k.valset.GetCurrentSnapshot(ctx))
+		snapshot := whoops.Must(k.valset.GetCurrentSnapshot(sdkCtx))
 
 		if len(snapshot.Validators) == 0 || snapshot.TotalShares.Equal(math.ZeroInt()) {
 			return
@@ -281,7 +292,7 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 			for _, signData := range msg.GetSignData() {
 				signedValidator, ok := validatorMap[signData.ValAddress.String()]
 				if !ok {
-					k.Logger(ctx).Info("validator not found", "validator", signData.ValAddress)
+					k.Logger(sdkCtx).Info("validator not found", "validator", signData.ValAddress)
 					continue
 				}
 				msgTotal = msgTotal.Add(signedValidator.ShareCount)
@@ -310,19 +321,20 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeNa
 
 // AddMessageSignature adds signatures to the messages.
 func (k Keeper) AddMessageSignature(
-	ctx sdk.Context,
+	ctx context.Context,
 	valAddr sdk.ValAddress,
 	msgs []*types.ConsensusMessageSignature,
 ) error {
 	err := whoops.Try(func() {
 		for _, msg := range msgs {
+			sdkCtx := sdk.UnwrapSDKContext(ctx)
 			cq := whoops.Must(
-				k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
+				k.getConsensusQueue(sdkCtx, msg.GetQueueTypeName()),
 			)
 			chainType, chainReferenceID := cq.ChainInfo()
 
 			publicKey := whoops.Must(k.valset.GetSigningKey(
-				ctx,
+				sdkCtx,
 				valAddr,
 				chainType,
 				chainReferenceID,
@@ -331,7 +343,7 @@ func (k Keeper) AddMessageSignature(
 
 			whoops.Assert(
 				cq.AddSignature(
-					ctx,
+					sdkCtx,
 					msg.Id,
 					&types.SignData{
 						ValAddress:             valAddr,
@@ -342,7 +354,7 @@ func (k Keeper) AddMessageSignature(
 				),
 			)
 
-			k.Logger(ctx).Info("added message signature",
+			k.Logger(sdkCtx).Info("added message signature",
 				"message-id", msg.GetId(),
 				"queue-type-name", msg.GetQueueTypeName(),
 				"signed-by-address", msg.GetSignedByAddress(),
@@ -351,8 +363,10 @@ func (k Keeper) AddMessageSignature(
 			)
 		}
 	})
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	if err != nil {
-		k.Logger(ctx).Error("error while adding messages signatures",
+		k.Logger(sdkCtx).Error("error while adding messages signatures",
 			"err", err,
 		)
 	}
@@ -361,18 +375,19 @@ func (k Keeper) AddMessageSignature(
 }
 
 func (k Keeper) AddMessageEvidence(
-	ctx sdk.Context,
+	ctx context.Context,
 	valAddr sdk.ValAddress,
 	msg *types.MsgAddEvidence,
 ) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := whoops.Try(func() {
 		cq := whoops.Must(
-			k.getConsensusQueue(ctx, msg.GetQueueTypeName()),
+			k.getConsensusQueue(sdkCtx, msg.GetQueueTypeName()),
 		)
 
 		whoops.Assert(
 			cq.AddEvidence(
-				ctx,
+				sdkCtx,
 				msg.GetMessageID(),
 				&types.Evidence{
 					ValAddress: valAddr,
@@ -381,7 +396,7 @@ func (k Keeper) AddMessageEvidence(
 			),
 		)
 		chainType, chainReferenceID := cq.ChainInfo()
-		k.Logger(ctx).Info("added message evidence",
+		k.Logger(sdkCtx).Info("added message evidence",
 			"message-id", msg.GetMessageID(),
 			"queue-type-name", msg.GetQueueTypeName(),
 			"chain-type", chainType,
@@ -389,7 +404,7 @@ func (k Keeper) AddMessageEvidence(
 		)
 	})
 	if err != nil {
-		k.Logger(ctx).Error("error while adding message evidence",
+		k.Logger(sdkCtx).Error("error while adding message evidence",
 			"err", err,
 		)
 	}
@@ -398,11 +413,13 @@ func (k Keeper) AddMessageEvidence(
 }
 
 func (k Keeper) SetMessagePublicAccessData(
-	ctx sdk.Context,
+	ctx context.Context,
 	valAddr sdk.ValAddress,
 	msg *types.MsgSetPublicAccessData,
 ) error {
-	cq, err := k.getConsensusQueue(ctx, msg.GetQueueTypeName())
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	cq, err := k.getConsensusQueue(sdkCtx, msg.GetQueueTypeName())
 	if err != nil {
 		return err
 	}
@@ -411,14 +428,14 @@ func (k Keeper) SetMessagePublicAccessData(
 		ValAddress: valAddr,
 		Data:       msg.GetData(),
 	}
-	err = cq.SetPublicAccessData(ctx, msg.GetMessageID(), payload)
+	err = cq.SetPublicAccessData(sdkCtx, msg.GetMessageID(), payload)
 	if err != nil {
-		k.Logger(ctx).Error("error while adding message public access data", "err", err)
+		k.Logger(sdkCtx).Error("error while adding message public access data", "err", err)
 		return err
 	}
 
 	chainType, chainReferenceID := cq.ChainInfo()
-	k.Logger(ctx).Info("added message public access data",
+	k.Logger(sdkCtx).Info("added message public access data",
 		"message-id", msg.GetMessageID(),
 		"queue-type-name", msg.GetQueueTypeName(),
 		"chain-type", chainType,
@@ -430,11 +447,12 @@ func (k Keeper) SetMessagePublicAccessData(
 }
 
 func (k Keeper) SetMessageErrorData(
-	ctx sdk.Context,
+	ctx context.Context,
 	valAddr sdk.ValAddress,
 	msg *types.MsgSetErrorData,
 ) error {
-	cq, err := k.getConsensusQueue(ctx, msg.GetQueueTypeName())
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	cq, err := k.getConsensusQueue(sdkCtx, msg.GetQueueTypeName())
 	if err != nil {
 		return err
 	}
@@ -443,14 +461,14 @@ func (k Keeper) SetMessageErrorData(
 		ValAddress: valAddr,
 		Data:       msg.GetData(),
 	}
-	err = cq.SetErrorData(ctx, msg.GetMessageID(), payload)
+	err = cq.SetErrorData(sdkCtx, msg.GetMessageID(), payload)
 	if err != nil {
-		k.Logger(ctx).Error("error while adding error data", "err", err)
+		k.Logger(sdkCtx).Error("error while adding error data", "err", err)
 		return err
 	}
 
 	chainType, chainReferenceID := cq.ChainInfo()
-	k.Logger(ctx).Info("added error data",
+	k.Logger(sdkCtx).Info("added error data",
 		"message-id", msg.GetMessageID(),
 		"queue-type-name", msg.GetQueueTypeName(),
 		"chain-type", chainType,
