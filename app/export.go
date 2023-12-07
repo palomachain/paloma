@@ -5,7 +5,6 @@ import (
 	"log"
 
 	storetypes "cosmossdk.io/store/types"
-	storetypes "cosmossdk.io/store/types"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -27,7 +26,7 @@ func (app *App) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs
 		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
 
-	genState, err := app.mm.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
+	genState, err := app.ModuleManager.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
 	if err != nil {
 		panic(err)
 	}
@@ -79,7 +78,6 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 	// withdraw all validator commission
 	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
 		_, err := app.DistrKeeper.WithdrawValidatorCommission(ctx, sdk.ValAddress(val.GetOperator()))
-		_, err := app.DistrKeeper.WithdrawValidatorCommission(ctx, sdk.ValAddress(val.GetOperator()))
 		if err != nil {
 			panic(err)
 		}
@@ -88,9 +86,7 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 
 	// withdraw all delegator rewards
 	dels, _ := app.StakingKeeper.GetAllDelegations(ctx)
-	dels, _ := app.StakingKeeper.GetAllDelegations(ctx)
 	for _, delegation := range dels {
-		_, err := app.DistrKeeper.WithdrawDelegationRewards(ctx, sdk.AccAddress(delegation.GetDelegatorAddr()), sdk.ValAddress(delegation.GetValidatorAddr()))
 		_, err := app.DistrKeeper.WithdrawDelegationRewards(ctx, sdk.AccAddress(delegation.GetDelegatorAddr()), sdk.ValAddress(delegation.GetValidatorAddr()))
 		if err != nil {
 			panic(err)
@@ -112,13 +108,9 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
 		scraps, _ := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, sdk.ValAddress(val.GetOperator()))
 		feePool, _ := app.DistrKeeper.FeePool.Get(ctx)
-		scraps, _ := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, sdk.ValAddress(val.GetOperator()))
-		feePool, _ := app.DistrKeeper.FeePool.Get(ctx)
 		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
 		app.DistrKeeper.FeePool.Set(ctx, feePool)
-		app.DistrKeeper.FeePool.Set(ctx, feePool)
 
-		if err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, sdk.ValAddress(val.GetOperator())); err != nil {
 		if err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, sdk.ValAddress(val.GetOperator())); err != nil {
 			panic(err)
 		}
@@ -129,11 +121,9 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 	// reinitialize all delegations
 	for _, del := range dels {
 		if err := app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, sdk.AccAddress(del.GetDelegatorAddr()), sdk.ValAddress(del.GetValidatorAddr())); err != nil {
-		if err := app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, sdk.AccAddress(del.GetDelegatorAddr()), sdk.ValAddress(del.GetValidatorAddr())); err != nil {
 			panic(err)
 		}
 
-		if err := app.DistrKeeper.Hooks().AfterDelegationModified(ctx, sdk.AccAddress(del.GetDelegatorAddr()), sdk.ValAddress(del.GetValidatorAddr())); err != nil {
 		if err := app.DistrKeeper.Hooks().AfterDelegationModified(ctx, sdk.AccAddress(del.GetDelegatorAddr()), sdk.ValAddress(del.GetValidatorAddr())); err != nil {
 			panic(err)
 		}
@@ -153,26 +143,14 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		return false
 	})
 
-	// iterate through unbonding delegations, reset creation height
-	app.StakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
-		for i := range ubd.Entries {
-			ubd.Entries[i].CreationHeight = 0
-		}
-		app.StakingKeeper.SetUnbondingDelegation(ctx, ubd)
-		return false
-	})
-
 	// Iterate through validators by power descending, reset bond heights, and
 	// update bond intra-tx counters.
 	store := ctx.KVStore(app.keys[stakingtypes.StoreKey])
-	iter := storetypes.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
 	iter := storetypes.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
 	counter := int16(0)
 
 	for ; iter.Valid(); iter.Next() {
 		addr := sdk.ValAddress(iter.Key()[1:])
-		validator, err := app.StakingKeeper.GetValidator(ctx, addr)
-		if err != nil {
 		validator, err := app.StakingKeeper.GetValidator(ctx, addr)
 		if err != nil {
 			panic("expected validator, not found")

@@ -126,7 +126,6 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	palomamempool "github.com/palomachain/paloma/app/mempool"
 	appparams "github.com/palomachain/paloma/app/params"
@@ -180,41 +179,6 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 var (
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
-
-	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
-	// non-dependant module elements, such as codec registration
-	// and genesis verification.
-	ModuleBasics = module.NewBasicManager(
-		auth.AppModuleBasic{},
-		genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-		BankModule{},
-		capability.AppModuleBasic{},
-		StakingModule{},
-		MintModule{},
-		distr.AppModuleBasic{},
-		GovModule{gov.NewAppModuleBasic(getGovProposalHandlers())},
-		params.AppModuleBasic{},
-		CrisisModule{},
-		slashing.AppModule{},
-		feegrantmodule.AppModuleBasic{},
-		upgrade.AppModuleBasic{},
-		evidence.AppModuleBasic{},
-		vesting.AppModuleBasic{},
-		// schedulermodule.AppModuleBasic{},
-		consensusmodule.AppModuleBasic{},
-		// valsetmodule.AppModuleBasic{},
-		// wasm.AppModuleBasic{},
-		// evm.AppModuleBasic{},
-		// gravitymodule.AppModuleBasic{},
-		// palomamodule.AppModuleBasic{},
-		// treasurymodule.AppModuleBasic{},
-		consensus.AppModuleBasic{},
-		transfer.AppModuleBasic{},
-		ibc.AppModuleBasic{},
-		ibctm.AppModuleBasic{},
-		ica.AppModuleBasic{},
-		ibcfee.AppModuleBasic{},
-	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
@@ -297,9 +261,9 @@ type App struct {
 	// GravityKeeper   gravitymodulekeeper.Keeper
 	// wasmKeeper      wasm.Keeper
 
-	// mm is the module manager
-	mm *module.Manager
-	bm module.BasicManager
+	// ModuleManager is the module manager
+	ModuleManager      *module.Manager
+	BasicModuleManager module.BasicManager
 
 	// sm is the simulation manager
 	sm *module.SimulationManager
@@ -788,7 +752,7 @@ func New(
 	// palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	// gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	// treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
-	app.mm = module.NewManager(
+	app.ModuleManager = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,
 			app.StakingKeeper,
@@ -828,7 +792,7 @@ func New(
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
-	app.mm.SetOrderBeginBlockers(
+	app.ModuleManager.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
@@ -859,7 +823,7 @@ func New(
 		consensusparamtypes.ModuleName,
 	)
 
-	app.mm.SetOrderEndBlockers(
+	app.ModuleManager.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -896,7 +860,7 @@ func New(
 	// NOTE: Capability module must occur first so that it can initialize any capabilities
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
-	app.mm.SetOrderInitGenesis(
+	app.ModuleManager.SetOrderInitGenesis(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -928,9 +892,9 @@ func New(
 		consensusparamtypes.ModuleName,
 	)
 
-	app.mm.RegisterInvariants(app.CrisisKeeper)
+	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	app.mm.RegisterServices(app.configurator)
+	app.ModuleManager.RegisterServices(app.configurator)
 
 	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
 	// Make sure it's called after `app.ModuleManager` and `app.configurator` are
@@ -947,7 +911,7 @@ func New(
 			app.GetSubspace(authtypes.ModuleName),
 		),
 	}
-	app.sm = module.NewSimulationManagerFromAppModules(app.mm.Modules, overrideModules)
+	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, overrideModules)
 	app.sm.RegisterStoreDecoders()
 
 	// initialize stores
@@ -1019,17 +983,17 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 func (app App) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
 
 func (app *App) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	return app.mm.PreBlock(ctx)
+	return app.ModuleManager.PreBlock(ctx)
 }
 
 // BeginBlocker application updates every begin block
 func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
-	return app.mm.BeginBlock(ctx)
+	return app.ModuleManager.BeginBlock(ctx)
 }
 
 // EndBlocker application updates every end block
 func (app *App) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
-	return app.mm.EndBlock(ctx)
+	return app.ModuleManager.EndBlock(ctx)
 }
 
 // InitChainer application update at chain initialization
@@ -1039,8 +1003,8 @@ func (app *App) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.
 		panic(err)
 	}
 
-	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
-	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
+	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
+	return app.ModuleManager.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
 // LoadHeight loads a particular height
@@ -1122,7 +1086,7 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register grpc-gateway routes for all modules.
-	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+	app.BasicModuleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
@@ -1182,7 +1146,7 @@ func (app *App) SimulationManager() *module.SimulationManager {
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
 func (app *App) DefaultGenesis() map[string]json.RawMessage {
-	return ModuleBasics.DefaultGenesis(app.appCodec)
+	return app.BasicModuleManager.DefaultGenesis(app.appCodec)
 }
 
 func (app *App) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
