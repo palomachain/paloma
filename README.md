@@ -58,7 +58,7 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 ## Join an active Network
 
 > #### Note:
-> Some have seen errors with GLIBC version differences with the downloaded binaries.  This is caused by a difference in the libraries of the host that built the binary and the host running the binary.
+> Some have seen errors with GLIBC version differences with the downloaded binaries. This is caused by a difference in the libraries of the host that built the binary and the host running the binary.
 >
 > If you experience these errors, please pull down the code and build it, rather than downloading the prebuilt binary
 
@@ -76,7 +76,7 @@ rm -r ~/.paloma/data/wasm/cache
 ### To get the latest prebuilt `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v1.10.1/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v1.10.2/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 ```
@@ -86,7 +86,7 @@ sudo chmod +x /usr/local/bin/palomad
 ```shell
 git clone https://github.com/palomachain/paloma.git
 cd paloma
-git checkout v1.10.1
+git checkout v1.10.2
 make build
 sudo mv ./build/palomad /usr/local/bin/palomad
 ```
