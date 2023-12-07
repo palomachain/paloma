@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -8,13 +9,16 @@ import (
 	"strings"
 	"time"
 
+	corestore "cosmossdk.io/core/store"
+	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/VolumeFi/whoops"
-	"github.com/cometbft/cometbft/libs/log"
+	"github.com/cosmos/cosmos-sdk/runtime"
+
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
@@ -47,7 +51,7 @@ type supportedChainInfo struct {
 	subqueue              string
 	batch                 bool
 	msgType               any
-	processAttesationFunc func(Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error
+	processAttesationFunc func(Keeper) func(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error
 }
 
 var SupportedConsensusQueues = []supportedChainInfo{
@@ -55,7 +59,7 @@ var SupportedConsensusQueues = []supportedChainInfo{
 		subqueue: ConsensusTurnstoneMessage,
 		batch:    false,
 		msgType:  &types.Message{},
-		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
+		processAttesationFunc: func(k Keeper) func(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestRouter
 		},
 	},
@@ -63,7 +67,7 @@ var SupportedConsensusQueues = []supportedChainInfo{
 		subqueue: ConsensusGetValidatorBalances,
 		batch:    false,
 		msgType:  &types.ValidatorBalancesAttestation{},
-		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
+		processAttesationFunc: func(k Keeper) func(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestValidatorBalances
 		},
 	},
@@ -71,7 +75,7 @@ var SupportedConsensusQueues = []supportedChainInfo{
 		batch:    false,
 		subqueue: ConsensusCollectFundEvents,
 		msgType:  &types.CollectFunds{},
-		processAttesationFunc: func(k Keeper) func(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
+		processAttesationFunc: func(k Keeper) func(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestCollectedFunds
 		},
 	},
@@ -91,37 +95,27 @@ func init() {
 var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
 
 type Keeper struct {
-	cdc        codec.BinaryCodec
-	storeKey   storetypes.StoreKey
-	memKey     storetypes.StoreKey
-	paramstore paramtypes.Subspace
-
+	cdc             codec.BinaryCodec
+	storeKey        corestore.KVStoreService
 	ConsensusKeeper types.ConsensusKeeper
 	SchedulerKeeper types.SchedulerKeeper
 	Valset          types.ValsetKeeper
 	ider            keeperutil.IDGenerator
 	msgSender       types.MsgSender
 	msgAssigner     types.MsgAssigner
+	authority       string
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey,
-	memKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
+	storeService corestore.KVStoreService,
 	consensusKeeper types.ConsensusKeeper,
 	valsetKeeper types.ValsetKeeper,
+	authority string,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
-
 	k := &Keeper{
 		cdc:             cdc,
-		storeKey:        storeKey,
-		memKey:          memKey,
-		paramstore:      ps,
+		storeKey:        storeService,
 		ConsensusKeeper: consensusKeeper,
 		Valset:          valsetKeeper,
 		msgSender: msgSender{
@@ -129,16 +123,16 @@ func NewKeeper(
 			cdc:             cdc,
 		},
 		msgAssigner: MsgAssigner{
-			valsetKeeper,
+			nil,
 		},
+		authority: authority,
 	}
-
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.provideSmartContractStore), []byte("id-key"))
 
 	return k
 }
 
-func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error) {
+func (k Keeper) PickValidatorForMessage(ctx context.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error) {
 	weights, err := k.GetRelayWeights(ctx, chainReferenceID)
 	if err != nil {
 		return "", err
@@ -148,6 +142,7 @@ func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string
 
 func (k Keeper) Logger(ctx sdk.Context) liblog.Logr {
 	return liblog.FromSDKLogger(ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName)))
+
 }
 
 func (k Keeper) ChangeMinOnChainBalance(ctx sdk.Context, chainReferenceID string, balance *big.Int) error {
@@ -216,12 +211,12 @@ func (k Keeper) SupportedQueues(ctx sdk.Context) ([]consensus.SupportsConsensusQ
 	return res, nil
 }
 
-func (k Keeper) GetAllChainInfos(ctx sdk.Context) ([]*types.ChainInfo, error) {
+func (k Keeper) GetAllChainInfos(ctx context.Context) ([]*types.ChainInfo, error) {
 	_, all, err := keeperutil.IterAll[*types.ChainInfo](k.chainInfoStore(ctx), k.cdc)
 	return all, err
 }
 
-func (k Keeper) GetChainInfo(ctx sdk.Context, targetChainReferenceID string) (*types.ChainInfo, error) {
+func (k Keeper) GetChainInfo(ctx context.Context, targetChainReferenceID string) (*types.ChainInfo, error) {
 	res, err := keeperutil.Load[*types.ChainInfo](k.chainInfoStore(ctx), k.cdc, []byte(targetChainReferenceID))
 	if errors.Is(err, keeperutil.ErrNotFound) {
 		return nil, ErrChainNotFound.Format(targetChainReferenceID)
@@ -230,10 +225,12 @@ func (k Keeper) GetChainInfo(ctx sdk.Context, targetChainReferenceID string) (*t
 }
 
 // MissingChains returns the chains in this keeper that aren't in the input slice
-func (k Keeper) MissingChains(ctx sdk.Context, inputChainReferenceIDs []string) ([]string, error) {
+func (k Keeper) MissingChains(ctx context.Context, inputChainReferenceIDs []string) ([]string, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	allChains, err := k.GetAllChainInfos(ctx)
 	if err != nil {
-		k.Logger(ctx).Error("Unable to get chains infos from keeper")
+		k.Logger(sdkCtx).Error("Unable to get chains infos from keeper")
 		return nil, err
 	}
 
@@ -257,12 +254,12 @@ func (k Keeper) MissingChains(ctx sdk.Context, inputChainReferenceIDs []string) 
 	return unsuportedChainReferenceIDs, nil
 }
 
-func (k Keeper) updateChainInfo(ctx sdk.Context, chainInfo *types.ChainInfo) error {
+func (k Keeper) updateChainInfo(ctx context.Context, chainInfo *types.ChainInfo) error {
 	return keeperutil.Save(k.chainInfoStore(ctx), k.cdc, []byte(chainInfo.GetChainReferenceID()), chainInfo)
 }
 
 func (k Keeper) AddSupportForNewChain(
-	ctx sdk.Context,
+	ctx context.Context,
 	chainReferenceID string,
 	chainID uint64,
 	blockHeight uint64,
@@ -313,12 +310,14 @@ func (k Keeper) AddSupportForNewChain(
 }
 
 func (k Keeper) ActivateChainReferenceID(
-	ctx sdk.Context,
+	ctx context.Context,
 	chainReferenceID string,
 	smartContract *types.SmartContract,
 	smartContractAddr string,
 	smartContractUniqueID []byte,
 ) (retErr error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	defer func() {
 		args := []any{
 			"chain-reference-id", chainReferenceID,
@@ -331,9 +330,9 @@ func (k Keeper) ActivateChainReferenceID(
 		}
 
 		if retErr != nil {
-			k.Logger(ctx).Error("error while activating chain with a new smart contract", args...)
+			k.Logger(sdkCtx).Error("error while activating chain with a new smart contract", args...)
 		} else {
-			k.Logger(ctx).Info("activated chain with a new smart contract", args...)
+			k.Logger(sdkCtx).Info("activated chain with a new smart contract", args...)
 		}
 	}()
 	chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
@@ -357,7 +356,9 @@ func (k Keeper) ActivateChainReferenceID(
 	return k.updateChainInfo(ctx, chainInfo)
 }
 
-func (k Keeper) RemoveSupportForChain(ctx sdk.Context, proposal *types.RemoveChainProposal) error {
+func (k Keeper) RemoveSupportForChain(ctx context.Context, proposal *types.RemoveChainProposal) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	_, err := k.GetChainInfo(ctx, proposal.GetChainReferenceID())
 	if err != nil {
 		return err
@@ -368,15 +369,16 @@ func (k Keeper) RemoveSupportForChain(ctx sdk.Context, proposal *types.RemoveCha
 	for _, q := range SupportedConsensusQueues {
 		queue := consensustypes.Queue(q.subqueue, xchainType, xchain.ReferenceID(proposal.GetChainReferenceID()))
 		if e := k.ConsensusKeeper.RemoveConsensusQueue(ctx, queue); e != nil {
-			k.Logger(ctx).Error("error removing consensus queue", "err", err, "referenceID", proposal.GetChainReferenceID())
+			k.Logger(sdkCtx).Error("error removing consensus queue", "err", err, "referenceID", proposal.GetChainReferenceID())
 		}
 	}
 
 	return nil
 }
 
-func (k Keeper) chainInfoStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("chain-info"))
+func (k Keeper) chainInfoStore(ctx context.Context) storetypes.KVStore {
+	kvstore := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(kvstore, []byte("chain-info"))
 }
 
 func (k Keeper) PreJobExecution(ctx sdk.Context, job *schedulertypes.Job) error {
@@ -394,16 +396,19 @@ func (k Keeper) PreJobExecution(ctx sdk.Context, job *schedulertypes.Job) error 
 	return k.justInTimeValsetUpdate(ctx, chain)
 }
 
-func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) error {
+func (k Keeper) justInTimeValsetUpdate(ctx context.Context, chain *types.ChainInfo) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	latestSnapshot, err := k.Valset.GetCurrentSnapshot(ctx)
+
 	if err != nil {
-		k.Logger(ctx).Error("couldn't get latest snapshot", "err", err)
+		k.Logger(sdkCtx).Error("couldn't get latest snapshot", "err", err)
 		return err
 	}
 	if latestSnapshot == nil {
 		// For some reason, GetCurrentShapshot is hiding the notFound errors and just returning nil, nil, so we need this
 		err := errors.New("nil, nil returned from Valset.GetCurrentSnapshot")
-		k.Logger(ctx).Error("unable to find current snapshot", "err", err)
+		k.Logger(sdkCtx).Error("unable to find current snapshot", "err", err)
 		return err
 	}
 
@@ -411,17 +416,17 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 
 	latestPublishedSnapshot, err := k.Valset.GetLatestSnapshotOnChain(ctx, chainReferenceID)
 	if err != nil {
-		k.Logger(ctx).Info("couldn't get latest published snapshot for chain.",
+		k.Logger(sdkCtx).Info("couldn't get latest published snapshot for chain.",
 			"chain-reference-id", chain.GetChainReferenceID(),
 			"err", err,
 		)
 		return err
 	}
 
-	latestValset := transformSnapshotToCompass(latestSnapshot, chainReferenceID, k.Logger(ctx))
+	latestValset := transformSnapshotToCompass(latestSnapshot, chainReferenceID, k.Logger(sdkCtx))
 
 	if latestPublishedSnapshot.GetId() == latestSnapshot.GetId() {
-		k.Logger(ctx).Info("ignoring valset for chain because it is already most recent",
+		k.Logger(sdkCtx).Info("ignoring valset for chain because it is already most recent",
 			"chain-reference-id", chain.GetChainReferenceID(),
 			"valset-id", latestValset.GetValsetID(),
 		)
@@ -429,7 +434,7 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 	}
 
 	if !chain.IsActive() {
-		k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
+		k.Logger(sdkCtx).Info("ignoring valset for chain as the chain is not yet active",
 			"chain-reference-id", chain.GetChainReferenceID(),
 			"valset-id", latestValset.GetValsetID(),
 		)
@@ -437,7 +442,7 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 	}
 
 	if !isEnoughToReachConsensus(latestValset) {
-		k.Logger(ctx).Info("ignoring valset for chain as there aren't enough validators to form a consensus for this chain",
+		k.Logger(sdkCtx).Info("ignoring valset for chain as there aren't enough validators to form a consensus for this chain",
 			"chain-reference-id", chain.GetChainReferenceID(),
 			"valset-id", latestValset.GetValsetID(),
 		)
@@ -451,7 +456,7 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 
 	err = k.msgSender.SendValsetMsgForChain(ctx, chain, latestValset, assignee)
 	if err != nil {
-		k.Logger(ctx).Error("unable to send valset message for chain",
+		k.Logger(sdkCtx).Error("unable to send valset message for chain",
 			"chain", chain.GetChainReferenceID(),
 			"err", err,
 		)
@@ -460,9 +465,11 @@ func (k Keeper) justInTimeValsetUpdate(ctx sdk.Context, chain *types.ChainInfo) 
 	return err
 }
 
-func (k Keeper) PublishValsetToChain(ctx sdk.Context, valset types.Valset, chain *types.ChainInfo) error {
+func (k Keeper) PublishValsetToChain(ctx context.Context, valset types.Valset, chain *types.ChainInfo) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	if !chain.IsActive() {
-		k.Logger(ctx).Info("ignoring valset for chain as the chain is not yet active",
+		k.Logger(sdkCtx).Info("ignoring valset for chain as the chain is not yet active",
 			"chain-reference-id", chain.GetChainReferenceID(),
 			"valset-id", valset.GetValsetID(),
 		)
@@ -470,7 +477,7 @@ func (k Keeper) PublishValsetToChain(ctx sdk.Context, valset types.Valset, chain
 	}
 
 	if !isEnoughToReachConsensus(valset) {
-		k.Logger(ctx).Info("ignoring valset for chain as there aren't enough validators to form a consensus for this chain",
+		k.Logger(sdkCtx).Info("ignoring valset for chain as there aren't enough validators to form a consensus for this chain",
 			"chain-reference-id", chain.GetChainReferenceID(),
 			"valset-id", valset.GetValsetID(),
 		)
@@ -479,7 +486,7 @@ func (k Keeper) PublishValsetToChain(ctx sdk.Context, valset types.Valset, chain
 
 	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
 	if err != nil {
-		k.Logger(ctx).Error("error picking a validator to run the message",
+		k.Logger(sdkCtx).Error("error picking a validator to run the message",
 			"chain-reference-id", chain.GetChainReferenceID(),
 			"valset-id", valset.GetValsetID(),
 			"error", err,
@@ -489,7 +496,7 @@ func (k Keeper) PublishValsetToChain(ctx sdk.Context, valset types.Valset, chain
 
 	err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset, assignee)
 	if err != nil {
-		k.Logger(ctx).Error("unable to send valset message for chain",
+		k.Logger(sdkCtx).Error("unable to send valset message for chain",
 			"chain", chain.GetChainReferenceID(),
 			"err", err,
 		)
@@ -498,25 +505,27 @@ func (k Keeper) PublishValsetToChain(ctx sdk.Context, valset types.Valset, chain
 	return nil
 }
 
-func (k Keeper) PublishSnapshotToAllChains(ctx sdk.Context, snapshot *valsettypes.Snapshot, forcePublish bool) error {
+func (k Keeper) PublishSnapshotToAllChains(ctx context.Context, snapshot *valsettypes.Snapshot, forcePublish bool) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	chainInfos, err := k.GetAllChainInfos(ctx)
 	if err != nil {
 		return err
 	}
-	logger := k.Logger(ctx)
+	logger := k.Logger(sdkCtx)
 	for _, chain := range chainInfos {
 		valset := transformSnapshotToCompass(snapshot, chain.GetChainReferenceID(), logger)
 
 		latestActiveValset, _ := k.Valset.GetLatestSnapshotOnChain(ctx, chain.GetChainReferenceID())
 		if latestActiveValset != nil && !forcePublish {
-			latestActiveValsetAge := ctx.BlockTime().Sub(latestActiveValset.CreatedAt)
+			latestActiveValsetAge := sdkCtx.BlockTime().Sub(latestActiveValset.CreatedAt)
 
 			// If it's been less than 1 month since publishing a valset, don't publish
 			keepWarmDays := 30
 			if latestActiveValsetAge < (time.Duration(keepWarmDays) * 24 * time.Hour) {
-				k.Logger(ctx).Info(fmt.Sprintf("ignoring valset for chain because chain has had a valset update in the past %d days", keepWarmDays),
+				k.Logger(sdkCtx).Info(fmt.Sprintf("ignoring valset for chain because chain has had a valset update in the past %d days", keepWarmDays),
 					"chain-reference-id", chain.GetChainReferenceID(),
-					"current-block-height", ctx.BlockHeight(),
+					"current-block-height", sdkCtx.BlockHeight(),
 					"current-published-valset-id", latestActiveValset.GetId(),
 					"current-published-valset-created-time", latestActiveValset.CreatedAt,
 					"valset-id", valset.GetValsetID(),
@@ -527,13 +536,13 @@ func (k Keeper) PublishSnapshotToAllChains(ctx sdk.Context, snapshot *valsettype
 
 		err := k.PublishValsetToChain(ctx, valset, chain)
 		if err != nil {
-			k.Logger(ctx).Error(err.Error())
+			k.Logger(sdkCtx).Error(err.Error())
 		}
 	}
 	return nil
 }
 
-func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
+func (k Keeper) OnSnapshotBuilt(ctx context.Context, snapshot *valsettypes.Snapshot) {
 	err := k.PublishSnapshotToAllChains(ctx, snapshot, false)
 	if err != nil {
 		panic(err)
@@ -551,25 +560,27 @@ func (m msgSender) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.ChainInfo, valset types.Valset, assignee string) error {
-	m.Logger(ctx).Info("snapshot was built and a new update valset message is being sent over",
+func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.ChainInfo, valset types.Valset, assignee string) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	m.Logger(sdkCtx).Info("snapshot was built and a new update valset message is being sent over",
 		"chainInfo-reference-id", chainInfo.GetChainReferenceID(),
 		"valset-id", valset.GetValsetID(),
 	)
 
 	// clear all other instances of the update valset from the queue
-	m.Logger(ctx).Info("clearing previous instances of the update valset from the queue")
+	m.Logger(sdkCtx).Info("clearing previous instances of the update valset from the queue")
 	queueName := consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID()))
 	messages, err := m.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 0)
 	if err != nil {
-		m.Logger(ctx).Error("unable to get messages from queue", "err", err)
+		m.Logger(sdkCtx).Error("unable to get messages from queue", "err", err)
 		return err
 	}
 
 	for _, msg := range messages {
 		cmsg, err := msg.ConsensusMsg(m.cdc)
 		if err != nil {
-			m.Logger(ctx).Error("unable to unpack message", "err", err)
+			m.Logger(sdkCtx).Error("unable to unpack message", "err", err)
 			return err
 		}
 
@@ -581,7 +592,7 @@ func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.Chain
 		if _, ok := act.(*types.Message_UpdateValset); ok {
 			err := m.ConsensusKeeper.DeleteJob(ctx, queueName, msg.GetId())
 			if err != nil {
-				m.Logger(ctx).Error("unable to delete message", "err", err)
+				m.Logger(sdkCtx).Error("unable to delete message", "err", err)
 				return err
 			}
 		}
@@ -603,29 +614,31 @@ func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.Chain
 		}, nil,
 	)
 	if err != nil {
-		m.Logger(ctx).Error("unable to put message in the queue", "err", err)
+		m.Logger(sdkCtx).Error("unable to put message in the queue", "err", err)
 		return err
 	}
 
-	m.Logger(ctx).With("new-message-id", msgID).Debug("Valset update message added to consensus queue.")
+	m.Logger(sdkCtx).With("new-message-id", msgID).Debug("Valset update message added to consensus queue.")
 	return nil
 }
 
-func (k Keeper) CheckExternalBalancesForChain(ctx sdk.Context, chainReferenceID string) error {
+func (k Keeper) CheckExternalBalancesForChain(ctx context.Context, chainReferenceID string) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
 	if err != nil {
 		return err
 	}
 
 	var msg types.ValidatorBalancesAttestation
-	msg.FromBlockTime = ctx.BlockTime().UTC()
+	msg.FromBlockTime = sdkCtx.BlockTime().UTC()
 
 	for _, val := range snapshot.GetValidators() {
 		for _, ext := range val.GetExternalChainInfos() {
 			if ext.GetChainReferenceID() == chainReferenceID && ext.GetChainType() == "evm" {
 				msg.ValAddresses = append(msg.ValAddresses, val.GetAddress())
 				msg.HexAddresses = append(msg.HexAddresses, ext.GetAddress())
-				k.Logger(ctx).Debug("check-external-balances-for-chain",
+				k.Logger(sdkCtx).Debug("check-external-balances-for-chain",
 					"chain-reference-id", chainReferenceID,
 					"msg-val-address", val.GetAddress(),
 					"msg-hex-address", ext.GetAddress(),
@@ -662,7 +675,7 @@ func isEnoughToReachConsensus(val types.Valset) bool {
 }
 
 func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID string, logger log.Logger) types.Valset {
-	var totalShares sdk.Int
+	var totalShares sdkmath.Int
 	if snapshot != nil {
 		totalShares = snapshot.TotalShares
 	}
@@ -680,7 +693,7 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 		return validators[i].ShareCount.GTE(validators[j].ShareCount)
 	})
 
-	totalPowerInt := sdk.NewInt(0)
+	totalPowerInt := sdkmath.NewInt(0)
 	for _, val := range validators {
 		totalPowerInt = totalPowerInt.Add(val.ShareCount)
 	}
@@ -712,13 +725,15 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 
 func (k Keeper) ModuleName() string { return types.ModuleName }
 
-func generateSmartContractID(ctx sdk.Context) (res [32]byte) {
-	b := []byte(fmt.Sprintf("%d", ctx.BlockHeight()))
+func generateSmartContractID(ctx context.Context) (res [32]byte) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	b := []byte(fmt.Sprintf("%d", sdkCtx.BlockHeight()))
 	copy(res[:], b)
 	return
 }
 
-func (k Keeper) SetRelayWeights(ctx sdk.Context, chainReferenceID string, weights *types.RelayWeights) error {
+func (k Keeper) SetRelayWeights(ctx context.Context, chainReferenceID string, weights *types.RelayWeights) error {
 	chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
 	if err != nil {
 		return err
@@ -729,7 +744,7 @@ func (k Keeper) SetRelayWeights(ctx sdk.Context, chainReferenceID string, weight
 	return keeperutil.Save(k.chainInfoStore(ctx), k.cdc, []byte(chainReferenceID), chainInfo)
 }
 
-func (k Keeper) GetRelayWeights(ctx sdk.Context, chainReferenceID string) (*types.RelayWeights, error) {
+func (k Keeper) GetRelayWeights(ctx context.Context, chainReferenceID string) (*types.RelayWeights, error) {
 	chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
 	if err != nil {
 		return &types.RelayWeights{}, err
@@ -738,7 +753,7 @@ func (k Keeper) GetRelayWeights(ctx sdk.Context, chainReferenceID string) (*type
 	return chainInfo.RelayWeights, nil
 }
 
-func (k Keeper) GetEthAddressByValidator(ctx sdk.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *gravitymoduletypes.EthAddress, found bool, err error) {
+func (k Keeper) GetEthAddressByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *gravitymoduletypes.EthAddress, found bool, err error) {
 	chainInfos, err := k.Valset.GetValidatorChainInfos(ctx, validator)
 	if err != nil {
 		return ethAddress, false, err
@@ -756,7 +771,7 @@ func (k Keeper) GetEthAddressByValidator(ctx sdk.Context, validator sdk.ValAddre
 	return ethAddress, false, nil
 }
 
-func (k Keeper) GetValidatorAddressByEthAddress(ctx sdk.Context, ethAddr gravitymoduletypes.EthAddress, chainReferenceId string) (valAddr sdk.ValAddress, found bool, err error) {
+func (k Keeper) GetValidatorAddressByEthAddress(ctx context.Context, ethAddr gravitymoduletypes.EthAddress, chainReferenceId string) (valAddr sdk.ValAddress, found bool, err error) {
 	validatorsExternalAccounts, err := k.Valset.GetAllChainInfos(ctx)
 	if err != nil {
 		return valAddr, false, err

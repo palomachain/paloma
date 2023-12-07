@@ -13,13 +13,9 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	dbm "github.com/cosmos/cosmos-db"
-	"github.com/cosmos/gogoproto/proto"
-
-	// xchain "github.com/palomachain/paloma/internal/x-chain"
-	// "github.com/palomachain/paloma/x/evm"
-
 	"github.com/cosmos/cosmos-sdk/std"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"github.com/cosmos/gogoproto/proto"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmjson "github.com/cometbft/cometbft/libs/json"
@@ -124,7 +120,6 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	palomamempool "github.com/palomachain/paloma/app/mempool"
 	appparams "github.com/palomachain/paloma/app/params"
@@ -133,10 +128,11 @@ import (
 	// consensusmodule "github.com/palomachain/paloma/x/consensus"
 	// consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	// consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
-	// "github.com/palomachain/paloma/x/evm"
-	// evmclient "github.com/palomachain/paloma/x/evm/client"
-	// evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
-	// evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/x/evm"
+	evmclient "github.com/palomachain/paloma/x/evm/client"
+	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
+	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+
 	// gravitymodule "github.com/palomachain/paloma/x/gravity"
 	// gravityclient "github.com/palomachain/paloma/x/gravity/client"
 	// gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
@@ -151,6 +147,7 @@ import (
 	// treasuryclient "github.com/palomachain/paloma/x/treasury/client"
 	// treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
 	// treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
+
 	// valsetmodule "github.com/palomachain/paloma/x/valset"
 	// valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
 	// valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
@@ -168,50 +165,13 @@ const (
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	return []govclient.ProposalHandler{
 		paramsclient.ProposalHandler,
-		// evmclient.ProposalHandler,
-		// gravityclient.ProposalHandler,
-		// treasuryclient.ProposalHandler,
+		evmclient.ProposalHandler,
 	}
 }
 
 var (
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
-
-	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
-	// non-dependant module elements, such as codec registration
-	// and genesis verification.
-	ModuleBasics = module.NewBasicManager(
-		auth.AppModuleBasic{},
-		genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-		BankModule{},
-		capability.AppModuleBasic{},
-		StakingModule{},
-		MintModule{},
-		distr.AppModuleBasic{},
-		GovModule{gov.NewAppModuleBasic(getGovProposalHandlers())},
-		params.AppModuleBasic{},
-		CrisisModule{},
-		slashing.AppModule{},
-		feegrantmodule.AppModuleBasic{},
-		upgrade.AppModuleBasic{},
-		evidence.AppModuleBasic{},
-		vesting.AppModuleBasic{},
-		// schedulermodule.AppModuleBasic{},
-		// consensusmodule.AppModuleBasic{},
-		// valsetmodule.AppModuleBasic{},
-		// wasm.AppModuleBasic{},
-		// evm.AppModuleBasic{},
-		// gravitymodule.AppModuleBasic{},
-		// palomamodule.AppModuleBasic{},
-		// treasurymodule.AppModuleBasic{},
-		// consensus.AppModuleBasic{},
-		transfer.AppModuleBasic{},
-		ibc.AppModuleBasic{},
-		ibctm.AppModuleBasic{},
-		ica.AppModuleBasic{},
-		ibcfee.AppModuleBasic{},
-	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
@@ -221,12 +181,10 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
-		// gravitymoduletypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
-		ibctransfertypes.ModuleName: {authtypes.Minter, authtypes.Burner},
-		ibcfeetypes.ModuleName:      nil,
-		icatypes.ModuleName:         nil,
-		// wasm.ModuleName:                {authtypes.Burner},
-		// treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
+		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		ibcfeetypes.ModuleName:         nil,
+		icatypes.ModuleName:            nil,
+		evmmoduletypes.ModuleName:      {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -289,14 +247,14 @@ type App struct {
 	// ConsensusKeeper consensusmodulekeeper.Keeper
 	// ValsetKeeper    valsetmodulekeeper.Keeper
 	// PalomaKeeper    palomamodulekeeper.Keeper
-	// TreasuryKeeper  treasurymodulekeeper.Keeper
-	// EvmKeeper       evmmodulekeeper.Keeper
+	// TreasuryKeeper treasurymodulekeeper.Keeper
+	EvmKeeper evmmodulekeeper.Keeper
 	// GravityKeeper   gravitymodulekeeper.Keeper
 	wasmKeeper wasmkeeper.Keeper
 
 	// mm is the module manager
-	mm *module.Manager
-	bm module.BasicManager
+	ModuleManager      *module.Manager
+	BasicModuleManager module.BasicManager
 
 	// sm is the simulation manager
 	sm *module.SimulationManager
@@ -367,6 +325,8 @@ func New(
 		// consensusmoduletypes.StoreKey,
 		// valsetmoduletypes.StoreKey,
 		// treasurymoduletypes.StoreKey,
+		// // wasm.StoreKey,
+		evmmoduletypes.StoreKey,
 		wasmtypes.StoreKey,
 		// evmmoduletypes.StoreKey,
 		// gravitymoduletypes.StoreKey,
@@ -378,7 +338,7 @@ func New(
 		capabilitytypes.MemStoreKey,
 		// valsetmoduletypes.MemStoreKey,
 		// consensusmoduletypes.MemStoreKey,
-		// evmmoduletypes.MemStoreKey,
+		evmmoduletypes.MemStoreKey,
 		// schedulermoduletypes.MemStoreKey,
 		// treasurymoduletypes.MemStoreKey,
 		// palomamoduletypes.MemStoreKey,
@@ -587,14 +547,13 @@ func New(
 	// 	consensusRegistry,
 	// )
 
-	// app.EvmKeeper = *evmmodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[evmmoduletypes.StoreKey],
-	// 	memKeys[evmmoduletypes.MemStoreKey],
-	// 	app.GetSubspace(evmmoduletypes.ModuleName),
-	// 	app.ConsensusKeeper,
-	// 	app.ValsetKeeper,
-	// )
+	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[evmmoduletypes.StoreKey]),
+		nil, //TODO
+		nil, //TODO
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
 	// app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 	// 	app.EvmKeeper,
 	// }
@@ -655,10 +614,10 @@ func New(
 	// 	appCodec,
 	// 	keys[treasurymoduletypes.StoreKey],
 	// 	memKeys[treasurymoduletypes.MemStoreKey],
-	// 	app.GetSubspace(schedulermoduletypes.ModuleName),
+	// 	app.GetSubspace("" /*schedulermoduletypes.ModuleName*/),
 	// 	app.BankKeeper,
 	// 	app.AccountKeeper,
-	// 	app.SchedulerKeeper,
+	// 	nil, // app.SchedulerKeeper,
 	// )
 
 	// app.ScopedConsensusKeeper = scopedConsensusKeeper
@@ -666,11 +625,8 @@ func New(
 	govRouter := govv1beta1.NewRouter()
 	govRouter.
 		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
-		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper))
-	// AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
-	// AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
-	// AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
-	// AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
+		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
+		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper))
 
 	// Example of setting gov params:
 	govKeeper := govkeeper.NewKeeper(
@@ -778,14 +734,14 @@ func New(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 
-	// evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
+	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
 	// consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 	// valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	// schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	// palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	// gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	// treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
-	app.mm = module.NewManager(
+	app.ModuleManager = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,
 			app.StakingKeeper,
@@ -809,7 +765,7 @@ func New(
 		// schedulerModule,
 		// consensusModule,
 		// valsetModule,
-		// evmModule,
+		evmModule,
 		// gravityModule,
 		// palomaModule,
 		// treasuryModule,
@@ -821,11 +777,23 @@ func New(
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 	)
 
+	app.BasicModuleManager = module.NewBasicManagerFromManager(
+		app.ModuleManager,
+		map[string]module.AppModuleBasic{
+			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+			govtypes.ModuleName: gov.NewAppModuleBasic(
+				[]govclient.ProposalHandler{
+					paramsclient.ProposalHandler,
+				},
+			),
+		})
+	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
+	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
-	app.mm.SetOrderBeginBlockers(
+	app.ModuleManager.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
@@ -845,6 +813,8 @@ func New(
 		genutiltypes.ModuleName,
 		// valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
+		// wasm.ModuleName,
+		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
 		// evmmoduletypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
@@ -856,7 +826,7 @@ func New(
 		consensusparamtypes.ModuleName,
 	)
 
-	app.mm.SetOrderEndBlockers(
+	app.ModuleManager.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -877,6 +847,8 @@ func New(
 		genutiltypes.ModuleName,
 		// valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
+		// wasm.ModuleName,
+		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
 		// evmmoduletypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
@@ -893,7 +865,7 @@ func New(
 	// NOTE: Capability module must occur first so that it can initialize any capabilities
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
-	app.mm.SetOrderInitGenesis(
+	app.ModuleManager.SetOrderInitGenesis(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -918,6 +890,8 @@ func New(
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
+		// wasm.ModuleName,
+		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
 		// evmmoduletypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
@@ -925,9 +899,9 @@ func New(
 		consensusparamtypes.ModuleName,
 	)
 
-	app.mm.RegisterInvariants(app.CrisisKeeper)
+	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	app.mm.RegisterServices(app.configurator)
+	app.ModuleManager.RegisterServices(app.configurator)
 
 	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
 	// Make sure it's called after `app.ModuleManager` and `app.configurator` are
@@ -944,7 +918,7 @@ func New(
 			app.GetSubspace(authtypes.ModuleName),
 		),
 	}
-	app.sm = module.NewSimulationManagerFromAppModules(app.mm.Modules, overrideModules)
+	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, overrideModules)
 	app.sm.RegisterStoreDecoders()
 
 	// initialize stores
@@ -955,6 +929,8 @@ func New(
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
+	app.SetPreBlocker(app.PreBlocker)
+	app.SetEndBlocker(app.EndBlocker)
 
 	/*baseAnteHandler*/
 	_, err = ante.NewAnteHandler(
@@ -1016,17 +992,17 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 func (app App) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
 
 func (app *App) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	return app.mm.PreBlock(ctx)
+	return app.ModuleManager.PreBlock(ctx)
 }
 
 // BeginBlocker application updates every begin block
 func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
-	return app.mm.BeginBlock(ctx)
+	return app.ModuleManager.BeginBlock(ctx)
 }
 
 // EndBlocker application updates every end block
 func (app *App) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
-	return app.mm.EndBlock(ctx)
+	return app.ModuleManager.EndBlock(ctx)
 }
 
 // InitChainer application update at chain initialization
@@ -1036,8 +1012,8 @@ func (app *App) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.
 		panic(err)
 	}
 
-	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
-	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
+	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
+	return app.ModuleManager.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
 // LoadHeight loads a particular height
@@ -1119,7 +1095,7 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register grpc-gateway routes for all modules.
-	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+	app.BasicModuleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
@@ -1179,7 +1155,7 @@ func (app *App) SimulationManager() *module.SimulationManager {
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
 func (app *App) DefaultGenesis() map[string]json.RawMessage {
-	return ModuleBasics.DefaultGenesis(app.appCodec)
+	return app.BasicModuleManager.DefaultGenesis(app.appCodec)
 }
 
 func (app *App) RegisterNodeService(clientCtx client.Context, cfg config.Config) {

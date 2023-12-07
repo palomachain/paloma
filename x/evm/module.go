@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"context"
+
+	"cosmossdk.io/core/appmodule"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -19,13 +22,24 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.HasServices         = AppModule{}
+	_ module.HasInvariants       = AppModule{}
+	_ module.HasABCIGenesis      = AppModule{}
+	_ module.HasConsensusVersion = AppModule{}
+	_ module.HasName             = AppModule{}
+
+	_ appmodule.HasEndBlocker   = AppModule{}
+	_ appmodule.HasBeginBlocker = AppModule{}
+	_ appmodule.AppModule       = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
 // AppModuleBasic
 // ----------------------------------------------------------------------------
+
+func (m AppModule) IsOnePerModuleType() {}
+func (m AppModule) IsAppModule()        {}
 
 // AppModuleBasic implements the AppModuleBasic interface for the capability module.
 type AppModuleBasic struct {
@@ -133,10 +147,10 @@ func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // InitGenesis performs the capability module's genesis initialization It returns
 // no validator updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genState types.GenesisState
 	// Initialize global index to index in genesis state
-	cdc.MustUnmarshalJSON(gs, &genState)
+	cdc.MustUnmarshalJSON(data, &genState)
 
 	InitGenesis(ctx, am.keeper, genState)
 
@@ -153,27 +167,28 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(context.Context) error { return nil }
 
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	am.keeper.TryDeployingLastCompassContractToAllChains(ctx)
+func (am AppModule) EndBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	am.keeper.TryDeployingLastCompassContractToAllChains(sdkCtx)
 
-	if ctx.BlockHeight()%300 == 0 {
+	if sdkCtx.BlockHeight()%300 == 0 {
 		func() {
-			cis, err := am.keeper.GetAllChainInfos(ctx)
+			cis, err := am.keeper.GetAllChainInfos(sdkCtx)
 			if err != nil {
-				am.keeper.Logger(ctx).Error("error while trying to get all chain infos to check external balances", "error", err)
+				am.keeper.Logger(sdkCtx).Error("error while trying to get all chain infos to check external balances", "error", err)
 				return
 			}
 			for _, ci := range cis {
-				err := am.keeper.CheckExternalBalancesForChain(ctx, ci.GetChainReferenceID())
+				err := am.keeper.CheckExternalBalancesForChain(sdkCtx, ci.GetChainReferenceID())
 				if err != nil {
-					am.keeper.Logger(ctx).Error("error while adding request to get the external chain balance for chain", "error", err, "chain-reference-id", ci.GetChainReferenceID())
+					am.keeper.Logger(sdkCtx).Error("error while adding request to get the external chain balance for chain", "error", err, "chain-reference-id", ci.GetChainReferenceID())
 				}
 			}
 		}()
 	}
-	return []abci.ValidatorUpdate{}
+	return nil
 }

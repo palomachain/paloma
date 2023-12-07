@@ -6,10 +6,6 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
@@ -17,14 +13,15 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -73,11 +70,9 @@ func (*MsgAddStatusUpdate) ProtoMessage()    {}
 func (*MsgAddStatusUpdate) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{0}
 }
-
 func (m *MsgAddStatusUpdate) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgAddStatusUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAddStatusUpdate.Marshal(b, m, deterministic)
@@ -90,15 +85,12 @@ func (m *MsgAddStatusUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-
 func (m *MsgAddStatusUpdate) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAddStatusUpdate.Merge(m, src)
 }
-
 func (m *MsgAddStatusUpdate) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgAddStatusUpdate) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAddStatusUpdate.DiscardUnknown(m)
 }
@@ -134,7 +126,8 @@ func (m *MsgAddStatusUpdate) GetMetadata() types.MsgMetadata {
 	return types.MsgMetadata{}
 }
 
-type EmptyResponse struct{}
+type EmptyResponse struct {
+}
 
 func (m *EmptyResponse) Reset()         { *m = EmptyResponse{} }
 func (m *EmptyResponse) String() string { return proto.CompactTextString(m) }
@@ -142,11 +135,9 @@ func (*EmptyResponse) ProtoMessage()    {}
 func (*EmptyResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{1}
 }
-
 func (m *EmptyResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *EmptyResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_EmptyResponse.Marshal(b, m, deterministic)
@@ -159,15 +150,12 @@ func (m *EmptyResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 		return b[:n], nil
 	}
 }
-
 func (m *EmptyResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_EmptyResponse.Merge(m, src)
 }
-
 func (m *EmptyResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *EmptyResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_EmptyResponse.DiscardUnknown(m)
 }
@@ -212,10 +200,8 @@ var fileDescriptor_8dc46060aeb172a8 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -251,7 +237,8 @@ type MsgServer interface {
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
-type UnimplementedMsgServer struct{}
+type UnimplementedMsgServer struct {
+}
 
 func (*UnimplementedMsgServer) AddStatusUpdate(ctx context.Context, req *MsgAddStatusUpdate) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddStatusUpdate not implemented")
@@ -378,7 +365,6 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *MsgAddStatusUpdate) Size() (n int) {
 	if m == nil {
 		return 0
@@ -413,11 +399,9 @@ func (m *EmptyResponse) Size() (n int) {
 func sovTx(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *MsgAddStatusUpdate) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -584,7 +568,6 @@ func (m *MsgAddStatusUpdate) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *EmptyResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -635,7 +618,6 @@ func (m *EmptyResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipTx(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
