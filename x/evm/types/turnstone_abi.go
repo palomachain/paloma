@@ -115,6 +115,10 @@ func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte
 	return crypto.Keccak256(bytes)
 }
 
+func (m *Message) SetAssignee(val string) {
+	m.Assignee = val
+}
+
 func (m *Message) Keccak256(nonce uint64) []byte {
 	type keccak256able interface {
 		keccak256(*Message, uint64) []byte

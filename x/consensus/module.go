@@ -93,7 +93,6 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 // AppModule implements the AppModule interface for the capability module.
 type AppModule struct {
 	AppModuleBasic
-
 	keeper        keeper.Keeper
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
@@ -164,8 +163,15 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		am.keeper.Logger(ctx).Error("error while attesting to messages", "err", err)
 	}
 
+	if ctx.BlockHeight()%10 == 0 {
+		err := am.keeper.ReassignOrphanedMessages(ctx, 10)
+		if err != nil {
+			am.keeper.Logger(ctx).Error("error while reassigning orphaned messages", "err", err)
+		}
+	}
+
 	if ctx.BlockHeight()%50 == 0 {
-		err := am.keeper.DeleteOldMessages(ctx, 1200)
+		err := am.keeper.PruneOldMessages(ctx, 1200)
 		if err != nil {
 			am.keeper.Logger(ctx).Error("error while deleting old messages", "err", err)
 		}

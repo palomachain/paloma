@@ -23,7 +23,8 @@ type (
 
 		valset types.ValsetKeeper
 
-		registry *registry
+		registry  *registry
+		evmKeeper types.EvmKeeper
 	}
 )
 
@@ -60,4 +61,12 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
 	return ctx.KVStore(k.storeKey)
+}
+
+func (k Keeper) ModuleName() string {
+	return types.ModuleName
+}
+
+func (k *Keeper) LateInject(evm types.EvmKeeper) {
+	k.evmKeeper = evm
 }

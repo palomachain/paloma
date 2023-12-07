@@ -575,6 +575,7 @@ func New(
 	// TODO: Refactor app to use pointer values only instead
 	// of keeping value copies and blowing up the stack.
 	app.EvmKeeper.Gravity = app.GravityKeeper
+	app.ConsensusKeeper.LateInject(app.EvmKeeper)
 
 	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
 		appCodec,
