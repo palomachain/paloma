@@ -5,7 +5,6 @@ import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 import "cosmos/msg/v1/msg.proto";
 import "palomachain/paloma/valset/common.proto";
-import "palomachain/paloma/evm/params.proto";
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 service Msg {
