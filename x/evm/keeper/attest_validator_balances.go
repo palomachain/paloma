@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -12,13 +13,14 @@ import (
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
-func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
-	k.Logger(ctx).Debug("attest-validator-balances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	k.Logger(sdkCtx).Debug("attest-validator-balances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
 	if len(msg.GetEvidence()) == 0 {
 		return nil
 	}
 
-	ctx, writeCache := ctx.CacheContext()
+	ctx, writeCache := sdkCtx.CacheContext()
 	defer func() {
 		if retErr == nil {
 			writeCache()
@@ -43,8 +45,8 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 	defer func() {
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
-		if err := q.Remove(ctx, msg.GetId()); err != nil {
-			k.Logger(ctx).Error("error removing message, attestValidatorBalances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+		if err := q.Remove(sdkCtx, msg.GetId()); err != nil {
+			k.Logger(sdkCtx).Error("error removing message, attestValidatorBalances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
 		}
 	}()
 
@@ -59,7 +61,7 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 		return err
 	}
 
-	return k.processValidatorBalanceProof(ctx, request, evidence, chainReferenceID, minBalance)
+	return k.processValidatorBalanceProof(sdkCtx, request, evidence, chainReferenceID, minBalance)
 }
 
 func (k Keeper) processValidatorBalanceProof(

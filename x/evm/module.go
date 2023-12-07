@@ -6,6 +6,7 @@ import (
 
 	"context"
 
+	"cosmossdk.io/core/appmodule"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -21,7 +22,16 @@ import (
 )
 
 var (
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.HasServices         = AppModule{}
+	_ module.HasInvariants       = AppModule{}
+	_ module.HasABCIGenesis      = AppModule{}
+	_ module.HasConsensusVersion = AppModule{}
+	_ module.HasName             = AppModule{}
+
+	_ appmodule.HasEndBlocker   = AppModule{}
+	_ appmodule.HasBeginBlocker = AppModule{}
+	_ appmodule.AppModule       = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
@@ -137,10 +147,10 @@ func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // InitGenesis performs the capability module's genesis initialization It returns
 // no validator updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genState types.GenesisState
 	// Initialize global index to index in genesis state
-	cdc.MustUnmarshalJSON(gs, &genState)
+	cdc.MustUnmarshalJSON(data, &genState)
 
 	InitGenesis(ctx, am.keeper, genState)
 
@@ -161,7 +171,7 @@ func (am AppModule) BeginBlock(context.Context) error { return nil }
 
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
-func (am AppModule) EndBlock(ctx context.Context) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx context.Context) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	am.keeper.TryDeployingLastCompassContractToAllChains(sdkCtx)
 
@@ -180,5 +190,5 @@ func (am AppModule) EndBlock(ctx context.Context) []abci.ValidatorUpdate {
 			}
 		}()
 	}
-	return []abci.ValidatorUpdate{}
+	return nil
 }

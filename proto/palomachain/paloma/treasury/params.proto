@@ -7,6 +7,5 @@ option go_package = "github.com/palomachain/paloma/x/treasury/types";
 
 // Params defines the parameters for the module.
 message Params {
-  option (gogoproto.goproto_stringer) = false;
-  
+  option (gogoproto.goproto_stringer) = false; 
 }

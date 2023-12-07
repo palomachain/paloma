@@ -44,7 +44,7 @@ var _ = g.Describe("genesis", func() {
 	g.BeforeEach(func() {
 		t := g.GinkgoT()
 		a = app.NewTestApp(t, false)
-		ctx = a.NewContext(false)
+		ctx = a.NewContext(false).WithBlockHeight(5)
 		k = &a.EvmKeeper
 	})
 

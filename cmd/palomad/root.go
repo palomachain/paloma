@@ -10,7 +10,6 @@ import (
 	"time"
 
 	cosmoslog "cosmossdk.io/log"
-
 	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -28,7 +27,6 @@ import (
 func NewRootCmd() *cobra.Command {
 	// set Bech32 address configuration
 	params.SetAddressConfig()
-
 	encCfg := palomaapp.MakeEncodingConfig()
 	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, encCfg, db.OptionsMap{})
 	initClientCtx := client.Context{}.
@@ -74,7 +72,6 @@ func NewRootCmd() *cobra.Command {
 			return applyForcedConfigOptions(cmd)
 		},
 	}
-
 	initRootCmd(rootCmd, encCfg, encCfg.InterfaceRegistry, encCfg, tempApp.BasicModuleManager)
 
 	if err := overwriteFlagDefaults(rootCmd, map[string]string{

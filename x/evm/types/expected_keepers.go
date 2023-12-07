@@ -11,39 +11,40 @@ import (
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
+//
 type AccountKeeper interface {
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
 	// Methods imported from account should be defined here
 }
 
 // BankKeeper defines the expected interface needed to retrieve account balances.
+
 type BankKeeper interface {
 	SpendableCoins(ctx context.Context, addr sdk.AccAddress) sdk.Coins
 	// Methods imported from bank should be defined here
 }
 
-//go:generate mockery --name=ConsensusKeeper
 type ConsensusKeeper interface {
-	PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg consensus.ConsensusMsg, opts *consensus.PutOptions) (uint64, error)
-	RemoveConsensusQueue(ctx sdk.Context, queueTypeName string) error
-	GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n int) (msgs []consensustypes.QueuedSignedMessageI, err error)
-	DeleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error)
+	PutMessageInQueue(ctx context.Context, queueTypeName string, msg consensus.ConsensusMsg, opts *consensus.PutOptions) (uint64, error)
+	RemoveConsensusQueue(ctx context.Context, queueTypeName string) error
+	GetMessagesFromQueue(ctx context.Context, queueTypeName string, n int) (msgs []consensustypes.QueuedSignedMessageI, err error)
+	DeleteJob(ctx context.Context, queueTypeName string, id uint64) (err error)
 }
 
-//go:generate mockery --name=ValsetKeeper
 type ValsetKeeper interface {
-	FindSnapshotByID(ctx sdk.Context, id uint64) (*valsettypes.Snapshot, error)
-	GetCurrentSnapshot(ctx sdk.Context) (*valsettypes.Snapshot, error)
-	SetSnapshotOnChain(ctx sdk.Context, snapshotID uint64, chainReferenceID string) error
-	GetLatestSnapshotOnChain(ctx sdk.Context, chainReferenceID string) (*valsettypes.Snapshot, error)
-	KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress, pigeonVersion string) error
-	Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error
-	IsJailed(ctx sdk.Context, val sdk.ValAddress) bool
-	SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error
-	GetValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) ([]*valsettypes.ExternalChainInfo, error)
-	GetAllChainInfos(ctx sdk.Context) ([]*valsettypes.ValidatorExternalAccounts, error)
+	FindSnapshotByID(ctx context.Context, id uint64) (*valsettypes.Snapshot, error)
+	GetCurrentSnapshot(ctx context.Context) (*valsettypes.Snapshot, error)
+	SetSnapshotOnChain(ctx context.Context, snapshotID uint64, chainReferenceID string) error
+	GetLatestSnapshotOnChain(ctx context.Context, chainReferenceID string) (*valsettypes.Snapshot, error)
+	KeepValidatorAlive(ctx context.Context, valAddr sdk.ValAddress, pigeonVersion string) error
+	Jail(ctx context.Context, valAddr sdk.ValAddress, reason string) error
+	IsJailed(ctx context.Context, val sdk.ValAddress) bool
+	SetValidatorBalance(ctx context.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error
+	GetValidatorChainInfos(ctx context.Context, valAddr sdk.ValAddress) ([]*valsettypes.ExternalChainInfo, error)
+	GetAllChainInfos(ctx context.Context) ([]*valsettypes.ValidatorExternalAccounts, error)
 }
 
+//go:generate mockery --name=ConsensusKeeper
 type SchedulerKeeper interface {
-	ScheduleNow(ctx sdk.Context, jobID string, in []byte, SenderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error
+	ScheduleNow(ctx context.Context, jobID string, in []byte, SenderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error
 }
