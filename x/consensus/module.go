@@ -171,7 +171,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	}
 
 	if ctx.BlockHeight()%50 == 0 {
-		err := am.keeper.PruneOldMessages(ctx, 1200)
+		err := am.keeper.PruneOldMessages(ctx, 300)
 		if err != nil {
 			am.keeper.Logger(ctx).Error("error while deleting old messages", "err", err)
 		}
