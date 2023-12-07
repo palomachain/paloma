@@ -23,6 +23,7 @@ type Queuer interface {
 	Put(sdk.Context, ConsensusMsg, *PutOptions) (uint64, error)
 	AddSignature(ctx sdk.Context, id uint64, signData *types.SignData) error
 	AddEvidence(ctx sdk.Context, id uint64, evidence *types.Evidence) error
+	ReassignValidator(ctx sdk.Context, id uint64, val string) error
 	SetPublicAccessData(ctx sdk.Context, id uint64, data *types.PublicAccessData) error
 	GetPublicAccessData(ctx sdk.Context, id uint64) (*types.PublicAccessData, error)
 	SetErrorData(ctx sdk.Context, id uint64, data *types.ErrorData) error

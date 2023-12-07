@@ -198,6 +198,39 @@ func (c Queue) AddEvidence(ctx sdk.Context, msgID uint64, evidence *types.Eviden
 	return c.save(ctx, msg)
 }
 
+type assignableMessage interface {
+	proto.Message
+	SetAssignee(val string)
+}
+
+func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) error {
+	imsg, err := c.GetMsgByID(ctx, msgID)
+	if err != nil {
+		return err
+	}
+
+	var m types.ConsensusMsg
+	if err := c.qo.Cdc.UnpackAny(imsg.GetMsg(), &m); err != nil {
+		return err
+	}
+
+	assignable, ok := m.(assignableMessage)
+	if !ok {
+		return fmt.Errorf("message does not support setting assignee")
+	}
+	assignable.SetAssignee(val)
+
+	msg := imsg.(*types.QueuedSignedMessage)
+	anyMsg, err := codectypes.NewAnyWithValue(assignable)
+	if err != nil {
+		return err
+	}
+
+	msg.Msg = anyMsg
+
+	return c.save(ctx, msg)
+}
+
 // SetPublicAccessData sets data that should be visible publically so that other can provide proofs.
 func (c Queue) SetPublicAccessData(ctx sdk.Context, msgID uint64, data *types.PublicAccessData) error {
 	msg, err := c.GetMsgByID(ctx, msgID)
