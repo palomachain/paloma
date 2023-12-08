@@ -543,7 +543,6 @@ func New(
 	app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[consensusmoduletypes.StoreKey]),
-		memKeys[consensusmoduletypes.MemStoreKey],
 		app.GetSubspace(consensusmoduletypes.ModuleName),
 		nil, //consensusRegistry,
 		nil, //authtypes.NewModuleAddress(govtypes.ModuleName).String(),

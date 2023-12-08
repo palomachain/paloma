@@ -21,7 +21,6 @@ type (
 		cdc        codec.BinaryCodec
 		Cdc        types.CodecMarshaler
 		storeKey   store.KVStoreService
-		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
 
 		ider keeperutil.IDGenerator
@@ -35,7 +34,6 @@ type (
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey store.KVStoreService,
-	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	valsetKeeper types.ValsetKeeper,
 	reg *registry,
@@ -44,7 +42,6 @@ func NewKeeper(
 	k := &Keeper{
 		cdc:        cdc,
 		storeKey:   storeKey,
-		memKey:     memKey,
 		paramstore: ps,
 		valset:     valsetKeeper,
 		registry:   reg,
