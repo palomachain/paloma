@@ -10,6 +10,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -79,7 +80,7 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 	ctx, writeCache := sdkCtx.CacheContext()
 	defer func() {
 		if err != nil {
-			logger.With(err).Error("failed to attest. Skipping writeback.")
+			logger.WithError(err).Error("failed to attest. Skipping writeback.")
 			return
 		}
 		writeCache()

@@ -16,7 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/liblog"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 )
@@ -73,7 +72,7 @@ func (k Keeper) SetSmartContractDeploymentStatusByContractID(ctx context.Context
 
 	v.Status = status
 	if err := keeperutil.Save(k.provideSmartContractDeploymentStore(ctx), k.cdc, key, v); err != nil {
-		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("failed to update smart contract deployment record")
+		k.Logger(sdkCtx).WithError(err).Error("failed to update smart contract deployment record")
 		return err
 	}
 
