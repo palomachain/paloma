@@ -44,7 +44,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 			QueueTypeName:         "simple-message",
 			Sg:                    sg,
 			Ider:                  keeperutil.NewIDGenerator(sg, nil),
-			Cdc:                   nil,
+			Cdc:                   types.ModuleCdc,
 			TypeCheck:             types.StaticTypeChecker(msgType),
 			Attestator:            mck,
 			BytesToSignCalculator: msgType.ConsensusSignBytes(),

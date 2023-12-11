@@ -6,7 +6,6 @@ import (
 
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
-	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -19,7 +18,6 @@ import (
 type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
-		Cdc        types.CodecMarshaler
 		storeKey   store.KVStoreService
 		paramstore paramtypes.Subspace
 
@@ -58,7 +56,5 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 }
 
 func (k Keeper) Store(ctx context.Context) storetypes.KVStore {
-	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
-
-	return prefix.NewStore(s, []byte("store"))
+	return runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
 }

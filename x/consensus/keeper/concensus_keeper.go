@@ -47,7 +47,7 @@ func (k Keeper) getConsensusQueue(ctx context.Context, queueTypeName string) (co
 		}
 
 		if opts.Cdc == nil {
-			opts.Cdc = k.Cdc
+			opts.Cdc = k.cdc
 		}
 
 		if opts.Batched {
