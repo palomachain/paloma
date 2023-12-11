@@ -4,6 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/liblog"
 )
 
 // CheckAndProcessAttestedMessages is supposed to be used within the
@@ -23,11 +24,8 @@ func (k Keeper) CheckAndProcessAttestedMessages(ctx context.Context) error {
 			}
 
 			for _, msg := range msgs {
-				k.Logger(sdkCtx).Debug(
-					"check-and-process-attested-messages-queue",
-					"id", msg.GetId(),
-					"nonce", msg.Nonce(),
-				)
+				liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(msg.GetId(), msg.Nonce()).Debug(
+					"check-and-process-attested-messages-queue.")
 				cq, err := k.getConsensusQueue(sdkCtx, opt.QueueTypeName)
 				if err != nil {
 					return err
