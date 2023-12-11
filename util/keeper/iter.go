@@ -5,7 +5,6 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/gogoproto/proto"
-	// "github.com/cosmos/cosmos-sdk/codec"
 )
 
 func IterAll[T proto.Message](store storetypes.KVStore, pu ProtoUnmarshaler) ([][]byte, []T, error) {

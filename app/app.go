@@ -13,7 +13,6 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	"cosmossdk.io/log"
-	"github.com/CosmWasm/wasmd/x/wasm"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/std"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -253,7 +252,7 @@ type App struct {
 	// TreasuryKeeper treasurymodulekeeper.Keeper
 	EvmKeeper evmmodulekeeper.Keeper
 	// GravityKeeper   gravitymodulekeeper.Keeper
-	wasmKeeper wasm.Keeper
+	wasmKeeper wasmkeeper.Keeper
 
 	// ModuleManager is the module manager
 	ModuleManager      *module.Manager
@@ -377,7 +376,7 @@ func New(
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
+	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
 	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 
 	app.CapabilityKeeper.Seal()
@@ -544,8 +543,8 @@ func New(
 		appCodec,
 		runtime.NewKVStoreService(keys[consensusmoduletypes.StoreKey]),
 		app.GetSubspace(consensusmoduletypes.ModuleName),
-		nil, //consensusRegistry,
-		nil, //authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		nil, // TODO: pass valset keeper
+		consensusRegistry,
 	)
 
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
@@ -657,9 +656,9 @@ func New(
 		panic("error while reading wasm config: " + err.Error())
 	}
 
-	app.wasmKeeper = wasm.NewKeeper(
+	app.wasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
-		runtime.NewKVStoreService(keys[wasm.StoreKey]),
+		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.StakingKeeper,
@@ -678,16 +677,16 @@ func New(
 		wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 			return wasmkeeper.NewMessageHandlerChain(
 				old,
-				// app.SchedulerKeeper.ExecuteWasmJobEventListener(),
+				// TODO: pass schedular keeper wasm event listener: // app.SchedulerKeeper.ExecuteWasmJobEventListener(),
 			)
 		}),
 	)
 
 	// register wasm gov proposal types
-	enabledProposals := GetEnabledProposals()
-	if len(enabledProposals) != 0 {
-		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
-	}
+	// enabledProposals := GetEnabledProposals()
+	// if len(enabledProposals) != 0 {
+	// 	govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
+	// }
 
 	// Create Transfer Stack
 	var transferStack porttypes.IBCModule
@@ -719,7 +718,7 @@ func New(
 	// Create static IBC router, add app routes, then set and seal it
 	ibcRouter := porttypes.NewRouter().
 		AddRoute(ibctransfertypes.ModuleName, transferStack).
-		AddRoute(wasm.ModuleName, wasmStack).
+		AddRoute(wasmtypes.ModuleName, wasmStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
@@ -931,7 +930,7 @@ func New(
 	app.SetEndBlocker(app.EndBlocker)
 
 	/*baseAnteHandler*/
-	_, err := ante.NewAnteHandler(
+	_, err = ante.NewAnteHandler(
 		ante.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
@@ -977,7 +976,7 @@ func New(
 	}
 
 	consensusRegistry.Add(
-	// app.EvmKeeper,
+		app.EvmKeeper,
 	)
 
 	return app
@@ -1139,7 +1138,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	// paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
 	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
-	paramsKeeper.Subspace(wasm.ModuleName)
+	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	// paramsKeeper.Subspace(evmmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
 

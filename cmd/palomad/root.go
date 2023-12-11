@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -79,7 +80,7 @@ func NewRootCmd() *cobra.Command {
 		flags.FlagKeyringBackend: keyring.BackendOS,
 	}); err != nil {
 		// seems to be non-fatal issue
-		fmt.Println("error overriding flag defaults: %s", err.Error())
+		log.Printf("error overriding flag defaults: %s", err.Error())
 	}
 
 	stakingCmd := findCommand(rootCmd, "tx", "staking")
