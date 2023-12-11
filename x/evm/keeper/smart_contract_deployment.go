@@ -72,7 +72,7 @@ func (k Keeper) SetSmartContractDeploymentStatusByContractID(ctx context.Context
 
 	v.Status = status
 	if err := keeperutil.Save(k.provideSmartContractDeploymentStore(ctx), k.cdc, key, v); err != nil {
-		k.Logger(sdkCtx).WithError(err).Error("failed to update smart contract deployment record")
+		logger.WithError(err).Error("failed to update smart contract deployment record")
 		return err
 	}
 

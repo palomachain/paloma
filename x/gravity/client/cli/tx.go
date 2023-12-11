@@ -3,11 +3,11 @@ package cli
 import (
 	"strconv"
 
-	sdkerrors "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/x/gravity/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cobra"
