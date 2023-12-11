@@ -15,21 +15,8 @@ func NewMsgAddMessagesSignatures(creator string) *MsgAddMessagesSignatures {
 	}
 }
 
-func (msg *MsgAddMessagesSignatures) Route() string {
-	return RouterKey
-}
-
-func (msg *MsgAddMessagesSignatures) Type() string {
-	return TypeMsgAddMessagesSignatures
-}
-
 func (msg *MsgAddMessagesSignatures) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(msg)
-}
-
-func (msg *MsgAddMessagesSignatures) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
 }
 
 func (msg *MsgAddMessagesSignatures) ValidateBasic() error {

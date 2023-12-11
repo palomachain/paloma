@@ -22,21 +22,8 @@ func NewMsgDeleteJob(creator string, queueTypeName string, messageID uint64) *Ms
 	}
 }
 
-func (msg *MsgDeleteJob) Route() string {
-	return RouterKey
-}
-
-func (msg *MsgDeleteJob) Type() string {
-	return TypeMsgDeleteJob
-}
-
 func (msg *MsgDeleteJob) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(msg)
-}
-
-func (msg *MsgDeleteJob) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
 }
 
 func (msg *MsgDeleteJob) ValidateBasic() error {
