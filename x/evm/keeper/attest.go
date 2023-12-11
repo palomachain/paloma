@@ -232,7 +232,7 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 			smartContractID := origMsg.UploadSmartContract.GetId()
 			deployment, _ := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
 			if deployment == nil {
-				logger.WithFields(err).With("smart-contract-id", smartContractID).Error("Smart contract not found")
+				logger.WithError(err).WithFields("smart-contract-id", smartContractID).Error("Smart contract not found")
 				return ErrCannotActiveSmartContractThatIsNotDeploying
 			}
 
