@@ -133,7 +133,7 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 		defer func() {
 			// regardless of the outcome, this upload/deployment should be removed
 			id := origMsg.TransferERC20Ownership.GetSmartContractID()
-			logger.WithError("smart-contract-id", id).Debug("removing deployment.")
+			logger.With("smart-contract-id", id).Debug("removing deployment.")
 			k.DeleteSmartContractDeploymentByContractID(sdkCtx, id, chainReferenceID)
 		}()
 		switch winner := evidence.(type) {
@@ -200,7 +200,7 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 			return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
 		}
 	case *types.Message_UploadSmartContract:
-		logger = logger.WithError("action-msg", "Message_UploadSmartContract")
+		logger = logger.WithFields("action-msg", "Message_UploadSmartContract")
 		logger.Debug("Processing upload smart contract message attestation.")
 		switch winner := evidence.(type) {
 		case *types.TxExecutedProof:
@@ -232,7 +232,7 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 			smartContractID := origMsg.UploadSmartContract.GetId()
 			deployment, _ := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
 			if deployment == nil {
-				logger.WithError(err).With("smart-contract-id", smartContractID).Error("Smart contract not found")
+				logger.WithFields(err).With("smart-contract-id", smartContractID).Error("Smart contract not found")
 				return ErrCannotActiveSmartContractThatIsNotDeploying
 			}
 
