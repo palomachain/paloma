@@ -45,7 +45,7 @@ func TestBatching(t *testing.T) {
 			QueueTypeName: "simple-message",
 			Sg:            sg,
 			Ider:          keeperutil.NewIDGenerator(sg, nil),
-			Cdc:           nil,
+			Cdc:           types.ModuleCdc,
 			TypeCheck:     types.StaticTypeChecker(msgType),
 			BytesToSignCalculator: types.TypedBytesToSign(func(msgs *types.Batch, _ types.Salt) []byte {
 				return []byte("hello")
