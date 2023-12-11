@@ -9,6 +9,10 @@ const TypeMsgAddEvidence = "add_evidence"
 
 var _ sdk.Msg = &MsgAddEvidence{}
 
+func (msg *MsgAddEvidence) Type() string {
+	return TypeMsgAddEvidence
+}
+
 func (msg *MsgAddEvidence) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(msg)
 }

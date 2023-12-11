@@ -9,6 +9,10 @@ const TypeMsgSetErrorData = "set_error_data"
 
 var _ sdk.Msg = &MsgSetErrorData{}
 
+func (msg *MsgSetErrorData) Type() string {
+	return TypeMsgSetErrorData
+}
+
 func (msg *MsgSetErrorData) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(msg)
 }

@@ -15,6 +15,10 @@ func NewMsgAddMessagesSignatures(creator string) *MsgAddMessagesSignatures {
 	}
 }
 
+func (msg *MsgAddMessagesSignatures) Type() string {
+	return TypeMsgAddMessagesSignatures
+}
+
 func (msg *MsgAddMessagesSignatures) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(msg)
 }

@@ -9,6 +9,10 @@ const TypeMsgSetPublicAccessData = "set_public_access_data"
 
 var _ sdk.Msg = &MsgSetPublicAccessData{}
 
+func (msg *MsgSetPublicAccessData) Type() string {
+	return TypeMsgSetPublicAccessData
+}
+
 func (msg *MsgSetPublicAccessData) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(msg)
 }

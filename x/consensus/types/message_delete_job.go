@@ -22,6 +22,10 @@ func NewMsgDeleteJob(creator string, queueTypeName string, messageID uint64) *Ms
 	}
 }
 
+func (msg *MsgDeleteJob) Type() string {
+	return TypeMsgDeleteJob
+}
+
 func (msg *MsgDeleteJob) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(msg)
 }
