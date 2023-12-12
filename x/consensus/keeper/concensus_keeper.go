@@ -80,7 +80,7 @@ func (k Keeper) PutMessageInQueue(ctx context.Context, queueTypeName string, msg
 		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("error while putting message into queue.")
 		return 0, err
 	}
-	liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(queueTypeName, msgID).Info("put message into consensus queue.")
+	liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("queue-type-name", queueTypeName, "message-id", msgID).Info("put message into consensus queue.")
 	return msgID, nil
 }
 
@@ -288,7 +288,7 @@ func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx context.Context, queueTy
 			for _, signData := range msg.GetSignData() {
 				signedValidator, ok := validatorMap[signData.ValAddress.String()]
 				if !ok {
-					liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(signData.ValAddress).Info("validator not found.")
+					liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("validator", signData.ValAddress).Info("validator not found.")
 					continue
 				}
 				msgTotal = msgTotal.Add(signedValidator.ShareCount)
@@ -350,8 +350,10 @@ func (k Keeper) AddMessageSignature(
 				),
 			)
 
-			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(msg.GetId(), msg.GetQueueTypeName(),
-				msg.GetSignedByAddress(), chainType, chainReferenceID).Info("added message signature.")
+			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("message-id", msg.GetId(), "queue-type-name", msg.GetQueueTypeName(),
+				"signed-by-address", msg.GetSignedByAddress(),
+				"chain-type", chainType,
+				"chain-reference-id", chainReferenceID).Info("added message signature.")
 		}
 	})
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -385,8 +387,8 @@ func (k Keeper) AddMessageEvidence(
 			),
 		)
 		chainType, chainReferenceID := cq.ChainInfo()
-		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(msg.GetMessageID(), msg.GetQueueTypeName(),
-			chainType, chainReferenceID).Info("added message evidence.")
+		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("message-id", msg.GetMessageID(), "queue-type-name", msg.GetQueueTypeName(),
+			"chain-type", chainType, "chain-reference-id", chainReferenceID).Info("added message evidence.")
 	})
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("error while adding message evidence.")
@@ -418,8 +420,8 @@ func (k Keeper) SetMessagePublicAccessData(
 	}
 
 	chainType, chainReferenceID := cq.ChainInfo()
-	liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(msg.GetMessageID(),
-		msg.GetQueueTypeName(), chainType, chainReferenceID, hexutil.Encode(payload.Data)).Info("added message public access data.")
+	liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("message-id", msg.GetMessageID(), "queue-type-name",
+		msg.GetQueueTypeName(), "chain-type", chainType, "chain-reference-id", chainReferenceID, "public-access-data", hexutil.Encode(payload.Data)).Info("added message public access data.")
 
 	return nil
 }
@@ -446,8 +448,11 @@ func (k Keeper) SetMessageErrorData(
 	}
 
 	chainType, chainReferenceID := cq.ChainInfo()
-	liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(msg.GetMessageID(), msg.GetQueueTypeName(),
-		chainType, chainReferenceID, hexutil.Encode(payload.Data)).Info("added error data.")
+	liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("message-id", msg.GetMessageID(),
+		"queue-type-name", msg.GetQueueTypeName(),
+		"chain-type", chainType,
+		"chain-reference-id", chainReferenceID,
+		"error-data", hexutil.Encode(payload.Data)).Info("added error data.")
 
 	return nil
 }

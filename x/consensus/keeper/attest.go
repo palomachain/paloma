@@ -24,7 +24,7 @@ func (k Keeper) CheckAndProcessAttestedMessages(ctx context.Context) error {
 			}
 
 			for _, msg := range msgs {
-				liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(msg.GetId(), msg.Nonce()).Debug(
+				liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("id", msg.GetId(), "nonce", msg.Nonce()).Debug(
 					"check-and-process-attested-messages-queue.")
 				cq, err := k.getConsensusQueue(sdkCtx, opt.QueueTypeName)
 				if err != nil {
