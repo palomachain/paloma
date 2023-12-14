@@ -1,12 +1,13 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
-	"github.com/cometbft/cometbft/libs/log"
+	cosmosstore "cosmossdk.io/core/store"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
@@ -18,7 +19,6 @@ const storeKey = "treasury"
 
 type Keeper struct {
 	cdc        codec.BinaryCodec
-	memKey     storetypes.StoreKey
 	paramstore paramtypes.Subspace
 	bank       types.BankKeeper
 	account    types.AccountKeeper
@@ -30,8 +30,7 @@ type Keeper struct {
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey,
-	memKey storetypes.StoreKey,
+	storeKey cosmosstore.KVStoreService,
 	ps paramtypes.Subspace,
 	bank types.BankKeeper,
 	account types.AccountKeeper,
@@ -44,7 +43,6 @@ func NewKeeper(
 
 	return &Keeper{
 		cdc:        cdc,
-		memKey:     memKey,
 		paramstore: ps,
 		bank:       bank,
 		account:    account,
@@ -58,11 +56,12 @@ func NewKeeper(
 
 func (k Keeper) ModuleName() string { return types.ModuleName }
 
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+func (k Keeper) Logger(ctx context.Context) log.Logger {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) SetCommunityFundFee(ctx sdk.Context, fee string) error {
+func (k Keeper) SetCommunityFundFee(ctx context.Context, fee string) error {
 	fees, err := k.GetFees(ctx)
 	if err != nil {
 		return err
@@ -75,7 +74,7 @@ func (k Keeper) SetCommunityFundFee(ctx sdk.Context, fee string) error {
 	return err
 }
 
-func (k Keeper) SetSecurityFee(ctx sdk.Context, fee string) error {
+func (k Keeper) SetSecurityFee(ctx context.Context, fee string) error {
 	fees, err := k.GetFees(ctx)
 	if err != nil {
 		return err
@@ -88,7 +87,7 @@ func (k Keeper) SetSecurityFee(ctx sdk.Context, fee string) error {
 	return err
 }
 
-func (k Keeper) GetFees(ctx sdk.Context) (*types.Fees, error) {
+func (k Keeper) GetFees(ctx context.Context) (*types.Fees, error) {
 	res, err := k.KeeperUtil.Load(k.Store.TreasuryStore(ctx), k.cdc, []byte(storeKey))
 	if errors.Is(err, keeperutil.ErrNotFound) {
 		return &types.Fees{}, nil
@@ -99,6 +98,6 @@ func (k Keeper) GetFees(ctx sdk.Context) (*types.Fees, error) {
 	return res, nil
 }
 
-func (k Keeper) setFees(ctx sdk.Context, fees *types.Fees) error {
+func (k Keeper) setFees(ctx context.Context, fees *types.Fees) error {
 	return k.KeeperUtil.Save(k.Store.TreasuryStore(ctx), k.cdc, []byte(storeKey), fees)
 }
