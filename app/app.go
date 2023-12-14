@@ -342,7 +342,7 @@ func New(
 		// valsetmoduletypes.MemStoreKey,
 		// consensusmoduletypes.MemStoreKey,
 		evmmoduletypes.MemStoreKey,
-		// schedulermoduletypes.MemStoreKey,
+		schedulermoduletypes.MemStoreKey,
 		// treasurymoduletypes.MemStoreKey,
 		// palomamoduletypes.MemStoreKey,
 	)
