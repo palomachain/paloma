@@ -527,21 +527,18 @@ func (k Keeper) GetSigningKey(ctx context.Context, valAddr sdk.ValAddress, chain
 }
 
 // IsJailed returns if the current validator is jailed or not.
-func (k Keeper) IsJailed(ctx context.Context, val sdk.ValAddress) bool {
+func (k Keeper) IsJailed(ctx context.Context, val sdk.ValAddress) (bool, error) {
 	a, err := k.staking.Validator(ctx, val)
 	if err != nil {
-		panic(err)
+		return a.IsJailed(), err
 	}
-	return a.IsJailed()
+	return a.IsJailed(), nil
 }
 
 func (k Keeper) Jail(ctx context.Context, valAddr sdk.ValAddress, reason string) error {
 	val, err := k.staking.Validator(ctx, valAddr)
 	if err != nil {
 		return err
-	}
-	if val == nil {
-		return ErrValidatorWithAddrNotFound.Format(valAddr)
 	}
 	if val.IsJailed() {
 		return ErrValidatorAlreadyJailed.Format(valAddr.String())

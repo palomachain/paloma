@@ -193,7 +193,11 @@ func (k Keeper) JailInactiveValidators(ctx context.Context) error {
 			continue
 		}
 
-		if !k.IsJailed(ctx, valAddr) {
+		jailed, err := k.IsJailed(ctx, valAddr)
+		if err != nil {
+			return err
+		}
+		if !jailed {
 			g.Add(
 				k.Jail(ctx, valAddr, types.JailReasonPigeonInactive),
 			)

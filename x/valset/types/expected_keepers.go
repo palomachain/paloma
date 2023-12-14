@@ -22,7 +22,7 @@ type BankKeeper interface {
 }
 
 //go:generate mockery --name=StakingKeeper
-
+//go:generate mockery --srcpkg=github.com/cosmos/cosmos-sdk/x/staking/types --name=ValidatorI --structname=StakingValidatorI
 type StakingKeeper interface {
 	Validator(ctx context.Context, addr sdk.ValAddress) (stakingtypes.ValidatorI, error)
 	IterateValidators(ctx context.Context, fn func(index int64, validator stakingtypes.ValidatorI) bool) error
