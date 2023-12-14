@@ -122,7 +122,6 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
 	palomamempool "github.com/palomachain/paloma/app/mempool"
-	appparams "github.com/palomachain/paloma/app/params"
 
 	// xchain "github.com/palomachain/paloma/internal/x-chain"
 	// consensusmodule "github.com/palomachain/paloma/x/consensus"
@@ -148,9 +147,9 @@ import (
 	// treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
 	// treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 
-	// valsetmodule "github.com/palomachain/paloma/x/valset"
-	// valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
-	// valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
+	valsetmodule "github.com/palomachain/paloma/x/valset"
+	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
+	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cast"
 )
 
@@ -245,7 +244,7 @@ type App struct {
 
 	// SchedulerKeeper schedulermodulekeeper.Keeper
 	// ConsensusKeeper consensusmodulekeeper.Keeper
-	// ValsetKeeper    valsetmodulekeeper.Keeper
+	ValsetKeeper valsetmodulekeeper.Keeper
 	// PalomaKeeper    palomamodulekeeper.Keeper
 	// TreasuryKeeper treasurymodulekeeper.Keeper
 	EvmKeeper evmmodulekeeper.Keeper
@@ -268,7 +267,6 @@ func New(
 	db dbm.DB,
 	traceStore io.Writer,
 	loadLatest bool,
-	encodingCfg appparams.EncodingConfig,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
@@ -323,12 +321,10 @@ func New(
 		capabilitytypes.StoreKey,
 		// schedulermoduletypes.StoreKey,
 		// consensusmoduletypes.StoreKey,
-		// valsetmoduletypes.StoreKey,
+		valsetmoduletypes.StoreKey,
 		// treasurymoduletypes.StoreKey,
-		// // wasm.StoreKey,
 		evmmoduletypes.StoreKey,
 		wasmtypes.StoreKey,
-		// evmmoduletypes.StoreKey,
 		// gravitymoduletypes.StoreKey,
 		// consensusparamtypes.StoreKey,
 		crisistypes.StoreKey,
@@ -336,7 +332,7 @@ func New(
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(
 		capabilitytypes.MemStoreKey,
-		// valsetmoduletypes.MemStoreKey,
+		valsetmoduletypes.MemStoreKey,
 		// consensusmoduletypes.MemStoreKey,
 		evmmoduletypes.MemStoreKey,
 		// schedulermoduletypes.MemStoreKey,
@@ -526,15 +522,14 @@ func New(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	// app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[valsetmoduletypes.StoreKey],
-	// 	memKeys[valsetmoduletypes.MemStoreKey],
-	// 	app.GetSubspace(valsetmoduletypes.ModuleName),
-	// 	app.StakingKeeper,
-	// 	minimumPigeonVersion,
-	// 	sdk.DefaultPowerReduction,
-	// )
+	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[valsetmoduletypes.StoreKey]),
+		app.GetSubspace(valsetmoduletypes.ModuleName),
+		app.StakingKeeper,
+		minimumPigeonVersion,
+		sdk.DefaultPowerReduction,
+	)
 
 	// consensusRegistry := consensusmodulekeeper.NewRegistry()
 
@@ -554,10 +549,10 @@ func New(
 		nil, //TODO
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	// app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
-	// 	app.EvmKeeper,
-	// }
-	// app.ValsetKeeper.EvmKeeper = app.EvmKeeper
+	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
+		app.EvmKeeper,
+	}
+	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
 
 	// app.GravityKeeper = gravitymodulekeeper.NewKeeper(
 	// 	appCodec,
@@ -736,7 +731,7 @@ func New(
 
 	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
 	// consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
-	// valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
+	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	// schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	// palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	// gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
@@ -764,8 +759,8 @@ func New(
 		params.NewAppModule(app.ParamsKeeper),
 		// schedulerModule,
 		// consensusModule,
-		// valsetModule,
 		evmModule,
+		valsetModule,
 		// gravityModule,
 		// palomaModule,
 		// treasuryModule,
@@ -811,13 +806,13 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
-		// valsetmoduletypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
 		// wasm.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
 		// evmmoduletypes.ModuleName,
-		// gravitymoduletypes.ModuleName,
+		//  gravitymoduletypes.ModuleName,
 		// treasurymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
@@ -845,7 +840,7 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
-		// valsetmoduletypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
 		// wasm.ModuleName,
 		evmmoduletypes.ModuleName,
@@ -884,7 +879,7 @@ func New(
 		ibctransfertypes.ModuleName,
 		// schedulermoduletypes.ModuleName,
 		// consensusmoduletypes.ModuleName,
-		// valsetmoduletypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
@@ -893,7 +888,6 @@ func New(
 		// wasm.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
-		// evmmoduletypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
 		// treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
@@ -1140,7 +1134,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	// paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
 	// paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
-	// paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
+	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	// paramsKeeper.Subspace(evmmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(gravitymoduletypes.ModuleName)

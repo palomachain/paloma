@@ -57,7 +57,6 @@ var DefaultConsensusParams = &tmproto.ConsensusParams{
 
 func NewTestApp(t testing, isCheckTx bool) TestApp {
 	db := dbm.NewMemDB()
-	encCfg := MakeEncodingConfig()
 
 	oldVersion := version.Version
 	version.Version = "v5.1.6"
@@ -92,7 +91,6 @@ func NewTestApp(t testing, isCheckTx bool) TestApp {
 		db,
 		nil,
 		true,
-		encCfg,
 		appOptions,
 	)
 

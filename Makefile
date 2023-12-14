@@ -69,6 +69,8 @@ ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
 
+
+
 build: go.sum
 	@echo "--> Building..."
 	go build -mod=readonly $(BUILD_FLAGS) -o $(BUILD_DIR)/ ./...
