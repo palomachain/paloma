@@ -139,9 +139,9 @@ import (
 	// gravityclient "github.com/palomachain/paloma/x/gravity/client"
 	// gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
 	// gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
-	// palomamodule "github.com/palomachain/paloma/x/paloma"
-	// palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
-	// palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
+	palomamodule "github.com/palomachain/paloma/x/paloma"
+	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
+	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
 	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
@@ -249,7 +249,7 @@ type App struct {
 	SchedulerKeeper schedulermodulekeeper.Keeper
 	ConsensusKeeper consensusmodulekeeper.Keeper
 	// ValsetKeeper    valsetmodulekeeper.Keeper
-	// PalomaKeeper    palomamodulekeeper.Keeper
+	PalomaKeeper palomamodulekeeper.Keeper
 	// TreasuryKeeper treasurymodulekeeper.Keeper
 	EvmKeeper evmmodulekeeper.Keeper
 	// GravityKeeper   gravitymodulekeeper.Keeper
@@ -343,7 +343,7 @@ func New(
 		evmmoduletypes.MemStoreKey,
 		schedulermoduletypes.MemStoreKey,
 		// treasurymoduletypes.MemStoreKey,
-		// palomamoduletypes.MemStoreKey,
+		palomamoduletypes.MemStoreKey,
 	)
 
 	app := &App{
@@ -573,19 +573,18 @@ func New(
 	// 	gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
 	// )
 
-	// app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[palomamoduletypes.StoreKey],
-	// 	memKeys[palomamoduletypes.MemStoreKey],
-	// 	app.GetSubspace(palomamoduletypes.ModuleName),
-	// 	semverVersion,
-	// 	app.ValsetKeeper,
-	// 	app.PalomaKeeper.Upgrade,
-	// )
+	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[palomamoduletypes.StoreKey]),
+		app.GetSubspace(palomamoduletypes.ModuleName),
+		semverVersion,
+		nil, //app.ValsetKeeper (TODO),
+		app.PalomaKeeper.Upgrade,
+	)
 
-	// app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
-	// 	app.EvmKeeper,
-	// }
+	app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
+		app.EvmKeeper,
+	}
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -737,7 +736,7 @@ func New(
 	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 	// valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
-	// palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
+	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	// gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	// treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	app.ModuleManager = module.NewManager(
@@ -766,7 +765,7 @@ func New(
 		// valsetModule,
 		evmModule,
 		// gravityModule,
-		// palomaModule,
+		palomaModule,
 		// treasuryModule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		ibc.NewAppModule(app.IBCKeeper),
@@ -811,7 +810,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		// valsetmoduletypes.ModuleName,
-		// palomamoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
 		// gravitymoduletypes.ModuleName,
@@ -843,7 +842,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		// valsetmoduletypes.ModuleName,
-		// palomamoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
 		// evmmoduletypes.ModuleName,
@@ -881,7 +880,7 @@ func New(
 		schedulermoduletypes.ModuleName,
 		consensusmoduletypes.ModuleName,
 		// valsetmoduletypes.ModuleName,
-		// palomamoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
