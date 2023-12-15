@@ -1,18 +1,22 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
 
+	"github.com/cosmos/cosmos-sdk/runtime"
+
+	"cosmossdk.io/core/store"
+	storetypes "cosmossdk.io/store/types"
+
+	"cosmossdk.io/log"
+	"cosmossdk.io/store/prefix"
 	"github.com/VolumeFi/whoops"
-	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
@@ -21,10 +25,8 @@ import (
 )
 
 type Keeper struct {
-	cdc        codec.BinaryCodec
-	storeKey   storetypes.StoreKey
-	memKey     storetypes.StoreKey
-	paramstore paramtypes.Subspace
+	cdc      codec.BinaryCodec
+	storeKey store.KVStoreService
 
 	account   types.AccountKeeper
 	EvmKeeper types.EvmKeeper
@@ -36,30 +38,22 @@ type Keeper struct {
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey,
-	memKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
+	storeKey store.KVStoreService,
 	account types.AccountKeeper,
 	evmKeeper types.EvmKeeper,
 	chains []xchain.Bridge,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
 
 	cm := slice.MustMakeMapKeys(chains, func(c xchain.Bridge) xchain.Type {
 		return c.XChainType()
 	})
 
 	k := &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
-		account:    account,
-		EvmKeeper:  evmKeeper,
-		Chains:     cm,
+		cdc:       cdc,
+		storeKey:  storeKey,
+		account:   account,
+		EvmKeeper: evmKeeper,
+		Chains:    cm,
 	}
 
 	k.ider = keeperutil.NewIDGenerator(k, nil)
@@ -67,32 +61,34 @@ func NewKeeper(
 	return k
 }
 
-func (k Keeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI {
+func (k Keeper) GetAccount(ctx context.Context, addr sdk.AccAddress) authtypes.AccountI {
 	return k.account.GetAccount(ctx, addr)
 }
 
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+func (k Keeper) Logger(ctx context.Context) log.Logger {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return liblog.FromSDKLogger(sdkCtx.Logger()).With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 func (k Keeper) ModuleName() string {
 	return types.ModuleName
 }
 
-func (k Keeper) PreJobExecution(ctx sdk.Context, job *types.Job) error {
+func (k Keeper) PreJobExecution(ctx context.Context, job *types.Job) error {
 	return k.EvmKeeper.PreJobExecution(ctx, job)
 }
 
 // store returns default store for this keeper!
-func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
-	return ctx.KVStore(k.storeKey)
+func (k Keeper) Store(ctx context.Context) storetypes.KVStore {
+	return runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
 }
 
-func (k Keeper) jobsStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(k.Store(ctx), types.KeyPrefix("jobs"))
+func (k Keeper) jobsStore(ctx context.Context) storetypes.KVStore {
+	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(s, types.KeyPrefix("jobs"))
 }
 
-func (k Keeper) AddNewJob(ctx sdk.Context, job *types.Job) error {
+func (k Keeper) AddNewJob(ctx context.Context, job *types.Job) error {
 	if k.JobIDExists(ctx, job.GetID()) {
 		return types.ErrJobWithIDAlreadyExists.Wrap(job.GetID())
 	}
@@ -109,7 +105,7 @@ func (k Keeper) AddNewJob(ctx sdk.Context, job *types.Job) error {
 	return nil
 }
 
-func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
+func (k Keeper) saveJob(ctx context.Context, job *types.Job) error {
 	if job.GetOwner().Empty() {
 		return types.ErrInvalid.Wrap("owner can't be empty when adding a new job")
 	}
@@ -140,11 +136,11 @@ func (k Keeper) saveJob(ctx sdk.Context, job *types.Job) error {
 	return keeperutil.Save(k.jobsStore(ctx), k.cdc, []byte(job.GetID()), job)
 }
 
-func (k Keeper) JobIDExists(ctx sdk.Context, jobID string) bool {
+func (k Keeper) JobIDExists(ctx context.Context, jobID string) bool {
 	return k.jobsStore(ctx).Has([]byte(jobID))
 }
 
-func (k Keeper) GetJob(ctx sdk.Context, jobID string) (*types.Job, error) {
+func (k Keeper) GetJob(ctx context.Context, jobID string) (*types.Job, error) {
 	job, err := keeperutil.Load[*types.Job](k.jobsStore(ctx), k.cdc, []byte(jobID))
 	if errors.Is(err, keeperutil.ErrNotFound) {
 		return nil, types.ErrJobNotFound.Wrap("job id: " + jobID)
@@ -153,7 +149,7 @@ func (k Keeper) GetJob(ctx sdk.Context, jobID string) (*types.Job, error) {
 	return job, nil
 }
 
-func (k Keeper) ExecuteJob(ctx sdk.Context, jobID string, payload []byte, senderAddress sdk.AccAddress, contractAddr sdk.AccAddress) (uint64, error) {
+func (k Keeper) ExecuteJob(ctx context.Context, jobID string, payload []byte, senderAddress sdk.AccAddress, contractAddr sdk.AccAddress) (uint64, error) {
 	job, err := k.GetJob(ctx, jobID)
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields("job-id", jobID).Error("Job not found.")
@@ -171,7 +167,7 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, jobID string, payload []byte, sender
 	return k.ScheduleNow(ctx, jobID, payload, senderAddress, contractAddr)
 }
 
-func (k Keeper) ScheduleNow(ctx sdk.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) (uint64, error) {
+func (k Keeper) ScheduleNow(ctx context.Context, jobID string, in []byte, senderAddress sdk.AccAddress, contractAddress sdk.AccAddress) (uint64, error) {
 	job, err := k.GetJob(ctx, jobID)
 	if err != nil {
 		k.Logger(ctx).Error("couldn't schedule a job", "job_id", jobID, "err", err)
