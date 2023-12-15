@@ -125,10 +125,10 @@ import (
 	palomamempool "github.com/palomachain/paloma/app/mempool"
 	appparams "github.com/palomachain/paloma/app/params"
 
-	// xchain "github.com/palomachain/paloma/internal/x-chain"
-	// consensusmodule "github.com/palomachain/paloma/x/consensus"
-	// consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
-	// consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
+	consensusmodule "github.com/palomachain/paloma/x/consensus"
+	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
+	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
+
 	gravitymodule "github.com/palomachain/paloma/x/gravity"
 	gravityclient "github.com/palomachain/paloma/x/gravity/client"
 	gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
@@ -198,14 +198,14 @@ var (
 		evidence.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		schedulermodule.AppModuleBasic{},
-		// consensusmodule.AppModuleBasic{},
+		consensusmodule.AppModuleBasic{},
 		// valsetmodule.AppModuleBasic{},
 		wasm.AppModuleBasic{},
 		evm.AppModuleBasic{},
 		gravitymodule.AppModuleBasic{},
 		// palomamodule.AppModuleBasic{},
 		// treasurymodule.AppModuleBasic{},
-		// consensus.AppModuleBasic{},
+		consensus.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		ibc.AppModuleBasic{},
 		ica.AppModuleBasic{},
@@ -285,7 +285,7 @@ type App struct {
 	TransferKeeper            ibctransferkeeper.Keeper
 
 	SchedulerKeeper schedulermodulekeeper.Keeper
-	// ConsensusKeeper consensusmodulekeeper.Keeper
+	ConsensusKeeper consensusmodulekeeper.Keeper
 	// ValsetKeeper    valsetmodulekeeper.Keeper
 	// PalomaKeeper    palomamodulekeeper.Keeper
 	// TreasuryKeeper  treasurymodulekeeper.Keeper
@@ -293,7 +293,7 @@ type App struct {
 	wasmKeeper    wasmkeeper.Keeper
 	EvmKeeper     evmmodulekeeper.Keeper
 
-	// mm is the module manager
+	// ModuleManager is the module manager
 	ModuleManager      *module.Manager
 	BasicModuleManager module.BasicManager
 
@@ -363,7 +363,7 @@ func New(
 		icacontrollertypes.StoreKey,
 		capabilitytypes.StoreKey,
 		schedulermoduletypes.StoreKey,
-		// consensusmoduletypes.StoreKey,
+		consensusmoduletypes.StoreKey,
 		// valsetmoduletypes.StoreKey,
 		// treasurymoduletypes.StoreKey,
 		evmmoduletypes.StoreKey,
@@ -376,7 +376,7 @@ func New(
 	memKeys := storetypes.NewMemoryStoreKeys(
 		capabilitytypes.MemStoreKey,
 		// valsetmoduletypes.MemStoreKey,
-		// consensusmoduletypes.MemStoreKey,
+		consensusmoduletypes.MemStoreKey,
 		evmmoduletypes.MemStoreKey,
 		schedulermoduletypes.MemStoreKey,
 		// treasurymoduletypes.MemStoreKey,
@@ -415,7 +415,7 @@ func New(
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
-	// scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
+	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 
 	app.CapabilityKeeper.Seal()
 
@@ -575,16 +575,15 @@ func New(
 	// 	sdk.DefaultPowerReduction,
 	// )
 
-	// consensusRegistry := consensusmodulekeeper.NewRegistry()
+	consensusRegistry := consensusmodulekeeper.NewRegistry()
 
-	// app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[consensusmoduletypes.StoreKey],
-	// 	memKeys[consensusmoduletypes.MemStoreKey],
-	// 	app.GetSubspace(consensusmoduletypes.ModuleName),
-	// 	app.ValsetKeeper,
-	// 	consensusRegistry,
-	// )
+	app.ConsensusKeeper = *consensusmodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[consensusmoduletypes.StoreKey]),
+		app.GetSubspace(consensusmoduletypes.ModuleName),
+		nil, // TODO: pass valset keeper
+		consensusRegistry,
+	)
 
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
 		appCodec,
@@ -657,7 +656,7 @@ func New(
 	// 	nil, // app.SchedulerKeeper,
 	// )
 
-	// app.ScopedConsensusKeeper = scopedConsensusKeeper
+	app.ScopedConsensusKeeper = scopedConsensusKeeper
 
 	govRouter := govv1beta1.NewRouter()
 	govRouter.
@@ -772,7 +771,7 @@ func New(
 	// must be passed by reference here.
 
 	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
-	// consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
+	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 	// valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	// palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
@@ -800,7 +799,7 @@ func New(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		schedulerModule,
-		// consensusModule,
+		consensusModule,
 		// valsetModule,
 		evmModule,
 		gravityModule,
@@ -840,7 +839,7 @@ func New(
 		stakingtypes.ModuleName,
 		feegrant.ModuleName,
 		schedulermoduletypes.ModuleName,
-		// consensusmoduletypes.ModuleName,
+		consensusmoduletypes.ModuleName,
 		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		banktypes.ModuleName,
@@ -873,7 +872,7 @@ func New(
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
 		feegrant.ModuleName,
-		// consensusmoduletypes.ModuleName,
+		consensusmoduletypes.ModuleName,
 		crisistypes.ModuleName,
 		banktypes.ModuleName,
 		paramstypes.ModuleName,
@@ -916,7 +915,7 @@ func New(
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		schedulermoduletypes.ModuleName,
-		// consensusmoduletypes.ModuleName,
+		consensusmoduletypes.ModuleName,
 		// valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -1009,9 +1008,9 @@ func New(
 		}
 	}
 
-	// consensusRegistry.Add(
-	// 	app.EvmKeeper,
-	// )
+	consensusRegistry.Add(
+		app.EvmKeeper,
+	)
 
 	return app
 }
@@ -1170,7 +1169,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
-	// paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
+	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)

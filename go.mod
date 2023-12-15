@@ -79,8 +79,30 @@ require (
 )
 
 require (
-	// cloud.google.com/go v0.110.10 // indirect
-	// cloud.google.com/go/compute v1.23.3 // indirect
+	github.com/consensys/bavard v0.1.13 // indirect
+	github.com/consensys/gnark-crypto v0.12.1 // indirect
+	github.com/crate-crypto/go-kzg-4844 v0.7.0 // indirect
+	github.com/ethereum/c-kzg-4844 v0.4.0 // indirect
+	github.com/mmcloughlin/addchain v0.4.0 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/supranational/blst v0.3.11 // indirect
+	rsc.io/tmplfunc v0.0.3 // indirect
+)
+
+require (
+	github.com/consensys/bavard v0.1.13 // indirect
+	github.com/consensys/gnark-crypto v0.12.1 // indirect
+	github.com/crate-crypto/go-kzg-4844 v0.7.0 // indirect
+	github.com/ethereum/c-kzg-4844 v0.4.0 // indirect
+	github.com/mmcloughlin/addchain v0.4.0 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/supranational/blst v0.3.11 // indirect
+	rsc.io/tmplfunc v0.0.3 // indirect
+)
+
+require (
+	cloud.google.com/go v0.110.10 // indirect
+	cloud.google.com/go/compute v1.23.3 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	// cloud.google.com/go/iam v1.1.5 // indirect
 	cloud.google.com/go/storage v1.30.1 // indirect

@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	"context"
 	types "github.com/cosmos/cosmos-sdk/types"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	mock "github.com/stretchr/testify/mock"
@@ -14,22 +15,23 @@ type Attestator struct {
 }
 
 // ProcessAllEvidence provides a mock function with given fields: ctx, task, evidence
-func (_m *Attestator) ProcessAllEvidence(ctx types.Context, task consensustypes.AttestTask, evidence []consensustypes.Evidence) (consensustypes.AttestResult, error) {
+func (_m *Attestator) ProcessAllEvidence(ctx context.Context, task consensustypes.AttestTask, evidence []consensustypes.Evidence) (consensustypes.AttestResult, error) {
 	ret := _m.Called(ctx, task, evidence)
+	sdkCtx:=types.UnwrapSDKContext(ctx)
 
 	var r0 consensustypes.AttestResult
 	var r1 error
 	if rf, ok := ret.Get(0).(func(types.Context, consensustypes.AttestTask, []consensustypes.Evidence) (consensustypes.AttestResult, error)); ok {
-		return rf(ctx, task, evidence)
+		return rf(sdkCtx, task, evidence)
 	}
 	if rf, ok := ret.Get(0).(func(types.Context, consensustypes.AttestTask, []consensustypes.Evidence) consensustypes.AttestResult); ok {
-		r0 = rf(ctx, task, evidence)
+		r0 = rf(sdkCtx, task, evidence)
 	} else {
 		r0 = ret.Get(0).(consensustypes.AttestResult)
 	}
 
 	if rf, ok := ret.Get(1).(func(types.Context, consensustypes.AttestTask, []consensustypes.Evidence) error); ok {
-		r1 = rf(ctx, task, evidence)
+		r1 = rf(sdkCtx, task, evidence)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -38,12 +40,12 @@ func (_m *Attestator) ProcessAllEvidence(ctx types.Context, task consensustypes.
 }
 
 // ValidateEvidence provides a mock function with given fields: ctx, task, evidence
-func (_m *Attestator) ValidateEvidence(ctx types.Context, task consensustypes.AttestTask, evidence consensustypes.Evidence) error {
+func (_m *Attestator) ValidateEvidence(ctx context.Context, task consensustypes.AttestTask, evidence consensustypes.Evidence) error {
 	ret := _m.Called(ctx, task, evidence)
-
+	sdkCtx:=types.UnwrapSDKContext(ctx)
 	var r0 error
 	if rf, ok := ret.Get(0).(func(types.Context, consensustypes.AttestTask, consensustypes.Evidence) error); ok {
-		r0 = rf(ctx, task, evidence)
+		r0 = rf(sdkCtx, task, evidence)
 	} else {
 		r0 = ret.Error(0)
 	}
