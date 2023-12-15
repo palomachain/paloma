@@ -13,9 +13,6 @@ type Logr interface {
 func FromSDKLogger(l log.Logger) Logr {
 	return &lgwr{l}
 }
-func (l *lgwr) Impl() interface{} {
-	return l
-}
 
 type lgwr struct {
 	l log.Logger

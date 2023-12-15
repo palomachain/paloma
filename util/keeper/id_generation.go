@@ -3,6 +3,7 @@ package keeper
 // A helper methods to help with incrementing and getting the last IDs for a given name.
 
 import (
+	"context"
 	"encoding/binary"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -30,7 +31,7 @@ func NewIDGenerator(sg StoreGetter, idkey []byte) IDGenerator {
 
 // getLastID returns the last id that was inserted for the given name.
 // If one does not exist, then it returns 0,
-func (i IDGenerator) GetLastID(ctx sdk.Context, name string) uint64 {
+func (i IDGenerator) GetLastID(ctx context.Context, name string) uint64 {
 	store := i.sg.Store(ctx)
 	prefixKey := i.nextKeyPrefix([]byte(name))
 	if !store.Has(prefixKey) {

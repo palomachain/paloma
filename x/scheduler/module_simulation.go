@@ -4,7 +4,6 @@ import (
 	"math/rand"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
@@ -67,49 +66,49 @@ func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedP
 }
 
 // RegisterStoreDecoder registers a decoder
-func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
+func (am AppModule) RegisterStoreDecoder(_ simtypes.StoreDecoderRegistry) {}
 
 // WeightedOperations returns the all the gov module operations with their respective weights.
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	operations := make([]simtypes.WeightedOperation, 0)
 
 	var weightMsgSubmitRecurringJob int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgSubmitRecurringJob, &weightMsgSubmitRecurringJob, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgSubmitRecurringJob, &weightMsgSubmitRecurringJob, nil,
 		func(_ *rand.Rand) {
 			weightMsgSubmitRecurringJob = defaultWeightMsgSubmitRecurringJob
 		},
 	)
 
 	var weightMsgHello int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgHello, &weightMsgHello, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgHello, &weightMsgHello, nil,
 		func(_ *rand.Rand) {
 			weightMsgHello = defaultWeightMsgHello
 		},
 	)
 
 	var weightMsgPauseRecurringJob int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgPauseRecurringJob, &weightMsgPauseRecurringJob, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgPauseRecurringJob, &weightMsgPauseRecurringJob, nil,
 		func(_ *rand.Rand) {
 			weightMsgPauseRecurringJob = defaultWeightMsgPauseRecurringJob
 		},
 	)
 
 	var weightMsgResumeRecurringJob int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgResumeRecurringJob, &weightMsgResumeRecurringJob, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgResumeRecurringJob, &weightMsgResumeRecurringJob, nil,
 		func(_ *rand.Rand) {
 			weightMsgResumeRecurringJob = defaultWeightMsgResumeRecurringJob
 		},
 	)
 
 	var weightMsgSigningQueueMessage int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgSigningQueueMessage, &weightMsgSigningQueueMessage, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgSigningQueueMessage, &weightMsgSigningQueueMessage, nil,
 		func(_ *rand.Rand) {
 			weightMsgSigningQueueMessage = defaultWeightMsgSigningQueueMessage
 		},
 	)
 
 	var weightMsgCreateJob int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgCreateJob, &weightMsgCreateJob, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgCreateJob, &weightMsgCreateJob, nil,
 		func(_ *rand.Rand) {
 			weightMsgCreateJob = defaultWeightMsgCreateJob
 		},
@@ -120,7 +119,7 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	))
 
 	var weightMsgExecuteJob int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgExecuteJob, &weightMsgExecuteJob, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgExecuteJob, &weightMsgExecuteJob, nil,
 		func(_ *rand.Rand) {
 			weightMsgExecuteJob = defaultWeightMsgExecuteJob
 		},
