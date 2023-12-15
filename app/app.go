@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	xchain "github.com/palomachain/paloma/internal/x-chain"
+
 	"cosmossdk.io/log"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -141,9 +143,10 @@ import (
 	// palomamodule "github.com/palomachain/paloma/x/paloma"
 	// palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
 	// palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
-	// schedulermodule "github.com/palomachain/paloma/x/scheduler"
-	// schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
-	// schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
+	schedulermodule "github.com/palomachain/paloma/x/scheduler"
+	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
+	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
+
 	treasurymodule "github.com/palomachain/paloma/x/treasury"
 	treasuryclient "github.com/palomachain/paloma/x/treasury/client"
 	treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
@@ -249,7 +252,7 @@ type App struct {
 	ICAHostKeeper             icahostkeeper.Keeper
 	TransferKeeper            ibctransferkeeper.Keeper
 
-	// SchedulerKeeper schedulermodulekeeper.Keeper
+	SchedulerKeeper schedulermodulekeeper.Keeper
 	// ConsensusKeeper consensusmodulekeeper.Keeper
 	// ValsetKeeper    valsetmodulekeeper.Keeper
 	// PalomaKeeper    palomamodulekeeper.Keeper
@@ -326,7 +329,7 @@ func New(
 		icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey,
 		capabilitytypes.StoreKey,
-		// schedulermoduletypes.StoreKey,
+		schedulermoduletypes.StoreKey,
 		// consensusmoduletypes.StoreKey,
 		// valsetmoduletypes.StoreKey,
 		treasurymoduletypes.StoreKey,
@@ -342,7 +345,7 @@ func New(
 		// valsetmoduletypes.MemStoreKey,
 		// consensusmoduletypes.MemStoreKey,
 		evmmoduletypes.MemStoreKey,
-		// schedulermoduletypes.MemStoreKey,
+		schedulermoduletypes.MemStoreKey,
 		treasurymoduletypes.MemStoreKey,
 		// palomamoduletypes.MemStoreKey,
 	)
@@ -601,17 +604,17 @@ func New(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
-	// app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[schedulermoduletypes.StoreKey],
-	// 	memKeys[schedulermoduletypes.MemStoreKey],
-	// 	app.GetSubspace(schedulermoduletypes.ModuleName),
-	// 	app.AccountKeeper,
-	// 	app.EvmKeeper,
-	// 	[]xchain.Bridge{
-	// 		app.EvmKeeper,
-	// 	},
-	// )
+	app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
+		appCodec,
+		keys[schedulermoduletypes.StoreKey],
+		memKeys[schedulermoduletypes.MemStoreKey],
+		app.GetSubspace(schedulermoduletypes.ModuleName),
+		app.AccountKeeper,
+		app.EvmKeeper,
+		[]xchain.Bridge{
+			app.EvmKeeper,
+		},
+	)
 
 	app.TreasuryKeeper = *treasurymodulekeeper.NewKeeper(
 		appCodec,
@@ -679,12 +682,12 @@ func New(
 		wasmConfig,
 		wasmAvailableCapabilities,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		//wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
-		//	return wasmkeeper.NewMessageHandlerChain(
-		//		old,
-		//		app.SchedulerKeeper.ExecuteWasmJobEventListener(),
-		//	)
-		//}),
+		wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
+			return wasmkeeper.NewMessageHandlerChain(
+				old,
+				app.SchedulerKeeper.ExecuteWasmJobEventListener(),
+			)
+		}),
 	)
 
 	// register wasm gov proposal types
@@ -742,7 +745,7 @@ func New(
 	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
 	// consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 	// valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
-	// schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
+	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	// palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	// gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
@@ -767,7 +770,7 @@ func New(
 		upgrade.NewAppModule(app.UpgradeKeeper, app.AccountKeeper.AddressCodec()),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
-		// schedulerModule,
+		schedulerModule,
 		// consensusModule,
 		// valsetModule,
 		evmModule,
@@ -808,7 +811,7 @@ func New(
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
 		feegrant.ModuleName,
-		// schedulermoduletypes.ModuleName,
+		schedulermoduletypes.ModuleName,
 		// consensusmoduletypes.ModuleName,
 		govtypes.ModuleName,
 		crisistypes.ModuleName,
@@ -834,7 +837,7 @@ func New(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
-		// schedulermoduletypes.ModuleName,
+		schedulermoduletypes.ModuleName,
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
@@ -884,7 +887,7 @@ func New(
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
-		// schedulermoduletypes.ModuleName,
+		schedulermoduletypes.ModuleName,
 		// consensusmoduletypes.ModuleName,
 		// valsetmoduletypes.ModuleName,
 		// palomamoduletypes.ModuleName,
@@ -1138,7 +1141,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibcexported.ModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
-	// paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
+	paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
 	// paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
 	// paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
