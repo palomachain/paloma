@@ -9,8 +9,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 )
 
-//go:generate mockery --name=TreasuryStore
-
 type TreasuryStore interface {
 	TreasuryStore(ctx context.Context) storetypes.KVStore
 }

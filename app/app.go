@@ -170,8 +170,6 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 	return []govclient.ProposalHandler{
 		paramsclient.ProposalHandler,
 		evmclient.ProposalHandler,
-		// gravityclient.ProposalHandler,
-		//ibcclientclient has been removed ,because it is deprecated
 		treasuryclient.ProposalHandler,
 	}
 }
@@ -619,10 +617,10 @@ func New(
 	app.TreasuryKeeper = *treasurymodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[treasurymoduletypes.StoreKey]),
-		app.GetSubspace("" /*schedulermoduletypes.ModuleName*/),
+		app.GetSubspace(schedulermoduletypes.ModuleName),
 		app.BankKeeper,
 		app.AccountKeeper,
-		nil, // app.SchedulerKeeper,
+		app.SchedulerKeeper,
 	)
 
 	// app.ScopedConsensusKeeper = scopedConsensusKeeper
@@ -631,9 +629,8 @@ func New(
 	govRouter.
 		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
-		// AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
 
 	// Example of setting gov params:
