@@ -29,7 +29,6 @@ func NewRootCmd() *cobra.Command {
 	// set Bech32 address configuration
 	params.SetAddressConfig()
 	encCfg := palomaapp.MakeEncodingConfig()
-
 	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, encCfg, db.OptionsMap{})
 	initClientCtx := client.Context{}.
 		WithCodec(encCfg.Codec).
@@ -67,7 +66,6 @@ func NewRootCmd() *cobra.Command {
 
 			customAppTemplate, customAppConfig := initAppConfig()
 			customTMConfig := initCometBFTConfig()
-
 			if err := server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customTMConfig); err != nil {
 				return err
 			}
