@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	tmdb "github.com/cometbft/cometbft-db"
+	"cosmossdk.io/log"
+	"cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
+	storetypes "cosmossdk.io/store/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	"github.com/cosmos/cosmos-sdk/store"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	tmdb "github.com/cosmos/cosmos-db"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
@@ -16,10 +18,10 @@ import (
 )
 
 func TestBatching(t *testing.T) {
-	storeKey := sdk.NewKVStoreKey(types.StoreKey)
+	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 	db := tmdb.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db)
+	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
 	stateStore.MountStoreWithDB(memStoreKey, storetypes.StoreTypeMemory, nil)
 	assert.NoError(t, stateStore.LoadLatestVersion())
