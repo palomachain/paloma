@@ -171,10 +171,11 @@ func (k Keeper) LastEventNonceByAddr(
 	if !found {
 		return nil, errors.Wrap(types.ErrUnknown, "address")
 	}
-	if err := sdk.VerifyAddressFormat(validator.GetOperator()); err != nil {
+	valAddress := k.addressCodec.StringToBytes(validator.GetOperator())
+	if err := sdk.VerifyAddressFormat(valAddress); err != nil {
 		return nil, errors.Wrap(err, "invalid validator address")
 	}
-	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, validator.GetOperator())
+	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, valAddress)
 	if err != nil {
 		return nil, err
 	}

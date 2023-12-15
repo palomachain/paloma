@@ -1,11 +1,12 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
+	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -17,13 +18,14 @@ import (
 // - persists an OutgoingTx
 // - adds the TX to the `available` TX pool
 func (k Keeper) AddToOutgoingPool(
-	ctx sdk.Context,
+	ctx context.Context,
 	sender sdk.AccAddress,
 	counterpartReceiver types.EthAddress,
 	amount sdk.Coin,
 	chainReferenceID string,
 ) (uint64, error) {
-	if ctx.IsZero() || sdk.VerifyAddressFormat(sender) != nil || counterpartReceiver.ValidateBasic() != nil ||
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.IsZero() || sdk.VerifyAddressFormat(sender) != nil || counterpartReceiver.ValidateBasic() != nil ||
 		!amount.IsValid() {
 		return 0, sdkerrors.Wrap(types.ErrInvalid, "arguments")
 	}
@@ -74,7 +76,7 @@ func (k Keeper) AddToOutgoingPool(
 	if err != nil {
 		return 0, err
 	}
-	return nextID, ctx.EventManager().EmitTypedEvent(
+	return nextID, sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventWithdrawalReceived{
 			BridgeContract: bridgeContractAddress.GetAddress().Hex(),
 			BridgeChainId:  strconv.Itoa(int(k.GetBridgeChainID(ctx))),
@@ -88,8 +90,9 @@ func (k Keeper) AddToOutgoingPool(
 // - checks that the provided tx actually exists
 // - deletes the unbatched tx from the pool
 // - issues the tokens back to the sender
-func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx sdk.Context, txId uint64, sender sdk.AccAddress) error {
-	if ctx.IsZero() || txId < 1 || sdk.VerifyAddressFormat(sender) != nil {
+func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64, sender sdk.AccAddress) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.IsZero() || txId < 1 || sdk.VerifyAddressFormat(sender) != nil {
 		return sdkerrors.Wrap(types.ErrInvalid, "arguments")
 	}
 	// check that we actually have a tx with that id and what it's details are
@@ -133,7 +136,7 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx sdk.Context, txId uint64, se
 		return err
 	}
 
-	return ctx.EventManager().EmitTypedEvent(
+	return sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventWithdrawCanceled{
 			Sender:         sender.String(),
 			TxId:           fmt.Sprint(txId),
@@ -145,7 +148,7 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx sdk.Context, txId uint64, se
 
 // addUnbatchedTx creates a new transaction in the pool
 // WARNING: Do not make this function public
-func (k Keeper) addUnbatchedTX(ctx sdk.Context, val *types.InternalOutgoingTransferTx) error {
+func (k Keeper) addUnbatchedTX(ctx context.Context, val *types.InternalOutgoingTransferTx) error {
 	store := k.GetStore(ctx)
 	idxKey := types.GetOutgoingTxPoolKey(*val.Erc20Token, val.Id)
 	if store.Has(idxKey) {
@@ -165,7 +168,7 @@ func (k Keeper) addUnbatchedTX(ctx sdk.Context, val *types.InternalOutgoingTrans
 
 // removeUnbatchedTXIndex removes the tx from the pool
 // WARNING: Do not make this function public
-func (k Keeper) removeUnbatchedTX(ctx sdk.Context, token types.InternalERC20Token, txID uint64) error {
+func (k Keeper) removeUnbatchedTX(ctx context.Context, token types.InternalERC20Token, txID uint64) error {
 	store := k.GetStore(ctx)
 	idxKey := types.GetOutgoingTxPoolKey(token, txID)
 	if !store.Has(idxKey) {
@@ -180,7 +183,7 @@ func (k Keeper) removeUnbatchedTX(ctx sdk.Context, token types.InternalERC20Toke
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // GetUnbatchedTxByAmountAndId grabs a tx from the pool given its txID
-func (k Keeper) GetUnbatchedTxByAmountAndId(ctx sdk.Context, token types.InternalERC20Token, txID uint64) (*types.InternalOutgoingTransferTx, error) {
+func (k Keeper) GetUnbatchedTxByAmountAndId(ctx context.Context, token types.InternalERC20Token, txID uint64) (*types.InternalOutgoingTransferTx, error) {
 	store := k.GetStore(ctx)
 	bz := store.Get(types.GetOutgoingTxPoolKey(token, txID))
 	if bz == nil {
@@ -200,7 +203,7 @@ func (k Keeper) GetUnbatchedTxByAmountAndId(ctx sdk.Context, token types.Interna
 
 // GetUnbatchedTxById grabs a tx from the pool given only the txID
 // note that due to the way unbatched txs are indexed, the GetUnbatchedTxByAmountAndId method is much faster
-func (k Keeper) GetUnbatchedTxById(ctx sdk.Context, txID uint64) (*types.InternalOutgoingTransferTx, error) {
+func (k Keeper) GetUnbatchedTxById(ctx context.Context, txID uint64) (*types.InternalOutgoingTransferTx, error) {
 	var r *types.InternalOutgoingTransferTx = nil
 	err := k.IterateUnbatchedTransactions(ctx, func(_ []byte, tx *types.InternalOutgoingTransferTx) bool {
 		if tx.Id == txID {
@@ -222,17 +225,17 @@ func (k Keeper) GetUnbatchedTxById(ctx sdk.Context, txID uint64) (*types.Interna
 
 // GetUnbatchedTransactionsByContract grabs all unbatched transactions from the tx pool for the given contract
 // unbatched transactions are sorted by nonce in DESC order
-func (k Keeper) GetUnbatchedTransactionsByContract(ctx sdk.Context, contractAddress types.EthAddress) ([]*types.InternalOutgoingTransferTx, error) {
+func (k Keeper) GetUnbatchedTransactionsByContract(ctx context.Context, contractAddress types.EthAddress) ([]*types.InternalOutgoingTransferTx, error) {
 	return k.collectUnbatchedTransactions(ctx, types.GetOutgoingTxPoolContractPrefix(contractAddress))
 }
 
 // GetUnbatchedTransactions grabs all transactions from the tx pool, useful for queries or genesis save/load
-func (k Keeper) GetUnbatchedTransactions(ctx sdk.Context) ([]*types.InternalOutgoingTransferTx, error) {
+func (k Keeper) GetUnbatchedTransactions(ctx context.Context) ([]*types.InternalOutgoingTransferTx, error) {
 	return k.collectUnbatchedTransactions(ctx, types.OutgoingTXPoolKey)
 }
 
 // Aggregates all unbatched transactions in the store with a given prefix
-func (k Keeper) collectUnbatchedTransactions(ctx sdk.Context, prefixKey []byte) (out []*types.InternalOutgoingTransferTx, err error) {
+func (k Keeper) collectUnbatchedTransactions(ctx context.Context, prefixKey []byte) (out []*types.InternalOutgoingTransferTx, err error) {
 	err = k.filterAndIterateUnbatchedTransactions(ctx, prefixKey, func(_ []byte, tx *types.InternalOutgoingTransferTx) bool {
 		out = append(out, tx)
 		return false
@@ -243,20 +246,20 @@ func (k Keeper) collectUnbatchedTransactions(ctx sdk.Context, prefixKey []byte) 
 // IterateUnbatchedTransactionsByContract iterates through unbatched transactions from the tx pool for the given contract,
 // executing the given callback on each discovered Tx. Return true in cb to stop iteration, false to continue.
 // unbatched transactions are sorted by nonce in DESC order
-func (k Keeper) IterateUnbatchedTransactionsByContract(ctx sdk.Context, contractAddress types.EthAddress, cb func(key []byte, tx *types.InternalOutgoingTransferTx) bool) error {
+func (k Keeper) IterateUnbatchedTransactionsByContract(ctx context.Context, contractAddress types.EthAddress, cb func(key []byte, tx *types.InternalOutgoingTransferTx) bool) error {
 	return k.filterAndIterateUnbatchedTransactions(ctx, types.GetOutgoingTxPoolContractPrefix(contractAddress), cb)
 }
 
 // IterateUnbatchedTransactions iterates through all unbatched transactions in DESC order, executing the given callback
 // on each discovered Tx. Return true in cb to stop iteration, false to continue.
 // For finer grained control, use filterAndIterateUnbatchedTransactions or one of the above methods
-func (k Keeper) IterateUnbatchedTransactions(ctx sdk.Context, cb func(key []byte, tx *types.InternalOutgoingTransferTx) (stop bool)) error {
+func (k Keeper) IterateUnbatchedTransactions(ctx context.Context, cb func(key []byte, tx *types.InternalOutgoingTransferTx) (stop bool)) error {
 	return k.filterAndIterateUnbatchedTransactions(ctx, types.OutgoingTXPoolKey, cb)
 }
 
 // filterAndIterateUnbatchedTransactions iterates through all unbatched transactions whose keys begin with prefixKey in DESC order
 // prefixKey should be either OutgoingTXPoolKey or some more granular key, passing the wrong key will cause an error
-func (k Keeper) filterAndIterateUnbatchedTransactions(ctx sdk.Context, prefixKey []byte, cb func(key []byte, tx *types.InternalOutgoingTransferTx) bool) error {
+func (k Keeper) filterAndIterateUnbatchedTransactions(ctx context.Context, prefixKey []byte, cb func(key []byte, tx *types.InternalOutgoingTransferTx) bool) error {
 	prefixStore := k.GetStore(ctx)
 	start, end, err := prefixRange(prefixKey)
 	if err != nil {
@@ -283,7 +286,7 @@ func (k Keeper) filterAndIterateUnbatchedTransactions(ctx sdk.Context, prefixKey
 // returning, initializing and incrementing all at once. This is particularly
 // used for the transaction pool and batch pool where each batch or transaction is
 // assigned a unique ID.
-func (k Keeper) autoIncrementID(ctx sdk.Context, idKey []byte) (uint64, error) {
+func (k Keeper) autoIncrementID(ctx context.Context, idKey []byte) (uint64, error) {
 	id, err := k.getID(ctx, idKey)
 	if err != nil {
 		return 0, err
@@ -294,7 +297,7 @@ func (k Keeper) autoIncrementID(ctx sdk.Context, idKey []byte) (uint64, error) {
 }
 
 // gets a generic uint64 counter from the store, initializing to 1 if no value exists
-func (k Keeper) getID(ctx sdk.Context, idKey []byte) (uint64, error) {
+func (k Keeper) getID(ctx context.Context, idKey []byte) (uint64, error) {
 	store := k.GetStore(ctx)
 	bz := store.Get(idKey)
 	id, err := types.UInt64FromBytes(bz)
@@ -305,7 +308,7 @@ func (k Keeper) getID(ctx sdk.Context, idKey []byte) (uint64, error) {
 }
 
 // sets a generic uint64 counter in the store
-func (k Keeper) setID(ctx sdk.Context, id uint64, idKey []byte) {
+func (k Keeper) setID(ctx context.Context, id uint64, idKey []byte) {
 	store := k.GetStore(ctx)
 	bz := sdk.Uint64ToBigEndian(id)
 	store.Set(idKey, bz)

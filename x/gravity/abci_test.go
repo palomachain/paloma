@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -53,11 +54,11 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 
 	stakingMsgSvr := stakingkeeper.NewMsgServerImpl(&input.StakingKeeper)
 
-	_, err = stakingMsgSvr.CreateValidator(input.Context, keeper.NewTestMsgCreateValidator(valAddr, consPubKey, sdk.NewIntFromUint64(1)))
+	_, err = stakingMsgSvr.CreateValidator(input.Context, keeper.NewTestMsgCreateValidator(valAddr, consPubKey, math.NewIntFromUint64(1)))
 	require.NoError(t, err)
 
 	// Run the staking endblocker to ensure valset is correct in state
-	stakingkeeper.EndBlocker(input.Context, &input.StakingKeeper)
+	input.StakingKeeper.EndBlocker(input.Context)
 
 	ethAddr, err := types.NewEthAddress("0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B")
 	if err != nil {
@@ -105,7 +106,7 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 	})
 
 	// Now remove all the stake
-	_, err = stakingMsgSvr.Undelegate(input.Context, keeper.NewTestMsgUnDelegateValidator(valAddr, sdk.NewIntFromUint64(1)))
+	_, err = stakingMsgSvr.Undelegate(input.Context, keeper.NewTestMsgUnDelegateValidator(valAddr, math.NewIntFromUint64(1)))
 	require.NoError(t, err)
 
 	EndBlocker(ctx, pk)
@@ -124,7 +125,7 @@ func TestBatchTimeout(t *testing.T) {
 		myReceiver       = "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7"
 		testERC20Address = "0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e"
 		testDenom        = "ugrain"
-		token, e2        = types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+		token, e2        = types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 		allVouchers      = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
 	)
 	require.NoError(t, e1)
@@ -145,7 +146,7 @@ func TestBatchTimeout(t *testing.T) {
 
 	// add some TX to the pool
 	for i := 0; i < 6; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), testERC20Address, "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 

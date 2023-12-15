@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
@@ -23,7 +24,7 @@ func TestBatches(t *testing.T) {
 		mySender, e1            = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
 		myReceiver, e2          = types.NewEthAddress("0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7")
 		myTokenContractAddr, e3 = types.NewEthAddress(testERC20Address)
-		token, e4               = types.NewInternalERC20Token(sdk.NewInt(99999), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+		token, e4               = types.NewInternalERC20Token(math.NewInt(99999), myTokenContractAddr.GetAddress().Hex(), "test-chain")
 		allVouchers             = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
 	)
 	require.NoError(t, e1)
@@ -47,7 +48,7 @@ func TestBatches(t *testing.T) {
 
 	// add some TX to the pool
 	for i := 0; i < 4; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), myTokenContractAddr.GetAddress().Hex(), "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 
@@ -138,9 +139,9 @@ func TestBatches(t *testing.T) {
 
 	gotUnbatchedTx, err := input.GravityKeeper.GetUnbatchedTransactionsByContract(ctx, *myTokenContractAddr)
 	require.NoError(t, err)
-	oneHundredTok, err := types.NewInternalERC20Token(sdk.NewInt(100), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+	oneHundredTok, err := types.NewInternalERC20Token(math.NewInt(100), myTokenContractAddr.GetAddress().Hex(), "test-chain")
 	require.NoError(t, err)
-	oneHundredOneTok, err := types.NewInternalERC20Token(sdk.NewInt(101), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+	oneHundredOneTok, err := types.NewInternalERC20Token(math.NewInt(101), myTokenContractAddr.GetAddress().Hex(), "test-chain")
 	require.NoError(t, err)
 
 	// and verify remaining available Tx in the pool
@@ -276,8 +277,8 @@ func TestBatchesFullCoins(t *testing.T) {
 		mySender, e1     = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
 		myReceiver       = "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7"
 		receiverAddr, e2 = types.NewEthAddress(myReceiver)
-		totalCoins, _    = sdk.NewIntFromString("1500000000000000000000") // 1,500 ETH worth
-		oneEth, _        = sdk.NewIntFromString("1000000000000000000")
+		totalCoins, _    = math.NewIntFromString("1500000000000000000000") // 1,500 ETH worth
+		oneEth, _        = math.NewIntFromString("1000000000000000000")
 		token, e3        = types.NewInternalERC20Token(totalCoins, testERC20Address, "test-chain")
 		allVouchers      = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
 	)
@@ -298,7 +299,7 @@ func TestBatchesFullCoins(t *testing.T) {
 
 	// add some TX to the pool
 	for _, v := range []uint64{20, 300, 25, 10} {
-		vAsSDKInt := sdk.NewIntFromUint64(v)
+		vAsSDKInt := math.NewIntFromUint64(v)
 		amountToken, err := types.NewInternalERC20Token(oneEth.Mul(vAsSDKInt), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
@@ -326,13 +327,13 @@ func TestBatchesFullCoins(t *testing.T) {
 				Id:          2,
 				Sender:      mySender.String(),
 				DestAddress: myReceiver,
-				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(sdk.NewIntFromUint64(300)), testERC20Address, "test-chain"),
+				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(300)), testERC20Address, "test-chain"),
 			},
 			{
 				Id:          3,
 				Sender:      mySender.String(),
 				DestAddress: myReceiver,
-				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(sdk.NewIntFromUint64(25)), testERC20Address, "test-chain"),
+				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(25)), testERC20Address, "test-chain"),
 			},
 		},
 		TokenContract:      testERC20Address,
@@ -350,9 +351,9 @@ func TestBatchesFullCoins(t *testing.T) {
 	// and verify remaining available Tx in the pool
 	gotUnbatchedTx, err := input.GravityKeeper.GetUnbatchedTransactionsByContract(ctx, *tokenContract)
 	require.NoError(t, err)
-	twentyTok, err := types.NewInternalERC20Token(oneEth.Mul(sdk.NewIntFromUint64(20)), testERC20Address, "test-chain")
+	twentyTok, err := types.NewInternalERC20Token(oneEth.Mul(math.NewIntFromUint64(20)), testERC20Address, "test-chain")
 	require.NoError(t, err)
-	tenTok, err := types.NewInternalERC20Token(oneEth.Mul(sdk.NewIntFromUint64(10)), testERC20Address, "test-chain")
+	tenTok, err := types.NewInternalERC20Token(oneEth.Mul(math.NewIntFromUint64(10)), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	expUnbatchedTx := []*types.InternalOutgoingTransferTx{
 		{
@@ -375,7 +376,7 @@ func TestBatchesFullCoins(t *testing.T) {
 
 	// add some more TX to the pool to create a more profitable batch
 	for _, v := range []uint64{200, 150} {
-		vAsSDKInt := sdk.NewIntFromUint64(v)
+		vAsSDKInt := math.NewIntFromUint64(v)
 		amountToken, err := types.NewInternalERC20Token(oneEth.Mul(vAsSDKInt), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
@@ -399,13 +400,13 @@ func TestBatchesFullCoins(t *testing.T) {
 				Id:          5,
 				Sender:      mySender.String(),
 				DestAddress: myReceiver,
-				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(sdk.NewIntFromUint64(200)), testERC20Address, "test-chain"),
+				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(200)), testERC20Address, "test-chain"),
 			},
 			{
 				Id:          6,
 				Sender:      mySender.String(),
 				DestAddress: myReceiver,
-				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(sdk.NewIntFromUint64(150)), testERC20Address, "test-chain"),
+				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(150)), testERC20Address, "test-chain"),
 			},
 		},
 		TokenContract:      testERC20Address,
@@ -456,8 +457,8 @@ func TestBatchesFullCoins(t *testing.T) {
 //		tokenContractAddr2 = "0xF815240800ddf3E0be80e0d848B13ecaa504BF37"
 //		tokenContractAddr3 = "0xd086dDA7BccEB70e35064f540d07E4baED142cB3"
 //		tokenContractAddr4 = "0x384981B9d133701c4bD445F77bF61C3d80e79D46"
-//		totalCoins, _      = sdk.NewIntFromString("1500000000000000000000000")
-//		oneEth, _          = sdk.NewIntFromString("1000000000000000000")
+//		totalCoins, _      = math.NewIntFromString("1500000000000000000000000")
+//		oneEth, _          = math.NewIntFromString("1000000000000000000")
 //		token1, e2         = types.NewInternalERC20Token(totalCoins, tokenContractAddr1, "test-chain")
 //		token2, e3         = types.NewInternalERC20Token(totalCoins, tokenContractAddr2, "test-chain")
 //		token3, e4         = types.NewInternalERC20Token(totalCoins, tokenContractAddr3, "test-chain")
@@ -492,7 +493,7 @@ func TestBatchesFullCoins(t *testing.T) {
 //		contractAddr, err := types.NewEthAddress(contract)
 //		require.NoError(t, err)
 //		for v := 1; v < 500; v++ {
-//			vAsSDKInt := sdk.NewIntFromUint64(uint64(v))
+//			vAsSDKInt := math.NewIntFromUint64(uint64(v))
 //			amountToken, err := types.NewInternalERC20Token(oneEth.Mul(vAsSDKInt), contract, "test-chain")
 //			require.NoError(t, err)
 //			amount := sdk.NewCoin(testDenom, amountToken.Amount)
@@ -548,9 +549,9 @@ func TestBatchesFullCoins(t *testing.T) {
 //		mySender, e1    = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
 //		notMySender, e2 = sdk.AccAddressFromBech32("gravity1add7f8wyertuus9r20284ej0asrs085c8ajr0y")
 //		myReceiver      = "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7"
-//		token, e3       = types.NewInternalERC20Token(sdk.NewInt(414), testERC20Address, "test-chain")
+//		token, e3       = types.NewInternalERC20Token(math.NewInt(414), testERC20Address, "test-chain")
 //		allVouchers     = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
-//		denomToken, e4  = types.NewInternalERC20Token(sdk.NewInt(1), testERC20Address, "test-chain")
+//		denomToken, e4  = types.NewInternalERC20Token(math.NewInt(1), testERC20Address, "test-chain")
 //		myDenom         = sdk.NewCoin(testDenom, denomToken.Amount).Denom
 //	)
 //	require.NoError(t, e1)
@@ -573,7 +574,7 @@ func TestBatchesFullCoins(t *testing.T) {
 //
 //	// add some TX to the pool
 //	for i := 0; i < 4; i++ {
-//		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), testERC20Address, "test-chain")
+//		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), testERC20Address, "test-chain")
 //		require.NoError(t, err)
 //		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 //
@@ -591,7 +592,7 @@ func TestBatchesFullCoins(t *testing.T) {
 //
 //	// Check the balance at the start
 //	balances := input.BankKeeper.GetAllBalances(ctx, mySender)
-//	require.Equal(t, sdk.NewInt(8), balances.AmountOf(myDenom))
+//	require.Equal(t, math.NewInt(8), balances.AmountOf(myDenom))
 //
 //	// tx batch size is 2, so that some of them stay behind
 //	// Should have 4: and 3: from above
@@ -612,7 +613,7 @@ func TestBatchesFullCoins(t *testing.T) {
 //
 //	// make sure refund was issued
 //	balances = input.BankKeeper.GetAllBalances(ctx, mySender)
-//	require.Equal(t, sdk.NewInt(109), balances.AmountOf(myDenom))
+//	require.Equal(t, math.NewInt(109), balances.AmountOf(myDenom))
 //}
 
 func TestBatchConfirms(t *testing.T) {
@@ -622,7 +623,7 @@ func TestBatchConfirms(t *testing.T) {
 		mySender, e1            = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
 		myReceiver, e2          = types.NewEthAddress("0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7")
 		myTokenContractAddr, e3 = types.NewEthAddress(testERC20Address)
-		token, e4               = types.NewInternalERC20Token(sdk.NewInt(1000000), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+		token, e4               = types.NewInternalERC20Token(math.NewInt(1000000), myTokenContractAddr.GetAddress().Hex(), "test-chain")
 		allVouchers             = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
 	)
 	require.NoError(t, e1)
@@ -641,7 +642,7 @@ func TestBatchConfirms(t *testing.T) {
 
 	// add batches with 1 tx to the pool
 	for i := 1; i < 200; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), myTokenContractAddr.GetAddress().Hex(), "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 
