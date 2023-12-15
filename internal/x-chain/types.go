@@ -1,6 +1,7 @@
 package xchain
 
 import (
+	"context"
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
@@ -47,8 +48,8 @@ type JobConfiguration struct {
 }
 
 type Jobber interface {
-	VerifyJob(ctx sdk.Context, definition []byte, payload []byte, refID ReferenceID) (err error)
-	ExecuteJob(ctx sdk.Context, jcfg *JobConfiguration) (msgID uint64, err error)
+	VerifyJob(ctx context.Context, definition []byte, payload []byte, refID ReferenceID) (err error)
+	ExecuteJob(ctx context.Context, jcfg *JobConfiguration) (msgID uint64, err error)
 }
 
 //go:generate mockery --name=FundCollecter

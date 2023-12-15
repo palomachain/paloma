@@ -8,7 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/palomachain/paloma/x/gravity/keeper"
@@ -58,7 +57,7 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 	require.NoError(t, err)
 
 	// Run the staking endblocker to ensure valset is correct in state
-	staking.EndBlocker(input.Context, &input.StakingKeeper)
+	stakingkeeper.EndBlocker(input.Context, &input.StakingKeeper)
 
 	ethAddr, err := types.NewEthAddress("0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B")
 	if err != nil {
