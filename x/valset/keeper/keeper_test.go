@@ -3,10 +3,10 @@ package keeper
 import (
 	"testing"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/mock"
@@ -160,8 +160,8 @@ func TestCreatingSnapshots(t *testing.T) {
 	vali1.On("IsJailed").Return(false)
 	vali2.On("IsJailed").Return(false)
 
-	vali1.On("GetBondedTokens").Return(sdk.NewInt(888))
-	vali2.On("GetBondedTokens").Return(sdk.NewInt(222))
+	vali1.On("GetBondedTokens").Return(sdkmath.NewInt(888))
+	vali2.On("GetBondedTokens").Return(sdkmath.NewInt(222))
 
 	vali1.On("IsBonded").Return(true)
 	vali2.On("IsBonded").Return(true)
@@ -172,7 +172,7 @@ func TestCreatingSnapshots(t *testing.T) {
 	ms.StakingKeeper.On("Validator", ctx, val2).Return(vali2)
 
 	ms.StakingKeeper.On("IterateValidators", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-		type fnc = func(int64, stakingtypes.ValidatorI) bool
+		type fnc = func(int64, *mocks.StakingValidatorI) bool
 		f := args.Get(1).(fnc)
 		f(0, vali1)
 		f(1, vali2)
@@ -300,17 +300,17 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: true,
 			name:   "two snapshots have same validators but different power orders",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(20)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(80)},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(20)},
 				},
 			},
 		},
@@ -318,17 +318,17 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: true,
 			name:   "two snapshots have same validators and same relative power orders, but differ in their absolute power more than 1 percent",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(20)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(30)},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(30)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 		},
@@ -336,29 +336,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: true,
 			name:   "two snapshots are same, but they have removed one of their accounts",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{}, {},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 		},
@@ -366,29 +366,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: true,
 			name:   "two snapshots are same, but they have different external chain infos",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc"}, {Address: "def"},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc"}, {Address: "123"},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 		},
@@ -396,29 +396,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: false,
 			name:   "two snapshots have same validators and same relative power orders",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc"}, {Address: "def"},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(1000),
+				TotalShares: sdkmath.NewInt(1000),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(200),
+						ShareCount: sdkmath.NewInt(200),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc"}, {Address: "def"},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(800)},
 				},
 			},
 		},
@@ -426,29 +426,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: false,
 			name:   "two snapshots have same validators and same traits",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(1000),
+				TotalShares: sdkmath.NewInt(1000),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(200),
+						ShareCount: sdkmath.NewInt(200),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(800)},
 				},
 			},
 		},
@@ -456,29 +456,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: true,
 			name:   "two snapshots have same validators and different traits",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(1000),
+				TotalShares: sdkmath.NewInt(1000),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(200),
+						ShareCount: sdkmath.NewInt(200),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"def"}},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(800)},
 				},
 			},
 		},
@@ -486,15 +486,15 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: false,
 			name:   "if the powers are still the same then it's not worthy",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(20)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(20)},
 				},
 			},
 		},
@@ -502,15 +502,15 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: false,
 			name:   "if the powers have change for less than 1%, then it's not worthy",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(1000),
+				TotalShares: sdkmath.NewInt(1000),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(20)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(1000),
+				TotalShares: sdkmath.NewInt(1000),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(21)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(21)},
 				},
 			},
 		},

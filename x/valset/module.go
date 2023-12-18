@@ -1,9 +1,11 @@
 package valset
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
+	"cosmossdk.io/core/appmodule"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -19,13 +21,24 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.HasServices         = AppModule{}
+	_ module.HasInvariants       = AppModule{}
+	_ module.HasABCIGenesis      = AppModule{}
+	_ module.HasConsensusVersion = AppModule{}
+	_ module.HasName             = AppModule{}
+
+	_ appmodule.HasEndBlocker   = AppModule{}
+	_ appmodule.HasBeginBlocker = AppModule{}
+	_ appmodule.AppModule       = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
 // AppModuleBasic
 // ----------------------------------------------------------------------------
+
+func (m AppModule) IsOnePerModuleType() {}
+func (m AppModule) IsAppModule()        {}
 
 // AppModuleBasic implements the AppModuleBasic interface for the capability module.
 type AppModuleBasic struct {
@@ -153,23 +166,24 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(context.Context) error { return nil }
 
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	if ctx.BlockHeight()%50 == 0 || ctx.BlockHeight() == 1 {
-		if _, err := am.keeper.TriggerSnapshotBuild(ctx); err != nil {
-			am.keeper.Logger(ctx).Error("error triggering snapshot build", "error", err)
+func (am AppModule) EndBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.BlockHeight()%50 == 0 || sdkCtx.BlockHeight() == 1 {
+		if _, err := am.keeper.TriggerSnapshotBuild(sdkCtx); err != nil {
+			am.keeper.Logger(sdkCtx).Error("error triggering snapshot build", "error", err)
 		}
 	}
 
-	am.keeper.UpdateGracePeriod(ctx)
+	am.keeper.UpdateGracePeriod(sdkCtx)
 
-	if ctx.BlockHeight() > 50 && ctx.BlockHeight()%10 == 0 {
-		if err := am.keeper.JailInactiveValidators(ctx); err != nil {
-			am.keeper.Logger(ctx).Error("error while jailing inactive validators", "error", err)
+	if sdkCtx.BlockHeight() > 50 && sdkCtx.BlockHeight()%10 == 0 {
+		if err := am.keeper.JailInactiveValidators(sdkCtx); err != nil {
+			am.keeper.Logger(sdkCtx).Error("error while jailing inactive validators", "error", err)
 		}
 	}
-	return []abci.ValidatorUpdate{}
+	return nil
 }
