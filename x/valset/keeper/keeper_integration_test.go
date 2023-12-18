@@ -1,113 +1,113 @@
 package keeper_test
 
-// import (
-// 	"testing"
+import (
+	"testing"
 
-// 	sdk "github.com/cosmos/cosmos-sdk/types"
-// 	. "github.com/onsi/ginkgo/v2"
-// 	. "github.com/onsi/gomega"
-// 	"github.com/palomachain/paloma/app"
-// 	"github.com/palomachain/paloma/testutil"
-// 	"github.com/palomachain/paloma/x/valset/keeper"
-// )
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/palomachain/paloma/app"
+	"github.com/palomachain/paloma/testutil"
+	"github.com/palomachain/paloma/x/valset/keeper"
+)
 
-// func TestGenesisGinkgo(t *testing.T) {
-// 	RegisterFailHandler(Fail)
-// 	RunSpecs(t, "Valset")
-// }
+func TestGenesisGinkgo(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Valset")
+}
 
-// var _ = Describe("jaling validators", func() {
-// 	var a app.TestApp
-// 	var ctx sdk.Context
+var _ = Describe("jaling validators", func() {
+	var a app.TestApp
+	var ctx sdk.Context
 
-// 	BeforeEach(func() {
-// 		a = app.NewTestApp(GinkgoT(), false)
-// 		ctx = a.NewContext(false)
-// 	})
+	BeforeEach(func() {
+		a = app.NewTestApp(GinkgoT(), false)
+		ctx = a.NewContext(false)
+	})
 
-// 	Context("with a non existing validator", func() {
-// 		It("returns an error", func() {
-// 			validators := testutil.GenValidators(1, 100)
-// 			err := a.ValsetKeeper.Jail(ctx, sdk.ValAddress(validators[0].GetOperator()), "i am bored")
-// 			Expect(err).To(MatchError(keeper.ErrValidatorWithAddrNotFound))
-// 		})
-// 	})
+	Context("with a non existing validator", func() {
+		It("returns an error", func() {
+			validators := testutil.GenValidators(1, 100)
+			err := a.ValsetKeeper.Jail(ctx, sdk.ValAddress(validators[0].GetOperator()), "i am bored")
+			Expect(err).To(MatchError(keeper.ErrValidatorWithAddrNotFound))
+		})
+	})
 
-// 	Context("with only a single validator", func() {
-// 		var val sdk.ValAddress
+	Context("with only a single validator", func() {
+		var val sdk.ValAddress
 
-// 		BeforeEach(func() {
-// 			By("query existing validator")
-// 			vals, err := a.StakingKeeper.GetAllValidators(ctx)
-// 			if err != nil {
-// 				panic(err)
-// 			}
-// 			Expect(len(vals)).To(Equal(1))
-// 			val = sdk.ValAddress(vals[0].GetOperator())
-// 		})
+		BeforeEach(func() {
+			By("query existing validator")
+			vals, err := a.StakingKeeper.GetAllValidators(ctx)
+			if err != nil {
+				panic(err)
+			}
+			Expect(len(vals)).To(Equal(1))
+			val = sdk.ValAddress(vals[0].GetOperator())
+		})
 
-// 		It("returns an error that it cannot jail the validator", func() {
-// 			err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
-// 			Expect(err).To(MatchError(keeper.ErrCannotJailValidator))
-// 		})
-// 	})
+		It("returns an error that it cannot jail the validator", func() {
+			err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
+			Expect(err).To(MatchError(keeper.ErrCannotJailValidator))
+		})
+	})
 
-// 	Context("with already a valid valset", func() {
-// 		var val sdk.ValAddress
+	Context("with already a valid valset", func() {
+		var val sdk.ValAddress
 
-// 		BeforeEach(func() {
-// 			By("add a whole lot of validators")
-// 			validators := testutil.GenValidators(10, 100)
-// 			for _, v := range validators {
-// 				a.StakingKeeper.SetValidator(ctx, v)
-// 				a.StakingKeeper.SetValidatorByConsAddr(ctx, v)
-// 			}
-// 			val = sdk.ValAddress(validators[0].GetOperator())
-// 		})
+		BeforeEach(func() {
+			By("add a whole lot of validators")
+			validators := testutil.GenValidators(10, 100)
+			for _, v := range validators {
+				a.StakingKeeper.SetValidator(ctx, v)
+				a.StakingKeeper.SetValidatorByConsAddr(ctx, v)
+			}
+			val = sdk.ValAddress(validators[0].GetOperator())
+		})
 
-// 		It("jailes the given validator", func() {
-// 			err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
-// 			Expect(err).To(BeNil())
-// 			isJailed := a.ValsetKeeper.IsJailed(ctx, val)
-// 			Expect(isJailed).To(BeTrue())
-// 		})
-// 		When("jailing panics", func() {
-// 			BeforeEach(func() {
-// 				validators := testutil.GenValidators(1, 100)
-// 				for _, v := range validators {
-// 					a.StakingKeeper.SetValidator(ctx, v)
-// 				}
-// 				val = sdk.ValAddress(validators[0].GetOperator())
-// 			})
-// 			It("returns the error if it's of type error or string", func() {
-// 				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
-// 				Expect(err).NotTo(BeNil())
-// 			})
-// 		})
+		It("jailes the given validator", func() {
+			err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
+			Expect(err).To(BeNil())
+			isJailed, err := a.ValsetKeeper.IsJailed(ctx, val)
+			Expect(isJailed).To(BeTrue())
+		})
+		When("jailing panics", func() {
+			BeforeEach(func() {
+				validators := testutil.GenValidators(1, 100)
+				for _, v := range validators {
+					a.StakingKeeper.SetValidator(ctx, v)
+				}
+				val = sdk.ValAddress(validators[0].GetOperator())
+			})
+			It("returns the error if it's of type error or string", func() {
+				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
+				Expect(err).NotTo(BeNil())
+			})
+		})
 
-// 		Context("jailing already jailed validator", func() {
-// 			BeforeEach(func() {
-// 				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
-// 				Expect(err).To(BeNil())
-// 			})
-// 			It("returns an error", func() {
-// 				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
-// 				Expect(err).To(MatchError(keeper.ErrValidatorAlreadyJailed))
-// 			})
-// 		})
+		Context("jailing already jailed validator", func() {
+			BeforeEach(func() {
+				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
+				Expect(err).To(BeNil())
+			})
+			It("returns an error", func() {
+				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
+				Expect(err).To(MatchError(keeper.ErrValidatorAlreadyJailed))
+			})
+		})
 
-// 		Context("jailing validator with too much network stake", func() {
-// 			BeforeEach(func() {
-// 				By("change validator stake")
-// 				validators := testutil.GenValidators(1, 100)
-// 				a.StakingKeeper.SetValidator(ctx, validators[0])
-// 				a.StakingKeeper.SetValidatorByConsAddr(ctx, validators[0])
-// 				val = sdk.ValAddress(validators[0].GetOperator())
-// 			})
-// 			It("returns an error", func() {
-// 				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
-// 				Expect(err).To(MatchError(keeper.ErrCannotJailValidator))
-// 			})
-// 		})
-// 	})
-// })
+		Context("jailing validator with too much network stake", func() {
+			BeforeEach(func() {
+				By("change validator stake")
+				validators := testutil.GenValidators(1, 100)
+				a.StakingKeeper.SetValidator(ctx, validators[0])
+				a.StakingKeeper.SetValidatorByConsAddr(ctx, validators[0])
+				val = sdk.ValAddress(validators[0].GetOperator())
+			})
+			It("returns an error", func() {
+				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
+				Expect(err).To(MatchError(keeper.ErrCannotJailValidator))
+			})
+		})
+	})
+})
