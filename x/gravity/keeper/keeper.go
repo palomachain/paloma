@@ -2,11 +2,11 @@ package keeper
 
 import (
 	"context"
-	"cosmossdk.io/core/address"
+	"fmt"
+
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrortypes "github.com/cosmos/cosmos-sdk/types/errors"
@@ -41,7 +41,6 @@ type Keeper struct {
 	accountKeeper     types.AccountKeeper
 	ibcTransferKeeper ibctransferkeeper.Keeper
 	evmKeeper         types.EVMKeeper
-	addressCodec      address.Codec
 	storeGetter       keeperutil.StoreGetter
 
 	AttestationHandler interface {

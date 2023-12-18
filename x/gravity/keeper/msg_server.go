@@ -9,6 +9,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -132,8 +133,10 @@ func (k msgServer) checkOrchestratorValidatorInSet(ctx context.Context, orchestr
 	if !found {
 		return sdkerrors.Wrap(types.ErrUnknown, "validator")
 	}
-	valAddress, _ := k.Keeper.addressCodec.StringToBytes(validator.GetOperator())
-
+	valAddress, err := keeperutil.ConvertStringToBytes(validator.GetOperator())
+	if err != nil {
+		return err
+	}
 	// return an error if the validator isn't in the active set
 	val, err := k.StakingKeeper.Validator(ctx, valAddress)
 	if err != nil {
@@ -188,7 +191,7 @@ func (k msgServer) confirmHandlerCommon(ctx context.Context, ethAddress string, 
 	if !found {
 		return sdkerrors.Wrap(types.ErrUnknown, "validator")
 	}
-	valAddress, _ := k.Keeper.addressCodec.StringToBytes(validator.GetOperator())
+	valAddress, err := keeperutil.ConvertStringToBytes(validator.GetOperator())
 	if !validator.IsBonded() && !validator.IsUnbonding() {
 		// We must only accept confirms from bonded or unbonding validators
 		return sdkerrors.Wrap(types.ErrInvalid, "validator is unbonded")

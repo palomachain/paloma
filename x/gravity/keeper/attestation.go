@@ -13,6 +13,7 @@ import (
 	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -30,7 +31,8 @@ func (k Keeper) Attest(
 		return nil, fmt.Errorf("could not find ValAddr for delegate key, should be checked by now")
 	}
 	valAddr := val.GetOperator()
-	valAddress, err := k.addressCodec.StringToBytes(valAddr)
+
+	valAddress, err := keeperutil.ConvertStringToBytes(val.GetOperator())
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +118,7 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 		attestationPower := math.NewInt(0)
 		for _, validator := range att.Votes {
 
-			val, err := k.addressCodec.StringToBytes(validator)
+			val, err := keeperutil.ConvertStringToBytes(validator)
 			if err != nil {
 				return err
 			}
