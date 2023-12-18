@@ -457,6 +457,29 @@ func (k Keeper) SetMessageErrorData(
 	return nil
 }
 
+func (k Keeper) reassignMessageValidator(
+	ctx sdk.Context,
+	valAddr string,
+	msgID uint64,
+	queueTypeName string,
+) error {
+	cq, err := k.getConsensusQueue(ctx, queueTypeName)
+	if err != nil {
+		return err
+	}
+
+	chainType, chainReferenceID := cq.ChainInfo()
+	k.Logger(ctx).Info("reassigning orphaned message",
+		"message-id", msgID,
+		"queue-type-name", queueTypeName,
+		"chain-type", chainType,
+		"chain-reference-id", chainReferenceID,
+		"new-assignee", valAddr,
+	)
+
+	return cq.ReassignValidator(ctx, msgID, valAddr)
+}
+
 func nonceFromID(id uint64) []byte {
 	return sdk.Uint64ToBigEndian(id)
 }

@@ -4,6 +4,11 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 )
 
+type ProtoSerializer interface {
+	ProtoMarshaler
+	ProtoUnmarshaler
+}
+
 type ProtoUnmarshaler interface {
 	Unmarshal(bz []byte, ptr proto.Message) error
 }

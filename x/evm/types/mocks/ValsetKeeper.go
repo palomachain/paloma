@@ -6,6 +6,8 @@ import (
 	context "context"
 	big "math/big"
 
+	mock "github.com/stretchr/testify/mock"
+
 	cosmos_sdktypes "github.com/cosmos/cosmos-sdk/types"
 
 	mock "github.com/stretchr/testify/mock"
@@ -22,11 +24,7 @@ type ValsetKeeper struct {
 func (_m *ValsetKeeper) FindSnapshotByID(ctx context.Context, id uint64) (*types.Snapshot, error) {
 	ret := _m.Called(ctx, id)
 
-	if len(ret) == 0 {
-		panic("no return value specified for FindSnapshotByID")
-	}
-
-	var r0 *types.Snapshot
+	var r0 *valsettypes.Snapshot
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, uint64) (*types.Snapshot, error)); ok {
 		return rf(ctx, id)
@@ -52,11 +50,7 @@ func (_m *ValsetKeeper) FindSnapshotByID(ctx context.Context, id uint64) (*types
 func (_m *ValsetKeeper) GetAllChainInfos(ctx context.Context) ([]*types.ValidatorExternalAccounts, error) {
 	ret := _m.Called(ctx)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetAllChainInfos")
-	}
-
-	var r0 []*types.ValidatorExternalAccounts
+	var r0 []*valsettypes.ValidatorExternalAccounts
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context) ([]*types.ValidatorExternalAccounts, error)); ok {
 		return rf(ctx)
@@ -82,11 +76,7 @@ func (_m *ValsetKeeper) GetAllChainInfos(ctx context.Context) ([]*types.Validato
 func (_m *ValsetKeeper) GetCurrentSnapshot(ctx context.Context) (*types.Snapshot, error) {
 	ret := _m.Called(ctx)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetCurrentSnapshot")
-	}
-
-	var r0 *types.Snapshot
+	var r0 *valsettypes.Snapshot
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context) (*types.Snapshot, error)); ok {
 		return rf(ctx)
@@ -112,11 +102,7 @@ func (_m *ValsetKeeper) GetCurrentSnapshot(ctx context.Context) (*types.Snapshot
 func (_m *ValsetKeeper) GetLatestSnapshotOnChain(ctx context.Context, chainReferenceID string) (*types.Snapshot, error) {
 	ret := _m.Called(ctx, chainReferenceID)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetLatestSnapshotOnChain")
-	}
-
-	var r0 *types.Snapshot
+	var r0 *valsettypes.Snapshot
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) (*types.Snapshot, error)); ok {
 		return rf(ctx, chainReferenceID)
@@ -142,11 +128,7 @@ func (_m *ValsetKeeper) GetLatestSnapshotOnChain(ctx context.Context, chainRefer
 func (_m *ValsetKeeper) GetValidatorChainInfos(ctx context.Context, valAddr cosmos_sdktypes.ValAddress) ([]*types.ExternalChainInfo, error) {
 	ret := _m.Called(ctx, valAddr)
 
-	if len(ret) == 0 {
-		panic("no return value specified for GetValidatorChainInfos")
-	}
-
-	var r0 []*types.ExternalChainInfo
+	var r0 []*valsettypes.ExternalChainInfo
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, cosmos_sdktypes.ValAddress) ([]*types.ExternalChainInfo, error)); ok {
 		return rf(ctx, valAddr)

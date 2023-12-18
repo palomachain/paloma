@@ -4,6 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -25,4 +26,9 @@ type ValsetKeeper interface {
 	GetCurrentSnapshot(ctx context.Context) (*valsettypes.Snapshot, error)
 	CanAcceptValidator(ctx context.Context, valAddr sdk.ValAddress) error
 	KeepValidatorAlive(ctx context.Context, valAddr sdk.ValAddress, pigeonVersion string) error
+}
+
+//go:generate mockery --name=EvmKeeper
+type EvmKeeper interface {
+	PickValidatorForMessage(ctx sdk.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error)
 }

@@ -15,6 +15,9 @@ const (
 
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_valset"
+
+	// JailLogKey defines the jail log KV store key
+	JailLogKey = "jail_log"
 )
 
 func KeyPrefix(p string) []byte {

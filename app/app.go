@@ -163,7 +163,7 @@ const (
 
 	wasmAvailableCapabilities = "iterator,staking,stargate,paloma"
 
-	minimumPigeonVersion = "v1.10.0"
+	minimumPigeonVersion = "v1.10.2"
 )
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -603,9 +603,7 @@ func New(
 
 	app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
 		appCodec,
-		keys[schedulermoduletypes.StoreKey],
-		memKeys[schedulermoduletypes.MemStoreKey],
-		app.GetSubspace(schedulermoduletypes.ModuleName),
+		runtime.NewKVStoreService(keys[schedulermoduletypes.StoreKey]),
 		app.AccountKeeper,
 		app.EvmKeeper,
 		[]xchain.Bridge{
@@ -738,7 +736,7 @@ func New(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 
-	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
+	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper)
 	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 	// valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)

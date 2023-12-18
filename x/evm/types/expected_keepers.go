@@ -48,3 +48,8 @@ type ValsetKeeper interface {
 type SchedulerKeeper interface {
 	ScheduleNow(ctx context.Context, jobID string, in []byte, SenderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error
 }
+
+//go:generate mockery --name=GravityKeeper
+type GravityKeeper interface {
+	GetLastObservedEventNonce(ctx sdk.Context) (uint64, error)
+}

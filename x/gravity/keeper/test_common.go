@@ -650,6 +650,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		memKeyValset,
 		getSubspace(paramsKeeper, valsettypes.ModuleName),
 		stakingKeeper,
+		slashingKeeper,
 		"v1.5.0",
 		sdk.DefaultPowerReduction,
 	)

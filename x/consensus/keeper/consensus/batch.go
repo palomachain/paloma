@@ -130,9 +130,8 @@ func (c BatchQueue) GetAll(ctx context.Context) ([]types.QueuedSignedMessageI, e
 	return c.base.GetAll(sdkCtx)
 }
 
-func (c BatchQueue) AddEvidence(ctx context.Context, id uint64, evidence *types.Evidence) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return c.base.AddEvidence(sdkCtx, id, evidence)
+func (c BatchQueue) AddEvidence(ctx sdk.Context, id uint64, evidence *types.Evidence) error {
+	return c.base.AddEvidence(ctx, id, evidence)
 }
 
 func (c BatchQueue) SetPublicAccessData(ctx context.Context, id uint64, data *types.PublicAccessData) error {

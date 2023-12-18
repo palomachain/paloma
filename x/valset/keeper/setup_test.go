@@ -19,8 +19,9 @@ import (
 )
 
 type mockedServices struct {
-	StakingKeeper *mocks.StakingKeeper
-	EvmKeeper     *mocks.EvmKeeper
+	StakingKeeper  *mocks.StakingKeeper
+	EvmKeeper      *mocks.EvmKeeper
+	SlashingKeeper *mocks.SlashingKeeper
 }
 
 func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
@@ -46,8 +47,9 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 	)
 
 	ms := mockedServices{
-		StakingKeeper: mocks.NewStakingKeeper(t),
-		EvmKeeper:     mocks.NewEvmKeeper(t),
+		StakingKeeper:  mocks.NewStakingKeeper(t),
+		EvmKeeper:      mocks.NewEvmKeeper(t),
+		SlashingKeeper: mocks.NewSlashingKeeper(t),
 	}
 	k := NewKeeper(
 		appCodec,
@@ -55,6 +57,7 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		memStoreKey,
 		paramsSubspace,
 		ms.StakingKeeper,
+		ms.SlashingKeeper,
 		"v1.4.0",
 		sdk.DefaultPowerReduction,
 	)

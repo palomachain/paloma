@@ -1,0 +1,30 @@
+syntax = "proto3";
+package palomachain.paloma.valset;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/palomachain/paloma/x/valset/types";
+
+
+message JailRecord {
+  // Address of the validator being jailed
+  bytes address = 1 [
+    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"
+  ];
+
+  // Duration of jailing 
+  google.protobuf.Duration duration = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+
+  // Timestamp of when the validator was jailed
+  google.protobuf.Timestamp jailedAt = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+

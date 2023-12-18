@@ -3,6 +3,7 @@ package consensus
 import (
 	"context"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -24,6 +25,7 @@ type Queuer interface {
 	Put(context.Context, ConsensusMsg, *PutOptions) (uint64, error)
 	AddSignature(ctx context.Context, id uint64, signData *types.SignData) error
 	AddEvidence(ctx context.Context, id uint64, evidence *types.Evidence) error
+	ReassignValidator(ctx sdk.Context, id uint64, val string) error
 	SetPublicAccessData(ctx context.Context, id uint64, data *types.PublicAccessData) error
 	GetPublicAccessData(ctx context.Context, id uint64) (*types.PublicAccessData, error)
 	SetErrorData(ctx context.Context, id uint64, data *types.ErrorData) error

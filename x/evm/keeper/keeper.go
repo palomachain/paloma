@@ -92,7 +92,7 @@ func init() {
 	}
 }
 
-var _ valsettypes.OnSnapshotBuiltListener = Keeper{}
+var _ valsettypes.OnSnapshotBuiltListener = &Keeper{}
 
 type Keeper struct {
 	cdc             codec.BinaryCodec
@@ -100,6 +100,7 @@ type Keeper struct {
 	ConsensusKeeper types.ConsensusKeeper
 	SchedulerKeeper types.SchedulerKeeper
 	Valset          types.ValsetKeeper
+	Gravity         types.GravityKeeper
 	ider            keeperutil.IDGenerator
 	msgSender       types.MsgSender
 	msgAssigner     types.MsgAssigner

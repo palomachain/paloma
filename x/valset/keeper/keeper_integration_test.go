@@ -2,9 +2,11 @@ package keeper_test
 
 import (
 	"testing"
+	"time"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
@@ -61,6 +63,9 @@ var _ = Describe("jaling validators", func() {
 			for _, v := range validators {
 				a.StakingKeeper.SetValidator(ctx, v)
 				a.StakingKeeper.SetValidatorByConsAddr(ctx, v)
+				addr, _ := v.GetConsAddr()
+				si := types.NewValidatorSigningInfo(addr, 0, 0, time.Time{}, false, 0)
+				a.SlashingKeeper.SetValidatorSigningInfo(ctx, addr, si)
 			}
 			val = validators[0].GetOperator()
 		})

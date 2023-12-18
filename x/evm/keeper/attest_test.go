@@ -73,6 +73,7 @@ var _ = g.Describe("attest router", func() {
 		consensukeeper = ms.ConsensusKeeper
 		q = consensusmocks.NewQueuer(t)
 		isGoodcase = true
+		ms.GravityKeeper.On("GetLastObservedEventNonce", mock.Anything).Return(uint64(100), nil).Maybe()
 	})
 
 	g.BeforeEach(func() {

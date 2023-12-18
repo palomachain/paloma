@@ -21,6 +21,7 @@ type mockedServices struct {
 	ConsensusKeeper *mocks.ConsensusKeeper
 	ValsetKeeper    *mocks.ValsetKeeper
 	MsgSender       *mocks.MsgSender
+	GravityKeeper   *mocks.GravityKeeper
 }
 
 func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
@@ -44,6 +45,7 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 		ConsensusKeeper: mocks.NewConsensusKeeper(t),
 		ValsetKeeper:    mocks.NewValsetKeeper(t),
 		MsgSender:       mocks.NewMsgSender(t),
+		GravityKeeper:   mocks.NewGravityKeeper(t),
 	}
 	k := NewKeeper(
 		appCodec,
@@ -54,6 +56,7 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 	)
 
 	k.msgSender = ms.MsgSender
+	k.Gravity = ms.GravityKeeper
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 
