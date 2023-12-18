@@ -183,7 +183,11 @@ func (k Keeper) processAttestation(ctx context.Context, att *types.Attestation, 
 	if err := k.AttestationHandler.Handle(xCtx, *att, claim); err != nil { // execute with a transient storage
 		// If the attestation fails, something has gone wrong and we can't recover it. Log and move on
 		// The attestation will still be marked "Observed", allowing the oracle to progress properly
-		liblog.FromSDKLogger(k.Logger(ctx)).WithFields("cause", err.Error(), "claim type", claim.GetType(), "id", types.GetAttestationKey(claim.GetEventNonce(), hash), "nonce", fmt.Sprint(claim.GetEventNonce())).Error("attestation failed")
+		liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
+			"cause", err.Error(),
+			"claim type", claim.GetType(),
+			"id", types.GetAttestationKey(claim.GetEventNonce(), hash),
+			"nonce", fmt.Sprint(claim.GetEventNonce())).Error("attestation failed")
 	} else {
 		commit() // persist transient storage
 	}

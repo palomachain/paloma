@@ -171,7 +171,7 @@ func (k Keeper) LastEventNonceByAddr(
 	if !found {
 		return nil, errors.Wrap(types.ErrUnknown, "address")
 	}
-	valAddress := k.addressCodec.StringToBytes(validator.GetOperator())
+	valAddress, _ := k.addressCodec.StringToBytes(validator.GetOperator())
 	if err := sdk.VerifyAddressFormat(valAddress); err != nil {
 		return nil, errors.Wrap(err, "invalid validator address")
 	}
