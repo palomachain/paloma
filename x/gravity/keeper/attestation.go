@@ -32,7 +32,7 @@ func (k Keeper) Attest(
 	}
 	valAddr := val.GetOperator()
 
-	valAddress, err := keeperutil.ConvertStringToBytes(val.GetOperator())
+	valAddress, err := keeperutil.ValAddressFromBech32(k.addressCodec, val.GetOperator())
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 		attestationPower := math.NewInt(0)
 		for _, validator := range att.Votes {
 
-			val, err := keeperutil.ConvertStringToBytes(validator)
+			val, err := keeperutil.ValAddressFromBech32(k.addressCodec, validator)
 			if err != nil {
 				return err
 			}

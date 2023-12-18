@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"cosmossdk.io/core/address"
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
@@ -41,6 +42,7 @@ type Keeper struct {
 	accountKeeper     types.AccountKeeper
 	ibcTransferKeeper ibctransferkeeper.Keeper
 	evmKeeper         types.EVMKeeper
+	addressCodec      address.Codec
 	storeGetter       keeperutil.StoreGetter
 
 	AttestationHandler interface {

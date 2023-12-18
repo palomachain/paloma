@@ -133,7 +133,7 @@ func (k msgServer) checkOrchestratorValidatorInSet(ctx context.Context, orchestr
 	if !found {
 		return sdkerrors.Wrap(types.ErrUnknown, "validator")
 	}
-	valAddress, err := keeperutil.ConvertStringToBytes(validator.GetOperator())
+	valAddress, err := keeperutil.ValAddressFromBech32(k.addressCodec, validator.GetOperator())
 	if err != nil {
 		return err
 	}
@@ -191,7 +191,7 @@ func (k msgServer) confirmHandlerCommon(ctx context.Context, ethAddress string, 
 	if !found {
 		return sdkerrors.Wrap(types.ErrUnknown, "validator")
 	}
-	valAddress, err := keeperutil.ConvertStringToBytes(validator.GetOperator())
+	valAddress, err := keeperutil.ValAddressFromBech32(k.addressCodec, validator.GetOperator())
 	if !validator.IsBonded() && !validator.IsUnbonding() {
 		// We must only accept confirms from bonded or unbonding validators
 		return sdkerrors.Wrap(types.ErrInvalid, "validator is unbonded")
