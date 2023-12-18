@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"sort"
 
-	"cosmossdk.io/core/address"
 	cosmosstore "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
@@ -42,7 +41,6 @@ type Keeper struct {
 	paramstore           paramtypes.Subspace
 	powerReduction       sdkmath.Int
 	staking              types.StakingKeeper
-	addressCodec         address.Codec
 	storeKey             cosmosstore.KVStoreService
 }
 
@@ -378,7 +376,10 @@ func (k Keeper) createNewSnapshot(ctx context.Context) (*types.Snapshot, error) 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	validators := []stakingtypes.ValidatorI{}
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
-		bz, _ := k.addressCodec.StringToBytes(val.GetOperator())
+		bz, err := keeperutil.ConvertStringToBytes(val.GetOperator())
+		if err != nil {
+			panic(err)
+		}
 		if val.IsBonded() && !val.IsJailed() && k.ValidatorSupportsAllChains(ctx, bz) {
 			validators = append(validators, val)
 		}
@@ -392,7 +393,10 @@ func (k Keeper) createNewSnapshot(ctx context.Context) (*types.Snapshot, error) 
 	}
 
 	for _, val := range validators {
-		bz, _ := k.addressCodec.StringToBytes(val.GetOperator())
+		bz, err := keeperutil.ConvertStringToBytes(val.GetOperator())
+		if err != nil {
+			return nil, err
+		}
 		chainInfo, err := k.GetValidatorChainInfos(ctx, bz)
 		if err != nil {
 			return nil, err
