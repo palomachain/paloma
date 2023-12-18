@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"context"
+	"cosmossdk.io/core/address"
 	"errors"
 	"fmt"
 	"math/big"
@@ -42,6 +43,7 @@ type Keeper struct {
 	powerReduction       sdkmath.Int
 	staking              types.StakingKeeper
 	storeKey             cosmosstore.KVStoreService
+	addressCodec         address.Codec
 }
 
 func NewKeeper(
@@ -376,7 +378,7 @@ func (k Keeper) createNewSnapshot(ctx context.Context) (*types.Snapshot, error) 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	validators := []stakingtypes.ValidatorI{}
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
-		bz, err := keeperutil.ConvertStringToBytes(val.GetOperator())
+		bz, err := keeperutil.ValAddressFromBech32(k.addressCodec, val.GetOperator())
 		if err != nil {
 			panic(err)
 		}
@@ -393,7 +395,7 @@ func (k Keeper) createNewSnapshot(ctx context.Context) (*types.Snapshot, error) 
 	}
 
 	for _, val := range validators {
-		bz, err := keeperutil.ConvertStringToBytes(val.GetOperator())
+		bz, err := keeperutil.ValAddressFromBech32(k.addressCodec, val.GetOperator())
 		if err != nil {
 			return nil, err
 		}

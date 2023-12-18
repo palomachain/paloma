@@ -21,7 +21,7 @@ func (k Keeper) GetAlivePigeons(goCtx context.Context, req *types.QueryGetAliveP
 	vals := k.GetUnjailedValidators(ctx)
 
 	res := slice.Map(vals, func(val stakingtypes.ValidatorI) *types.QueryGetAlivePigeonsResponse_ValidatorAlive {
-		bz, err := keeperutil.ConvertStringToBytes(val.GetOperator())
+		bz, err := keeperutil.ValAddressFromBech32(k.addressCodec, val.GetOperator())
 		s := &types.QueryGetAlivePigeonsResponse_ValidatorAlive{
 			ValAddress: bz,
 		}

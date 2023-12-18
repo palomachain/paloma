@@ -143,7 +143,7 @@ func (k Keeper) UpdateGracePeriod(ctx context.Context) error {
 	}
 
 	vals, err := slice.MapErr(k.GetUnjailedValidators(ctx), func(i stakingtypes.ValidatorI) ([]byte, error) {
-		bz, err := keeperutil.ConvertStringToBytes(i.GetOperator())
+		bz, err := keeperutil.ValAddressFromBech32(k.addressCodec, i.GetOperator())
 		if err != nil {
 			return nil, err
 		}
@@ -171,7 +171,7 @@ func (k Keeper) JailInactiveValidators(ctx context.Context) error {
 		if !(val.GetStatus() == stakingtypes.Bonded || val.GetStatus() == stakingtypes.Unbonding) {
 			continue
 		}
-		valAddr, err := keeperutil.ConvertStringToBytes(val.GetOperator())
+		valAddr, err := keeperutil.ValAddressFromBech32(k.addressCodec, val.GetOperator())
 		if err != nil {
 			return err
 		}
