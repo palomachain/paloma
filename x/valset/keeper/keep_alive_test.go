@@ -45,7 +45,7 @@ func TestJailingInactiveValidators(t *testing.T) {
 
 	k.unjailedSnapshotStore(ctx).Set([]byte(cUnjailedSnapshotStoreKey), bytes.Join([][]byte{a1, a2, a3, a4}, []byte(",")))
 	ms.StakingKeeper.On("IterateValidators", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-		callback := args.Get(1).(func(int64, stakingtypes.ValidatorI) bool)
+		callback := args.Get(1).(func(int64, *mocks.StakingValidatorI) bool)
 		callback(0, v1)
 		callback(0, v2)
 		callback(0, v3)
@@ -151,7 +151,7 @@ func TestUpdateGracePeriod(t *testing.T) {
 	}
 
 	ms.StakingKeeper.On("IterateValidators", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-		callback := args.Get(1).(func(int64, stakingtypes.ValidatorI) bool)
+		callback := args.Get(1).(func(int64, *mocks.StakingValidatorI) bool)
 		callback(0, v1)
 		callback(0, v2)
 		callback(0, v3)

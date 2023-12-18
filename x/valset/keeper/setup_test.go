@@ -1,16 +1,17 @@
 package keeper
 
 import (
-	"os"
 	"testing"
 
-	tmdb "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	"cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
+	storetypes "cosmossdk.io/store/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmdb "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/store"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/valset/types"
@@ -24,11 +25,13 @@ type mockedServices struct {
 }
 
 func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
-	storeKey := sdk.NewKVStoreKey(types.StoreKey)
+	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
+
+	storeKeyService := runtime.NewKVStoreService(storeKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
 	db := tmdb.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db)
+	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
 	stateStore.MountStoreWithDB(memStoreKey, storetypes.StoreTypeMemory, nil)
 	require.NoError(t, stateStore.LoadLatestVersion())
@@ -46,13 +49,12 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 	)
 
 	ms := mockedServices{
-		StakingKeeper: mocks.NewStakingKeeper(t),
-		EvmKeeper:     mocks.NewEvmKeeper(t),
+		StakingKeeper: &mocks.StakingKeeper{},
+		EvmKeeper:     &mocks.EvmKeeper{},
 	}
 	k := NewKeeper(
 		appCodec,
-		storeKey,
-		memStoreKey,
+		storeKeyService,
 		paramsSubspace,
 		ms.StakingKeeper,
 		"v1.4.0",
@@ -62,9 +64,9 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 	k.EvmKeeper = ms.EvmKeeper
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
-	ctx = ctx.WithMultiStore(stateStore).WithGasMeter(sdk.NewInfiniteGasMeter())
+	ctx = ctx.WithMultiStore(stateStore).WithGasMeter(storetypes.NewInfiniteGasMeter())
 
-	ctx = ctx.WithLogger(log.NewTMJSONLogger(os.Stdout))
+	ctx = ctx.WithLogger(log.NewNopLogger())
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())
