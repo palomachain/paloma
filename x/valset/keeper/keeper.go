@@ -378,10 +378,7 @@ func (k Keeper) createNewSnapshot(ctx context.Context) (*types.Snapshot, error) 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	validators := []stakingtypes.ValidatorI{}
 	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
-		bz, err := k.addressCodec.StringToBytes(val.GetOperator())
-		if err != nil {
-			panic(err)
-		}
+		bz, _ := k.addressCodec.StringToBytes(val.GetOperator())
 		if val.IsBonded() && !val.IsJailed() && k.ValidatorSupportsAllChains(ctx, bz) {
 			validators = append(validators, val)
 		}
@@ -395,7 +392,7 @@ func (k Keeper) createNewSnapshot(ctx context.Context) (*types.Snapshot, error) 
 	}
 
 	for _, val := range validators {
-		bz, err := k.addressCodec.StringToBytes(val.GetOperator())
+		bz, _ := k.addressCodec.StringToBytes(val.GetOperator())
 		chainInfo, err := k.GetValidatorChainInfos(ctx, bz)
 		if err != nil {
 			return nil, err

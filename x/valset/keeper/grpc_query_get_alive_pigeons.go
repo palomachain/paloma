@@ -21,12 +21,9 @@ func (k Keeper) GetAlivePigeons(goCtx context.Context, req *types.QueryGetAliveP
 	vals := k.GetUnjailedValidators(ctx)
 
 	res := slice.Map(vals, func(val stakingtypes.ValidatorI) *types.QueryGetAlivePigeonsResponse_ValidatorAlive {
-		bz, err := k.addressCodec.StringToBytes(val.GetOperator())
+		bz, _ := k.addressCodec.StringToBytes(val.GetOperator())
 		s := &types.QueryGetAlivePigeonsResponse_ValidatorAlive{
 			ValAddress: bz,
-		}
-		if err != nil {
-			s.Error = err.Error()
 		}
 		until, err := k.ValidatorAliveUntil(ctx, bz)
 		if err != nil {
