@@ -3,13 +3,13 @@ package paloma
 import (
 	"context"
 	"fmt"
+	"github.com/palomachain/paloma/util/liblog"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/x/feegrant"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/proto"
-	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/libmeta"
 	"github.com/palomachain/paloma/x/paloma/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
@@ -32,13 +32,11 @@ func NewAnteHandlerDecorator(handler sdk.AnteHandler) HandlerDecorator {
 
 // AnteHandle wraps the next AnteHandler to perform custom pre- and post-processing
 func (decorator HandlerDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	if newCtx, err = decorator.handler(sdkCtx, tx, simulate); err != nil {
+	if newCtx, err = decorator.handler(ctx, tx, simulate); err != nil {
 		return newCtx, err
 	}
 
-	return next(sdkCtx, tx, simulate)
+	return next(newCtx, tx, simulate)
 }
 
 // LogMsgDecorator logs all messages in blocks
@@ -53,23 +51,21 @@ func NewLogMsgDecorator(cdc codec.Codec) LogMsgDecorator {
 
 // AnteHandle logs all messages in blocks
 func (d LogMsgDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	if simulate || sdkCtx.IsCheckTx() {
-		return next(sdkCtx, tx, simulate)
+	if simulate || ctx.IsCheckTx() {
+		return next(ctx, tx, simulate)
 	}
 
 	msgs := tx.GetMsgs()
 
 	for _, msg := range msgs {
-		liblog.FromSDKLogger(logger(ctx)).Debug(fmt.Sprintf("received message of type %s in block %d: %s",
+		logger(ctx).Debug(fmt.Sprintf("received message of type %s in block %d: %s",
 			proto.MessageName(msg),
-			sdkCtx.BlockHeight(),
+			ctx.BlockHeight(),
 			string(d.cdc.MustMarshalJSON(msg)),
 		))
 	}
 
-	return next(sdkCtx, tx, simulate)
+	return next(ctx, tx, simulate)
 }
 
 // VerifyAuthorisedSignatureDecorator verifies that the message is signed by at least one signature that has
@@ -85,20 +81,19 @@ func NewVerifyAuthorisedSignatureDecorator(fk types.FeegrantKeeper) VerifyAuthor
 // AnteHandle verifies that the message is signed by at least one signature that has
 // active fee grant from the creator address, IF the message contains metadata.
 func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if simulate {
-		return next(sdkCtx, tx, simulate)
+		return next(ctx, tx, simulate)
 	}
 
 	for _, msg := range tx.GetMsgs() {
 		m, ok := msg.(libmeta.MsgWithMetadata[vtypes.MsgMetadata])
 		if !ok {
-			liblog.FromSDKLogger(logger(ctx)).Debug(fmt.Sprintf("msg %s does not contain metadata. skipping ownership verification...", proto.MessageName(msg)))
+			logger(ctx).Debug(fmt.Sprintf("msg %s does not contain metadata. skipping ownership verification...", proto.MessageName(msg)))
 			continue
 		}
 
 		creator := m.GetMetadata().GetCreator()
-		signers := m.GetMetadata().GetSigners()
+		signers := m.GetSigners()
 
 		signedByCreator := func() bool {
 			for _, v := range signers {
@@ -109,7 +104,7 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 			return false
 		}()
 		if signedByCreator {
-			liblog.FromSDKLogger(logger(ctx)).Debug(fmt.Sprintf("msg %s was signed by creator.", proto.MessageName(msg)))
+			logger(ctx).Debug(fmt.Sprintf("msg %s was signed by creator.", proto.MessageName(msg)))
 			continue
 		}
 
@@ -120,21 +115,21 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 			return ctx, fmt.Errorf("failed to verify message signature authorisation: %w", err)
 		}
 
-		liblog.FromSDKLogger(logger(ctx)).Debug(fmt.Sprintf("got %d allowances from granter %s", len(grants.GetAllowances()), creator))
+		logger(ctx).Debug(fmt.Sprintf("got %d allowances from granter %s", len(grants.GetAllowances()), creator))
 		grantsLkUp := map[string]feegrant.Grant{}
 		for _, v := range grants.GetAllowances() {
 			if v == nil {
 				continue
 			}
 
-			liblog.FromSDKLogger(logger(ctx)).WithFields("granter", v.GetGranter(), "grantee", v.GetGrantee()).Debug("found allowance")
+			logger(ctx).Debug("found allowance", "granter", v.GetGranter(), "grantee", v.GetGrantee())
 			grantsLkUp[v.GetGrantee()] = *v
 		}
 
 		grantees := make([]string, 0, len(signers))
 		for _, signer := range signers {
 			if v, found := grantsLkUp[signer]; found {
-				liblog.FromSDKLogger(logger(ctx)).WithFields("signature", v.Grantee).Debug("found granted signature")
+				logger(ctx).Debug("found granted signature", "signature", v.Grantee)
 				grantees = append(grantees, v.Grantee)
 			}
 		}
@@ -143,8 +138,8 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 			return ctx, fmt.Errorf("no signature from granted address found for message %s", proto.MessageName(msg))
 		}
 
-		liblog.FromSDKLogger(logger(ctx)).Debug(fmt.Sprintf("found total of %d signatures from granted addresses for message %s", len(grantees), proto.MessageName(msg)))
+		logger(ctx).Debug(fmt.Sprintf("found total of %d signatures from granted addresses for message %s", len(grantees), proto.MessageName(msg)))
 	}
 
-	return next(sdkCtx, tx, simulate)
+	return next(ctx, tx, simulate)
 }

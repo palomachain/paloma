@@ -11,6 +11,7 @@ type Metadata interface {
 
 type MsgWithMetadata[T Metadata] interface {
 	GetMetadata() T
+	GetSigners() []string
 }
 
 func GetSigners[E Metadata, T MsgWithMetadata[E]](msg T) []sdk.AccAddress {

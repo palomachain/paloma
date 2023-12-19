@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"sort"
 	"strings"
 
@@ -83,7 +84,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 	var g whoops.Group
 	for _, val := range vals {
-		bz, err := k.AddressCodec.StringToBytes(val.GetOperator())
+		bz, err := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
 		if err != nil {
 			return err
 		}
@@ -108,7 +109,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 		sort.Strings(notSupported)
 
-		bz, err = k.AddressCodec.StringToBytes(val.GetOperator())
+		bz, err = keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
 		if err != nil {
 			return err
 		}
