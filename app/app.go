@@ -170,7 +170,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 	return []govclient.ProposalHandler{
 		paramsclient.ProposalHandler,
 		gravityclient.ProposalHandler,
-		// treasuryclient.ProposalHandler,
+		treasuryclient.ProposalHandler,
 		evmclient.ProposalHandler,
 		treasuryclient.ProposalHandler,
 	}
@@ -201,12 +201,12 @@ var (
 		vesting.AppModuleBasic{},
 		schedulermodule.AppModuleBasic{},
 		consensusmodule.AppModuleBasic{},
-		// valsetmodule.AppModuleBasic{},
+		valsetmodule.AppModuleBasic{},
 		wasm.AppModuleBasic{},
 		evm.AppModuleBasic{},
 		gravitymodule.AppModuleBasic{},
-		// palomamodule.AppModuleBasic{},
-		// treasurymodule.AppModuleBasic{},
+		palomamodule.AppModuleBasic{},
+		treasurymodule.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		ibc.AppModuleBasic{},
@@ -365,10 +365,10 @@ func New(
 		capabilitytypes.StoreKey,
 		schedulermoduletypes.StoreKey,
 		consensusmoduletypes.StoreKey,
-		// valsetmoduletypes.StoreKey,
+		valsetmoduletypes.StoreKey,
 		treasurymoduletypes.StoreKey,
 		valsetmoduletypes.StoreKey,
-		// treasurymoduletypes.StoreKey,
+		treasurymoduletypes.StoreKey,
 		evmmoduletypes.StoreKey,
 		gravitymoduletypes.StoreKey,
 		consensusparamtypes.StoreKey,
@@ -980,13 +980,13 @@ func New(
 		panic(err)
 	}
 	anteDecorators := []sdk.AnteDecorator{
-		// palomamodule.NewAnteHandlerDecorator(baseAnteHandler),
+		palomamodule.NewAnteHandlerDecorator(baseAnteHandler),
 	}
 	anteDecorators = append(anteDecorators)
-	// palomamodule.NewLogMsgDecorator(app.appCodec),
-	// 	palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
+	palomamodule.NewLogMsgDecorator(app.appCodec),
+		palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
 
-	anteHandler := sdk.ChainAnteDecorators(
+		anteHandler := sdk.ChainAnteDecorators(
 		anteDecorators...,
 	)
 
