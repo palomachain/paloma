@@ -45,7 +45,7 @@ func PalomaKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		paramsSubspace,
 		"v0.0.1", // do not use this PalomaKeeper function!
 		valsetkeeper.Keeper{},
-		nil, // nil to be replaced by upgrade keeper
+		nil,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
