@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"sort"
 
+	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -40,11 +42,12 @@ func AllInvariants(k Keeper) sdk.Invariant {
 // Note that the returned bool should be true if there is an error, e.g. an unexpected module balance
 func ModuleBalanceInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		modAcc := k.accountKeeper.GetModuleAddress(types.ModuleName)
 		actualBals := k.bankKeeper.GetAllBalances(ctx, modAcc)
-		expectedBals := make(map[string]*sdk.Int, len(actualBals)) // Collect balances by contract
+		expectedBals := make(map[string]*math.Int, len(actualBals)) // Collect balances by contract
 		for _, v := range actualBals {
-			newInt := sdk.NewInt(0)
+			newInt := math.NewInt(0)
 			expectedBals[v.Denom] = &newInt
 		}
 		expectedBals, err := sumUnconfirmedBatchModuleBalances(ctx, k, expectedBals)
@@ -62,7 +65,7 @@ func ModuleBalanceInvariant(k Keeper) sdk.Invariant {
 			_, err := k.GetERC20OfDenom(ctx, "test-chain", denom)
 			if err != nil {
 				// Here we do not return because a user could halt the chain by gifting gravity a cosmos asset with no erc20 repr
-				ctx.Logger().Error("Unexpected gravity module balance of paloma-originated asset with no erc20 representation", "asset", denom)
+				liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("asset", denom).Error("Unexpected gravity module balance of paloma-originated asset with no erc20 representation")
 				continue
 			}
 			expected, ok := expectedBals[denom]
@@ -81,9 +84,9 @@ func ModuleBalanceInvariant(k Keeper) sdk.Invariant {
 /////// MODULE BALANCE HELPERS
 
 // sumUnconfirmedBatchModuleBalances calculate the value the module should have stored due to unconfirmed batches
-func sumUnconfirmedBatchModuleBalances(ctx sdk.Context, k Keeper, expectedBals map[string]*sdk.Int) (map[string]*sdk.Int, error) {
+func sumUnconfirmedBatchModuleBalances(ctx sdk.Context, k Keeper, expectedBals map[string]*math.Int) (map[string]*math.Int, error) {
 	err := k.IterateOutgoingTxBatches(ctx, func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
-		batchTotal := sdk.NewInt(0)
+		batchTotal := math.NewInt(0)
 		// Collect the send amount for each tx
 		for _, tx := range batch.Transactions {
 			newTotal := batchTotal.Add(tx.Erc20Token.Amount)
@@ -94,7 +97,7 @@ func sumUnconfirmedBatchModuleBalances(ctx sdk.Context, k Keeper, expectedBals m
 		// Add the batch total to the contract counter
 		_, ok := expectedBals[denom]
 		if !ok {
-			zero := sdk.ZeroInt()
+			zero := math.ZeroInt()
 			expectedBals[denom] = &zero
 		}
 
@@ -107,7 +110,7 @@ func sumUnconfirmedBatchModuleBalances(ctx sdk.Context, k Keeper, expectedBals m
 }
 
 // sumUnbatchedTxModuleBalances calculates the value the module should have stored due to unbatched txs
-func sumUnbatchedTxModuleBalances(ctx sdk.Context, k Keeper, expectedBals map[string]*sdk.Int) (map[string]*sdk.Int, error) {
+func sumUnbatchedTxModuleBalances(ctx sdk.Context, k Keeper, expectedBals map[string]*math.Int) (map[string]*math.Int, error) {
 	// It is also given the balance of all unbatched txs in the pool
 	err := k.IterateUnbatchedTransactions(ctx, func(_ []byte, tx *types.InternalOutgoingTransferTx) bool {
 		contract := tx.Erc20Token.Contract
@@ -115,7 +118,7 @@ func sumUnbatchedTxModuleBalances(ctx sdk.Context, k Keeper, expectedBals map[st
 
 		_, ok := expectedBals[denom]
 		if !ok {
-			zero := sdk.ZeroInt()
+			zero := math.ZeroInt()
 			expectedBals[denom] = &zero
 		}
 		*expectedBals[denom] = expectedBals[denom].Add(tx.Erc20Token.Amount)

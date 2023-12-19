@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -8,7 +9,7 @@ import (
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
-func initBridgeDataFromGenesis(ctx sdk.Context, k Keeper, data types.GenesisState) {
+func initBridgeDataFromGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 	// reset batches in state
 	for _, batch := range data.Batches {
 		// TODO: block height?
@@ -33,7 +34,7 @@ func initBridgeDataFromGenesis(ctx sdk.Context, k Keeper, data types.GenesisStat
 }
 
 // InitGenesis starts a chain from a genesis state
-func InitGenesis(ctx sdk.Context, k Keeper, data types.GenesisState) {
+func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 	k.SetParams(ctx, *data.Params)
 
 	// restore various nonces, this MUST match GravityNonces in genesis
@@ -129,7 +130,7 @@ func InitGenesis(ctx sdk.Context, k Keeper, data types.GenesisState) {
 
 // ExportGenesis exports all the state needed to restart the chain
 // from the current state of the chain
-func ExportGenesis(ctx sdk.Context, k Keeper) types.GenesisState {
+func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 	unbatchedTransfers, err := k.GetUnbatchedTransactions(ctx)
 	if err != nil {
 		panic(err)

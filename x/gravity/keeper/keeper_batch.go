@@ -1,9 +1,12 @@
 package keeper
 
 import (
+	"context"
+
 	sdkerrors "cosmossdk.io/errors"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -12,10 +15,10 @@ import (
 /////////////////////////////
 
 // GetBatchConfirm returns a batch confirmation given its nonce, the token contract, and a validator address
-func (k Keeper) GetBatchConfirm(ctx sdk.Context, nonce uint64, tokenContract types.EthAddress, validator sdk.AccAddress) (*types.MsgConfirmBatch, error) {
+func (k Keeper) GetBatchConfirm(ctx context.Context, nonce uint64, tokenContract types.EthAddress, validator sdk.AccAddress) (*types.MsgConfirmBatch, error) {
 	store := k.GetStore(ctx)
 	if err := sdk.VerifyAddressFormat(validator); err != nil {
-		ctx.Logger().Error("invalid validator address")
+		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("invalid validator address")
 		return nil, nil
 	}
 	batchConfirmKey, err := types.GetBatchConfirmKey(tokenContract, nonce, validator)
@@ -38,7 +41,7 @@ func (k Keeper) GetBatchConfirm(ctx sdk.Context, nonce uint64, tokenContract typ
 }
 
 // SetBatchConfirm sets a batch confirmation by a validator
-func (k Keeper) SetBatchConfirm(ctx sdk.Context, batch *types.MsgConfirmBatch) ([]byte, error) {
+func (k Keeper) SetBatchConfirm(ctx context.Context, batch *types.MsgConfirmBatch) ([]byte, error) {
 	store := k.GetStore(ctx)
 	acc, err := sdk.AccAddressFromBech32(batch.Orchestrator)
 	if err != nil {
@@ -57,7 +60,7 @@ func (k Keeper) SetBatchConfirm(ctx sdk.Context, batch *types.MsgConfirmBatch) (
 }
 
 // DeleteBatchConfirms deletes confirmations for an outgoing transaction batch
-func (k Keeper) DeleteBatchConfirms(ctx sdk.Context, batch types.InternalOutgoingTxBatch) error {
+func (k Keeper) DeleteBatchConfirms(ctx context.Context, batch types.InternalOutgoingTxBatch) error {
 	store := k.GetStore(ctx)
 	batchConfirms, err := k.GetBatchConfirmByNonceAndTokenContract(ctx, batch.BatchNonce, batch.TokenContract)
 	if err != nil {
@@ -82,7 +85,7 @@ func (k Keeper) DeleteBatchConfirms(ctx sdk.Context, batch types.InternalOutgoin
 // IterateBatchConfirmByNonceAndTokenContract iterates through all batch confirmations
 // MARK finish-batches: this is where the key is iterated in the old (presumed working) code
 // TODO: specify which nonce this is
-func (k Keeper) IterateBatchConfirmByNonceAndTokenContract(ctx sdk.Context, nonce uint64, tokenContract types.EthAddress, cb func([]byte, types.MsgConfirmBatch) bool) error {
+func (k Keeper) IterateBatchConfirmByNonceAndTokenContract(ctx context.Context, nonce uint64, tokenContract types.EthAddress, cb func([]byte, types.MsgConfirmBatch) bool) error {
 	store := k.GetStore(ctx)
 	prefix := types.GetBatchConfirmNonceContractPrefix(tokenContract, nonce)
 	start, end, err := prefixRange(prefix)
@@ -111,7 +114,7 @@ func (k Keeper) IterateBatchConfirmByNonceAndTokenContract(ctx sdk.Context, nonc
 }
 
 // GetBatchConfirmByNonceAndTokenContract returns the batch confirms
-func (k Keeper) GetBatchConfirmByNonceAndTokenContract(ctx sdk.Context, nonce uint64, tokenContract types.EthAddress) (out []types.MsgConfirmBatch, err error) {
+func (k Keeper) GetBatchConfirmByNonceAndTokenContract(ctx context.Context, nonce uint64, tokenContract types.EthAddress) (out []types.MsgConfirmBatch, err error) {
 	err = k.IterateBatchConfirmByNonceAndTokenContract(ctx, nonce, tokenContract, func(_ []byte, msg types.MsgConfirmBatch) bool {
 		out = append(out, msg)
 		return false
@@ -120,7 +123,7 @@ func (k Keeper) GetBatchConfirmByNonceAndTokenContract(ctx sdk.Context, nonce ui
 }
 
 // IterateBatchConfirms iterates through all batch confirmations
-func (k Keeper) IterateBatchConfirms(ctx sdk.Context, cb func([]byte, types.MsgConfirmBatch) (stop bool)) {
+func (k Keeper) IterateBatchConfirms(ctx context.Context, cb func([]byte, types.MsgConfirmBatch) (stop bool)) {
 	store := k.GetStore(ctx)
 	prefixStore := prefix.NewStore(store, types.BatchConfirmKey)
 	iter := prefixStore.Iterator(nil, nil)

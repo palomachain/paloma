@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -18,7 +18,7 @@ const (
 
 var (
 	// AttestationVotesPowerThreshold threshold of votes power to succeed
-	AttestationVotesPowerThreshold = sdk.NewInt(66)
+	AttestationVotesPowerThreshold = math.NewInt(66)
 
 	// ParamsStoreKeyContractHash stores the contract hash
 	ParamsStoreKeyContractHash = []byte("ContractHash")
@@ -62,8 +62,8 @@ var (
 		TargetBatchTimeout:           0,
 		AverageBlockTime:             0,
 		AverageEthereumBlockTime:     0,
-		SlashFractionBatch:           sdk.Dec{},
-		SlashFractionBadEthSignature: sdk.Dec{},
+		SlashFractionBatch:           math.LegacyDec{},
+		SlashFractionBadEthSignature: math.LegacyDec{},
 	}
 )
 
@@ -100,8 +100,8 @@ func DefaultParams() *Params {
 		TargetBatchTimeout:           43200000,
 		AverageBlockTime:             5000,
 		AverageEthereumBlockTime:     15000,
-		SlashFractionBatch:           sdk.NewDec(1).Quo(sdk.NewDec(1000)),
-		SlashFractionBadEthSignature: sdk.NewDec(1).Quo(sdk.NewDec(1000)),
+		SlashFractionBatch:           math.LegacyNewDec(1).Quo(math.LegacyNewDec(1000)),
+		SlashFractionBadEthSignature: math.LegacyNewDec(1).Quo(math.LegacyNewDec(1000)),
 	}
 }
 
@@ -147,8 +147,8 @@ func ParamKeyTable() paramtypes.KeyTable {
 		TargetBatchTimeout:           0,
 		AverageBlockTime:             0,
 		AverageEthereumBlockTime:     0,
-		SlashFractionBatch:           sdk.Dec{},
-		SlashFractionBadEthSignature: sdk.Dec{},
+		SlashFractionBatch:           math.LegacyDec{},
+		SlashFractionBadEthSignature: math.LegacyDec{},
 	})
 }
 
@@ -245,7 +245,7 @@ func validateSignedBatchesWindow(i interface{}) error {
 
 func validateSlashFractionBatch(i interface{}) error {
 	// TODO: do we want to set some bounds on this value?
-	if _, ok := i.(sdk.Dec); !ok {
+	if _, ok := i.(math.LegacyDec); !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 	return nil
@@ -253,7 +253,7 @@ func validateSlashFractionBatch(i interface{}) error {
 
 func validateSlashFractionBadEthSignature(i interface{}) error {
 	// TODO: do we want to set some bounds on this value?
-	if _, ok := i.(sdk.Dec); !ok {
+	if _, ok := i.(math.LegacyDec); !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 	return nil

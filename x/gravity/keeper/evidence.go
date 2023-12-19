@@ -2,17 +2,18 @@ package keeper
 
 import (
 	"bytes"
+	"context"
 	"encoding/hex"
 	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
 func (k Keeper) CheckBadSignatureEvidence(
-	ctx sdk.Context,
+	ctx context.Context,
 	msg *types.MsgSubmitBadSignatureEvidence,
 	chainReferenceID string,
 ) error {
@@ -33,7 +34,7 @@ func (k Keeper) CheckBadSignatureEvidence(
 	}
 }
 
-func (k Keeper) checkBadSignatureEvidenceInternal(ctx sdk.Context, subject types.EthereumSigned, signature string) error {
+func (k Keeper) checkBadSignatureEvidenceInternal(ctx context.Context, subject types.EthereumSigned, signature string) error {
 	// Get checkpoint of the supposed bad signature (fake batch submitted to eth)
 
 	ci, err := k.evmKeeper.GetChainInfo(ctx, subject.GetChainReferenceID())
@@ -82,11 +83,11 @@ func (k Keeper) checkBadSignatureEvidenceInternal(ctx sdk.Context, subject types
 	if err != nil {
 		return sdkerrors.Wrap(err, "Could not get consensus key address for validator")
 	}
-
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params := k.GetParams(ctx)
 	if !val.IsJailed() {
 		k.StakingKeeper.Jail(ctx, cons)
-		k.StakingKeeper.Slash(ctx, cons, ctx.BlockHeight(), val.ConsensusPower(sdk.DefaultPowerReduction), params.SlashFractionBadEthSignature)
+		k.StakingKeeper.Slash(ctx, cons, sdkCtx.BlockHeight(), val.ConsensusPower(sdk.DefaultPowerReduction), params.SlashFractionBadEthSignature)
 	}
 
 	return nil
@@ -94,13 +95,13 @@ func (k Keeper) checkBadSignatureEvidenceInternal(ctx sdk.Context, subject types
 
 // SetPastEthSignatureCheckpoint puts the checkpoint of a batch into a set
 // in order to prove later that it existed at one point.
-func (k Keeper) SetPastEthSignatureCheckpoint(ctx sdk.Context, checkpoint []byte) {
+func (k Keeper) SetPastEthSignatureCheckpoint(ctx context.Context, checkpoint []byte) {
 	store := k.GetStore(ctx)
 	store.Set(types.GetPastEthSignatureCheckpointKey(checkpoint), []byte{0x1})
 }
 
 // GetPastEthSignatureCheckpoint tells you whether a given checkpoint has ever existed
-func (k Keeper) GetPastEthSignatureCheckpoint(ctx sdk.Context, checkpoint []byte) (found bool) {
+func (k Keeper) GetPastEthSignatureCheckpoint(ctx context.Context, checkpoint []byte) (found bool) {
 	store := k.GetStore(ctx)
 	if bytes.Equal(store.Get(types.GetPastEthSignatureCheckpointKey(checkpoint)), []byte{0x1}) {
 		return true
@@ -109,7 +110,7 @@ func (k Keeper) GetPastEthSignatureCheckpoint(ctx sdk.Context, checkpoint []byte
 	}
 }
 
-func (k Keeper) IteratePastEthSignatureCheckpoints(ctx sdk.Context, cb func(key []byte, value []byte) (stop bool)) error {
+func (k Keeper) IteratePastEthSignatureCheckpoints(ctx context.Context, cb func(key []byte, value []byte) (stop bool)) error {
 	prefixStore := prefix.NewStore(k.GetStore(ctx), types.PastEthSignatureCheckpointKey)
 	iter := prefixStore.Iterator(nil, nil)
 	defer iter.Close()

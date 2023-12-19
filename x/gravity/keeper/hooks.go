@@ -1,6 +1,9 @@
 package keeper
 
 import (
+	"context"
+
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -17,46 +20,46 @@ func (k Keeper) Hooks() Hooks {
 	return Hooks{k}
 }
 
-func (h Hooks) AfterUnbondingInitiated(ctx sdk.Context, id uint64) error {
+func (h Hooks) AfterUnbondingInitiated(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (h Hooks) AfterValidatorBeginUnbonding(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
+func (h Hooks) AfterValidatorBeginUnbonding(ctx context.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
 	return nil
 }
 
-func (h Hooks) BeforeDelegationCreated(_ sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
+func (h Hooks) BeforeDelegationCreated(_ context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	return nil
 }
 
-func (h Hooks) AfterValidatorCreated(ctx sdk.Context, valAddr sdk.ValAddress) error {
+func (h Hooks) AfterValidatorCreated(ctx context.Context, valAddr sdk.ValAddress) error {
 	return nil
 }
 
-func (h Hooks) BeforeValidatorModified(_ sdk.Context, _ sdk.ValAddress) error {
+func (h Hooks) BeforeValidatorModified(_ context.Context, _ sdk.ValAddress) error {
 	return nil
 }
 
-func (h Hooks) AfterValidatorBonded(_ sdk.Context, _ sdk.ConsAddress, _ sdk.ValAddress) error {
+func (h Hooks) AfterValidatorBonded(_ context.Context, _ sdk.ConsAddress, _ sdk.ValAddress) error {
 	return nil
 }
 
-func (h Hooks) BeforeDelegationRemoved(_ sdk.Context, _ sdk.AccAddress, _ sdk.ValAddress) error {
+func (h Hooks) BeforeDelegationRemoved(_ context.Context, _ sdk.AccAddress, _ sdk.ValAddress) error {
 	return nil
 }
 
-func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, _ sdk.ConsAddress, valAddr sdk.ValAddress) error {
+func (h Hooks) AfterValidatorRemoved(ctx context.Context, _ sdk.ConsAddress, valAddr sdk.ValAddress) error {
 	return nil
 }
 
-func (h Hooks) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) error {
+func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction math.LegacyDec) error {
 	return nil
 }
 
-func (h Hooks) BeforeDelegationSharesModified(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
+func (h Hooks) BeforeDelegationSharesModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	return nil
 }
 
-func (h Hooks) AfterDelegationModified(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
+func (h Hooks) AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	return nil
 }

@@ -3,6 +3,7 @@ package types
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/slices"
@@ -35,7 +36,7 @@ func TestMsgSendToPalomaClaimHash(t *testing.T) {
 		EventNonce:     0,
 		EthBlockHeight: 0,
 		TokenContract:  "",
-		Amount:         sdk.Int{},
+		Amount:         math.Int{},
 		EthereumSender: "",
 		PalomaReceiver: "",
 		Orchestrator:   "",

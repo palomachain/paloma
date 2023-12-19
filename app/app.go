@@ -123,37 +123,38 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
+	ibcclient "github.com/cosmos/ibc-go/v8/modules/core/02-client"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	palomamempool "github.com/palomachain/paloma/app/mempool"
-	appparams "github.com/palomachain/paloma/app/params"
 
 	consensusmodule "github.com/palomachain/paloma/x/consensus"
 	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
+
+	gravitymodule "github.com/palomachain/paloma/x/gravity"
+	gravityclient "github.com/palomachain/paloma/x/gravity/client"
+	gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
+	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 
 	"github.com/palomachain/paloma/x/evm"
 	evmclient "github.com/palomachain/paloma/x/evm/client"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
 
-	// gravitymodule "github.com/palomachain/paloma/x/gravity"
-	// gravityclient "github.com/palomachain/paloma/x/gravity/client"
-	// gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
-	// gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
-	palomamodule "github.com/palomachain/paloma/x/paloma"
 	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
 	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
 
-	// treasurymodule "github.com/palomachain/paloma/x/treasury"
-	// treasuryclient "github.com/palomachain/paloma/x/treasury/client"
-	// treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
-	// treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
+	treasurymodule "github.com/palomachain/paloma/x/treasury"
+	treasuryclient "github.com/palomachain/paloma/x/treasury/client"
+	treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
+	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 
-	// valsetmodule "github.com/palomachain/paloma/x/valset"
-	// valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
-	// valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
+	valsetmodule "github.com/palomachain/paloma/x/valset"
+	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
+	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cast"
 )
 
@@ -168,13 +169,50 @@ const (
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	return []govclient.ProposalHandler{
 		paramsclient.ProposalHandler,
+		gravityclient.ProposalHandler,
+		// treasuryclient.ProposalHandler,
 		evmclient.ProposalHandler,
+		treasuryclient.ProposalHandler,
 	}
 }
 
 var (
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
+
+	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
+	// non-dependant module elements, such as codec registration
+	// and genesis verification.
+	ModuleBasics = module.NewBasicManager(
+		auth.AppModuleBasic{},
+		genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+		bank.AppModule{},
+		capability.AppModuleBasic{},
+		staking.AppModule{},
+		mint.AppModule{},
+		distr.AppModuleBasic{},
+		gov.AppModule{AppModuleBasic: gov.NewAppModuleBasic(getGovProposalHandlers())},
+		params.AppModuleBasic{},
+		crisis.AppModule{},
+		slashing.AppModule{},
+		feegrantmodule.AppModuleBasic{},
+		upgrade.AppModuleBasic{},
+		evidence.AppModuleBasic{},
+		vesting.AppModuleBasic{},
+		schedulermodule.AppModuleBasic{},
+		consensusmodule.AppModuleBasic{},
+		// valsetmodule.AppModuleBasic{},
+		wasm.AppModuleBasic{},
+		evm.AppModuleBasic{},
+		gravitymodule.AppModuleBasic{},
+		// palomamodule.AppModuleBasic{},
+		// treasurymodule.AppModuleBasic{},
+		consensus.AppModuleBasic{},
+		transfer.AppModuleBasic{},
+		ibc.AppModuleBasic{},
+		ica.AppModuleBasic{},
+		ibcfee.AppModuleBasic{},
+	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
@@ -184,10 +222,12 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
+		gravitymoduletypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		ibcfeetypes.ModuleName:         nil,
 		icatypes.ModuleName:            nil,
-		evmmoduletypes.ModuleName:      {authtypes.Burner, authtypes.Minter},
+		wasmtypes.ModuleName:           {authtypes.Burner},
+		treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -248,12 +288,12 @@ type App struct {
 
 	SchedulerKeeper schedulermodulekeeper.Keeper
 	ConsensusKeeper consensusmodulekeeper.Keeper
-	// ValsetKeeper    valsetmodulekeeper.Keeper
-	PalomaKeeper palomamodulekeeper.Keeper
-	// TreasuryKeeper treasurymodulekeeper.Keeper
-	EvmKeeper evmmodulekeeper.Keeper
-	// GravityKeeper   gravitymodulekeeper.Keeper
-	wasmKeeper wasmkeeper.Keeper
+	ValsetKeeper    valsetmodulekeeper.Keeper
+	PalomaKeeper    palomamodulekeeper.Keeper
+	TreasuryKeeper  treasurymodulekeeper.Keeper
+	EvmKeeper       evmmodulekeeper.Keeper
+	GravityKeeper   gravitymodulekeeper.Keeper
+	wasmKeeper      wasmkeeper.Keeper
 
 	// ModuleManager is the module manager
 	ModuleManager      *module.Manager
@@ -271,7 +311,6 @@ func New(
 	db dbm.DB,
 	traceStore io.Writer,
 	loadLatest bool,
-	encodingCfg appparams.EncodingConfig,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
@@ -327,22 +366,22 @@ func New(
 		schedulermoduletypes.StoreKey,
 		consensusmoduletypes.StoreKey,
 		// valsetmoduletypes.StoreKey,
+		treasurymoduletypes.StoreKey,
+		valsetmoduletypes.StoreKey,
 		// treasurymoduletypes.StoreKey,
 		evmmoduletypes.StoreKey,
-		wasmtypes.StoreKey,
-		// evmmoduletypes.StoreKey,
-		// gravitymoduletypes.StoreKey,
+		gravitymoduletypes.StoreKey,
 		consensusparamtypes.StoreKey,
 		crisistypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(
 		capabilitytypes.MemStoreKey,
-		// valsetmoduletypes.MemStoreKey,
+		valsetmoduletypes.MemStoreKey,
 		consensusmoduletypes.MemStoreKey,
 		evmmoduletypes.MemStoreKey,
 		schedulermoduletypes.MemStoreKey,
-		// treasurymoduletypes.MemStoreKey,
+		treasurymoduletypes.MemStoreKey,
 		palomamoduletypes.MemStoreKey,
 	)
 
@@ -528,15 +567,14 @@ func New(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	// app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[valsetmoduletypes.StoreKey],
-	// 	memKeys[valsetmoduletypes.MemStoreKey],
-	// 	app.GetSubspace(valsetmoduletypes.ModuleName),
-	// 	app.StakingKeeper,
-	// 	minimumPigeonVersion,
-	// 	sdk.DefaultPowerReduction,
-	// )
+	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[valsetmoduletypes.StoreKey]),
+		app.GetSubspace(valsetmoduletypes.ModuleName),
+		app.StakingKeeper,
+		minimumPigeonVersion,
+		sdk.DefaultPowerReduction,
+	)
 
 	consensusRegistry := consensusmodulekeeper.NewRegistry()
 
@@ -555,23 +593,23 @@ func New(
 		nil, //TODO
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	// app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
-	// 	app.EvmKeeper,
-	// }
-	// app.ValsetKeeper.EvmKeeper = app.EvmKeeper
+	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
+		app.EvmKeeper,
+	}
+	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
 
-	// app.GravityKeeper = gravitymodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	app.GetSubspace(gravitymoduletypes.ModuleName),
-	// 	app.AccountKeeper,
-	// 	app.StakingKeeper,
-	// 	app.BankKeeper,
-	// 	app.SlashingKeeper,
-	// 	app.DistrKeeper,
-	// 	app.EvmKeeper,
-	// 	app.TransferKeeper,
-	// 	gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
-	// )
+	app.GravityKeeper = gravitymodulekeeper.NewKeeper(
+		appCodec,
+		app.GetSubspace(gravitymoduletypes.ModuleName),
+		app.AccountKeeper,
+		app.StakingKeeper,
+		app.BankKeeper,
+		app.SlashingKeeper,
+		app.DistrKeeper,
+		app.TransferKeeper,
+		app.EvmKeeper,
+		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
+	)
 
 	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
 		appCodec,
@@ -600,7 +638,9 @@ func New(
 
 	app.SchedulerKeeper = *schedulermodulekeeper.NewKeeper(
 		appCodec,
-		runtime.NewKVStoreService(keys[evidencetypes.StoreKey]),
+		keys[schedulermoduletypes.StoreKey],
+		memKeys[schedulermoduletypes.MemStoreKey],
+		app.GetSubspace(schedulermoduletypes.ModuleName),
 		app.AccountKeeper,
 		app.EvmKeeper,
 		[]xchain.Bridge{
@@ -608,15 +648,14 @@ func New(
 		},
 	)
 
-	// app.TreasuryKeeper = *treasurymodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[treasurymoduletypes.StoreKey],
-	// 	memKeys[treasurymoduletypes.MemStoreKey],
-	// 	app.GetSubspace("" /*schedulermoduletypes.ModuleName*/),
-	// 	app.BankKeeper,
-	// 	app.AccountKeeper,
-	// 	nil, // app.SchedulerKeeper,
-	// )
+	app.TreasuryKeeper = *treasurymodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[treasurymoduletypes.StoreKey]),
+		app.GetSubspace(schedulermoduletypes.ModuleName),
+		app.BankKeeper,
+		app.AccountKeeper,
+		app.SchedulerKeeper,
+	)
 
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
 
@@ -624,7 +663,9 @@ func New(
 	govRouter.
 		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper))
+		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
+		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
 
 	// Example of setting gov params:
 	govKeeper := govkeeper.NewKeeper(
@@ -734,11 +775,11 @@ func New(
 
 	evmModule := evm.NewAppModule(appCodec, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
 	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
-	// valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
+	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
-	// gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
-	// treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
+	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
+	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	app.ModuleManager = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,
@@ -762,11 +803,11 @@ func New(
 		params.NewAppModule(app.ParamsKeeper),
 		schedulerModule,
 		consensusModule,
-		// valsetModule,
 		evmModule,
-		// gravityModule,
+		valsetModule,
+		gravityModule,
 		palomaModule,
-		// treasuryModule,
+		treasuryModule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		ibc.NewAppModule(app.IBCKeeper),
 		transfer.NewAppModule(app.TransferKeeper),
@@ -785,6 +826,7 @@ func New(
 				},
 			),
 		})
+
 	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
 	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -809,12 +851,12 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
-		// valsetmoduletypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 		palomamoduletypes.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
-		// gravitymoduletypes.ModuleName,
-		// treasurymoduletypes.ModuleName,
+		gravitymoduletypes.ModuleName,
+		treasurymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
@@ -841,17 +883,16 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
-		// valsetmoduletypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 		palomamoduletypes.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
-		// evmmoduletypes.ModuleName,
-		// gravitymoduletypes.ModuleName,
+		gravitymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
-		// treasurymoduletypes.ModuleName,
+		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
 
@@ -879,7 +920,7 @@ func New(
 		ibctransfertypes.ModuleName,
 		schedulermoduletypes.ModuleName,
 		consensusmoduletypes.ModuleName,
-		// valsetmoduletypes.ModuleName,
+		valsetmoduletypes.ModuleName,
 		palomamoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
@@ -887,9 +928,8 @@ func New(
 		ibcfeetypes.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
-		// evmmoduletypes.ModuleName,
-		// gravitymoduletypes.ModuleName,
-		// treasurymoduletypes.ModuleName,
+		gravitymoduletypes.ModuleName,
+		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
 	)
 
@@ -1134,10 +1174,10 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
 	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
-	// paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
+	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
-	// paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
+	paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
 
 	return paramsKeeper
 }

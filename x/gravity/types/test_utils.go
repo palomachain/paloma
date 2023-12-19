@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"math/rand"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -38,13 +39,13 @@ func NonemptyEthAddress() (ret string) {
 }
 
 // Creates a random nonzero sdk.Int test value
-func NonzeroSdkInt() (ret sdk.Int) {
+func NonzeroSdkInt() (ret math.Int) {
 	amount := big.NewInt(0)
 	for amount.Cmp(big.NewInt(0)) == 0 {
 		amountBz := make([]byte, 32)
 		rand.Read(amountBz) //nolint:gosec
 		amount = big.NewInt(0).SetBytes(amountBz)
 	}
-	ret = sdk.NewIntFromBigInt(amount)
+	ret = math.NewIntFromBigInt(amount)
 	return
 }
