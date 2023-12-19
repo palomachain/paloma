@@ -26,7 +26,7 @@ type (
 		Valset         types.ValsetKeeper
 		Upgrade        types.UpgradeKeeper
 		AppVersion     string
-		addressCodec   address.Codec
+		AddressCodec   address.Codec
 		ExternalChains []types.ExternalChainSupporterKeeper
 	}
 )
@@ -83,7 +83,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 	var g whoops.Group
 	for _, val := range vals {
-		bz, err := k.addressCodec.StringToBytes(val.GetOperator())
+		bz, err := k.AddressCodec.StringToBytes(val.GetOperator())
 		if err != nil {
 			return err
 		}
@@ -108,7 +108,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 		sort.Strings(notSupported)
 
-		bz, err = k.addressCodec.StringToBytes(val.GetOperator())
+		bz, err = k.AddressCodec.StringToBytes(val.GetOperator())
 		if err != nil {
 			return err
 		}

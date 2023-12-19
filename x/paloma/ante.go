@@ -31,7 +31,7 @@ func NewAnteHandlerDecorator(handler sdk.AnteHandler) HandlerDecorator {
 }
 
 // AnteHandle wraps the next AnteHandler to perform custom pre- and post-processing
-func (decorator HandlerDecorator) AnteHandle(ctx context.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx context.Context, err error) {
+func (decorator HandlerDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	if newCtx, err = decorator.handler(sdkCtx, tx, simulate); err != nil {
@@ -52,7 +52,7 @@ func NewLogMsgDecorator(cdc codec.Codec) LogMsgDecorator {
 }
 
 // AnteHandle logs all messages in blocks
-func (d LogMsgDecorator) AnteHandle(ctx context.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (context.Context, error) {
+func (d LogMsgDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	if simulate || sdkCtx.IsCheckTx() {
@@ -84,7 +84,7 @@ func NewVerifyAuthorisedSignatureDecorator(fk types.FeegrantKeeper) VerifyAuthor
 
 // AnteHandle verifies that the message is signed by at least one signature that has
 // active fee grant from the creator address, IF the message contains metadata.
-func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx context.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (context.Context, error) {
+func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if simulate {
 		return next(sdkCtx, tx, simulate)
@@ -134,7 +134,7 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx context.Context, tx s
 		grantees := make([]string, 0, len(signers))
 		for _, signer := range signers {
 			if v, found := grantsLkUp[signer]; found {
-				liblog.FromSDKLogger(logger(ctx)).WithFields( "signature", v.Grantee).Debug("found granted signature")
+				liblog.FromSDKLogger(logger(ctx)).WithFields("signature", v.Grantee).Debug("found granted signature")
 				grantees = append(grantees, v.Grantee)
 			}
 		}

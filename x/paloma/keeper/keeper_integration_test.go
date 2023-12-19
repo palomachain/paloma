@@ -2,13 +2,13 @@ package keeper_test
 
 import (
 	"fmt"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"math/big"
 	"testing"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
@@ -33,9 +33,7 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 	BeforeEach(func() {
 		t := GinkgoT()
 		a = app.NewTestApp(t, false)
-		ctx = a.NewContext(false, tmproto.Header{
-			Height: 5,
-		})
+		ctx = a.NewContext(false).WithBlockHeight(5)
 		k = &a.PalomaKeeper
 	})
 
@@ -56,7 +54,8 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			// val[1] has only one chain
 			// val[2] doesn't have anything
 			// All other vals have everything
-			err := a.ValsetKeeper.AddExternalChainInfo(ctx, vals[0].GetOperator(), []*valsettypes.ExternalChainInfo{
+			valAddress, err := keeperutil.ValAddressFromBech32(a.PalomaKeeper.AddressCodec, vals[0].GetOperator())
+			err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddress, []*valsettypes.ExternalChainInfo{
 				{
 					ChainType:        "evm",
 					ChainReferenceID: "c1",
@@ -71,7 +70,8 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 				},
 			})
 			Expect(err).To(BeNil())
-			err = a.ValsetKeeper.AddExternalChainInfo(ctx, vals[1].GetOperator(), []*valsettypes.ExternalChainInfo{
+			valAddress2, err := keeperutil.ValAddressFromBech32(a.PalomaKeeper.AddressCodec, vals[1].GetOperator())
+			err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddress2, []*valsettypes.ExternalChainInfo{
 				{
 					ChainType:        "evm",
 					ChainReferenceID: "c1",
@@ -81,7 +81,8 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			})
 			Expect(err).To(BeNil())
 			for i, v := range vals[3:] {
-				err := a.ValsetKeeper.AddExternalChainInfo(ctx, v.GetOperator(), []*valsettypes.ExternalChainInfo{
+				valAddress, err := keeperutil.ValAddressFromBech32(a.PalomaKeeper.AddressCodec, v.GetOperator())
+				err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddress, []*valsettypes.ExternalChainInfo{
 					{
 						ChainType:        "evm",
 						ChainReferenceID: "c1",
@@ -108,18 +109,21 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 
 		It("jails val[1] and val[2], but no val[0]", func() {
 			By("validators are not jailed")
-			Expect(a.ValsetKeeper.IsJailed(ctx, vals[0].GetOperator())).To(BeFalse())
-			Expect(a.ValsetKeeper.IsJailed(ctx, vals[1].GetOperator())).To(BeFalse())
-			Expect(a.ValsetKeeper.IsJailed(ctx, vals[2].GetOperator())).To(BeFalse())
+			valAddress1, err := keeperutil.ValAddressFromBech32(a.PalomaKeeper.AddressCodec, vals[0].GetOperator())
+			valAddress2, err := keeperutil.ValAddressFromBech32(a.PalomaKeeper.AddressCodec, vals[1].GetOperator())
+			valAddress3, err := keeperutil.ValAddressFromBech32(a.PalomaKeeper.AddressCodec, vals[2].GetOperator())
+			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress1)).To(BeFalse())
+			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress2)).To(BeFalse())
+			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress3)).To(BeFalse())
 
 			By("jail validators with missing external chain infos")
-			err := k.JailValidatorsWithMissingExternalChainInfos(ctx)
+			err = k.JailValidatorsWithMissingExternalChainInfos(ctx)
 			Expect(err).To(BeNil())
 
 			By("check for jailed validators")
-			Expect(a.ValsetKeeper.IsJailed(ctx, vals[0].GetOperator())).To(BeFalse())
-			Expect(a.ValsetKeeper.IsJailed(ctx, vals[1].GetOperator())).To(BeTrue())
-			Expect(a.ValsetKeeper.IsJailed(ctx, vals[2].GetOperator())).To(BeTrue())
+			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress1)).To(BeFalse())
+			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress2)).To(BeTrue())
+			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress3)).To(BeTrue())
 		})
 	})
 })
@@ -132,9 +136,8 @@ var _ = Describe("checking the chain version", func() {
 	BeforeEach(func() {
 		t := GinkgoT()
 		a = app.NewTestApp(t, false)
-		ctx = a.NewContext(false, tmproto.Header{
-			Height: 5,
-		})
+		ctx = a.NewContext(false).WithBlockHeight(5)
+
 		k = &a.PalomaKeeper
 	})
 

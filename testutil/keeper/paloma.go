@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"testing"
 
 	"cosmossdk.io/log"
@@ -40,12 +41,11 @@ func PalomaKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	)
 	k := keeper.NewKeeper(
 		cdc,
-		storeKey,
-		memStoreKey,
+		runtime.NewKVStoreService(storeKey),
 		paramsSubspace,
 		"v0.0.1", // do not use this PalomaKeeper function!
 		valsetkeeper.Keeper{},
-		nil,
+		nil, // nil to be replaced by upgrade keeper
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

@@ -141,6 +141,7 @@ import (
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
 
+	palomamodule "github.com/palomachain/paloma/x/paloma"
 	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
@@ -967,7 +968,7 @@ func New(
 	app.SetEndBlocker(app.EndBlocker)
 
 	/*baseAnteHandler*/
-	_, err = ante.NewAnteHandler(
+	baseAnteHandler, err := ante.NewAnteHandler(
 		ante.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
@@ -982,11 +983,11 @@ func New(
 	anteDecorators := []sdk.AnteDecorator{
 		palomamodule.NewAnteHandlerDecorator(baseAnteHandler),
 	}
-	anteDecorators = append(anteDecorators)
-	palomamodule.NewLogMsgDecorator(app.appCodec),
+	anteDecorators = append(anteDecorators,
+		palomamodule.NewLogMsgDecorator(app.appCodec),
 		palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
-
-		anteHandler := sdk.ChainAnteDecorators(
+	)
+	anteHandler := sdk.ChainAnteDecorators(
 		anteDecorators...,
 	)
 
