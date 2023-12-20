@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
@@ -28,7 +29,7 @@ func TestLastPendingBatchRequest(t *testing.T) {
 								Sender:      "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
 								DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
 								Erc20Token: types.ERC20Token{
-									Amount:           sdk.NewInt(103),
+									Amount:           math.NewInt(103),
 									Contract:         testERC20Address,
 									ChainReferenceId: "test-chain",
 								},
@@ -38,7 +39,7 @@ func TestLastPendingBatchRequest(t *testing.T) {
 								Sender:      "paloma1qyqszqgpqyqszqgpqyqszqgpqyqszqgp2kvale",
 								DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
 								Erc20Token: types.ERC20Token{
-									Amount:           sdk.NewInt(102),
+									Amount:           math.NewInt(102),
 									Contract:         testERC20Address,
 									ChainReferenceId: "test-chain",
 								},
@@ -89,7 +90,7 @@ func createTestBatch(t *testing.T, input TestInput, maxTxElements uint) {
 	tokenContract, err := types.NewEthAddress(testERC20Address)
 	require.NoError(t, err)
 	// mint some voucher first
-	token, err := types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+	token, err := types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, token.Amount)}
 	err = input.BankKeeper.MintCoins(input.Context, types.ModuleName, allVouchers)
@@ -102,7 +103,7 @@ func createTestBatch(t *testing.T, input TestInput, maxTxElements uint) {
 
 	// add some TX to the pool
 	for i := 0; i < 4; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), testERC20Address, "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 		_, err = input.GravityKeeper.AddToOutgoingPool(input.Context, mySender, *receiver, amount, "test-chain")
@@ -192,7 +193,7 @@ func TestQueryBatch(t *testing.T) {
 				{
 					DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
 					Erc20Token: types.ERC20Token{
-						Amount:           sdk.NewInt(103),
+						Amount:           math.NewInt(103),
 						Contract:         testERC20Address,
 						ChainReferenceId: "test-chain",
 					},
@@ -202,7 +203,7 @@ func TestQueryBatch(t *testing.T) {
 				{
 					DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
 					Erc20Token: types.ERC20Token{
-						Amount:           sdk.NewInt(102),
+						Amount:           math.NewInt(102),
 						Contract:         testERC20Address,
 						ChainReferenceId: "test-chain",
 					},
@@ -245,7 +246,7 @@ func TestLastBatchesRequest(t *testing.T) {
 					{
 						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
 						Erc20Token: types.ERC20Token{
-							Amount:           sdk.NewInt(103),
+							Amount:           math.NewInt(103),
 							Contract:         testERC20Address,
 							ChainReferenceId: "test-chain",
 						},
@@ -255,7 +256,7 @@ func TestLastBatchesRequest(t *testing.T) {
 					{
 						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
 						Erc20Token: types.ERC20Token{
-							Amount:           sdk.NewInt(102),
+							Amount:           math.NewInt(102),
 							Contract:         testERC20Address,
 							ChainReferenceId: "test-chain",
 						},
@@ -265,7 +266,7 @@ func TestLastBatchesRequest(t *testing.T) {
 					{
 						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
 						Erc20Token: types.ERC20Token{
-							Amount:           sdk.NewInt(101),
+							Amount:           math.NewInt(101),
 							Contract:         testERC20Address,
 							ChainReferenceId: "test-chain",
 						},
@@ -283,7 +284,7 @@ func TestLastBatchesRequest(t *testing.T) {
 					{
 						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
 						Erc20Token: types.ERC20Token{
-							Amount:           sdk.NewInt(103),
+							Amount:           math.NewInt(103),
 							Contract:         testERC20Address,
 							ChainReferenceId: "test-chain",
 						},
@@ -293,7 +294,7 @@ func TestLastBatchesRequest(t *testing.T) {
 					{
 						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
 						Erc20Token: types.ERC20Token{
-							Amount:           sdk.NewInt(102),
+							Amount:           math.NewInt(102),
 							Contract:         testERC20Address,
 							ChainReferenceId: "test-chain",
 						},
@@ -388,7 +389,7 @@ func TestQueryPendingSendToEth(t *testing.T) {
 		now            = time.Now().UTC()
 		mySender, err1 = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
 		myReceiver     = "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7"
-		token, err2    = types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+		token, err2    = types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 		allVouchers    = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
 	)
 	require.NoError(t, err1)
@@ -409,7 +410,7 @@ func TestQueryPendingSendToEth(t *testing.T) {
 
 	// add some TX to the pool
 	for i := 0; i < 4; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), testERC20Address, "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 		_, err = input.GravityKeeper.AddToOutgoingPool(sdkCtx, mySender, *receiver, amount, "test-chain")
@@ -440,7 +441,7 @@ func TestQueryPendingSendToEth(t *testing.T) {
 				DestAddress: "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",
 				Erc20Token: types.ERC20Token{
 					Contract:         testERC20Address,
-					Amount:           sdk.NewInt(103),
+					Amount:           math.NewInt(103),
 					ChainReferenceId: "test-chain",
 				},
 			},
@@ -450,7 +451,7 @@ func TestQueryPendingSendToEth(t *testing.T) {
 				DestAddress: "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",
 				Erc20Token: types.ERC20Token{
 					Contract:         testERC20Address,
-					Amount:           sdk.NewInt(102),
+					Amount:           math.NewInt(102),
 					ChainReferenceId: "test-chain",
 				},
 			},
@@ -463,7 +464,7 @@ func TestQueryPendingSendToEth(t *testing.T) {
 				DestAddress: "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",
 				Erc20Token: types.ERC20Token{
 					Contract:         testERC20Address,
-					Amount:           sdk.NewInt(101),
+					Amount:           math.NewInt(101),
 					ChainReferenceId: "test-chain",
 				},
 			},
@@ -473,7 +474,7 @@ func TestQueryPendingSendToEth(t *testing.T) {
 				DestAddress: "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",
 				Erc20Token: types.ERC20Token{
 					Contract:         testERC20Address,
-					Amount:           sdk.NewInt(100),
+					Amount:           math.NewInt(100),
 					ChainReferenceId: "test-chain",
 				},
 			},

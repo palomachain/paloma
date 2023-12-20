@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
@@ -19,8 +20,8 @@ func TestHandleMsgSendToEth(t *testing.T) {
 		blockTime                        = time.Date(2020, 9, 14, 15, 20, 10, 0, time.UTC)
 		blockHeight            int64     = 200
 		testDenom                        = "ugrain"
-		startingCoinAmount, _            = sdk.NewIntFromString("150000000000000000000")
-		sendAmount, _                    = sdk.NewIntFromString("60000000000000000000")
+		startingCoinAmount, _            = math.NewIntFromString("150000000000000000000")
+		sendAmount, _                    = math.NewIntFromString("60000000000000000000")
 		startingCoins          sdk.Coins = sdk.Coins{sdk.NewCoin(testDenom, startingCoinAmount)}
 		sendingCoin            sdk.Coin  = sdk.NewCoin(testDenom, sendAmount)
 		ethDestination                   = "0x3c9289da00b02dC623d0D8D907619890301D26d4"

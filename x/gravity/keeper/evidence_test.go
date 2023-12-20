@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
@@ -20,7 +21,7 @@ func TestSubmitBadSignatureEvidenceBatchExists(t *testing.T) {
 		now          = time.Now().UTC()
 		mySender, e1 = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
 		myReceiver   = "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7"
-		token, e2    = types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+		token, e2    = types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 		allVouchers  = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
 	)
 	require.NoError(t, e1)
@@ -40,7 +41,7 @@ func TestSubmitBadSignatureEvidenceBatchExists(t *testing.T) {
 
 	// add some TX to the pool
 	for i := 0; i < 4; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), testERC20Address, "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 
@@ -95,6 +96,7 @@ func TestSubmitBadSignatureEvidenceSlash(t *testing.T) {
 	err = input.GravityKeeper.CheckBadSignatureEvidence(ctx, &msg, "test-chain")
 	require.NoError(t, err)
 
-	val := input.StakingKeeper.Validator(ctx, ValAddrs[0])
+	val, err := input.StakingKeeper.Validator(ctx, ValAddrs[0])
+	require.NoError(t, err)
 	require.True(t, val.IsJailed())
 }

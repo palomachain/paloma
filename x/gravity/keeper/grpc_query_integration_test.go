@@ -1,9 +1,11 @@
 package keeper_test
 
 import (
+	"context"
 	gocontext "context"
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,16 +17,17 @@ import (
 
 // nolint: exhaustruct
 func TestQueryGetAttestations(t *testing.T) {
+
 	input := keeper.CreateTestEnv(t)
 	encCfg := app.MakeEncodingConfig()
 	k := input.GravityKeeper
 	ctx := input.Context
-
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Some query functions use additional logic to determine if they should look up values using the v1 key, or the new
 	// hashed bytes keys used post-Mercury, so we must set the block height high enough here for the correct data to be found
-	ctx = ctx.WithBlockHeight(int64(keeper.MERCURY_UPGRADE_HEIGHT) + ctx.BlockHeight())
+	ctx = sdkCtx.WithBlockHeight(int64(keeper.MERCURY_UPGRADE_HEIGHT) + sdkCtx.BlockHeight())
 
-	queryHelper := baseapp.NewQueryServerTestHelper(ctx, encCfg.InterfaceRegistry)
+	queryHelper := baseapp.NewQueryServerTestHelper(sdkCtx, encCfg.InterfaceRegistry)
 	types.RegisterQueryServer(queryHelper, k)
 	queryClient := types.NewQueryClient(queryHelper)
 
@@ -128,7 +131,7 @@ func TestQueryGetAttestations(t *testing.T) {
 	}
 }
 
-func createAttestations(t *testing.T, k keeper.Keeper, ctx sdk.Context, length int) {
+func createAttestations(t *testing.T, k keeper.Keeper, ctx context.Context, length int) {
 	t.Helper()
 
 	for i := 0; i < length; i++ {
@@ -137,7 +140,7 @@ func createAttestations(t *testing.T, k keeper.Keeper, ctx sdk.Context, length i
 			EventNonce:     nonce,
 			EthBlockHeight: 1,
 			TokenContract:  "0x00000000000000000001",
-			Amount:         sdk.NewInt(10000000000 + int64(i)),
+			Amount:         math.NewInt(10000000000 + int64(i)),
 			EthereumSender: "0x00000000000000000002",
 			PalomaReceiver: "0x00000000000000000003",
 			Orchestrator:   "0x00000000000000000004",
@@ -145,11 +148,11 @@ func createAttestations(t *testing.T, k keeper.Keeper, ctx sdk.Context, length i
 
 		any, err := codectypes.NewAnyWithValue(&msg)
 		require.NoError(t, err)
-
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		att := &types.Attestation{
 			Observed: false,
 			Votes:    []string{},
-			Height:   uint64(ctx.BlockHeight()),
+			Height:   uint64(sdkCtx.BlockHeight()),
 			Claim:    any,
 		}
 

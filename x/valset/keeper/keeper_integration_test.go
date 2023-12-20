@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 	. "github.com/onsi/ginkgo/v2"
@@ -25,15 +24,13 @@ var _ = Describe("jaling validators", func() {
 
 	BeforeEach(func() {
 		a = app.NewTestApp(GinkgoT(), false)
-		ctx = a.NewContext(false, tmproto.Header{
-			Height: 5,
-		})
+		ctx = a.NewContext(false)
 	})
 
 	Context("with a non existing validator", func() {
 		It("returns an error", func() {
 			validators := testutil.GenValidators(1, 100)
-			err := a.ValsetKeeper.Jail(ctx, validators[0].GetOperator(), "i am bored")
+			err := a.ValsetKeeper.Jail(ctx, sdk.ValAddress(validators[0].GetOperator()), "i am bored")
 			Expect(err).To(MatchError(keeper.ErrValidatorWithAddrNotFound))
 		})
 	})
@@ -43,9 +40,12 @@ var _ = Describe("jaling validators", func() {
 
 		BeforeEach(func() {
 			By("query existing validator")
-			vals := a.StakingKeeper.GetAllValidators(ctx)
+			vals, err := a.StakingKeeper.GetAllValidators(ctx)
+			if err != nil {
+				panic(err)
+			}
 			Expect(len(vals)).To(Equal(1))
-			val = vals[0].GetOperator()
+			val = sdk.ValAddress(vals[0].GetOperator())
 		})
 
 		It("returns an error that it cannot jail the validator", func() {
@@ -67,13 +67,13 @@ var _ = Describe("jaling validators", func() {
 				si := types.NewValidatorSigningInfo(addr, 0, 0, time.Time{}, false, 0)
 				a.SlashingKeeper.SetValidatorSigningInfo(ctx, addr, si)
 			}
-			val = validators[0].GetOperator()
+			val = sdk.ValAddress(validators[0].GetOperator())
 		})
 
 		It("jailes the given validator", func() {
 			err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
 			Expect(err).To(BeNil())
-			isJailed := a.ValsetKeeper.IsJailed(ctx, val)
+			isJailed, err := a.ValsetKeeper.IsJailed(ctx, val)
 			Expect(isJailed).To(BeTrue())
 		})
 		When("jailing panics", func() {
@@ -82,7 +82,7 @@ var _ = Describe("jaling validators", func() {
 				for _, v := range validators {
 					a.StakingKeeper.SetValidator(ctx, v)
 				}
-				val = validators[0].GetOperator()
+				val = sdk.ValAddress(validators[0].GetOperator())
 			})
 			It("returns the error if it's of type error or string", func() {
 				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")
@@ -107,7 +107,7 @@ var _ = Describe("jaling validators", func() {
 				validators := testutil.GenValidators(1, 100)
 				a.StakingKeeper.SetValidator(ctx, validators[0])
 				a.StakingKeeper.SetValidatorByConsAddr(ctx, validators[0])
-				val = validators[0].GetOperator()
+				val = sdk.ValAddress(validators[0].GetOperator())
 			})
 			It("returns an error", func() {
 				err := a.ValsetKeeper.Jail(ctx, val, "i am bored")

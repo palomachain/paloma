@@ -4,9 +4,10 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/util/libmeta"
 )
 
@@ -44,7 +45,7 @@ func (msg MsgSendToEth) ValidateBasic() error {
 	}
 
 	if !msg.Amount.IsValid() || msg.Amount.IsZero() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "amount")
+		return sdkerrors.Wrap(errorsmod.ErrInvalidCoins, "amount")
 	}
 
 	if err := ValidateEthAddress(msg.EthDest); err != nil {

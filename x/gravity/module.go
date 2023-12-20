@@ -1,9 +1,11 @@
 package gravity
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
+	"cosmossdk.io/core/appmodule"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -22,8 +24,20 @@ import (
 // type check to ensure the interface is properly implemented
 // nolint: exhaustruct
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	// _ module.AppModule           = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.HasServices         = AppModule{}
+	_ module.AppModuleGenesis    = AppModule{}
+	_ module.AppModuleSimulation = AppModule{}
+	_ module.HasABCIGenesis      = AppModule{}
+	_ module.HasConsensusVersion = AppModule{}
+	_ module.HasInvariants       = AppModule{}
+	_ module.HasName             = AppModule{}
+	_ module.HasGenesisBasics    = AppModule{}
+	_ module.HasProposalContents = AppModule{}
+	_ appmodule.HasEndBlocker    = AppModule{}
+	_ appmodule.HasBeginBlocker  = AppModule{}
+	_ appmodule.AppModule        = AppModule{}
 )
 
 // AppModuleBasic object for module implementation
@@ -92,6 +106,8 @@ type AppModule struct {
 	bankKeeper bankkeeper.Keeper
 }
 
+func (m AppModule) IsOnePerModuleType() {}
+func (m AppModule) IsAppModule()        {}
 func (am AppModule) ConsensusVersion() uint64 {
 	return 4
 }
@@ -141,12 +157,15 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 // BeginBlock implements app module
-func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	return nil
+}
 
 // EndBlock implements app module
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	EndBlocker(ctx, am.keeper)
-	return []abci.ValidatorUpdate{}
+func (am AppModule) EndBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	EndBlocker(sdkCtx, am.keeper)
+	return nil
 }
 
 //____________________________________________________________________________
@@ -167,7 +186,7 @@ func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes
 }
 
 // RegisterStoreDecoder registers a decoder for distribution module's types
-func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
+func (am AppModule) RegisterStoreDecoder(sdr simtypes.StoreDecoderRegistry) {
 	// TODO: implement gravity simulation stuffs
 	// sdr[types.StoreKey] = simulation.NewDecodeStore(am.cdc)
 }

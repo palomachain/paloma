@@ -43,8 +43,6 @@ func BenchmarkSimulation(b *testing.B) {
 		require.NoError(b, err)
 	})
 
-	encCfg := palomaapp.MakeEncodingConfig()
-
 	appOptions := make(simtestutil.AppOptionsMap, 0)
 	appOptions[flags.FlagHome] = palomaapp.DefaultNodeHome
 	appOptions[server.FlagInvCheckPeriod] = 0
@@ -54,7 +52,6 @@ func BenchmarkSimulation(b *testing.B) {
 		db,
 		nil,
 		true,
-		encCfg,
 		appOptions,
 	)
 

@@ -1,6 +1,8 @@
 package gravity
 
 import (
+	"context"
+
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/keeper"
@@ -8,7 +10,7 @@ import (
 )
 
 // EndBlocker is called at the end of every block
-func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
+func EndBlocker(ctx context.Context, k keeper.Keeper) {
 	// slashing(ctx, k)
 
 	err := createBatch(ctx, k)
@@ -33,8 +35,9 @@ func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
 }
 
 // Create a batch of transactions for each token
-func createBatch(ctx sdk.Context, k keeper.Keeper) error {
-	if ctx.BlockHeight()%50 == 0 {
+func createBatch(ctx context.Context, k keeper.Keeper) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.BlockHeight()%50 == 0 {
 		denoms, err := k.GetAllERC20ToDenoms(ctx)
 		if err != nil {
 			return err
@@ -57,7 +60,7 @@ func createBatch(ctx sdk.Context, k keeper.Keeper) error {
 // Iterate over all attestations currently being voted on in order of nonce and
 // "Observe" those who have passed the threshold. Break the loop once we see
 // an attestation that has not passed the threshold
-func attestationTally(ctx sdk.Context, k keeper.Keeper) error {
+func attestationTally(ctx context.Context, k keeper.Keeper) error {
 	attmap, keys, err := k.GetAttestationMapping(ctx)
 	if err != nil {
 		return err
@@ -104,8 +107,9 @@ func attestationTally(ctx sdk.Context, k keeper.Keeper) error {
 }
 
 // cleanupTimedOutBatches deletes batches that have passed their expiration
-func cleanupTimedOutBatches(ctx sdk.Context, k keeper.Keeper) error {
-	currentTime := uint64(ctx.BlockTime().Unix())
+func cleanupTimedOutBatches(ctx context.Context, k keeper.Keeper) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	currentTime := uint64(sdkCtx.BlockTime().Unix())
 	batches, err := k.GetOutgoingTxBatches(ctx)
 	if err != nil {
 		return err
@@ -126,7 +130,7 @@ func cleanupTimedOutBatches(ctx sdk.Context, k keeper.Keeper) error {
 // use. This could be combined with create attestation and save some computation
 // but (A) pruning keeps the iteration small in the first place and (B) there is
 // already enough nuance in the other handler that it's best not to complicate it further
-func pruneAttestations(ctx sdk.Context, k keeper.Keeper) error {
+func pruneAttestations(ctx context.Context, k keeper.Keeper) error {
 	attmap, keys, err := k.GetAttestationMapping(ctx)
 	if err != nil {
 		return err
