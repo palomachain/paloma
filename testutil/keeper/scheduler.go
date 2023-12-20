@@ -1,18 +1,18 @@
 package keeper
 
 import (
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"testing"
 
+	"cosmossdk.io/log"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-	"cosmossdk.io/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmdb "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/scheduler/keeper"
 	"github.com/palomachain/paloma/x/scheduler/types"
 	"github.com/stretchr/testify/require"
@@ -33,17 +33,9 @@ func SchedulerKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	registry := codectypes.NewInterfaceRegistry()
 	appCodec := codec.NewProtoCodec(registry)
 
-	paramsSubspace := typesparams.NewSubspace(appCodec,
-		types.Amino,
-		storeKey,
-		memStoreKey,
-		"SchedulerParams",
-	)
 	k := keeper.NewKeeper(
 		appCodec,
-		storeKey,
-		memStoreKey,
-		paramsSubspace,
+		runtime.NewKVStoreService(storeKey),
 		nil,
 		nil,
 		nil,
