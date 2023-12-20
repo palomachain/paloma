@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/store/metrics"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
@@ -46,7 +47,6 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
@@ -72,6 +72,7 @@ import (
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	gravityparams "github.com/palomachain/paloma/app/params"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	consensuskeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	evmkeeper "github.com/palomachain/paloma/x/evm/keeper"
@@ -275,6 +276,7 @@ type TestInput struct {
 	Context           context.Context
 	Marshaler         codec.Codec
 	LegacyAmino       *codec.LegacyAmino
+	addressCodec      address.Codec
 	GravityStoreKey   *storetypes.KVStoreKey
 }
 
@@ -317,7 +319,7 @@ func addValidators(t *testing.T, input *TestInput, count int) {
 
 		pubKey, err := validator.ConsPubKey()
 		require.NoError(t, err)
-		valAddress, err := input.GravityKeeper.addressCodec.StringToBytes(validator.String())
+		valAddress, err := keeperutil.ValAddressFromBech32(input.addressCodec, validator.GetOperator())
 		sdkCtx := sdk.UnwrapSDKContext(input.Context)
 		err = input.ValsetKeeper.AddExternalChainInfo(sdkCtx, valAddress, []*valsettypes.ExternalChainInfo{
 			{
@@ -618,11 +620,6 @@ func CreateTestEnv(t *testing.T) TestInput {
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	err = govKeeper.Proposals.Set(ctx, govv1beta1types.DefaultStartingProposalID, nil)
-	if err != nil {
-		return TestInput{}
-	}
-
 	slashingKeeper := slashingkeeper.NewKeeper(
 		marshaler,
 		codec.NewLegacyAmino(),
@@ -665,7 +662,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		getSubspace(paramsKeeper, ibctransfertypes.ModuleName),
 		ibcKeeper.ChannelKeeper,
 		ibcKeeper.ChannelKeeper,
-		&ibcKeeper.PortKeeper,
+		ibcKeeper.PortKeeper,
 		accountKeeper,
 		bankKeeper,
 		scopedTransferKeeper,
@@ -674,8 +671,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 
 	valsetKeeper := valsetkeeper.NewKeeper(
 		marshaler,
-		keyValset,
-		memKeyValset,
+		runtime.NewKVStoreService(keyValset),
+		// memKeyValset,
 		getSubspace(paramsKeeper, valsettypes.ModuleName),
 		stakingKeeper,
 		"v1.5.0",
