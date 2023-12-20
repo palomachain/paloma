@@ -12,6 +12,7 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/consensus/keeper"
@@ -42,8 +43,8 @@ func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	)
 	k := keeper.NewKeeper(
 		appCodec,
-		storeKey,
-		memStoreKey,
+		runtime.NewKVStoreService(storeKey),
+		//	memStoreKey,
 		paramsSubspace,
 		nil,
 		keeper.NewRegistry(),
