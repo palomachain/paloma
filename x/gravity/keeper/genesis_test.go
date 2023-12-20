@@ -16,7 +16,9 @@ func TestBatchAndTxImportExport(t *testing.T) {
 	// SETUP ENV + DATA
 	// ==================
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(input.Context)
+
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	ctx := input.Context
 	batchSize := 100
@@ -113,7 +115,7 @@ func TestBatchAndTxImportExport(t *testing.T) {
 	// when
 
 	now := time.Now().UTC()
-	ctx = ctx.WithBlockTime(now)
+	ctx = sdkCtx.WithBlockTime(now)
 
 	// CREATE BATCHES
 	// ==================
@@ -124,6 +126,6 @@ func TestBatchAndTxImportExport(t *testing.T) {
 		batch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", *v, uint(batchSize))
 		require.NoError(t, err)
 		batches[i] = batch
-		ctx.Logger().Info(fmt.Sprintf("Created batch %v for contract %v with %v transactions", i, v.GetAddress(), batchSize))
+		sdkCtx.Logger().Info(fmt.Sprintf("Created batch %v for contract %v with %v transactions", i, v.GetAddress(), batchSize))
 	}
 }
