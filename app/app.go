@@ -617,7 +617,7 @@ func New(
 		runtime.NewKVStoreService(keys[palomamoduletypes.StoreKey]),
 		app.GetSubspace(palomamoduletypes.ModuleName),
 		semverVersion,
-		nil, //app.ValsetKeeper (TODO),
+		app.ValsetKeeper,
 		app.PalomaKeeper.Upgrade,
 	)
 
