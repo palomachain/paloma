@@ -592,11 +592,10 @@ func CreateTestEnv(t *testing.T) TestInput {
 			// distribution module balance must be outstanding rewards + community pool in order to pass
 			// invariants checks, therefore we must add any amount we add to the module balance to the fee pool
 			feePool, err := distKeeper.FeePool.Get(ctx)
+			require.NoError(t, err)
 			newCoins := feePool.CommunityPool.Add(sdk.NewDecCoinsFromCoins(amt...)...)
 			feePool.CommunityPool = newCoins
 			distKeeper.FeePool.Set(ctx, feePool)
-
-			require.NoError(t, err)
 		}
 		accountKeeper.SetModuleAccount(ctx, mod)
 	}
