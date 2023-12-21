@@ -30,7 +30,7 @@ func NewRootCmd() *cobra.Command {
 	params.SetAddressConfig()
 	encCfg := palomaapp.MakeEncodingConfig()
 
-	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, encCfg, db.OptionsMap{})
+	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, db.OptionsMap{})
 	initClientCtx := client.Context{}.
 		WithCodec(encCfg.Codec).
 		WithInterfaceRegistry(encCfg.InterfaceRegistry).
@@ -113,6 +113,13 @@ func NewRootCmd() *cobra.Command {
 		}
 	}
 
+	autoCliOpts := tempApp.AutoCliOpts()
+	autoCliOpts.Keyring, _ = keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
+	autoCliOpts.ClientCtx = initClientCtx
+
+	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
+		panic(err)
+	}
 	return rootCmd
 }
 
