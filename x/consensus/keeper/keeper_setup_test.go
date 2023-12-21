@@ -59,7 +59,6 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 	k := NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keyConsensus),
-		// memStoreKey,
 		paramsSubspace,
 		ms.ValsetKeeper,
 		NewRegistry(),

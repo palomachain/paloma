@@ -44,7 +44,6 @@ func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	k := keeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(storeKey),
-		//	memStoreKey,
 		paramsSubspace,
 		nil,
 		keeper.NewRegistry(),
