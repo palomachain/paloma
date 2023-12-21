@@ -100,8 +100,6 @@ var (
 			[]govclient.ProposalHandler{
 				paramsclient.ProposalHandler,
 				// distrclient.ProposalHandler,
-				//upgradeclient.LegacyProposalHandler,
-				//upgradeclient.LegacyCancelProposalHandler,
 			},
 		),
 		params.AppModuleBasic{},
@@ -590,7 +588,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 			err = bankKeeper.MintCoins(ctx, types.ModuleName, amt)
 			require.NoError(t, err)
 			err = bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, mod.Name, amt)
-
+			require.NoError(t, err)
 			// distribution module balance must be outstanding rewards + community pool in order to pass
 			// invariants checks, therefore we must add any amount we add to the module balance to the fee pool
 			feePool, err := distKeeper.FeePool.Get(ctx)
