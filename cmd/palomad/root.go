@@ -30,7 +30,7 @@ func NewRootCmd() *cobra.Command {
 	params.SetAddressConfig()
 	encCfg := palomaapp.MakeEncodingConfig()
 
-	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, db.OptionsMap{})
+	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, encCfg, db.OptionsMap{})
 	initClientCtx := client.Context{}.
 		WithCodec(encCfg.Codec).
 		WithInterfaceRegistry(encCfg.InterfaceRegistry).
