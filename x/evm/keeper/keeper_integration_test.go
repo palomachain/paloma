@@ -8,8 +8,9 @@ import (
 	"testing"
 	"time"
 
+	keeperutil "github.com/palomachain/paloma/util/keeper"
+
 	"github.com/VolumeFi/whoops"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -41,9 +42,7 @@ func genValidators(numValidators, totalConsPower int) []stakingtypes.Validator {
 func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	chainType, chainReferenceID := consensustypes.ChainTypeEVM, "eth-main"
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-	})
+	ctx := a.NewContext(false)
 
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "eth-main",
@@ -76,11 +75,12 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		require.NoError(t, err)
 		pubKey, err := validator.ConsPubKey()
 		require.NoError(t, err)
-		err = a.ValsetKeeper.AddExternalChainInfo(ctx, validator.GetOperator(), []*valsettypes.ExternalChainInfo{
+		operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, validator.GetOperator())
+		err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: newChain.GetChainReferenceID(),
-				Address:          valAddr.String(),
+				Address:          string(valAddr),
 				Pubkey:           pubKey.Bytes(),
 			},
 		})
@@ -112,7 +112,8 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	require.NoError(t, err)
 
 	accAddr := crypto.PubkeyToAddress(private.PublicKey)
-	err = a.ValsetKeeper.AddExternalChainInfo(ctx, validators[0].GetOperator(), []*valsettypes.ExternalChainInfo{
+	operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, validators[0].GetOperator())
+	err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 		{
 			ChainType:        chainType,
 			ChainReferenceID: chainReferenceID,
@@ -123,7 +124,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 
 	require.NoError(t, err)
 	queue := consensustypes.Queue(keeper.ConsensusTurnstoneMessage, chainType, chainReferenceID)
-	msgs, err := a.ConsensusKeeper.GetMessagesForSigning(ctx, queue, validators[0].GetOperator())
+	msgs, err := a.ConsensusKeeper.GetMessagesForSigning(ctx, queue, operator)
 
 	for _, msg := range msgs {
 		sigbz, err := crypto.Sign(
@@ -136,7 +137,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		require.NoError(t, err)
 		err = a.ConsensusKeeper.AddMessageSignature(
 			ctx,
-			validators[0].GetOperator(),
+			operator,
 			[]*consensustypes.ConsensusMessageSignature{
 				{
 					Id:              msg.GetId(),
@@ -152,10 +153,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 
 func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-		Time:   time.Now(),
-	})
+	ctx := a.NewContext(false)
 
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "bob",
@@ -187,7 +185,8 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
-		err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+		operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
+		err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: "bob",
@@ -214,10 +213,7 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-		Time:   time.Now(),
-	})
+	ctx := a.NewContext(false)
 
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "bob",
@@ -249,7 +245,8 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
-		err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+		operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
+		err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: "bob",
@@ -288,7 +285,8 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	validators = genValidators(2, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
-		err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+		operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
+		err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: "bob",
@@ -312,10 +310,7 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-		Time:   time.Now(),
-	})
+	ctx := a.NewContext(false)
 
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "bob",
@@ -347,7 +342,8 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
-		err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+		operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
+		err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: "bob",
@@ -388,7 +384,8 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	validators = genValidators(2, 25000)
 	for _, val := range validators {
 		a.StakingKeeper.SetValidator(ctx, val)
-		err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+		operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
+		err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: "bob",
@@ -412,9 +409,7 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-	})
+	ctx := a.NewContext(false)
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
@@ -432,9 +427,7 @@ func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 
 func TestAddingSupportForNewChain(t *testing.T) {
 	a := app.NewTestApp(t, false)
-	ctx := a.NewContext(false, tmproto.Header{
-		Height: 5,
-	})
+	ctx := a.NewContext(false)
 
 	t.Run("with happy path there are no errors", func(t *testing.T) {
 		newChain := &types.AddChainProposal{
@@ -579,10 +572,11 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 						Pubkey:           accAddr[:],
 					}
 				}
-				err = a.ValsetKeeper.AddExternalChainInfo(ctx, validator.GetOperator(), externalChains)
+				operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, validator.GetOperator())
+				err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, externalChains)
 				require.NoError(t, err)
 
-				return validator.GetOperator()
+				return operator
 			},
 			expected: true,
 		},
@@ -622,9 +616,10 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 				accAddr := crypto.PubkeyToAddress(private.PublicKey)
 
 				// Only add support for one of two chains created
+				operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, validator.GetOperator())
 				err = a.ValsetKeeper.AddExternalChainInfo(
 					ctx,
-					validator.GetOperator(),
+					operator,
 					[]*valsettypes.ExternalChainInfo{
 						{
 							ChainType:        "evm",
@@ -636,7 +631,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 				)
 				require.NoError(t, err)
 
-				return validator.GetOperator()
+				return operator
 			},
 			expected: false,
 		},
@@ -646,9 +641,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 	for _, tt := range testcases {
 		t.Run(tt.name, func(t *testing.T) {
 			a := app.NewTestApp(t, false)
-			ctx := a.NewContext(false, tmproto.Header{
-				Height: 5,
-			})
+			ctx := a.NewContext(false)
 
 			validatorAddress := tt.setup(ctx, a)
 
@@ -690,9 +683,7 @@ var _ = Describe("evm", func() {
 
 	BeforeEach(func() {
 		a = app.NewTestApp(GinkgoT(), false)
-		ctx = a.NewContext(false, tmproto.Header{
-			Height: 5,
-		})
+		ctx = a.NewContext(false)
 	})
 
 	Context("multiple chains and smart contracts", func() {
@@ -751,7 +742,8 @@ var _ = Describe("evm", func() {
 					Expect(err).To(BeNil())
 					accAddr1 := crypto.PubkeyToAddress(private1.PublicKey)
 					accAddr2 := crypto.PubkeyToAddress(private2.PublicKey)
-					err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+					operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
+					err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 						{
 							ChainType:        "evm",
 							ChainReferenceID: chain1.ChainReferenceID,
@@ -892,7 +884,8 @@ var _ = Describe("evm", func() {
 						private, err := crypto.GenerateKey()
 						Expect(err).To(BeNil())
 						accAddr := crypto.PubkeyToAddress(private.PublicKey)
-						err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+						operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
+						err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 							{
 								ChainType:        "evm",
 								ChainReferenceID: newChain.ChainReferenceID,
@@ -1015,7 +1008,8 @@ var _ = Describe("evm", func() {
 							private, err := crypto.GenerateKey()
 							Expect(err).To(BeNil())
 							accAddr := crypto.PubkeyToAddress(private.PublicKey)
-							err = a.ValsetKeeper.AddExternalChainInfo(ctx, val.GetOperator(), []*valsettypes.ExternalChainInfo{
+							operator, err := keeperutil.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
+							err = a.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
 									ChainReferenceID: "new-chain",
@@ -1116,9 +1110,7 @@ var _ = Describe("change min on chain balance", func() {
 
 	BeforeEach(func() {
 		a = app.NewTestApp(GinkgoT(), false)
-		ctx = a.NewContext(false, tmproto.Header{
-			Height: 5,
-		})
+		ctx = a.NewContext(false)
 	})
 
 	When("chain info exists", func() {
@@ -1168,9 +1160,7 @@ var _ = Describe("change relay weights", func() {
 
 	BeforeEach(func() {
 		a = app.NewTestApp(GinkgoT(), false)
-		ctx = a.NewContext(false, tmproto.Header{
-			Height: 5,
-		})
+		ctx = a.NewContext(false)
 	})
 
 	When("chain info exists", func() {

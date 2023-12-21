@@ -25,7 +25,7 @@ type Bridge interface {
 
 type Info interface {
 	XChainType() Type
-	XChainReferenceIDs(sdk.Context) []ReferenceID
+	XChainReferenceIDs(context.Context) []ReferenceID
 }
 
 type CobraTXJobAdder interface {
