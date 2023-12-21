@@ -19,6 +19,7 @@ var (
 	_ sdk.Msg = &MsgSendToPalomaClaim{}
 	_ sdk.Msg = &MsgBatchSendToEthClaim{}
 	_ sdk.Msg = &MsgSubmitBadSignatureEvidence{}
+	_ sdk.Msg = &MsgUpdateParams{}
 )
 
 // NewMsgSendToEth returns a new msgSendToEth
@@ -330,3 +331,30 @@ func (msg MsgSubmitBadSignatureEvidence) Type() string { return "Submit_Bad_Sign
 
 // Route should return the name of the module
 func (msg MsgSubmitBadSignatureEvidence) Route() string { return RouterKey }
+
+//MsgUpdateParams
+
+// ValidateBasic performs stateless checks
+func (msg *MsgUpdateParams) ValidateBasic() (err error) {
+	return libmeta.ValidateBasic(msg)
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgUpdateParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgUpdateParams) GetSigners() []sdk.AccAddress {
+	acc, err := sdk.AccAddressFromBech32(msg.Metadata.Creator)
+	if err != nil {
+		panic("Invalid signer ")
+	}
+	return []sdk.AccAddress{acc}
+}
+
+// Type should return the action
+func (msg MsgUpdateParams) Type() string { return "update_params" }
+
+// Route should return the name of the module
+func (msg MsgUpdateParams) Route() string { return RouterKey }

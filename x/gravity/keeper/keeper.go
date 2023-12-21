@@ -48,12 +48,12 @@ type Keeper struct {
 	AttestationHandler interface {
 		Handle(context.Context, types.Attestation, types.EthereumClaim) error
 	}
+	authority string
 }
 
 // NewKeeper returns a new instance of the gravity keeper
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	paramSpace paramtypes.Subspace,
 	accKeeper types.AccountKeeper,
 	stakingKeeper types.StakingKeeper,
 	bankKeeper types.BankKeeper,
@@ -62,14 +62,9 @@ func NewKeeper(
 	ibcTransferKeeper ibctransferkeeper.Keeper,
 	evmKeeper types.EVMKeeper,
 	storeGetter keeperutil.StoreGetter,
+	authority string,
 ) Keeper {
-	// set KeyTable if it has not already been set
-	if !paramSpace.HasKeyTable() {
-		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
-	}
-
 	k := Keeper{
-		paramSpace: paramSpace,
 
 		cdc:                cdc,
 		bankKeeper:         bankKeeper,
@@ -85,7 +80,7 @@ func NewKeeper(
 	attestationHandler := AttestationHandler{keeper: &k}
 	attestationHandler.ValidateMembers()
 	k.AttestationHandler = attestationHandler
-
+	k.authority = authority
 	return k
 }
 
@@ -252,4 +247,8 @@ func NewGravityStoreGetter(storeKey storetypes.StoreKey) GravityStoreGetter {
 func (gsg GravityStoreGetter) Store(ctx context.Context) storetypes.KVStore {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.KVStore(gsg.storeKey)
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
