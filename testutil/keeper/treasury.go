@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"testing"
 
 	"cosmossdk.io/log"
@@ -39,8 +40,7 @@ func TreasuryKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	)
 	k := keeper.NewKeeper(
 		cdc,
-		storeKey,
-		memStoreKey,
+		runtime.NewKVStoreService(storeKey),
 		paramsSubspace,
 		nil,
 		nil,
