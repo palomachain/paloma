@@ -15,7 +15,8 @@ import (
 // nolint: exhaustruct
 func TestSubmitBadSignatureEvidenceBatchExists(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	var (
 		now          = time.Now().UTC()
@@ -50,7 +51,7 @@ func TestSubmitBadSignatureEvidenceBatchExists(t *testing.T) {
 	}
 
 	// when
-	ctx = ctx.WithBlockTime(now)
+	ctx = sdkCtx.WithBlockTime(now)
 
 	goodBatch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", *tokenContract, 2)
 	require.NoError(t, err)
@@ -71,7 +72,10 @@ func TestSubmitBadSignatureEvidenceBatchExists(t *testing.T) {
 // nolint: exhaustruct
 func TestSubmitBadSignatureEvidenceSlash(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	batch := types.OutgoingTxBatch{
 		TokenContract:    "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7",

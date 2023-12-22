@@ -16,7 +16,10 @@ import (
 func TestModuleBalanceUnbatchedTxs(t *testing.T) {
 	////////////////// SETUP //////////////////
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 	var (
