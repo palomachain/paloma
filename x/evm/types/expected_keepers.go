@@ -11,7 +11,6 @@ import (
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
-//
 type AccountKeeper interface {
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
 	// Methods imported from account should be defined here
@@ -38,7 +37,7 @@ type ValsetKeeper interface {
 	GetLatestSnapshotOnChain(ctx context.Context, chainReferenceID string) (*valsettypes.Snapshot, error)
 	KeepValidatorAlive(ctx context.Context, valAddr sdk.ValAddress, pigeonVersion string) error
 	Jail(ctx context.Context, valAddr sdk.ValAddress, reason string) error
-	IsJailed(ctx context.Context, val sdk.ValAddress) bool
+	IsJailed(ctx context.Context, val sdk.ValAddress) (bool, error)
 	SetValidatorBalance(ctx context.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error
 	GetValidatorChainInfos(ctx context.Context, valAddr sdk.ValAddress) ([]*valsettypes.ExternalChainInfo, error)
 	GetAllChainInfos(ctx context.Context) ([]*valsettypes.ValidatorExternalAccounts, error)
