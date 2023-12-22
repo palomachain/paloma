@@ -183,7 +183,7 @@ message MsgUpdateParams {
   // NOTE: All parameters must be supplied.
   Params params = 2 [(gogoproto.nullable) = false];
   
-  palomachain.paloma.valset.MsgMetadata metadata       = 6 [(gogoproto.nullable) = false];
+  palomachain.paloma.valset.MsgMetadata metadata       = 3 [(gogoproto.nullable) = false];
 
 }
 
