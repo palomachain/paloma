@@ -36,7 +36,7 @@ type QueueOptions struct {
 	QueueTypeName         string
 	Sg                    keeperutil.StoreGetter
 	Ider                  keeperutil.IDGenerator
-	Cdc                   codecMarshaler
+	Cdc                   codec.BinaryCodec
 	TypeCheck             types.TypeChecker
 	BytesToSignCalculator types.BytesToSignFunc
 	VerifySignature       types.VerifySignatureFunc

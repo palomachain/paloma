@@ -11,6 +11,7 @@ import (
 	tmdb "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/consensus/types"
@@ -54,10 +55,10 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 	ms := mockedServices{
 		ValsetKeeper: mocks.NewValsetKeeper(t),
 	}
+	keyConsensus := storetypes.NewKVStoreKey(types.StoreKey)
 	k := NewKeeper(
 		appCodec,
-		storeKey,
-		memStoreKey,
+		runtime.NewKVStoreService(keyConsensus),
 		paramsSubspace,
 		ms.ValsetKeeper,
 		NewRegistry(),
