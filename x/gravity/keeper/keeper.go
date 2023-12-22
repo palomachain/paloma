@@ -125,8 +125,8 @@ func (k Keeper) GetParamsIfSet(ctx context.Context) (params types.Params, err er
 // GetParams returns the parameters from the store
 func (k Keeper) GetParams(ctx context.Context) (params types.Params) {
 	bz := k.GetStore(ctx).Get([]byte(types.ParamsKey))
-	if bz == nil { // only panic on unset params and not on empty params
-		panic("params are not set in store")
+	if bz == nil {
+		return params
 	}
 	k.cdc.MustUnmarshal(bz, &params)
 	return params
