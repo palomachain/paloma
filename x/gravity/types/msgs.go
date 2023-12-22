@@ -345,12 +345,8 @@ func (msg MsgUpdateParams) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgUpdateParams) GetSigners() []sdk.AccAddress {
-	acc, err := sdk.AccAddressFromBech32(msg.Metadata.Creator)
-	if err != nil {
-		panic("Invalid signer")
-	}
-	return []sdk.AccAddress{acc}
+func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
+	return libmeta.GetSigners(msg)
 }
 
 // Type should return the action
