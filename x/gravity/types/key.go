@@ -3,7 +3,6 @@ package types
 import (
 	"strings"
 
-	"cosmossdk.io/collections"
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -116,7 +115,7 @@ var (
 	// PastEthSignatureCheckpointKey indexes eth signature checkpoints that have existed
 	// [0x1cbe0be407a979331b98e599eeedd09f]
 	PastEthSignatureCheckpointKey = HashString("PastEthSignatureCheckpointKey")
-	ParamsKey                     = collections.NewPrefix(1)
+	ParamsKey                     = []byte{0x01}
 )
 
 // GetOrchestratorAddressKey returns the following key format

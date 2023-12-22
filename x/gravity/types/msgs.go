@@ -348,7 +348,7 @@ func (msg MsgUpdateParams) GetSignBytes() []byte {
 func (msg MsgUpdateParams) GetSigners() []sdk.AccAddress {
 	acc, err := sdk.AccAddressFromBech32(msg.Metadata.Creator)
 	if err != nil {
-		panic("Invalid signer ")
+		panic("Invalid signer")
 	}
 	return []sdk.AccAddress{acc}
 }
