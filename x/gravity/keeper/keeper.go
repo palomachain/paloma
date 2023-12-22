@@ -124,15 +124,18 @@ func (k Keeper) GetParamsIfSet(ctx context.Context) (params types.Params, err er
 
 // GetParams returns the parameters from the store
 func (k Keeper) GetParams(ctx context.Context) (params types.Params) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	k.paramSpace.GetParamSet(sdkCtx, &params)
-	return
+	bz := k.GetStore(ctx).Get([]byte(types.ParamsKey))
+	if bz == nil { // only panic on unset params and not on empty params
+		panic("params are not set in store")
+	}
+	k.cdc.MustUnmarshal(bz, &params)
+	return params
 }
 
 // SetParams sets the parameters in the store
-func (k Keeper) SetParams(ctx context.Context, ps types.Params) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	k.paramSpace.SetParamSet(sdkCtx, &ps)
+func (k Keeper) SetParams(ctx context.Context, params types.Params) {
+	bz := k.cdc.MustMarshal(&params)
+	k.GetStore(ctx).Set([]byte(types.ParamsKey), bz)
 }
 
 // GetBridgeContractAddress returns the bridge contract address on ETH
