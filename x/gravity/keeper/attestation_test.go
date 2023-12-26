@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/gravity/types"
@@ -17,9 +18,10 @@ func TestGetAndDeleteAttestation(t *testing.T) {
 	input := CreateTestEnv(t)
 	k := input.GravityKeeper
 	ctx := input.Context
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	length := 10
-	_, _, hashes := createAttestations(t, length, k, ctx)
+	_, _, hashes := createAttestations(t, length, k, sdkCtx)
 
 	// Get created attestations
 	for i := 0; i < length; i++ {
@@ -63,13 +65,17 @@ func TestGetAndDeleteAttestation(t *testing.T) {
 // Sets up 10 attestations and checks that they are returned in the correct order
 func TestGetMostRecentAttestations(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	k := input.GravityKeeper
 	ctx := input.Context
 
 	length := 10
-	msgs, anys, _ := createAttestations(t, length, k, ctx)
+	msgs, anys, _ := createAttestations(t, length, k, sdk.UnwrapSDKContext(ctx))
 
 	recentAttestations, err := k.GetMostRecentAttestations(ctx, uint64(length))
 	require.NoError(t, err)
@@ -140,7 +146,7 @@ func TestGetSetLastObservedEthereumBlockHeight(t *testing.T) {
 	require.NoError(t, err)
 
 	ethHeight := k.GetLastObservedEthereumBlockHeight(ctx)
-	require.Equal(t, uint64(ctx.BlockHeight()), ethHeight.PalomaBlockHeight)
+	require.Equal(t, uint64(sdk.UnwrapSDKContext(ctx).BlockHeight()), ethHeight.PalomaBlockHeight)
 	require.Equal(t, ethereumHeight, ethHeight.EthereumBlockHeight)
 }
 
@@ -175,10 +181,11 @@ func TestGetSetLastEventNonceByValidator(t *testing.T) {
 
 func TestInvalidHeight(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 	pk := input.GravityKeeper
 	msgServer := NewMsgServerImpl(pk)
-	log := ctx.Logger()
+	log := sdkCtx.Logger()
 
 	val0 := ValAddrs[0]
 	sender := AccAddrs[0]
@@ -230,7 +237,7 @@ func TestInvalidHeight(t *testing.T) {
 			Signers: []string{sender.String()},
 		},
 	}
-	context := sdktypes.WrapSDKContext(ctx)
+	context := sdktypes.UnwrapSDKContext(ctx)
 	log.Info("Submitting bad eth claim from orchestrator 0", "sender", sender.String(), "val", val0.String())
 
 	_, err = msgServer.BatchSendToEthClaim(context, &bad)

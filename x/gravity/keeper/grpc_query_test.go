@@ -56,9 +56,11 @@ func TestLastPendingBatchRequest(t *testing.T) {
 	// any lower than this and a validator won't be created
 	const minStake = 1000000
 	input, _ := SetupTestChain(t, []uint64{minStake, minStake, minStake, minStake, minStake})
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(input.Context)
 
-	ctx := sdk.WrapSDKContext(input.Context)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+
+	ctx := sdk.WrapSDKContext(sdkCtx)
 	var valAddr sdk.AccAddress = bytes.Repeat([]byte{byte(1)}, 20)
 	createTestBatch(t, input, 2)
 	for msg, spec := range specs {
@@ -80,6 +82,7 @@ func TestLastPendingBatchRequest(t *testing.T) {
 
 // nolint: exhaustruct
 func createTestBatch(t *testing.T, input TestInput, maxTxElements uint) {
+	sdkCtx := sdk.UnwrapSDKContext(input.Context)
 	var (
 		mySender   = bytes.Repeat([]byte{1}, 20)
 		myReceiver = "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934"
@@ -115,7 +118,7 @@ func createTestBatch(t *testing.T, input TestInput, maxTxElements uint) {
 		// 4: amount 103
 	}
 	// when
-	input.Context = input.Context.WithBlockTime(now)
+	input.Context = sdkCtx.WithBlockTime(now)
 
 	// tx batch size is 2, so that some of them stay behind
 	_, err = input.GravityKeeper.BuildOutgoingTXBatch(input.Context, "test-chain", *tokenContract, maxTxElements)
@@ -127,9 +130,9 @@ func createTestBatch(t *testing.T, input TestInput, maxTxElements uint) {
 // nolint: exhaustruct
 func TestQueryAllBatchConfirms(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
-	sdkCtx := input.Context
 	k := input.GravityKeeper
 
 	var (
@@ -177,7 +180,8 @@ func TestQueryAllBatchConfirms(t *testing.T) {
 // Check with multiple nonces and tokenContracts
 func TestQueryBatch(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	k := input.GravityKeeper
 
@@ -229,7 +233,9 @@ func TestQueryBatch(t *testing.T) {
 // nolint: exhaustruct
 func TestLastBatchesRequest(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	k := input.GravityKeeper
 
@@ -332,10 +338,10 @@ func TestQueryERC20ToDenom(t *testing.T) {
 		Denom: testDenom,
 	}
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(input.Context)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
-	sdkCtx := input.Context
-	ctx := sdk.WrapSDKContext(input.Context)
+	ctx := sdk.UnwrapSDKContext(sdkCtx)
 	k := input.GravityKeeper
 	err = input.GravityKeeper.setDenomToERC20(sdkCtx, chainReferenceID, testDenom, *erc20)
 	require.NoError(t, err)
@@ -360,16 +366,19 @@ func TestQueryDenomToERC20(t *testing.T) {
 		Erc20: erc20.GetAddress().Hex(),
 	}
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	sdkCtx := input.Context
-	ctx := sdk.WrapSDKContext(input.Context)
+
 	k := input.GravityKeeper
 
 	err = input.GravityKeeper.setDenomToERC20(sdkCtx, chainReferenceID, testDenom, *erc20)
 	require.NoError(t, err)
 
-	queriedERC20, err := k.DenomToERC20(ctx, &types.QueryDenomToERC20Request{
+	queriedERC20, err := k.DenomToERC20(input.Context, &types.QueryDenomToERC20Request{
 		Denom:            testDenom,
 		ChainReferenceId: chainReferenceID,
 	})
@@ -381,9 +390,8 @@ func TestQueryDenomToERC20(t *testing.T) {
 // nolint: exhaustruct
 func TestQueryPendingSendToEth(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
-
-	sdkCtx := input.Context
+	sdkCtx := sdk.UnwrapSDKContext(input.Context)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 	k := input.GravityKeeper
 	var (
 		now            = time.Now().UTC()
