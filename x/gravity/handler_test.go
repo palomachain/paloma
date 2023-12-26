@@ -31,7 +31,9 @@ func TestHandleMsgSendToEth(t *testing.T) {
 
 	// we start by depositing some funds into the users balance to send
 	input := keeper.CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(input.Context)
+
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	ctx := input.Context
 	h := NewHandler(input.GravityKeeper)
@@ -47,8 +49,8 @@ func TestHandleMsgSendToEth(t *testing.T) {
 		Amount:           sendingCoin,
 		ChainReferenceId: "test-chain",
 	}
-	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
-	_, err := h(ctx, msg)
+	ctx = sdkCtx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
+	_, err := h(sdkCtx, msg)
 	require.NoError(t, err)
 	balance2 := input.BankKeeper.GetAllBalances(ctx, userCosmosAddr)
 	assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, startingCoinAmount.Sub(sendAmount))}, balance2)
@@ -60,8 +62,8 @@ func TestHandleMsgSendToEth(t *testing.T) {
 		Amount:           sendingCoin,
 		ChainReferenceId: "test-chain",
 	}
-	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
-	_, err1 := h(ctx, msg1)
+	ctx = sdkCtx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
+	_, err1 := h(sdkCtx, msg1)
 	require.NoError(t, err1)
 	balance3 := input.BankKeeper.GetAllBalances(ctx, userCosmosAddr)
 	finalAmount3 := startingCoinAmount.Sub(sendAmount).Sub(sendAmount)
@@ -74,8 +76,8 @@ func TestHandleMsgSendToEth(t *testing.T) {
 		Amount:           sendingCoin,
 		ChainReferenceId: "test-chain",
 	}
-	ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
-	_, err2 := h(ctx, msg2)
+	ctx = sdkCtx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
+	_, err2 := h(sdkCtx, msg2)
 	require.Error(t, err2)
 	balance4 := input.BankKeeper.GetAllBalances(ctx, userCosmosAddr)
 	assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, finalAmount3)}, balance4)
@@ -88,8 +90,8 @@ func TestHandleMsgSendToEth(t *testing.T) {
 			Amount:           sendingCoin,
 			ChainReferenceId: "test-chain",
 		}
-		ctx = ctx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
-		_, err := h(ctx, msg)
+		ctx = sdkCtx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
+		_, err := h(sdkCtx, msg)
 		require.Error(t, err)
 		balance := input.BankKeeper.GetAllBalances(ctx, userCosmosAddr)
 		assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, finalAmount3)}, balance)

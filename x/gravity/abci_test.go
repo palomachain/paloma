@@ -21,7 +21,8 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 	//	Test if a non-validator confirm won't panic
 
 	input, ctx := keeper.SetupFiveValChain(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	pk := input.GravityKeeper
 	params := pk.GetParams(ctx)
@@ -77,11 +78,11 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 		BatchTimeout:       0,
 		Transactions:       []types.OutgoingTransferTx{},
 		TokenContract:      keeper.TokenContractAddrs[0],
-		PalomaBlockCreated: uint64(ctx.BlockHeight() - int64(params.SignedBatchesWindow+1)),
+		PalomaBlockCreated: uint64(sdkCtx.BlockHeight() - int64(params.SignedBatchesWindow+1)),
 	})
 	require.NoError(t, err)
 	pk.StoreBatch(ctx, *batch)
-	unslashedBatches, err := pk.GetUnSlashedBatches(ctx, uint64(ctx.BlockHeight()))
+	unslashedBatches, err := pk.GetUnSlashedBatches(ctx, uint64(sdkCtx.BlockHeight()))
 	require.NoError(t, err)
 	assert.True(t, len(unslashedBatches) == 1 && unslashedBatches[0].BatchNonce == 1)
 
@@ -115,7 +116,8 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 // Test batch timeout
 func TestBatchTimeout(t *testing.T) {
 	input, ctx := keeper.SetupFiveValChain(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	pk := input.GravityKeeper
 	params := pk.GetParams(ctx)
@@ -155,7 +157,7 @@ func TestBatchTimeout(t *testing.T) {
 	}
 
 	// when
-	ctx = ctx.WithBlockTime(testTime)
+	ctx = sdkCtx.WithBlockTime(testTime)
 
 	// check that we can make a batch without first setting an ethereum block height
 	b1, err1 := pk.BuildOutgoingTXBatch(ctx, "test-chain", *tokenContract, 1)
@@ -200,7 +202,7 @@ func TestBatchTimeout(t *testing.T) {
 	require.Equal(t, len(keeper.OrchAddrs), len(secondBatchConfirms))
 
 	// when, beyond the timeout
-	ctx = ctx.WithBlockTime(testTime.Add(20 * time.Minute))
+	ctx = sdkCtx.WithBlockTime(testTime.Add(20 * time.Minute))
 
 	EndBlocker(ctx, pk)
 

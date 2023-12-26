@@ -16,8 +16,9 @@ import (
 // nolint: exhaustruct
 func TestBatches(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	var (
 		now                     = time.Now().UTC()
@@ -62,7 +63,7 @@ func TestBatches(t *testing.T) {
 	}
 
 	// when
-	ctx = ctx.WithBlockTime(now)
+	ctx = sdkCtx.WithBlockTime(now)
 	err = input.GravityKeeper.SetLastObservedEthereumBlockHeight(ctx, 1234567)
 	require.NoError(t, err)
 	// maxElements must be greater than 0, otherwise the batch would not be created
@@ -79,7 +80,7 @@ func TestBatches(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, gotFirstBatch)
 	// Should have txs 4 and 3 from above, because the store is ordered by amount
-	ctx.Logger().Info(fmt.Sprintf("found batch %+v", gotFirstBatch))
+	sdkCtx.Logger().Info(fmt.Sprintf("found batch %+v", gotFirstBatch))
 
 	expFirstBatch := types.OutgoingTxBatch{
 		BatchNonce: 1,
@@ -165,7 +166,7 @@ func TestBatches(t *testing.T) {
 	// CREATE SECOND BATCH
 	// ====================================
 
-	ctx = ctx.WithBlockTime(now)
+	ctx = sdkCtx.WithBlockTime(now)
 
 	secondBatch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", *myTokenContractAddr, 2)
 	require.NoError(t, err)
@@ -270,7 +271,8 @@ func TestBatches(t *testing.T) {
 // nolint: exhaustruct
 func TestBatchesFullCoins(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	var (
 		now              = time.Now().UTC()
@@ -309,7 +311,7 @@ func TestBatchesFullCoins(t *testing.T) {
 	}
 
 	// when
-	ctx = ctx.WithBlockTime(now)
+	ctx = sdkCtx.WithBlockTime(now)
 
 	// tx batch size is 2, so that some of them stay behind
 	firstBatch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", *tokenContract, 2)
@@ -385,7 +387,7 @@ func TestBatchesFullCoins(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	ctx = ctx.WithBlockTime(now)
+	ctx = sdkCtx.WithBlockTime(now)
 	err = input.GravityKeeper.SetLastObservedEthereumBlockHeight(ctx, 1234567)
 	require.NoError(t, err)
 	// tx batch size is 2, so that some of them stay behind
@@ -638,7 +640,7 @@ func TestBatchConfirms(t *testing.T) {
 	require.NoError(t, input.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, mySender, allVouchers))
 
 	// when
-	ctx = ctx.WithBlockTime(now)
+	ctx = sdk.UnwrapSDKContext(ctx).WithBlockTime(now)
 
 	// add batches with 1 tx to the pool
 	for i := 1; i < 200; i++ {
