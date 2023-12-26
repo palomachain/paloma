@@ -3,13 +3,13 @@ package keeper
 import (
 	"context"
 	"fmt"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"log"
 	"sort"
 	"strings"
 
 	"cosmossdk.io/core/address"
 	cosmosstore "cosmossdk.io/core/store"
-	"cosmossdk.io/log"
+	cosmoslog "cosmossdk.io/log"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -63,7 +63,21 @@ func NewKeeper(
 	}
 }
 
-func (k Keeper) Logger(ctx context.Context) log.Logger {
+func (k *Keeper) MustGetValAddr(addr string) (sdk.ValAddress, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("error while getting valAddr ", r)
+			return
+		}
+	}()
+	bz, err := k.AddressCodec.StringToBytes(addr)
+	if err != nil {
+		panic(err)
+	}
+	return bz, err
+}
+
+func (k Keeper) Logger(ctx context.Context) cosmoslog.Logger {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return liblog.FromSDKLogger(sdkCtx.Logger()).With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
@@ -84,7 +98,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 	var g whoops.Group
 	for _, val := range vals {
-		bz, err := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+		bz, err := k.MustGetValAddr(val.GetOperator())
 		if err != nil {
 			return err
 		}
@@ -109,7 +123,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 		sort.Strings(notSupported)
 
-		bz, err = keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+		bz, err = k.MustGetValAddr(val.GetOperator())
 		if err != nil {
 			return err
 		}
