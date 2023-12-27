@@ -63,20 +63,6 @@ func NewKeeper(
 	}
 }
 
-func (k *Keeper) MustGetValAddr(addr string) (sdk.ValAddress, error) {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Printf("error while getting valAddr ", r)
-			return
-		}
-	}()
-	bz, err := k.AddressCodec.StringToBytes(addr)
-	if err != nil {
-		panic(err)
-	}
-	return bz, err
-}
-
 func (k Keeper) Logger(ctx context.Context) cosmoslog.Logger {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return liblog.FromSDKLogger(sdkCtx.Logger()).With("module", fmt.Sprintf("x/%s", types.ModuleName))
@@ -98,10 +84,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 	var g whoops.Group
 	for _, val := range vals {
-		bz, err := k.MustGetValAddr(val.GetOperator())
-		if err != nil {
-			return err
-		}
+		bz := k.MustGetValAddr(val.GetOperator())
 		exts, err := k.Valset.GetValidatorChainInfos(ctx, bz)
 		if err != nil {
 			g.Add(err)
@@ -123,10 +106,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 		sort.Strings(notSupported)
 
-		bz, err = k.MustGetValAddr(val.GetOperator())
-		if err != nil {
-			return err
-		}
+		bz = k.MustGetValAddr(val.GetOperator())
 		if len(notSupported) > 0 {
 			g.Add(k.Valset.Jail(ctx, bz, fmt.Sprintf(types.JailReasonNotSupportingTheseExternalChains, strings.Join(notSupported, ", "))))
 		}
@@ -175,4 +155,16 @@ func (k Keeper) CheckChainVersion(ctx context.Context) {
 		abandon()
 		return
 	}
+}
+func (k *Keeper) MustGetValAddr(addr string) sdk.ValAddress {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("error while getting valAddr ", r)
+		}
+	}()
+	bz, err := k.AddressCodec.StringToBytes(addr)
+	if err != nil {
+		panic(err)
+	}
+	return bz
 }
