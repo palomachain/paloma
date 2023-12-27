@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 
@@ -159,7 +158,7 @@ func (k Keeper) CheckChainVersion(ctx context.Context) {
 func (k *Keeper) MustGetValAddr(addr string) sdk.ValAddress {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("error while getting valAddr ", r)
+			k.Logger(context.Background()).Error("error while getting valAddr")
 		}
 	}()
 	bz, err := k.AddressCodec.StringToBytes(addr)
