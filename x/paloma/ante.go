@@ -93,7 +93,7 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 		}
 
 		creator := m.GetMetadata().GetCreator()
-		signers := m.GetSigners()
+		signers := m.GetMetadata().GetSigners()
 
 		signedByCreator := func() bool {
 			for _, v := range signers {
