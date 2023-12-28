@@ -8,7 +8,8 @@ import "palomachain/paloma/valset/common.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/any.proto";
-
+import "cosmos/msg/v1/msg.proto";
+import "palomachain/paloma/gravity/params.proto";
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
 // Msg defines the state transitions possible within gravity
@@ -19,6 +20,8 @@ service Msg {
   rpc BatchSendToEthClaim(MsgBatchSendToEthClaim) returns (MsgBatchSendToEthClaimResponse) {}
   rpc CancelSendToEth(MsgCancelSendToEth) returns (MsgCancelSendToEthResponse) {}
   rpc SubmitBadSignatureEvidence(MsgSubmitBadSignatureEvidence) returns (MsgSubmitBadSignatureEvidenceResponse) {}
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
 }
 
 // MsgSendToEth
@@ -70,7 +73,7 @@ message MsgSendToPalomaClaim {
   uint64 eth_block_height   = 2;
   string token_contract = 3;
   string amount         = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable)   = false
   ];
   string ethereum_sender = 5;
@@ -169,3 +172,21 @@ message EventOutgoingTxId {
     string message = 1;
     string tx_id = 2;
 }
+
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // params defines the x/gravity parameters to update.
+  //
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [(gogoproto.nullable) = false];
+  
+  palomachain.paloma.valset.MsgMetadata metadata       = 3 [(gogoproto.nullable) = false];
+
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+message MsgUpdateParamsResponse {}

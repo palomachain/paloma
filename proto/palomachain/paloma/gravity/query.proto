@@ -9,6 +9,8 @@ import "google/api/annotations.proto";
 import "palomachain/paloma/gravity/genesis.proto";
 import "palomachain/paloma/gravity/types.proto";
 import "palomachain/paloma/gravity/msgs.proto";
+import "palomachain/paloma/gravity/params.proto";
+
 
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
 

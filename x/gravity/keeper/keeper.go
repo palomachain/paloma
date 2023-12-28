@@ -48,12 +48,12 @@ type Keeper struct {
 	AttestationHandler interface {
 		Handle(context.Context, types.Attestation, types.EthereumClaim) error
 	}
+	authority string
 }
 
 // NewKeeper returns a new instance of the gravity keeper
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	paramSpace paramtypes.Subspace,
 	accKeeper types.AccountKeeper,
 	stakingKeeper types.StakingKeeper,
 	bankKeeper types.BankKeeper,
@@ -62,14 +62,9 @@ func NewKeeper(
 	ibcTransferKeeper ibctransferkeeper.Keeper,
 	evmKeeper types.EVMKeeper,
 	storeGetter keeperutil.StoreGetter,
+	authority string,
 ) Keeper {
-	// set KeyTable if it has not already been set
-	if !paramSpace.HasKeyTable() {
-		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
-	}
-
 	k := Keeper{
-		paramSpace: paramSpace,
 
 		cdc:                cdc,
 		bankKeeper:         bankKeeper,
@@ -85,7 +80,7 @@ func NewKeeper(
 	attestationHandler := AttestationHandler{keeper: &k}
 	attestationHandler.ValidateMembers()
 	k.AttestationHandler = attestationHandler
-
+	k.authority = authority
 	return k
 }
 
@@ -129,15 +124,18 @@ func (k Keeper) GetParamsIfSet(ctx context.Context) (params types.Params, err er
 
 // GetParams returns the parameters from the store
 func (k Keeper) GetParams(ctx context.Context) (params types.Params) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	k.paramSpace.GetParamSet(sdkCtx, &params)
-	return
+	bz := k.GetStore(ctx).Get([]byte(types.ParamsKey))
+	if bz == nil {
+		return params
+	}
+	k.cdc.MustUnmarshal(bz, &params)
+	return params
 }
 
 // SetParams sets the parameters in the store
-func (k Keeper) SetParams(ctx context.Context, ps types.Params) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	k.paramSpace.SetParamSet(sdkCtx, &ps)
+func (k Keeper) SetParams(ctx context.Context, params types.Params) {
+	bz := k.cdc.MustMarshal(&params)
+	k.GetStore(ctx).Set([]byte(types.ParamsKey), bz)
 }
 
 // GetBridgeContractAddress returns the bridge contract address on ETH
@@ -252,4 +250,8 @@ func NewGravityStoreGetter(storeKey storetypes.StoreKey) GravityStoreGetter {
 func (gsg GravityStoreGetter) Store(ctx context.Context) storetypes.KVStore {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.KVStore(gsg.storeKey)
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
