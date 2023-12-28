@@ -158,7 +158,7 @@ func (k Keeper) CheckChainVersion(ctx context.Context) {
 func (k *Keeper) MustGetValAddr(addr string) sdk.ValAddress {
 	defer func() {
 		if r := recover(); r != nil {
-			k.Logger(context.Background()).Error("error while getting valAddr")
+			k.Logger(context.Background()).Error("error while getting valAddr", r)
 		}
 	}()
 	bz, err := k.AddressCodec.StringToBytes(addr)
