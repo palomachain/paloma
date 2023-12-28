@@ -115,6 +115,7 @@ var (
 	// PastEthSignatureCheckpointKey indexes eth signature checkpoints that have existed
 	// [0x1cbe0be407a979331b98e599eeedd09f]
 	PastEthSignatureCheckpointKey = HashString("PastEthSignatureCheckpointKey")
+	ParamsKey                     = []byte{0x01}
 )
 
 // GetOrchestratorAddressKey returns the following key format
