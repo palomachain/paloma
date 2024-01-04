@@ -12,6 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/testutil"
+	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/paloma/keeper"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
@@ -53,7 +54,10 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			// val[1] has only one chain
 			// val[2] doesn't have anything
 			// All other vals have everything
-			valAddress, err := k.MustGetValAddr(vals[0].GetOperator())
+			valAddress, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, vals[0].GetOperator())
+			if err != nil {
+				k.Logger(ctx).Error("Error while getting ValAddress", err)
+			}
 			err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddress, []*valsettypes.ExternalChainInfo{
 				{
 					ChainType:        "evm",
@@ -69,7 +73,10 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 				},
 			})
 			Expect(err).To(BeNil())
-			valAddress2, err := k.MustGetValAddr(vals[1].GetOperator())
+			valAddress2, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, vals[1].GetOperator())
+			if err != nil {
+				k.Logger(ctx).Error("Error while getting ValAddress", err)
+			}
 			err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddress2, []*valsettypes.ExternalChainInfo{
 				{
 					ChainType:        "evm",
@@ -80,7 +87,10 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			})
 			Expect(err).To(BeNil())
 			for i, v := range vals[3:] {
-				valAddress, err := k.MustGetValAddr(v.GetOperator())
+				valAddress, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, v.GetOperator())
+				if err != nil {
+					k.Logger(ctx).Error("Error while getting ValAddress", err)
+				}
 				err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddress, []*valsettypes.ExternalChainInfo{
 					{
 						ChainType:        "evm",
@@ -108,9 +118,18 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 
 		It("jails val[1] and val[2], but no val[0]", func() {
 			By("validators are not jailed")
-			valAddress1, err := k.MustGetValAddr(vals[0].GetOperator())
-			valAddress2, err := k.MustGetValAddr(vals[1].GetOperator())
-			valAddress3, err := k.MustGetValAddr(vals[2].GetOperator())
+			valAddress1, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, vals[0].GetOperator())
+			if err != nil {
+				k.Logger(ctx).Error("Error while getting ValAddress", err)
+			}
+			valAddress2, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, vals[1].GetOperator())
+			if err != nil {
+				k.Logger(ctx).Error("Error while getting ValAddress", err)
+			}
+			valAddress3, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, vals[2].GetOperator())
+			if err != nil {
+				k.Logger(ctx).Error("Error while getting ValAddress", err)
+			}
 			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress1)).To(BeFalse())
 			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress2)).To(BeFalse())
 			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress3)).To(BeFalse())

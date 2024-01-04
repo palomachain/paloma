@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/paloma/types"
 	"golang.org/x/mod/semver"
@@ -83,8 +84,11 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 	var g whoops.Group
 	for _, val := range vals {
-		bz := k.MustGetValAddr(val.GetOperator())
-		exts, err := k.Valset.GetValidatorChainInfos(ctx, bz)
+		valAddr, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+		if err != nil {
+			k.Logger(ctx).Error("Error while getting ValAddress", err)
+		}
+		exts, err := k.Valset.GetValidatorChainInfos(ctx, valAddr)
 		if err != nil {
 			g.Add(err)
 			continue
@@ -105,9 +109,12 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 		sort.Strings(notSupported)
 
-		bz = k.MustGetValAddr(val.GetOperator())
+		valAddr, err = utilkeeper.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+		if err != nil {
+			k.Logger(ctx).Error("Error while getting ValAddress", err)
+		}
 		if len(notSupported) > 0 {
-			g.Add(k.Valset.Jail(ctx, bz, fmt.Sprintf(types.JailReasonNotSupportingTheseExternalChains, strings.Join(notSupported, ", "))))
+			g.Add(k.Valset.Jail(ctx, valAddr, fmt.Sprintf(types.JailReasonNotSupportingTheseExternalChains, strings.Join(notSupported, ", "))))
 		}
 	}
 
@@ -154,16 +161,4 @@ func (k Keeper) CheckChainVersion(ctx context.Context) {
 		abandon()
 		return
 	}
-}
-func (k *Keeper) MustGetValAddr(addr string) sdk.ValAddress {
-	defer func() {
-		if r := recover(); r != nil {
-			k.Logger(context.Background()).Error("error while getting valAddr", r)
-		}
-	}()
-	bz, err := k.AddressCodec.StringToBytes(addr)
-	if err != nil {
-		panic(err)
-	}
-	return bz
 }
