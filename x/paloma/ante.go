@@ -93,11 +93,11 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 		}
 
 		creator := m.GetMetadata().GetCreator()
-		signers := m.GetMetadata().GetSigners()
+		signers := libmeta.GetSigners(m)
 
 		signedByCreator := func() bool {
 			for _, v := range signers {
-				if v == creator {
+				if v.String() == creator {
 					return true
 				}
 			}
@@ -128,7 +128,7 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 
 		grantees := make([]string, 0, len(signers))
 		for _, signer := range signers {
-			if v, found := grantsLkUp[signer]; found {
+			if v, found := grantsLkUp[signer.String()]; found {
 				logger(ctx).Debug("found granted signature", "signature", v.Grantee)
 				grantees = append(grantees, v.Grantee)
 			}
