@@ -112,7 +112,8 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 		valAddr, err = utilkeeper.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
 		if err != nil {
-			k.Logger(ctx).Error("Error while getting ValAddress", err)
+			g.Add(err)
+			continue
 		}
 		if len(notSupported) > 0 {
 			g.Add(k.Valset.Jail(ctx, valAddr, fmt.Sprintf(types.JailReasonNotSupportingTheseExternalChains, strings.Join(notSupported, ", "))))
