@@ -48,7 +48,14 @@ type SchedulerKeeper interface {
 	ScheduleNow(ctx sdk.Context, jobID string, in []byte, SenderAddress sdk.AccAddress, contractAddress sdk.AccAddress) error
 }
 
+type ERC20Record interface {
+	GetErc20() string
+	GetDenom() string
+	GetChainReferenceId() string
+}
+
 //go:generate mockery --name=GravityKeeper
 type GravityKeeper interface {
 	GetLastObservedEventNonce(ctx sdk.Context) (uint64, error)
+	CastAllERC20ToDenoms(ctx sdk.Context) ([]ERC20Record, error)
 }

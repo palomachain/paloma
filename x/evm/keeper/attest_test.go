@@ -35,11 +35,22 @@ var (
 	}()
 )
 
+type record struct {
+	denom string
+	erc20 string
+	chain string
+}
+
+func (r record) GetDenom() string            { return r.denom }
+func (r record) GetErc20() string            { return r.erc20 }
+func (r record) GetChainReferenceId() string { return r.chain }
+
 var _ = g.Describe("attest router", func() {
 	var k Keeper
 	var ctx sdk.Context
 	var q *consensusmocks.Queuer
 	var v *evmmocks.ValsetKeeper
+	var gk *evmmocks.GravityKeeper
 	var consensukeeper *evmmocks.ConsensusKeeper
 	var msg *consensustypes.QueuedSignedMessage
 	var consensusMsg *types.Message
@@ -68,6 +79,7 @@ var _ = g.Describe("attest router", func() {
 		ctx = _ctx
 		k = *kpr
 		v = ms.ValsetKeeper
+		gk = ms.GravityKeeper
 		consensukeeper = ms.ConsensusKeeper
 		q = consensusmocks.NewQueuer(t)
 		isGoodcase = true
@@ -267,6 +279,67 @@ var _ = g.Describe("attest router", func() {
 					})
 					successfulProcess()
 
+					g.When("message is attesting to successful erc20 relink", func() {
+						g.When("no more pending messages after this", func() {
+							g.It("remove the deployment and activate the chain", func() {
+								setupChainSupport()
+								dep, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+								Expect(dep).ToNot(BeNil())
+								dep.Status = types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER
+								dep.Erc20Transfers = []types.SmartContractDeployment_ERC20Transfer{
+									{
+										Denom:  "denom",
+										Erc20:  "address",
+										MsgID:  123,
+										Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
+									},
+								}
+								err := k.updateSmartContractDeployment(ctx, uint64(1), newChain.ChainReferenceID, dep)
+								Expect(err).To(BeNil())
+								k.deploymentCache.Add(ctx, newChain.ChainReferenceID, uint64(1), 123)
+								Expect(subject()).To(BeNil())
+								res, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+								Expect(res).To(BeNil())
+								info, err := k.GetChainInfo(ctx, newChain.ChainReferenceID)
+								Expect(err).To(BeNil())
+								Expect(info.ActiveSmartContractID).To(Equal(uint64(1)))
+							})
+						})
+						g.When("more pending messages after this", func() {
+							g.It("updates the deployment", func() {
+								setupChainSupport()
+								dep, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+								Expect(dep).ToNot(BeNil())
+								dep.Status = types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER
+								dep.Erc20Transfers = []types.SmartContractDeployment_ERC20Transfer{
+									{
+										Denom:  "denom",
+										Erc20:  "address",
+										MsgID:  123,
+										Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
+									},
+									{
+										Denom:  "denom2",
+										Erc20:  "address2",
+										MsgID:  1234,
+										Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
+									},
+								}
+								err := k.updateSmartContractDeployment(ctx, uint64(1), newChain.ChainReferenceID, dep)
+								Expect(err).To(BeNil())
+								k.deploymentCache.Add(ctx, newChain.ChainReferenceID, uint64(1), 123)
+								Expect(subject()).To(BeNil())
+								res, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+								Expect(res.Erc20Transfers).To(HaveLen(2))
+								Expect(res.Erc20Transfers[0].Status).To(Equal(types.SmartContractDeployment_ERC20Transfer_OK))
+								Expect(res.Erc20Transfers[1].Status).To(Equal(types.SmartContractDeployment_ERC20Transfer_PENDING))
+								info, err := k.GetChainInfo(ctx, newChain.ChainReferenceID)
+								Expect(err).To(BeNil())
+								Expect(info.ActiveSmartContractID).To(Equal(uint64(0)))
+							})
+						})
+					})
+
 					g.When("message has not been retried", func() {
 						g.BeforeEach(func() {
 							consensusMsg.Action = &types.Message_SubmitLogicCall{
@@ -339,39 +412,62 @@ var _ = g.Describe("attest router", func() {
 						}
 					})
 
-					g.It("updates the info about smart contract to chain deployment", func() {
-						setupChainSupport()
-						Expect(subject()).To(BeNil())
-						v, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
-						Expect(v.Status).To(Equal(types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER))
-					})
-				})
-
-				g.When("message is TransferERC20Ownership", func() {
-					g.BeforeEach(func() {
-						consensusMsg.Action = &types.Message_TransferERC20Ownership{
-							TransferERC20Ownership: &types.TransferERC20Ownership{
-								SmartContractID:   1,
-								NewCompassAddress: sdk.ValAddress("12345678901234567890"),
-							},
-						}
-					})
-
-					g.When("contract not actively deploying", func() {
-						g.It("returns an error", func() {
-							isGoodcase = false
+					g.When("target chain has no deployed ERC20 tokens", func() {
+						g.BeforeEach(func() {
+							gk.On("CastAllERC20ToDenoms", mock.Anything).Return(nil, nil)
+						})
+						g.It("removes deployment", func() {
 							setupChainSupport()
-							Expect(subject()).To(MatchError("trying to activate a smart contract that is not currently deploying"))
+							Expect(subject()).To(BeNil())
+							v, key := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+							Expect(key).To(BeNil())
+							Expect(v).To(BeNil())
+						})
+						g.It("sets chain as active", func() {
+							setupChainSupport()
+							Expect(subject()).To(BeNil())
+							v, err := k.GetChainInfo(ctx, newChain.GetChainReferenceID())
+							Expect(err).To(BeNil())
+							Expect(v.GetActiveSmartContractID()).To(BeEquivalentTo(uint64(1)))
 						})
 					})
 
-					g.When("transfer is done", func() {
-						g.It("must remove the deployment from deployment store", func() {
+					g.When("target chain has active ERC20 tokens deployed", func() {
+						g.BeforeEach(func() {
+							gk.On("CastAllERC20ToDenoms", mock.Anything).Return([]types.ERC20Record{
+								record{"denom", "address1", newChain.ChainReferenceID},
+								record{"denom2", "address2", newChain.ChainReferenceID},
+								record{"denom3", "address3", "unknown-chain"},
+							}, nil)
+						})
+						g.It("updates deployment", func() {
 							setupChainSupport()
-							k.SetSmartContractDeploymentStatusByContractID(ctx, uint64(1), newChain.ChainReferenceID, types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER)
 							Expect(subject()).To(BeNil())
-							v, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
-							Expect(v).To(BeNil())
+							v, key := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+							Expect(key).ToNot(BeNil())
+							Expect(v).ToNot(BeNil())
+							Expect(v.GetStatus()).To(BeEquivalentTo(types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER))
+							Expect(v.GetErc20Transfers()).To(BeEquivalentTo([]types.SmartContractDeployment_ERC20Transfer{
+								{
+									Denom:  "denom",
+									Erc20:  "address1",
+									MsgID:  10,
+									Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
+								},
+								{
+									Denom:  "denom2",
+									Erc20:  "address2",
+									MsgID:  10,
+									Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
+								},
+							}))
+						})
+						g.It("doesn't set the chain as active", func() {
+							setupChainSupport()
+							Expect(subject()).To(BeNil())
+							v, err := k.GetChainInfo(ctx, newChain.GetChainReferenceID())
+							Expect(err).To(BeNil())
+							Expect(v.GetActiveSmartContractID()).To(BeEquivalentTo(uint64(0)))
 						})
 					})
 				})
