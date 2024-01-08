@@ -55,9 +55,7 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			// val[2] doesn't have anything
 			// All other vals have everything
 			valAddress, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, vals[0].GetOperator())
-			if err != nil {
-				k.Logger(ctx).Error("Error while getting ValAddress", err)
-			}
+			Expect(err).To(BeNil())
 			err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddress, []*valsettypes.ExternalChainInfo{
 				{
 					ChainType:        "evm",
@@ -74,9 +72,7 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			})
 			Expect(err).To(BeNil())
 			valAddress2, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, vals[1].GetOperator())
-			if err != nil {
-				k.Logger(ctx).Error("Error while getting ValAddress", err)
-			}
+			Expect(err).To(BeNil())
 			err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddress2, []*valsettypes.ExternalChainInfo{
 				{
 					ChainType:        "evm",
@@ -88,9 +84,7 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 			Expect(err).To(BeNil())
 			for i, v := range vals[3:] {
 				valAddress, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, v.GetOperator())
-				if err != nil {
-					k.Logger(ctx).Error("Error while getting ValAddress", err)
-				}
+				Expect(err).To(BeNil())
 				err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddress, []*valsettypes.ExternalChainInfo{
 					{
 						ChainType:        "evm",
@@ -119,17 +113,11 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 		It("jails val[1] and val[2], but no val[0]", func() {
 			By("validators are not jailed")
 			valAddress1, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, vals[0].GetOperator())
-			if err != nil {
-				k.Logger(ctx).Error("Error while getting ValAddress", err)
-			}
+			Expect(err).To(BeNil())
 			valAddress2, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, vals[1].GetOperator())
-			if err != nil {
-				k.Logger(ctx).Error("Error while getting ValAddress", err)
-			}
+			Expect(err).To(BeNil())
 			valAddress3, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, vals[2].GetOperator())
-			if err != nil {
-				k.Logger(ctx).Error("Error while getting ValAddress", err)
-			}
+			Expect(err).To(BeNil())
 			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress1)).To(BeFalse())
 			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress2)).To(BeFalse())
 			Expect(a.ValsetKeeper.IsJailed(ctx, valAddress3)).To(BeFalse())
