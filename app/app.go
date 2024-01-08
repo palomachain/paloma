@@ -8,6 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"cosmossdk.io/client/v2/autocli"
+	"cosmossdk.io/core/appmodule"
+	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
+
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 
 	"cosmossdk.io/log"
@@ -1018,6 +1022,23 @@ func New(
 	)
 
 	return app
+}
+
+func (app *App) AutoCliOpts() autocli.AppOptions {
+	modules := make(map[string]appmodule.AppModule, 0)
+	for _, m := range app.ModuleManager.Modules {
+		if moduleWithName, ok := m.(module.HasName); ok {
+			moduleName := moduleWithName.Name()
+			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
+				modules[moduleName] = appModule
+			}
+		}
+	}
+
+	return autocli.AppOptions{
+		Modules:       modules,
+		ModuleOptions: runtimeservices.ExtractAutoCLIOptions(app.ModuleManager.Modules),
+	}
 }
 
 // Name returns the name of the App
