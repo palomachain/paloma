@@ -13,8 +13,12 @@ func TestValAddressConversion(t *testing.T) {
 		Bech32Prefix: sdk.GetConfig().GetBech32ValidatorAddrPrefix(),
 	}
 
-	validators := testutil.GenValidators(1, 25000)
+	validators := testutil.GenValidators(2, 25000)
 	bech32, err := ValAddressFromBech32(codec, validators[0].GetOperator())
+	actual, _ := codec.StringToBytes(validators[0].GetOperator())
+	different, _ := ValAddressFromBech32(codec, validators[1].GetOperator())
 	assert.NoError(t, err)
 	assert.NotNil(t, bech32)
+	assert.Equal(t, bech32, actual)
+	assert.NotEqual(t, bech32, different)
 }
