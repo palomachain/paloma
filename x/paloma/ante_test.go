@@ -6,10 +6,10 @@ import (
 	"reflect"
 	"testing"
 
+	"cosmossdk.io/x/feegrant"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/palomachain/paloma/x/paloma"
 	"github.com/palomachain/paloma/x/paloma/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"

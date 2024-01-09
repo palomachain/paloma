@@ -145,9 +145,9 @@ import (
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
 
-	// palomamodule "github.com/palomachain/paloma/x/paloma"
-	// palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
-	// palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
+	palomamodule "github.com/palomachain/paloma/x/paloma"
+	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
+	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
 	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
@@ -175,7 +175,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 	return []govclient.ProposalHandler{
 		paramsclient.ProposalHandler,
 		gravityclient.ProposalHandler,
-		// treasuryclient.ProposalHandler,
+		treasuryclient.ProposalHandler,
 		evmclient.ProposalHandler,
 		treasuryclient.ProposalHandler,
 	}
@@ -206,12 +206,12 @@ var (
 		vesting.AppModuleBasic{},
 		schedulermodule.AppModuleBasic{},
 		consensusmodule.AppModuleBasic{},
-		// valsetmodule.AppModuleBasic{},
+		valsetmodule.AppModuleBasic{},
 		wasm.AppModuleBasic{},
 		evm.AppModuleBasic{},
 		gravitymodule.AppModuleBasic{},
-		// palomamodule.AppModuleBasic{},
-		// treasurymodule.AppModuleBasic{},
+		palomamodule.AppModuleBasic{},
+		treasurymodule.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		ibc.AppModuleBasic{},
@@ -294,11 +294,11 @@ type App struct {
 	SchedulerKeeper schedulermodulekeeper.Keeper
 	ConsensusKeeper consensusmodulekeeper.Keeper
 	ValsetKeeper    valsetmodulekeeper.Keeper
-	// PalomaKeeper    palomamodulekeeper.Keeper
-	TreasuryKeeper treasurymodulekeeper.Keeper
-	EvmKeeper      evmmodulekeeper.Keeper
-	GravityKeeper  gravitymodulekeeper.Keeper
-	wasmKeeper     wasmkeeper.Keeper
+	PalomaKeeper    palomamodulekeeper.Keeper
+	TreasuryKeeper  treasurymodulekeeper.Keeper
+	EvmKeeper       evmmodulekeeper.Keeper
+	GravityKeeper   gravitymodulekeeper.Keeper
+	wasmKeeper      wasmkeeper.Keeper
 
 	// ModuleManager is the module manager
 	ModuleManager      *module.Manager
@@ -370,10 +370,10 @@ func New(
 		capabilitytypes.StoreKey,
 		schedulermoduletypes.StoreKey,
 		consensusmoduletypes.StoreKey,
-		// valsetmoduletypes.StoreKey,
+		valsetmoduletypes.StoreKey,
 		treasurymoduletypes.StoreKey,
 		valsetmoduletypes.StoreKey,
-		// treasurymoduletypes.StoreKey,
+		treasurymoduletypes.StoreKey,
 		evmmoduletypes.StoreKey,
 		gravitymoduletypes.StoreKey,
 		consensusparamtypes.StoreKey,
@@ -387,7 +387,7 @@ func New(
 		evmmoduletypes.MemStoreKey,
 		schedulermoduletypes.MemStoreKey,
 		treasurymoduletypes.MemStoreKey,
-		// palomamoduletypes.MemStoreKey,
+		palomamoduletypes.MemStoreKey,
 	)
 
 	app := &App{
@@ -616,19 +616,18 @@ func New(
 		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
 	)
 
-	// app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[palomamoduletypes.StoreKey],
-	// 	memKeys[palomamoduletypes.MemStoreKey],
-	// 	app.GetSubspace(palomamoduletypes.ModuleName),
-	// 	semverVersion,
-	// 	app.ValsetKeeper,
-	// 	app.PalomaKeeper.Upgrade,
-	// )
+	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[palomamoduletypes.StoreKey]),
+		app.GetSubspace(palomamoduletypes.ModuleName),
+		semverVersion,
+		app.ValsetKeeper,
+		app.PalomaKeeper.Upgrade,
+	)
 
-	// app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
-	// 	app.EvmKeeper,
-	// }
+	app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
+		app.EvmKeeper,
+	}
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -783,7 +782,7 @@ func New(
 	consensusModule := consensusmodule.NewAppModule(appCodec, app.ConsensusKeeper, app.AccountKeeper, app.BankKeeper)
 	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
-	// palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
+	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	app.ModuleManager = module.NewManager(
@@ -812,7 +811,7 @@ func New(
 		evmModule,
 		valsetModule,
 		gravityModule,
-		// palomaModule,
+		palomaModule,
 		treasuryModule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		ibc.NewAppModule(app.IBCKeeper),
@@ -858,7 +857,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		valsetmoduletypes.ModuleName,
-		// palomamoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
 		gravitymoduletypes.ModuleName,
@@ -890,7 +889,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		valsetmoduletypes.ModuleName,
-		// palomamoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
 		gravitymoduletypes.ModuleName,
@@ -927,7 +926,7 @@ func New(
 		schedulermoduletypes.ModuleName,
 		consensusmoduletypes.ModuleName,
 		valsetmoduletypes.ModuleName,
-		// palomamoduletypes.ModuleName,
+		palomamoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
@@ -973,7 +972,7 @@ func New(
 	app.SetEndBlocker(app.EndBlocker)
 
 	/*baseAnteHandler*/
-	_, err = ante.NewAnteHandler(
+	baseAnteHandler, err := ante.NewAnteHandler(
 		ante.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
@@ -986,12 +985,12 @@ func New(
 		panic(err)
 	}
 	anteDecorators := []sdk.AnteDecorator{
-		// palomamodule.NewAnteHandlerDecorator(baseAnteHandler),
+		palomamodule.NewAnteHandlerDecorator(baseAnteHandler),
 	}
-	anteDecorators = append(anteDecorators)
-	// palomamodule.NewLogMsgDecorator(app.appCodec),
-	// 	palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
-
+	anteDecorators = append(anteDecorators,
+		palomamodule.NewLogMsgDecorator(app.appCodec),
+		palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
+	)
 	anteHandler := sdk.ChainAnteDecorators(
 		anteDecorators...,
 	)
