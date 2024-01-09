@@ -103,17 +103,11 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 		notSupported := []string{}
 		for mustExistKey := range mmap {
 			if _, ok := valmap[mustExistKey]; !ok {
-				// well well well
 				notSupported = append(notSupported, fmt.Sprintf("[%s, %s]", mustExistKey[0], mustExistKey[1]))
 			}
 		}
 
 		sort.Strings(notSupported)
-
-		if err != nil {
-			g.Add(err)
-			continue
-		}
 		if len(notSupported) > 0 {
 			g.Add(k.Valset.Jail(ctx, valAddr, fmt.Sprintf(types.JailReasonNotSupportingTheseExternalChains, strings.Join(notSupported, ", "))))
 		}
