@@ -139,14 +139,31 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 			return err
 		}
 
+		// SLCs are usually always authored by either a contract on Paloma, or
+		// a specific validator. In this case, this is really a consensus operation
+		// without a singular governing entity. For the sake the established
+		// technological boundaries, we'll set the sender to the address of the
+		// validator that attested this message.
+
+		sender, err := sdk.ValAddressFromBech32(a.msg.GetAssignee())
+		if err != nil {
+			return fmt.Errorf("validator address from bech32: %w", err)
+		}
+
+		payload, err = injectSenderIntoPayload(sender, payload)
+		if err != nil {
+			return fmt.Errorf("inject sender %q to payload: %w", a.msg.GetAssignee(), err)
+		}
+
 		msgID, err := a.k.AddSmartContractExecutionToConsensus(
 			ctx,
 			a.chainReferenceID,
 			turnstoneID,
 			&types.SubmitLogicCall{
+				SenderAddress:      sender,
 				Payload:            payload,
 				HexContractAddress: v.GetErc20(),
-				Abi:                []byte(erc20abi),
+				Abi:                common.FromHex(fmt.Sprintf("%x", erc20abi)),
 				Deadline:           ctx.BlockTime().Add(time.Minute * 10).Unix(),
 			},
 		)

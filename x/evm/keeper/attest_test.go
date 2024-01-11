@@ -410,6 +410,9 @@ var _ = g.Describe("attest router", func() {
 								Id: 1,
 							},
 						}
+						address, err := sdk.ValAddressFromBech32("cosmosvaloper1pzf9apnk8yw7pjw3v9vtmxvn6guhkslanh8r07")
+						Expect(err).To(BeNil())
+						consensusMsg.Assignee = address.String()
 					})
 
 					g.When("target chain has no deployed ERC20 tokens", func() {
