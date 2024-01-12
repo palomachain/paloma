@@ -1,10 +1,10 @@
 package keeper
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strings"
-	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -156,18 +157,33 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 			return fmt.Errorf("inject sender %q to payload: %w", a.msg.GetAssignee(), err)
 		}
 
-		msgID, err := a.k.AddSmartContractExecutionToConsensus(
-			ctx,
-			a.chainReferenceID,
-			turnstoneID,
-			&types.SubmitLogicCall{
-				SenderAddress:      sender,
-				Payload:            payload,
-				HexContractAddress: v.GetErc20(),
-				// Abi:                common.FromHex(fmt.Sprintf("%x", erc20abi)),
-				Deadline: ctx.BlockTime().Add(time.Minute * 10).Unix(),
-			},
-		)
+		def := types.JobDefinition{
+			Address: v.GetErc20(),
+			// ABI:     "", // TODO: Maybe this?
+		}
+		defBz, err := json.Marshal(def)
+		if err != nil {
+			return fmt.Errorf("marshal job definition: %w", err)
+		}
+
+		msgID, err := a.k.ExecuteJob(ctx, &xchain.JobConfiguration{
+			Definition:    defBz,
+			Payload:       payload,
+			SenderAddress: sender,
+			RefID:         a.chainReferenceID,
+		})
+		// msgID, err := a.k.AddSmartContractExecutionToConsensus(
+		// 	ctx,
+		// 	a.chainReferenceID,
+		// 	turnstoneID,
+		// 	&types.SubmitLogicCall{
+		// 		SenderAddress:      sender,
+		// 		Payload:            payload,
+		// 		HexContractAddress: v.GetErc20(),
+		// 		// Abi:                common.FromHex(fmt.Sprintf("%x", erc20abi)),
+		// 		Deadline: ctx.BlockTime().Add(time.Minute * 10).Unix(),
+		// 	},
+		// )
 		if err != nil {
 			return err
 		}
