@@ -121,7 +121,7 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 ) error {
 	msgIDs := make([]uint64, 0, len(records))
 	transfers := make([]types.SmartContractDeployment_ERC20Transfer, 0, len(records))
-	turnstoneID := a.msg.GetTurnstoneID()
+	// turnstoneID := a.msg.GetTurnstoneID()
 	erc20abi := `[{"inputs": [{"name": "_compass","type": "address"}],"name": "new_compass","outputs": [],"stateMutability": "nonpayable","type": "function"}]`
 
 	for _, v := range records {
