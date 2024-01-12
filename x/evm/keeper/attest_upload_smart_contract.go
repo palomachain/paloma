@@ -145,9 +145,9 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 		// technological boundaries, we'll set the sender to the address of the
 		// validator that attested this message.
 
-		sender, err := sdk.ValAddressFromBech32(a.msg.GetAssignee())
+		sender, err := sdk.AccAddressFromBech32(a.msg.GetAssignee())
 		if err != nil {
-			return fmt.Errorf("validator address from bech32: %w", err)
+			return fmt.Errorf("account address from bech32: %w", err)
 		}
 
 		payload, err = injectSenderIntoPayload(sender, payload)
@@ -163,8 +163,8 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 				SenderAddress:      sender,
 				Payload:            payload,
 				HexContractAddress: v.GetErc20(),
-				Abi:                common.FromHex(fmt.Sprintf("%x", erc20abi)),
-				Deadline:           ctx.BlockTime().Add(time.Minute * 10).Unix(),
+				// Abi:                common.FromHex(fmt.Sprintf("%x", erc20abi)),
+				Deadline: ctx.BlockTime().Add(time.Minute * 10).Unix(),
 			},
 		)
 		if err != nil {

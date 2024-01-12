@@ -78,6 +78,7 @@ func (k Keeper) PutMessageInQueue(ctx sdk.Context, queueTypeName string, msg con
 		"put message into consensus queue",
 		"queue-type-name", queueTypeName,
 		"message-id", msgID,
+		"msg", msg,
 	)
 	return msgID, nil
 }
