@@ -81,9 +81,17 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) (uint
 		}
 	}
 
-	modifiedPayload, err := injectSenderIntoPayload(hexBytes, common.FromHex(load.HexPayload))
-	if err != nil {
-		return 0, fmt.Errorf("inject sender into payload: %w", err)
+	var modifiedPayload []byte
+	if !jcfg.SkipInjection {
+		modifiedPayload, err = injectSenderIntoPayload(hexBytes, common.FromHex(load.HexPayload))
+		if err != nil {
+			return 0, fmt.Errorf("inject sender into payload: %w", err)
+		}
+	} else {
+		modifiedPayload, err = injectSenderIntoPayload(make([]byte, 32), common.FromHex(load.HexPayload))
+		if err != nil {
+			return 0, fmt.Errorf("inject sender into payload: %w", err)
+		}
 	}
 
 	return k.AddSmartContractExecutionToConsensus(

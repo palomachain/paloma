@@ -44,6 +44,7 @@ type JobConfiguration struct {
 	ContractAddress sdk.AccAddress
 	RefID           ReferenceID
 	Requirements    JobRequirements
+	SkipInjection   bool
 }
 
 type Jobber interface {

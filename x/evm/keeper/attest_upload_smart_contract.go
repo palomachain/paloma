@@ -161,6 +161,7 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 		def := types.JobDefinition{
 			Address: v.GetErc20(),
 		}
+
 		pl := types.JobPayload{
 			HexPayload: hexutil.Encode(payload),
 		}
@@ -178,6 +179,7 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 			Payload:       plBz,
 			SenderAddress: sender,
 			RefID:         a.chainReferenceID,
+			SkipInjection: true,
 		})
 		// msgID, err := a.k.AddSmartContractExecutionToConsensus(
 		// 	ctx,
