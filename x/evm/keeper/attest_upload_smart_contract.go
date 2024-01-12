@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -151,24 +152,30 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 		}
 
 		sender := sdk.AccAddress(valAddr.Bytes())
-
-		payload, err = injectSenderIntoPayload(sender, payload)
-		if err != nil {
-			return fmt.Errorf("inject sender %q to payload: %w", a.msg.GetAssignee(), err)
-		}
+		//
+		// payload, err = injectSenderIntoPayload(sender, payload)
+		// if err != nil {
+		// 	return fmt.Errorf("inject sender %q to payload: %w", a.msg.GetAssignee(), err)
+		// }
 
 		def := types.JobDefinition{
 			Address: v.GetErc20(),
-			// ABI:     "", // TODO: Maybe this?
+		}
+		pl := types.JobPayload{
+			HexPayload: hexutil.Encode(payload),
 		}
 		defBz, err := json.Marshal(def)
 		if err != nil {
 			return fmt.Errorf("marshal job definition: %w", err)
 		}
+		plBz, err := json.Marshal(pl)
+		if err != nil {
+			return fmt.Errorf("marshal job payload: %w", err)
+		}
 
 		msgID, err := a.k.ExecuteJob(ctx, &xchain.JobConfiguration{
 			Definition:    defBz,
-			Payload:       payload,
+			Payload:       plBz,
 			SenderAddress: sender,
 			RefID:         a.chainReferenceID,
 		})
@@ -185,7 +192,7 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 		// 	},
 		// )
 		if err != nil {
-			return err
+			return fmt.Errorf("execute job: %w", err)
 		}
 
 		msgIDs = append(msgIDs, msgID)
