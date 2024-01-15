@@ -1,19 +1,17 @@
 package keeper
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -158,29 +156,34 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 		// 	return fmt.Errorf("inject sender %q to payload: %w", a.msg.GetAssignee(), err)
 		// }
 
-		def := types.JobDefinition{
-			Address: v.GetErc20(),
+		// def := types.JobDefinition{
+		// 	Address: v.GetErc20(),
+		// }
+
+		modifiedPayload, err := injectSenderIntoPayload(make([]byte, 32), payload)
+		if err != nil {
+			return fmt.Errorf("inject zero padding to payload: %w", err)
 		}
 
-		pl := types.JobPayload{
-			HexPayload: hexutil.Encode(payload),
-		}
-		defBz, err := json.Marshal(def)
-		if err != nil {
-			return fmt.Errorf("marshal job definition: %w", err)
-		}
-		plBz, err := json.Marshal(pl)
-		if err != nil {
-			return fmt.Errorf("marshal job payload: %w", err)
-		}
+		// pl := types.JobPayload{
+		// 	HexPayload: hexutil.Encode(payload),
+		// }
+		// defBz, err := json.Marshal(def)
+		// if err != nil {
+		// 	return fmt.Errorf("marshal job definition: %w", err)
+		// }
+		// plBz, err := json.Marshal(pl)
+		// if err != nil {
+		// 	return fmt.Errorf("marshal job payload: %w", err)
+		// }
 
-		msgID, err := a.k.ExecuteJob(ctx, &xchain.JobConfiguration{
-			Definition:    defBz,
-			Payload:       plBz,
-			SenderAddress: sender,
-			RefID:         a.chainReferenceID,
-			SkipInjection: true,
-		})
+		// msgID, err := a.k.ExecuteJob(ctx, &xchain.JobConfiguration{
+		// 	Definition:    defBz,
+		// 	Payload:       plBz,
+		// 	SenderAddress: sender,
+		// 	RefID:         a.chainReferenceID,
+		// 	SkipInjection: true,
+		// })
 		// msgID, err := a.k.AddSmartContractExecutionToConsensus(
 		// 	ctx,
 		// 	a.chainReferenceID,
@@ -193,6 +196,26 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 		// 		Deadline: ctx.BlockTime().Add(time.Minute * 10).Unix(),
 		// 	},
 		// )
+		ci, err := a.k.GetChainInfo(ctx, a.chainReferenceID)
+		if err != nil {
+			return fmt.Errorf("get chain info: %w", err)
+		}
+
+		msgID, err := a.k.AddSmartContractExecutionToConsensus(
+			ctx,
+			a.chainReferenceID,
+			string(ci.GetSmartContractUniqueID()),
+			&types.SubmitLogicCall{
+				HexContractAddress: v.GetErc20(),
+				Abi:                common.FromHex(""),
+				Payload:            modifiedPayload,
+				Deadline:           ctx.BlockTime().Add(10 * time.Minute).Unix(),
+				SenderAddress:      sender,
+				ExecutionRequirements: types.SubmitLogicCall_ExecutionRequirements{
+					EnforceMEVRelay: false,
+				},
+			},
+		)
 		if err != nil {
 			return fmt.Errorf("execute job: %w", err)
 		}
