@@ -4,6 +4,8 @@ import (
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 )
 
+// TODO: Implement TX verifications
+
 func (m *TransferERC20Ownership) VerifyAgainstTX(tx *ethtypes.Transaction) error {
 	return nil
 }
@@ -12,6 +14,10 @@ func (m *UploadSmartContract) VerifyAgainstTX(tx *ethtypes.Transaction) error {
 	// if !bytes.Equal(tx.Data(), append(m.GetBytecode()[:], m.GetConstructorInput()[:]...)) {
 	// 	// return ErrEthTxNotVerified
 	// }
+	return nil
+}
+
+func (m *SubmitLogicCall) VerifyAgainstTX(tx *ethtypes.Transaction) error {
 	return nil
 }
 

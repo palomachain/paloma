@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -13,7 +14,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/evm/keeper/deployment"
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
@@ -57,20 +60,26 @@ func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx sdk.Context, smart
 	k.provideSmartContractDeploymentStore(ctx).Delete(key)
 }
 
-func (k Keeper) SetSmartContractDeploymentStatusByContractID(ctx sdk.Context, smartContractID uint64, chainReferenceID string, status types.SmartContractDeployment_Status) error {
-	logger := k.Logger(ctx).WithFields("smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID, "new-smart-contract-status", status)
+func (k Keeper) updateSmartContractDeployment(ctx sdk.Context, smartContractID uint64, chainReferenceID string, deployment *types.SmartContractDeployment) error {
+	if deployment == nil {
+		return fmt.Errorf("deployment must not be nil")
+	}
+
+	logger := k.Logger(ctx).WithFields("smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID, "new-deployment", deployment)
+	logger.Debug("Updating deployment record...")
 	v, key := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
 	if key == nil {
+		logger.WithError(keeperutil.ErrNotFound).Error("No deployment found for given contract and chain ID.")
 		return keeperutil.ErrNotFound
 	}
 
-	v.Status = status
-	if err := keeperutil.Save(k.provideSmartContractDeploymentStore(ctx), k.cdc, key, v); err != nil {
-		logger.WithError(err).Error("failed to update smart contract deployment record")
+	logger = logger.WithFields("current-deployment", v)
+	if err := keeperutil.Save(k.provideSmartContractDeploymentStore(ctx), k.cdc, key, deployment); err != nil {
+		logger.WithError(err).Error("Failed to update smart contract deployment record.")
 		return err
 	}
 
-	logger.Debug("updated contract deployment state")
+	logger.Debug("Updated contract deployment record.")
 	return nil
 }
 
@@ -412,4 +421,23 @@ func (k Keeper) provideSmartContractStore(ctx sdk.Context) sdk.KVStore {
 
 func (k Keeper) provideLastCompassContractStore(ctx sdk.Context) sdk.KVStore {
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("latest-smart-contract"))
+}
+
+func provideDeploymentCacheBootstrapper(k *Keeper) func(context.Context, *deployment.Cache) {
+	return func(ctx context.Context, c *deployment.Cache) {
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		d, err := k.AllSmartContractsDeployments(sdkCtx)
+		if err != nil {
+			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("Failed to load smart contract deployments")
+			// This should only happen once during cache initialisation.
+			// A better approach would be to use the cache as a wrapper that gets cold data on demand.
+			panic(err)
+		}
+
+		for _, v := range d {
+			for _, t := range v.Erc20Transfers {
+				c.Add(ctx, v.GetChainReferenceID(), t.GetMsgID())
+			}
+		}
+	}
 }

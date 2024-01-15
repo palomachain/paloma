@@ -22,6 +22,7 @@ import (
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/evm/keeper/deployment"
 	"github.com/palomachain/paloma/x/evm/types"
 	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
@@ -103,6 +104,7 @@ type Keeper struct {
 	ider            keeperutil.IDGenerator
 	msgSender       types.MsgSender
 	msgAssigner     types.MsgAssigner
+	deploymentCache *deployment.Cache
 }
 
 func NewKeeper(
@@ -134,6 +136,7 @@ func NewKeeper(
 		},
 	}
 
+	k.deploymentCache = deployment.NewCache(provideDeploymentCacheBootstrapper(k))
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.provideSmartContractStore), []byte("id-key"))
 
 	return k
@@ -286,7 +289,7 @@ func (k Keeper) AddSupportForNewChain(
 	for _, existing := range all {
 		if existing.GetChainID() == chainID {
 			return ErrCannotAddSupportForChainThatExists.Format(chainReferenceID).
-				WrapS("chain with chainID %d already exists", chainID)
+				JoinErrorf("chain with chainID %d already exists", chainID)
 		}
 	}
 

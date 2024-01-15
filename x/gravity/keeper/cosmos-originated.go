@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -46,6 +47,20 @@ func (k Keeper) GetAllERC20ToDenoms(ctx sdk.Context) ([]*types.ERC20ToDenom, err
 	_, all, err := keeperutil.IterAll[*types.ERC20ToDenom](prefixStore, k.cdc)
 
 	return all, err
+}
+
+func (k Keeper) CastAllERC20ToDenoms(ctx sdk.Context) ([]evmtypes.ERC20Record, error) {
+	all, err := k.GetAllERC20ToDenoms(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cast := make([]evmtypes.ERC20Record, len(all))
+	for i, v := range all {
+		cast[i] = v
+	}
+
+	return cast, nil
 }
 
 func (k Keeper) setDenomToERC20(ctx sdk.Context, chainReferenceId, denom string, tokenContract types.EthAddress) error {

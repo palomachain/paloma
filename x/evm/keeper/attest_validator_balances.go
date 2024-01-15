@@ -109,7 +109,7 @@ func (k Keeper) processValidatorBalanceProof(
 			}
 		}
 	default:
-		return ErrUnexpectedError.WrapS("unknown type %t when attesting", winner)
+		return ErrUnexpectedError.JoinErrorf("unknown type %t when attesting", winner)
 	}
 
 	return nil

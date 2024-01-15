@@ -3,6 +3,7 @@ syntax = "proto3";
 package palomachain.paloma.evm;
 
 import "palomachain/paloma/evm/relay_weights.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
@@ -71,4 +72,33 @@ message SmartContractDeployment {
     WAITING_FOR_ERC20_OWNERSHIP_TRANSFER = 2;
   }
   Status status = 4;
+
+  message ERC20Transfer {
+    // Paloma denom of the ERC20 token 
+    string denom = 1;
+    // Address of the ERC20 token on the target chain
+    string erc20 = 2;
+    // Message ID of the logic call message created in charge of updating the
+    // ownership.
+    uint64 msgID = 3;
+    enum Status {
+        // The transfer is still ongoing.
+        PENDING = 0;
+        // The transfer has finished successfully.
+        OK = 1;
+        // The transfer has failed and needs to be retried.
+        FAIL = 2;
+      }
+    // Current status of the transfer.
+    Status status = 4;
+    }
+
+  // A set of transfer records for each ERC20 token that
+  // needs the updated smart contract address before Paloma
+  // can switch to the new contract.
+  repeated ERC20Transfer erc20transfers = 5 [(gogoproto.nullable) = false];
+
+  // Once deployed, this contains the address of the contract
+  // on the remote chain.
+  string newSmartContractAddress = 6;
 }

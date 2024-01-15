@@ -81,13 +81,10 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) (uint
 		}
 	}
 
-	// zero pad our byte array to 32 bytes
-	appendSenderBytes, err := zeroPadBytes(hexBytes, 32)
+	modifiedPayload, err := injectSenderIntoPayload(hexBytes, common.FromHex(load.HexPayload))
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("inject sender into payload: %w", err)
 	}
-
-	modifiedPayload := append(common.FromHex(load.GetHexPayload()), appendSenderBytes...)
 
 	return k.AddSmartContractExecutionToConsensus(
 		ctx,
@@ -105,6 +102,16 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) (uint
 			},
 		},
 	)
+}
+
+func injectSenderIntoPayload(senderBytes, payload []byte) ([]byte, error) {
+	// zero pad our byte array to 32 bytes
+	appendSenderBytes, err := zeroPadBytes(senderBytes, 32)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(payload, appendSenderBytes...), nil
 }
 
 func addressToHex(address sdk.AccAddress) string {
