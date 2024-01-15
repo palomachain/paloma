@@ -18,10 +18,10 @@ import (
 )
 
 type attestionParameters struct {
-	msgID            uint64
-	chainReferenceID string
 	rawEvidence      any
 	msg              *types.Message
+	chainReferenceID string
+	msgID            uint64
 }
 
 type uploadSmartContractAttester struct {
@@ -120,7 +120,6 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 ) error {
 	msgIDs := make([]uint64, 0, len(records))
 	transfers := make([]types.SmartContractDeployment_ERC20Transfer, 0, len(records))
-	// turnstoneID := a.msg.GetTurnstoneID()
 	erc20abi := `[{"inputs": [{"name": "_compass","type": "address"}],"name": "new_compass","outputs": [],"stateMutability": "nonpayable","type": "function"}]`
 
 	for _, v := range records {
@@ -150,52 +149,12 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 		}
 
 		sender := sdk.AccAddress(valAddr.Bytes())
-		//
-		// payload, err = injectSenderIntoPayload(sender, payload)
-		// if err != nil {
-		// 	return fmt.Errorf("inject sender %q to payload: %w", a.msg.GetAssignee(), err)
-		// }
-
-		// def := types.JobDefinition{
-		// 	Address: v.GetErc20(),
-		// }
 
 		modifiedPayload, err := injectSenderIntoPayload(make([]byte, 32), payload)
 		if err != nil {
 			return fmt.Errorf("inject zero padding to payload: %w", err)
 		}
 
-		// pl := types.JobPayload{
-		// 	HexPayload: hexutil.Encode(payload),
-		// }
-		// defBz, err := json.Marshal(def)
-		// if err != nil {
-		// 	return fmt.Errorf("marshal job definition: %w", err)
-		// }
-		// plBz, err := json.Marshal(pl)
-		// if err != nil {
-		// 	return fmt.Errorf("marshal job payload: %w", err)
-		// }
-
-		// msgID, err := a.k.ExecuteJob(ctx, &xchain.JobConfiguration{
-		// 	Definition:    defBz,
-		// 	Payload:       plBz,
-		// 	SenderAddress: sender,
-		// 	RefID:         a.chainReferenceID,
-		// 	SkipInjection: true,
-		// })
-		// msgID, err := a.k.AddSmartContractExecutionToConsensus(
-		// 	ctx,
-		// 	a.chainReferenceID,
-		// 	turnstoneID,
-		// 	&types.SubmitLogicCall{
-		// 		SenderAddress:      sender,
-		// 		Payload:            payload,
-		// 		HexContractAddress: v.GetErc20(),
-		// 		// Abi:                common.FromHex(fmt.Sprintf("%x", erc20abi)),
-		// 		Deadline: ctx.BlockTime().Add(time.Minute * 10).Unix(),
-		// 	},
-		// )
 		ci, err := a.k.GetChainInfo(ctx, a.chainReferenceID)
 		if err != nil {
 			return fmt.Errorf("get chain info: %w", err)
