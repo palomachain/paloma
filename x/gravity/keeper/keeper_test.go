@@ -3,6 +3,7 @@ package keeper
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
@@ -49,7 +50,10 @@ func TestPrefixRange(t *testing.T) {
 // nolint: exhaustruct
 func TestAttestationIterator(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 	// add some attestations to the store
@@ -57,7 +61,7 @@ func TestAttestationIterator(t *testing.T) {
 	claim1 := &types.MsgSendToPalomaClaim{
 		EventNonce:     1,
 		TokenContract:  TokenContractAddrs[0],
-		Amount:         sdk.NewInt(100),
+		Amount:         math.NewInt(100),
 		EthereumSender: EthAddrs[0].String(),
 		PalomaReceiver: AccAddrs[0].String(),
 		Orchestrator:   AccAddrs[0].String(),
@@ -77,7 +81,7 @@ func TestAttestationIterator(t *testing.T) {
 	claim2 := &types.MsgSendToPalomaClaim{
 		EventNonce:     2,
 		TokenContract:  TokenContractAddrs[0],
-		Amount:         sdk.NewInt(100),
+		Amount:         math.NewInt(100),
 		EthereumSender: EthAddrs[0].String(),
 		PalomaReceiver: AccAddrs[0].String(),
 		Orchestrator:   AccAddrs[0].String(),

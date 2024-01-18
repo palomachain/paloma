@@ -3,6 +3,7 @@ package palomachain.paloma.paloma;
 
 import "gogoproto/gogo.proto";
 import "palomachain/paloma/valset/common.proto";
+import "cosmos/msg/v1/msg.proto";
 
 option go_package = "github.com/palomachain/paloma/x/paloma/types";
 
@@ -12,6 +13,7 @@ service Msg {
 }
 
 message MsgAddStatusUpdate {
+  option (cosmos.msg.v1.signer) = "metadata";
   enum Level {
     LEVEL_DEBUG = 0;
     LEVEL_INFO = 1;

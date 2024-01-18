@@ -2,8 +2,8 @@ syntax = "proto3";
 package palomachain.paloma.evm;
 
 import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
 import "palomachain/paloma/valset/common.proto";
-
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 service Msg {
@@ -12,6 +12,7 @@ service Msg {
 }
 
 message MsgDeployNewSmartContractRequest {
+  option (cosmos.msg.v1.signer) = "metadata";
   string creator = 1 [deprecated = true];
   string title = 2;
   string description = 3;
@@ -24,6 +25,7 @@ message MsgDeployNewSmartContractRequest {
 message DeployNewSmartContractResponse {}
 
 message MsgRemoveSmartContractDeploymentRequest {
+  option (cosmos.msg.v1.signer) = "metadata";
   string Sender = 1 [deprecated = true];
   uint64 smartContractID = 2;
   string chainReferenceID = 3;
@@ -31,3 +33,4 @@ message MsgRemoveSmartContractDeploymentRequest {
   palomachain.paloma.valset.MsgMetadata metadata = 4 [(gogoproto.nullable) = false];
 }
 message RemoveSmartContractDeploymentResponse {}
+

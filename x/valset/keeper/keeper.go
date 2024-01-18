@@ -2,22 +2,27 @@ package keeper
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"math/big"
 	"sort"
 	"time"
 
+	"cosmossdk.io/core/address"
+	cosmosstore "cosmossdk.io/core/store"
+	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/VolumeFi/whoops"
-	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/valset/types"
 )
@@ -42,26 +47,26 @@ type Keeper struct {
 
 	cdc                  codec.BinaryCodec
 	ider                 keeperutil.IDGenerator
-	memKey               storetypes.StoreKey
 	minimumPigeonVersion string
 	paramstore           paramtypes.Subspace
 	powerReduction       sdkmath.Int
 	staking              types.StakingKeeper
+	storeKey             cosmosstore.KVStoreService
+	AddressCodec         address.Codec
 	slashing             types.SlashingKeeper
-	storeKey             storetypes.StoreKey
 
 	jailLog *keeperutil.KVStoreWrapper[*types.JailRecord]
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey,
-	memKey storetypes.StoreKey,
+	storeKey cosmosstore.KVStoreService,
 	ps paramtypes.Subspace,
 	staking types.StakingKeeper,
 	slashing types.SlashingKeeper,
 	minimumPigeonVersion string,
 	powerReduction sdkmath.Int,
+	addressCodec address.Codec,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -71,32 +76,43 @@ func NewKeeper(
 	k := &Keeper{
 		cdc:                  cdc,
 		storeKey:             storeKey,
-		memKey:               memKey,
 		paramstore:           ps,
 		staking:              staking,
 		slashing:             slashing,
 		minimumPigeonVersion: minimumPigeonVersion,
 		powerReduction:       powerReduction,
-		jailLog:              keeperutil.NewKvStoreWrapper[*types.JailRecord](jailLogProviderFactory(storeKey), cdc),
+		AddressCodec:         addressCodec,
 	}
-	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx sdk.Context) sdk.KVStore {
-		return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("IDs"))
+	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx context.Context) storetypes.KVStore {
+		store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+		return prefix.NewStore(store, []byte("IDs"))
 	}), nil)
+	k.jailLog = keeperutil.NewKvStoreWrapper[*types.JailRecord](keeperutil.StoreGetterFn(func(ctx context.Context) storetypes.KVStore {
+		s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+		return prefix.NewStore(s, []byte("IDs"))
+	}), cdc)
 
 	return k
 }
 
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+func (k Keeper) Logger(ctx context.Context) log.Logger {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
+
+// TODO: not required now
+func (k Keeper) PunishValidator(ctx context.Context) {}
+
+// TODO: not required now
+func (k Keeper) Heartbeat(ctx context.Context) {}
 
 // addExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
 // we can attribute rewards for running the jobs.
-func (k Keeper) AddExternalChainInfo(ctx sdk.Context, valAddr sdk.ValAddress, newChainInfo []*types.ExternalChainInfo) error {
+func (k Keeper) AddExternalChainInfo(ctx context.Context, valAddr sdk.ValAddress, newChainInfo []*types.ExternalChainInfo) error {
 	return k.SetExternalChainInfoState(ctx, valAddr, newChainInfo)
 }
 
-func (k Keeper) SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error {
+func (k Keeper) SetValidatorBalance(ctx context.Context, valAddr sdk.ValAddress, chainType string, chainReferenceID string, externalAddress string, balance *big.Int) error {
 	chainInfos, err := k.GetValidatorChainInfos(ctx, valAddr)
 	if err != nil {
 		return err
@@ -116,7 +132,7 @@ func (k Keeper) SetValidatorBalance(ctx sdk.Context, valAddr sdk.ValAddress, cha
 	return k.SetExternalChainInfoState(ctx, valAddr, chainInfos)
 }
 
-func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddress, chainInfos []*types.ExternalChainInfo) error {
+func (k Keeper) SetExternalChainInfoState(ctx context.Context, valAddr sdk.ValAddress, chainInfos []*types.ExternalChainInfo) error {
 	if len(chainInfos) > maxNumOfAllowedExternalAccounts {
 		return ErrMaxNumberOfExternalAccounts.Format(
 			len(chainInfos),
@@ -184,34 +200,34 @@ func (k Keeper) SetExternalChainInfoState(ctx sdk.Context, valAddr sdk.ValAddres
 
 // TriggerSnapshotBuild creates the snapshot of currently active validators that are
 // active and registered as conductors.
-func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
+func (k Keeper) TriggerSnapshotBuild(ctx context.Context) (*types.Snapshot, error) {
 	snapshot, err := k.createNewSnapshot(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	k.Logger(ctx).Info("create new snapshot", "snapshot-id", snapshot.GetId())
+	liblog.FromSDKLogger(k.Logger(ctx)).WithFields("snapshot-id", snapshot.GetId()).Info("create new snapshot")
 
 	current, err := k.GetCurrentSnapshot(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	k.Logger(ctx).Info("get current triggered snapshot", "id", current.GetId(), "validator-length", len(current.GetValidators()))
+	liblog.FromSDKLogger(k.Logger(ctx)).WithFields("id", current.GetId(), "validator-length", len(current.GetValidators())).Info("get current triggered snapshot")
 
 	worthy := k.isNewSnapshotWorthy(ctx, current, snapshot)
 	if !worthy {
 		return nil, nil
 	}
 
-	k.Logger(ctx).Info("is worthy", "snapshot-id", current.GetId())
+	liblog.FromSDKLogger(k.Logger(ctx)).WithFields("snapshot-id", current.GetId()).Info("is worthy")
 
 	err = k.setSnapshotAsCurrent(ctx, snapshot)
 	if err != nil {
 		return nil, err
 	}
 
-	k.Logger(ctx).Info("set snapshot as current", "snapshot-id", snapshot.GetId())
+	liblog.FromSDKLogger(k.Logger(ctx)).WithFields("snapshot-id", snapshot.GetId()).Info("set snapshot as current")
 
 	// remove jail reasons for all active validators.
 	// given that a validator is in snapshot, they can't be jailed.
@@ -226,9 +242,9 @@ func (k Keeper) TriggerSnapshotBuild(ctx sdk.Context) (*types.Snapshot, error) {
 	return snapshot, err
 }
 
-func (k Keeper) isNewSnapshotWorthy(ctx sdk.Context, currentSnapshot, newSnapshot *types.Snapshot) bool {
+func (k Keeper) isNewSnapshotWorthy(ctx context.Context, currentSnapshot, newSnapshot *types.Snapshot) bool {
 	log := func(reason string) {
-		k.Logger(ctx).Info("new snapshot is worthy", "reason", reason)
+		liblog.FromSDKLogger(k.Logger(ctx)).WithFields("reason", reason).Info("new snapshot is worthy")
 	}
 	// if there is no current snapshot, that this new one is worthy
 	if currentSnapshot == nil {
@@ -344,26 +360,26 @@ func (k Keeper) isNewSnapshotWorthy(ctx sdk.Context, currentSnapshot, newSnapsho
 	return false
 }
 
-func (k Keeper) GetUnjailedValidators(ctx sdk.Context) []stakingtypes.ValidatorI {
+func (k Keeper) GetUnjailedValidators(ctx context.Context) []stakingtypes.ValidatorI {
 	validators := []stakingtypes.ValidatorI{}
-	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
+	err := k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		if !val.IsJailed() {
 			validators = append(validators, val)
 		}
 		return false
 	})
+	if err != nil {
+		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err)
+	}
 
 	return validators
 }
 
 // ValidatorSupportsAllChains returns true if the validator supports all chains in the keeper
-func (k Keeper) ValidatorSupportsAllChains(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
+func (k Keeper) ValidatorSupportsAllChains(ctx context.Context, validatorAddress sdk.ValAddress) bool {
 	valSupportedChains, err := k.GetValidatorChainInfos(ctx, validatorAddress)
 	if err != nil {
-		k.Logger(ctx).Error("Unable to get supported chains for validator",
-			"validator-address",
-			validatorAddress.String(),
-		)
+		liblog.FromSDKLogger(k.Logger(ctx)).WithFields("validator-address", validatorAddress.String()).Error("Unable to get supported chains for validator")
 		return false
 	}
 
@@ -374,37 +390,48 @@ func (k Keeper) ValidatorSupportsAllChains(ctx sdk.Context, validatorAddress sdk
 
 	missingChains, err := k.EvmKeeper.MissingChains(ctx, valSupportedChainReferenceIDs)
 	if err != nil {
-		k.Logger(ctx).With("error", err).Error("error checking missing chains for validator",
-			"validator-address",
-			validatorAddress.String())
+		liblog.FromSDKLogger(k.Logger(ctx)).WithFields("validator-address", validatorAddress.String()).Error("error checking missing chains for validator")
 	}
 	return len(missingChains) == 0
 }
 
 // createNewSnapshot builds a current snapshot of validators.
-func (k Keeper) createNewSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
+func (k Keeper) createNewSnapshot(ctx context.Context) (*types.Snapshot, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	validators := []stakingtypes.ValidatorI{}
-	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
-		if val.IsBonded() && !val.IsJailed() && k.ValidatorSupportsAllChains(ctx, val.GetOperator()) {
+	err := k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
+		bz, err := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+		if err != nil {
+			return false
+		}
+		if val.IsBonded() && !val.IsJailed() && k.ValidatorSupportsAllChains(ctx, bz) {
 			validators = append(validators, val)
 		}
 		return false
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	snapshot := &types.Snapshot{
-		Height:      ctx.BlockHeight(),
-		CreatedAt:   ctx.BlockTime(),
-		TotalShares: sdk.ZeroInt(),
+		Height:      sdkCtx.BlockHeight(),
+		CreatedAt:   sdkCtx.BlockTime(),
+		TotalShares: sdkmath.ZeroInt(),
 	}
 
 	for _, val := range validators {
-		chainInfo, err := k.GetValidatorChainInfos(ctx, val.GetOperator())
+		bz, err := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+		if err != nil {
+			return nil, err
+		}
+		chainInfo, err := k.GetValidatorChainInfos(ctx, bz)
 		if err != nil {
 			return nil, err
 		}
 		snapshot.TotalShares = snapshot.TotalShares.Add(val.GetBondedTokens())
+
 		snapshot.Validators = append(snapshot.Validators, types.Validator{
-			Address:            val.GetOperator(),
+			Address:            bz,
 			ShareCount:         val.GetBondedTokens(),
 			State:              types.ValidatorState_ACTIVE,
 			ExternalChainInfos: chainInfo,
@@ -414,14 +441,15 @@ func (k Keeper) createNewSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
 	return snapshot, nil
 }
 
-func (k Keeper) setSnapshotAsCurrent(ctx sdk.Context, snapshot *types.Snapshot) error {
+func (k Keeper) setSnapshotAsCurrent(ctx context.Context, snapshot *types.Snapshot) error {
 	snapStore := k.snapshotStore(ctx)
-	newID := k.ider.IncrementNextID(ctx, snapshotIDKey)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	newID := k.ider.IncrementNextID(sdkCtx, snapshotIDKey)
 	snapshot.Id = newID
 	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(newID), snapshot)
 }
 
-func (k Keeper) SetSnapshotOnChain(ctx sdk.Context, snapshotID uint64, chainReferenceID string) error {
+func (k Keeper) SetSnapshotOnChain(ctx context.Context, snapshotID uint64, chainReferenceID string) error {
 	snapStore := k.snapshotStore(ctx)
 	snapshot, err := k.FindSnapshotByID(ctx, snapshotID)
 	if err != nil {
@@ -431,8 +459,9 @@ func (k Keeper) SetSnapshotOnChain(ctx sdk.Context, snapshotID uint64, chainRefe
 	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(snapshot.Id), snapshot)
 }
 
-func (k Keeper) GetLatestSnapshotOnChain(ctx sdk.Context, chainReferenceID string) (*types.Snapshot, error) {
-	snapshotId := k.ider.GetLastID(ctx, snapshotIDKey)
+func (k Keeper) GetLatestSnapshotOnChain(ctx context.Context, chainReferenceID string) (*types.Snapshot, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	snapshotId := k.ider.GetLastID(sdkCtx, snapshotIDKey)
 
 	// Walk backwards from the most recent snapshot until we find one for this chainReferenceID
 	for {
@@ -459,23 +488,24 @@ func (k Keeper) GetLatestSnapshotOnChain(ctx sdk.Context, chainReferenceID strin
 }
 
 // GetCurrentSnapshot returns the currently active snapshot.
-func (k Keeper) GetCurrentSnapshot(ctx sdk.Context) (*types.Snapshot, error) {
+func (k Keeper) GetCurrentSnapshot(ctx context.Context) (*types.Snapshot, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	snapStore := k.snapshotStore(ctx)
-	lastID := k.ider.GetLastID(ctx, snapshotIDKey)
+	lastID := k.ider.GetLastID(sdkCtx, snapshotIDKey)
 	snapshot, err := keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(lastID))
-	k.Logger(ctx).Debug("get current snapshot", "last-id", lastID, "snapshot-validator-size", len(snapshot.Validators))
+	liblog.FromSDKLogger(k.Logger(ctx)).WithFields("last-id", lastID, "snapshot-validator-size", len(snapshot.Validators)).Debug("get current snapshot")
 	if errors.Is(err, keeperutil.ErrNotFound) {
 		return nil, nil
 	}
 	return snapshot, err
 }
 
-func (k Keeper) FindSnapshotByID(ctx sdk.Context, id uint64) (*types.Snapshot, error) {
+func (k Keeper) FindSnapshotByID(ctx context.Context, id uint64) (*types.Snapshot, error) {
 	snapStore := k.snapshotStore(ctx)
 	return keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(id))
 }
 
-func (k Keeper) GetValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) ([]*types.ExternalChainInfo, error) {
+func (k Keeper) GetValidatorChainInfos(ctx context.Context, valAddr sdk.ValAddress) ([]*types.ExternalChainInfo, error) {
 	info, err := keeperutil.Load[*types.ValidatorExternalAccounts](
 		k.externalChainInfoStore(ctx, valAddr),
 		k.cdc,
@@ -491,7 +521,7 @@ func (k Keeper) GetValidatorChainInfos(ctx sdk.Context, valAddr sdk.ValAddress) 
 	return info.ExternalChainInfo, nil
 }
 
-func (k Keeper) GetAllChainInfos(ctx sdk.Context) ([]*types.ValidatorExternalAccounts, error) {
+func (k Keeper) GetAllChainInfos(ctx context.Context) ([]*types.ValidatorExternalAccounts, error) {
 	chainInfoStore := k._externalChainInfoStore(ctx)
 	iter := chainInfoStore.Iterator(nil, nil)
 
@@ -509,7 +539,7 @@ func (k Keeper) GetAllChainInfos(ctx sdk.Context) ([]*types.ValidatorExternalAcc
 }
 
 // GetSigningKey returns a signing key used by the conductor to sign arbitrary messages.
-func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType, chainReferenceID, signedByAddress string) ([]byte, error) {
+func (k Keeper) GetSigningKey(ctx context.Context, valAddr sdk.ValAddress, chainType, chainReferenceID, signedByAddress string) ([]byte, error) {
 	externalAccounts, err := k.GetValidatorChainInfos(ctx, valAddr)
 	if err != nil {
 		return nil, err
@@ -525,13 +555,18 @@ func (k Keeper) GetSigningKey(ctx sdk.Context, valAddr sdk.ValAddress, chainType
 }
 
 // IsJailed returns if the current validator is jailed or not.
-func (k Keeper) IsJailed(ctx sdk.Context, val sdk.ValAddress) bool {
-	return k.staking.Validator(ctx, val).IsJailed()
+func (k Keeper) IsJailed(ctx context.Context, val sdk.ValAddress) (bool, error) {
+	a, err := k.staking.Validator(ctx, val)
+	if err != nil {
+		return a.IsJailed(), err
+	}
+	return a.IsJailed(), nil
 }
 
-func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error {
+func (k Keeper) Jail(_ctx context.Context, valAddr sdk.ValAddress, reason string) error {
+	ctx := sdk.UnwrapSDKContext(_ctx)
 	jailTime := ctx.BlockTime()
-	val := k.staking.Validator(ctx, valAddr)
+	val, err := k.staking.Validator(ctx, valAddr)
 
 	if val == nil {
 		return ErrValidatorWithAddrNotFound.Format(valAddr)
@@ -543,14 +578,16 @@ func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) err
 	consensusPower := val.GetConsensusPower(k.powerReduction)
 	totalConsensusPower := int64(0)
 	count := 0
-	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
+	err = k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		if val.IsBonded() && !val.IsJailed() {
 			totalConsensusPower += val.GetConsensusPower(k.powerReduction)
 			count++
 		}
 		return false
 	})
-
+	if err != nil {
+		return err
+	}
 	if count == 1 {
 		return ErrCannotJailValidator.Format(valAddr).WrapS("number of active validators would be zero then")
 	}
@@ -580,8 +617,12 @@ func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) err
 			}
 		}()
 
-		k.slashing.Jail(ctx, cons)
-		r, err := k.jailLog.Get(ctx, cons)
+		err := k.slashing.Jail(ctx, cons)
+		if err != nil {
+			return fmt.Errorf("failed to jail log: %w", err)
+		}
+		valAddr := sdk.ValAddress(cons)
+		r, err := k.jailLog.Get(ctx, valAddr)
 		if err != nil {
 			if !errors.Is(err, keeperutil.ErrNotFound) {
 				return err
@@ -591,7 +632,7 @@ func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) err
 		if r == nil {
 			// not found, create dummy record
 			r = &types.JailRecord{
-				Address:  cons.Bytes(),
+				Address:  valAddr,
 				Duration: time.Minute * 1,
 				JailedAt: time.Time{},
 			}
@@ -608,18 +649,18 @@ func (k Keeper) Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) err
 		}
 
 		r = &types.JailRecord{
-			Address:  cons.Bytes(),
+			Address:  valAddr,
 			Duration: sentence,
 			JailedAt: ctx.BlockTime(),
 		}
 
-		if err := k.jailLog.Set(ctx, cons, r); err != nil {
+		if err := k.jailLog.Set(ctx, valAddr, r); err != nil {
 			return fmt.Errorf("failed to set jail log: %w", err)
 		}
 
 		jailTime = ctx.BlockTime().Add(sentence)
-		k.slashing.JailUntil(ctx, cons, jailTime)
-		return nil
+		err = k.slashing.JailUntil(ctx, cons, jailTime)
+		return err
 	}()
 	if err != nil {
 		return err
@@ -652,19 +693,23 @@ func deriveJailSentence(d time.Duration) time.Duration {
 	return jailSentences[len(jailSentences)-1]
 }
 
-func (k Keeper) jailReasonStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("jail-reasons"))
+func (k Keeper) jailReasonStore(ctx context.Context) storetypes.KVStore {
+	store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(store, []byte("jail-reasons"))
 }
 
-func (k Keeper) gracePeriodStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("grace-period"))
+func (k Keeper) gracePeriodStore(ctx context.Context) storetypes.KVStore {
+	store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+
+	return prefix.NewStore(store, []byte("grace-period"))
 }
 
-func (k Keeper) unjailedSnapshotStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("unjailed-snapshot"))
+func (k Keeper) unjailedSnapshotStore(ctx context.Context) storetypes.KVStore {
+	store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(store, []byte("unjailed-snapshot"))
 }
 
-func (k Keeper) externalChainInfoStore(ctx sdk.Context, val sdk.ValAddress) sdk.KVStore {
+func (k Keeper) externalChainInfoStore(ctx context.Context, val sdk.ValAddress) storetypes.KVStore {
 	return prefix.NewStore(
 		k._externalChainInfoStore(ctx),
 		[]byte(
@@ -673,26 +718,19 @@ func (k Keeper) externalChainInfoStore(ctx sdk.Context, val sdk.ValAddress) sdk.
 	)
 }
 
-func (k Keeper) _externalChainInfoStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(
-		ctx.KVStore(k.storeKey),
-		[]byte("external-chain-info"),
-	)
+func (k Keeper) _externalChainInfoStore(ctx context.Context) storetypes.KVStore {
+	store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(store, []byte("external-chain-info"))
 }
 
-func (k Keeper) snapshotStore(ctx sdk.Context) sdk.KVStore {
-	k.Logger(ctx).Debug("snapshot store", "store-key-name", k.storeKey.Name(), "store-key-string", k.storeKey.String())
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("snapshot"))
+func (k Keeper) snapshotStore(ctx context.Context) storetypes.KVStore {
+	store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	// k.Logger(ctx).Debug("snapshot store", "store-key-name", k.memKey.Name(), "store-key-string", k.storeKey) //TODO
+	return prefix.NewStore(store, []byte("snapshot"))
 }
 
 // SaveModifiedSnapshot is needed for integration tests
-func (k Keeper) SaveModifiedSnapshot(ctx sdk.Context, snapshot *types.Snapshot) error {
+func (k Keeper) SaveModifiedSnapshot(ctx context.Context, snapshot *types.Snapshot) error {
 	snapStore := k.snapshotStore(ctx)
 	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(snapshot.GetId()), snapshot)
-}
-
-func jailLogProviderFactory(storeKey storetypes.StoreKey) func(ctx sdk.Context) sdk.KVStore {
-	return func(ctx sdk.Context) sdk.KVStore {
-		return prefix.NewStore(ctx.KVStore(storeKey), types.KeyPrefix(types.JailLogKey))
-	}
 }

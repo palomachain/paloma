@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	types "github.com/cosmos/cosmos-sdk/types"
 	mock "github.com/stretchr/testify/mock"
 
@@ -15,7 +17,7 @@ type ValsetKeeper struct {
 }
 
 // CanAcceptValidator provides a mock function with given fields: ctx, valAddr
-func (_m *ValsetKeeper) CanAcceptValidator(ctx types.Context, valAddr types.ValAddress) error {
+func (_m *ValsetKeeper) CanAcceptValidator(ctx context.Context, valAddr types.ValAddress) error {
 	ret := _m.Called(ctx, valAddr)
 
 	if len(ret) == 0 {
@@ -23,7 +25,7 @@ func (_m *ValsetKeeper) CanAcceptValidator(ctx types.Context, valAddr types.ValA
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, types.ValAddress) error); ok {
 		r0 = rf(ctx, valAddr)
 	} else {
 		r0 = ret.Error(0)
@@ -33,7 +35,7 @@ func (_m *ValsetKeeper) CanAcceptValidator(ctx types.Context, valAddr types.ValA
 }
 
 // GetCurrentSnapshot provides a mock function with given fields: ctx
-func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snapshot, error) {
+func (_m *ValsetKeeper) GetCurrentSnapshot(ctx context.Context) (*valsettypes.Snapshot, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
@@ -42,10 +44,10 @@ func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snap
 
 	var r0 *valsettypes.Snapshot
 	var r1 error
-	if rf, ok := ret.Get(0).(func(types.Context) (*valsettypes.Snapshot, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) (*valsettypes.Snapshot, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(types.Context) *valsettypes.Snapshot); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) *valsettypes.Snapshot); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
@@ -53,7 +55,7 @@ func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snap
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(types.Context) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
@@ -63,7 +65,7 @@ func (_m *ValsetKeeper) GetCurrentSnapshot(ctx types.Context) (*valsettypes.Snap
 }
 
 // GetSigningKey provides a mock function with given fields: ctx, valAddr, chainType, chainReferenceID, signedByAddress
-func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddress, chainType string, chainReferenceID string, signedByAddress string) ([]byte, error) {
+func (_m *ValsetKeeper) GetSigningKey(ctx context.Context, valAddr types.ValAddress, chainType string, chainReferenceID string, signedByAddress string) ([]byte, error) {
 	ret := _m.Called(ctx, valAddr, chainType, chainReferenceID, signedByAddress)
 
 	if len(ret) == 0 {
@@ -72,10 +74,10 @@ func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddres
 
 	var r0 []byte
 	var r1 error
-	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress, string, string, string) ([]byte, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, types.ValAddress, string, string, string) ([]byte, error)); ok {
 		return rf(ctx, valAddr, chainType, chainReferenceID, signedByAddress)
 	}
-	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress, string, string, string) []byte); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, types.ValAddress, string, string, string) []byte); ok {
 		r0 = rf(ctx, valAddr, chainType, chainReferenceID, signedByAddress)
 	} else {
 		if ret.Get(0) != nil {
@@ -83,7 +85,7 @@ func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddres
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(types.Context, types.ValAddress, string, string, string) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, types.ValAddress, string, string, string) error); ok {
 		r1 = rf(ctx, valAddr, chainType, chainReferenceID, signedByAddress)
 	} else {
 		r1 = ret.Error(1)
@@ -93,7 +95,7 @@ func (_m *ValsetKeeper) GetSigningKey(ctx types.Context, valAddr types.ValAddres
 }
 
 // KeepValidatorAlive provides a mock function with given fields: ctx, valAddr, pigeonVersion
-func (_m *ValsetKeeper) KeepValidatorAlive(ctx types.Context, valAddr types.ValAddress, pigeonVersion string) error {
+func (_m *ValsetKeeper) KeepValidatorAlive(ctx context.Context, valAddr types.ValAddress, pigeonVersion string) error {
 	ret := _m.Called(ctx, valAddr, pigeonVersion)
 
 	if len(ret) == 0 {
@@ -101,7 +103,7 @@ func (_m *ValsetKeeper) KeepValidatorAlive(ctx types.Context, valAddr types.ValA
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, types.ValAddress, string) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, types.ValAddress, string) error); ok {
 		r0 = rf(ctx, valAddr, pigeonVersion)
 	} else {
 		r0 = ret.Error(0)
@@ -115,8 +117,7 @@ func (_m *ValsetKeeper) KeepValidatorAlive(ctx types.Context, valAddr types.ValA
 func NewValsetKeeper(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *ValsetKeeper {
+}) *ValsetKeeper {
 	mock := &ValsetKeeper{}
 	mock.Mock.Test(t)
 

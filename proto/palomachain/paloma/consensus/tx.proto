@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
 import "google/protobuf/any.proto";
 import "palomachain/paloma/valset/common.proto";
 package palomachain.paloma.consensus;
@@ -20,12 +21,14 @@ service Msg {
 }
 
 message MsgAddMessagesSignatures {
+  option (cosmos.msg.v1.signer) = "metadata";
   string                                creator        = 1 [deprecated = true];
   repeated ConsensusMessageSignature    signedMessages = 2;
   palomachain.paloma.valset.MsgMetadata metadata       = 3 [(gogoproto.nullable) = false];
 }
 
 message ConsensusMessageSignature {
+  option (cosmos.msg.v1.signer) = "metadata";
   uint64 id              = 1;
   string queueTypeName   = 2;
   bytes  signature       = 3;
@@ -44,6 +47,7 @@ message MsgDeleteJob {
 message MsgDeleteJobResponse {}
 
 message MsgAddEvidence {
+  option (cosmos.msg.v1.signer) = "metadata";
   string                                creator        = 1 [deprecated = true];
   google.protobuf.Any                   proof          = 2;
   uint64                                messageID      = 3;
@@ -54,6 +58,7 @@ message MsgAddEvidence {
 message MsgAddEvidenceResponse {}
 
 message MsgSetPublicAccessData {
+  option (cosmos.msg.v1.signer) = "metadata";
   string                                creator       = 1 [deprecated = true];
   uint64                                messageID     = 2;
   string                                queueTypeName = 3;
@@ -64,6 +69,7 @@ message MsgSetPublicAccessData {
 message MsgSetPublicAccessDataResponse {}
 
 message MsgSetErrorData {
+  option (cosmos.msg.v1.signer) = "metadata";
   string                                creator       = 1 [deprecated = true];
   uint64                                messageID     = 2;
   string                                queueTypeName = 3;

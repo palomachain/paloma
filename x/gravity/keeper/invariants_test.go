@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"context"
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
@@ -14,7 +16,10 @@ import (
 func TestModuleBalanceUnbatchedTxs(t *testing.T) {
 	////////////////// SETUP //////////////////
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 	var (
@@ -25,7 +30,7 @@ func TestModuleBalanceUnbatchedTxs(t *testing.T) {
 	receiver, err := types.NewEthAddress(myReceiver)
 	require.NoError(t, err)
 	// mint some voucher first
-	allVouchersToken, err := types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+	allVouchersToken, err := types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, allVouchersToken.Amount)}
 	err = input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers)
@@ -41,7 +46,7 @@ func TestModuleBalanceUnbatchedTxs(t *testing.T) {
 
 	// Create some unbatched transactions
 	for i := 0; i < 4; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), testERC20Address, "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 
@@ -62,7 +67,7 @@ func TestModuleBalanceUnbatchedTxs(t *testing.T) {
 	checkInvariant(t, ctx, input.GravityKeeper, true)
 
 	// Ensure an error is returned for a mismatched balance
-	oneVoucher, err := types.NewInternalERC20Token(sdk.NewInt(1), testERC20Address, "test-chain")
+	oneVoucher, err := types.NewInternalERC20Token(math.NewInt(1), testERC20Address, "test-chain")
 	require.NoError(t, err)
 
 	checkImbalancedModule(t, ctx, input.GravityKeeper, input.BankKeeper, mySender, sdk.NewCoins(sdk.NewCoin(testDenom, oneVoucher.Amount)))
@@ -72,7 +77,8 @@ func TestModuleBalanceUnbatchedTxs(t *testing.T) {
 func TestModuleBalanceBatchedTxs(t *testing.T) {
 	////////////////// SETUP //////////////////
 	input, ctx := SetupFiveValChain(t)
-	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	var (
 		now                     = time.Now().UTC()
@@ -83,9 +89,9 @@ func TestModuleBalanceBatchedTxs(t *testing.T) {
 	require.NoError(t, e1)
 	require.NoError(t, e2)
 	require.NoError(t, e3)
-	token, err := types.NewInternalERC20Token(sdk.NewInt(150000000000000), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+	token, err := types.NewInternalERC20Token(math.NewInt(150000000000000), myTokenContractAddr.GetAddress().Hex(), "test-chain")
 	require.NoError(t, err)
-	voucher, err := types.NewInternalERC20Token(sdk.NewInt(1), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+	voucher, err := types.NewInternalERC20Token(math.NewInt(1), myTokenContractAddr.GetAddress().Hex(), "test-chain")
 	require.NoError(t, err)
 	voucherCoin := sdk.NewCoins(sdk.NewCoin(testDenom, voucher.Amount))
 	tokenCoin := sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
@@ -105,7 +111,7 @@ func TestModuleBalanceBatchedTxs(t *testing.T) {
 
 	// add some TX to the pool
 	for i := 0; i < 8; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), token.Contract.GetAddress().Hex(), "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), token.Contract.GetAddress().Hex(), "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 
@@ -122,7 +128,7 @@ func TestModuleBalanceBatchedTxs(t *testing.T) {
 
 	// Create a batch, perform some checks
 	// when
-	ctx = ctx.WithBlockTime(now)
+	ctx = sdkCtx.WithBlockTime(now)
 	// tx batch size is 3, so that some of them stay behind
 	batch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", token.Contract, 3)
 	require.NoError(t, err)
@@ -155,8 +161,9 @@ func TestModuleBalanceBatchedTxs(t *testing.T) {
 	checkImbalancedModule(t, ctx, input.GravityKeeper, input.BankKeeper, mySender, voucherCoin)
 }
 
-func checkInvariant(t *testing.T, ctx sdk.Context, k Keeper, succeed bool) {
-	res, ok := ModuleBalanceInvariant(k)(ctx)
+func checkInvariant(t *testing.T, ctx context.Context, k Keeper, succeed bool) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	res, ok := ModuleBalanceInvariant(k)(sdkCtx)
 	if succeed {
 		require.False(t, ok, "Invariant should have returned false")
 		require.Empty(t, res, "Invariant should have returned no message")
@@ -166,7 +173,7 @@ func checkInvariant(t *testing.T, ctx sdk.Context, k Keeper, succeed bool) {
 	}
 }
 
-func checkImbalancedModule(t *testing.T, ctx sdk.Context, gravityKeeper Keeper, bankKeeper bankkeeper.BaseKeeper, sender sdk.AccAddress, coins sdk.Coins) {
+func checkImbalancedModule(t *testing.T, ctx context.Context, gravityKeeper Keeper, bankKeeper bankkeeper.BaseKeeper, sender sdk.AccAddress, coins sdk.Coins) {
 	// Imbalance the module
 	require.NoError(t, bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, coins))
 	checkInvariant(t, ctx, gravityKeeper, false)

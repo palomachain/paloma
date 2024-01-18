@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,9 @@ func TestBatchAndTxImportExport(t *testing.T) {
 	// SETUP ENV + DATA
 	// ==================
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	sdkCtx := sdk.UnwrapSDKContext(input.Context)
+
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	ctx := input.Context
 	batchSize := 100
@@ -67,7 +70,7 @@ func TestBatchAndTxImportExport(t *testing.T) {
 	tokens := make([]*types.InternalERC20Token, len(contracts))
 	vouchers := make([]*sdk.Coins, len(contracts))
 	for i, v := range contracts {
-		token, err := types.NewInternalERC20Token(sdk.NewInt(99999999), v.GetAddress().Hex(), "test-chain")
+		token, err := types.NewInternalERC20Token(math.NewInt(99999999), v.GetAddress().Hex(), "test-chain")
 		tokens[i] = token
 		allVouchers := sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
 		vouchers[i] = &allVouchers
@@ -96,7 +99,7 @@ func TestBatchAndTxImportExport(t *testing.T) {
 		sender := senders[i%len(senders)]
 		receiver := receivers[i%len(receivers)]
 		contract := contracts[i%len(contracts)]
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(amount)), contract.GetAddress().Hex(), "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(amount)), contract.GetAddress().Hex(), "test-chain")
 		require.NoError(t, err)
 
 		// add transaction to the pool
@@ -112,7 +115,7 @@ func TestBatchAndTxImportExport(t *testing.T) {
 	// when
 
 	now := time.Now().UTC()
-	ctx = ctx.WithBlockTime(now)
+	ctx = sdkCtx.WithBlockTime(now)
 
 	// CREATE BATCHES
 	// ==================
@@ -123,6 +126,6 @@ func TestBatchAndTxImportExport(t *testing.T) {
 		batch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", *v, uint(batchSize))
 		require.NoError(t, err)
 		batches[i] = batch
-		ctx.Logger().Info(fmt.Sprintf("Created batch %v for contract %v with %v transactions", i, v.GetAddress(), batchSize))
+		sdkCtx.Logger().Info(fmt.Sprintf("Created batch %v for contract %v with %v transactions", i, v.GetAddress(), batchSize))
 	}
 }

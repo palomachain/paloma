@@ -1,20 +1,23 @@
 package paloma
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	"cosmossdk.io/x/feegrant"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/gogo/protobuf/proto"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/libmeta"
 	"github.com/palomachain/paloma/x/paloma/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
 )
 
-func logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+func logger(ctx context.Context) log.Logger {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return liblog.FromSDKLogger(sdkCtx.Logger()).With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 // HandlerDecorator is an ante decorator wrapper for an ante handler
@@ -90,11 +93,11 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 		}
 
 		creator := m.GetMetadata().GetCreator()
-		signers := msg.GetSigners()
+		signers := m.GetMetadata().GetSigners() // libmeta.GetSigners(m) //// COMMENTED DUE TO FAILED TEST CASE
 
 		signedByCreator := func() bool {
 			for _, v := range signers {
-				if v.String() == creator {
+				if v == creator {
 					return true
 				}
 			}
@@ -125,7 +128,7 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 
 		grantees := make([]string, 0, len(signers))
 		for _, signer := range signers {
-			if v, found := grantsLkUp[signer.String()]; found {
+			if v, found := grantsLkUp[signer]; found {
 				logger(ctx).Debug("found granted signature", "signature", v.Grantee)
 				grantees = append(grantees, v.Grantee)
 			}

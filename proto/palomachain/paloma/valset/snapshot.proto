@@ -11,7 +11,7 @@ option go_package = "github.com/palomachain/paloma/x/valset/types";
 
 message Validator {
   bytes shareCount = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 
@@ -41,7 +41,7 @@ message Snapshot {
 
 
   bytes totalShares = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 

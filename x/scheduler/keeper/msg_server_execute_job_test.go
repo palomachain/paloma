@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authmocks "github.com/palomachain/paloma/testutil/third_party_mocks/cosmos/cosmos-sdk/x/auth/types/mocks"
@@ -44,7 +44,7 @@ func TestExecuteJob(t *testing.T) {
 				).Return(uint64(10), nil)
 
 				msgServer := msgServer{
-					schedulerKeeper,
+					Keeper: schedulerKeeper,
 				}
 
 				return msgServer
@@ -76,7 +76,7 @@ func TestExecuteJob(t *testing.T) {
 				).Return(uint64(0), errors.New("error-3"))
 
 				msgServer := msgServer{
-					schedulerKeeper,
+					Keeper: schedulerKeeper,
 				}
 
 				return msgServer

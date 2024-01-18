@@ -2,6 +2,8 @@ syntax = "proto3";
 package palomachain.paloma.valset;
 
 import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
+
 import "palomachain/paloma/valset/snapshot.proto";
 import "palomachain/paloma/valset/common.proto";
 
@@ -15,6 +17,8 @@ service Msg {
 }
 
 message MsgAddExternalChainInfoForValidator {
+  option (cosmos.msg.v1.signer) = "metadata";
+
   string                     creator    = 1 [deprecated = true];
   repeated ExternalChainInfo chainInfos = 2;
   palomachain.paloma.valset.MsgMetadata metadata = 3 [(gogoproto.nullable) = false];
@@ -23,6 +27,7 @@ message MsgAddExternalChainInfoForValidator {
 message MsgAddExternalChainInfoForValidatorResponse {}
 
 message MsgKeepAlive {
+  option (cosmos.msg.v1.signer) = "metadata";
   string creator = 1 [deprecated = true];
   string pigeonVersion = 2;
   palomachain.paloma.valset.MsgMetadata metadata = 3 [(gogoproto.nullable) = false];

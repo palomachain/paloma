@@ -1,9 +1,11 @@
 package paloma
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
+	"cosmossdk.io/core/appmodule"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -12,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/paloma/client/cli"
 	"github.com/palomachain/paloma/x/paloma/keeper"
 	"github.com/palomachain/paloma/x/paloma/types"
@@ -19,13 +22,24 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.HasServices         = AppModule{}
+	_ module.HasInvariants       = AppModule{}
+	_ module.HasABCIGenesis      = AppModule{}
+	_ module.HasConsensusVersion = AppModule{}
+	_ module.HasName             = AppModule{}
+
+	_ appmodule.HasEndBlocker   = AppModule{}
+	_ appmodule.HasBeginBlocker = AppModule{}
+	_ appmodule.AppModule       = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
 // AppModuleBasic
 // ----------------------------------------------------------------------------
+
+func (m AppModule) IsOnePerModuleType() {}
+func (m AppModule) IsAppModule()        {}
 
 // AppModuleBasic implements the AppModuleBasic interface for the capability module.
 type AppModuleBasic struct {
@@ -153,18 +167,20 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
-func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(ctx context.Context) error {
 	am.keeper.CheckChainVersion(ctx)
+	return nil
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	if ctx.BlockHeight()%303 == 0 {
-		err := am.keeper.JailValidatorsWithMissingExternalChainInfos(ctx)
+func (am AppModule) EndBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.BlockHeight()%303 == 0 {
+		err := am.keeper.JailValidatorsWithMissingExternalChainInfos(sdkCtx)
 		if err != nil {
-			am.keeper.Logger(ctx).Error("wrror jailing validators with missing external chain infos", "err", err)
+			liblog.FromSDKLogger(am.keeper.Logger(sdkCtx)).WithError(err).Error("wrror jailing validators with missing external chain infos")
 		}
 	}
-	return []abci.ValidatorUpdate{}
+	return nil
 }

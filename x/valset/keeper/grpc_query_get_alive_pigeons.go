@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/valset/types"
 	"google.golang.org/grpc/codes"
@@ -21,10 +22,15 @@ func (k Keeper) GetAlivePigeons(goCtx context.Context, req *types.QueryGetAliveP
 	vals := k.GetUnjailedValidators(ctx)
 
 	res := slice.Map(vals, func(val stakingtypes.ValidatorI) *types.QueryGetAlivePigeonsResponse_ValidatorAlive {
-		until, err := k.ValidatorAliveUntil(ctx, val.GetOperator())
+		bz, err := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+
 		s := &types.QueryGetAlivePigeonsResponse_ValidatorAlive{
-			ValAddress: val.GetOperator(),
+			ValAddress: bz,
 		}
+		if err != nil {
+			s.Error = err.Error()
+		}
+		until, err := k.ValidatorAliveUntil(ctx, bz)
 		if err != nil {
 			s.Error = err.Error()
 		} else {

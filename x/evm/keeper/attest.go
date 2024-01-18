@@ -1,14 +1,17 @@
 package keeper
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
 
 	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/VolumeFi/whoops"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/palomachain/paloma/util/liblog"
@@ -38,7 +41,7 @@ func (c *consensusPower) setTotal(total sdkmath.Int) {
 func (c *consensusPower) add(power sdkmath.Int) {
 	var zero sdkmath.Int
 	if c.runningSum == zero {
-		c.runningSum = sdk.NewInt(0)
+		c.runningSum = sdkmath.NewInt(0)
 	}
 	c.runningSum = c.runningSum.Add(power)
 }
@@ -53,13 +56,14 @@ func (c *consensusPower) consensus() bool {
 		===
 		3 * sum >= totalPower * 2
 	*/
-	return c.runningSum.Mul(sdk.NewInt(3)).GTE(
-		c.totalPower.Mul(sdk.NewInt(2)),
+	return c.runningSum.Mul(sdkmath.NewInt(3)).GTE(
+		c.totalPower.Mul(sdkmath.NewInt(2)),
 	)
 }
 
-func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
-	logger := k.Logger(ctx).WithFields(
+func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx).WithFields(
 		"component", "attest-router",
 		"msg-id", msg.GetId(),
 		"msg-nonce", msg.Nonce())
@@ -69,8 +73,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return nil
 	}
 
-	// Use transactionalsed context only!
-	ctx, writeCache := ctx.CacheContext()
+	ctx, writeCache := sdkCtx.CacheContext()
 	defer func() {
 		if err != nil {
 			logger.WithError(err).Error("failed to attest. Skipping writeback.")
@@ -85,7 +88,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return err
 	}
 
-	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
+	evidence, err := k.findEvidenceThatWon(sdkCtx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			logger.WithError(err).Error("consensus not achieved")
@@ -102,7 +105,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		case *types.TxExecutedProof:
 			tx, err := winner.GetTX()
 			if err == nil {
-				k.setTxAsAlreadyProcessed(ctx, tx)
+				k.setTxAsAlreadyProcessed(sdkCtx, tx)
 			}
 		}
 
@@ -131,11 +134,11 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		logger.Debug("Skipping attestation as deprecated.")
 		return nil
 	case *types.Message_UploadSmartContract:
-		return newUploadSmartContractAttester(&k, logger, params).Execute(ctx)
+		return newUploadSmartContractAttester(&k, logger, params).Execute(sdkCtx)
 	case *types.Message_UpdateValset:
-		return newUpdateValsetAttester(&k, logger, q, params).Execute(ctx)
+		return newUpdateValsetAttester(&k, logger, q, params).Execute(sdkCtx)
 	case *types.Message_SubmitLogicCall:
-		return newSubmitLogicCallAttester(&k, logger, params).Execute(ctx)
+		return newSubmitLogicCallAttester(&k, logger, params).Execute(sdkCtx)
 	}
 
 	return nil
@@ -167,7 +170,7 @@ func attestTransactionIntegrity(
 }
 
 func (k Keeper) findEvidenceThatWon(
-	ctx sdk.Context,
+	ctx context.Context,
 	evidences []*consensustypes.Evidence,
 ) (any, error) {
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
@@ -287,9 +290,9 @@ func (k Keeper) SetSmartContractAsActive(ctx sdk.Context, smartContractID uint64
 	return nil
 }
 
-func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) sdk.KVStore {
-	kv := ctx.KVStore(k.storeKey)
-	return prefix.NewStore(kv, []byte("tx-processed"))
+func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) storetypes.KVStore {
+	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(s, []byte("tx-processed"))
 }
 
 func (k Keeper) setTxAsAlreadyProcessed(ctx sdk.Context, tx *ethtypes.Transaction) {

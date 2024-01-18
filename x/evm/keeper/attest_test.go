@@ -6,6 +6,7 @@ import (
 	"os"
 	"sync"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -141,12 +142,12 @@ var _ = g.Describe("attest router", func() {
 				&valsettypes.Snapshot{
 					Validators: slice.Map(valpowers, func(p valpower) valsettypes.Validator {
 						return valsettypes.Validator{
-							ShareCount:         sdk.NewInt(p.power),
+							ShareCount:         sdkmath.NewInt(p.power),
 							Address:            p.valAddr,
 							ExternalChainInfos: p.externalChain,
 						}
 					}),
-					TotalShares: sdk.NewInt(totalPower),
+					TotalShares: sdkmath.NewInt(totalPower),
 				},
 				nil,
 			)

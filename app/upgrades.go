@@ -1,50 +1,42 @@
 package app
 
 import (
+	"context"
 	"fmt"
 
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	consensustypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
-	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
-	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
-	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
-	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
-	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
+	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
+	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
+	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
+	ibctmmigrations "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint/migrations"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
-	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
 	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
-	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
-	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
-	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
-	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 )
 
-var minCommissionRate = sdk.MustNewDecFromStr("0.05")
+var minCommissionRate = math.LegacyMustNewDecFromStr("0.05")
 
 // UpdateMinCommissionRate update minimum commission rate param.
-func UpdateMinCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper) (sdk.Dec, error) {
-	params := keeper.GetParams(ctx)
+func UpdateMinCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper) (math.LegacyDec, error) {
+	params, err := keeper.GetParams(ctx)
+	if err != nil {
+		return math.LegacyDec{}, err
+	}
 	params.MinCommissionRate = minCommissionRate
 
 	if err := keeper.SetParams(ctx, params); err != nil {
-		return sdk.Dec{}, err
+		return math.LegacyDec{}, err
 	}
 
 	return minCommissionRate, nil
@@ -52,19 +44,28 @@ func UpdateMinCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper) (sdk.
 
 // SetMinimumCommissionRate updates the commission rate for validators
 // whose current commission rate is lower than the new minimum commission rate.
-func SetMinimumCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper, minCommissionRate sdk.Dec) error {
-	validators := keeper.GetAllValidators(ctx)
-
+func SetMinimumCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper, minCommissionRate math.LegacyDec) error {
+	validators, err := keeper.GetAllValidators(ctx)
+	if err != nil {
+		return err
+	}
 	for _, validator := range validators {
 		if validator.Commission.Rate.IsNil() || validator.Commission.Rate.LT(minCommissionRate) {
-			if err := keeper.Hooks().BeforeValidatorModified(ctx, validator.GetOperator()); err != nil {
+			valAddr, err := keeperutil.ValAddressFromBech32(keeper.ValidatorAddressCodec(), validator.GetOperator())
+			if err != nil {
+				return err
+			}
+			if err := keeper.Hooks().BeforeValidatorModified(ctx, valAddr); err != nil {
 				return err
 			}
 
 			validator.Commission.Rate = minCommissionRate
 			validator.Commission.UpdateTime = ctx.BlockTime()
 
-			keeper.SetValidator(ctx, validator)
+			err = keeper.SetValidator(ctx, validator)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -72,59 +73,18 @@ func SetMinimumCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper, minC
 }
 
 func (app *App) RegisterUpgradeHandlers(semverVersion string) {
-	// Set param key table for params module migration
-	for _, subspace := range app.ParamsKeeper.GetSubspaces() {
-		subspace := subspace
-
-		var keyTable paramstypes.KeyTable
-		switch subspace.Name() {
-		case authtypes.ModuleName:
-			keyTable = authtypes.ParamKeyTable() //nolint:staticcheck
-		case banktypes.ModuleName:
-			keyTable = banktypes.ParamKeyTable() //nolint:staticcheck
-		case stakingtypes.ModuleName:
-			keyTable = stakingtypes.ParamKeyTable() //nolint:staticcheck
-		case minttypes.ModuleName:
-			keyTable = minttypes.ParamKeyTable() //nolint:staticcheck
-		case distrtypes.ModuleName:
-			keyTable = distrtypes.ParamKeyTable() //nolint:staticcheck
-		case slashingtypes.ModuleName:
-			keyTable = slashingtypes.ParamKeyTable() //nolint:staticcheck
-		case govtypes.ModuleName:
-			keyTable = govv1.ParamKeyTable() //nolint:staticcheck
-		case crisistypes.ModuleName:
-			keyTable = crisistypes.ParamKeyTable() //nolint:staticcheck
-		case consensusmoduletypes.ModuleName:
-			keyTable = consensusmoduletypes.ParamKeyTable() //nolint:staticcheck
-		case evmmoduletypes.ModuleName:
-			keyTable = evmmoduletypes.ParamKeyTable() //nolint:staticcheck
-		case gravitymoduletypes.ModuleName:
-			keyTable = gravitymoduletypes.ParamKeyTable() //nolint:staticcheck
-		case palomamoduletypes.ModuleName:
-			keyTable = palomamoduletypes.ParamKeyTable() //nolint:staticcheck
-		case schedulermoduletypes.ModuleName:
-			keyTable = schedulermoduletypes.ParamKeyTable() //nolint:staticcheck
-		case treasurymoduletypes.ModuleName:
-			keyTable = treasurymoduletypes.ParamKeyTable() //nolint:staticcheck
-		case valsetmoduletypes.ModuleName:
-			keyTable = valsetmoduletypes.ParamKeyTable() //nolint:staticcheck
-		case wasmtypes.ModuleName:
-			keyTable = wasmtypes.ParamKeyTable() //nolint:staticcheck
-		}
-
-		if !subspace.HasKeyTable() {
-			subspace.WithKeyTable(keyTable)
-		}
-	}
-
 	baseAppLegacySS := app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable())
 
 	app.UpgradeKeeper.SetUpgradeHandler(
 		semverVersion,
-		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			// Migrate CometBFT consensus parameters from x/params module to a
 			// dedicated x/consensus module.
-			baseapp.MigrateParams(ctx, baseAppLegacySS, &app.ConsensusParamsKeeper)
+			sdkCtx := sdk.UnwrapSDKContext(ctx)
+			err := baseapp.MigrateParams(sdkCtx, baseAppLegacySS, &app.ConsensusParamsKeeper.ParamsStore)
+			if err != nil {
+				return nil, err
+			}
 
 			// TODO: We may need to execute ibc-go v6 migrations but importing ibc-go
 			// v6 will fail using Cosmos SDK v0.47.x.
@@ -134,7 +94,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 			// }
 
 			// OPTIONAL: prune expired tendermint consensus states to save storage space
-			if _, err := ibctmmigrations.PruneExpiredConsensusStates(ctx, app.appCodec, app.IBCKeeper.ClientKeeper); err != nil {
+			if _, err := ibctmmigrations.PruneExpiredConsensusStates(sdkCtx, app.appCodec, app.IBCKeeper.ClientKeeper); err != nil {
 				return nil, err
 			}
 
@@ -143,7 +103,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 
 			// Add Interchain Accounts host module
 			// set the ICS27 consensus version so InitGenesis is not run
-			fromVM[icatypes.ModuleName] = app.mm.Modules[icatypes.ModuleName].(module.HasConsensusVersion).ConsensusVersion()
+			fromVM[icatypes.ModuleName] = app.ModuleManager.Modules[icatypes.ModuleName].(module.HasConsensusVersion).ConsensusVersion()
 
 			// create ICS27 Host submodule params, host module not enabled.
 			hostParams := icahosttypes.Params{
@@ -151,7 +111,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				AllowMessages: []string{},
 			}
 
-			mod, found := app.mm.Modules[icatypes.ModuleName]
+			mod, found := app.ModuleManager.Modules[icatypes.ModuleName]
 			if !found {
 				return nil, fmt.Errorf("module %s is not in the module manager", icatypes.ModuleName)
 			}
@@ -163,20 +123,20 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 
 			// skip InitModule in upgrade tests after the upgrade has gone through.
 			if oldIcaVersion != fromVM[icatypes.ModuleName] {
-				icaMod.InitModule(ctx, icacontrollertypes.DefaultParams(), hostParams)
+				icaMod.InitModule(sdkCtx, icacontrollertypes.DefaultParams(), hostParams)
 			}
 
-			vm, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
+			vm, err := app.ModuleManager.RunMigrations(ctx, app.configurator, fromVM)
 			if err != nil {
 				return vm, err
 			}
 
-			minCommissionRate, err := UpdateMinCommissionRate(ctx, *app.StakingKeeper)
+			minCommissionRate, err := UpdateMinCommissionRate(sdkCtx, *app.StakingKeeper)
 			if err != nil {
 				return vm, err
 			}
 
-			err = SetMinimumCommissionRate(ctx, *app.StakingKeeper, minCommissionRate)
+			err = SetMinimumCommissionRate(sdkCtx, *app.StakingKeeper, minCommissionRate)
 			if err != nil {
 				return vm, err
 			}

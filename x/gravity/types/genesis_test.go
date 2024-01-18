@@ -3,7 +3,7 @@ package types
 import (
 	"testing"
 
-	types "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,8 +23,8 @@ func TestGenesisStateValidate(t *testing.T) {
 				TargetBatchTimeout:           0,
 				AverageBlockTime:             0,
 				AverageEthereumBlockTime:     0,
-				SlashFractionBatch:           types.Dec{},
-				SlashFractionBadEthSignature: types.Dec{},
+				SlashFractionBatch:           math.LegacyDec{},
+				SlashFractionBadEthSignature: math.LegacyDec{},
 			},
 			GravityNonces:      GravityNonces{},
 			Batches:            []OutgoingTxBatch{},
@@ -42,8 +42,8 @@ func TestGenesisStateValidate(t *testing.T) {
 				TargetBatchTimeout:           0,
 				AverageBlockTime:             0,
 				AverageEthereumBlockTime:     0,
-				SlashFractionBatch:           types.Dec{},
-				SlashFractionBadEthSignature: types.Dec{},
+				SlashFractionBatch:           math.LegacyDec{},
+				SlashFractionBadEthSignature: math.LegacyDec{},
 			},
 			GravityNonces:      GravityNonces{},
 			Batches:            []OutgoingTxBatch{},

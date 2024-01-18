@@ -6,22 +6,29 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cometbft/cometbft/libs/log"
+	bankv1beta1 "cosmossdk.io/api/cosmos/bank/v1beta1"
+	"cosmossdk.io/log"
+	"cosmossdk.io/x/feegrant"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/palomachain/paloma/x/paloma"
 	"github.com/palomachain/paloma/x/paloma/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/require"
+	protov2 "google.golang.org/protobuf/proto"
 )
 
 type tx struct {
-	msgs []sdk.Msg
+	msgs    []sdk.Msg
+	address sdk.Address
 }
 
 func (t *tx) GetMsgs() []sdk.Msg {
 	return t.msgs
+}
+
+func (t *tx) GetMsgsV2() ([]protov2.Message, error) {
+	return []protov2.Message{&bankv1beta1.MsgSend{FromAddress: t.address.String()}}, nil // this is a hack for tests
 }
 
 func (t *tx) ValidateBasic() error {

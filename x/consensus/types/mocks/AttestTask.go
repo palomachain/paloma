@@ -19,8 +19,7 @@ func (_m *AttestTask) Attest() {
 func NewAttestTask(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *AttestTask {
+}) *AttestTask {
 	mock := &AttestTask{}
 	mock.Mock.Test(t)
 

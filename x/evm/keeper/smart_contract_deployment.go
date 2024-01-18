@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/VolumeFi/whoops"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
@@ -30,7 +32,7 @@ func (k Keeper) AllSmartContractsDeployments(ctx sdk.Context) ([]*types.SmartCon
 	return res, err
 }
 
-func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID string) (found bool) {
+func (k Keeper) HasAnySmartContractDeployment(ctx context.Context, chainReferenceID string) (found bool) {
 	if err := keeperutil.IterAllFnc(
 		k.provideSmartContractDeploymentStore(ctx),
 		k.cdc,
@@ -51,16 +53,17 @@ func (k Keeper) HasAnySmartContractDeployment(ctx sdk.Context, chainReferenceID 
 	return
 }
 
-func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx sdk.Context, smartContractID uint64, chainReferenceID string) {
-	_, key := k.getSmartContractDeploymentByContractID(ctx, smartContractID, chainReferenceID)
+func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx context.Context, smartContractID uint64, chainReferenceID string) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	_, key := k.getSmartContractDeploymentByContractID(sdkCtx, smartContractID, chainReferenceID)
 	if key == nil {
 		return
 	}
 	k.Logger(ctx).Info("removing a smart contract deployment", "smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID)
-	k.provideSmartContractDeploymentStore(ctx).Delete(key)
+	k.provideSmartContractDeploymentStore(sdkCtx).Delete(key)
 }
 
-func (k Keeper) updateSmartContractDeployment(ctx sdk.Context, smartContractID uint64, chainReferenceID string, deployment *types.SmartContractDeployment) error {
+func (k Keeper) updateSmartContractDeployment(ctx context.Context, smartContractID uint64, chainReferenceID string, deployment *types.SmartContractDeployment) error {
 	if deployment == nil {
 		return fmt.Errorf("deployment must not be nil")
 	}
@@ -83,14 +86,15 @@ func (k Keeper) updateSmartContractDeployment(ctx sdk.Context, smartContractID u
 	return nil
 }
 
-func (k Keeper) GetLastCompassContract(ctx sdk.Context) (*types.SmartContract, error) {
+func (k Keeper) GetLastCompassContract(ctx context.Context) (*types.SmartContract, error) {
 	kv := k.provideLastCompassContractStore(ctx)
 	id := kv.Get(lastSmartContractKey)
 	return keeperutil.Load[*types.SmartContract](k.provideSmartContractStore(ctx), k.cdc, id)
 }
 
-func (k Keeper) SetAsCompassContract(ctx sdk.Context, smartContract *types.SmartContract) error {
-	k.Logger(ctx).Info("setting smart contract as the latest one", "smart-contract-id", smartContract.GetId())
+func (k Keeper) SetAsCompassContract(ctx context.Context, smartContract *types.SmartContract) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	k.Logger(sdkCtx).Info("setting smart contract as the latest one", "smart-contract-id", smartContract.GetId())
 	err := k.setAsLastCompassContract(ctx, smartContract)
 	if err != nil {
 		return fmt.Errorf("failed to set contract as last smart contract: %w", err)
@@ -107,7 +111,7 @@ func (k Keeper) SetAsCompassContract(ctx sdk.Context, smartContract *types.Smart
 	return nil
 }
 
-func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode []byte) (*types.SmartContract, error) {
+func (k Keeper) SaveNewSmartContract(ctx context.Context, abiJSON string, bytecode []byte) (*types.SmartContract, error) {
 	smartContract := &types.SmartContract{
 		Id:       k.ider.IncrementNextID(ctx, "smart-contract"),
 		AbiJSON:  abiJSON,
@@ -123,7 +127,7 @@ func (k Keeper) SaveNewSmartContract(ctx sdk.Context, abiJSON string, bytecode [
 	return smartContract, nil
 }
 
-func (k Keeper) TryDeployingLastCompassContractToAllChains(ctx sdk.Context) {
+func (k Keeper) TryDeployingLastCompassContractToAllChains(ctx context.Context) {
 	smartContract, err := k.GetLastCompassContract(ctx)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting latest smart contract", "err", err)
@@ -143,7 +147,7 @@ func (k Keeper) TryDeployingLastCompassContractToAllChains(ctx sdk.Context) {
 }
 
 func (k Keeper) AddSmartContractExecutionToConsensus(
-	ctx sdk.Context,
+	ctx context.Context,
 	chainReferenceID,
 	turnstoneID string,
 	logicCall *types.SubmitLogicCall,
@@ -173,7 +177,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 		}, nil)
 }
 
-func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) (retErr error) {
+func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) (retErr error) {
 	defer func() {
 		args := []any{
 			"chain-reference-id", chainInfo.GetChainReferenceID(),
@@ -211,7 +215,6 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		"validators-size", len(snapshot.GetValidators()),
 		"total-shares", totalShares,
 	)
-
 	if err != nil {
 		if errors.Is(err, keeperutil.ErrNotFound) {
 			logger.With("error", err).Info("cannot deploy due to no consensus")
@@ -241,7 +244,6 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 		)
 	}
 	uniqueID := generateSmartContractID(ctx)
-
 	k.createSmartContractDeployment(ctx, smartContract, chainInfo, uniqueID[:])
 	lastEventNonce, err := k.Gravity.GetLastObservedEventNonce(ctx)
 	if err != nil {
@@ -280,7 +282,6 @@ func (k Keeper) deploySmartContractToChain(ctx sdk.Context, chainInfo *types.Cha
 	if err != nil {
 		return err
 	}
-
 	_, err = k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
@@ -307,17 +308,17 @@ func (k Keeper) getSmartContract(ctx sdk.Context, id uint64) (*types.SmartContra
 	return keeperutil.Load[*types.SmartContract](k.provideSmartContractStore(ctx), k.cdc, keeperutil.Uint64ToByte(id))
 }
 
-func (k Keeper) createSmartContract(ctx sdk.Context, smartContract *types.SmartContract) error {
+func (k Keeper) createSmartContract(ctx context.Context, smartContract *types.SmartContract) error {
 	return keeperutil.Save(k.provideSmartContractStore(ctx), k.cdc, keeperutil.Uint64ToByte(smartContract.GetId()), smartContract)
 }
 
-func (k Keeper) setAsLastCompassContract(ctx sdk.Context, smartContract *types.SmartContract) error {
+func (k Keeper) setAsLastCompassContract(ctx context.Context, smartContract *types.SmartContract) error {
 	kv := k.provideLastCompassContractStore(ctx)
 	kv.Set(lastSmartContractKey, keeperutil.Uint64ToByte(smartContract.GetId()))
 	return nil
 }
 
-func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContract *types.SmartContract) error {
+func (k Keeper) tryDeployingSmartContractToAllChains(ctx context.Context, smartContract *types.SmartContract) error {
 	var g whoops.Group
 	chainInfos, err := k.GetAllChainInfos(ctx)
 	if err != nil {
@@ -350,7 +351,7 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx sdk.Context, smartContr
 }
 
 func (k Keeper) createSmartContractDeployment(
-	ctx sdk.Context,
+	ctx context.Context,
 	smartContract *types.SmartContract,
 	chainInfo *types.ChainInfo,
 	uniqueID []byte,
@@ -382,13 +383,12 @@ func (k Keeper) createSmartContractDeployment(
 	); err != nil {
 		k.Logger(ctx).Error("error setting smart contract in deployment store", "err", err)
 	}
-
 	k.Logger(ctx).Info("setting smart contract in deployment state", "smart-contract-id", smartContract.GetId(), "chain-reference-id", chainInfo.GetChainReferenceID())
 
 	return item
 }
 
-func (k Keeper) getSmartContractDeploymentByContractID(ctx sdk.Context, smartContractID uint64, chainReferenceID string) (res *types.SmartContractDeployment, key []byte) {
+func (k Keeper) getSmartContractDeploymentByContractID(ctx context.Context, smartContractID uint64, chainReferenceID string) (res *types.SmartContractDeployment, key []byte) {
 	if err := keeperutil.IterAllFnc(
 		k.provideSmartContractDeploymentStore(ctx),
 		k.cdc,
@@ -411,16 +411,19 @@ func (k Keeper) getSmartContractDeploymentByContractID(ctx sdk.Context, smartCon
 	return
 }
 
-func (k Keeper) provideSmartContractDeploymentStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("smart-contract-deployment"))
+func (k Keeper) provideSmartContractDeploymentStore(ctx context.Context) storetypes.KVStore {
+	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(s, []byte("smart-contract-deployment"))
 }
 
-func (k Keeper) provideSmartContractStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("smart-contracts"))
+func (k Keeper) provideSmartContractStore(ctx context.Context) storetypes.KVStore {
+	kvstore := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(kvstore, []byte("smart-contracts"))
 }
 
-func (k Keeper) provideLastCompassContractStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("latest-smart-contract"))
+func (k Keeper) provideLastCompassContractStore(ctx context.Context) storetypes.KVStore {
+	kvstore := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(kvstore, []byte("latest-smart-contract"))
 }
 
 func provideDeploymentCacheBootstrapper(k *Keeper) func(context.Context, *deployment.Cache) {

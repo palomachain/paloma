@@ -3,7 +3,7 @@ package types
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 )
 
@@ -64,7 +64,7 @@ func getAllKeys(t *testing.T) [][]byte {
 	// Claim, InvalidationId
 	dummyBytes := []byte("0xc783df8a850f42e7F7e57013759C285caa701eB6")
 	// InternationalERC20Token
-	dummyErc := InternalERC20Token{Amount: sdk.OneInt(), Contract: dummyEthAddr}
+	dummyErc := InternalERC20Token{Amount: math.OneInt(), Contract: dummyEthAddr}
 
 	// Denom
 	dummyChainReferenceID := "test-chain"

@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -20,8 +21,7 @@ const (
 
 // Params queries the params of the gravity module
 func (k Keeper) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	var params types.Params
-	k.paramSpace.GetParamSet(sdk.UnwrapSDKContext(c), &params)
+	params := k.GetParams(c)
 	return &types.QueryParamsResponse{Params: params}, nil
 }
 
@@ -171,10 +171,11 @@ func (k Keeper) LastEventNonceByAddr(
 	if !found {
 		return nil, errors.Wrap(types.ErrUnknown, "address")
 	}
-	if err := sdk.VerifyAddressFormat(validator.GetOperator()); err != nil {
+	valAddress, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, validator.GetOperator())
+	if err := sdk.VerifyAddressFormat(valAddress); err != nil {
 		return nil, errors.Wrap(err, "invalid validator address")
 	}
-	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, validator.GetOperator())
+	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, valAddress)
 	if err != nil {
 		return nil, err
 	}

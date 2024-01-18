@@ -6,7 +6,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
@@ -546,7 +547,7 @@ func TestPickValidatorForMessage(t *testing.T) {
 				snapshot := &valsettypes.Snapshot{
 					Id:          1,
 					Chains:      []string{"test-chain"},
-					TotalShares: sdk.NewInt(75000),
+					TotalShares: sdkmath.NewInt(75000),
 					Validators: []valsettypes.Validator{
 						{
 							Address: sdk.ValAddress("testvalidator1"),
@@ -631,7 +632,7 @@ func TestPickValidatorForMessage(t *testing.T) {
 				snapshot := &valsettypes.Snapshot{
 					Id:          1,
 					Chains:      []string{"test-chain"},
-					TotalShares: sdk.NewInt(75000),
+					TotalShares: sdkmath.NewInt(75000),
 					Validators: []valsettypes.Validator{
 						{
 							Address: sdk.ValAddress("testvalidator1"),
@@ -676,7 +677,7 @@ func TestPickValidatorForMessage(t *testing.T) {
 				snapshot := &valsettypes.Snapshot{
 					Id:          1,
 					Chains:      []string{"test-chain"},
-					TotalShares: sdk.NewInt(75000),
+					TotalShares: sdkmath.NewInt(75000),
 					Validators: []valsettypes.Validator{
 						{
 							Address: sdk.ValAddress("testvalidator1"),

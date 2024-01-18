@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,7 +26,7 @@ func TestOutgoingTxBatchCheckpoint(t *testing.T) {
 				Sender:      "paloma1rxdhpk85wju9z9kqf6m0wq0rkty7gpjhey4wd2",
 				DestAddress: "0xE3cD54d29CBf35648EDcf53D6a344bd4B88DA059",
 				Erc20Token: ERC20Token{
-					Amount:           sdk.NewInt(10000000),
+					Amount:           math.NewInt(10000000),
 					Contract:         "0x28E9e9bfedEd29747FCc33ccA25b4B75f05E434B",
 					ChainReferenceId: "bnb-main",
 				},

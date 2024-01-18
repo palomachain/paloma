@@ -15,8 +15,9 @@ import (
 )
 
 func (k Keeper) PruneOldMessages(ctx sdk.Context, blocksAgo int64) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	for _, supportedConsensusQueue := range k.registry.slice {
-		opts, err := supportedConsensusQueue.SupportedQueues(ctx)
+		opts, err := supportedConsensusQueue.SupportedQueues(sdkCtx)
 		if err != nil {
 			return err
 		}

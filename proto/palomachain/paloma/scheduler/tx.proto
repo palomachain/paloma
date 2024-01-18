@@ -4,6 +4,7 @@ package palomachain.paloma.scheduler;
 import "palomachain/paloma/scheduler/job.proto";
 import "palomachain/paloma/valset/common.proto";
 import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
 
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
@@ -14,6 +15,7 @@ service Msg {
 }
 
 message MsgCreateJob {
+  option (cosmos.msg.v1.signer) = "metadata";
   string creator = 1 [deprecated = true];
   Job    job     = 2;
   palomachain.paloma.valset.MsgMetadata metadata = 3 [(gogoproto.nullable) = false];
@@ -22,6 +24,7 @@ message MsgCreateJob {
 message MsgCreateJobResponse {}
 
 message MsgExecuteJob {
+  option (cosmos.msg.v1.signer) = "metadata";
   string creator = 1 [deprecated = true];
   string jobID   = 2;
   bytes  payload = 3;

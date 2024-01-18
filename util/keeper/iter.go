@@ -3,11 +3,11 @@ package keeper
 import (
 	"reflect"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/gogoproto/proto"
 )
 
-func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu ProtoUnmarshaler) ([][]byte, []T, error) {
+func IterAll[T proto.Message](store storetypes.KVStore, pu ProtoUnmarshaler) ([][]byte, []T, error) {
 	res := []T{}
 	keys := [][]byte{}
 	err := IterAllFnc(store, pu, func(key []byte, val T) bool {
@@ -21,7 +21,7 @@ func IterAll[T codec.ProtoMarshaler](store sdk.KVStore, pu ProtoUnmarshaler) ([]
 	return keys, res, nil
 }
 
-func IterAllRaw(store sdk.KVStore, pu ProtoUnmarshaler) (keys [][]byte, values [][]byte, _err error) {
+func IterAllRaw(store storetypes.KVStore, pu ProtoUnmarshaler) (keys [][]byte, values [][]byte, _err error) {
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
@@ -31,7 +31,7 @@ func IterAllRaw(store sdk.KVStore, pu ProtoUnmarshaler) (keys [][]byte, values [
 	return
 }
 
-func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu ProtoUnmarshaler, fnc func([]byte, T) bool) error {
+func IterAllFnc[T proto.Message](store storetypes.KVStore, pu ProtoUnmarshaler, fnc func([]byte, T) bool) error {
 	res := []T{}
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
