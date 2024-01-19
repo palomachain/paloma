@@ -1,0 +1,12 @@
+syntax = "proto3";
+package palomachain.paloma.metrix;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/metrix/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+  
+}

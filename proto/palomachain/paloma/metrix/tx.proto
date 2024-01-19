@@ -1,0 +1,10 @@
+syntax = "proto3";
+package palomachain.paloma.metrix;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/metrix/types";
+
+service Msg {
+}
+
