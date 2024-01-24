@@ -88,7 +88,10 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 	}
 
 	// withdraw all delegator rewards
-	dels, _ := app.StakingKeeper.GetAllDelegations(ctx)
+	dels, err := app.StakingKeeper.GetAllDelegations(ctx)
+	if err != nil {
+		panic(err)
+	}
 	for _, delegation := range dels {
 		_, err := app.DistrKeeper.WithdrawDelegationRewards(ctx, sdk.AccAddress(delegation.GetDelegatorAddr()), sdk.ValAddress(delegation.GetValidatorAddr()))
 		if err != nil {
@@ -109,8 +112,14 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 	// reinitialize all validators
 	err = app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
 		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
-		scraps, _ := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, sdk.ValAddress(val.GetOperator()))
-		feePool, _ := app.DistrKeeper.FeePool.Get(ctx)
+		scraps, err := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, sdk.ValAddress(val.GetOperator()))
+		if err != nil {
+			panic(err)
+		}
+		feePool, err := app.DistrKeeper.FeePool.Get(ctx)
+		if err != nil {
+			panic(err)
+		}
 		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
 		err = app.DistrKeeper.FeePool.Set(ctx, feePool)
 		if err != nil {
