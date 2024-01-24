@@ -537,20 +537,20 @@ func TestGracePeriodCoverage(t *testing.T) {
 		for i := cJailingGracePeriodBlockHeight; i >= 0; i-- {
 			val := sdk.ValAddress("validator")
 			bh := sdk.Uint64ToBigEndian(uint64(sdkCtx.BlockHeight() - int64(i)))
-			k.gracePeriodStore(ctx).Set(val, bh)
-			require.True(t, k.isValidatorInGracePeriod(ctx, val))
+			k.gracePeriodStore(sdkCtx).Set(val, bh)
+			require.True(t, k.isValidatorInGracePeriod(sdkCtx, val))
 		}
 	})
 
 	t.Run("with unjailed validator no longer covered by grace period", func(t *testing.T) {
 		val := sdk.ValAddress("validator")
 		bh := sdk.Uint64ToBigEndian(uint64(sdkCtx.BlockHeight() - cJailingGracePeriodBlockHeight - 1))
-		k.gracePeriodStore(ctx).Set(val, bh)
-		require.False(t, k.isValidatorInGracePeriod(ctx, val), "bh = %d", bh)
+		k.gracePeriodStore(sdkCtx).Set(val, bh)
+		require.False(t, k.isValidatorInGracePeriod(sdkCtx, val), "bh = %d", bh)
 	})
 
 	t.Run("with not present in grace period store", func(t *testing.T) {
 		val := sdk.ValAddress("validator-bonded")
-		require.False(t, k.isValidatorInGracePeriod(ctx, val))
+		require.False(t, k.isValidatorInGracePeriod(sdkCtx, val))
 	})
 }
