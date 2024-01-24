@@ -531,14 +531,14 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 func TestGracePeriodCoverage(t *testing.T) {
 	k, _, ctx := newValsetKeeper(t)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	ctx = sdkCtx.WithBlockHeight(100)
+	sdkCtx = sdkCtx.WithBlockHeight(100)
 
 	t.Run("with unjailed validator covered by grace period", func(t *testing.T) {
 		for i := cJailingGracePeriodBlockHeight; i >= 0; i-- {
 			val := sdk.ValAddress("validator")
 			bh := sdk.Uint64ToBigEndian(uint64(sdkCtx.BlockHeight() - int64(i)))
 			k.gracePeriodStore(ctx).Set(val, bh)
-			require.False(t, k.isValidatorInGracePeriod(ctx, val)) // require.TRUE Before, but sdkCtx.BlockHeight()-int64(sdk.BigEndianToUint64(bytes)) is always > 100
+			require.True(t, k.isValidatorInGracePeriod(ctx, val))
 		}
 	})
 
