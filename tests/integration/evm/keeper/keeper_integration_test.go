@@ -42,7 +42,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	chainType, chainReferenceID := consensustypes.ChainTypeEVM, "eth-main"
 	t1 := GinkgoT()
 	f := initFixture(t1)
-	ctx := f.ctx
+	ctx := f.ctx.WithBlockHeight(5)
 
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "eth-main",
@@ -456,7 +456,7 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 	t1 := GinkgoT()
 	f := initFixture(t1)
-	ctx := f.ctx.WithHeaderInfo(header.Info{Height: 5})
+	ctx := f.ctx.WithBlockHeight(5)
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
@@ -475,7 +475,7 @@ func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 func TestAddingSupportForNewChain(t *testing.T) {
 	t1 := GinkgoT()
 	f := initFixture(t1)
-	ctx := f.ctx.WithHeaderInfo(header.Info{Height: 5})
+	ctx := f.ctx.WithBlockHeight(5)
 
 	t.Run("with happy path there are no errors", func(t *testing.T) {
 		newChain := &types.AddChainProposal{
@@ -694,7 +694,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t1 := GinkgoT()
 			f = initFixture(t1)
-			ctx := f.ctx.WithHeaderInfo(header.Info{Height: 5})
+			ctx := f.ctx.WithBlockHeight(5)
 
 			validatorAddress := tt.setup(ctx, f)
 
