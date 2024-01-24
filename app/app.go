@@ -564,8 +564,10 @@ func New(
 	)
 	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 		&app.EvmKeeper,
+		&app.metrixKeeper,
 	}
 	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
+	app.EvmKeeper.AddMessageConsensusAttestedListener(&app.metrixKeeper)
 
 	app.GravityKeeper = gravitymodulekeeper.NewKeeper(
 		appCodec,

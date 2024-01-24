@@ -35,6 +35,7 @@ type SlashingKeeper interface {
 	JailUntil(sdk.Context, sdk.ConsAddress, time.Time)
 }
 
+// TODO: Move this to metrix module to reduce dependencies
 type OnSnapshotBuiltListener interface {
 	OnSnapshotBuilt(sdk.Context, *Snapshot)
 }

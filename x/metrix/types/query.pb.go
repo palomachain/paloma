@@ -10,7 +10,9 @@ import (
 	math "math"
 	math_bits "math/bits"
 
+	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/query"
+	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
@@ -125,9 +127,112 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
+// QueryValidatorRequest is the request type for the Query/Validator RPC method.
+type QueryValidatorRequest struct {
+	// cons_address holds the consensus address of the validator you want to query for.
+	ConsAddress string `protobuf:"bytes,1,opt,name=cons_address,json=consAddress,proto3" json:"cons_address,omitempty"`
+}
+
+func (m *QueryValidatorRequest) Reset()         { *m = QueryValidatorRequest{} }
+func (m *QueryValidatorRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryValidatorRequest) ProtoMessage()    {}
+func (*QueryValidatorRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_3c46127e87024275, []int{2}
+}
+
+func (m *QueryValidatorRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *QueryValidatorRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryValidatorRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *QueryValidatorRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryValidatorRequest.Merge(m, src)
+}
+
+func (m *QueryValidatorRequest) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *QueryValidatorRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryValidatorRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryValidatorRequest proto.InternalMessageInfo
+
+func (m *QueryValidatorRequest) GetConsAddress() string {
+	if m != nil {
+		return m.ConsAddress
+	}
+	return ""
+}
+
+type QueryValidatorResponse struct {
+	// validator_metrics holds the collected metrics info of requested val cons address
+	ValMetrics ValidatorMetrics `protobuf:"bytes,1,opt,name=val_metrics,json=valMetrics,proto3" json:"val_metrics"`
+}
+
+func (m *QueryValidatorResponse) Reset()         { *m = QueryValidatorResponse{} }
+func (m *QueryValidatorResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryValidatorResponse) ProtoMessage()    {}
+func (*QueryValidatorResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_3c46127e87024275, []int{3}
+}
+
+func (m *QueryValidatorResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *QueryValidatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryValidatorResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *QueryValidatorResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryValidatorResponse.Merge(m, src)
+}
+
+func (m *QueryValidatorResponse) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *QueryValidatorResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryValidatorResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryValidatorResponse proto.InternalMessageInfo
+
+func (m *QueryValidatorResponse) GetValMetrics() ValidatorMetrics {
+	if m != nil {
+		return m.ValMetrics
+	}
+	return ValidatorMetrics{}
+}
+
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "palomachain.paloma.metrix.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "palomachain.paloma.metrix.QueryParamsResponse")
+	proto.RegisterType((*QueryValidatorRequest)(nil), "palomachain.paloma.metrix.QueryValidatorRequest")
+	proto.RegisterType((*QueryValidatorResponse)(nil), "palomachain.paloma.metrix.QueryValidatorResponse")
 }
 
 func init() {
@@ -135,27 +240,36 @@ func init() {
 }
 
 var fileDescriptor_3c46127e87024275 = []byte{
-	// 306 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x90, 0xb1, 0x4e, 0xeb, 0x30,
-	0x14, 0x86, 0xe3, 0xab, 0x4b, 0x07, 0xb3, 0x99, 0x0e, 0x50, 0x21, 0x43, 0x8b, 0x40, 0x80, 0xc0,
-	0x56, 0xcb, 0x03, 0x20, 0x75, 0x60, 0x86, 0x0e, 0x0c, 0x6c, 0x4e, 0x64, 0xb9, 0x96, 0x1a, 0x1f,
-	0x37, 0x76, 0x50, 0xbb, 0xf2, 0x04, 0x08, 0x56, 0x1e, 0xa8, 0x63, 0x25, 0x16, 0x26, 0x84, 0x12,
-	0x1e, 0x04, 0x35, 0x0e, 0x12, 0x08, 0x0a, 0x6c, 0x47, 0x27, 0xdf, 0xff, 0xe5, 0xf7, 0xc1, 0xbb,
-	0x56, 0x8c, 0x20, 0x15, 0xc9, 0x50, 0x68, 0xc3, 0xc3, 0xcc, 0x53, 0xe9, 0x33, 0x3d, 0xe1, 0xe3,
-	0x5c, 0x66, 0x53, 0x66, 0x33, 0xf0, 0x40, 0x36, 0x3e, 0x60, 0x2c, 0xcc, 0x2c, 0x60, 0xad, 0xa6,
-	0x02, 0x05, 0x15, 0xc5, 0x17, 0x53, 0x08, 0xb4, 0x36, 0x15, 0x80, 0x1a, 0x49, 0x2e, 0xac, 0xe6,
-	0xc2, 0x18, 0xf0, 0xc2, 0x6b, 0x30, 0xae, 0xfe, 0x7a, 0x98, 0x80, 0x4b, 0xc1, 0xf1, 0x58, 0x38,
-	0x19, 0xfe, 0xc3, 0xaf, 0xbb, 0xb1, 0xf4, 0xa2, 0xcb, 0xad, 0x50, 0xda, 0x54, 0x70, 0xcd, 0xee,
-	0x2d, 0x6f, 0x68, 0x45, 0x26, 0xd2, 0xda, 0xd9, 0x69, 0x62, 0x72, 0xb1, 0x30, 0x9d, 0x57, 0xcb,
-	0x81, 0x1c, 0xe7, 0xd2, 0xf9, 0xce, 0x25, 0x5e, 0xfb, 0xb4, 0x75, 0x16, 0x8c, 0x93, 0xe4, 0x14,
-	0x37, 0x42, 0x78, 0x1d, 0x6d, 0xa3, 0xfd, 0xd5, 0x5e, 0x9b, 0x2d, 0x7d, 0x20, 0x0b, 0xd1, 0xfe,
-	0xff, 0xd9, 0xf3, 0x56, 0x34, 0xa8, 0x63, 0xbd, 0x07, 0x84, 0x57, 0x2a, 0x31, 0xb9, 0x43, 0xb8,
-	0x11, 0x10, 0x72, 0xfc, 0x83, 0xe5, 0x6b, 0xb7, 0x16, 0xfb, 0x2b, 0x1e, 0x4a, 0x77, 0x0e, 0x6e,
-	0x1e, 0x5f, 0xef, 0xff, 0xed, 0x90, 0x36, 0xff, 0xed, 0x24, 0xfd, 0xb3, 0x59, 0x41, 0xd1, 0xbc,
-	0xa0, 0xe8, 0xa5, 0xa0, 0xe8, 0xb6, 0xa4, 0xd1, 0xbc, 0xa4, 0xd1, 0x53, 0x49, 0xa3, 0xab, 0x23,
-	0xa5, 0xfd, 0x30, 0x8f, 0x59, 0x02, 0xe9, 0x77, 0x9a, 0xc9, 0xbb, 0xc8, 0x4f, 0xad, 0x74, 0x71,
-	0xa3, 0xba, 0xed, 0xc9, 0x5b, 0x00, 0x00, 0x00, 0xff, 0xff, 0xac, 0xea, 0xb7, 0xf5, 0x27, 0x02,
-	0x00, 0x00,
+	// 459 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x52, 0x3f, 0x6f, 0xd3, 0x40,
+	0x14, 0x8f, 0x2b, 0x88, 0x94, 0x0b, 0x0b, 0x47, 0x40, 0x6d, 0x84, 0x0c, 0x35, 0x50, 0x41, 0x69,
+	0x7d, 0xa4, 0x8c, 0x0c, 0x88, 0x0c, 0x6c, 0x48, 0x10, 0x50, 0x91, 0x58, 0xa2, 0x17, 0xe7, 0xe4,
+	0x9e, 0x64, 0xdf, 0x73, 0x7c, 0x97, 0x88, 0xae, 0x7c, 0x02, 0x04, 0x3b, 0x33, 0x23, 0x03, 0x2b,
+	0x7b, 0xc7, 0x0a, 0x16, 0x26, 0x84, 0x12, 0x24, 0xbe, 0x06, 0xf2, 0xbd, 0x4b, 0x05, 0x85, 0xa6,
+	0x61, 0xb1, 0xcf, 0xef, 0x7e, 0xff, 0xde, 0xf3, 0x63, 0x37, 0x0a, 0xc8, 0x30, 0x87, 0x64, 0x0f,
+	0x94, 0x16, 0x74, 0x16, 0xb9, 0xb4, 0xa5, 0x7a, 0x29, 0x46, 0x63, 0x59, 0xee, 0xc7, 0x45, 0x89,
+	0x16, 0xf9, 0xda, 0x6f, 0xb0, 0x98, 0xce, 0x31, 0xc1, 0xda, 0xad, 0x14, 0x53, 0x74, 0x28, 0x51,
+	0x9d, 0x88, 0xd0, 0xbe, 0x9c, 0x22, 0xa6, 0x99, 0x14, 0x50, 0x28, 0x01, 0x5a, 0xa3, 0x05, 0xab,
+	0x50, 0x1b, 0x7f, 0xbb, 0x99, 0xa0, 0xc9, 0xd1, 0x88, 0x01, 0x18, 0x49, 0x3e, 0x62, 0xd2, 0x19,
+	0x48, 0x0b, 0x1d, 0x51, 0x40, 0xaa, 0xb4, 0x03, 0x7b, 0xec, 0x1a, 0x61, 0xfb, 0x64, 0x41, 0x1f,
+	0xfe, 0x6a, 0xe3, 0xe4, 0xf0, 0x05, 0x94, 0x90, 0x2f, 0x81, 0xa3, 0x97, 0xc7, 0x9d, 0x87, 0x5c,
+	0x69, 0x14, 0xee, 0x49, 0xa5, 0xa8, 0xc5, 0xf8, 0x93, 0x2a, 0xdf, 0x63, 0xa7, 0xd7, 0x93, 0xa3,
+	0xb1, 0x34, 0x36, 0xda, 0x65, 0x17, 0xfe, 0xa8, 0x9a, 0x02, 0xb5, 0x91, 0xfc, 0x3e, 0xab, 0x93,
+	0xef, 0x6a, 0x70, 0x35, 0xb8, 0xd9, 0xdc, 0x59, 0x8f, 0x4f, 0x1c, 0x5b, 0x4c, 0xd4, 0xee, 0x99,
+	0x83, 0x6f, 0x57, 0x6a, 0x3d, 0x4f, 0x8b, 0x9e, 0xb1, 0x8b, 0x4e, 0x77, 0x17, 0x32, 0x35, 0x04,
+	0x8b, 0xa5, 0x37, 0xe4, 0xf7, 0xd8, 0xb9, 0x04, 0xb5, 0xe9, 0xc3, 0x70, 0x58, 0x4a, 0x43, 0xfa,
+	0x8d, 0xee, 0xea, 0xe7, 0x8f, 0xdb, 0x2d, 0x3f, 0x91, 0x07, 0x74, 0xf3, 0xd4, 0x96, 0x4a, 0xa7,
+	0xbd, 0x66, 0x85, 0xf6, 0xa5, 0x68, 0xc4, 0x2e, 0x1d, 0x57, 0xf5, 0x81, 0x9f, 0xb3, 0xe6, 0x04,
+	0xb2, 0xbe, 0x8b, 0x94, 0xcc, 0x53, 0xdf, 0x5e, 0x90, 0xfa, 0x48, 0xe2, 0x11, 0x51, 0xba, 0x8d,
+	0x2a, 0xff, 0xfb, 0x9f, 0x1f, 0x36, 0x83, 0x1e, 0x9b, 0x40, 0xe6, 0xcb, 0x3b, 0x9f, 0x56, 0xd8,
+	0x59, 0xe7, 0xc9, 0xdf, 0x04, 0xac, 0x4e, 0xbd, 0xf2, 0xed, 0x05, 0xc2, 0x7f, 0x0f, 0xb9, 0x1d,
+	0x2f, 0x0b, 0xa7, 0x66, 0xa2, 0x5b, 0xaf, 0xbe, 0xfc, 0x78, 0xbb, 0x72, 0x8d, 0xaf, 0x8b, 0xd3,
+	0xd6, 0x82, 0xbf, 0x0b, 0x58, 0xe3, 0xa8, 0x15, 0x7e, 0xe7, 0x34, 0xa3, 0xe3, 0xbf, 0xa3, 0xdd,
+	0xf9, 0x0f, 0x86, 0x4f, 0xb7, 0xe5, 0xd2, 0x6d, 0xf0, 0xeb, 0x0b, 0xd2, 0x4d, 0xe6, 0xac, 0xee,
+	0xc3, 0x83, 0x69, 0x18, 0x1c, 0x4e, 0xc3, 0xe0, 0xfb, 0x34, 0x0c, 0x5e, 0xcf, 0xc2, 0xda, 0xe1,
+	0x2c, 0xac, 0x7d, 0x9d, 0x85, 0xb5, 0x17, 0x5b, 0xa9, 0xb2, 0x7b, 0xe3, 0x41, 0x9c, 0x60, 0xfe,
+	0x2f, 0xa5, 0xf9, 0x46, 0x0b, 0xbb, 0x5f, 0x48, 0x33, 0xa8, 0xbb, 0x2d, 0xbe, 0xfb, 0x2b, 0x00,
+	0x00, 0xff, 0xff, 0xb9, 0x69, 0xcb, 0x8b, 0xe7, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -174,6 +288,8 @@ const _ = grpc.SupportPackageIsVersion4
 type QueryClient interface {
 	// Parameters queries the parameters of the module.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
+	// Validator queries the metrics of a validator participating in consensus.
+	Validator(ctx context.Context, in *QueryValidatorRequest, opts ...grpc.CallOption) (*QueryValidatorResponse, error)
 }
 
 type queryClient struct {
@@ -193,10 +309,21 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
+func (c *queryClient) Validator(ctx context.Context, in *QueryValidatorRequest, opts ...grpc.CallOption) (*QueryValidatorResponse, error) {
+	out := new(QueryValidatorResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.metrix.Query/Validator", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// Parameters queries the parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
+	// Validator queries the metrics of a validator participating in consensus.
+	Validator(context.Context, *QueryValidatorRequest) (*QueryValidatorResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -204,6 +331,10 @@ type UnimplementedQueryServer struct{}
 
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
+}
+
+func (*UnimplementedQueryServer) Validator(ctx context.Context, req *QueryValidatorRequest) (*QueryValidatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Validator not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -228,6 +359,24 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_Validator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryValidatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Validator(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/palomachain.paloma.metrix.Query/Validator",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Validator(ctx, req.(*QueryValidatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "palomachain.paloma.metrix.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -235,6 +384,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Params",
 			Handler:    _Query_Params_Handler,
+		},
+		{
+			MethodName: "Validator",
+			Handler:    _Query_Validator_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -297,6 +450,69 @@ func (m *QueryParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryValidatorRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryValidatorRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryValidatorRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ConsAddress) > 0 {
+		i -= len(m.ConsAddress)
+		copy(dAtA[i:], m.ConsAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ConsAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryValidatorResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryValidatorResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryValidatorResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.ValMetrics.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -325,6 +541,30 @@ func (m *QueryParamsResponse) Size() (n int) {
 	var l int
 	_ = l
 	l = m.Params.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryValidatorRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ConsAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryValidatorResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.ValMetrics.Size()
 	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
@@ -447,6 +687,173 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *QueryValidatorRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryValidatorRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryValidatorRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConsAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ConsAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *QueryValidatorResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryValidatorResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryValidatorResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValMetrics", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ValMetrics.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

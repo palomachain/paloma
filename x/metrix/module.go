@@ -18,6 +18,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const cUpdateUptimeBlockInterval = 10
+
 var (
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
@@ -152,5 +154,9 @@ func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {}
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	if ctx.BlockHeight()%cUpdateUptimeBlockInterval == 0 {
+		am.keeper.UpdateUptime(ctx)
+	}
+
 	return []abci.ValidatorUpdate{}
 }

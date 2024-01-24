@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -25,6 +26,7 @@ import (
 	"github.com/palomachain/paloma/x/evm/keeper/deployment"
 	"github.com/palomachain/paloma/x/evm/types"
 	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -105,6 +107,8 @@ type Keeper struct {
 	msgSender       types.MsgSender
 	msgAssigner     types.MsgAssigner
 	deploymentCache *deployment.Cache
+
+	onMessageAttestedListeners []metrixtypes.OnConsensusMessageAttestedListener
 }
 
 func NewKeeper(
@@ -134,12 +138,17 @@ func NewKeeper(
 		msgAssigner: MsgAssigner{
 			valsetKeeper,
 		},
+		onMessageAttestedListeners: make([]metrixtypes.OnConsensusMessageAttestedListener, 0),
 	}
 
 	k.deploymentCache = deployment.NewCache(provideDeploymentCacheBootstrapper(k))
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.provideSmartContractStore), []byte("id-key"))
 
 	return k
+}
+
+func (k *Keeper) AddMessageConsensusAttestedListener(l metrixtypes.OnConsensusMessageAttestedListener) {
+	k.onMessageAttestedListeners = append(k.onMessageAttestedListeners, l)
 }
 
 func (k Keeper) PickValidatorForMessage(ctx sdk.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error) {
@@ -603,7 +612,8 @@ func (m msgSender) SendValsetMsgForChain(ctx sdk.Context, chainInfo *types.Chain
 					Valset: &valset,
 				},
 			},
-			Assignee: assignee,
+			Assignee:              assignee,
+			AssignedAtBlockHeight: math.NewInt(ctx.BlockHeight()),
 		}, nil,
 	)
 	if err != nil {

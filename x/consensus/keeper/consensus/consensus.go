@@ -200,7 +200,7 @@ func (c Queue) AddEvidence(ctx sdk.Context, msgID uint64, evidence *types.Eviden
 
 type assignableMessage interface {
 	proto.Message
-	SetAssignee(val string)
+	SetAssignee(ctx sdk.Context, val string)
 }
 
 func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) error {
@@ -218,7 +218,7 @@ func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) erro
 	if !ok {
 		return fmt.Errorf("message does not support setting assignee")
 	}
-	assignable.SetAssignee(val)
+	assignable.SetAssignee(ctx, val)
 
 	msg := imsg.(*types.QueuedSignedMessage)
 	anyMsg, err := codectypes.NewAnyWithValue(assignable)
