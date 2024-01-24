@@ -43,7 +43,8 @@ var _ = Describe("jailing validators with missing external chain infos", func() 
 		vals = testutil.GenValidators(10, 100)
 
 		for _, val := range vals {
-			f.stakingKeeper.SetValidator(ctx, val)
+			err := f.stakingKeeper.SetValidator(ctx, val)
+			Expect(err).To(BeNil())
 			f.stakingKeeper.SetValidatorByConsAddr(ctx, val)
 		}
 
