@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/palomachain/paloma/x/metrix/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
@@ -18,12 +19,14 @@ type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
 		paramstore paramtypes.Subspace
+		slashing   types.SlashingKeeper
 	}
 )
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	ps paramtypes.Subspace,
+	slashing types.SlashingKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -33,6 +36,7 @@ func NewKeeper(
 	return Keeper{
 		cdc:        cdc,
 		paramstore: ps,
+		slashing:   slashing,
 	}
 }
 
@@ -52,7 +56,11 @@ func (*Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) 
 	// 2. Feature sets
 }
 
-func (*Keeper) UpdateUptime(ctx sdk.Context) {
+func (k *Keeper) UpdateUptime(ctx sdk.Context) {
 	// use slashing keeper
 	// 3. uptime
+
+	k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
+		return false
+	})
 }

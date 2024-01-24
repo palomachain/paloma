@@ -530,7 +530,10 @@ func New(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	app.metrixKeeper = metrixmodulekeeper.NewKeeper(appCodec, app.GetSubspace(metrixmoduletypes.ModuleName))
+	app.metrixKeeper = metrixmodulekeeper.NewKeeper(
+		appCodec,
+		app.GetSubspace(metrixmoduletypes.ModuleName),
+		app.SlashingKeeper)
 
 	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
 		appCodec,
