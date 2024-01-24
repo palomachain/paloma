@@ -456,7 +456,7 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 	t1 := GinkgoT()
 	f := initFixture(t1)
-	ctx := f.ctx.WithBlockHeight(5)
+	ctx := f.ctx.WithHeaderInfo(header.Info{Height: 5})
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
@@ -475,7 +475,7 @@ func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 func TestAddingSupportForNewChain(t *testing.T) {
 	t1 := GinkgoT()
 	f := initFixture(t1)
-	ctx := f.ctx.WithBlockHeight(5)
+	ctx := f.ctx.WithHeaderInfo(header.Info{Height: 5})
 
 	t.Run("with happy path there are no errors", func(t *testing.T) {
 		newChain := &types.AddChainProposal{
@@ -564,7 +564,6 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			})
 			require.NoError(t, err)
 			_, err = f.evmKeeper.GetChainInfo(ctx, "bob")
-			require.NoError(t, err)
 			require.Error(t, keeper.ErrChainNotFound)
 		})
 	})
@@ -695,7 +694,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t1 := GinkgoT()
 			f = initFixture(t1)
-			ctx := f.ctx.WithBlockHeight(5)
+			ctx := f.ctx.WithHeaderInfo(header.Info{Height: 5})
 
 			validatorAddress := tt.setup(ctx, f)
 
@@ -738,7 +737,7 @@ var _ = Describe("evm", func() {
 
 	BeforeEach(func() {
 		a = initFixture(t) // app.NewTestApp(GinkgoT(), false)
-		ctx = a.ctx.WithBlockHeight(5)
+		ctx = a.ctx.WithHeaderInfo(header.Info{Height: 5})
 	})
 
 	Context("multiple chains and smart contracts", func() {
@@ -1170,7 +1169,7 @@ var _ = Describe("change min on chain balance", func() {
 
 	BeforeEach(func() {
 		a = initFixture(t)
-		ctx = a.ctx.WithBlockHeight(5)
+		ctx = a.ctx.WithHeaderInfo(header.Info{Height: 5})
 	})
 
 	When("chain info exists", func() {
@@ -1221,7 +1220,7 @@ var _ = Describe("change relay weights", func() {
 
 	BeforeEach(func() {
 		a = initFixture(t)
-		ctx = a.ctx.WithBlockHeight(5)
+		ctx = a.ctx.WithHeaderInfo(header.Info{Height: 5})
 	})
 
 	When("chain info exists", func() {
