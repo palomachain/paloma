@@ -77,11 +77,13 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		require.NoError(t, err)
 		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, validator.GetOperator())
 		require.NoError(t, err)
+		valAddress, err := f.evmKeeper.AddressCodec.BytesToString(valAddr)
+		require.NoError(t, err)
 		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: newChain.GetChainReferenceID(),
-				Address:          string(valAddr),
+				Address:          valAddress,
 				Pubkey:           pubKey.Bytes(),
 			},
 		})
@@ -191,8 +193,10 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
-		f.stakingKeeper.SetValidator(ctx, val)
+		err := f.stakingKeeper.SetValidator(ctx, val)
+		require.NoError(t, err)
 		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, val.GetOperator())
+		require.NoError(t, err)
 		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
@@ -208,7 +212,7 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 	msgs, err := f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
 	require.NoError(t, err)
 	require.Empty(t, msgs)
-	f.consensusKeeper.PutMessageInQueue(ctx, queue, &types.Message{
+	_, err = f.consensusKeeper.PutMessageInQueue(ctx, queue, &types.Message{
 		TurnstoneID:      "abc",
 		ChainReferenceID: "new-chain",
 		Action: &types.Message_UpdateValset{
@@ -219,6 +223,7 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 			},
 		},
 	}, nil)
+	require.NoError(t, err)
 	_, err = f.valsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
 
@@ -262,6 +267,7 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	for _, val := range validators {
 		f.stakingKeeper.SetValidator(ctx, val)
 		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, val.GetOperator())
+		require.NoError(t, err)
 		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
@@ -300,8 +306,10 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	// Add two validators to make this new snapshot worthy
 	validators = genValidators(2, 25000)
 	for _, val := range validators {
-		f.stakingKeeper.SetValidator(ctx, val)
+		err := f.stakingKeeper.SetValidator(ctx, val)
+		require.NoError(t, err)
 		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, val.GetOperator())
+		require.NoError(t, err)
 		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
@@ -363,8 +371,10 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
-		f.stakingKeeper.SetValidator(ctx, val)
+		err := f.stakingKeeper.SetValidator(ctx, val)
+		require.NoError(t, err)
 		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, val.GetOperator())
+		require.NoError(t, err)
 		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
@@ -406,8 +416,10 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	// Add two validators to make this new snapshot worthy
 	validators = genValidators(2, 25000)
 	for _, val := range validators {
-		f.stakingKeeper.SetValidator(ctx, val)
+		err := f.stakingKeeper.SetValidator(ctx, val)
+		require.NoError(t, err)
 		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, val.GetOperator())
+		require.NoError(t, err)
 		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
@@ -444,7 +456,7 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 	t1 := GinkgoT()
 	f := initFixture(t1)
-	ctx := f.ctx
+	ctx := f.ctx.WithBlockHeight(5)
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
@@ -463,7 +475,7 @@ func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 func TestAddingSupportForNewChain(t *testing.T) {
 	t1 := GinkgoT()
 	f := initFixture(t1)
-	ctx := f.ctx
+	ctx := f.ctx.WithBlockHeight(5)
 
 	t.Run("with happy path there are no errors", func(t *testing.T) {
 		newChain := &types.AddChainProposal{
@@ -552,6 +564,7 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			})
 			require.NoError(t, err)
 			_, err = f.evmKeeper.GetChainInfo(ctx, "bob")
+			require.NoError(t, err)
 			require.Error(t, keeper.ErrChainNotFound)
 		})
 	})
@@ -593,8 +606,8 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 				}
 
 				validator := genValidators(1, 1000)[0]
-				a.stakingKeeper.SetValidator(ctx, validator)
-
+				err := a.stakingKeeper.SetValidator(ctx, validator)
+				require.NoError(t, err)
 				private, err := crypto.GenerateKey()
 				require.NoError(t, err)
 
@@ -611,6 +624,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 					}
 				}
 				operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, validator.GetOperator())
+				require.NoError(t, err)
 				err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, externalChains)
 				require.NoError(t, err)
 
@@ -655,6 +669,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 
 				// Only add support for one of two chains created
 				operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, validator.GetOperator())
+				require.NoError(t, err)
 				err = f.valsetKeeper.AddExternalChainInfo(
 					ctx,
 					operator,
@@ -680,7 +695,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t1 := GinkgoT()
 			f = initFixture(t1)
-			ctx := f.ctx
+			ctx := f.ctx.WithBlockHeight(5)
 
 			validatorAddress := tt.setup(ctx, f)
 
@@ -778,6 +793,7 @@ var _ = Describe("evm", func() {
 			JustBeforeEach(func() {
 				for _, val := range validators {
 					private1, err := crypto.GenerateKey()
+					Expect(err).To(BeNil())
 					private2, err := crypto.GenerateKey()
 					Expect(err).To(BeNil())
 					accAddr1 := crypto.PubkeyToAddress(private1.PublicKey)
