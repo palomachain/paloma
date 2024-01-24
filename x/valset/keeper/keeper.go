@@ -100,12 +100,6 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return sdkCtx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// TODO: not required now
-func (k Keeper) PunishValidator(ctx context.Context) {}
-
-// TODO: not required now
-func (k Keeper) Heartbeat(ctx context.Context) {}
-
 // addExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
 // we can attribute rewards for running the jobs.
 func (k Keeper) AddExternalChainInfo(ctx context.Context, valAddr sdk.ValAddress, newChainInfo []*types.ExternalChainInfo) error {
