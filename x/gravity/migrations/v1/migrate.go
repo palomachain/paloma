@@ -8,6 +8,8 @@ import (
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
+// migrateParams will set the params to store from subspace
+
 func MigrateParams(
 	ctx sdk.Context,
 	storeService store.KVStoreService,

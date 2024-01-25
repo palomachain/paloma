@@ -49,9 +49,9 @@ func NewKeeper(
 		appVersion = fmt.Sprintf("v%s", appVersion)
 	}
 
-	//if !semver.IsValid(appVersion) {
-	//	panic(fmt.Sprintf("provided app version: '%s' it not a valid semver", appVersion))
-	//}
+	if !semver.IsValid(appVersion) {
+		panic(fmt.Sprintf("provided app version: '%s' it not a valid semver", appVersion))
+	}
 
 	return &Keeper{
 		cdc:          cdc,

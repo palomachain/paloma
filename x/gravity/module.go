@@ -24,7 +24,6 @@ import (
 // type check to ensure the interface is properly implemented
 // nolint: exhaustruct
 var (
-	// _ module.AppModule           = AppModule{}
 	_ module.AppModuleBasic      = AppModuleBasic{}
 	_ module.HasServices         = AppModule{}
 	_ module.AppModuleGenesis    = AppModule{}
