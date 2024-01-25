@@ -33,7 +33,6 @@ service Msg {
 // the coin to send across the bridge, note the restriction that this is a
 // single coin not a set of coins that is normal in other Cosmos messages
 message MsgSendToEth {
-  option (cosmos.msg.v1.signer) = "metadata";
 
   string                   sender   = 1 [deprecated = true];
   string                   eth_dest = 2;
@@ -176,7 +175,6 @@ message EventOutgoingTxId {
 }
 
 message MsgUpdateParams {
-  option (cosmos.msg.v1.signer) = "authority";
   // authority is the address that controls the module (defaults to x/gov unless overwritten).
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 

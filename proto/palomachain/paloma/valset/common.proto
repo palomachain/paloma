@@ -11,7 +11,6 @@ option go_package = "github.com/palomachain/paloma/x/valset/types";
 // Getters are implemented manually to avoid use of pointer methods, which breaks
 // interface casting.
 message MsgMetadata {
-  option (cosmos.msg.v1.signer) = "signers";
   option (gogoproto.goproto_getters) = false;
   string creator = 1;
   repeated string signers = 2;

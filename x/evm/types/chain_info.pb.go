@@ -5,12 +5,11 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	_ "github.com/cosmos/gogoproto/gogoproto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -440,11 +439,9 @@ func (*SmartContractDeployment_ERC20Transfer) ProtoMessage()    {}
 func (*SmartContractDeployment_ERC20Transfer) Descriptor() ([]byte, []int) {
 	return fileDescriptor_61bfdb7d30bf7e88, []int{2, 0}
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SmartContractDeployment_ERC20Transfer.Marshal(b, m, deterministic)
@@ -457,15 +454,12 @@ func (m *SmartContractDeployment_ERC20Transfer) XXX_Marshal(b []byte, determinis
 		return b[:n], nil
 	}
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SmartContractDeployment_ERC20Transfer.Merge(m, src)
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) XXX_DiscardUnknown() {
 	xxx_messageInfo_SmartContractDeployment_ERC20Transfer.DiscardUnknown(m)
 }
@@ -1794,7 +1788,6 @@ func (m *SmartContractDeployment) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
