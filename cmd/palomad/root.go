@@ -120,7 +120,9 @@ func NewRootCmd() *cobra.Command {
 		}
 	}
 
+	// add keyring to autocli opts
 	autoCliOpts := tempApp.AutoCliOpts()
+	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
 	autoCliOpts.Keyring, _ = keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
 	autoCliOpts.ClientCtx = initClientCtx
 	autoCliOpts.AddressCodec = address.Bech32Codec{
