@@ -94,7 +94,7 @@ func NewInterfaceRegistry(addrPrefix string, valAddrPrefix string) (types.Interf
 		SigningOptions: signing.Options{
 			AddressCodec:          addresscodec.NewBech32Codec(addrPrefix),
 			ValidatorAddressCodec: addresscodec.NewBech32Codec(valAddrPrefix),
-			CustomGetSigners:      map[protoreflect.FullName]signing.GetSignersFunc(messages),
+			CustomGetSigners:      messages,
 		},
 	})
 }
