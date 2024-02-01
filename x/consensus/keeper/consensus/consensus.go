@@ -244,7 +244,7 @@ func (c Queue) SetPublicAccessData(ctx sdk.Context, msgID uint64, data *types.Pu
 	}
 
 	msg.SetPublicAccessData(data)
-	msg.SetHandledAtBlockHeight(math.NewIntFromUint64(msgID))
+	msg.SetHandledAtBlockHeight(math.NewInt(ctx.BlockHeight()))
 
 	return c.save(ctx, msg)
 }
@@ -269,7 +269,7 @@ func (c Queue) SetErrorData(ctx sdk.Context, msgID uint64, data *types.ErrorData
 	}
 
 	msg.SetErrorData(data)
-	msg.SetHandledAtBlockHeight(math.NewIntFromUint64(msgID))
+	msg.SetHandledAtBlockHeight(math.NewInt(ctx.BlockHeight()))
 
 	return c.save(ctx, msg)
 }

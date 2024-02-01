@@ -378,8 +378,8 @@ func (k Keeper) tryUpdateRecord(ctx sdk.Context, valAddr sdk.ValAddress, patch r
 	if record == nil {
 		record = &types.ValidatorMetrics{
 			ValAddress:    valAddr.String(),
-			Uptime:        math.LegacyZeroDec(),
-			SuccessRate:   math.LegacyZeroDec(),
+			Uptime:        palomath.LegacyDecFromFloat64(1.0),
+			SuccessRate:   palomath.LegacyDecFromFloat64(0.5),
 			ExecutionTime: math.ZeroInt(),
 			Fee:           math.ZeroInt(),
 			FeatureSet:    math.LegacyZeroDec(),
