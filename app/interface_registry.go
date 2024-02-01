@@ -3,9 +3,8 @@ package app
 import (
 	"fmt"
 
-	"cosmossdk.io/x/tx/signing"
-
 	"cosmossdk.io/core/address"
+	"cosmossdk.io/x/tx/signing"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	gogoproto "github.com/cosmos/gogoproto/proto"
@@ -27,7 +26,7 @@ func init() {
 	}
 }
 
-//getCustomMsgSignerFn returns CustomSigners
+// getCustomMsgSignerFn returns CustomSigners
 func getCustomMsgSignerFn(a address.Codec, path []string) func(msg golangproto.Message) ([][]byte, error) {
 	if len(path) == 0 {
 		panic("path is expected to contain at least one value.")
