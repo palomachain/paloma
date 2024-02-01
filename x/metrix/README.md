@@ -20,7 +20,7 @@ ator node attributed with the relayer.
 It is updated once per block, and calculated by evaluating the nodes `missed
 blocks` during the `signed blocks window` using the following formula:
 
-`((params.signed_blocks_window - signingInfo.missed_blocks_counter /
+`((params.signed_blocks_window - signingInfo.missed_blocks_counter) /
 params.signed_blocks_window) * 100`
 
 ### SuccessRate

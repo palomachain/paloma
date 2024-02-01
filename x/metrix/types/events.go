@@ -13,7 +13,7 @@ type OnConsensusMessageAttestedListener interface {
 
 type MessageAttestedEvent struct {
 	AssignedAtBlockHeight  math.Int
-	AttestedAtBlockHeight  math.Int
+	HandledAtBlockHeight   math.Int
 	Assignee               sdk.ValAddress
 	MessageID              uint64
 	WasRelayedSuccessfully bool

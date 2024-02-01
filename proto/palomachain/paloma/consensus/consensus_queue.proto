@@ -2,6 +2,8 @@ syntax = "proto3";
 import "google/protobuf/any.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
+import "cosmos_proto/cosmos.proto";
+import "amino/amino.proto";
 
 package palomachain.paloma.consensus;
 
@@ -22,6 +24,15 @@ message QueuedSignedMessage {
   PublicAccessData    publicAccessData  = 8;
   bool                requireSignatures = 9;
   ErrorData           errorData         = 10;
+
+  // block height at which the message was assinged to the
+  // current relayer. Updated when message is reassigned.
+  string handled_at_block_height   = 11 [
+    (cosmos_proto.scalar)  = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (amino.dont_omitempty) = true,
+    (gogoproto.nullable)   = true
+  ];
 }
 
 message BatchOfConsensusMessages {

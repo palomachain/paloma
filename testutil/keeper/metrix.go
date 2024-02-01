@@ -38,7 +38,9 @@ func MetrixKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	)
 	k := keeper.NewKeeper(
 		cdc,
+		storeKey,
 		paramsSubspace,
+		nil,
 		nil,
 	)
 

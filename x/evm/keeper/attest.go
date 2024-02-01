@@ -113,7 +113,11 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			}
 		}
 
-		publishMessageAttestedEvent(ctx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, success)
+		handledAt := msg.GetHandledAtBlockHeight()
+		if handledAt == nil {
+			handledAt = func(i math.Int) *math.Int { return &i }(sdk.NewInt(ctx.BlockHeight()))
+		}
+		publishMessageAttestedEvent(ctx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
 
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
@@ -144,7 +148,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	return nil
 }
 
-func publishMessageAttestedEvent(ctx sdk.Context, k *Keeper, msgID uint64, assignee string, assignedAt math.Int, successful bool) {
+func publishMessageAttestedEvent(ctx sdk.Context, k *Keeper, msgID uint64, assignee string, assignedAt math.Int, handledAt math.Int, successful bool) {
 	valAddr, err := sdk.ValAddressFromBech32(assignee)
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields("assignee", assignee, "msg-id", msgID).Error("failed to get validator address from bech32.")
@@ -153,7 +157,7 @@ func publishMessageAttestedEvent(ctx sdk.Context, k *Keeper, msgID uint64, assig
 	for _, v := range k.onMessageAttestedListeners {
 		v.OnConsensusMessageAttested(ctx, metrixtypes.MessageAttestedEvent{
 			AssignedAtBlockHeight:  assignedAt,
-			AttestedAtBlockHeight:  sdk.NewInt(ctx.BlockHeight()),
+			HandledAtBlockHeight:   handledAt,
 			Assignee:               valAddr,
 			MessageID:              msgID,
 			WasRelayedSuccessfully: successful,

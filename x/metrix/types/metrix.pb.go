@@ -35,7 +35,8 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // ValidatorMetrics defines a validator's collected metrics to be
 // used during relayer selection.
 type ValidatorMetrics struct {
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	// Validator address of a validator participating in consensus.
+	ValAddress string `protobuf:"bytes,1,opt,name=val_address,json=valAddress,proto3" json:"val_address,omitempty"`
 	// Percentage of validator uptime within the signed blocks window.
 	// Higher is better ([0,1]).
 	Uptime cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=uptime,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"uptime"`
@@ -92,15 +93,144 @@ func (m *ValidatorMetrics) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ValidatorMetrics proto.InternalMessageInfo
 
-func (m *ValidatorMetrics) GetAddress() string {
+func (m *ValidatorMetrics) GetValAddress() string {
 	if m != nil {
-		return m.Address
+		return m.ValAddress
 	}
 	return ""
 }
 
+type ValidatorHistory struct {
+	// validator address of a validator participating in consensus.
+	ValAddress string `protobuf:"bytes,1,opt,name=val_address,json=valAddress,proto3" json:"val_address,omitempty"`
+	// records contain records of the last `n` messages relayed by
+	// the validator.
+	// Records older than `n` are discared and no longer affect
+	// performance scoring.
+	Records []HistoricRelayData `protobuf:"bytes,2,rep,name=records,proto3" json:"records"`
+}
+
+func (m *ValidatorHistory) Reset()         { *m = ValidatorHistory{} }
+func (m *ValidatorHistory) String() string { return proto.CompactTextString(m) }
+func (*ValidatorHistory) ProtoMessage()    {}
+func (*ValidatorHistory) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb382b6ba8ce0e33, []int{1}
+}
+
+func (m *ValidatorHistory) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *ValidatorHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ValidatorHistory.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *ValidatorHistory) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ValidatorHistory.Merge(m, src)
+}
+
+func (m *ValidatorHistory) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *ValidatorHistory) XXX_DiscardUnknown() {
+	xxx_messageInfo_ValidatorHistory.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ValidatorHistory proto.InternalMessageInfo
+
+func (m *ValidatorHistory) GetValAddress() string {
+	if m != nil {
+		return m.ValAddress
+	}
+	return ""
+}
+
+func (m *ValidatorHistory) GetRecords() []HistoricRelayData {
+	if m != nil {
+		return m.Records
+	}
+	return nil
+}
+
+type HistoricRelayData struct {
+	MessageId              uint64 `protobuf:"varint,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	Success                bool   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
+	ExecutionSpeedInBlocks uint64 `protobuf:"varint,3,opt,name=execution_speed_in_blocks,json=executionSpeedInBlocks,proto3" json:"execution_speed_in_blocks,omitempty"`
+}
+
+func (m *HistoricRelayData) Reset()         { *m = HistoricRelayData{} }
+func (m *HistoricRelayData) String() string { return proto.CompactTextString(m) }
+func (*HistoricRelayData) ProtoMessage()    {}
+func (*HistoricRelayData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb382b6ba8ce0e33, []int{2}
+}
+
+func (m *HistoricRelayData) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *HistoricRelayData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_HistoricRelayData.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *HistoricRelayData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HistoricRelayData.Merge(m, src)
+}
+
+func (m *HistoricRelayData) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *HistoricRelayData) XXX_DiscardUnknown() {
+	xxx_messageInfo_HistoricRelayData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HistoricRelayData proto.InternalMessageInfo
+
+func (m *HistoricRelayData) GetMessageId() uint64 {
+	if m != nil {
+		return m.MessageId
+	}
+	return 0
+}
+
+func (m *HistoricRelayData) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
+}
+
+func (m *HistoricRelayData) GetExecutionSpeedInBlocks() uint64 {
+	if m != nil {
+		return m.ExecutionSpeedInBlocks
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*ValidatorMetrics)(nil), "palomachain.paloma.metrix.ValidatorMetrics")
+	proto.RegisterType((*ValidatorHistory)(nil), "palomachain.paloma.metrix.ValidatorHistory")
+	proto.RegisterType((*HistoricRelayData)(nil), "palomachain.paloma.metrix.HistoricRelayData")
 }
 
 func init() {
@@ -108,36 +238,44 @@ func init() {
 }
 
 var fileDescriptor_bb382b6ba8ce0e33 = []byte{
-	// 449 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x93, 0x31, 0x6b, 0x14, 0x41,
-	0x14, 0xc7, 0x6f, 0x3d, 0x3d, 0x75, 0xa2, 0xa2, 0x4b, 0x84, 0x4d, 0x94, 0x3d, 0xb1, 0x10, 0x09,
-	0x66, 0xc7, 0x28, 0x58, 0xd8, 0x79, 0x04, 0x21, 0xa0, 0x16, 0x17, 0x31, 0x68, 0x73, 0xbc, 0x9b,
-	0x7d, 0xd9, 0x1b, 0xbc, 0x99, 0x59, 0x67, 0xde, 0x4a, 0xee, 0x5b, 0x58, 0x5a, 0xa6, 0xb4, 0xb4,
-	0xc8, 0x87, 0x48, 0x19, 0x52, 0x89, 0x45, 0x90, 0xbb, 0x42, 0x5b, 0xbf, 0x81, 0xec, 0xce, 0x9c,
-	0x04, 0x14, 0x0b, 0xaf, 0xd9, 0x7d, 0xbb, 0xef, 0xf7, 0xff, 0xcd, 0xdb, 0x65, 0x86, 0xdd, 0x29,
-	0x61, 0x6c, 0x14, 0x88, 0x11, 0x48, 0xcd, 0x7d, 0xcd, 0x15, 0x92, 0x95, 0x7b, 0xe1, 0x96, 0x95,
-	0xd6, 0x90, 0x89, 0x57, 0x4e, 0x71, 0x99, 0xaf, 0x33, 0x0f, 0xac, 0x2e, 0x17, 0xa6, 0x30, 0x0d,
-	0xc5, 0xeb, 0xca, 0x07, 0x56, 0x6f, 0x16, 0xc6, 0x14, 0x63, 0xe4, 0x50, 0x4a, 0x0e, 0x5a, 0x1b,
-	0x02, 0x92, 0x46, 0xbb, 0xd0, 0x5d, 0x13, 0xc6, 0x29, 0xe3, 0xf8, 0x10, 0x1c, 0xf2, 0x77, 0x15,
-	0xda, 0x09, 0x7f, 0xbf, 0x31, 0x44, 0x82, 0x0d, 0x5e, 0x42, 0x21, 0x75, 0x03, 0x07, 0x76, 0xc5,
-	0xb3, 0x03, 0xbf, 0x84, 0x7f, 0x08, 0xad, 0x7f, 0x4c, 0x5f, 0x82, 0x05, 0x35, 0xe7, 0xae, 0x81,
-	0x92, 0xda, 0xf0, 0xe6, 0xea, 0x5f, 0xdd, 0xfe, 0xd9, 0x66, 0x57, 0x5f, 0xc1, 0x58, 0xe6, 0x40,
-	0xc6, 0x3e, 0xaf, 0x33, 0xc2, 0xc5, 0x0f, 0xd8, 0x79, 0xc8, 0x73, 0x8b, 0xce, 0x25, 0xd1, 0xad,
-	0xe8, 0xee, 0xc5, 0x5e, 0x72, 0x7c, 0xb0, 0xbe, 0x1c, 0x96, 0x7c, 0xe2, 0x3b, 0xdb, 0x64, 0xa5,
-	0x2e, 0xfa, 0x73, 0x30, 0x7e, 0xc1, 0x3a, 0x55, 0x49, 0x52, 0x61, 0x72, 0xa6, 0x89, 0x3c, 0x3a,
-	0x3c, 0xe9, 0xb6, 0xbe, 0x9e, 0x74, 0x6f, 0xf8, 0x98, 0xcb, 0xdf, 0x66, 0xd2, 0x70, 0x05, 0x34,
-	0xca, 0x9e, 0x61, 0x01, 0x62, 0xb2, 0x89, 0xe2, 0xf8, 0x60, 0x9d, 0x05, 0xeb, 0x26, 0x8a, 0x4f,
-	0xdf, 0x3f, 0xaf, 0x45, 0xfd, 0x60, 0x89, 0x5f, 0xb3, 0x4b, 0xae, 0x12, 0x02, 0x9d, 0x1b, 0x58,
-	0x20, 0x4c, 0xda, 0x0b, 0x59, 0x97, 0x82, 0xab, 0x0f, 0x84, 0xf1, 0x0e, 0xbb, 0x82, 0x7b, 0x28,
-	0xaa, 0xfa, 0xe7, 0x0e, 0x9a, 0x91, 0xcf, 0x36, 0xf2, 0xfb, 0x41, 0x7e, 0xfd, 0x4f, 0xf9, 0x96,
-	0xa6, 0x53, 0xda, 0x2d, 0x4d, 0x5e, 0x7b, 0xf9, 0xb7, 0xe7, 0x65, 0x3d, 0x73, 0x8f, 0xb5, 0x77,
-	0x11, 0x93, 0x73, 0xff, 0x69, 0xab, 0xc3, 0xf1, 0x0e, 0x5b, 0xda, 0x45, 0xa0, 0xca, 0xe2, 0xc0,
-	0x21, 0x25, 0x9d, 0x85, 0x3e, 0x9b, 0x05, 0xd5, 0x36, 0xd2, 0xe3, 0x0b, 0x1f, 0xf7, 0xbb, 0xd1,
-	0x8f, 0xfd, 0x6e, 0xd4, 0x7b, 0x7a, 0x38, 0x4d, 0xa3, 0xa3, 0x69, 0x1a, 0x7d, 0x9b, 0xa6, 0xd1,
-	0x87, 0x59, 0xda, 0x3a, 0x9a, 0xa5, 0xad, 0x2f, 0xb3, 0xb4, 0xf5, 0xe6, 0x5e, 0x21, 0x69, 0x54,
-	0x0d, 0x33, 0x61, 0x14, 0xff, 0xcb, 0x9e, 0x9a, 0x1f, 0x06, 0x4e, 0x93, 0x12, 0xdd, 0xb0, 0xd3,
-	0x6c, 0xa1, 0x87, 0xbf, 0x02, 0x00, 0x00, 0xff, 0xff, 0x98, 0xdb, 0xdc, 0x4d, 0x3d, 0x03, 0x00,
-	0x00,
+	// 582 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x94, 0xcf, 0x4f, 0x14, 0x31,
+	0x14, 0xc7, 0x77, 0xd8, 0x95, 0x1f, 0x5d, 0x35, 0x32, 0x41, 0x33, 0xa0, 0xee, 0x12, 0x0e, 0x86,
+	0x10, 0x98, 0x8a, 0x26, 0x26, 0x70, 0x73, 0x43, 0x8c, 0x9b, 0xa8, 0x89, 0x83, 0x91, 0xe8, 0x65,
+	0xf2, 0xb6, 0xf3, 0x18, 0x1a, 0x66, 0xa6, 0x63, 0xdb, 0x21, 0xec, 0x7f, 0xa1, 0x37, 0x8f, 0x9c,
+	0x8c, 0x47, 0x0f, 0xfc, 0x11, 0x1c, 0x09, 0x27, 0xe3, 0x81, 0x18, 0x38, 0xe8, 0x9f, 0xe0, 0xd1,
+	0xcc, 0xb4, 0x0b, 0x24, 0xa8, 0x07, 0xf7, 0xb2, 0xdb, 0xf6, 0x7d, 0xdf, 0xa7, 0xdf, 0xf6, 0xf5,
+	0x0d, 0xb9, 0x97, 0x43, 0x22, 0x52, 0x60, 0x5b, 0xc0, 0x33, 0x6a, 0xc6, 0x34, 0x45, 0x2d, 0xf9,
+	0xae, 0xfd, 0xf3, 0x73, 0x29, 0xb4, 0x70, 0xa7, 0x2f, 0xe8, 0x7c, 0x33, 0xf6, 0x8d, 0x60, 0x66,
+	0x2a, 0x16, 0xb1, 0xa8, 0x54, 0xb4, 0x1c, 0x99, 0x84, 0x99, 0x3b, 0xb1, 0x10, 0x71, 0x82, 0x14,
+	0x72, 0x4e, 0x21, 0xcb, 0x84, 0x06, 0xcd, 0x45, 0xa6, 0x6c, 0x74, 0x81, 0x09, 0x95, 0x0a, 0x45,
+	0x7b, 0xa0, 0x90, 0xbe, 0x2b, 0x50, 0xf6, 0xe9, 0xce, 0x72, 0x0f, 0x35, 0x2c, 0xd3, 0x1c, 0x62,
+	0x9e, 0x55, 0x62, 0xab, 0x9d, 0x36, 0xda, 0xd0, 0x6c, 0x61, 0x26, 0x36, 0xf4, 0x0f, 0xf7, 0x39,
+	0x48, 0x48, 0x07, 0xba, 0x49, 0x48, 0x79, 0x26, 0x68, 0xf5, 0x6b, 0x96, 0xe6, 0x7e, 0xd5, 0xc9,
+	0x8d, 0xd7, 0x90, 0xf0, 0x08, 0xb4, 0x90, 0xcf, 0xcb, 0x1c, 0xa6, 0xdc, 0x15, 0xd2, 0xdc, 0x81,
+	0x24, 0x84, 0x28, 0x92, 0xa8, 0x94, 0xe7, 0xcc, 0x3a, 0xf3, 0x13, 0x1d, 0xef, 0x68, 0x7f, 0x69,
+	0xca, 0x6e, 0xfb, 0xd8, 0x44, 0xd6, 0xb5, 0xe4, 0x59, 0x1c, 0x90, 0x1d, 0x48, 0xec, 0x8a, 0xfb,
+	0x82, 0x8c, 0x16, 0xb9, 0xe6, 0x29, 0x7a, 0x23, 0x55, 0xd6, 0xa3, 0x83, 0xe3, 0x76, 0xed, 0xdb,
+	0x71, 0xfb, 0xb6, 0xc9, 0x54, 0xd1, 0xb6, 0xcf, 0x05, 0x4d, 0x41, 0x6f, 0xf9, 0xcf, 0x30, 0x06,
+	0xd6, 0x5f, 0x43, 0x76, 0xb4, 0xbf, 0x44, 0x2c, 0x78, 0x0d, 0xd9, 0xe7, 0x1f, 0x5f, 0x16, 0x9c,
+	0xc0, 0x52, 0xdc, 0x37, 0xe4, 0xaa, 0x2a, 0x18, 0x43, 0xa5, 0x42, 0x09, 0x1a, 0xbd, 0xfa, 0x50,
+	0xd4, 0xa6, 0x65, 0x05, 0xa0, 0xd1, 0xdd, 0x20, 0xd7, 0x71, 0x17, 0x59, 0x51, 0xde, 0x71, 0x58,
+	0x59, 0x6e, 0x54, 0xf0, 0xfb, 0x16, 0x7e, 0xf3, 0x32, 0xbc, 0x9b, 0xe9, 0x0b, 0xd8, 0x6e, 0xa6,
+	0x0d, 0xf6, 0xda, 0x19, 0xe7, 0x55, 0xe9, 0xb9, 0x43, 0xea, 0x9b, 0x88, 0xde, 0x95, 0xff, 0xa4,
+	0x95, 0xc9, 0xee, 0x06, 0x69, 0x6e, 0x22, 0xe8, 0x42, 0x62, 0xa8, 0x50, 0x7b, 0xa3, 0x43, 0x1d,
+	0x9b, 0x58, 0xd4, 0x3a, 0xea, 0xd5, 0xf1, 0x8f, 0x7b, 0x6d, 0xe7, 0xe7, 0x5e, 0xdb, 0x99, 0xfb,
+	0xe4, 0x5c, 0x28, 0xfd, 0x53, 0xae, 0xb4, 0x90, 0xfd, 0x61, 0x4a, 0xff, 0x92, 0x8c, 0x49, 0x64,
+	0x42, 0x46, 0xca, 0x1b, 0x99, 0xad, 0xcf, 0x37, 0x1f, 0x2c, 0xfa, 0x7f, 0xed, 0x16, 0xdf, 0xec,
+	0xc7, 0x59, 0x80, 0x09, 0xf4, 0xd7, 0x40, 0x43, 0x67, 0xa2, 0x3c, 0x9c, 0xf1, 0x3b, 0xe0, 0xac,
+	0x36, 0x4a, 0xb3, 0x73, 0x1f, 0x1c, 0x32, 0x79, 0x49, 0xef, 0xde, 0x25, 0x24, 0x45, 0xa5, 0x20,
+	0xc6, 0x90, 0x47, 0x95, 0xd1, 0x46, 0x30, 0x61, 0x57, 0xba, 0x91, 0xeb, 0x91, 0x31, 0x5b, 0xec,
+	0xea, 0x25, 0x8e, 0x07, 0x83, 0xa9, 0xbb, 0x42, 0xa6, 0xcf, 0xeb, 0xae, 0x72, 0xc4, 0x28, 0xe4,
+	0x59, 0xd8, 0x4b, 0x04, 0xdb, 0x56, 0xd5, 0xfb, 0x6a, 0x04, 0xb7, 0xce, 0x04, 0xeb, 0x65, 0xbc,
+	0x9b, 0x75, 0xaa, 0xe8, 0xf9, 0xe5, 0x75, 0x9e, 0x1c, 0x9c, 0xb4, 0x9c, 0xc3, 0x93, 0x96, 0xf3,
+	0xfd, 0xa4, 0xe5, 0xbc, 0x3f, 0x6d, 0xd5, 0x0e, 0x4f, 0x5b, 0xb5, 0xaf, 0xa7, 0xad, 0xda, 0xdb,
+	0xc5, 0x98, 0xeb, 0xad, 0xa2, 0xe7, 0x33, 0x91, 0xd2, 0x3f, 0xf4, 0xe5, 0xe0, 0x83, 0x42, 0x75,
+	0x3f, 0x47, 0xd5, 0x1b, 0xad, 0xda, 0xf0, 0xe1, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff, 0x26, 0x30,
+	0x76, 0xa9, 0x81, 0x04, 0x00, 0x00,
 }
 
 func (this *ValidatorMetrics) Equal(that interface{}) bool {
@@ -159,7 +297,7 @@ func (this *ValidatorMetrics) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.Address != that1.Address {
+	if this.ValAddress != that1.ValAddress {
 		return false
 	}
 	if !this.Uptime.Equal(that1.Uptime) {
@@ -175,6 +313,37 @@ func (this *ValidatorMetrics) Equal(that interface{}) bool {
 		return false
 	}
 	if !this.FeatureSet.Equal(that1.FeatureSet) {
+		return false
+	}
+	return true
+}
+
+func (this *HistoricRelayData) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HistoricRelayData)
+	if !ok {
+		that2, ok := that.(HistoricRelayData)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.MessageId != that1.MessageId {
+		return false
+	}
+	if this.Success != that1.Success {
+		return false
+	}
+	if this.ExecutionSpeedInBlocks != that1.ExecutionSpeedInBlocks {
 		return false
 	}
 	return true
@@ -250,12 +419,99 @@ func (m *ValidatorMetrics) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x12
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintMetrix(dAtA, i, uint64(len(m.Address)))
+	if len(m.ValAddress) > 0 {
+		i -= len(m.ValAddress)
+		copy(dAtA[i:], m.ValAddress)
+		i = encodeVarintMetrix(dAtA, i, uint64(len(m.ValAddress)))
 		i--
 		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ValidatorHistory) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ValidatorHistory) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ValidatorHistory) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Records) > 0 {
+		for iNdEx := len(m.Records) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Records[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintMetrix(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.ValAddress) > 0 {
+		i -= len(m.ValAddress)
+		copy(dAtA[i:], m.ValAddress)
+		i = encodeVarintMetrix(dAtA, i, uint64(len(m.ValAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *HistoricRelayData) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *HistoricRelayData) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *HistoricRelayData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.ExecutionSpeedInBlocks != 0 {
+		i = encodeVarintMetrix(dAtA, i, uint64(m.ExecutionSpeedInBlocks))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.Success {
+		i--
+		if m.Success {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.MessageId != 0 {
+		i = encodeVarintMetrix(dAtA, i, uint64(m.MessageId))
+		i--
+		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -278,7 +534,7 @@ func (m *ValidatorMetrics) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.Address)
+	l = len(m.ValAddress)
 	if l > 0 {
 		n += 1 + l + sovMetrix(uint64(l))
 	}
@@ -292,6 +548,43 @@ func (m *ValidatorMetrics) Size() (n int) {
 	n += 1 + l + sovMetrix(uint64(l))
 	l = m.FeatureSet.Size()
 	n += 1 + l + sovMetrix(uint64(l))
+	return n
+}
+
+func (m *ValidatorHistory) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ValAddress)
+	if l > 0 {
+		n += 1 + l + sovMetrix(uint64(l))
+	}
+	if len(m.Records) > 0 {
+		for _, e := range m.Records {
+			l = e.Size()
+			n += 1 + l + sovMetrix(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *HistoricRelayData) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.MessageId != 0 {
+		n += 1 + sovMetrix(uint64(m.MessageId))
+	}
+	if m.Success {
+		n += 2
+	}
+	if m.ExecutionSpeedInBlocks != 0 {
+		n += 1 + sovMetrix(uint64(m.ExecutionSpeedInBlocks))
+	}
 	return n
 }
 
@@ -334,7 +627,7 @@ func (m *ValidatorMetrics) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ValAddress", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -362,7 +655,7 @@ func (m *ValidatorMetrics) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Address = string(dAtA[iNdEx:postIndex])
+			m.ValAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -534,6 +827,232 @@ func (m *ValidatorMetrics) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMetrix(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthMetrix
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ValidatorHistory) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMetrix
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ValidatorHistory: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ValidatorHistory: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetrix
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMetrix
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetrix
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Records", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetrix
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMetrix
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetrix
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Records = append(m.Records, HistoricRelayData{})
+			if err := m.Records[len(m.Records)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMetrix(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthMetrix
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *HistoricRelayData) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMetrix
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: HistoricRelayData: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: HistoricRelayData: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MessageId", wireType)
+			}
+			m.MessageId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetrix
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MessageId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Success", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetrix
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Success = bool(v != 0)
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExecutionSpeedInBlocks", wireType)
+			}
+			m.ExecutionSpeedInBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetrix
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ExecutionSpeedInBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipMetrix(dAtA[iNdEx:])

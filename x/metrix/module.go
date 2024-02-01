@@ -155,6 +155,8 @@ func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {}
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	if ctx.BlockHeight()%cUpdateUptimeBlockInterval == 0 {
+		am.keeper.PurgeRelayMetrics(ctx)
+		am.keeper.UpdateRelayMetrics(ctx)
 		am.keeper.UpdateUptime(ctx)
 	}
 

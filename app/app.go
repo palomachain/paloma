@@ -280,7 +280,7 @@ type App struct {
 	EvmKeeper       evmmodulekeeper.Keeper
 	GravityKeeper   gravitymodulekeeper.Keeper
 	wasmKeeper      wasm.Keeper
-	metrixKeeper    metrixmodulekeeper.Keeper
+	MetrixKeeper    metrixmodulekeeper.Keeper
 
 	// mm is the module manager
 	mm *module.Manager
@@ -530,10 +530,12 @@ func New(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	app.metrixKeeper = metrixmodulekeeper.NewKeeper(
+	app.MetrixKeeper = metrixmodulekeeper.NewKeeper(
 		appCodec,
+		keys[metrixmoduletypes.StoreKey],
 		app.GetSubspace(metrixmoduletypes.ModuleName),
-		app.SlashingKeeper)
+		app.SlashingKeeper,
+		app.StakingKeeper)
 
 	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
 		appCodec,
@@ -567,10 +569,10 @@ func New(
 	)
 	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 		&app.EvmKeeper,
-		&app.metrixKeeper,
+		&app.MetrixKeeper,
 	}
 	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
-	app.EvmKeeper.AddMessageConsensusAttestedListener(&app.metrixKeeper)
+	app.EvmKeeper.AddMessageConsensusAttestedListener(&app.MetrixKeeper)
 
 	app.GravityKeeper = gravitymodulekeeper.NewKeeper(
 		appCodec,
@@ -763,7 +765,7 @@ func New(
 	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
-	metrixModule := metrix.NewAppModule(appCodec, app.metrixKeeper)
+	metrixModule := metrix.NewAppModule(appCodec, app.MetrixKeeper)
 	app.mm = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,

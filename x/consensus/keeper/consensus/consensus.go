@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -243,6 +244,7 @@ func (c Queue) SetPublicAccessData(ctx sdk.Context, msgID uint64, data *types.Pu
 	}
 
 	msg.SetPublicAccessData(data)
+	msg.SetHandledAtBlockHeight(math.NewIntFromUint64(msgID))
 
 	return c.save(ctx, msg)
 }
@@ -262,11 +264,12 @@ func (c Queue) SetErrorData(ctx sdk.Context, msgID uint64, data *types.ErrorData
 		return err
 	}
 
-	if msg.GetErrorData() != nil {
+	if msg.GetErrorData() != nil || msg.GetPublicAccessData() != nil {
 		return nil
 	}
 
 	msg.SetErrorData(data)
+	msg.SetHandledAtBlockHeight(math.NewIntFromUint64(msgID))
 
 	return c.save(ctx, msg)
 }

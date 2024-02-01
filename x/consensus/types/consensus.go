@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
@@ -28,6 +29,8 @@ type QueuedSignedMessageI interface {
 	GetPublicAccessData() *PublicAccessData
 	SetErrorData(*ErrorData)
 	GetErrorData() *ErrorData
+	SetHandledAtBlockHeight(math.Int)
+	GetHandledAtBlockHeight() *math.Int
 	GetBytesToSign() []byte
 	GetRequireSignatures() bool
 	GetMsg() *types.Any
@@ -99,6 +102,14 @@ func (q *QueuedSignedMessage) SetPublicAccessData(data *PublicAccessData) {
 
 func (q *QueuedSignedMessage) SetErrorData(data *ErrorData) {
 	q.ErrorData = data
+}
+
+func (q *QueuedSignedMessage) GetHandledAtBlockHeight() *math.Int {
+	return q.HandledAtBlockHeight
+}
+
+func (q *QueuedSignedMessage) SetHandledAtBlockHeight(i math.Int) {
+	q.HandledAtBlockHeight = &i
 }
 
 func (q *QueuedSignedMessage) Nonce() []byte {

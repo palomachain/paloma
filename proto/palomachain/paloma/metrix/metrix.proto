@@ -16,7 +16,8 @@ message ValidatorMetrics {
   option (gogoproto.equal)            = true;
   option (gogoproto.goproto_stringer) = true;
 
-  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // Validator address of a validator participating in consensus.
+  string val_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
   // Percentage of validator uptime within the signed blocks window.
   // Higher is better ([0,1]).
@@ -63,4 +64,30 @@ message ValidatorMetrics {
     (amino.dont_omitempty) = true,
     (gogoproto.nullable)   = false
   ];
+}
+
+message ValidatorHistory {
+  option (gogoproto.goproto_stringer) = true;
+
+  // validator address of a validator participating in consensus.
+  string val_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // records contain records of the last `n` messages relayed by
+  // the validator.
+  // Records older than `n` are discared and no longer affect
+  // performance scoring.
+  repeated HistoricRelayData records = 2[
+    (amino.dont_omitempty) = true,
+    (gogoproto.nullable)   = false
+  ];
+
+}
+
+message HistoricRelayData {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = true;
+
+  uint64 message_id = 1;
+  bool success = 2;
+  uint64 execution_speed_in_blocks = 3;
 }

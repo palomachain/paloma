@@ -2,15 +2,45 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"math/big"
+	"slices"
 
+	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/util/palomath"
 	"github.com/palomachain/paloma/x/metrix/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
+)
+
+const (
+	// cRecordHistoryCap specifies the amount of messages within the
+	// scoring window to consider during performance scoring.
+	// If more messages are processed during the window, the data set
+	// will roll over and remove the oldest entries.
+	cRecordHistoryCap int = 100
+
+	// cRecordHistoryScoringWindow specifies the window of messages to
+	// consider when scoring. Messages older than this window will
+	// be purged from the data set.
+	cRecordHistoryScoringWindow uint64 = 1000
+
+	// cSuccessRateIncrement specifies the increment applied to the
+	// message relay success rate for every successful attempt.
+	cSuccessRateIncrement = 0.01
+
+	// cSuccessRateDecrement specifies the decrement applied to the
+	// message relay success rate for every failed attempt.
+	cSuccessRateDecrement = 0.02
 )
 
 var _ valsettypes.OnSnapshotBuiltListener = &Keeper{}
@@ -20,13 +50,20 @@ type (
 		cdc        codec.BinaryCodec
 		paramstore paramtypes.Subspace
 		slashing   types.SlashingKeeper
+		staking    types.StakingKeeper
+
+		metrics           *keeperutil.KVStoreWrapper[*types.ValidatorMetrics]
+		history           *keeperutil.KVStoreWrapper[*types.ValidatorHistory]
+		messageNonceCache *keeperutil.KVStoreWrapper[*types.HistoricRelayData]
 	}
 )
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
+	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	slashing types.SlashingKeeper,
+	staking types.StakingKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -34,9 +71,13 @@ func NewKeeper(
 	}
 
 	return Keeper{
-		cdc:        cdc,
-		paramstore: ps,
-		slashing:   slashing,
+		cdc:               cdc,
+		paramstore:        ps,
+		slashing:          slashing,
+		staking:           staking,
+		metrics:           keeperutil.NewKvStoreWrapper[*types.ValidatorMetrics](storeFactory(storeKey, types.MetricsStorePrefix), cdc),
+		history:           keeperutil.NewKvStoreWrapper[*types.ValidatorHistory](storeFactory(storeKey, types.HistoryStorePrefix), cdc),
+		messageNonceCache: keeperutil.NewKvStoreWrapper[*types.HistoricRelayData](storeFactory(storeKey, types.MessageNonceCacheStorePrefix), cdc),
 	}
 }
 
@@ -44,23 +85,351 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+// GetValidatorMetrics returns the metrics for a validator. Will return nil if no metrics found
+// for the given validator address.
+func (k Keeper) GetValidatorMetrics(ctx sdk.Context, address sdk.ValAddress) (*types.ValidatorMetrics, error) {
+	return getFromStore(ctx, k.metrics, address)
+}
+
+// GetValidatorHistory returns the historic relay data for a validator. Will return nil if no history found
+// for the given validator address.
+func (k Keeper) GetValidatorHistory(ctx sdk.Context, address sdk.ValAddress) (*types.ValidatorHistory, error) {
+	return getFromStore(ctx, k.history, address)
+}
+
+// GetValidatorMetrics returns the metrics for a validator. Will return nil if no metrics found
+// for the given validator address.
+func (k Keeper) GetMessageNonceCache(ctx sdk.Context) (*types.HistoricRelayData, error) {
+	return getFromStore(ctx, k.messageNonceCache, types.MessageNonceCacheKey)
+}
+
 // OnConsensusMessageAttested implements types.OnConsensusMessageAttestedListener.
-func (Keeper) OnConsensusMessageAttested(context.Context, types.MessageAttestedEvent) {
-	// 4. success rate
-	// 5. runtime
+func (k Keeper) OnConsensusMessageAttested(goCtx context.Context, e types.MessageAttestedEvent) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Get record from store
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
+		"component", "metrix.OnConsensusMessageAttested",
+		"event", e,
+	)
+
+	if e.HandledAtBlockHeight.LT(e.AssignedAtBlockHeight) ||
+		e.HandledAtBlockHeight.GT(math.NewInt(ctx.BlockHeight())) {
+		logger.Error("Skipping message with invalid block heights.")
+		return
+	}
+
+	record, err := k.GetValidatorHistory(ctx, e.Assignee)
+	if err != nil {
+		logger.WithError(err).Error("Failed to get history from store")
+		return
+	}
+	if record == nil {
+		record = &types.ValidatorHistory{
+			ValAddress: e.Assignee.String(),
+			Records:    make([]types.HistoricRelayData, 0, cRecordHistoryCap),
+		}
+	}
+
+	// Roll over data set if cap exceeded by popping the
+	// oldest entry.
+	if len(record.Records) >= cRecordHistoryCap {
+		record.Records = record.Records[1:]
+	}
+
+	// Append latest record
+	record.Records = append(record.Records, types.HistoricRelayData{
+		MessageId:              e.MessageID,
+		Success:                e.WasRelayedSuccessfully,
+		ExecutionSpeedInBlocks: e.HandledAtBlockHeight.Sub(e.AssignedAtBlockHeight).Uint64(),
+	})
+
+	if err := k.history.Set(ctx, e.Assignee, record); err != nil {
+		logger.WithError(err).Error("Failed to write history to store")
+		return
+	}
+
+	cache, err := k.GetMessageNonceCache(ctx)
+	if err != nil {
+		logger.WithError(err).Error("Failed to get message nonce cache from store.")
+		return
+	}
+	if cache == nil || cache.MessageId < e.MessageID {
+		cache = &types.HistoricRelayData{
+			MessageId: e.MessageID,
+		}
+	}
+
+	if err := k.messageNonceCache.Set(ctx, types.MessageNonceCacheKey, cache); err != nil {
+		logger.WithError(err).Error("Failed to persist message nonce cache into store.")
+		return
+	}
 }
 
 // OnSnapshotBuilt implements types.OnSnapshotBuiltListener.
-func (*Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
-	// 1. Fee?
-	// 2. Feature sets
+func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithFields("component", "OnSnapshotBuilt")
+	logger.Debug("Updating snapshot metrics...")
+
+	// Building the feature set is currently only taking MEV support into consideration.
+	max := int64(len(snapshot.Chains))
+	if max < 1 {
+		logger.Info("Skip updating metrics, no chains found.")
+		return
+	}
+
+	for _, v := range snapshot.Validators {
+		logger := logger.WithFields("validator", v.GetAddress().String())
+
+		matches := func() int64 {
+			if v.State != valsettypes.ValidatorState_ACTIVE {
+				logger.Info("Skipping inactive validator.")
+				return 0
+			}
+
+			var matches int64
+			for _, c := range v.ExternalChainInfos {
+				if slices.Contains(c.Traits, valsettypes.PIGEON_TRAIT_MEV) {
+					matches++
+				}
+			}
+
+			if matches > max {
+				logger.WithFields("max-matches", max, "found-matches", matches).Error("Found too many matches.")
+				return 0
+			}
+
+			return matches
+		}()
+
+		score := palomath.BigIntDiv(big.NewInt(matches), big.NewInt(max))
+		k.updateRecord(ctx, v.GetAddress(), recordPatch{featureSet: &score})
+	}
+}
+
+func (k *Keeper) PurgeRelayMetrics(ctx sdk.Context) {
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithFields("component", "metrix.UpdateRelayMetrix")
+	cache, err := k.GetMessageNonceCache(ctx)
+	if err != nil {
+		logger.WithError(err).Error("Failed to get message nonce from cache.")
+		return
+	}
+	if cache == nil {
+		logger.WithError(err).Info("Skipping metrics relay update, empty cache.")
+		return
+	}
+
+	if cache.MessageId <= cRecordHistoryScoringWindow {
+		logger.WithError(err).Info("Skipping metrics relay update, cached message ID smaller than scoring window.")
+		return
+	}
+
+	threshold := cache.MessageId - cRecordHistoryScoringWindow
+
+	updates := make(map[string]types.ValidatorHistory)
+
+	// Purge records outside scoring window
+	k.history.Iterate(ctx, func(key []byte, history *types.ValidatorHistory) bool {
+		purged := history.Records
+
+		func() {
+			for i, v := range history.Records {
+				if v.MessageId >= threshold {
+					// from here on, messages are within the window
+					purged = history.Records[i:]
+					return
+				}
+
+				// looks like we're purging everything
+				purged = nil
+			}
+		}()
+
+		if purged == nil || len(purged) != len(history.Records) {
+			updates[string(key)] = types.ValidatorHistory{
+				ValAddress: history.ValAddress,
+				Records:    purged,
+			}
+		}
+
+		return true
+	})
+
+	for key, val := range updates {
+		if err := k.history.Set(ctx, sdk.ValAddress([]byte(key)), &val); err != nil {
+			logger.WithError(err).WithFields("validator", val.ValAddress).Error("Failed to purge history")
+		}
+	}
+}
+
+func (k *Keeper) UpdateRelayMetrics(ctx sdk.Context) {
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithFields("component", "metrix.UpdateRelayMetrics")
+
+	k.history.Iterate(ctx, func(key []byte, history *types.ValidatorHistory) bool {
+		logger := logger.WithFields("val-address", history.ValAddress)
+		valAddress := sdk.ValAddress(key)
+
+		metrics, err := k.GetValidatorMetrics(ctx, valAddress)
+		if err != nil {
+			logger.WithError(err).Error("Failed to get history from store.")
+			return true
+		}
+
+		successRateScore := 0.5
+		executionTimes := make([]uint64, len(history.Records))
+
+		for i, v := range history.Records {
+			executionTimes[i] = v.ExecutionSpeedInBlocks
+			if v.Success {
+				successRateScore += cSuccessRateIncrement
+			} else {
+				successRateScore -= cSuccessRateDecrement
+			}
+		}
+
+		successRateScore = palomath.Clamp(successRateScore, 0, 1)
+		medianExecutionTime := palomath.Median(executionTimes)
+
+		decSuccessRateScore := palomath.LegacyDecFromFloat64(successRateScore)
+		decMedianExecutionTime := math.NewIntFromUint64(medianExecutionTime)
+
+		if metrics == nil ||
+			!metrics.SuccessRate.Equal(decSuccessRateScore) ||
+			!metrics.ExecutionTime.Equal(decMedianExecutionTime) {
+			k.updateRecord(ctx, valAddress, recordPatch{
+				executionTime: &decMedianExecutionTime,
+				successRate:   &decSuccessRateScore,
+			})
+		}
+
+		return true
+	})
 }
 
 func (k *Keeper) UpdateUptime(ctx sdk.Context) {
-	// use slashing keeper
-	// 3. uptime
+	window := k.slashing.SignedBlocksWindow(ctx)
 
 	k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
+		val, found := k.staking.GetValidatorByConsAddr(ctx, consAddr)
+		if !found {
+			liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
+				"component", "metrix.UpdateUptime",
+				"cons-addr", consAddr.String(),
+			).Error("no validator found for cons address.")
+
+			return false
+		}
+
+		uptime := calculateUptime(window, info.MissedBlocksCounter)
+		k.updateRecord(ctx, val.GetOperator(), recordPatch{uptime: &uptime})
 		return false
 	})
+}
+
+type recordPatch struct {
+	uptime        *math.LegacyDec
+	successRate   *math.LegacyDec
+	executionTime *math.Int
+	fee           *math.Int
+	featureSet    *math.LegacyDec
+}
+
+func (p recordPatch) apply(data types.ValidatorMetrics) *types.ValidatorMetrics {
+	if p.uptime != nil {
+		data.Uptime = *p.uptime
+	}
+
+	if p.successRate != nil {
+		data.SuccessRate = *p.successRate
+	}
+
+	if p.executionTime != nil {
+		data.ExecutionTime = *p.executionTime
+	}
+
+	if p.fee != nil {
+		data.Fee = *p.fee
+	}
+
+	if p.featureSet != nil {
+		data.FeatureSet = *p.featureSet
+	}
+
+	return &data
+}
+
+func (k Keeper) updateRecord(ctx sdk.Context, valAddr sdk.ValAddress, patch recordPatch) {
+	if err := k.tryUpdateRecord(ctx, valAddr, patch); err != nil {
+		liblog.FromSDKLogger(k.Logger(ctx)).
+			WithError(err).
+			WithFields(
+				"component", "metrix.updateRecord",
+				"val-addr", valAddr.String(),
+			).Error("Failed to update metrics record.")
+	}
+}
+
+func (k Keeper) tryUpdateRecord(ctx sdk.Context, valAddr sdk.ValAddress, patch recordPatch) error {
+	record, err := k.GetValidatorMetrics(ctx, valAddr)
+	if err != nil {
+		return fmt.Errorf("update record: %w", err)
+	}
+
+	if record == nil {
+		record = &types.ValidatorMetrics{
+			ValAddress:    valAddr.String(),
+			Uptime:        math.LegacyZeroDec(),
+			SuccessRate:   math.LegacyZeroDec(),
+			ExecutionTime: math.ZeroInt(),
+			Fee:           math.ZeroInt(),
+			FeatureSet:    math.LegacyZeroDec(),
+		}
+	}
+
+	patched := patch.apply(*record)
+
+	// Do not override if no changes
+	if record.Equal(patched) {
+		return nil
+	}
+
+	err = k.metrics.Set(ctx, valAddr, patched)
+	if err != nil {
+		return fmt.Errorf("update record: %w", err)
+	}
+
+	return nil
+}
+
+func storeFactory(storeKey storetypes.StoreKey, p string) func(ctx sdk.Context) sdk.KVStore {
+	return func(ctx sdk.Context) sdk.KVStore {
+		return prefix.NewStore(ctx.KVStore(storeKey), types.KeyPrefix(p))
+	}
+}
+
+func calculateUptime(window, missed int64) math.LegacyDec {
+	if window < 1 || missed < 0 || missed > window {
+		return math.LegacyNewDec(0)
+	}
+
+	// return (window - missed) / window
+	w := big.NewInt(window)
+	m := big.NewInt(missed)
+
+	diff := big.NewInt(0).Sub(w, m)
+	return palomath.BigIntDiv(diff, w)
+}
+
+func getFromStore[T codec.ProtoMarshaler](ctx sdk.Context, store *keeperutil.KVStoreWrapper[T], key keeperutil.Byter) (T, error) {
+	var empty T
+	data, err := store.Get(ctx, key)
+	if err != nil {
+		if !errors.Is(err, keeperutil.ErrNotFound) {
+			return empty, fmt.Errorf("get from store: %w", err)
+		}
+
+		return empty, nil
+	}
+
+	return data, nil
 }
