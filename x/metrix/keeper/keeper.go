@@ -108,10 +108,11 @@ func (k Keeper) OnConsensusMessageAttested(goCtx context.Context, e types.Messag
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Get record from store
-	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
-		"component", "metrix.OnConsensusMessageAttested",
-		"event", e,
-	)
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).
+		WithComponent("metrix.OnConsensusMessageAttested").
+		WithFields("event", e)
+
+	logger.Debug("Running OnConsensusMessageAttested")
 
 	if e.HandledAtBlockHeight.LT(e.AssignedAtBlockHeight) ||
 		e.HandledAtBlockHeight.GT(math.NewInt(ctx.BlockHeight())) {
@@ -125,6 +126,7 @@ func (k Keeper) OnConsensusMessageAttested(goCtx context.Context, e types.Messag
 		return
 	}
 	if record == nil {
+		logger.Debug("No record found, creating new record...")
 		record = &types.ValidatorHistory{
 			ValAddress: e.Assignee.String(),
 			Records:    make([]types.HistoricRelayData, 0, cRecordHistoryCap),
@@ -134,6 +136,7 @@ func (k Keeper) OnConsensusMessageAttested(goCtx context.Context, e types.Messag
 	// Roll over data set if cap exceeded by popping the
 	// oldest entry.
 	if len(record.Records) >= cRecordHistoryCap {
+		logger.Debug("Record capacity reached, rolling over ...")
 		record.Records = record.Records[1:]
 	}
 
@@ -155,6 +158,7 @@ func (k Keeper) OnConsensusMessageAttested(goCtx context.Context, e types.Messag
 		return
 	}
 	if cache == nil || cache.MessageId < e.MessageID {
+		logger.Debug("Updating message nonce cache.")
 		cache = &types.HistoricRelayData{
 			MessageId: e.MessageID,
 		}
@@ -164,11 +168,13 @@ func (k Keeper) OnConsensusMessageAttested(goCtx context.Context, e types.Messag
 		logger.WithError(err).Error("Failed to persist message nonce cache into store.")
 		return
 	}
+
+	logger.Debug("OnConsensusMessageAttested finished!")
 }
 
 // OnSnapshotBuilt implements types.OnSnapshotBuiltListener.
 func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
-	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithFields("component", "OnSnapshotBuilt")
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("metrix.OnSnapshotBuilt")
 	logger.Debug("Updating snapshot metrics...")
 
 	// Building the feature set is currently only taking MEV support into consideration.
@@ -179,7 +185,7 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 	}
 
 	for _, v := range snapshot.Validators {
-		logger := logger.WithFields("validator", v.GetAddress().String())
+		logger := logger.WithValidator(v.GetAddress().String())
 
 		matches := func() int64 {
 			if v.State != valsettypes.ValidatorState_ACTIVE {
@@ -208,39 +214,46 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 }
 
 func (k *Keeper) PurgeRelayMetrics(ctx sdk.Context) {
-	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithFields("component", "metrix.UpdateRelayMetrix")
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("metrix.PurgeRelayMetrics")
+	logger.Debug("Running relay metrics purging loop...")
+
 	cache, err := k.GetMessageNonceCache(ctx)
 	if err != nil {
 		logger.WithError(err).Error("Failed to get message nonce from cache.")
 		return
 	}
 	if cache == nil {
-		logger.WithError(err).Info("Skipping metrics relay update, empty cache.")
+		logger.WithError(err).Info("Skipping metrics relay purge, empty cache.")
 		return
 	}
 
 	if cache.MessageId <= cRecordHistoryScoringWindow {
-		logger.WithError(err).Info("Skipping metrics relay update, cached message ID smaller than scoring window.")
+		logger.WithError(err).Info("Skipping metrics relay purge, cached message ID smaller than scoring window.")
 		return
 	}
 
 	threshold := cache.MessageId - cRecordHistoryScoringWindow
-
 	updates := make(map[string]types.ValidatorHistory)
+	logger = logger.WithFields("threshold", threshold)
 
 	// Purge records outside scoring window
 	k.history.Iterate(ctx, func(key []byte, history *types.ValidatorHistory) bool {
+		logger := logger.WithValidator(history.ValAddress)
+		logger.Debug("Puring records for validator.")
+
 		purged := history.Records
 
 		func() {
 			for i, v := range history.Records {
 				if v.MessageId >= threshold {
 					// from here on, messages are within the window
+					logger.Debug(fmt.Sprintf("Puring %d records.", i))
 					purged = history.Records[i:]
 					return
 				}
 
 				// looks like we're purging everything
+				logger.Debug("Purging entire history.")
 				purged = nil
 			}
 		}()
@@ -255,18 +268,21 @@ func (k *Keeper) PurgeRelayMetrics(ctx sdk.Context) {
 		return true
 	})
 
+	logger.Debug("Executing purge...")
 	for key, val := range updates {
 		if err := k.history.Set(ctx, sdk.ValAddress([]byte(key)), &val); err != nil {
-			logger.WithError(err).WithFields("validator", val.ValAddress).Error("Failed to purge history")
+			logger.WithError(err).WithValidator(val.ValAddress).Error("Failed to purge history")
 		}
 	}
+	logger.Debug("Purge finished!")
 }
 
 func (k *Keeper) UpdateRelayMetrics(ctx sdk.Context) {
-	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithFields("component", "metrix.UpdateRelayMetrics")
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("metrix.UpdateRelayMetrics")
+	logger.Debug("Running relay metrics update loop.")
 
 	k.history.Iterate(ctx, func(key []byte, history *types.ValidatorHistory) bool {
-		logger := logger.WithFields("val-address", history.ValAddress)
+		logger := logger.WithValidator(history.ValAddress)
 		valAddress := sdk.ValAddress(key)
 
 		metrics, err := k.GetValidatorMetrics(ctx, valAddress)
@@ -290,12 +306,15 @@ func (k *Keeper) UpdateRelayMetrics(ctx sdk.Context) {
 		successRateScore = palomath.Clamp(successRateScore, 0, 1)
 		medianExecutionTime := palomath.Median(executionTimes)
 
+		logger = logger.WithFields("success-rate", successRateScore, "execution-time", medianExecutionTime)
 		decSuccessRateScore := palomath.LegacyDecFromFloat64(successRateScore)
 		decMedianExecutionTime := math.NewIntFromUint64(medianExecutionTime)
 
+		logger.Debug("Calculated relay  metrics.")
 		if metrics == nil ||
 			!metrics.SuccessRate.Equal(decSuccessRateScore) ||
 			!metrics.ExecutionTime.Equal(decMedianExecutionTime) {
+			logger.Debug("Relay metrics changed. Updating validator metrics.")
 			k.updateRecord(ctx, valAddress, recordPatch{
 				executionTime: &decMedianExecutionTime,
 				successRate:   &decSuccessRateScore,
@@ -304,26 +323,35 @@ func (k *Keeper) UpdateRelayMetrics(ctx sdk.Context) {
 
 		return true
 	})
+
+	logger.Debug("Updating relay metrics finished!")
 }
 
 func (k *Keeper) UpdateUptime(ctx sdk.Context) {
 	window := k.slashing.SignedBlocksWindow(ctx)
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("metrix.UpdateUptime").WithFields("signed-blocks-window", window)
+	logger.Debug("Running uptime update loop.")
 
 	k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
+		logger := logger.WithFields("validator-conspub", info.GetAddress())
 		val, found := k.staking.GetValidatorByConsAddr(ctx, consAddr)
 		if !found {
-			liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
-				"component", "metrix.UpdateUptime",
-				"cons-addr", consAddr.String(),
-			).Error("no validator found for cons address.")
+			logger.Error("no validator found for cons pub address.")
 
 			return false
 		}
 
 		uptime := calculateUptime(window, info.MissedBlocksCounter)
+		logger.WithValidator(val.GetOperator().String()).
+			WithFields(
+				"missed-blocks-counter", info.MissedBlocksCounter,
+				"uptime", uptime).
+			Debug("Calculated uptime, updating record.")
 		k.updateRecord(ctx, val.GetOperator(), recordPatch{uptime: &uptime})
 		return false
 	})
+
+	logger.Debug("Updating uptime finished!")
 }
 
 type recordPatch struct {
@@ -362,10 +390,9 @@ func (k Keeper) updateRecord(ctx sdk.Context, valAddr sdk.ValAddress, patch reco
 	if err := k.tryUpdateRecord(ctx, valAddr, patch); err != nil {
 		liblog.FromSDKLogger(k.Logger(ctx)).
 			WithError(err).
-			WithFields(
-				"component", "metrix.updateRecord",
-				"val-addr", valAddr.String(),
-			).Error("Failed to update metrics record.")
+			WithComponent("metrix.updateRecord").
+			WithValidator(valAddr.String()).
+			Error("Failed to update metrics record.")
 	}
 }
 

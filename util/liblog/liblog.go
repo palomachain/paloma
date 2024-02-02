@@ -8,6 +8,8 @@ type Logr interface {
 	log.Logger
 	WithFields(keyvals ...interface{}) Logr
 	WithError(err error) Logr
+	WithComponent(string) Logr
+	WithValidator(string) Logr
 }
 
 func FromSDKLogger(l log.Logger) Logr {
@@ -36,6 +38,16 @@ func (l *lgwr) With(keyvals ...interface{}) log.Logger {
 
 func (l *lgwr) WithFields(keyvals ...interface{}) Logr {
 	l.l = l.l.With(keyvals...)
+	return l
+}
+
+func (l *lgwr) WithComponent(c string) Logr {
+	l.l = l.l.With("component", c)
+	return l
+}
+
+func (l *lgwr) WithValidator(v string) Logr {
+	l.l = l.l.With("validator", v)
 	return l
 }
 

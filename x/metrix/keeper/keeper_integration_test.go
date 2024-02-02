@@ -392,7 +392,7 @@ var _ = Describe("purge historic relay data", func() {
 	BeforeEach(func() {
 		a = app.NewTestApp(GinkgoT(), false)
 		ctx = a.NewContext(false, tmproto.Header{
-			Height: 2000,
+			Height: 20000,
 		})
 	})
 
