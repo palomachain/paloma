@@ -40,13 +40,15 @@ func (k Keeper) Validators(goCtx context.Context, _ *types.Empty) (*types.QueryV
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	metrics := make([]types.ValidatorMetrics, 0, 200)
-	k.metrics.Iterate(ctx, func(_ []byte, m *types.ValidatorMetrics) bool {
+	if err := k.metrics.Iterate(ctx, func(_ []byte, m *types.ValidatorMetrics) bool {
 		if m != nil {
 			metrics = append(metrics, *m)
 		}
 
 		return true
-	})
+	}); err != nil {
+		return nil, fmt.Errorf("iterate metrics: %w", err)
+	}
 
 	return &types.QueryValidatorsResponse{
 		ValMetrics: metrics,

@@ -273,7 +273,8 @@ func (k *Keeper) PurgeRelayMetrics(ctx sdk.Context) {
 
 	logger.Debug("Executing purge...")
 	for key, val := range updates {
-		if err := k.history.Set(ctx, sdk.ValAddress([]byte(key)), &val); err != nil {
+		memcpy := val
+		if err := k.history.Set(ctx, sdk.ValAddress([]byte(key)), &memcpy); err != nil {
 			logger.WithError(err).WithValidator(val.ValAddress).Error("Failed to purge history")
 		}
 	}
