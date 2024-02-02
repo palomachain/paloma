@@ -54,7 +54,6 @@ func (k Keeper) LastPendingBatchRequestByAddr(
 
 		return false
 	})
-
 	if err != nil {
 		return nil, err
 	}

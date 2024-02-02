@@ -2,11 +2,14 @@ package network
 
 import (
 	"fmt"
+	"io"
 	"testing"
 	"time"
 
+	cosmoslog "cosmossdk.io/log"
 	pruningtypes "cosmossdk.io/store/pruning/types"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
+	db "github.com/cosmos/cosmos-db"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
@@ -49,6 +52,7 @@ func New(t *testing.T, configs ...network.Config) *network.Network {
 // genesis and single validator. All other parameters are inherited from cosmos-sdk/testutil/network.DefaultConfig
 func DefaultConfig() network.Config {
 	encoding := app.MakeEncodingConfig()
+	tempApp := app.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, db.OptionsMap{})
 	return network.Config{
 		Codec:             encoding.Codec,
 		TxConfig:          encoding.TxConfig,
@@ -66,7 +70,7 @@ func DefaultConfig() network.Config {
 				baseapp.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
 			)
 		},
-		GenesisState:    app.ModuleBasics.DefaultGenesis(encoding.Codec),
+		GenesisState:    tempApp.BasicModuleManager.DefaultGenesis(encoding.Codec),
 		TimeoutCommit:   2 * time.Second,
 		ChainID:         "chain-" + tmrand.NewRand().Str(6),
 		NumValidators:   1,

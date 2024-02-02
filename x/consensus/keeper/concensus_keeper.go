@@ -238,7 +238,6 @@ func (k Keeper) GetMessagesFromQueue(ctx context.Context, queueTypeName string, 
 		return nil, err
 	}
 	msgs, err = cq.GetAll(sdkCtx)
-
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("error while getting all messages from queue.")
 		return nil, err

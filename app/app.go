@@ -163,41 +163,6 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 var (
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
-
-	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
-	// non-dependant module elements, such as codec registration
-	// and genesis verification.
-	ModuleBasics = module.NewBasicManager(
-		auth.AppModuleBasic{},
-		genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-		bank.AppModule{},
-		capability.AppModuleBasic{},
-		staking.AppModule{},
-		mint.AppModule{},
-		distr.AppModuleBasic{},
-		gov.AppModule{AppModuleBasic: gov.NewAppModuleBasic(getGovProposalHandlers())},
-		params.AppModuleBasic{},
-		crisis.AppModule{},
-		slashing.AppModule{},
-		feegrantmodule.AppModuleBasic{},
-		upgrade.AppModuleBasic{},
-		evidence.AppModuleBasic{},
-		vesting.AppModuleBasic{},
-		schedulermodule.AppModuleBasic{},
-		consensusmodule.AppModuleBasic{},
-		valsetmodule.AppModuleBasic{},
-		wasm.AppModuleBasic{},
-		evm.AppModuleBasic{},
-		gravitymodule.AppModuleBasic{},
-		palomamodule.AppModuleBasic{},
-		treasurymodule.AppModuleBasic{},
-		consensus.AppModuleBasic{},
-		transfer.AppModuleBasic{},
-		ibc.AppModuleBasic{},
-		ica.AppModuleBasic{},
-		ibcfee.AppModuleBasic{},
-	)
-
 	// module account permissions
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:     nil,
@@ -760,6 +725,9 @@ func New(
 	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
+
+	stakingAppModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName))
+
 	app.ModuleManager = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,
@@ -777,7 +745,7 @@ func New(
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(distrtypes.ModuleName)),
-		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
+		stakingAppModule,
 		upgrade.NewAppModule(app.UpgradeKeeper, app.AccountKeeper.AddressCodec()),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
@@ -796,15 +764,15 @@ func New(
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 	)
 
+	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
 	app.BasicModuleManager = module.NewBasicManagerFromManager(
 		app.ModuleManager,
 		map[string]module.AppModuleBasic{
 			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-			govtypes.ModuleName: gov.NewAppModuleBasic(
-				[]govclient.ProposalHandler{
-					paramsclient.ProposalHandler,
-				},
-			),
+			stakingtypes.ModuleName: StakingModule{AppModuleBasic: stakingAppModule.AppModuleBasic},
+			minttypes.ModuleName:    MintModule{},
+			govtypes.ModuleName:     GovModule{gov.NewAppModuleBasic(getGovProposalHandlers())},
+			crisistypes.ModuleName:  CrisisModule{},
 		})
 
 	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
@@ -913,7 +881,6 @@ func New(
 		consensusparamtypes.ModuleName,
 	)
 
-	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	err = app.ModuleManager.RegisterServices(app.configurator)
 	if err != nil {

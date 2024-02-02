@@ -115,8 +115,10 @@ type GovModule struct {
 // DefaultGenesis returns custom Paloma x/gov module genesis state.
 func (GovModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	minDeposit := sdk.NewCoins(sdk.NewCoin(BondDenom, govv1types.DefaultMinDepositTokens))
+	minExpedited := sdk.NewCoins(sdk.NewCoin(BondDenom, govv1types.DefaultMinExpeditedDepositTokens))
 	genState := govv1types.DefaultGenesisState()
 	genState.Params.MinDeposit = minDeposit
+	genState.Params.ExpeditedMinDeposit = minExpedited
 
 	return cdc.MustMarshalJSON(genState)
 }
