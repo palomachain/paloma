@@ -28,3 +28,7 @@ func (v *KVStoreWrapper[T]) Get(ctx types.Context, key Byter) (T, error) {
 func (v *KVStoreWrapper[T]) Set(ctx types.Context, key Byter, value T) error {
 	return Save(v.sg(ctx), v.ps, key.Bytes(), value)
 }
+
+func (v *KVStoreWrapper[T]) Iterate(ctx types.Context, fn func([]byte, T) bool) error {
+	return IterAllFnc[T](v.sg(ctx), v.ps, fn)
+}

@@ -1,0 +1,78 @@
+syntax = "proto3";
+package palomachain.paloma.metrix;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos_proto/cosmos.proto";
+import "palomachain/paloma/metrix/params.proto";
+import "palomachain/paloma/metrix/metrix.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/palomachain/paloma/x/metrix/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/palomachain/paloma/metrix/params";
+ 
+ }
+  // Validator queries the metrics of a validator participating in consensus.
+  rpc Validator(QueryValidatorRequest) returns (QueryValidatorResponse) {
+    option (google.api.http).get = "/palomachain/paloma/metrix/validator";
+  }
+
+  // Validator queries the metrics of a validator participating in consensus.
+  rpc Validators(Empty) returns (QueryValidatorsResponse) {
+    option (google.api.http).get = "/palomachain/paloma/metrix/validators";
+  }
+
+  // HistoricRelayData queries the historic relay data on record
+  // for a given validator, which is used in performance scoring.
+  rpc HistoricRelayData(QueryHistoricRelayDataRequest) returns (QueryHistoricRelayDataResponse) {
+    option (google.api.http).get = "/palomachain/paloma/metrix/history";
+  }
+}
+
+// Empty represents an empty message
+message Empty {}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryValidatorRequest is the request type for the Query/Validator RPC method.
+message QueryValidatorRequest {
+  // val_address holds the validator address of the validator you want to query for.
+  string val_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// QueryValidatorResponse is response type for the Query/Validator RPC method.
+message QueryValidatorResponse {
+  // validator_metrics holds the collected metrics info of requested val cons address
+  ValidatorMetrics val_metrics = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// QueryValidatorsResponse is response type for the Query/Validators RPC method.
+message QueryValidatorsResponse {
+  // validator_metrics holds the collected metrics info of all validators on record
+  repeated ValidatorMetrics val_metrics = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// QueryHistoricRelayDataRequest is the request type for the Query/HistoricRelayData RPC method.
+message QueryHistoricRelayDataRequest {
+  // val_address holds the validator address of the validator you want to query for.
+  string val_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// QueryHistoricRelayDataResponse is response type for the Query/HistoricRelayData RPC method.
+message QueryHistoricRelayDataResponse {
+  // history contains the historic relay data for the queried validator.
+  ValidatorHistory history = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}

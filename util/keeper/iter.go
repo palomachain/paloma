@@ -32,7 +32,6 @@ func IterAllRaw(store sdk.KVStore, pu ProtoUnmarshaler) (keys [][]byte, values [
 }
 
 func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu ProtoUnmarshaler, fnc func([]byte, T) bool) error {
-	res := []T{}
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
 
@@ -51,8 +50,6 @@ func IterAllFnc[T codec.ProtoMarshaler](store sdk.KVStore, pu ProtoUnmarshaler, 
 		if !fnc(iterator.Key(), val) {
 			return nil
 		}
-
-		res = append(res, val)
 	}
 
 	return nil

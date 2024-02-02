@@ -1,0 +1,93 @@
+syntax = "proto3";
+package palomachain.paloma.metrix;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos_proto/cosmos.proto";
+import "palomachain/paloma/metrix/params.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/palomachain/paloma/x/metrix/types";
+
+// ValidatorMetrics defines a validator's collected metrics to be
+// used during relayer selection.
+message ValidatorMetrics {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = true;
+
+  // Validator address of a validator participating in consensus.
+  string val_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // Percentage of validator uptime within the signed blocks window.
+  // Higher is better ([0,1]).
+  string uptime = 2 [
+    (cosmos_proto.scalar)  = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (amino.dont_omitempty) = true,
+    (gogoproto.nullable)   = false
+  ];
+
+  // Percent of validator's relay success rate over the last
+  // params.relay_metrics_window messages. Higher is better ([0,1]).
+  string success_rate = 3 [
+    (cosmos_proto.scalar)  = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (amino.dont_omitempty) = true,
+    (gogoproto.nullable)   = false
+  ];
+
+  // A median value in ms of the relay execution time over the
+  // last params.relay_metrics_window messages. Lower is better, 0 means
+  // no collected data.
+  string execution_time   = 4 [
+    (cosmos_proto.scalar)  = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (amino.dont_omitempty) = true,
+    (gogoproto.nullable)   = false
+  ];
+
+  // The value of the relaying fee the relayer has specified for themselves.
+  // Lower is better, 0 means no fee.
+  string fee   = 5 [
+    (cosmos_proto.scalar)  = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (amino.dont_omitempty) = true,
+    (gogoproto.nullable)   = false
+  ];
+
+  // Artificial decimal value representing the total amount of optional support
+  // features that this validator has enabled. Higher is better ([0,1]).
+  string feature_set = 6 [
+    (cosmos_proto.scalar)  = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (amino.dont_omitempty) = true,
+    (gogoproto.nullable)   = false
+  ];
+}
+
+message ValidatorHistory {
+  option (gogoproto.goproto_stringer) = true;
+
+  // validator address of a validator participating in consensus.
+  string val_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // records contain records of the last `n` messages relayed by
+  // the validator.
+  // Records older than `n` are discared and no longer affect
+  // performance scoring.
+  repeated HistoricRelayData records = 2[
+    (amino.dont_omitempty) = true,
+    (gogoproto.nullable)   = false
+  ];
+
+}
+
+message HistoricRelayData {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = true;
+
+  uint64 message_id = 1;
+  bool success = 2;
+  uint64 execution_speed_in_blocks = 3;
+}

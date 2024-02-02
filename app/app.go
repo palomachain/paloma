@@ -120,6 +120,9 @@ import (
 	gravityclient "github.com/palomachain/paloma/x/gravity/client"
 	gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
 	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
+	"github.com/palomachain/paloma/x/metrix"
+	metrixmodulekeeper "github.com/palomachain/paloma/x/metrix/keeper"
+	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 	palomamodule "github.com/palomachain/paloma/x/paloma"
 	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
@@ -194,6 +197,7 @@ var (
 		ibctm.AppModuleBasic{},
 		ica.AppModuleBasic{},
 		ibcfee.AppModuleBasic{},
+		metrix.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -276,6 +280,7 @@ type App struct {
 	EvmKeeper       evmmodulekeeper.Keeper
 	GravityKeeper   gravitymodulekeeper.Keeper
 	wasmKeeper      wasm.Keeper
+	MetrixKeeper    metrixmodulekeeper.Keeper
 
 	// mm is the module manager
 	mm *module.Manager
@@ -340,6 +345,7 @@ func New(
 		gravitymoduletypes.StoreKey,
 		consensusparamtypes.StoreKey,
 		crisistypes.StoreKey,
+		metrixmoduletypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(
@@ -350,6 +356,7 @@ func New(
 		schedulermoduletypes.MemStoreKey,
 		treasurymoduletypes.MemStoreKey,
 		palomamoduletypes.MemStoreKey,
+		metrixmoduletypes.MemStoreKey,
 	)
 
 	app := &App{
@@ -523,6 +530,13 @@ func New(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
+	app.MetrixKeeper = metrixmodulekeeper.NewKeeper(
+		appCodec,
+		keys[metrixmoduletypes.StoreKey],
+		app.GetSubspace(metrixmoduletypes.ModuleName),
+		app.SlashingKeeper,
+		app.StakingKeeper)
+
 	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
 		appCodec,
 		keys[valsetmoduletypes.StoreKey],
@@ -555,8 +569,10 @@ func New(
 	)
 	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 		&app.EvmKeeper,
+		&app.MetrixKeeper,
 	}
 	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
+	app.EvmKeeper.AddMessageConsensusAttestedListener(&app.MetrixKeeper)
 
 	app.GravityKeeper = gravitymodulekeeper.NewKeeper(
 		appCodec,
@@ -749,6 +765,7 @@ func New(
 	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
+	metrixModule := metrix.NewAppModule(appCodec, app.MetrixKeeper)
 	app.mm = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,
@@ -777,6 +794,7 @@ func New(
 		gravityModule,
 		palomaModule,
 		treasuryModule,
+		metrixModule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		ibc.NewAppModule(app.IBCKeeper),
 		transfer.NewAppModule(app.TransferKeeper),
@@ -818,6 +836,7 @@ func New(
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		metrixmoduletypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -850,6 +869,7 @@ func New(
 		ibcfeetypes.ModuleName,
 		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		metrixmoduletypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -887,6 +907,7 @@ func New(
 		gravitymoduletypes.ModuleName,
 		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		metrixmoduletypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(app.CrisisKeeper)
@@ -1128,6 +1149,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(wasm.ModuleName)
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
 	paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
+	paramsKeeper.Subspace(metrixmoduletypes.ModuleName)
 
 	return paramsKeeper
 }

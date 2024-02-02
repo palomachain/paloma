@@ -30,6 +30,7 @@ import (
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
 	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
+	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
 	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
@@ -108,6 +109,8 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 			keyTable = treasurymoduletypes.ParamKeyTable() //nolint:staticcheck
 		case valsetmoduletypes.ModuleName:
 			keyTable = valsetmoduletypes.ParamKeyTable() //nolint:staticcheck
+		case metrixmoduletypes.ModuleName:
+			keyTable = metrixmoduletypes.ParamKeyTable() //nolint:staticcheck
 		case wasmtypes.ModuleName:
 			keyTable = wasmtypes.ParamKeyTable() //nolint:staticcheck
 		}
@@ -246,6 +249,17 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 			},
 			Added: []string{
 				gravitymoduletypes.ModuleName,
+			},
+		}
+
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
+
+	if upgradeInfo.Name == "v1.12.0" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{
+				metrixmoduletypes.ModuleName,
 			},
 		}
 
