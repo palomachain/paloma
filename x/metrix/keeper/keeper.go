@@ -237,7 +237,7 @@ func (k *Keeper) PurgeRelayMetrics(ctx sdk.Context) {
 	logger = logger.WithFields("threshold", threshold)
 
 	// Purge records outside scoring window
-	k.history.Iterate(ctx, func(key []byte, history *types.ValidatorHistory) bool {
+	if err := k.history.Iterate(ctx, func(key []byte, history *types.ValidatorHistory) bool {
 		logger := logger.WithValidator(history.ValAddress)
 		logger.Debug("Puring records for validator.")
 
@@ -266,7 +266,10 @@ func (k *Keeper) PurgeRelayMetrics(ctx sdk.Context) {
 		}
 
 		return true
-	})
+	}); err != nil {
+		logger.WithError(err).Info("Iterating validator history failed.")
+		return
+	}
 
 	logger.Debug("Executing purge...")
 	for key, val := range updates {
@@ -281,7 +284,7 @@ func (k *Keeper) UpdateRelayMetrics(ctx sdk.Context) {
 	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("metrix.UpdateRelayMetrics")
 	logger.Debug("Running relay metrics update loop.")
 
-	k.history.Iterate(ctx, func(key []byte, history *types.ValidatorHistory) bool {
+	if err := k.history.Iterate(ctx, func(key []byte, history *types.ValidatorHistory) bool {
 		logger := logger.WithValidator(history.ValAddress)
 		valAddress := sdk.ValAddress(key)
 
@@ -322,7 +325,10 @@ func (k *Keeper) UpdateRelayMetrics(ctx sdk.Context) {
 		}
 
 		return true
-	})
+	}); err != nil {
+		logger.WithError(err).Info("Iterating validator history failed.")
+		return
+	}
 
 	logger.Debug("Updating relay metrics finished!")
 }
@@ -350,7 +356,6 @@ func (k *Keeper) UpdateUptime(ctx sdk.Context) {
 		k.updateRecord(ctx, val.GetOperator(), recordPatch{uptime: &uptime})
 		return false
 	})
-
 	logger.Debug("Updating uptime finished!")
 }
 
