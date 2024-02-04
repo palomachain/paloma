@@ -33,7 +33,7 @@ service Msg {
 // the coin to send across the bridge, note the restriction that this is a
 // single coin not a set of coins that is normal in other Cosmos messages
 message MsgSendToEth {
-
+  option (cosmos.msg.v1.signer) = "metadata";
   string                   sender   = 1 [deprecated = true];
   string                   eth_dest = 2;
   cosmos.base.v1beta1.Coin amount   = 3 [
@@ -54,6 +54,7 @@ message MsgSendToEthResponse {}
 // as well as an Ethereum signature over this batch by the validator
 // -------------
 message MsgConfirmBatch {
+  option (cosmos.msg.v1.signer) = "metadata";
   uint64 nonce          = 1;
   string token_contract = 2;
   string eth_signer     = 3;
@@ -70,6 +71,7 @@ message MsgConfirmBatchResponse {}
 // issued to the Cosmos address in question
 // -------------
 message MsgSendToPalomaClaim {
+  option (cosmos.msg.v1.signer) = "metadata";
   uint64 event_nonce    = 1;
   uint64 eth_block_height   = 2;
   string token_contract = 3;
@@ -89,6 +91,7 @@ message MsgSendToPalomaClaimResponse {}
 // BatchSendToEthClaim claims that a batch of send to eth
 // operations on the bridge contract was executed.
 message MsgBatchSendToEthClaim {
+  option (cosmos.msg.v1.signer) = "metadata";
   uint64 event_nonce    = 1;
   uint64 eth_block_height   = 2;
   uint64 batch_nonce    = 3;
@@ -104,6 +107,7 @@ message MsgBatchSendToEthClaimResponse {}
 // to cancel a given MsgSendToEth and recieve a refund
 // of the tokens
 message MsgCancelSendToEth {
+  option (cosmos.msg.v1.signer) = "metadata";
   uint64 transaction_id = 1;
   string sender         = 2 [deprecated = true];
   palomachain.paloma.valset.MsgMetadata metadata       = 3 [(gogoproto.nullable) = false];
@@ -116,6 +120,7 @@ message MsgCancelSendToEthResponse {}
 // existed on the Cosmos chain. 
 // Subject contains the batch.
 message MsgSubmitBadSignatureEvidence {
+  option (cosmos.msg.v1.signer) = "metadata";
   google.protobuf.Any subject = 1
       [ (cosmos_proto.accepts_interface) = "EthereumSigned" ];
   string              signature = 2;
@@ -175,6 +180,7 @@ message EventOutgoingTxId {
 }
 
 message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
   // authority is the address that controls the module (defaults to x/gov unless overwritten).
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
