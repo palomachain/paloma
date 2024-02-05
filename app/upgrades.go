@@ -23,6 +23,11 @@ import (
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
+	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
+	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
+	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
+	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
+	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 var minCommissionRate = math.LegacyMustNewDecFromStr("0.05")
@@ -73,6 +78,53 @@ func SetMinimumCommissionRate(ctx sdk.Context, keeper stakingkeeper.Keeper, minC
 }
 
 func (app *App) RegisterUpgradeHandlers(semverVersion string) {
+	// Set param key table for params module migration
+	for _, subspace := range app.ParamsKeeper.GetSubspaces() {
+		subspace := subspace
+
+		var keyTable paramstypes.KeyTable
+		switch subspace.Name() {
+		case authtypes.ModuleName:
+			keyTable = authtypes.ParamKeyTable() //nolint:staticcheck
+		case banktypes.ModuleName:
+			keyTable = banktypes.ParamKeyTable() //nolint:staticcheck
+		case stakingtypes.ModuleName:
+			keyTable = stakingtypes.ParamKeyTable() //nolint:staticcheck
+		case minttypes.ModuleName:
+			keyTable = minttypes.ParamKeyTable() //nolint:staticcheck
+		case distrtypes.ModuleName:
+			keyTable = distrtypes.ParamKeyTable() //nolint:staticcheck
+		case slashingtypes.ModuleName:
+			keyTable = slashingtypes.ParamKeyTable() //nolint:staticcheck
+		case govtypes.ModuleName:
+			keyTable = govv1.ParamKeyTable() //nolint:staticcheck
+		case crisistypes.ModuleName:
+			keyTable = crisistypes.ParamKeyTable() //nolint:staticcheck
+		case consensusmoduletypes.ModuleName:
+			keyTable = consensusmoduletypes.ParamKeyTable() //nolint:staticcheck
+		case evmmoduletypes.ModuleName:
+			keyTable = evmmoduletypes.ParamKeyTable() //nolint:staticcheck
+		case gravitymoduletypes.ModuleName:
+			keyTable = gravitymoduletypes.ParamKeyTable() //nolint:staticcheck
+		case palomamoduletypes.ModuleName:
+			keyTable = palomamoduletypes.ParamKeyTable() //nolint:staticcheck
+		case schedulermoduletypes.ModuleName:
+			keyTable = schedulermoduletypes.ParamKeyTable() //nolint:staticcheck
+		case treasurymoduletypes.ModuleName:
+			keyTable = treasurymoduletypes.ParamKeyTable() //nolint:staticcheck
+		case valsetmoduletypes.ModuleName:
+			keyTable = valsetmoduletypes.ParamKeyTable() //nolint:staticcheck
+		case metrixmoduletypes.ModuleName:
+			keyTable = metrixmoduletypes.ParamKeyTable() //nolint:staticcheck
+		case wasmtypes.ModuleName:
+			keyTable = wasmtypes.ParamKeyTable() //nolint:staticcheck
+		}
+
+		if !subspace.HasKeyTable() {
+			subspace.WithKeyTable(keyTable)
+		}
+	}
+
 	baseAppLegacySS := app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable())
 
 	app.UpgradeKeeper.SetUpgradeHandler(
@@ -206,6 +258,17 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 			},
 			Added: []string{
 				gravitymoduletypes.ModuleName,
+			},
+		}
+
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
+
+	if upgradeInfo.Name == "v1.12.0" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{
+				metrixmoduletypes.ModuleName,
 			},
 		}
 

@@ -1,5 +1,7 @@
 syntax = "proto3";
 import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "amino/amino.proto";
 
 package palomachain.paloma.evm;
 
@@ -40,6 +42,10 @@ message UploadSmartContract {
 }
 
 message Message {
+  // Previous definitions no longer in use.
+  reserved 8;
+  reserved "transferERC20Ownership";
+
   string turnstoneID = 1;
   string chainReferenceID = 2;
 
@@ -47,11 +53,19 @@ message Message {
     SubmitLogicCall submitLogicCall = 3;
     UpdateValset updateValset = 4;
     UploadSmartContract uploadSmartContract = 5;
-    TransferERC20Ownership transferERC20Ownership = 8;
   }
 
   string compassAddr = 6;
   string assignee = 7;
+  
+  // block height at which the message was assinged to the
+  // current relayer. Updated when message is reassigned.
+  string assigned_at_block_height   = 9 [
+    (cosmos_proto.scalar)  = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (amino.dont_omitempty) = true,
+    (gogoproto.nullable)   = false
+  ];
 }
 
 message TxExecutedProof {
@@ -62,7 +76,9 @@ message SmartContractExecutionErrorProof {
   string errorMessage = 1;
 }
 
+// This is no longer in active use.
 message TransferERC20Ownership {
+  option deprecated = true;
   uint64 smartContractID = 1;
   bytes newCompassAddress = 2;
 }

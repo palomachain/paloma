@@ -51,8 +51,6 @@ func IterAllFnc[T proto.Message](store storetypes.KVStore, pu ProtoUnmarshaler, 
 		if !fnc(iterator.Key(), val) {
 			return nil
 		}
-
-		res = append(res, val)
 	}
 
 	return nil

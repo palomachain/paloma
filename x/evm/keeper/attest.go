@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -19,6 +20,7 @@ import (
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 )
 
 const cMaxSubmitLogicCallRetries uint32 = 2
@@ -98,16 +100,27 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 		return err
 	}
 
+	message := consensusMsg.(*types.Message)
+
 	// If we got up to here it means that the enough evidence was provided
 	defer func() {
+		success := false
+
 		// if the input type is a TX, then regardles, we want to set it as already processed
 		switch winner := evidence.(type) {
 		case *types.TxExecutedProof:
+			success = true
 			tx, err := winner.GetTX()
 			if err == nil {
 				k.setTxAsAlreadyProcessed(sdkCtx, tx)
 			}
 		}
+
+		handledAt := msg.GetHandledAtBlockHeight()
+		if handledAt == nil {
+			handledAt = func(i math.Int) *math.Int { return &i }(sdk.NewInt(ctx.BlockHeight()))
+		}
+		publishMessageAttestedEvent(ctx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
 
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
@@ -116,7 +129,6 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 		}
 	}()
 
-	message := consensusMsg.(*types.Message)
 	rawAction := message.GetAction()
 	_, chainReferenceID := q.ChainInfo()
 	logger = logger.WithFields("chain-reference-id", chainReferenceID)
@@ -128,11 +140,6 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 		msg:              message,
 	}
 	switch rawAction.(type) {
-	case *types.Message_TransferERC20Ownership:
-		logger = logger.WithFields("action-msg", "Message_TransferERC20Ownership")
-		logger.Debug("Processing attestation.")
-		logger.Debug("Skipping attestation as deprecated.")
-		return nil
 	case *types.Message_UploadSmartContract:
 		return newUploadSmartContractAttester(&k, logger, params).Execute(sdkCtx)
 	case *types.Message_UpdateValset:
@@ -142,6 +149,23 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 	}
 
 	return nil
+}
+
+func publishMessageAttestedEvent(ctx sdk.Context, k *Keeper, msgID uint64, assignee string, assignedAt math.Int, handledAt math.Int, successful bool) {
+	valAddr, err := sdk.ValAddressFromBech32(assignee)
+	if err != nil {
+		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields("assignee", assignee, "msg-id", msgID).Error("failed to get validator address from bech32.")
+	}
+
+	for _, v := range k.onMessageAttestedListeners {
+		v.OnConsensusMessageAttested(ctx, metrixtypes.MessageAttestedEvent{
+			AssignedAtBlockHeight:  assignedAt,
+			HandledAtBlockHeight:   handledAt,
+			Assignee:               valAddr,
+			MessageID:              msgID,
+			WasRelayedSuccessfully: successful,
+		})
+	}
 }
 
 func attestTransactionIntegrity(

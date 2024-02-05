@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -198,7 +199,7 @@ func (c Queue) AddEvidence(ctx context.Context, msgID uint64, evidence *types.Ev
 
 type assignableMessage interface {
 	proto.Message
-	SetAssignee(val string)
+	SetAssignee(ctx sdk.Context, val string)
 }
 
 func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) error {
@@ -215,7 +216,7 @@ func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) erro
 	if !ok {
 		return fmt.Errorf("message does not support setting assignee")
 	}
-	assignable.SetAssignee(val)
+	assignable.SetAssignee(ctx, val)
 	var a proto.Message
 	a = assignable
 	msg := imsg.(*types.QueuedSignedMessage)
@@ -242,6 +243,7 @@ func (c Queue) SetPublicAccessData(ctx context.Context, msgID uint64, data *type
 	}
 
 	msg.SetPublicAccessData(data)
+	msg.SetHandledAtBlockHeight(math.NewInt(ctx.BlockHeight()))
 
 	return c.save(sdkCtx, msg)
 }
@@ -263,11 +265,12 @@ func (c Queue) SetErrorData(ctx context.Context, msgID uint64, data *types.Error
 		return err
 	}
 
-	if msg.GetErrorData() != nil {
+	if msg.GetErrorData() != nil || msg.GetPublicAccessData() != nil {
 		return nil
 	}
 
 	msg.SetErrorData(data)
+	msg.SetHandledAtBlockHeight(math.NewInt(ctx.BlockHeight()))
 
 	return c.save(sdkCtx, msg)
 }

@@ -5,7 +5,9 @@ import (
 	"math/big"
 	"strings"
 
+	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -62,16 +64,6 @@ func (_m *Message_UploadSmartContract) keccak256(orig *Message, nonce uint64) []
 	return crypto.Keccak256(append(m.GetBytecode()[:], uint64ToByte(nonce)...))
 }
 
-func (_m *Message_TransferERC20Ownership) keccak256(orig *Message, nonce uint64) []byte {
-	m := _m.TransferERC20Ownership
-
-	bytes := make([]byte, 0, 48) // 2*8 UINT64 + 32 ADDRESS
-	bytes = append(bytes, uint64ToByte(m.GetSmartContractID())...)
-	bytes = append(bytes, m.GetNewCompassAddress()...)
-	bytes = append(bytes, uint64ToByte(nonce)...)
-	return crypto.Keccak256(bytes)
-}
-
 func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte {
 	m := _m.SubmitLogicCall
 	// logic_call((address,bytes),uint256,uint256)
@@ -115,8 +107,9 @@ func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte
 	return crypto.Keccak256(bytes)
 }
 
-func (m *Message) SetAssignee(val string) {
+func (m *Message) SetAssignee(ctx sdk.Context, val string) {
 	m.Assignee = val
+	m.AssignedAtBlockHeight = math.NewInt(ctx.BlockHeight())
 }
 
 func (m *Message) Keccak256(nonce uint64) []byte {

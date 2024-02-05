@@ -129,6 +129,9 @@ import (
 	gravityclient "github.com/palomachain/paloma/x/gravity/client"
 	gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
 	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
+	"github.com/palomachain/paloma/x/metrix"
+	metrixmodulekeeper "github.com/palomachain/paloma/x/metrix/keeper"
+	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 	palomamodule "github.com/palomachain/paloma/x/paloma"
 	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
@@ -166,6 +169,42 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 var (
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
+
+	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
+	// non-dependant module elements, such as codec registration
+	// and genesis verification.
+	ModuleBasics = module.NewBasicManager(
+		auth.AppModuleBasic{},
+		genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+		BankModule{},
+		capability.AppModuleBasic{},
+		StakingModule{},
+		MintModule{},
+		distr.AppModuleBasic{},
+		GovModule{gov.NewAppModuleBasic(getGovProposalHandlers())},
+		params.AppModuleBasic{},
+		CrisisModule{},
+		slashing.AppModule{},
+		feegrantmodule.AppModuleBasic{},
+		upgrade.AppModuleBasic{},
+		evidence.AppModuleBasic{},
+		vesting.AppModuleBasic{},
+		schedulermodule.AppModuleBasic{},
+		consensusmodule.AppModuleBasic{},
+		valsetmodule.AppModuleBasic{},
+		wasm.AppModuleBasic{},
+		evm.AppModuleBasic{},
+		gravitymodule.AppModuleBasic{},
+		palomamodule.AppModuleBasic{},
+		treasurymodule.AppModuleBasic{},
+		consensus.AppModuleBasic{},
+		transfer.AppModuleBasic{},
+		ibc.AppModuleBasic{},
+		ibctm.AppModuleBasic{},
+		ica.AppModuleBasic{},
+		ibcfee.AppModuleBasic{},
+	)
+
 	// module account permissions
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:     nil,
@@ -246,6 +285,7 @@ type App struct {
 	EvmKeeper       evmmodulekeeper.Keeper
 	GravityKeeper   gravitymodulekeeper.Keeper
 	wasmKeeper      wasmkeeper.Keeper
+	MetrixKeeper    metrixmodulekeeper.Keeper
 
 	// ModuleManager is the module manager
 	ModuleManager      *module.Manager
@@ -326,6 +366,7 @@ func New(
 		gravitymoduletypes.StoreKey,
 		consensusparamtypes.StoreKey,
 		crisistypes.StoreKey,
+		metrixmoduletypes.StoreKey,
 		wasmtypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -337,6 +378,7 @@ func New(
 		schedulermoduletypes.MemStoreKey,
 		treasurymoduletypes.MemStoreKey,
 		palomamoduletypes.MemStoreKey,
+		metrixmoduletypes.MemStoreKey,
 	)
 
 	app := &App{
@@ -521,6 +563,13 @@ func New(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
+	app.MetrixKeeper = metrixmodulekeeper.NewKeeper(
+		appCodec,
+		keys[metrixmoduletypes.StoreKey],
+		app.GetSubspace(metrixmoduletypes.ModuleName),
+		app.SlashingKeeper,
+		app.StakingKeeper)
+
 	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[valsetmoduletypes.StoreKey]),
@@ -552,8 +601,10 @@ func New(
 	)
 	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 		&app.EvmKeeper,
+		&app.MetrixKeeper,
 	}
 	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
+	app.EvmKeeper.AddMessageConsensusAttestedListener(&app.MetrixKeeper)
 
 	app.GravityKeeper = gravitymodulekeeper.NewKeeper(
 		appCodec,
@@ -743,6 +794,7 @@ func New(
 	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
 	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
+	metrixModule := metrix.NewAppModule(appCodec, app.MetrixKeeper)
 
 	stakingAppModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName))
 
@@ -774,6 +826,7 @@ func New(
 		gravityModule,
 		palomaModule,
 		treasuryModule,
+		metrixModule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		ibc.NewAppModule(app.IBCKeeper),
 		transfer.NewAppModule(app.TransferKeeper),
@@ -828,6 +881,7 @@ func New(
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		metrixmoduletypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -860,6 +914,7 @@ func New(
 		ibcfeetypes.ModuleName,
 		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		metrixmoduletypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -897,6 +952,7 @@ func New(
 		gravitymoduletypes.ModuleName,
 		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		metrixmoduletypes.ModuleName,
 	)
 
 	app.configurator = module.NewConfigurator(appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
@@ -1168,6 +1224,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
 	paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
+	paramsKeeper.Subspace(metrixmoduletypes.ModuleName)
 
 	paramsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())

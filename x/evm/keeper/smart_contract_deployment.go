@@ -173,7 +173,8 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 			Action: &types.Message_SubmitLogicCall{
 				SubmitLogicCall: logicCall,
 			},
-			Assignee: assignee,
+			Assignee:              assignee,
+			AssignedAtBlockHeight: sdkmath.NewInt(ctx.BlockHeight()),
 		}, nil)
 }
 
@@ -299,7 +300,8 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 					ConstructorInput: input,
 				},
 			},
-			Assignee: assignee,
+			Assignee:              assignee,
+			AssignedAtBlockHeight: sdkmath.NewInt(ctx.BlockHeight()),
 		}, nil)
 	return err
 }
