@@ -110,13 +110,16 @@ var _ = Describe("updating feature set", func() {
 					State: valsettypes.ValidatorState_ACTIVE,
 					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "1",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
 						},
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "2",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
 						},
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "3",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
 						},
 					},
 					Address: validators[0].GetOperator(),
@@ -125,10 +128,15 @@ var _ = Describe("updating feature set", func() {
 					State: valsettypes.ValidatorState_ACTIVE,
 					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "1",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
 						},
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "2",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+						{
+							ChainReferenceID: "3",
 						},
 					},
 					Address: validators[1].GetOperator(),
@@ -137,13 +145,19 @@ var _ = Describe("updating feature set", func() {
 					State: valsettypes.ValidatorState_ACTIVE,
 					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "1",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+						{
+							ChainReferenceID: "2",
+						},
+						{
+							ChainReferenceID: "3",
 						},
 					},
 					Address: validators[2].GetOperator(),
 				},
 			},
-			Chains: []string{"chain-1", "chain-2", "chain-3"},
 		}
 	})
 
@@ -207,8 +221,9 @@ var _ = Describe("updating feature set", func() {
 
 			a.MetrixKeeper.OnSnapshotBuilt(ctx, snapshot)
 			snapshot.Validators[0].ExternalChainInfos[0].Traits = []string{}
-			snapshot.Validators[1].ExternalChainInfos = snapshot.Validators[1].ExternalChainInfos[:1]
-			snapshot.Validators[2].ExternalChainInfos = append(snapshot.Validators[2].ExternalChainInfos, &valsettypes.ExternalChainInfo{Traits: []string{valsettypes.PIGEON_TRAIT_MEV}})
+			snapshot.Validators[1].ExternalChainInfos[1].Traits = []string{}
+			snapshot.Validators[2].ExternalChainInfos[0].Traits = []string{valsettypes.PIGEON_TRAIT_MEV}
+			snapshot.Validators[2].ExternalChainInfos[1].Traits = []string{valsettypes.PIGEON_TRAIT_MEV}
 			a.MetrixKeeper.OnSnapshotBuilt(ctx, snapshot)
 
 			featureSets := []math.LegacyDec{

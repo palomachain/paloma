@@ -179,14 +179,13 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 	logger.Debug("Updating snapshot metrics...")
 
 	// Building the feature set is currently only taking MEV support into consideration.
-	max := int64(len(snapshot.Chains))
-	if max < 1 {
-		logger.Info("Skip updating metrics, no chains found.")
-		return
-	}
-
 	for _, v := range snapshot.Validators {
 		logger := logger.WithValidator(v.GetAddress().String())
+		scoreMax := int64(len(v.ExternalChainInfos))
+		if scoreMax < 1 {
+			logger.Info("Skip updating metrics, no chains found.")
+			return
+		}
 
 		matches := func() int64 {
 			if v.State != valsettypes.ValidatorState_ACTIVE {
@@ -201,15 +200,10 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 				}
 			}
 
-			if matches > max {
-				logger.WithFields("max-matches", max, "found-matches", matches).Error("Found too many matches.")
-				return 0
-			}
-
 			return matches
 		}()
 
-		score := palomath.BigIntDiv(big.NewInt(matches), big.NewInt(max))
+		score := palomath.BigIntDiv(big.NewInt(matches), big.NewInt(scoreMax))
 		k.updateRecord(ctx, v.GetAddress(), recordPatch{featureSet: &score})
 	}
 }
