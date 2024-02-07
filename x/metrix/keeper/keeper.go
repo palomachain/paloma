@@ -15,6 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/palomath"
@@ -339,6 +340,14 @@ func (k *Keeper) UpdateUptime(ctx sdk.Context) {
 	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("metrix.UpdateUptime").WithFields("signed-blocks-window", window)
 	logger.Debug("Running uptime update loop.")
 
+	jailed := make(map[string]struct{})
+	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
+		if val.IsJailed() {
+			jailed[val.GetOperator().String()] = struct{}{}
+		}
+		return false
+	})
+
 	k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
 		logger := logger.WithFields("validator-conspub", info.GetAddress())
 		val, found := k.staking.GetValidatorByConsAddr(ctx, consAddr)
@@ -348,11 +357,17 @@ func (k *Keeper) UpdateUptime(ctx sdk.Context) {
 			return false
 		}
 
-		uptime := calculateUptime(window, info.MissedBlocksCounter)
-		logger.WithValidator(val.GetOperator().String()).
+		valAddr := val.GetOperator().String()
+		uptime := math.LegacyNewDec(0)
+		_, isJailed := jailed[valAddr]
+		if !isJailed {
+			uptime = calculateUptime(window, info.MissedBlocksCounter)
+		}
+		logger.WithValidator(valAddr).
 			WithFields(
 				"missed-blocks-counter", info.MissedBlocksCounter,
-				"uptime", uptime).
+				"uptime", uptime,
+				"is-jailed", isJailed).
 			Debug("Calculated uptime, updating record.")
 		k.updateRecord(ctx, val.GetOperator(), recordPatch{uptime: &uptime})
 		return false

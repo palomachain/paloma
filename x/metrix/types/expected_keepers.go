@@ -16,4 +16,5 @@ type SlashingKeeper interface {
 type StakingKeeper interface {
 	GetValidator(sdk.Context, sdk.ValAddress) (stakingtypes.Validator, bool)
 	GetValidatorByConsAddr(sdk.Context, sdk.ConsAddress) (stakingtypes.Validator, bool)
+	IterateValidators(sdk.Context, func(int64, stakingtypes.ValidatorI) bool)
 }
