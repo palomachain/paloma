@@ -8,6 +8,7 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/app"
@@ -25,44 +26,62 @@ func TestGenesisGinkgo(t *testing.T) {
 var _ = Describe("updating uptime", func() {
 	var a app.TestApp
 	var ctx sdk.Context
+	var validators []stakingtypes.Validator
+	var cons []sdk.ConsAddress
+	var uptimes []math.LegacyDec
 
 	BeforeEach(func() {
 		a = app.NewTestApp(GinkgoT(), false)
 		ctx = a.NewContext(false, tmproto.Header{
 			Height: 5,
 		})
+		validators := testutil.GenValidators(3, 1000)
+		for _, v := range validators {
+			r, err := a.MetrixKeeper.GetValidatorMetrics(ctx, v.GetOperator())
+			Expect(r).To(BeNil())
+			Expect(err).To(BeNil())
+
+			a.StakingKeeper.SetValidator(ctx, v)
+			a.StakingKeeper.SetValidatorByConsAddr(ctx, v)
+		}
+
+		cons = make([]sdk.ConsAddress, len(validators))
+		for i, v := range validators {
+			var err error
+			cons[i], err = v.GetConsAddr()
+			Expect(err).To(BeNil())
+		}
+
+		a.SlashingKeeper.SetValidatorSigningInfo(ctx, cons[0], slashingtypes.NewValidatorSigningInfo(cons[0], 0, 0, time.Time{}, false, 1))
+		a.SlashingKeeper.SetValidatorSigningInfo(ctx, cons[1], slashingtypes.NewValidatorSigningInfo(cons[1], 0, 0, time.Time{}, false, 10))
+		a.SlashingKeeper.SetValidatorSigningInfo(ctx, cons[2], slashingtypes.NewValidatorSigningInfo(cons[2], 0, 0, time.Time{}, false, 42))
+
+		uptimes = []math.LegacyDec{
+			math.LegacyMustNewDecFromStr("0.99"),
+			math.LegacyMustNewDecFromStr("0.9"),
+			math.LegacyMustNewDecFromStr("0.58"),
+		}
+		a.MetrixKeeper.UpdateUptime(ctx)
 	})
 
 	Context("with nonexisting validator", func() {
 		It("creates new validator metrics", func() {
-			validators := testutil.GenValidators(3, 1000)
-			for _, v := range validators {
-				r, err := a.MetrixKeeper.GetValidatorMetrics(ctx, v.GetOperator())
-				Expect(r).To(BeNil())
-				Expect(err).To(BeNil())
-
-				a.StakingKeeper.SetValidator(ctx, v)
-				a.StakingKeeper.SetValidatorByConsAddr(ctx, v)
-			}
-
-			cons := make([]sdk.ConsAddress, len(validators))
 			for i, v := range validators {
-				var err error
-				cons[i], err = v.GetConsAddr()
+				r, err := a.MetrixKeeper.GetValidatorMetrics(ctx, v.GetOperator())
+				Expect(r).To(Not(BeNil()))
 				Expect(err).To(BeNil())
+				Expect(r.Uptime).To(Equal(uptimes[i]))
 			}
+		})
+	})
 
-			a.SlashingKeeper.SetValidatorSigningInfo(ctx, cons[0], slashingtypes.NewValidatorSigningInfo(cons[0], 0, 0, time.Time{}, false, 1))
-			a.SlashingKeeper.SetValidatorSigningInfo(ctx, cons[1], slashingtypes.NewValidatorSigningInfo(cons[1], 0, 0, time.Time{}, false, 10))
-			a.SlashingKeeper.SetValidatorSigningInfo(ctx, cons[2], slashingtypes.NewValidatorSigningInfo(cons[2], 0, 0, time.Time{}, false, 42))
+	Context("with jailed validator", func() {
+		BeforeEach(func() {
+			a.StakingKeeper.Jail(ctx, cons[2])
+			uptimes[2] = math.LegacyNewDec(0)
+		})
 
-			a.MetrixKeeper.UpdateUptime(ctx)
-
-			uptimes := []math.LegacyDec{
-				math.LegacyMustNewDecFromStr("0.99"),
-				math.LegacyMustNewDecFromStr("0.9"),
-				math.LegacyMustNewDecFromStr("0.58"),
-			}
+		It("sets uptime to 0", func() {
 			for i, v := range validators {
 				r, err := a.MetrixKeeper.GetValidatorMetrics(ctx, v.GetOperator())
 				Expect(r).To(Not(BeNil()))
@@ -91,13 +110,16 @@ var _ = Describe("updating feature set", func() {
 					State: valsettypes.ValidatorState_ACTIVE,
 					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "1",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
 						},
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "2",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
 						},
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "3",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
 						},
 					},
 					Address: validators[0].GetOperator(),
@@ -106,10 +128,15 @@ var _ = Describe("updating feature set", func() {
 					State: valsettypes.ValidatorState_ACTIVE,
 					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "1",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
 						},
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "2",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+						{
+							ChainReferenceID: "3",
 						},
 					},
 					Address: validators[1].GetOperator(),
@@ -118,13 +145,19 @@ var _ = Describe("updating feature set", func() {
 					State: valsettypes.ValidatorState_ACTIVE,
 					ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 						{
-							Traits: []string{valsettypes.PIGEON_TRAIT_MEV},
+							ChainReferenceID: "1",
+							Traits:           []string{valsettypes.PIGEON_TRAIT_MEV},
+						},
+						{
+							ChainReferenceID: "2",
+						},
+						{
+							ChainReferenceID: "3",
 						},
 					},
 					Address: validators[2].GetOperator(),
 				},
 			},
-			Chains: []string{"chain-1", "chain-2", "chain-3"},
 		}
 	})
 
@@ -188,8 +221,9 @@ var _ = Describe("updating feature set", func() {
 
 			a.MetrixKeeper.OnSnapshotBuilt(ctx, snapshot)
 			snapshot.Validators[0].ExternalChainInfos[0].Traits = []string{}
-			snapshot.Validators[1].ExternalChainInfos = snapshot.Validators[1].ExternalChainInfos[:1]
-			snapshot.Validators[2].ExternalChainInfos = append(snapshot.Validators[2].ExternalChainInfos, &valsettypes.ExternalChainInfo{Traits: []string{valsettypes.PIGEON_TRAIT_MEV}})
+			snapshot.Validators[1].ExternalChainInfos[1].Traits = []string{}
+			snapshot.Validators[2].ExternalChainInfos[0].Traits = []string{valsettypes.PIGEON_TRAIT_MEV}
+			snapshot.Validators[2].ExternalChainInfos[1].Traits = []string{valsettypes.PIGEON_TRAIT_MEV}
 			a.MetrixKeeper.OnSnapshotBuilt(ctx, snapshot)
 
 			featureSets := []math.LegacyDec{
