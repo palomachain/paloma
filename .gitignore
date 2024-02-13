@@ -7,4 +7,4 @@ release/
 build/
 dist/
 .scratch/
-
+tests/integration/evm/keeper/testdata
