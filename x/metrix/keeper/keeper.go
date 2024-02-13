@@ -19,6 +19,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/palomath"
@@ -189,6 +190,11 @@ func (k Keeper) OnSnapshotBuilt(ctx context.Context, snapshot *valsettypes.Snaps
 	// Building the feature set is currently only taking MEV support into consideration.
 	for _, v := range snapshot.Validators {
 		logger := logger.WithValidator(v.GetAddress().String())
+		scoreMax := int64(len(v.ExternalChainInfos))
+		if scoreMax < 1 {
+			logger.Info("Skip updating metrics, no chains found.")
+			return
+		}
 		scoreMax := int64(len(v.ExternalChainInfos))
 		if scoreMax < 1 {
 			logger.Info("Skip updating metrics, no chains found.")
@@ -377,6 +383,8 @@ func (k *Keeper) UpdateUptime(ctx context.Context) error {
 		logger.WithValidator(valAddr).
 			WithFields(
 				"missed-blocks-counter", info.MissedBlocksCounter,
+				"uptime", uptime,
+				"is-jailed", isJailed).
 				"uptime", uptime,
 				"is-jailed", isJailed).
 			Debug("Calculated uptime, updating record.")
