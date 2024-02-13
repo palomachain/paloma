@@ -354,7 +354,7 @@ func (k *Keeper) UpdateUptime(ctx context.Context) error {
 	logger.Debug("Running uptime update loop.")
 
 	jailed := make(map[string]struct{})
-	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
+	err = k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		bz, _ := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
 		valAddr, _ := k.AddressCodec.BytesToString(bz)
 		if val.IsJailed() {
@@ -362,16 +362,17 @@ func (k *Keeper) UpdateUptime(ctx context.Context) error {
 		}
 		return false
 	})
+	if err != nil {
+		return err
+	}
 
-	k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
+	err = k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
 		logger := logger.WithFields("validator-conspub", info.GetAddress())
 		val, err := k.staking.GetValidatorByConsAddr(ctx, consAddr)
 		if err != nil {
 			logger.Error("no validator found for cons pub address.")
-
 			return false
 		}
-
 		bz, _ := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
 		valAddr, _ := k.AddressCodec.BytesToString(bz)
 		uptime := math.LegacyNewDec(0)
@@ -390,6 +391,9 @@ func (k *Keeper) UpdateUptime(ctx context.Context) error {
 		k.updateRecord(ctx, bz, recordPatch{uptime: &uptime})
 		return false
 	})
+	if err != nil {
+		return err
+	}
 	logger.Debug("Updating uptime finished!")
 	return nil
 }
