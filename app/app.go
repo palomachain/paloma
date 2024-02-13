@@ -170,41 +170,6 @@ var (
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
 
-	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
-	// non-dependant module elements, such as codec registration
-	// and genesis verification.
-	ModuleBasics = module.NewBasicManager(
-		auth.AppModuleBasic{},
-		genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-		BankModule{},
-		capability.AppModuleBasic{},
-		StakingModule{},
-		MintModule{},
-		distr.AppModuleBasic{},
-		GovModule{gov.NewAppModuleBasic(getGovProposalHandlers())},
-		params.AppModuleBasic{},
-		CrisisModule{},
-		slashing.AppModule{},
-		feegrantmodule.AppModuleBasic{},
-		upgrade.AppModuleBasic{},
-		evidence.AppModuleBasic{},
-		vesting.AppModuleBasic{},
-		schedulermodule.AppModuleBasic{},
-		consensusmodule.AppModuleBasic{},
-		valsetmodule.AppModuleBasic{},
-		wasm.AppModuleBasic{},
-		evm.AppModuleBasic{},
-		gravitymodule.AppModuleBasic{},
-		palomamodule.AppModuleBasic{},
-		treasurymodule.AppModuleBasic{},
-		consensus.AppModuleBasic{},
-		transfer.AppModuleBasic{},
-		ibc.AppModuleBasic{},
-		ibctm.AppModuleBasic{},
-		ica.AppModuleBasic{},
-		ibcfee.AppModuleBasic{},
-	)
-
 	// module account permissions
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:     nil,
@@ -565,10 +530,12 @@ func New(
 
 	app.MetrixKeeper = metrixmodulekeeper.NewKeeper(
 		appCodec,
-		keys[metrixmoduletypes.StoreKey],
+		runtime.NewKVStoreService(keys[metrixmoduletypes.StoreKey]),
 		app.GetSubspace(metrixmoduletypes.ModuleName),
 		app.SlashingKeeper,
-		app.StakingKeeper)
+		app.StakingKeeper,
+		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+	)
 
 	app.ValsetKeeper = *valsetmodulekeeper.NewKeeper(
 		appCodec,
@@ -964,7 +931,6 @@ func New(
 	// Make sure it's called after `app.ModuleManager` and `app.configurator` are
 	// set.
 	app.RegisterUpgradeHandlers(semverVersion)
-
 	// Create the simulation manager and define the order of the modules for
 	// deterministic simulations.
 	overrideModules := map[string]module.AppModuleSimulation{

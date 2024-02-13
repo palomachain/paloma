@@ -152,6 +152,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	turnstoneID string,
 	logicCall *types.SubmitLogicCall,
 ) (uint64, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	requirements := &xchain.JobRequirements{
 		EnforceMEVRelay: logicCall.ExecutionRequirements.EnforceMEVRelay,
 	}
@@ -174,11 +175,12 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 				SubmitLogicCall: logicCall,
 			},
 			Assignee:              assignee,
-			AssignedAtBlockHeight: sdkmath.NewInt(ctx.BlockHeight()),
+			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
 		}, nil)
 }
 
 func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) (retErr error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	defer func() {
 		args := []any{
 			"chain-reference-id", chainInfo.GetChainReferenceID(),
@@ -301,7 +303,7 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 				},
 			},
 			Assignee:              assignee,
-			AssignedAtBlockHeight: sdkmath.NewInt(ctx.BlockHeight()),
+			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
 		}, nil)
 	return err
 }

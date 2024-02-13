@@ -243,7 +243,7 @@ func (c Queue) SetPublicAccessData(ctx context.Context, msgID uint64, data *type
 	}
 
 	msg.SetPublicAccessData(data)
-	msg.SetHandledAtBlockHeight(math.NewInt(ctx.BlockHeight()))
+	msg.SetHandledAtBlockHeight(math.NewInt(sdkCtx.BlockHeight()))
 
 	return c.save(sdkCtx, msg)
 }
@@ -270,7 +270,7 @@ func (c Queue) SetErrorData(ctx context.Context, msgID uint64, data *types.Error
 	}
 
 	msg.SetErrorData(data)
-	msg.SetHandledAtBlockHeight(math.NewInt(ctx.BlockHeight()))
+	msg.SetHandledAtBlockHeight(math.NewInt(sdkCtx.BlockHeight()))
 
 	return c.save(sdkCtx, msg)
 }

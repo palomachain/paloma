@@ -4,27 +4,23 @@
 package types
 
 import (
-	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	cosmossdk_io_math "cosmossdk.io/math"
-
+	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -61,11 +57,9 @@ func (*ValidatorMetrics) ProtoMessage()    {}
 func (*ValidatorMetrics) Descriptor() ([]byte, []int) {
 	return fileDescriptor_bb382b6ba8ce0e33, []int{0}
 }
-
 func (m *ValidatorMetrics) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *ValidatorMetrics) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ValidatorMetrics.Marshal(b, m, deterministic)
@@ -78,15 +72,12 @@ func (m *ValidatorMetrics) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-
 func (m *ValidatorMetrics) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ValidatorMetrics.Merge(m, src)
 }
-
 func (m *ValidatorMetrics) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *ValidatorMetrics) XXX_DiscardUnknown() {
 	xxx_messageInfo_ValidatorMetrics.DiscardUnknown(m)
 }
@@ -116,11 +107,9 @@ func (*ValidatorHistory) ProtoMessage()    {}
 func (*ValidatorHistory) Descriptor() ([]byte, []int) {
 	return fileDescriptor_bb382b6ba8ce0e33, []int{1}
 }
-
 func (m *ValidatorHistory) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *ValidatorHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ValidatorHistory.Marshal(b, m, deterministic)
@@ -133,15 +122,12 @@ func (m *ValidatorHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-
 func (m *ValidatorHistory) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ValidatorHistory.Merge(m, src)
 }
-
 func (m *ValidatorHistory) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *ValidatorHistory) XXX_DiscardUnknown() {
 	xxx_messageInfo_ValidatorHistory.DiscardUnknown(m)
 }
@@ -174,11 +160,9 @@ func (*HistoricRelayData) ProtoMessage()    {}
 func (*HistoricRelayData) Descriptor() ([]byte, []int) {
 	return fileDescriptor_bb382b6ba8ce0e33, []int{2}
 }
-
 func (m *HistoricRelayData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *HistoricRelayData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_HistoricRelayData.Marshal(b, m, deterministic)
@@ -191,15 +175,12 @@ func (m *HistoricRelayData) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-
 func (m *HistoricRelayData) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_HistoricRelayData.Merge(m, src)
 }
-
 func (m *HistoricRelayData) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *HistoricRelayData) XXX_DiscardUnknown() {
 	xxx_messageInfo_HistoricRelayData.DiscardUnknown(m)
 }
@@ -317,7 +298,6 @@ func (this *ValidatorMetrics) Equal(that interface{}) bool {
 	}
 	return true
 }
-
 func (this *HistoricRelayData) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -348,7 +328,6 @@ func (this *HistoricRelayData) Equal(that interface{}) bool {
 	}
 	return true
 }
-
 func (m *ValidatorMetrics) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -527,7 +506,6 @@ func encodeVarintMetrix(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *ValidatorMetrics) Size() (n int) {
 	if m == nil {
 		return 0
@@ -591,11 +569,9 @@ func (m *HistoricRelayData) Size() (n int) {
 func sovMetrix(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozMetrix(x uint64) (n int) {
 	return sovMetrix(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *ValidatorMetrics) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -848,7 +824,6 @@ func (m *ValidatorMetrics) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *ValidatorHistory) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -965,7 +940,6 @@ func (m *ValidatorHistory) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *HistoricRelayData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1074,7 +1048,6 @@ func (m *HistoricRelayData) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipMetrix(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

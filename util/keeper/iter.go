@@ -32,7 +32,6 @@ func IterAllRaw(store storetypes.KVStore, pu ProtoUnmarshaler) (keys [][]byte, v
 }
 
 func IterAllFnc[T proto.Message](store storetypes.KVStore, pu ProtoUnmarshaler, fnc func([]byte, T) bool) error {
-	res := []T{}
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
 

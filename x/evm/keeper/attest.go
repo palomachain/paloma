@@ -118,9 +118,9 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 
 		handledAt := msg.GetHandledAtBlockHeight()
 		if handledAt == nil {
-			handledAt = func(i math.Int) *math.Int { return &i }(sdk.NewInt(ctx.BlockHeight()))
+			handledAt = func(i math.Int) *math.Int { return &i }(sdkmath.NewInt(sdkCtx.BlockHeight()))
 		}
-		publishMessageAttestedEvent(ctx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
+		publishMessageAttestedEvent(sdkCtx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
 
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.

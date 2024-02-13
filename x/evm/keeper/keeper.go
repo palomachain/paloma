@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"cosmossdk.io/math"
 	"cosmossdk.io/core/address"
 	corestore "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -134,8 +134,8 @@ func NewKeeper(
 			ValsetKeeper: valsetKeeper,
 		},
 		onMessageAttestedListeners: make([]metrixtypes.OnConsensusMessageAttestedListener, 0),
-		authority:    authority,
-		AddressCodec: a,
+		authority:                  authority,
+		AddressCodec:               a,
 	}
 
 	k.deploymentCache = deployment.NewCache(provideDeploymentCacheBootstrapper(k))
@@ -628,7 +628,7 @@ func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.C
 				},
 			},
 			Assignee:              assignee,
-			AssignedAtBlockHeight: math.NewInt(ctx.BlockHeight()),
+			AssignedAtBlockHeight: math.NewInt(sdkCtx.BlockHeight()),
 		}, nil,
 	)
 	if err != nil {
