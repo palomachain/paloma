@@ -19,7 +19,6 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/palomath"
@@ -195,7 +194,7 @@ func (k Keeper) OnSnapshotBuilt(ctx context.Context, snapshot *valsettypes.Snaps
 			logger.Info("Skip updating metrics, no chains found.")
 			return
 		}
-		scoreMax := int64(len(v.ExternalChainInfos))
+		scoreMax = int64(len(v.ExternalChainInfos))
 		if scoreMax < 1 {
 			logger.Info("Skip updating metrics, no chains found.")
 			return
@@ -384,7 +383,7 @@ func (k *Keeper) UpdateUptime(ctx context.Context) error {
 			WithFields(
 				"missed-blocks-counter", info.MissedBlocksCounter,
 				"uptime", uptime,
-				"is-jailed", isJailed).
+				"is-jailed", isJailed,
 				"uptime", uptime,
 				"is-jailed", isJailed).
 			Debug("Calculated uptime, updating record.")

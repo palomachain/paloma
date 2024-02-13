@@ -23,6 +23,7 @@ import (
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
+	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 )
 
 var minCommissionRate = math.LegacyMustNewDecFromStr("0.05")
