@@ -36,7 +36,3 @@ func (m CacheKey) Bytes() []byte { return []byte(m) }
 type Key []byte
 
 func (k Key) Bytes() []byte { return k }
-
-func KeyPrefix(p string) []byte {
-	return []byte(p)
-}

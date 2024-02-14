@@ -1,7 +1,21 @@
 syntax = "proto3";
 package palomachain.paloma.treasury;
 
+import "gogoproto/gogo.proto";
+import "palomachain/paloma/treasury/relayer_fee.proto";
+import "palomachain/paloma/valset/common.proto";
+
 option go_package = "github.com/palomachain/paloma/x/treasury/types";
 
-// Msg defines the Msg service.
-service Msg {}
+service Msg {
+    rpc SetRelayerFee(MsgSetRelayerFee) returns (SetRelayerFeeResponse);
+}
+
+message MsgSetRelayerFee {
+  RelayerFee fee = 1 [(gogoproto.nullable) = false];
+  palomachain.paloma.valset.MsgMetadata metadata = 2 [(gogoproto.nullable) = false];
+}
+message SetRelayerFeeResponse {
+  RelayerFee fee = 1 [(gogoproto.nullable) = false];
+}
+

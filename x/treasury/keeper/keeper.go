@@ -17,15 +17,15 @@ import (
 const storeKey = "treasury"
 
 type Keeper struct {
-	cdc        codec.BinaryCodec
-	memKey     storetypes.StoreKey
-	paramstore paramtypes.Subspace
-	bank       types.BankKeeper
-	account    types.AccountKeeper
-	Scheduler  types.Scheduler
-	Chains     []xchain.FundCollecter
-	KeeperUtil keeperutil.KeeperUtilI[*types.Fees]
-	Store      types.TreasuryStore
+	cdc             codec.BinaryCodec
+	memKey          storetypes.StoreKey
+	paramstore      paramtypes.Subspace
+	bank            types.BankKeeper
+	account         types.AccountKeeper
+	Scheduler       types.Scheduler
+	Chains          []xchain.FundCollecter
+	treasureStore   *keeperutil.KVStoreWrapper[*types.Fees]
+	relayerFeeStore *keeperutil.KVStoreWrapper[*types.RelayerFee]
 }
 
 func NewKeeper(
@@ -43,16 +43,14 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:        cdc,
-		memKey:     memKey,
-		paramstore: ps,
-		bank:       bank,
-		account:    account,
-		Scheduler:  scheduler,
-		KeeperUtil: keeperutil.KeeperUtil[*types.Fees]{},
-		Store: types.Store{
-			StoreKey: storeKey,
-		},
+		cdc:             cdc,
+		memKey:          memKey,
+		paramstore:      ps,
+		bank:            bank,
+		account:         account,
+		Scheduler:       scheduler,
+		treasureStore:   keeperutil.NewKvStoreWrapper[*types.Fees](keeperutil.StoreFactory(storeKey, types.TreasureStorePrefix), cdc),
+		relayerFeeStore: keeperutil.NewKvStoreWrapper[*types.RelayerFee](keeperutil.StoreFactory(storeKey, types.RelayerFeeStorePrefix), cdc),
 	}
 }
 
@@ -101,4 +99,12 @@ func (k Keeper) GetFees(ctx sdk.Context) (*types.Fees, error) {
 
 func (k Keeper) setFees(ctx sdk.Context, fees *types.Fees) error {
 	return k.KeeperUtil.Save(k.Store.TreasuryStore(ctx), k.cdc, []byte(storeKey), fees)
+}
+
+func (k Keeper) SetRelayerFee(ctx sdk.Context, fee *types.RelayerFee) error {
+	if fee == nil {
+		return fmt.Errorf("nil fee not allowed")
+	}
+
+	return k.KeeperUtil.Save(k.Store.RelayerFeeStore(ctx), k.cdc)
 }

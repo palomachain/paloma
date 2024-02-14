@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -31,4 +33,10 @@ func (v *KVStoreWrapper[T]) Set(ctx types.Context, key Byter, value T) error {
 
 func (v *KVStoreWrapper[T]) Iterate(ctx types.Context, fn func([]byte, T) bool) error {
 	return IterAllFnc[T](v.sg(ctx), v.ps, fn)
+}
+
+func StoreFactory(storeKey storetypes.StoreKey, p string) func(ctx types.Context) types.KVStore {
+	return func(ctx types.Context) types.KVStore {
+		return prefix.NewStore(ctx.KVStore(storeKey), []byte(p))
+	}
 }

@@ -15,6 +15,9 @@ const (
 
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_treasury"
+
+	TreasureStorePrefix   = "treasury"
+	RelayerFeeStorePrefix = "relayer-fee"
 )
 
 func KeyPrefix(p string) []byte {

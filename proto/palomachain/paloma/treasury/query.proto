@@ -1,11 +1,13 @@
 syntax = "proto3";
 package palomachain.paloma.treasury;
 
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "palomachain/paloma/treasury/params.proto";
 import "palomachain/paloma/treasury/fees.proto";
+import "palomachain/paloma/treasury/relayer_fee.proto";
 
 option go_package = "github.com/palomachain/paloma/x/treasury/types";
 
@@ -19,6 +21,14 @@ service Query {
   rpc QueryFees(QueryFeesRequest) returns (Fees) {
     option (google.api.http).get = "/palomachain/paloma/treasury/fees";
   }
+
+  rpc QueryRelayerFee(QueryRelayerFeeRequest) returns (RelayerFee) {
+    option (google.api.http).get = "/palomachain/paloma/treasury/fees/relayer";
+  }
+
+  rpc QueryRelayerFees(Empty) returns (QueryRelayerFeesResponse) {
+    option (google.api.http).get = "/palomachain/paloma/treasury/fees/relayers";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -31,3 +41,13 @@ message QueryParamsResponse {
 }
 
 message QueryFeesRequest {}
+
+message QueryRelayerFeeRequest {
+  string validator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+message Empty {}
+
+message QueryRelayerFeesResponse {
+    repeated RelayerFee fees = 1 [(gogoproto.nullable) = false];
+}

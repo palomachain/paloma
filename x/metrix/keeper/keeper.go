@@ -10,7 +10,6 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -76,9 +75,9 @@ func NewKeeper(
 		paramstore:        ps,
 		slashing:          slashing,
 		staking:           staking,
-		metrics:           keeperutil.NewKvStoreWrapper[*types.ValidatorMetrics](storeFactory(storeKey, types.MetricsStorePrefix), cdc),
-		history:           keeperutil.NewKvStoreWrapper[*types.ValidatorHistory](storeFactory(storeKey, types.HistoryStorePrefix), cdc),
-		messageNonceCache: keeperutil.NewKvStoreWrapper[*types.HistoricRelayData](storeFactory(storeKey, types.MessageNonceCacheStorePrefix), cdc),
+		metrics:           keeperutil.NewKvStoreWrapper[*types.ValidatorMetrics](keeperutil.StoreFactory(storeKey, types.MetricsStorePrefix), cdc),
+		history:           keeperutil.NewKvStoreWrapper[*types.ValidatorHistory](keeperutil.StoreFactory(storeKey, types.HistoryStorePrefix), cdc),
+		messageNonceCache: keeperutil.NewKvStoreWrapper[*types.HistoricRelayData](keeperutil.StoreFactory(storeKey, types.MessageNonceCacheStorePrefix), cdc),
 	}
 }
 
@@ -441,12 +440,6 @@ func (k Keeper) tryUpdateRecord(ctx sdk.Context, valAddr sdk.ValAddress, patch r
 	}
 
 	return nil
-}
-
-func storeFactory(storeKey storetypes.StoreKey, p string) func(ctx sdk.Context) sdk.KVStore {
-	return func(ctx sdk.Context) sdk.KVStore {
-		return prefix.NewStore(ctx.KVStore(storeKey), types.KeyPrefix(p))
-	}
 }
 
 func calculateUptime(window, missed int64) math.LegacyDec {
