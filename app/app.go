@@ -252,9 +252,9 @@ type App struct {
 	wasmKeeper      wasmkeeper.Keeper
 	MetrixKeeper    metrixmodulekeeper.Keeper
 
-	// moduleManager is the module manager
-	moduleManager      *module.Manager
-	basicmoduleManager module.BasicManager
+	// ModuleManager is the module manager
+	ModuleManager      *module.Manager
+	BasicModuleManager module.BasicManager
 
 	// sm is the simulation manager
 	sm *module.SimulationManager
@@ -764,7 +764,7 @@ func New(
 
 	stakingAppModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName))
 
-	app.moduleManager = module.NewManager(
+	app.ModuleManager = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,
 			app.StakingKeeper,
@@ -801,9 +801,9 @@ func New(
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 	)
 
-	app.moduleManager.RegisterInvariants(app.CrisisKeeper)
-	app.basicmoduleManager = module.NewBasicManagerFromManager(
-		app.moduleManager,
+	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
+	app.BasicModuleManager = module.NewBasicManagerFromManager(
+		app.ModuleManager,
 		map[string]module.AppModuleBasic{
 			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
 			stakingtypes.ModuleName: StakingModule{AppModuleBasic: stakingAppModule.AppModuleBasic},
@@ -812,13 +812,13 @@ func New(
 			crisistypes.ModuleName:  CrisisModule{},
 		})
 
-	app.basicmoduleManager.RegisterLegacyAminoCodec(legacyAmino)
-	app.basicmoduleManager.RegisterInterfaces(interfaceRegistry)
+	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
+	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
-	app.moduleManager.SetOrderBeginBlockers(
+	app.ModuleManager.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
@@ -850,7 +850,7 @@ func New(
 		metrixmoduletypes.ModuleName,
 	)
 
-	app.moduleManager.SetOrderEndBlockers(
+	app.ModuleManager.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -888,7 +888,7 @@ func New(
 	// NOTE: Capability module must occur first so that it can initialize any capabilities
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
-	app.moduleManager.SetOrderInitGenesis(
+	app.ModuleManager.SetOrderInitGenesis(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -922,12 +922,12 @@ func New(
 	)
 
 	app.configurator = module.NewConfigurator(appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	err = app.moduleManager.RegisterServices(app.configurator)
+	err = app.ModuleManager.RegisterServices(app.configurator)
 	if err != nil {
 		panic(err)
 	}
 	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
-	// Make sure it's called after `app.moduleManager` and `app.configurator` are
+	// Make sure it's called after `app.ModuleManager` and `app.configurator` are
 	// set.
 	app.RegisterUpgradeHandlers(semverVersion)
 	// Create the simulation manager and define the order of the modules for
@@ -940,7 +940,7 @@ func New(
 			app.GetSubspace(authtypes.ModuleName),
 		),
 	}
-	app.sm = module.NewSimulationManagerFromAppModules(app.moduleManager.Modules, overrideModules)
+	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, overrideModules)
 	app.sm.RegisterStoreDecoders()
 
 	// initialize stores
@@ -1009,7 +1009,7 @@ func New(
 
 func (app *App) AutoCliOpts() autocli.AppOptions {
 	modules := make(map[string]appmodule.AppModule, 0)
-	for _, m := range app.moduleManager.Modules {
+	for _, m := range app.ModuleManager.Modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
 			moduleName := moduleWithName.Name()
 			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
@@ -1020,7 +1020,7 @@ func (app *App) AutoCliOpts() autocli.AppOptions {
 
 	return autocli.AppOptions{
 		Modules:       modules,
-		ModuleOptions: runtimeservices.ExtractAutoCLIOptions(app.moduleManager.Modules),
+		ModuleOptions: runtimeservices.ExtractAutoCLIOptions(app.ModuleManager.Modules),
 	}
 }
 
@@ -1031,17 +1031,17 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 func (app App) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
 
 func (app *App) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	return app.moduleManager.PreBlock(ctx)
+	return app.ModuleManager.PreBlock(ctx)
 }
 
 // BeginBlocker application updates every begin block
 func (app *App) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
-	return app.moduleManager.BeginBlock(ctx)
+	return app.ModuleManager.BeginBlock(ctx)
 }
 
 // EndBlocker application updates every end block
 func (app *App) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
-	return app.moduleManager.EndBlock(ctx)
+	return app.ModuleManager.EndBlock(ctx)
 }
 
 func (app *App) TxConfig() client.TxConfig {
@@ -1055,11 +1055,11 @@ func (app *App) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.
 		panic(err)
 	}
 
-	err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.moduleManager.GetVersionMap())
+	err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
 	if err != nil {
 		panic(err)
 	}
-	return app.moduleManager.InitGenesis(ctx, app.appCodec, genesisState)
+	return app.ModuleManager.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
 // LoadHeight loads a particular height
@@ -1141,7 +1141,7 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register grpc-gateway routes for all modules.
-	app.basicmoduleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+	app.BasicModuleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
@@ -1206,7 +1206,7 @@ func (app *App) SimulationManager() *module.SimulationManager {
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
 func (app *App) DefaultGenesis() map[string]json.RawMessage {
-	return app.basicmoduleManager.DefaultGenesis(app.appCodec)
+	return app.BasicModuleManager.DefaultGenesis(app.appCodec)
 }
 
 func (app *App) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
