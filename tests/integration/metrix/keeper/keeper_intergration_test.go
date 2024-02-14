@@ -65,12 +65,10 @@ var _ = Describe("updating uptime", func() {
 				math.LegacyMustNewDecFromStr("0.9"),
 				math.LegacyMustNewDecFromStr("0.58"),
 			}
-			fmt.Println("the uptimes array is>>>>>>>>>>>..", uptimes)
 			for i, v := range validators {
 				bz, err := utilkeeper.ValAddressFromBech32(a.metrixkeeper.AddressCodec, v.GetOperator())
 				Expect(err).To(BeNil())
 				r, err := a.metrixkeeper.GetValidatorMetrics(ctx, bz)
-				fmt.Println("The r value is>>>>>>>>..", r)
 				Expect(r).To(Not(BeNil()))
 				Expect(err).To(BeNil())
 				Expect(r.Uptime).To(Equal(uptimes[i]))

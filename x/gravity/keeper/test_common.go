@@ -68,7 +68,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	params2 "github.com/palomachain/paloma/app/params"
+	chainparams "github.com/palomachain/paloma/app/params"
 	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus"
 	consensuskeeper "github.com/palomachain/paloma/x/consensus/keeper"
@@ -320,7 +320,7 @@ func addValidators(t *testing.T, input *TestInput, count int) {
 		require.NoError(t, err)
 		valAddress, err := utilkeeper.ValAddressFromBech32(input.GravityKeeper.AddressCodec, validator.GetOperator())
 		if err != nil {
-			input.GravityKeeper.Logger(input.Context).Error("error while converting into bytes", err)
+			require.NoError(t, err)
 		}
 		sdkCtx := sdk.UnwrapSDKContext(input.Context)
 		err = input.ValsetKeeper.AddExternalChainInfo(sdkCtx, valAddress, []*valsettypes.ExternalChainInfo{
@@ -545,8 +545,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 		runtime.NewKVStoreService(keyAcc),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
-		authcodec.NewBech32Codec(params2.AccountAddressPrefix),
-		params2.AccountAddressPrefix,
+		authcodec.NewBech32Codec(chainparams.AccountAddressPrefix),
+		chainparams.AccountAddressPrefix,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
@@ -577,8 +577,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 		accountKeeper,
 		bankKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
-		authcodec.NewBech32Codec(params2.ConsNodeAddressPrefix),
+		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
+		authcodec.NewBech32Codec(chainparams.ConsNodeAddressPrefix),
 	)
 
 	err = stakingKeeper.SetParams(ctx, TestingStakeParams)
@@ -691,20 +691,18 @@ func CreateTestEnv(t *testing.T) TestInput {
 	valsetKeeper := valsetkeeper.NewKeeper(
 		marshaler,
 		runtime.NewKVStoreService(keyValset),
-		// memKeyValset,
 		getSubspace(paramsKeeper, valsettypes.ModuleName),
 		stakingKeeper,
 		slashingKeeper,
 		"v1.5.0",
 		sdk.DefaultPowerReduction,
-		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
 	)
 
 	consensusRegistry := consensuskeeper.NewRegistry()
 	consensusKeeper := consensuskeeper.NewKeeper(
 		marshaler,
 		runtime.NewKVStoreService(keyConsensus),
-		// memKeyConsensus,
 		getSubspace(paramsKeeper, consensustypes.ModuleName),
 		valsetKeeper,
 		consensusRegistry,
@@ -713,11 +711,10 @@ func CreateTestEnv(t *testing.T) TestInput {
 	evmKeeper := evmkeeper.NewKeeper(
 		marshaler,
 		runtime.NewKVStoreService(keyEvm),
-		// memKeyEvm,
 		consensusKeeper,
 		valsetKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
 	)
 
 	valsetKeeper.EvmKeeper = evmKeeper
@@ -743,7 +740,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		evmKeeper,
 		NewGravityStoreGetter(gravityKey),
 		"",
-		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
 	)
 
 	stakingKeeper.SetHooks(
@@ -890,8 +887,8 @@ func MakeTestMarshaler() codec.Codec {
 	return codec.NewProtoCodec(interfaceRegistry)
 }
 
-func MakeTestEncodingConfig() params2.EncodingConfig {
-	encodingConfig := params2.MakeEncodingConfig()
+func MakeTestEncodingConfig() chainparams.EncodingConfig {
+	encodingConfig := chainparams.MakeEncodingConfig()
 	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	ModuleBasics.RegisterLegacyAminoCodec(encodingConfig.Amino)

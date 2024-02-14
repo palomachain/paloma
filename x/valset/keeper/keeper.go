@@ -396,7 +396,7 @@ func (k Keeper) createNewSnapshot(ctx context.Context) (*types.Snapshot, error) 
 	err := k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		bz, err := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
 		if err != nil {
-			return false
+			k.Logger(ctx).Error("error while getting validator address")
 		}
 		if val.IsBonded() && !val.IsJailed() && k.ValidatorSupportsAllChains(ctx, bz) {
 			validators = append(validators, val)
@@ -561,7 +561,9 @@ func (k Keeper) Jail(_ctx context.Context, valAddr sdk.ValAddress, reason string
 	ctx := sdk.UnwrapSDKContext(_ctx)
 	jailTime := ctx.BlockTime()
 	val, err := k.staking.Validator(ctx, valAddr)
-
+	if err != nil {
+		return err
+	}
 	if val == nil {
 		return ErrValidatorWithAddrNotFound.Format(valAddr)
 	}
@@ -719,7 +721,7 @@ func (k Keeper) _externalChainInfoStore(ctx context.Context) storetypes.KVStore 
 
 func (k Keeper) snapshotStore(ctx context.Context) storetypes.KVStore {
 	store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
-	// k.Logger(ctx).Debug("snapshot store", "store-key-name", k.memKey.Name(), "store-key-string", k.storeKey) //TODO
+	k.Logger(ctx).Debug("snapshot store", "store-key-name", "store-key-string", k.storeKey)
 	return prefix.NewStore(store, []byte("snapshot"))
 }
 

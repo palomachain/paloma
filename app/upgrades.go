@@ -104,7 +104,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 
 			// Add Interchain Accounts host module
 			// set the ICS27 consensus version so InitGenesis is not run
-			fromVM[icatypes.ModuleName] = app.ModuleManager.Modules[icatypes.ModuleName].(module.HasConsensusVersion).ConsensusVersion()
+			fromVM[icatypes.ModuleName] = app.moduleManager.Modules[icatypes.ModuleName].(module.HasConsensusVersion).ConsensusVersion()
 
 			// create ICS27 Host submodule params, host module not enabled.
 			hostParams := icahosttypes.Params{
@@ -112,7 +112,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				AllowMessages: []string{},
 			}
 
-			mod, found := app.ModuleManager.Modules[icatypes.ModuleName]
+			mod, found := app.moduleManager.Modules[icatypes.ModuleName]
 			if !found {
 				return nil, fmt.Errorf("module %s is not in the module manager", icatypes.ModuleName)
 			}
@@ -127,7 +127,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				icaMod.InitModule(sdkCtx, icacontrollertypes.DefaultParams(), hostParams)
 			}
 
-			vm, err := app.ModuleManager.RunMigrations(ctx, app.configurator, fromVM)
+			vm, err := app.moduleManager.RunMigrations(ctx, app.configurator, fromVM)
 			if err != nil {
 				return vm, err
 			}

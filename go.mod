@@ -238,16 +238,10 @@ require (
 replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	// github.com/cosmos/ledger-cosmos-go => github.com/cosmos/ledger-cosmos-go v0.12.4
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134
 	// Link to op-geth, which is built on top of go-ethereum
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-
-// See https://github.com/Agoric/agoric-sdk/issues/8783
-// and https://github.com/Agoric/agoric-sdk/commit/bc4a284e7346369f64757be20543045df52e8c3b
-// Can potentially be removed with Cosmos 0.50
-// github.com/zondax/ledger-go => github.com/zondax/ledger-go v0.14.3
 )

@@ -15,9 +15,7 @@ import (
 
 // nolint: exhaustruct
 func TestHandleMsgSendToEth(t *testing.T) {
-	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount("paloma", "pub")
-	config.SetBech32PrefixForValidator("palomavaloper", "valoperpub")
+	input := keeper.CreateTestEnv(t)
 	var (
 		userCosmosAddr, e1               = sdk.AccAddressFromBech32("paloma1l2j8vaykh03zenzytntj3cza6zfxwlj68dd0l3")
 		blockTime                        = time.Date(2020, 9, 14, 15, 20, 10, 0, time.UTC)
@@ -33,9 +31,7 @@ func TestHandleMsgSendToEth(t *testing.T) {
 	require.NoError(t, e1)
 
 	// we start by depositing some funds into the users balance to send
-	input := keeper.CreateTestEnv(t)
 	sdkCtx := sdk.UnwrapSDKContext(input.Context)
-
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	ctx := input.Context

@@ -339,11 +339,6 @@ func (msg *MsgUpdateParams) ValidateBasic() (err error) {
 	return libmeta.ValidateBasic(msg)
 }
 
-// GetSignBytes encodes the message for signing
-func (msg MsgUpdateParams) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
 // GetSigners defines whose signature is required
 func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(msg)

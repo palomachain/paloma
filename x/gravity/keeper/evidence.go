@@ -88,7 +88,7 @@ func (k Keeper) checkBadSignatureEvidenceInternal(ctx context.Context, subject t
 	if !val.IsJailed() {
 		err := k.StakingKeeper.Jail(ctx, cons)
 		if err != nil {
-			return err
+			return fmt.Errorf("checkBadSignatureEvidenceInternal jail: %w", err)
 		}
 		_, err = k.StakingKeeper.Slash(ctx, cons, sdkCtx.BlockHeight(), val.ConsensusPower(sdk.DefaultPowerReduction), params.SlashFractionBadEthSignature)
 		if err != nil {

@@ -169,7 +169,9 @@ func (k Keeper) JailInactiveValidators(ctx context.Context) error {
 			continue
 		}
 		valAddr, err := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
-
+		if err != nil {
+			return err
+		}
 		alive, err := k.IsValidatorAlive(ctx, valAddr)
 		switch {
 		case err == nil:

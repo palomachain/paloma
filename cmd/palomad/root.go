@@ -82,7 +82,7 @@ func NewRootCmd() *cobra.Command {
 			return applyForcedConfigOptions(cmd)
 		},
 	}
-	initRootCmd(rootCmd, encCfg, encCfg.InterfaceRegistry, encCfg, tempApp.BasicModuleManager)
+	initRootCmd(rootCmd, encCfg, encCfg.InterfaceRegistry, encCfg, tempApp.mo)
 
 	if err := overwriteFlagDefaults(rootCmd, map[string]string{
 		flags.FlagChainID:        palomaapp.Name,
