@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -474,7 +473,6 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 							SignedByAddress: "bob4",
 						},
 					})
-					fmt.Println("Error is>>>>>>>>>>>..", err)
 					require.NoError(t, err)
 				})
 			},
