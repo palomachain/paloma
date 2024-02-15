@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -424,6 +425,8 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 				sdkCtx := sdk.UnwrapSDKContext(sd.ctx)
 				msg := &types.SimpleMessage{}
 				_, err := sd.keeper.PutMessageInQueue(sdkCtx, defaultQueueName, msg, nil)
+				_, err = sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
+
 				require.NoError(t, err)
 
 				sd.ms.ValsetKeeper.On("GetSigningKey", mock.Anything, sdk.ValAddress("val3"), "evm", "test", "bob3").Return(
@@ -462,18 +465,18 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 					})
 					require.NoError(t, err)
 				})
-				// TODO message id 2 does not exist(to be fixed)
-				// t.Run("adding message signatures to a second message doesn't have enough signatures", func(t *testing.T) {
-				// 	err = sd.keeper.AddMessageSignature(sdkCtx, sdk.ValAddress("val4"), []*types.ConsensusMessageSignature{
-				// 		{
-				// 			Id:              2,
-				// 			QueueTypeName:   defaultQueueName,
-				// 			Signature:       []byte("abc"),
-				// 			SignedByAddress: "bob4",
-				// 		},
-				// 	})
-				// 	require.NoError(t, err)
-				// })
+				t.Run("adding message signatures to a second message doesn't have enough signatures", func(t *testing.T) {
+					err = sd.keeper.AddMessageSignature(sdkCtx, sdk.ValAddress("val4"), []*types.ConsensusMessageSignature{
+						{
+							Id:              2,
+							QueueTypeName:   defaultQueueName,
+							Signature:       []byte("abc"),
+							SignedByAddress: "bob4",
+						},
+					})
+					fmt.Println("Error is>>>>>>>>>>>..", err)
+					require.NoError(t, err)
+				})
 			},
 		},
 		{
