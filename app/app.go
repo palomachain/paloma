@@ -562,7 +562,6 @@ func New(
 		runtime.NewKVStoreService(keys[evmmoduletypes.StoreKey]),
 		app.ConsensusKeeper,
 		app.ValsetKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
 	)
 	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{

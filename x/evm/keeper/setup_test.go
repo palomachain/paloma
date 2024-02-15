@@ -54,7 +54,6 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 		storeService,
 		ms.ConsensusKeeper,
 		ms.ValsetKeeper,
-		"authority",
 		authcodec.NewBech32Codec(params.ValidatorAddressPrefix),
 	)
 

@@ -108,7 +108,6 @@ type Keeper struct {
 	msgSender       types.MsgSender
 	msgAssigner     types.MsgAssigner
 	AddressCodec    address.Codec
-	authority       string
 	deploymentCache *deployment.Cache
 
 	onMessageAttestedListeners []metrixtypes.OnConsensusMessageAttestedListener
@@ -118,8 +117,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService corestore.KVStoreService,
 	consensusKeeper types.ConsensusKeeper,
-	valsetKeeper types.ValsetKeeper,
-	authority string, a address.Codec,
+	valsetKeeper types.ValsetKeeper, a address.Codec,
 ) *Keeper {
 	k := &Keeper{
 		cdc:             cdc,
@@ -134,7 +132,6 @@ func NewKeeper(
 			ValsetKeeper: valsetKeeper,
 		},
 		onMessageAttestedListeners: make([]metrixtypes.OnConsensusMessageAttestedListener, 0),
-		authority:                  authority,
 		AddressCodec:               a,
 	}
 
