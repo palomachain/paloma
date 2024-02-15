@@ -18,8 +18,7 @@ service Msg {
 
 message MsgAddExternalChainInfoForValidator {
   option (cosmos.msg.v1.signer) = "metadata";
-  reserved 1;
-  reserved "creator";
+  string creator = 1 [ deprecated = true ];
   repeated ExternalChainInfo chainInfos = 2;
   palomachain.paloma.valset.MsgMetadata metadata = 3
       [ (gogoproto.nullable) = false ];
@@ -29,8 +28,7 @@ message MsgAddExternalChainInfoForValidatorResponse {}
 
 message MsgKeepAlive {
   option (cosmos.msg.v1.signer) = "metadata";
-  reserved 1;
-  reserved "creator";
+  string creator = 1 [ deprecated = true ];
   string pigeonVersion = 2;
   palomachain.paloma.valset.MsgMetadata metadata = 3
       [ (gogoproto.nullable) = false ];

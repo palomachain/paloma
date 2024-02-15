@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -228,7 +227,6 @@ var _ = Describe("updating feature set", func() {
 				r, err := a.metrixkeeper.GetValidatorMetrics(ctx, bz)
 				Expect(r).To(Not(BeNil()))
 				Expect(err).To(BeNil())
-				fmt.Println("The r.features set is>>>>>>>>>>>>>>>", r.FeatureSet)
 				Expect(r.FeatureSet).To(Equal(featureSets[i]))
 			}
 		})

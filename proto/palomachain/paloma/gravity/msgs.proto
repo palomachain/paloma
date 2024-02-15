@@ -37,8 +37,7 @@ service Msg {
 // single coin not a set of coins that is normal in other Cosmos messages
 message MsgSendToEth {
   option (cosmos.msg.v1.signer) = "metadata";
-  reserved 1;
-  reserved "sender";
+  string sender = 1 [ deprecated = true ];
   string eth_dest = 2;
   cosmos.base.v1beta1.Coin amount = 3 [ (gogoproto.nullable) = false ];
   string chain_reference_id = 4;
@@ -115,8 +114,7 @@ message MsgBatchSendToEthClaimResponse {}
 message MsgCancelSendToEth {
   option (cosmos.msg.v1.signer) = "metadata";
   uint64 transaction_id = 1;
-  reserved 2;
-  reserved "sender";
+  string sender = 2 [ deprecated = true ];
   palomachain.paloma.valset.MsgMetadata metadata = 3
       [ (gogoproto.nullable) = false ];
 }
@@ -132,8 +130,7 @@ message MsgSubmitBadSignatureEvidence {
   google.protobuf.Any subject = 1
       [ (cosmos_proto.accepts_interface) = "EthereumSigned" ];
   string signature = 2;
-  reserved 3;
-  reserved "sender";
+  string sender = 3 [ deprecated = true ];
   string chain_reference_id = 4;
   palomachain.paloma.valset.MsgMetadata metadata = 5
       [ (gogoproto.nullable) = false ];

@@ -30,8 +30,9 @@ var _ = Describe("jailing validators", func() {
 		It("returns an error", func() {
 			validators := testutil.GenValidators(1, 100)
 			val, err := a.valsetKeeper.AddressCodec.StringToBytes(validators[0].GetOperator())
-			err = a.valsetKeeper.Jail(ctx, val, "i am bored")
-			Expect(err).To(MatchError(keeper.ErrCannotJailValidator))
+			Expect(err).To(BeNil())
+			err1 := a.valsetKeeper.Jail(ctx, val, "i am bored")
+			Expect(err1).To(MatchError(keeper.ErrValidatorWithAddrNotFound))
 		})
 	})
 

@@ -562,7 +562,7 @@ func (k Keeper) Jail(_ctx context.Context, valAddr sdk.ValAddress, reason string
 	jailTime := ctx.BlockTime()
 	val, err := k.staking.Validator(ctx, valAddr)
 	if err != nil {
-		return err
+		return ErrValidatorWithAddrNotFound.Format(valAddr)
 	}
 	if val == nil {
 		return ErrValidatorWithAddrNotFound.Format(valAddr)

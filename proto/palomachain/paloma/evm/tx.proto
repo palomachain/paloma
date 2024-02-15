@@ -15,8 +15,7 @@ service Msg {
 
 message MsgDeployNewSmartContractRequest {
   option (cosmos.msg.v1.signer) = "metadata";
-  reserved 1;
-  reserved "creator";
+  string creator = 1 [ deprecated = true ];
   string title = 2;
   string description = 3;
 
@@ -30,8 +29,7 @@ message DeployNewSmartContractResponse {}
 
 message MsgRemoveSmartContractDeploymentRequest {
   option (cosmos.msg.v1.signer) = "metadata";
-  reserved 1;
-  reserved "creator";
+  string Sender = 1 [ deprecated = true ];
   uint64 smartContractID = 2;
   string chainReferenceID = 3;
 
