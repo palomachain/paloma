@@ -7,10 +7,7 @@ import "cosmos/msg/v1/msg.proto";
 
 option go_package = "github.com/palomachain/paloma/x/paloma/types";
 
-service Msg {
-  rpc AddStatusUpdate(MsgAddStatusUpdate)
-    returns (EmptyResponse);
-}
+service Msg { rpc AddStatusUpdate(MsgAddStatusUpdate) returns (EmptyResponse); }
 
 message MsgAddStatusUpdate {
   option (cosmos.msg.v1.signer) = "metadata";
@@ -20,15 +17,15 @@ message MsgAddStatusUpdate {
     LEVEL_ERROR = 2;
   }
   message KeyValuePair {
-      string key = 1;
-      string value = 2;
+    string key = 1;
+    string value = 2;
   }
-  string creator = 1 [deprecated = true];
+  string creator = 1 [ deprecated = true ];
   string status = 2;
   Level level = 3;
-  palomachain.paloma.valset.MsgMetadata metadata = 4 [(gogoproto.nullable) = false];
-  repeated KeyValuePair args = 5 [(gogoproto.nullable) = false];
+  palomachain.paloma.valset.MsgMetadata metadata = 4
+      [ (gogoproto.nullable) = false ];
+  repeated KeyValuePair args = 5 [ (gogoproto.nullable) = false ];
 }
 
 message EmptyResponse {}
-

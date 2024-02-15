@@ -308,7 +308,7 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 	return err
 }
 
-func (k Keeper) getSmartContract(ctx sdk.Context, id uint64) (*types.SmartContract, error) {
+func (k Keeper) getSmartContract(ctx context.Context, id uint64) (*types.SmartContract, error) {
 	return keeperutil.Load[*types.SmartContract](k.provideSmartContractStore(ctx), k.cdc, keeperutil.Uint64ToByte(id))
 }
 

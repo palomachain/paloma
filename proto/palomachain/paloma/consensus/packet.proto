@@ -4,9 +4,7 @@ package palomachain.paloma.consensus;
 option go_package = "github.com/palomachain/paloma/x/consensus/types";
 
 message ConsensusPacketData {
-  oneof packet {
-    NoData noData = 1;
-  }
+  oneof packet { NoData noData = 1; }
 }
 
 message NoData {}

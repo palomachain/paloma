@@ -10,18 +10,21 @@ import "cosmos/base/v1beta1/coin.proto";
 import "palomachain/paloma/gravity/params.proto";
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
-// GenesisState struct, containing all persistant data required by the Gravity module
+// GenesisState struct, containing all persistant data required by the Gravity
+// module
 message GenesisState {
-  Params                             params              = 1;
-  GravityNonces                      gravity_nonces      = 2 [(gogoproto.nullable) = false];
-  repeated OutgoingTxBatch           batches             = 3 [(gogoproto.nullable) = false];
-  repeated MsgConfirmBatch           batch_confirms      = 4 [(gogoproto.nullable) = false];
-  repeated Attestation               attestations        = 7 [(gogoproto.nullable) = false];
-  repeated ERC20ToDenom              erc20_to_denoms     = 9 [(gogoproto.nullable) = false];
-  repeated OutgoingTransferTx        unbatched_transfers = 10 [(gogoproto.nullable) = false];
+  Params params = 1;
+  GravityNonces gravity_nonces = 2 [ (gogoproto.nullable) = false ];
+  repeated OutgoingTxBatch batches = 3 [ (gogoproto.nullable) = false ];
+  repeated MsgConfirmBatch batch_confirms = 4 [ (gogoproto.nullable) = false ];
+  repeated Attestation attestations = 7 [ (gogoproto.nullable) = false ];
+  repeated ERC20ToDenom erc20_to_denoms = 9 [ (gogoproto.nullable) = false ];
+  repeated OutgoingTransferTx unbatched_transfers = 10
+      [ (gogoproto.nullable) = false ];
 }
 
-// GravityCounters contains the many noces and counters required to maintain the bridge state in the genesis
+// GravityCounters contains the many noces and counters required to maintain the
+// bridge state in the genesis
 message GravityNonces {
   // the last observed Gravity.sol contract event nonce
   uint64 last_observed_nonce = 1;

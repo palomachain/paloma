@@ -26,8 +26,8 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // MsgMetadata contains a record of the message creator (validator address)
 // as well as a list of message signers (e.g. operator keys, multisigs, etc...)
-// Getters are implemented manually to avoid use of pointer methods, which breaks
-// interface casting.
+// Getters are implemented manually to avoid use of pointer methods, which
+// breaks interface casting.
 type MsgMetadata struct {
 	Creator string   `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
 	Signers []string `protobuf:"bytes,2,rep,name=signers,proto3" json:"signers,omitempty"`

@@ -6,7 +6,7 @@ option go_package = "github.com/palomachain/paloma/x/evm/types";
 message DeployNewSmartContractProposal {
   string title = 1;
   string description = 2;
-  
-  string abiJSON = 3; 
-  string bytecodeHex = 4; 
+
+  string abiJSON = 3;
+  string bytecodeHex = 4;
 }

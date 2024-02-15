@@ -9,7 +9,7 @@ option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 // GenesisState defines the evm module's genesis state.
 message GenesisState {
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
 
   GenesisSmartContract smartContract = 2;
 
@@ -17,15 +17,15 @@ message GenesisState {
 }
 
 message GenesisChainInfo {
-  string chainReferenceID  = 1;
-  uint64 chainID           = 2;
-  uint64 blockHeight       = 3;
+  string chainReferenceID = 1;
+  uint64 chainID = 2;
+  uint64 blockHeight = 3;
   string blockHashAtHeight = 4;
   string minOnChainBalance = 5;
   RelayWeights relayWeights = 6;
 }
 
 message GenesisSmartContract {
-  string abiJson     = 1;
+  string abiJson = 1;
   string bytecodeHex = 2;
 }

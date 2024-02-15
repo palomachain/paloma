@@ -154,7 +154,8 @@ func (m *QueryParamsResponse) GetParams() Params {
 
 // QueryValidatorRequest is the request type for the Query/Validator RPC method.
 type QueryValidatorRequest struct {
-	// val_address holds the validator address of the validator you want to query for.
+	// val_address holds the validator address of the validator you want to query
+	// for.
 	ValAddress string `protobuf:"bytes,1,opt,name=val_address,json=valAddress,proto3" json:"val_address,omitempty"`
 }
 
@@ -200,7 +201,8 @@ func (m *QueryValidatorRequest) GetValAddress() string {
 
 // QueryValidatorResponse is response type for the Query/Validator RPC method.
 type QueryValidatorResponse struct {
-	// validator_metrics holds the collected metrics info of requested val cons address
+	// validator_metrics holds the collected metrics info of requested val cons
+	// address
 	ValMetrics ValidatorMetrics `protobuf:"bytes,1,opt,name=val_metrics,json=valMetrics,proto3" json:"val_metrics"`
 }
 
@@ -246,7 +248,8 @@ func (m *QueryValidatorResponse) GetValMetrics() ValidatorMetrics {
 
 // QueryValidatorsResponse is response type for the Query/Validators RPC method.
 type QueryValidatorsResponse struct {
-	// validator_metrics holds the collected metrics info of all validators on record
+	// validator_metrics holds the collected metrics info of all validators on
+	// record
 	ValMetrics []ValidatorMetrics `protobuf:"bytes,1,rep,name=val_metrics,json=valMetrics,proto3" json:"val_metrics"`
 }
 
@@ -290,9 +293,11 @@ func (m *QueryValidatorsResponse) GetValMetrics() []ValidatorMetrics {
 	return nil
 }
 
-// QueryHistoricRelayDataRequest is the request type for the Query/HistoricRelayData RPC method.
+// QueryHistoricRelayDataRequest is the request type for the
+// Query/HistoricRelayData RPC method.
 type QueryHistoricRelayDataRequest struct {
-	// val_address holds the validator address of the validator you want to query for.
+	// val_address holds the validator address of the validator you want to query
+	// for.
 	ValAddress string `protobuf:"bytes,1,opt,name=val_address,json=valAddress,proto3" json:"val_address,omitempty"`
 }
 
@@ -336,7 +341,8 @@ func (m *QueryHistoricRelayDataRequest) GetValAddress() string {
 	return ""
 }
 
-// QueryHistoricRelayDataResponse is response type for the Query/HistoricRelayData RPC method.
+// QueryHistoricRelayDataResponse is response type for the
+// Query/HistoricRelayData RPC method.
 type QueryHistoricRelayDataResponse struct {
 	// history contains the historic relay data for the queried validator.
 	History ValidatorHistory `protobuf:"bytes,1,opt,name=history,proto3" json:"history"`

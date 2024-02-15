@@ -10,13 +10,13 @@ message Job {
   // chosen by the owner
   string ID = 1;
 
-  bytes owner = 2 [
-    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"
-  ];
+  bytes owner = 2 [ (gogoproto.casttype) =
+                        "github.com/cosmos/cosmos-sdk/types.AccAddress" ];
 
-  Routing routing = 3 [(gogoproto.nullable) = false];
+  Routing routing = 3 [ (gogoproto.nullable) = false ];
 
-  // this is the job definition. It is something arbitrary as it's different for every chain.
+  // this is the job definition. It is something arbitrary as it's different for
+  // every chain.
   bytes definition = 5;
 
   // this is the payload for the job
@@ -24,14 +24,13 @@ message Job {
 
   bool isPayloadModifiable = 7;
 
-  Permissions permissions = 8 [(gogoproto.nullable) = false];
+  Permissions permissions = 8 [ (gogoproto.nullable) = false ];
 
   repeated Trigger triggers = 9;
 
   reserved 10;
 
   bool enforceMEVRelay = 11;
-  
 }
 
 message Trigger {
@@ -41,21 +40,18 @@ message Trigger {
   };
 }
 
-message ScheduleTrigger {
+message ScheduleTrigger {}
 
-}
-
-message EventTrigger {
-
-}
+message EventTrigger {}
 
 message Permissions {
-  repeated Runner whitelist = 1; 
-  repeated Runner blacklist = 2; 
+  repeated Runner whitelist = 1;
+  repeated Runner blacklist = 2;
 }
 
-// Runner defines an actor that runs the job. It can be a smart contract from any other
-// external chain, a direct user on paloma, a smart contract in paloma, etc,...
+// Runner defines an actor that runs the job. It can be a smart contract from
+// any other external chain, a direct user on paloma, a smart contract in
+// paloma, etc,...
 message Runner {
   string chainType = 1;
   string chainReferenceID = 2;
@@ -65,7 +61,6 @@ message Runner {
 
 message Routing {
   // routing information
-  string chainType = 1; // evm, bitcoin?, cosmos,...
+  string chainType = 1;        // evm, bitcoin?, cosmos,...
   string chainReferenceID = 2; // terra, bitcoin, ropsten, eth-main, binance,...
 }
-

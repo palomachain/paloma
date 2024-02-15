@@ -4,7 +4,6 @@ package palomachain.paloma.gravity;
 import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
 
-
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
 // ClaimType is the cosmos type of an event from the counterpart chain that can
@@ -13,68 +12,69 @@ enum ClaimType {
   option (gogoproto.goproto_enum_prefix) = false;
 
   // An unspecified claim type
-  CLAIM_TYPE_UNSPECIFIED         = 0;
+  CLAIM_TYPE_UNSPECIFIED = 0;
   // A claim for a SendToPaloma transaction
-  CLAIM_TYPE_SEND_TO_PALOMA      = 1;
+  CLAIM_TYPE_SEND_TO_PALOMA = 1;
   // A claim for when batches are relayed
-  CLAIM_TYPE_BATCH_SEND_TO_ETH   = 2;
+  CLAIM_TYPE_BATCH_SEND_TO_ETH = 2;
 }
 
 // Attestation is an aggregate of `claims` that eventually becomes `observed` by
 // all orchestrators
 // EVENT_NONCE:
-// EventNonce a nonce provided by the gravity contract that is unique per event fired
-// These event nonces must be relayed in order. This is a correctness issue,
-// if relaying out of order transaction replay attacks become possible
+// EventNonce a nonce provided by the gravity contract that is unique per event
+// fired These event nonces must be relayed in order. This is a correctness
+// issue, if relaying out of order transaction replay attacks become possible
 // OBSERVED:
 // Observed indicates that >67% of validators have attested to the event,
 // and that the event should be executed by the gravity state machine
 //
-// The actual content of the claims is passed in with the transaction making the claim
-// and then passed through the call stack alongside the attestation while it is processed
-// the key in which the attestation is stored is keyed on the exact details of the claim
-// but there is no reason to store those exact details because the next message sender
-// will kindly provide you with them.
+// The actual content of the claims is passed in with the transaction making the
+// claim and then passed through the call stack alongside the attestation while
+// it is processed the key in which the attestation is stored is keyed on the
+// exact details of the claim but there is no reason to store those exact
+// details because the next message sender will kindly provide you with them.
 message Attestation {
-  bool                observed = 1;
-  repeated string     votes    = 2;
-  uint64              height   = 3;
-  google.protobuf.Any claim    = 4;
+  bool observed = 1;
+  repeated string votes = 2;
+  uint64 height = 3;
+  google.protobuf.Any claim = 4;
 }
 
 // ERC20Token unique identifier for an Ethereum ERC20 token.
 // CONTRACT:
 // The contract address on ETH of the token, this could be a Cosmos
 // originated token, if so it will be the ERC20 address of the representation
-// (note: developers should look up the token symbol using the address on ETH to display for UI)
+// (note: developers should look up the token symbol using the address on ETH to
+// display for UI)
 message ERC20Token {
   string contract = 1;
-  string amount   = 2 [
+  string amount = 2 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false
+    (gogoproto.nullable) = false
   ];
   string chain_reference_id = 3;
 }
 
 message EventObservation {
   string attestation_type = 1;
-  string bridge_contract  = 2;
-  string bridge_chain_id  = 3;
-  string attestation_id   = 4;
-  string nonce            = 5;
+  string bridge_contract = 2;
+  string bridge_chain_id = 3;
+  string attestation_id = 4;
+  string nonce = 5;
 }
 
 message EventInvalidSendToPalomaReceiver {
   string amount = 1;
-  string nonce  = 2;
-  string token  = 3;
+  string nonce = 2;
+  string token = 3;
   string sender = 4;
 }
 
 message EventSendToPaloma {
   string amount = 1;
-  string nonce  = 2;
-  string token  = 3;
+  string nonce = 2;
+  string token = 3;
 }
 
 message EventSendToPalomaLocal {

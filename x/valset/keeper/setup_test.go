@@ -32,7 +32,6 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, context.Context) {
 	config := sdk.GetConfig()
 	config.SetBech32PrefixForAccount("paloma", "pub")
 	config.SetBech32PrefixForValidator("palomavaloper", "valoperpub")
-
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 
 	storeKeyService := runtime.NewKVStoreService(storeKey)

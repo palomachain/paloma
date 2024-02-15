@@ -1,9 +1,7 @@
 syntax = "proto3";
 package palomachain.paloma.treasury;
 
-
 option go_package = "github.com/palomachain/paloma/x/treasury/types";
 
 // Params defines the parameters for the module.
-message Params {  
-}
+message Params {}

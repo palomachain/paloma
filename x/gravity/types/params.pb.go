@@ -25,9 +25,9 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// The slashing fractions for the various gravity related slashing conditions. The first three
-// refer to not submitting a particular message, the third for submitting a different claim
-// for the same Ethereum event
+// The slashing fractions for the various gravity related slashing conditions.
+// The first three refer to not submitting a particular message, the third for
+// submitting a different claim for the same Ethereum event
 type Params struct {
 	ContractSourceHash           string                      `protobuf:"bytes,1,opt,name=contract_source_hash,json=contractSourceHash,proto3" json:"contract_source_hash,omitempty"`
 	BridgeEthereumAddress        string                      `protobuf:"bytes,2,opt,name=bridge_ethereum_address,json=bridgeEthereumAddress,proto3" json:"bridge_ethereum_address,omitempty"`

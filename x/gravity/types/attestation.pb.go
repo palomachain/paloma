@@ -61,18 +61,18 @@ func (ClaimType) EnumDescriptor() ([]byte, []int) {
 // Attestation is an aggregate of `claims` that eventually becomes `observed` by
 // all orchestrators
 // EVENT_NONCE:
-// EventNonce a nonce provided by the gravity contract that is unique per event fired
-// These event nonces must be relayed in order. This is a correctness issue,
-// if relaying out of order transaction replay attacks become possible
+// EventNonce a nonce provided by the gravity contract that is unique per event
+// fired These event nonces must be relayed in order. This is a correctness
+// issue, if relaying out of order transaction replay attacks become possible
 // OBSERVED:
 // Observed indicates that >67% of validators have attested to the event,
 // and that the event should be executed by the gravity state machine
 //
-// The actual content of the claims is passed in with the transaction making the claim
-// and then passed through the call stack alongside the attestation while it is processed
-// the key in which the attestation is stored is keyed on the exact details of the claim
-// but there is no reason to store those exact details because the next message sender
-// will kindly provide you with them.
+// The actual content of the claims is passed in with the transaction making the
+// claim and then passed through the call stack alongside the attestation while
+// it is processed the key in which the attestation is stored is keyed on the
+// exact details of the claim but there is no reason to store those exact
+// details because the next message sender will kindly provide you with them.
 type Attestation struct {
 	Observed bool       `protobuf:"varint,1,opt,name=observed,proto3" json:"observed,omitempty"`
 	Votes    []string   `protobuf:"bytes,2,rep,name=votes,proto3" json:"votes,omitempty"`
@@ -145,7 +145,8 @@ func (m *Attestation) GetClaim() *types.Any {
 // CONTRACT:
 // The contract address on ETH of the token, this could be a Cosmos
 // originated token, if so it will be the ERC20 address of the representation
-// (note: developers should look up the token symbol using the address on ETH to display for UI)
+// (note: developers should look up the token symbol using the address on ETH to
+// display for UI)
 type ERC20Token struct {
 	Contract         string                `protobuf:"bytes,1,opt,name=contract,proto3" json:"contract,omitempty"`
 	Amount           cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=cosmossdk.io/math.Int" json:"amount"`

@@ -29,13 +29,9 @@ message QueryParamsRequest {}
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
-message QueryGetJobByIDRequest {
-  string jobID = 1;
-}
+message QueryGetJobByIDRequest { string jobID = 1; }
 
-message QueryGetJobByIDResponse {
-  Job job = 1;
-}
+message QueryGetJobByIDResponse { Job job = 1; }

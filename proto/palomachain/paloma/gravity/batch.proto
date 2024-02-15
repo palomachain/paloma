@@ -8,11 +8,11 @@ option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
 // OutgoingTxBatch represents a batch of transactions going from gravity to ETH
 message OutgoingTxBatch {
-  uint64                      batch_nonce          = 1;
-  uint64                      batch_timeout        = 2;
-  repeated OutgoingTransferTx transactions         = 3 [(gogoproto.nullable) = false];
-  string                      token_contract       = 4;
-  uint64                      paloma_block_created = 5;
+  uint64 batch_nonce = 1;
+  uint64 batch_timeout = 2;
+  repeated OutgoingTransferTx transactions = 3 [ (gogoproto.nullable) = false ];
+  string token_contract = 4;
+  uint64 paloma_block_created = 5;
   string chain_reference_id = 6;
   bytes bytes_to_sign = 7;
   string assignee = 8;
@@ -20,10 +20,10 @@ message OutgoingTxBatch {
 
 // OutgoingTransferTx represents an individual send from gravity to ETH
 message OutgoingTransferTx {
-  uint64     id           = 1;
-  string     sender       = 2;
-  string     dest_address = 3;
-  ERC20Token erc20_token = 4 [(gogoproto.nullable) = false];
+  uint64 id = 1;
+  string sender = 2;
+  string dest_address = 3;
+  ERC20Token erc20_token = 4 [ (gogoproto.nullable) = false ];
 }
 
 message EventOutgoingBatchCanceled {

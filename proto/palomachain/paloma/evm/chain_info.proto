@@ -11,7 +11,7 @@ message ChainInfo {
   uint64 id = 9999;
 
   string chainReferenceID = 1;
-  
+
   uint64 chainID = 2;
 
   bytes smartContractUniqueID = 3;
@@ -37,7 +37,6 @@ message ChainInfo {
   string minOnChainBalance = 12;
 
   RelayWeights relayWeights = 13;
-
 }
 
 message SmartContract {
@@ -54,8 +53,8 @@ message SmartContractDeployment {
   string chainReferenceID = 2;
 
   // application level ID which uniquely identifies a deployed smart contract.
-  // It's used if we have multiple smart contracts deployed on a same EVM so that
-  // the contract can figure out if the message was actually sent for them.
+  // It's used if we have multiple smart contracts deployed on a same EVM so
+  // that the contract can figure out if the message was actually sent for them.
   // (message includes the unique id and smart contract has simple logic to
   // disallow those that to not match)
   bytes uniqueID = 3;
@@ -74,7 +73,7 @@ message SmartContractDeployment {
   Status status = 4;
 
   message ERC20Transfer {
-    // Paloma denom of the ERC20 token 
+    // Paloma denom of the ERC20 token
     string denom = 1;
     // Address of the ERC20 token on the target chain
     string erc20 = 2;
@@ -82,21 +81,21 @@ message SmartContractDeployment {
     // ownership.
     uint64 msgID = 3;
     enum Status {
-        // The transfer is still ongoing.
-        PENDING = 0;
-        // The transfer has finished successfully.
-        OK = 1;
-        // The transfer has failed and needs to be retried.
-        FAIL = 2;
-      }
+      // The transfer is still ongoing.
+      PENDING = 0;
+      // The transfer has finished successfully.
+      OK = 1;
+      // The transfer has failed and needs to be retried.
+      FAIL = 2;
+    }
     // Current status of the transfer.
     Status status = 4;
-    }
+  }
 
   // A set of transfer records for each ERC20 token that
   // needs the updated smart contract address before Paloma
   // can switch to the new contract.
-  repeated ERC20Transfer erc20transfers = 5 [(gogoproto.nullable) = false];
+  repeated ERC20Transfer erc20transfers = 5 [ (gogoproto.nullable) = false ];
 
   // Once deployed, this contains the address of the contract
   // on the remote chain.

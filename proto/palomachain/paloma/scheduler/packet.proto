@@ -4,9 +4,7 @@ package palomachain.paloma.scheduler;
 option go_package = "github.com/palomachain/paloma/x/scheduler/types";
 
 message SchedulerPacketData {
-  oneof packet {
-    NoData noData = 1;
-  }
+  oneof packet { NoData noData = 1; }
 }
 
 message NoData {}

@@ -24,7 +24,8 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// GenesisState struct, containing all persistant data required by the Gravity module
+// GenesisState struct, containing all persistant data required by the Gravity
+// module
 type GenesisState struct {
 	Params             *Params              `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 	GravityNonces      GravityNonces        `protobuf:"bytes,2,opt,name=gravity_nonces,json=gravityNonces,proto3" json:"gravity_nonces"`
@@ -117,7 +118,8 @@ func (m *GenesisState) GetUnbatchedTransfers() []OutgoingTransferTx {
 	return nil
 }
 
-// GravityCounters contains the many noces and counters required to maintain the bridge state in the genesis
+// GravityCounters contains the many noces and counters required to maintain the
+// bridge state in the genesis
 type GravityNonces struct {
 	// the last observed Gravity.sol contract event nonce
 	LastObservedNonce uint64 `protobuf:"varint,1,opt,name=last_observed_nonce,json=lastObservedNonce,proto3" json:"last_observed_nonce,omitempty"`

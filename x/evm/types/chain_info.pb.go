@@ -331,8 +331,8 @@ type SmartContractDeployment struct {
 	// to which chain info the smart contract is getting deployed to
 	ChainReferenceID string `protobuf:"bytes,2,opt,name=chainReferenceID,proto3" json:"chainReferenceID,omitempty"`
 	// application level ID which uniquely identifies a deployed smart contract.
-	// It's used if we have multiple smart contracts deployed on a same EVM so that
-	// the contract can figure out if the message was actually sent for them.
+	// It's used if we have multiple smart contracts deployed on a same EVM so
+	// that the contract can figure out if the message was actually sent for them.
 	// (message includes the unique id and smart contract has simple logic to
 	// disallow those that to not match)
 	UniqueID []byte                         `protobuf:"bytes,3,opt,name=uniqueID,proto3" json:"uniqueID,omitempty"`

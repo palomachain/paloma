@@ -75,7 +75,7 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 		return nil
 	}
 
-	ctx, writeCache := sdkCtx.CacheContext()
+	ctx1, writeCache := sdkCtx.CacheContext()
 	defer func() {
 		if err != nil {
 			logger.WithError(err).Error("failed to attest. Skipping writeback.")
@@ -90,7 +90,7 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 		return err
 	}
 
-	evidence, err := k.findEvidenceThatWon(sdkCtx, msg.GetEvidence())
+	evidence, err := k.findEvidenceThatWon(ctx1, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			logger.WithError(err).Error("consensus not achieved")
@@ -112,13 +112,13 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 			success = true
 			tx, err := winner.GetTX()
 			if err == nil {
-				k.setTxAsAlreadyProcessed(sdkCtx, tx)
+				k.setTxAsAlreadyProcessed(ctx1, tx)
 			}
 		}
 
 		handledAt := msg.GetHandledAtBlockHeight()
 		if handledAt == nil {
-			handledAt = func(i math.Int) *math.Int { return &i }(sdkmath.NewInt(sdkCtx.BlockHeight()))
+			handledAt = func(i math.Int) *math.Int { return &i }(sdkmath.NewInt(ctx1.BlockHeight()))
 		}
 		publishMessageAttestedEvent(sdkCtx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
 
@@ -141,17 +141,17 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 	}
 	switch rawAction.(type) {
 	case *types.Message_UploadSmartContract:
-		return newUploadSmartContractAttester(&k, logger, params).Execute(sdkCtx)
+		return newUploadSmartContractAttester(&k, logger, params).Execute(ctx1)
 	case *types.Message_UpdateValset:
-		return newUpdateValsetAttester(&k, logger, q, params).Execute(sdkCtx)
+		return newUpdateValsetAttester(&k, logger, q, params).Execute(ctx1)
 	case *types.Message_SubmitLogicCall:
-		return newSubmitLogicCallAttester(&k, logger, params).Execute(sdkCtx)
+		return newSubmitLogicCallAttester(&k, logger, params).Execute(ctx1)
 	}
 
 	return nil
 }
 
-func publishMessageAttestedEvent(ctx sdk.Context, k *Keeper, msgID uint64, assignee string, assignedAt math.Int, handledAt math.Int, successful bool) {
+func publishMessageAttestedEvent(ctx context.Context, k *Keeper, msgID uint64, assignee string, assignedAt math.Int, handledAt math.Int, successful bool) {
 	valAddr, err := sdk.ValAddressFromBech32(assignee)
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields("assignee", assignee, "msg-id", msgID).Error("failed to get validator address from bech32.")
@@ -169,7 +169,7 @@ func publishMessageAttestedEvent(ctx sdk.Context, k *Keeper, msgID uint64, assig
 }
 
 func attestTransactionIntegrity(
-	ctx sdk.Context,
+	ctx context.Context,
 	k *Keeper,
 	proof *types.TxExecutedProof,
 	verifyTx func(tx *ethtypes.Transaction) error,
@@ -278,7 +278,7 @@ func (k Keeper) findEvidenceThatWon(
 	return nil, ErrConsensusNotAchieved
 }
 
-func (k Keeper) SetSmartContractAsActive(ctx sdk.Context, smartContractID uint64, chainReferenceID string) (err error) {
+func (k Keeper) SetSmartContractAsActive(ctx context.Context, smartContractID uint64, chainReferenceID string) (err error) {
 	logger := liblog.FromSDKLogger(k.Logger(ctx))
 	defer func() {
 		if err == nil {
@@ -314,17 +314,17 @@ func (k Keeper) SetSmartContractAsActive(ctx sdk.Context, smartContractID uint64
 	return nil
 }
 
-func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) storetypes.KVStore {
+func (k Keeper) txAlreadyProcessedStore(ctx context.Context) storetypes.KVStore {
 	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
 	return prefix.NewStore(s, []byte("tx-processed"))
 }
 
-func (k Keeper) setTxAsAlreadyProcessed(ctx sdk.Context, tx *ethtypes.Transaction) {
+func (k Keeper) setTxAsAlreadyProcessed(ctx context.Context, tx *ethtypes.Transaction) {
 	kv := k.txAlreadyProcessedStore(ctx)
 	kv.Set(tx.Hash().Bytes(), []byte{1})
 }
 
-func (k Keeper) isTxProcessed(ctx sdk.Context, tx *ethtypes.Transaction) bool {
+func (k Keeper) isTxProcessed(ctx context.Context, tx *ethtypes.Transaction) bool {
 	kv := k.txAlreadyProcessedStore(ctx)
 	return kv.Has(tx.Hash().Bytes())
 }

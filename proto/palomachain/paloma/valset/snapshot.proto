@@ -8,7 +8,6 @@ import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "github.com/palomachain/paloma/x/valset/types";
 
-
 message Validator {
   bytes shareCount = 1 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
@@ -19,15 +18,13 @@ message Validator {
 
   repeated ExternalChainInfo externalChainInfos = 3;
 
-  bytes address = 4 [
-    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"
-  ];
+  bytes address = 4 [ (gogoproto.casttype) =
+                          "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
 }
 
 message ValidatorExternalAccounts {
-  bytes address = 1 [
-    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"
-  ];
+  bytes address = 1 [ (gogoproto.casttype) =
+                          "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
   repeated ExternalChainInfo ExternalChainInfo = 2;
 }
 
@@ -35,20 +32,15 @@ message Snapshot {
   uint64 id = 1;
   int64 height = 2;
 
-  repeated Validator validators = 3 [
-    (gogoproto.nullable) = false
-  ];
-
+  repeated Validator validators = 3 [ (gogoproto.nullable) = false ];
 
   bytes totalShares = 4 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 
-  google.protobuf.Timestamp createdAt = 5 [
-    (gogoproto.nullable) = false,
-    (gogoproto.stdtime) = true
-  ];
+  google.protobuf.Timestamp createdAt = 5
+      [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
 
   repeated string chains = 6;
 }
@@ -68,4 +60,3 @@ enum ValidatorState {
   ACTIVE = 1;
   JAILED = 2;
 }
-

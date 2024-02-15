@@ -809,13 +809,14 @@ func (m *QueryDenomToERC20Response) GetErc20() string {
 	return ""
 }
 
-// QueryLastObservedEthBlockRequest defines the request for getting the height of the
-// last applied Ethereum Event on the bridge. This is expected to lag the actual
-// Ethereum block height significantly due to 1. Ethereum Finality and
+// QueryLastObservedEthBlockRequest defines the request for getting the height
+// of the last applied Ethereum Event on the bridge. This is expected to lag the
+// actual Ethereum block height significantly due to 1. Ethereum Finality and
 //  2. Consensus mirroring the state on Ethereum
 type QueryLastObservedEthBlockRequest struct {
-	// indicates whether to search for store data using the old Gravity v1 key "LastObservedEthereumBlockHeightKey"
-	// Note that queries before the Mercury upgrade at height 1282013 must set this to true
+	// indicates whether to search for store data using the old Gravity v1 key
+	// "LastObservedEthereumBlockHeightKey" Note that queries before the Mercury
+	// upgrade at height 1282013 must set this to true
 	UseV1Key bool `protobuf:"varint,1,opt,name=use_v1_key,json=useV1Key,proto3" json:"use_v1_key,omitempty"`
 }
 
@@ -860,8 +861,8 @@ func (m *QueryLastObservedEthBlockRequest) GetUseV1Key() bool {
 }
 
 type QueryLastObservedEthBlockResponse struct {
-	// a response of 0 indicates that no Ethereum events have been observed, and thus
-	// the bridge is inactive
+	// a response of 0 indicates that no Ethereum events have been observed, and
+	// thus the bridge is inactive
 	Block uint64 `protobuf:"varint,1,opt,name=block,proto3" json:"block,omitempty"`
 }
 
@@ -905,13 +906,14 @@ func (m *QueryLastObservedEthBlockResponse) GetBlock() uint64 {
 	return 0
 }
 
-// QueryLastObservedEthNonceRequest defines the request for getting the event nonce
-// of the last applied Ethereum Event on the bridge.
-// Note that this is likely to lag the last executed event a little
-// due to 1. Ethereum Finality and 2. Consensus mirroring the Ethereum state
+// QueryLastObservedEthNonceRequest defines the request for getting the event
+// nonce of the last applied Ethereum Event on the bridge. Note that this is
+// likely to lag the last executed event a little due to 1. Ethereum Finality
+// and 2. Consensus mirroring the Ethereum state
 type QueryLastObservedEthNonceRequest struct {
-	// indicates whether to search for store data using the old Gravity v1 key "LastObservedEventNonceKey"
-	// Note that queries before the Mercury upgrade at height 1282013 must set this to true
+	// indicates whether to search for store data using the old Gravity v1 key
+	// "LastObservedEventNonceKey" Note that queries before the Mercury upgrade at
+	// height 1282013 must set this to true
 	UseV1Key bool `protobuf:"varint,1,opt,name=use_v1_key,json=useV1Key,proto3" json:"use_v1_key,omitempty"`
 }
 
@@ -956,8 +958,8 @@ func (m *QueryLastObservedEthNonceRequest) GetUseV1Key() bool {
 }
 
 type QueryLastObservedEthNonceResponse struct {
-	// a response of 0 indicates that no Ethereum events have been observed, and thus
-	// the bridge is inactive
+	// a response of 0 indicates that no Ethereum events have been observed, and
+	// thus the bridge is inactive
 	Nonce uint64 `protobuf:"varint,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
 
@@ -1021,8 +1023,9 @@ type QueryAttestationsRequest struct {
 	Nonce uint64 `protobuf:"varint,4,opt,name=nonce,proto3" json:"nonce,omitempty"`
 	// height allows filtering attestations by Ethereum claim height.
 	Height uint64 `protobuf:"varint,5,opt,name=height,proto3" json:"height,omitempty"`
-	// indicates whether to search for store data using the old Gravity v1 key "OracleAttestationKey"
-	// Note that queries before the Mercury upgrade at height 1282013 must set this to true
+	// indicates whether to search for store data using the old Gravity v1 key
+	// "OracleAttestationKey" Note that queries before the Mercury upgrade at
+	// height 1282013 must set this to true
 	UseV1Key bool `protobuf:"varint,6,opt,name=use_v1_key,json=useV1Key,proto3" json:"use_v1_key,omitempty"`
 }
 
