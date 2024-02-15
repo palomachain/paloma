@@ -713,7 +713,6 @@ func CreateTestEnv(t *testing.T) TestInput {
 		runtime.NewKVStoreService(keyEvm),
 		consensusKeeper,
 		valsetKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
 	)
 
