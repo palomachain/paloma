@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -224,7 +225,7 @@ func (k Keeper) InvalidSendToEthAddress(ctx sdk.Context, addr types.EthAddress, 
 	return addr == types.ZeroAddress()
 }
 
-func (k Keeper) GetStore(ctx sdk.Context) sdk.KVStore {
+func (k Keeper) GetStore(ctx context.Context) sdk.KVStore {
 	return k.storeGetter.Store(ctx)
 }
 
@@ -238,6 +239,7 @@ func NewGravityStoreGetter(storeKey storetypes.StoreKey) GravityStoreGetter {
 	}
 }
 
-func (gsg GravityStoreGetter) Store(ctx sdk.Context) sdk.KVStore {
-	return ctx.KVStore(gsg.storeKey)
+func (gsg GravityStoreGetter) Store(ctx context.Context) sdk.KVStore {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.KVStore(gsg.storeKey)
 }

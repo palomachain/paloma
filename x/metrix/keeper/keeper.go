@@ -52,9 +52,9 @@ type (
 		slashing   types.SlashingKeeper
 		staking    types.StakingKeeper
 
-		metrics           *keeperutil.KVStoreWrapper[*types.ValidatorMetrics]
-		history           *keeperutil.KVStoreWrapper[*types.ValidatorHistory]
-		messageNonceCache *keeperutil.KVStoreWrapper[*types.HistoricRelayData]
+		metrics           keeperutil.KVStoreWrapper[*types.ValidatorMetrics]
+		history           keeperutil.KVStoreWrapper[*types.ValidatorHistory]
+		messageNonceCache keeperutil.KVStoreWrapper[*types.HistoricRelayData]
 	}
 )
 
@@ -455,7 +455,7 @@ func calculateUptime(window, missed int64) math.LegacyDec {
 	return palomath.BigIntDiv(diff, w)
 }
 
-func getFromStore[T codec.ProtoMarshaler](ctx sdk.Context, store *keeperutil.KVStoreWrapper[T], key keeperutil.Byter) (T, error) {
+func getFromStore[T codec.ProtoMarshaler](ctx sdk.Context, store keeperutil.KVStoreWrapper[T], key keeperutil.Byter) (T, error) {
 	var empty T
 	data, err := store.Get(ctx, key)
 	if err != nil {

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -14,18 +15,19 @@ import (
 	"github.com/palomachain/paloma/x/treasury/types"
 )
 
-const storeKey = "treasury"
+const treasuryFeeStoreKey keeperutil.Key = "treasury"
 
 type Keeper struct {
+	paramstore      paramtypes.Subspace
 	cdc             codec.BinaryCodec
 	memKey          storetypes.StoreKey
-	paramstore      paramtypes.Subspace
 	bank            types.BankKeeper
 	account         types.AccountKeeper
+	staking         types.StakingKeeper
 	Scheduler       types.Scheduler
+	treasureStore   keeperutil.KVStoreWrapper[*types.Fees]
+	relayerFeeStore keeperutil.KVStoreWrapper[*types.RelayerFee]
 	Chains          []xchain.FundCollecter
-	treasureStore   *keeperutil.KVStoreWrapper[*types.Fees]
-	relayerFeeStore *keeperutil.KVStoreWrapper[*types.RelayerFee]
 }
 
 func NewKeeper(
@@ -35,6 +37,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	bank types.BankKeeper,
 	account types.AccountKeeper,
+	staking types.StakingKeeper,
 	scheduler types.Scheduler,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -48,6 +51,7 @@ func NewKeeper(
 		paramstore:      ps,
 		bank:            bank,
 		account:         account,
+		staking:         staking,
 		Scheduler:       scheduler,
 		treasureStore:   keeperutil.NewKvStoreWrapper[*types.Fees](keeperutil.StoreFactory(storeKey, types.TreasureStorePrefix), cdc),
 		relayerFeeStore: keeperutil.NewKvStoreWrapper[*types.RelayerFee](keeperutil.StoreFactory(storeKey, types.RelayerFeeStorePrefix), cdc),
@@ -63,31 +67,25 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) SetCommunityFundFee(ctx sdk.Context, fee string) error {
 	fees, err := k.GetFees(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("SetCommunityFundFee: %w", err)
 	}
 
 	fees.CommunityFundFee = fee
-
-	err = k.setFees(ctx, fees)
-
-	return err
+	return k.setFees(ctx, fees)
 }
 
 func (k Keeper) SetSecurityFee(ctx sdk.Context, fee string) error {
 	fees, err := k.GetFees(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("SetSecurityFee: %w", err)
 	}
 
 	fees.SecurityFee = fee
-
-	err = k.setFees(ctx, fees)
-
-	return err
+	return k.setFees(ctx, fees)
 }
 
 func (k Keeper) GetFees(ctx sdk.Context) (*types.Fees, error) {
-	res, err := k.KeeperUtil.Load(k.Store.TreasuryStore(ctx), k.cdc, []byte(storeKey))
+	res, err := k.treasureStore.Get(ctx, treasuryFeeStoreKey)
 	if errors.Is(err, keeperutil.ErrNotFound) {
 		return &types.Fees{}, nil
 	}
@@ -98,13 +96,41 @@ func (k Keeper) GetFees(ctx sdk.Context) (*types.Fees, error) {
 }
 
 func (k Keeper) setFees(ctx sdk.Context, fees *types.Fees) error {
-	return k.KeeperUtil.Save(k.Store.TreasuryStore(ctx), k.cdc, []byte(storeKey), fees)
+	return k.treasureStore.Set(ctx, treasuryFeeStoreKey, fees)
 }
 
-func (k Keeper) SetRelayerFee(ctx sdk.Context, fee *types.RelayerFee) error {
+func (k Keeper) setRelayerFee(ctx context.Context, valAddress sdk.ValAddress, fee *types.RelayerFee) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	val := k.staking.Validator(sdkCtx, valAddress)
+	if val == nil {
+		return fmt.Errorf("validator not found")
+	}
 	if fee == nil {
 		return fmt.Errorf("nil fee not allowed")
 	}
 
-	return k.KeeperUtil.Save(k.Store.RelayerFeeStore(ctx), k.cdc)
+	return k.relayerFeeStore.Set(ctx, valAddress, fee)
+}
+
+func (k Keeper) getRelayerFee(ctx context.Context, valAddress sdk.ValAddress) (*types.RelayerFee, error) {
+	fee, err := k.relayerFeeStore.Get(ctx, valAddress)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return fee, nil
+}
+
+func (k Keeper) getRelayerFees(ctx context.Context) ([]types.RelayerFee, error) {
+	fees := make([]types.RelayerFee, 0, 200)
+	if err := k.relayerFeeStore.Iterate(ctx, func(_ []byte, f *types.RelayerFee) bool {
+		fees = append(fees, *f)
+		return true
+	}); err != nil {
+		return nil, fmt.Errorf("iterate relayer fee store: %w", err)
+	}
+
+	return fees, nil
 }

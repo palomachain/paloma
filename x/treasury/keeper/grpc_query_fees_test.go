@@ -8,7 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutilmocks "github.com/palomachain/paloma/util/keeper/mocks"
 	"github.com/palomachain/paloma/x/treasury/types"
-	"github.com/palomachain/paloma/x/treasury/types/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
@@ -17,26 +16,22 @@ import (
 
 func TestKeeper_QueryFees(t *testing.T) {
 	testcases := []struct {
-		name        string
+		expectedErr error
 		setup       func() (Keeper, *types.QueryFeesRequest)
 		expected    *types.Fees
-		expectedErr error
+		name        string
 	}{
 		{
 			name: "returns fees when set",
 			setup: func() (Keeper, *types.QueryFeesRequest) {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load", mock.Anything, mock.Anything, mock.Anything).Return(&types.Fees{
+				sm := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				sm.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{
 					CommunityFundFee: "0.01",
 					SecurityFee:      "0.02",
 				}, nil)
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: sm,
 				}
 
 				return k, &types.QueryFeesRequest{}

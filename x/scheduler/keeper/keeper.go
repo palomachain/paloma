@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -84,8 +85,9 @@ func (k Keeper) PreJobExecution(ctx sdk.Context, job *types.Job) error {
 }
 
 // store returns default store for this keeper!
-func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
-	return ctx.KVStore(k.storeKey)
+func (k Keeper) Store(ctx context.Context) sdk.KVStore {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.KVStore(k.storeKey)
 }
 
 func (k Keeper) jobsStore(ctx sdk.Context) sdk.KVStore {

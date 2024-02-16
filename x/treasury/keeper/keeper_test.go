@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -10,44 +11,30 @@ import (
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	keeperutilmocks "github.com/palomachain/paloma/util/keeper/mocks"
 	"github.com/palomachain/paloma/x/treasury/types"
-	"github.com/palomachain/paloma/x/treasury/types/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestSetCommunityFundFee(t *testing.T) {
 	testcases := []struct {
-		name        string
-		setup       func() Keeper
-		input       string
 		expectedErr error
+		setup       func() Keeper
+		name        string
+		input       string
 	}{
 		{
 			name:  "success case - tells store to set fees and returns no error",
 			input: "0.01",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(&types.Fees{}, nil)
-
-				keeperUtil.On("Save",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-					&types.Fees{
-						CommunityFundFee: "0.01",
-					},
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{}, nil)
+				ms.On("Set", mock.Anything, mock.Anything, &types.Fees{
+					CommunityFundFee: "0.01",
+				},
 				).Return(nil)
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -57,32 +44,20 @@ func TestSetCommunityFundFee(t *testing.T) {
 			name:  "success case with existing fees - tells store to set fees and returns no error",
 			input: "0.01",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(&types.Fees{
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{
 					CommunityFundFee: "0.02",
 					SecurityFee:      "0.03",
 				}, nil)
-
-				keeperUtil.On("Save",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
+				ms.On("Set", mock.Anything, mock.Anything,
 					&types.Fees{
 						CommunityFundFee: "0.01",
 						SecurityFee:      "0.03",
 					},
 				).Return(nil)
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -92,51 +67,35 @@ func TestSetCommunityFundFee(t *testing.T) {
 			name:  "error returned loading existing fees, returns error",
 			input: "0.01",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get",
 					mock.Anything,
 					mock.Anything,
 				).Return(&types.Fees{}, errors.New("load error"))
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
 			},
-			expectedErr: errors.New("load error"),
+			expectedErr: fmt.Errorf("SetCommunityFundFee: %w", errors.New("load error")),
 		},
 		{
 			name:  "error returned saving fees, returns error",
 			input: "0.01",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(&types.Fees{}, nil)
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{}, nil)
 
-				keeperUtil.On("Save",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
+				ms.On("Set", mock.Anything, mock.Anything,
 					&types.Fees{
 						CommunityFundFee: "0.01",
 					},
 				).Return(errors.New("save error"))
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -147,7 +106,7 @@ func TestSetCommunityFundFee(t *testing.T) {
 
 	asserter := assert.New(t)
 	for _, tt := range testcases {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
 			k := tt.setup()
 
@@ -159,37 +118,25 @@ func TestSetCommunityFundFee(t *testing.T) {
 
 func TestSetSecurityFee(t *testing.T) {
 	testcases := []struct {
-		name        string
-		setup       func() Keeper
-		input       string
 		expectedErr error
+		setup       func() Keeper
+		name        string
+		input       string
 	}{
 		{
 			name:  "success case - tells store to set fees and returns no error",
 			input: "0.01",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(&types.Fees{}, nil)
-
-				keeperUtil.On("Save",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{}, nil)
+				ms.On("Set", mock.Anything, mock.Anything,
 					&types.Fees{
 						SecurityFee: "0.01",
 					},
 				).Return(nil)
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -199,32 +146,20 @@ func TestSetSecurityFee(t *testing.T) {
 			name:  "success case with existing fees - tells store to set fees and returns no error",
 			input: "0.01",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(&types.Fees{
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{
 					CommunityFundFee: "0.02",
 					SecurityFee:      "0.03",
 				}, nil)
-
-				keeperUtil.On("Save",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
+				ms.On("Set", mock.Anything, mock.Anything,
 					&types.Fees{
 						CommunityFundFee: "0.02",
 						SecurityFee:      "0.01",
 					},
 				).Return(nil)
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -234,51 +169,31 @@ func TestSetSecurityFee(t *testing.T) {
 			name:  "error returned loading existing fees, returns error",
 			input: "0.01",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(&types.Fees{}, errors.New("load error"))
-
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{}, errors.New("load error"))
 
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
 			},
-			expectedErr: errors.New("load error"),
+			expectedErr: fmt.Errorf("SetSecurityFee: %w", errors.New("load error")),
 		},
 		{
 			name:  "error returned saving fees, returns error",
 			input: "0.01",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(&types.Fees{}, nil)
-
-				keeperUtil.On("Save",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{}, nil)
+				ms.On("Set", mock.Anything, mock.Anything,
 					&types.Fees{
 						SecurityFee: "0.01",
 					},
 				).Return(errors.New("save error"))
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -289,7 +204,7 @@ func TestSetSecurityFee(t *testing.T) {
 
 	asserter := assert.New(t)
 	for _, tt := range testcases {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
 			k := tt.setup()
 
@@ -301,30 +216,22 @@ func TestSetSecurityFee(t *testing.T) {
 
 func TestGetFees(t *testing.T) {
 	testcases := []struct {
-		name        string
+		expectedErr error
 		setup       func() Keeper
 		expected    *types.Fees
-		expectedErr error
+		name        string
 	}{
 		{
 			name: "success case - returns what's loaded from the store",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(&types.Fees{
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{
 					CommunityFundFee: "0.01",
 					SecurityFee:      "0.02",
 				}, nil)
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -337,19 +244,11 @@ func TestGetFees(t *testing.T) {
 		{
 			name: "success case - not found in store.  returns empty fees",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(&types.Fees{}, keeperutil.ErrNotFound.Format(&types.Fees{}, ""))
-
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{}, keeperutil.ErrNotFound.Format(&types.Fees{}, ""))
 
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -359,19 +258,11 @@ func TestGetFees(t *testing.T) {
 		{
 			name: "error case - returns error from loading",
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-				keeperUtil.On("Load",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
-				).Return(&types.Fees{}, errors.New("load error"))
-
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Get", mock.Anything, mock.Anything).Return(&types.Fees{}, errors.New("load error"))
 
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -383,7 +274,7 @@ func TestGetFees(t *testing.T) {
 
 	asserter := assert.New(t)
 	for _, tt := range testcases {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
 			k := tt.setup()
 
@@ -396,10 +287,10 @@ func TestGetFees(t *testing.T) {
 
 func TestSetFees(t *testing.T) {
 	testcases := []struct {
-		name        string
+		expectedErr error
 		setup       func() Keeper
 		input       *types.Fees
-		expectedErr error
+		name        string
 	}{
 		{
 			name: "success case - tells store to set fees and returns no error",
@@ -408,24 +299,16 @@ func TestSetFees(t *testing.T) {
 				SecurityFee:      "0.02",
 			},
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
-
-				keeperUtil.On("Save",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
+				ms.On("Set", mock.Anything, mock.Anything,
 					&types.Fees{
 						CommunityFundFee: "0.01",
 						SecurityFee:      "0.02",
 					},
 				).Return(nil)
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -438,24 +321,17 @@ func TestSetFees(t *testing.T) {
 				SecurityFee:      "0.02",
 			},
 			setup: func() Keeper {
-				keeperUtil := keeperutilmocks.NewKeeperUtilI[*types.Fees](t)
+				ms := keeperutilmocks.NewKVStoreWrapper[*types.Fees](t)
 
-				keeperUtil.On("Save",
-					mock.Anything,
-					mock.Anything,
-					mock.Anything,
+				ms.On("Set", mock.Anything, mock.Anything,
 					&types.Fees{
 						CommunityFundFee: "0.01",
 						SecurityFee:      "0.02",
 					},
 				).Return(errors.New("save error"))
 
-				store := mocks.NewTreasuryStore(t)
-				store.On("TreasuryStore", mock.Anything).Return(nil)
-
 				k := Keeper{
-					KeeperUtil: keeperUtil,
-					Store:      store,
+					treasureStore: ms,
 				}
 
 				return k
@@ -466,7 +342,7 @@ func TestSetFees(t *testing.T) {
 
 	asserter := assert.New(t)
 	for _, tt := range testcases {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
 			k := tt.setup()
 

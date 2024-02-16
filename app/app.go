@@ -636,6 +636,7 @@ func New(
 		app.GetSubspace(schedulermoduletypes.ModuleName),
 		app.BankKeeper,
 		app.AccountKeeper,
+		app.StakingKeeper,
 		app.SchedulerKeeper,
 	)
 

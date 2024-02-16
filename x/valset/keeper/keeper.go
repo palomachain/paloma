@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -50,7 +51,7 @@ type Keeper struct {
 	slashing             types.SlashingKeeper
 	storeKey             storetypes.StoreKey
 
-	jailLog *keeperutil.KVStoreWrapper[*types.JailRecord]
+	jailLog keeperutil.KVStoreWrapper[*types.JailRecord]
 }
 
 func NewKeeper(
@@ -79,8 +80,9 @@ func NewKeeper(
 		powerReduction:       powerReduction,
 		jailLog:              keeperutil.NewKvStoreWrapper[*types.JailRecord](jailLogProviderFactory(storeKey), cdc),
 	}
-	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx sdk.Context) sdk.KVStore {
-		return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("IDs"))
+	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx context.Context) sdk.KVStore {
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		return prefix.NewStore(sdkCtx.KVStore(k.storeKey), []byte("IDs"))
 	}), nil)
 
 	return k
@@ -691,8 +693,9 @@ func (k Keeper) SaveModifiedSnapshot(ctx sdk.Context, snapshot *types.Snapshot) 
 	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(snapshot.GetId()), snapshot)
 }
 
-func jailLogProviderFactory(storeKey storetypes.StoreKey) func(ctx sdk.Context) sdk.KVStore {
-	return func(ctx sdk.Context) sdk.KVStore {
-		return prefix.NewStore(ctx.KVStore(storeKey), types.KeyPrefix(types.JailLogKey))
+func jailLogProviderFactory(storeKey storetypes.StoreKey) func(ctx context.Context) sdk.KVStore {
+	return func(ctx context.Context) sdk.KVStore {
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		return prefix.NewStore(sdkCtx.KVStore(storeKey), types.KeyPrefix(types.JailLogKey))
 	}
 }

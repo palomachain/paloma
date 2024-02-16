@@ -417,8 +417,9 @@ func (k Keeper) provideSmartContractDeploymentStore(ctx sdk.Context) sdk.KVStore
 	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("smart-contract-deployment"))
 }
 
-func (k Keeper) provideSmartContractStore(ctx sdk.Context) sdk.KVStore {
-	return prefix.NewStore(ctx.KVStore(k.storeKey), []byte("smart-contracts"))
+func (k Keeper) provideSmartContractStore(ctx context.Context) sdk.KVStore {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return prefix.NewStore(sdkCtx.KVStore(k.storeKey), []byte("smart-contracts"))
 }
 
 func (k Keeper) provideLastCompassContractStore(ctx sdk.Context) sdk.KVStore {

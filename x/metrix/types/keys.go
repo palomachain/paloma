@@ -1,5 +1,7 @@
 package types
 
+import keeperutil "github.com/palomachain/paloma/util/keeper"
+
 const (
 	// ModuleName defines the module name
 	ModuleName = "metrix"
@@ -26,13 +28,5 @@ const (
 	MessageNonceCacheStorePrefix = "message-nonce"
 
 	// MessageNonceCacheKey defines the key to access the singleton resource on the message nonce store.
-	MessageNonceCacheKey CacheKey = "highest-message-nonce"
+	MessageNonceCacheKey keeperutil.Key = "highest-message-nonce"
 )
-
-type CacheKey string
-
-func (m CacheKey) Bytes() []byte { return []byte(m) }
-
-type Key []byte
-
-func (k Key) Bytes() []byte { return k }

@@ -3,6 +3,7 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 )
@@ -10,10 +11,16 @@ import (
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&CommunityFundFeeProposal{}, "treasury/CommunityFundFeeProposal", nil)
 	cdc.RegisterConcrete(&SecurityFeeProposal{}, "treasury/SecurityFeeProposal", nil)
+	cdc.RegisterConcrete(&MsgSetRelayerFee{}, "treasury/SetRelayerFee", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
+
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&MsgSetRelayerFee{},
+	)
 
 	registry.RegisterImplementations(
 		(*govv1beta1types.Content)(nil),

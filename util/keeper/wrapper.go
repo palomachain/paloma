@@ -1,42 +1,60 @@
 package keeper
 
 import (
+	"context"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types"
 )
 
+var _ Byter = Key("")
+
 type Byter interface {
 	Bytes() []byte
 }
 
-func NewKvStoreWrapper[T codec.ProtoMarshaler](s StoreGetterFn, ps ProtoSerializer) *KVStoreWrapper[T] {
-	return &KVStoreWrapper[T]{
+type Key string
+
+func (k Key) Bytes() []byte {
+	return []byte(k)
+}
+
+//go:generate mockery --name=KVStoreWrapper
+type KVStoreWrapper[T codec.ProtoMarshaler] interface {
+	Get(ctx context.Context, key Byter) (T, error)
+	Set(ctx context.Context, key Byter, value T) error
+	Iterate(ctx context.Context, fn func([]byte, T) bool) error
+}
+
+func NewKvStoreWrapper[T codec.ProtoMarshaler](s StoreGetterFn, ps ProtoSerializer) KVStoreWrapper[T] {
+	return &kvStoreWrapper[T]{
 		sg: s,
 		ps: ps,
 	}
 }
 
-type KVStoreWrapper[T codec.ProtoMarshaler] struct {
+type kvStoreWrapper[T codec.ProtoMarshaler] struct {
 	sg StoreGetterFn
 	ps ProtoSerializer
 }
 
-func (v *KVStoreWrapper[T]) Get(ctx types.Context, key Byter) (T, error) {
+func (v *kvStoreWrapper[T]) Get(ctx context.Context, key Byter) (T, error) {
 	return Load[T](v.sg(ctx), v.ps, key.Bytes())
 }
 
-func (v *KVStoreWrapper[T]) Set(ctx types.Context, key Byter, value T) error {
+func (v *kvStoreWrapper[T]) Set(ctx context.Context, key Byter, value T) error {
 	return Save(v.sg(ctx), v.ps, key.Bytes(), value)
 }
 
-func (v *KVStoreWrapper[T]) Iterate(ctx types.Context, fn func([]byte, T) bool) error {
+func (v *kvStoreWrapper[T]) Iterate(ctx context.Context, fn func([]byte, T) bool) error {
 	return IterAllFnc[T](v.sg(ctx), v.ps, fn)
 }
 
-func StoreFactory(storeKey storetypes.StoreKey, p string) func(ctx types.Context) types.KVStore {
-	return func(ctx types.Context) types.KVStore {
-		return prefix.NewStore(ctx.KVStore(storeKey), []byte(p))
+func StoreFactory(storeKey storetypes.StoreKey, p string) func(ctx context.Context) types.KVStore {
+	return func(ctx context.Context) types.KVStore {
+		sdkCtx := types.UnwrapSDKContext(ctx)
+		return prefix.NewStore(sdkCtx.KVStore(storeKey), []byte(p))
 	}
 }

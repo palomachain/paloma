@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 )
 
@@ -30,4 +31,9 @@ type BankKeeper interface {
 
 type Scheduler interface {
 	GetJob(ctx sdk.Context, jobID string) (*schedulertypes.Job, error)
+}
+
+//go:generate mockery --name=StakingKeeper
+type StakingKeeper interface {
+	Validator(ctx sdk.Context, addr sdk.ValAddress) stakingtypes.ValidatorI
 }

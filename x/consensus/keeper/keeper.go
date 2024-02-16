@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -59,8 +60,9 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) Store(ctx sdk.Context) sdk.KVStore {
-	return ctx.KVStore(k.storeKey)
+func (k Keeper) Store(ctx context.Context) sdk.KVStore {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.KVStore(k.storeKey)
 }
 
 func (k Keeper) ModuleName() string {
