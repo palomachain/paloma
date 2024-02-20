@@ -4,15 +4,10 @@ import (
 	"errors"
 
 	"cosmossdk.io/core/address"
+	"github.com/palomachain/paloma/util/liberr"
 )
 
-type err string
-
-const ErrFailedToParseValAddress err = "failed to parse validator address from bech32"
-
-func (e err) Error() string {
-	return string(e)
-}
+const ErrFailedToParseValAddress = liberr.Error("failed to parse validator address from bech32: %s")
 
 func ValAddressFromBech32(addressCodec address.Codec, valAddr string) ([]byte, error) {
 	bz, err := addressCodec.StringToBytes(valAddr)
