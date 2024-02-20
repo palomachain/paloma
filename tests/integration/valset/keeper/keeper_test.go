@@ -28,16 +28,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	"github.com/onsi/ginkgo/v2"
 	params2 "github.com/palomachain/paloma/app/params"
+	helper "github.com/palomachain/paloma/tests/integration/helper"
 	"github.com/palomachain/paloma/testutil"
 	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
@@ -53,15 +51,6 @@ import (
 const (
 	minimumPigeonVersion = "v1.10.0"
 )
-
-var maccPerms = map[string][]string{
-	authtypes.FeeCollectorName:     nil,
-	distrtypes.ModuleName:          nil,
-	minttypes.ModuleName:           {authtypes.Minter},
-	stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
-	stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-	govtypes.ModuleName:            {authtypes.Burner},
-}
 
 type fixture struct {
 	ctx               sdk.Context
@@ -118,14 +107,14 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 
 	appCodec := codec.NewProtoCodec(cdc.InterfaceRegistry())
 	legacyAmino := codec.NewLegacyAmino()
-	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
-	paramsKeeper := initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
+	tkeys := storetypes.NewTransientStoreKeys(paramtypes.TStoreKey)
+	paramsKeeper := helper.InitParamsKeeper(appCodec, legacyAmino, keys[paramtypes.StoreKey], tkeys[paramtypes.TStoreKey])
 
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		accountKeeper,
-		BlockedAddresses(),
+		helper.BlockedAddresses(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		log.NewNopLogger(),
 	)
@@ -149,7 +138,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 	valsetKeeper := *keeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[valsetmoduletypes.StoreKey]),
-		getSubspace(valsetmoduletypes.ModuleName, paramsKeeper),
+		helper.GetSubspace(valsetmoduletypes.ModuleName, paramsKeeper),
 		stakingKeeper,
 		slashingKeeper,
 		minimumPigeonVersion,
@@ -160,7 +149,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 	consensusKeeper := *consensusmodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[consensusmoduletypes.StoreKey]),
-		getSubspace(consensusmoduletypes.ModuleName, paramsKeeper),
+		helper.GetSubspace(consensusmoduletypes.ModuleName, paramsKeeper),
 		valsetKeeper,
 		consensusRegistry,
 	)
@@ -194,7 +183,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 
 	queryClient := v1.NewQueryClient(integrationApp.QueryHelper())
 	legacyQueryClient := v1beta1.NewQueryClient(integrationApp.QueryHelper())
-	ps := getSubspace(valsetmoduletypes.ModuleName, paramsKeeper)
+	ps := helper.GetSubspace(valsetmoduletypes.ModuleName, paramsKeeper)
 	storeKey := runtime.NewKVStoreService(keys[valsetmoduletypes.StoreKey])
 
 	validators := testutil.GenValidators(1, 100)
@@ -218,53 +207,4 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		paramstore:        ps,
 		storeKey:          storeKey,
 	}
-}
-
-// GetMaccPerms returns a copy of the module account permissions
-func GetMaccPerms() map[string][]string {
-	dupMaccPerms := make(map[string][]string)
-	for k, v := range maccPerms {
-		dupMaccPerms[k] = v
-	}
-	return dupMaccPerms
-}
-
-// BlockedAddresses returns all the app's blocked account addresses.
-func BlockedAddresses() map[string]bool {
-	modAccAddrs := make(map[string]bool)
-	for acc := range GetMaccPerms() {
-		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
-	}
-
-	// allow the following addresses to receive funds
-	delete(modAccAddrs, authtypes.NewModuleAddress(govtypes.ModuleName).String())
-
-	return modAccAddrs
-}
-
-// initParamsKeeper init params keeper and its subspaces
-func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper {
-	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
-
-	keyTable := ibcclienttypes.ParamKeyTable()
-	keyTable.RegisterParamSet(&ibcconnectiontypes.Params{})
-
-	paramsKeeper.Subspace(authtypes.ModuleName)
-	paramsKeeper.Subspace(banktypes.ModuleName)
-	paramsKeeper.Subspace(stakingtypes.ModuleName)
-	paramsKeeper.Subspace(minttypes.ModuleName)
-	paramsKeeper.Subspace(distrtypes.ModuleName)
-	paramsKeeper.Subspace(slashingtypes.ModuleName)
-	paramsKeeper.Subspace(govtypes.ModuleName)
-	paramsKeeper.Subspace(types.ModuleName)
-	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
-	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
-
-	return paramsKeeper
-}
-
-// NOTE: This is solely to be used for testing purposes.
-func getSubspace(moduleName string, paramsKeeper paramskeeper.Keeper) paramstypes.Subspace {
-	subspace, _ := paramsKeeper.GetSubspace(moduleName)
-	return subspace
 }
