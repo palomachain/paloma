@@ -46,6 +46,8 @@ func TestIfValidatorCanBeAccepted(t *testing.T) {
 		err := k.CanAcceptValidator(ctx, nonExistingVal)
 		require.ErrorIs(t, err, ErrValidatorWithAddrNotFound)
 	})
+
+	// t.Run("Retu ")
 }
 
 func TestRegisteringPigeon(t *testing.T) {
@@ -552,5 +554,24 @@ func TestGracePeriodCoverage(t *testing.T) {
 	t.Run("with not present in grace period store", func(t *testing.T) {
 		val := sdk.ValAddress("validator-bonded")
 		require.False(t, k.isValidatorInGracePeriod(sdkCtx, val))
+	})
+}
+
+func TestJailedValidaotors(t *testing.T) {
+	k, ms, ctx := newValsetKeeper(t)
+	val := sdk.ValAddress("validator")
+	vali := mocks.NewStakingValidatorI(t)
+
+	ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali, nil)
+	t.Run("Return true when validator is jailed", func(t *testing.T) {
+		vali.On("IsJailed").Return(false).Once()
+		flag, err := k.IsJailed(ctx, val)
+		require.NoError(t, err)
+		require.False(t, flag)
+	})
+	t.Run("Return true when the validator is jailed", func(t *testing.T) {
+		vali.On("IsJailed").Return(true).Once()
+		err := k.Jail(ctx, val, "i don't know")
+		require.Error(t, err)
 	})
 }
