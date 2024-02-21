@@ -5,7 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
@@ -51,7 +51,7 @@ func TestPrefixRange(t *testing.T) {
 func TestAttestationIterator(t *testing.T) {
 	input := CreateTestEnv(t)
 	defer func() {
-		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 

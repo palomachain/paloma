@@ -4,6 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 )
 
 type EventAttribute string
@@ -29,7 +30,7 @@ func ModuleNameFunc(moduleName string) HasModuleName {
 }
 
 func EmitEvent(k HasModuleName, ctx context.Context, name string, attrs ...sdk.Attribute) {
-	sdkctx := sdk.UnwrapSDKContext(ctx)
+	sdkctx := common.SdkContext(ctx)
 	sdkctx.EventManager().EmitEvent(
 		sdk.NewEvent(sdk.EventTypeMessage,
 			append([]sdk.Attribute{

@@ -4,11 +4,12 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/valset/types"
 )
 
 func (k msgServer) KeepAlive(goCtx context.Context, msg *types.MsgKeepAlive) (*types.MsgKeepAliveResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+	ctx := common.SdkContext(goCtx)
 
 	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
 	valAddr := sdk.ValAddress(creator.Bytes())

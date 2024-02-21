@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -64,7 +65,7 @@ func (c *consensusPower) consensus() bool {
 }
 
 func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	logger := k.Logger(sdkCtx).WithFields(
 		"component", "attest-router",
 		"msg-id", msg.GetId(),

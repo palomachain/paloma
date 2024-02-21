@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/paloma/client/cli"
 	"github.com/palomachain/paloma/x/paloma/keeper"
@@ -178,7 +179,7 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx context.Context) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	if sdkCtx.BlockHeight()%303 == 0 {
 		err := am.keeper.JailValidatorsWithMissingExternalChainInfos(sdkCtx)
 		if err != nil {

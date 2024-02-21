@@ -12,6 +12,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
+	"github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
@@ -123,7 +124,7 @@ func NewQueue(qo QueueOptions) Queue {
 
 // Put puts raw message into a signing queue.
 func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	requireSignatures := true
 	var publicAccessData *types.PublicAccessData
 
@@ -165,7 +166,7 @@ func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uin
 
 // getAll returns all messages from a signing queu
 func (c Queue) GetAll(ctx context.Context) ([]types.QueuedSignedMessageI, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	var msgs []types.QueuedSignedMessageI
 	queue := c.queue(sdkCtx)
 	iterator := queue.Iterator(nil, nil)
@@ -186,7 +187,7 @@ func (c Queue) GetAll(ctx context.Context) ([]types.QueuedSignedMessageI, error)
 }
 
 func (c Queue) AddEvidence(ctx context.Context, msgID uint64, evidence *types.Evidence) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
@@ -232,7 +233,7 @@ func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) erro
 
 // SetPublicAccessData sets data that should be visible publically so that other can provide proofs.
 func (c Queue) SetPublicAccessData(ctx context.Context, msgID uint64, data *types.PublicAccessData) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
@@ -249,7 +250,7 @@ func (c Queue) SetPublicAccessData(ctx context.Context, msgID uint64, data *type
 }
 
 func (c Queue) GetPublicAccessData(ctx context.Context, msgID uint64) (*types.PublicAccessData, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return nil, err
@@ -259,7 +260,7 @@ func (c Queue) GetPublicAccessData(ctx context.Context, msgID uint64) (*types.Pu
 }
 
 func (c Queue) SetErrorData(ctx context.Context, msgID uint64, data *types.ErrorData) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
@@ -276,7 +277,7 @@ func (c Queue) SetErrorData(ctx context.Context, msgID uint64, data *types.Error
 }
 
 func (c Queue) GetErrorData(ctx context.Context, msgID uint64) (*types.ErrorData, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return nil, err
@@ -287,7 +288,7 @@ func (c Queue) GetErrorData(ctx context.Context, msgID uint64) (*types.ErrorData
 
 // AddSignature adds a signature to the message and checks if the signature is valid.
 func (c Queue) AddSignature(ctx context.Context, msgID uint64, signData *types.SignData) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
@@ -315,7 +316,7 @@ func (c Queue) AddSignature(ctx context.Context, msgID uint64, signData *types.S
 
 // remove removes the message from the queue.
 func (c Queue) Remove(ctx context.Context, msgID uint64) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	_, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
@@ -332,7 +333,7 @@ func (c Queue) Remove(ctx context.Context, msgID uint64) error {
 
 // getMsgByID given a message ID, it returns the message
 func (c Queue) GetMsgByID(ctx context.Context, id uint64) (types.QueuedSignedMessageI, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	queue := c.queue(sdkCtx)
 	data := queue.Get(sdk.Uint64ToBigEndian(id))
 
@@ -363,7 +364,7 @@ func (c Queue) save(ctx context.Context, msg types.QueuedSignedMessageI) error {
 
 // queue is a simple helper function to return the queue store
 func (c Queue) queue(ctx context.Context) prefix.Store {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	store := c.qo.Sg.Store(sdkCtx)
 	return prefix.NewStore(store, []byte(c.signingQueueKey()))
 }
@@ -381,7 +382,7 @@ func (c Queue) ChainInfo() (types.ChainType, string) {
 }
 
 func RemoveQueueCompletely(ctx context.Context, cq Queuer) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	var store storetypes.KVStore
 	switch typ := cq.(type) {
 	case Queue:

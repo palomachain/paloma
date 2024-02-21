@@ -4,7 +4,7 @@ import (
 	"context"
 
 	sdkerrors "cosmossdk.io/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	log "github.com/sirupsen/logrus"
 )
@@ -36,7 +36,7 @@ func EndBlocker(ctx context.Context, k keeper.Keeper) {
 
 // Create a batch of transactions for each token
 func createBatch(ctx context.Context, k keeper.Keeper) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	if sdkCtx.BlockHeight()%50 == 0 {
 		denoms, err := k.GetAllERC20ToDenoms(ctx)
 		if err != nil {
@@ -108,7 +108,7 @@ func attestationTally(ctx context.Context, k keeper.Keeper) error {
 
 // cleanupTimedOutBatches deletes batches that have passed their expiration
 func cleanupTimedOutBatches(ctx context.Context, k keeper.Keeper) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	currentTime := uint64(sdkCtx.BlockTime().Unix())
 	batches, err := k.GetOutgoingTxBatches(ctx)
 	if err != nil {

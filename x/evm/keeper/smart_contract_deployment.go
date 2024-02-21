@@ -15,6 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	"github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -54,7 +55,7 @@ func (k Keeper) HasAnySmartContractDeployment(ctx context.Context, chainReferenc
 }
 
 func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx context.Context, smartContractID uint64, chainReferenceID string) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	_, key := k.getSmartContractDeploymentByContractID(sdkCtx, smartContractID, chainReferenceID)
 	if key == nil {
 		return
@@ -93,7 +94,7 @@ func (k Keeper) GetLastCompassContract(ctx context.Context) (*types.SmartContrac
 }
 
 func (k Keeper) SetAsCompassContract(ctx context.Context, smartContract *types.SmartContract) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	k.Logger(sdkCtx).Info("setting smart contract as the latest one", "smart-contract-id", smartContract.GetId())
 	err := k.setAsLastCompassContract(ctx, smartContract)
 	if err != nil {
@@ -152,7 +153,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	turnstoneID string,
 	logicCall *types.SubmitLogicCall,
 ) (uint64, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	requirements := &xchain.JobRequirements{
 		EnforceMEVRelay: logicCall.ExecutionRequirements.EnforceMEVRelay,
 	}
@@ -180,7 +181,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 }
 
 func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) (retErr error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	defer func() {
 		args := []any{
 			"chain-reference-id", chainInfo.GetChainReferenceID(),
@@ -432,7 +433,7 @@ func (k Keeper) provideLastCompassContractStore(ctx context.Context) storetypes.
 
 func provideDeploymentCacheBootstrapper(k *Keeper) func(context.Context, *deployment.Cache) {
 	return func(ctx context.Context, c *deployment.Cache) {
-		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		sdkCtx := common.SdkContext(ctx)
 		d, err := k.AllSmartContractsDeployments(sdkCtx)
 		if err != nil {
 			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("Failed to load smart contract deployments")

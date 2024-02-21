@@ -8,7 +8,7 @@ import (
 	"testing"
 	"unicode"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,7 +22,7 @@ type testInitStruct struct {
 func TestConfirmHandlerCommon(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
 	defer func() {
-		sdk.UnwrapSDKContext(ctx).Logger().Info("Asserting invariants at test end")
+		common.SdkContext(ctx).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -49,7 +49,7 @@ func TestConfirmHandlerCommon(t *testing.T) {
 func confirmHandlerCommonWithAddress(t *testing.T, address string, testVar testInitStruct) error {
 	input, ctx := SetupFiveValChain(t)
 	defer func() {
-		sdk.UnwrapSDKContext(ctx).Logger().Info("Asserting invariants at test end")
+		common.SdkContext(ctx).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 

@@ -7,6 +7,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
@@ -56,7 +57,7 @@ func TestLastPendingBatchRequest(t *testing.T) {
 	// any lower than this and a validator won't be created
 	const minStake = 1000000
 	input, _ := SetupTestChain(t, []uint64{minStake, minStake, minStake, minStake, minStake})
-	sdkCtx := sdk.UnwrapSDKContext(input.Context)
+	sdkCtx := common.SdkContext(input.Context)
 
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
@@ -82,7 +83,7 @@ func TestLastPendingBatchRequest(t *testing.T) {
 
 // nolint: exhaustruct
 func createTestBatch(t *testing.T, input TestInput, maxTxElements uint) {
-	sdkCtx := sdk.UnwrapSDKContext(input.Context)
+	sdkCtx := common.SdkContext(input.Context)
 	var (
 		mySender   = bytes.Repeat([]byte{1}, 20)
 		myReceiver = "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934"
@@ -130,7 +131,7 @@ func createTestBatch(t *testing.T, input TestInput, maxTxElements uint) {
 // nolint: exhaustruct
 func TestQueryAllBatchConfirms(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	k := input.GravityKeeper
@@ -180,7 +181,7 @@ func TestQueryAllBatchConfirms(t *testing.T) {
 // Check with multiple nonces and tokenContracts
 func TestQueryBatch(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	k := input.GravityKeeper
@@ -233,7 +234,7 @@ func TestQueryBatch(t *testing.T) {
 // nolint: exhaustruct
 func TestLastBatchesRequest(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
@@ -338,10 +339,10 @@ func TestQueryERC20ToDenom(t *testing.T) {
 		Denom: testDenom,
 	}
 	input := CreateTestEnv(t)
-	sdkCtx := sdk.UnwrapSDKContext(input.Context)
+	sdkCtx := common.SdkContext(input.Context)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
-	ctx := sdk.UnwrapSDKContext(sdkCtx)
+	ctx := common.SdkContext(sdkCtx)
 	k := input.GravityKeeper
 	err = input.GravityKeeper.setDenomToERC20(sdkCtx, chainReferenceID, testDenom, *erc20)
 	require.NoError(t, err)
@@ -367,7 +368,7 @@ func TestQueryDenomToERC20(t *testing.T) {
 	}
 	input := CreateTestEnv(t)
 	defer func() {
-		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -390,7 +391,7 @@ func TestQueryDenomToERC20(t *testing.T) {
 // nolint: exhaustruct
 func TestQueryPendingSendToEth(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	sdkCtx := sdk.UnwrapSDKContext(input.Context)
+	sdkCtx := common.SdkContext(input.Context)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 	k := input.GravityKeeper
 	var (

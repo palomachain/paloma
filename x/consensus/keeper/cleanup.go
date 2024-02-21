@@ -6,6 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	"github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/libmsg"
@@ -15,7 +16,7 @@ import (
 )
 
 func (k Keeper) PruneOldMessages(ctx sdk.Context, blocksAgo int64) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	for _, supportedConsensusQueue := range k.registry.slice {
 		opts, err := supportedConsensusQueue.SupportedQueues(sdkCtx)
 		if err != nil {

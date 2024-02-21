@@ -15,6 +15,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/client/cli"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
@@ -162,7 +163,7 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 
 // EndBlock implements app module
 func (am AppModule) EndBlock(ctx context.Context) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	EndBlocker(sdkCtx, am.keeper)
 	return nil
 }

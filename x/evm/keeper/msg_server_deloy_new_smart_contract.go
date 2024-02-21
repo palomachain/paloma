@@ -3,12 +3,12 @@ package keeper
 import (
 	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
 func (k Keeper) DeployNewSmartContract(goCtx context.Context, msg *types.MsgDeployNewSmartContractRequest) (*types.DeployNewSmartContractResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+	ctx := common.SdkContext(goCtx)
 	logger := ctx.Logger()
 
 	logger.Info("TODO: Implement me")

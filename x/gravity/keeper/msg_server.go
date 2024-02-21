@@ -11,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/palomachain/paloma/util/common"
 	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -27,7 +28,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 // SendToEth handles MsgSendToEth
 func (k msgServer) SendToEth(c context.Context, msg *types.MsgSendToEth) (*types.MsgSendToEthResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := common.SdkContext(c)
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid sender")
@@ -70,7 +71,7 @@ func (k msgServer) ConfirmBatch(c context.Context, msg *types.MsgConfirmBatch) (
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "eth address invalid")
 	}
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := common.SdkContext(c)
 
 	// fetch the outgoing batch given the nonce
 	batch, err := k.GetOutgoingTXBatch(ctx, *contract, msg.Nonce)
@@ -163,7 +164,7 @@ func (k msgServer) claimHandlerCommon(ctx context.Context, msgAny *codectypes.An
 	if err != nil {
 		return sdkerrors.Wrap(err, "unable to compute claim hash")
 	}
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	// Emit the handle message event
 	return sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventClaim{
@@ -224,7 +225,7 @@ func (k msgServer) confirmHandlerCommon(ctx context.Context, ethAddress string, 
 }
 
 func (k msgServer) SendToPalomaClaim(c context.Context, msg *types.MsgSendToPalomaClaim) (*types.MsgSendToPalomaClaimResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := common.SdkContext(c)
 
 	err := k.checkOrchestratorValidatorInSet(ctx, msg.Orchestrator)
 	if err != nil {
@@ -243,7 +244,7 @@ func (k msgServer) SendToPalomaClaim(c context.Context, msg *types.MsgSendToPalo
 }
 
 func (k msgServer) BatchSendToEthClaim(c context.Context, msg *types.MsgBatchSendToEthClaim) (*types.MsgBatchSendToEthClaimResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := common.SdkContext(c)
 
 	err := k.checkOrchestratorValidatorInSet(ctx, msg.Orchestrator)
 	if err != nil {
@@ -296,7 +297,7 @@ func additionalPatchChecks(ctx context.Context, k msgServer, msg *types.MsgBatch
 }
 
 func (k msgServer) CancelSendToEth(c context.Context, msg *types.MsgCancelSendToEth) (*types.MsgCancelSendToEthResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := common.SdkContext(c)
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -310,7 +311,7 @@ func (k msgServer) CancelSendToEth(c context.Context, msg *types.MsgCancelSendTo
 }
 
 func (k msgServer) SubmitBadSignatureEvidence(c context.Context, msg *types.MsgSubmitBadSignatureEvidence) (*types.MsgSubmitBadSignatureEvidenceResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := common.SdkContext(c)
 
 	err := k.CheckBadSignatureEvidence(ctx, msg, msg.GetChainReferenceId())
 	if err != nil {
@@ -335,7 +336,7 @@ func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParam
 		return nil, err
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
+	ctx := common.SdkContext(goCtx)
 	k.SetParams(ctx, msg.Params)
 
 	return &types.MsgUpdateParamsResponse{}, nil

@@ -23,6 +23,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	palomacommon "github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -154,7 +155,7 @@ func (k Keeper) PickValidatorForMessage(ctx context.Context, chainReferenceID st
 }
 
 func (k Keeper) Logger(ctx context.Context) liblog.Logr {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 	return liblog.FromSDKLogger(sdkCtx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName)))
 }
 
@@ -217,7 +218,7 @@ func (k Keeper) SupportedQueues(ctx context.Context) ([]consensus.SupportsConsen
 				QueueOptions:                 opts,
 				ProcessMessageForAttestation: queueInfo.processAttesationFunc(k),
 			})
-			sdkCtx := sdk.UnwrapSDKContext(ctx)
+			sdkCtx := palomacommon.SdkContext(ctx)
 			k.Logger(sdkCtx).Debug("supported-queues", "chain-id", chainInfo.ChainReferenceID, "queue", queue)
 		}
 	}
@@ -240,7 +241,7 @@ func (k Keeper) GetChainInfo(ctx context.Context, targetChainReferenceID string)
 
 // MissingChains returns the chains in this keeper that aren't in the input slice
 func (k Keeper) MissingChains(ctx context.Context, inputChainReferenceIDs []string) ([]string, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 
 	allChains, err := k.GetAllChainInfos(ctx)
 	if err != nil {
@@ -330,7 +331,7 @@ func (k Keeper) ActivateChainReferenceID(
 	smartContractAddr string,
 	smartContractUniqueID []byte,
 ) (retErr error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 
 	defer func() {
 		args := []any{
@@ -371,7 +372,7 @@ func (k Keeper) ActivateChainReferenceID(
 }
 
 func (k Keeper) RemoveSupportForChain(ctx context.Context, proposal *types.RemoveChainProposal) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 
 	_, err := k.GetChainInfo(ctx, proposal.GetChainReferenceID())
 	if err != nil {
@@ -400,7 +401,7 @@ func (k Keeper) PreJobExecution(ctx context.Context, job *schedulertypes.Job) er
 	chainReferenceID := router.GetChainReferenceID()
 	chain, err := k.GetChainInfo(ctx, chainReferenceID)
 	if err != nil {
-		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		sdkCtx := palomacommon.SdkContext(ctx)
 		k.Logger(sdkCtx).Error("couldn't get chain info",
 			"chain-reference-id", chainReferenceID,
 			"err", err,
@@ -412,7 +413,7 @@ func (k Keeper) PreJobExecution(ctx context.Context, job *schedulertypes.Job) er
 }
 
 func (k Keeper) justInTimeValsetUpdate(ctx context.Context, chain *types.ChainInfo) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 
 	latestSnapshot, err := k.Valset.GetCurrentSnapshot(ctx)
 	if err != nil {
@@ -480,7 +481,7 @@ func (k Keeper) justInTimeValsetUpdate(ctx context.Context, chain *types.ChainIn
 }
 
 func (k Keeper) PublishValsetToChain(ctx context.Context, valset types.Valset, chain *types.ChainInfo) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 
 	if !chain.IsActive() {
 		k.Logger(sdkCtx).Info("ignoring valset for chain as the chain is not yet active",
@@ -520,7 +521,7 @@ func (k Keeper) PublishValsetToChain(ctx context.Context, valset types.Valset, c
 }
 
 func (k Keeper) PublishSnapshotToAllChains(ctx context.Context, snapshot *valsettypes.Snapshot, forcePublish bool) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 
 	chainInfos, err := k.GetAllChainInfos(ctx)
 	if err != nil {
@@ -575,7 +576,7 @@ func (m msgSender) Logger(ctx sdk.Context) log.Logger {
 }
 
 func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.ChainInfo, valset types.Valset, assignee string) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 
 	m.Logger(sdkCtx).Info("snapshot was built and a new update valset message is being sent over",
 		"chainInfo-reference-id", chainInfo.GetChainReferenceID(),
@@ -638,7 +639,7 @@ func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.C
 }
 
 func (k Keeper) CheckExternalBalancesForChain(ctx context.Context, chainReferenceID string) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
 	if err != nil {
@@ -741,7 +742,7 @@ func transformSnapshotToCompass(snapshot *valsettypes.Snapshot, chainReferenceID
 func (k Keeper) ModuleName() string { return types.ModuleName }
 
 func generateSmartContractID(ctx context.Context) (res [32]byte) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 
 	b := []byte(fmt.Sprintf("%d", sdkCtx.BlockHeight()))
 	copy(res[:], b)

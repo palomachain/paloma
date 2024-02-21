@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensusmock "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	"github.com/palomachain/paloma/x/consensus/types"
@@ -126,7 +127,7 @@ func TestGetMessagesFromQueue(t *testing.T) {
 		},
 	}
 	addMessages := func(ctx context.Context, k Keeper, queue string, numMessages int) {
-		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		sdkCtx := common.SdkContext(ctx)
 		for i := 0; i < numMessages; i++ {
 			_, err := k.PutMessageInQueue(sdkCtx, queue, &types.SimpleMessage{}, nil)
 			require.NoError(t, err)
@@ -318,7 +319,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 		{
 			name: "if there is a message but snapshot does not exist",
 			preRun: func(t *testing.T, sd setupData) {
-				sdkCtx := sdk.UnwrapSDKContext(sd.ctx)
+				sdkCtx := common.SdkContext(sd.ctx)
 				msg := &types.SimpleMessage{}
 				// sd.cq.On("GetAll", mock.Anything).Return([]types.QueuedSignedMessageI{msg}, nil).Once()
 				sd.keeper.PutMessageInQueue(sdkCtx, defaultQueueName, msg, nil)
@@ -328,7 +329,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 		{
 			name: "with messages returned but no signature data it returns nothing",
 			preRun: func(t *testing.T, sd setupData) {
-				sdkCtx := sdk.UnwrapSDKContext(sd.ctx)
+				sdkCtx := common.SdkContext(sd.ctx)
 				msg := &types.SimpleMessage{}
 				sd.keeper.PutMessageInQueue(sdkCtx, defaultQueueName, msg, nil)
 				// msg := consensustypesmock.NewQueuedSignedMessageI(t)
@@ -346,7 +347,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 		{
 			name: "with a single signature only which is not enough it returns nothing",
 			preRun: func(t *testing.T, sd setupData) {
-				sdkCtx := sdk.UnwrapSDKContext(sd.ctx)
+				sdkCtx := common.SdkContext(sd.ctx)
 				msg := &types.SimpleMessage{}
 				_, err := sd.keeper.PutMessageInQueue(sdkCtx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
@@ -376,7 +377,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 			name:       "with enough signatures for a consensus it returns messages",
 			expMsgsLen: 1,
 			preRun: func(t *testing.T, sd setupData) {
-				sdkCtx := sdk.UnwrapSDKContext(sd.ctx)
+				sdkCtx := common.SdkContext(sd.ctx)
 				msg := &types.SimpleMessage{}
 				_, err := sd.keeper.PutMessageInQueue(sdkCtx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
@@ -421,7 +422,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 			name:       "with multiple messages where only one has enough signatures",
 			expMsgsLen: 1,
 			preRun: func(t *testing.T, sd setupData) {
-				sdkCtx := sdk.UnwrapSDKContext(sd.ctx)
+				sdkCtx := common.SdkContext(sd.ctx)
 				msg := &types.SimpleMessage{}
 				_, err := sd.keeper.PutMessageInQueue(sdkCtx, defaultQueueName, msg, nil)
 				_, err = sd.keeper.PutMessageInQueue(sd.ctx, defaultQueueName, msg, nil)
@@ -481,7 +482,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 			name:       "with multiple messages where all have enough signatures",
 			expMsgsLen: 2,
 			preRun: func(t *testing.T, sd setupData) {
-				sdkCtx := sdk.UnwrapSDKContext(sd.ctx)
+				sdkCtx := common.SdkContext(sd.ctx)
 				msg := &types.SimpleMessage{}
 				_, err := sd.keeper.PutMessageInQueue(sdkCtx, defaultQueueName, msg, nil)
 				require.NoError(t, err)
@@ -563,7 +564,7 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 		{
 			name: "if it's signed by a validator which is not in the snapshot it skips it",
 			preRun: func(t *testing.T, sd setupData) {
-				sdkCtx := sdk.UnwrapSDKContext(sd.ctx)
+				sdkCtx := common.SdkContext(sd.ctx)
 				msg := &types.SimpleMessage{}
 				_, err := sd.keeper.PutMessageInQueue(sdkCtx, defaultQueueName, msg, nil)
 				require.NoError(t, err)

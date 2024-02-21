@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -129,7 +130,7 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 			invalidAddress = true
 		}
 	}
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	// for whatever reason above, invalid string, etc this deposit is not valid
 	// we can't send the tokens back on the Ethereum side, and if we don't put them somewhere on
 	// the paloma side they will be lost an inaccessible even though they are locked in the bridge.
@@ -178,7 +179,7 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 // batches with lower claim.BatchNonce, and clean up state
 // Note: Previously SendToEth was referred to as a bridge "Withdrawal", as tokens are withdrawn from the gravity contract
 func (a AttestationHandler) handleBatchSendToEth(ctx context.Context, claim types.MsgBatchSendToEthClaim) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	contract, err := types.NewEthAddress(claim.TokenContract)
 	if err != nil {
 		return sdkerrors.Wrap(err, "invalid token contract on batch")
@@ -226,7 +227,7 @@ func (a AttestationHandler) assertSentAmount(ctx context.Context, moduleAddr sdk
 func (a AttestationHandler) sendCoinToLocalAddress(
 	ctx context.Context, claim types.MsgSendToPalomaClaim, receiver sdk.AccAddress, coin sdk.Coin,
 ) (err error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	err = a.keeper.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver, sdk.NewCoins(coin))
 	if err != nil {
 		// log and send to Community pool

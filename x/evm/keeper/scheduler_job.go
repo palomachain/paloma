@@ -11,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	palomacommon "github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/evm/types"
 )
@@ -87,7 +88,7 @@ func (k Keeper) ExecuteJob(ctx context.Context, jcfg *xchain.JobConfiguration) (
 		return 0, fmt.Errorf("inject sender into payload: %w", err)
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := palomacommon.SdkContext(ctx)
 	return k.AddSmartContractExecutionToConsensus(
 		ctx,
 		jcfg.RefID,

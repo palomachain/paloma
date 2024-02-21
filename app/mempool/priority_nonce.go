@@ -10,6 +10,7 @@ import (
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/huandu/skiplist"
+	"github.com/palomachain/paloma/util/common"
 )
 
 var (
@@ -129,7 +130,7 @@ func NewDefaultTxPriority() TxPriority[int64] {
 			}
 
 			// default to CheckTx priority, which is typically based on fees
-			return sdk.UnwrapSDKContext(goCtx).Priority()
+			return common.SdkContext(goCtx).Priority()
 		},
 		Compare: func(a, b int64) int {
 			return skiplist.Int64.Compare(a, b)

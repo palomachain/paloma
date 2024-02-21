@@ -3,15 +3,15 @@ package keeper_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	testkeeper "github.com/palomachain/paloma/testutil/keeper"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/paloma/types"
 	"github.com/stretchr/testify/require"
 )
 
 func TestParamsQuery(t *testing.T) {
 	keeper, ctx := testkeeper.PalomaKeeper(t)
-	wctx := sdk.UnwrapSDKContext(ctx)
+	wctx := common.SdkContext(ctx)
 	params := types.DefaultParams()
 	keeper.SetParams(ctx, params)
 

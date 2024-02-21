@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/metrix/client/cli"
 	"github.com/palomachain/paloma/x/metrix/keeper"
 	"github.com/palomachain/paloma/x/metrix/types"
@@ -171,7 +172,7 @@ func (am AppModule) BeginBlock(ctx context.Context) error { return nil }
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx context.Context) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	if sdkCtx.BlockHeight()%cUpdateUptimeBlockInterval == 0 {
 		am.keeper.PurgeRelayMetrics(ctx)
 		am.keeper.UpdateRelayMetrics(ctx)

@@ -7,6 +7,7 @@ import (
 
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -24,7 +25,7 @@ func (k Keeper) AddToOutgoingPool(
 	amount sdk.Coin,
 	chainReferenceID string,
 ) (uint64, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	if sdkCtx.IsZero() || sdk.VerifyAddressFormat(sender) != nil || counterpartReceiver.ValidateBasic() != nil ||
 		!amount.IsValid() {
 		return 0, sdkerrors.Wrap(types.ErrInvalid, "arguments")
@@ -91,7 +92,7 @@ func (k Keeper) AddToOutgoingPool(
 // - deletes the unbatched tx from the pool
 // - issues the tokens back to the sender
 func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64, sender sdk.AccAddress) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	if sdkCtx.IsZero() || txId < 1 || sdk.VerifyAddressFormat(sender) != nil {
 		return sdkerrors.Wrap(types.ErrInvalid, "arguments")
 	}

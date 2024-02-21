@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/VolumeFi/whoops"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/valset/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,7 +15,7 @@ func (k Keeper) GetValidatorJailReason(goCtx context.Context, req *types.QueryGe
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
+	ctx := common.SdkContext(goCtx)
 
 	jailed, err := k.IsJailed(ctx, req.GetValAddress())
 	if err != nil {

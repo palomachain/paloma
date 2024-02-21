@@ -7,6 +7,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +17,7 @@ import (
 // nolint: exhaustruct
 func TestBatches(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
@@ -271,7 +272,7 @@ func TestBatches(t *testing.T) {
 // nolint: exhaustruct
 func TestBatchesFullCoins(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	var (
@@ -640,7 +641,7 @@ func TestBatchConfirms(t *testing.T) {
 	require.NoError(t, input.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, mySender, allVouchers))
 
 	// when
-	ctx = sdk.UnwrapSDKContext(ctx).WithBlockTime(now)
+	ctx = common.SdkContext(ctx).WithBlockTime(now)
 
 	// add batches with 1 tx to the pool
 	for i := 1; i < 200; i++ {

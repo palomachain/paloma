@@ -37,6 +37,7 @@ import (
 	params2 "github.com/palomachain/paloma/app/params"
 	helper "github.com/palomachain/paloma/tests/integration/helper"
 	"github.com/palomachain/paloma/testutil"
+	"github.com/palomachain/paloma/util/common"
 	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
@@ -179,7 +180,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		types.ModuleName:     valsetModule,
 	})
 
-	sdkCtx := sdk.UnwrapSDKContext(integrationApp.Context())
+	sdkCtx := common.SdkContext(integrationApp.Context())
 
 	queryClient := v1.NewQueryClient(integrationApp.QueryHelper())
 	legacyQueryClient := v1beta1.NewQueryClient(integrationApp.QueryHelper())

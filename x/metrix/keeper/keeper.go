@@ -19,6 +19,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/palomath"
@@ -89,7 +90,7 @@ func NewKeeper(
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	return sdkCtx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
@@ -113,7 +114,7 @@ func (k Keeper) GetMessageNonceCache(ctx context.Context) (*types.HistoricRelayD
 
 // OnConsensusMessageAttested implements types.OnConsensusMessageAttestedListener.
 func (k Keeper) OnConsensusMessageAttested(goCtx context.Context, e types.MessageAttestedEvent) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+	ctx := common.SdkContext(goCtx)
 
 	// Get record from store
 	logger := liblog.FromSDKLogger(k.Logger(ctx)).
@@ -182,7 +183,7 @@ func (k Keeper) OnConsensusMessageAttested(goCtx context.Context, e types.Messag
 
 // OnSnapshotBuilt implements types.OnSnapshotBuiltListener.
 func (k Keeper) OnSnapshotBuilt(ctx context.Context, snapshot *valsettypes.Snapshot) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	logger := liblog.FromSDKLogger(k.Logger(sdkCtx)).WithComponent("metrix.OnSnapshotBuilt")
 	logger.Debug("Updating snapshot metrics...")
 
@@ -222,7 +223,7 @@ func (k Keeper) OnSnapshotBuilt(ctx context.Context, snapshot *valsettypes.Snaps
 }
 
 func (k *Keeper) PurgeRelayMetrics(ctx context.Context) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	logger := liblog.FromSDKLogger(k.Logger(sdkCtx)).WithComponent("metrix.PurgeRelayMetrics")
 	logger.Debug("Running relay metrics purging loop...")
 
@@ -291,7 +292,7 @@ func (k *Keeper) PurgeRelayMetrics(ctx context.Context) {
 }
 
 func (k *Keeper) UpdateRelayMetrics(ctx context.Context) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	logger := liblog.FromSDKLogger(k.Logger(sdkCtx)).WithComponent("metrix.UpdateRelayMetrics")
 	logger.Debug("Running relay metrics update loop.")
 
@@ -345,7 +346,7 @@ func (k *Keeper) UpdateRelayMetrics(ctx context.Context) {
 }
 
 func (k *Keeper) UpdateUptime(ctx context.Context) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	window, err := k.slashing.SignedBlocksWindow(ctx)
 	if err != nil {
 		return err
@@ -431,7 +432,7 @@ func (p recordPatch) apply(data types.ValidatorMetrics) *types.ValidatorMetrics 
 }
 
 func (k Keeper) updateRecord(ctx context.Context, valAddr sdk.ValAddress, patch recordPatch) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	if err := k.tryUpdateRecord(ctx, valAddr, patch); err != nil {
 		liblog.FromSDKLogger(k.Logger(sdkCtx)).
 			WithError(err).
@@ -442,7 +443,7 @@ func (k Keeper) updateRecord(ctx context.Context, valAddr sdk.ValAddress, patch 
 }
 
 func (k Keeper) tryUpdateRecord(ctx context.Context, valAddr sdk.ValAddress, patch recordPatch) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	record, err := k.GetValidatorMetrics(ctx, valAddr)
 	if err != nil {
 		return fmt.Errorf("update record: %w", err)
@@ -496,7 +497,7 @@ func calculateUptime(window, missed int64) math.LegacyDec {
 
 func getFromStore[T codec.ProtoMarshaler](ctx context.Context, store *keeperutil.KVStoreWrapper[T], key keeperutil.Byter) (T, error) {
 	var empty T
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	data, err := store.Get(sdkCtx, key)
 	if err != nil {
 		if !errors.Is(err, keeperutil.ErrNotFound) {

@@ -8,6 +8,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -20,7 +21,7 @@ var defaultResponseMessageCount = 1000
 
 // getConsensusQueue gets the consensus queue for the given type.
 func (k Keeper) getConsensusQueue(ctx context.Context, queueTypeName string) (consensus.Queuer, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	for _, q := range k.registry.slice {
 		supportedQueues, err := q.SupportedQueues(sdkCtx)
 		if err != nil {
@@ -59,7 +60,7 @@ func (k Keeper) getConsensusQueue(ctx context.Context, queueTypeName string) (co
 }
 
 func (k Keeper) RemoveConsensusQueue(ctx context.Context, queueTypeName string) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
 	if err != nil {
 		return err
@@ -69,7 +70,7 @@ func (k Keeper) RemoveConsensusQueue(ctx context.Context, queueTypeName string) 
 }
 
 func (k Keeper) PutMessageInQueue(ctx context.Context, queueTypeName string, msg consensus.ConsensusMsg, opts *consensus.PutOptions) (uint64, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("error while getting consensus queue.")
@@ -91,7 +92,7 @@ func (k Keeper) PutMessageInQueue(ctx context.Context, queueTypeName string, msg
 
 // GetMessagesForSigning returns messages for a single validator that needs to be signed.
 func (k Keeper) GetMessagesForSigning(ctx context.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	msgs, err = k.GetMessagesFromQueue(sdkCtx, queueTypeName, 0)
 	if err != nil {
 		return nil, err
@@ -116,7 +117,7 @@ func (k Keeper) GetMessagesForSigning(ctx context.Context, queueTypeName string,
 
 // GetMessagesForRelaying returns messages for a single validator to relay.
 func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	msgs, err = k.GetMessagesFromQueue(sdkCtx, queueTypeName, 0)
 	if err != nil {
 		return nil, err
@@ -200,7 +201,7 @@ func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string
 
 // GetMessagesForAttesting returns messages for a single validator to attest.
 func (k Keeper) GetMessagesForAttesting(ctx context.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	msgs, err = k.GetMessagesFromQueue(sdkCtx, queueTypeName, 0)
 	if err != nil {
 		return nil, err
@@ -231,7 +232,7 @@ func (k Keeper) GetMessagesForAttesting(ctx context.Context, queueTypeName strin
 
 // GetMessagesFromQueue gets N messages from the queue.
 func (k Keeper) GetMessagesFromQueue(ctx context.Context, queueTypeName string, n int) (msgs []types.QueuedSignedMessageI, err error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("error while getting consensus queue.")
@@ -251,7 +252,7 @@ func (k Keeper) GetMessagesFromQueue(ctx context.Context, queueTypeName string, 
 }
 
 func (k Keeper) DeleteJob(ctx context.Context, queueTypeName string, id uint64) (err error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("error while getting consensus queue.")
@@ -264,7 +265,7 @@ func (k Keeper) DeleteJob(ctx context.Context, queueTypeName string, id uint64) 
 // queueTypeName that have reached consensus based on the latest snapshot
 // available.
 func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx context.Context, queueTypeName string) ([]types.QueuedSignedMessageI, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	var consensusReached []types.QueuedSignedMessageI
 
 	err := whoops.Try(func() {
@@ -327,7 +328,7 @@ func (k Keeper) AddMessageSignature(
 ) error {
 	err := whoops.Try(func() {
 		for _, msg := range msgs {
-			sdkCtx := sdk.UnwrapSDKContext(ctx)
+			sdkCtx := common.SdkContext(ctx)
 			cq := whoops.Must(
 				k.getConsensusQueue(sdkCtx, msg.GetQueueTypeName()),
 			)
@@ -360,7 +361,7 @@ func (k Keeper) AddMessageSignature(
 				"chain-reference-id", chainReferenceID).Info("added message signature.")
 		}
 	})
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("error while adding messages signatures.")
@@ -374,7 +375,7 @@ func (k Keeper) AddMessageEvidence(
 	valAddr sdk.ValAddress,
 	msg *types.MsgAddEvidence,
 ) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	err := whoops.Try(func() {
 		cq := whoops.Must(
 			k.getConsensusQueue(sdkCtx, msg.GetQueueTypeName()),
@@ -406,7 +407,7 @@ func (k Keeper) SetMessagePublicAccessData(
 	valAddr sdk.ValAddress,
 	msg *types.MsgSetPublicAccessData,
 ) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 
 	cq, err := k.getConsensusQueue(sdkCtx, msg.GetQueueTypeName())
 	if err != nil {
@@ -435,7 +436,7 @@ func (k Keeper) SetMessageErrorData(
 	valAddr sdk.ValAddress,
 	msg *types.MsgSetErrorData,
 ) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	cq, err := k.getConsensusQueue(sdkCtx, msg.GetQueueTypeName())
 	if err != nil {
 		return err

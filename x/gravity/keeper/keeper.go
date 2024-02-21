@@ -16,6 +16,7 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	"github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/types"
@@ -138,7 +139,7 @@ func (k Keeper) GetBridgeChainID(ctx context.Context) uint64 {
 
 // Logger returns a module-specific Logger.
 func (k Keeper) Logger(ctx context.Context) log.Logger {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	return liblog.FromSDKLogger(sdkCtx.Logger()).With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
@@ -212,7 +213,7 @@ func (k Keeper) InvalidSendToEthAddress(ctx context.Context, addr types.EthAddre
 }
 
 func (k Keeper) GetStore(ctx context.Context) storetypes.KVStore {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	return k.storeGetter.Store(sdkCtx)
 }
 
@@ -227,7 +228,7 @@ func NewGravityStoreGetter(storeKey storetypes.StoreKey) GravityStoreGetter {
 }
 
 func (gsg GravityStoreGetter) Store(ctx context.Context) storetypes.KVStore {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx := common.SdkContext(ctx)
 	return sdkCtx.KVStore(gsg.storeKey)
 }
 

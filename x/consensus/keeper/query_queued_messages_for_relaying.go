@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"google.golang.org/grpc/codes"
@@ -14,7 +14,7 @@ func (k Keeper) QueuedMessagesForRelaying(goCtx context.Context, req *types.Quer
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
-	ctx := sdk.UnwrapSDKContext(goCtx)
+	ctx := common.SdkContext(goCtx)
 	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
 		"component", "queued-messages-for-relaying",
 		"sender", req.ValAddress.String())
