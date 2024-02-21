@@ -8,7 +8,6 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/mock"
@@ -53,7 +52,7 @@ func TestIfValidatorCanBeAccepted(t *testing.T) {
 
 func TestRegisteringPigeon(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	ctx = sdkCtx.WithBlockHeight(3000)
 	val := sdk.ValAddress("validator")
 	val2 := sdk.ValAddress("validator2")
@@ -533,7 +532,7 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 
 func TestGracePeriodCoverage(t *testing.T) {
 	k, _, ctx := newValsetKeeper(t)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx = sdkCtx.WithBlockHeight(100)
 
 	t.Run("with unjailed validator covered by grace period", func(t *testing.T) {

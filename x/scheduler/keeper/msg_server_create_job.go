@@ -4,12 +4,11 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
 func (k msgServer) CreateJob(goCtx context.Context, msg *types.MsgCreateJob) (*types.MsgCreateJobResponse, error) {
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	var err error
 	job := msg.Job

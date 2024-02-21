@@ -3,8 +3,8 @@ package keeper
 import (
 	"context"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/valset/types"
@@ -17,7 +17,7 @@ func (k Keeper) GetAlivePigeons(goCtx context.Context, req *types.QueryGetAliveP
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	vals := k.GetUnjailedValidators(ctx)
 

@@ -14,7 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/evm/client/cli"
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -175,7 +174,7 @@ func (am AppModule) BeginBlock(context.Context) error { return nil }
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx context.Context) error {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	am.keeper.TryDeployingLastCompassContractToAllChains(sdkCtx)
 
 	if sdkCtx.BlockHeight()%300 == 0 {

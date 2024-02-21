@@ -21,7 +21,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
@@ -97,7 +96,7 @@ func NewKeeper(
 }
 
 func (k Keeper) Logger(ctx context.Context) log.Logger {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
@@ -392,7 +391,7 @@ func (k Keeper) ValidatorSupportsAllChains(ctx context.Context, validatorAddress
 
 // createNewSnapshot builds a current snapshot of validators.
 func (k Keeper) createNewSnapshot(ctx context.Context) (*types.Snapshot, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	validators := []stakingtypes.ValidatorI{}
 	err := k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		bz, err := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
@@ -438,7 +437,7 @@ func (k Keeper) createNewSnapshot(ctx context.Context) (*types.Snapshot, error) 
 
 func (k Keeper) setSnapshotAsCurrent(ctx context.Context, snapshot *types.Snapshot) error {
 	snapStore := k.snapshotStore(ctx)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	newID := k.ider.IncrementNextID(sdkCtx, snapshotIDKey)
 	snapshot.Id = newID
 	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(newID), snapshot)
@@ -455,7 +454,7 @@ func (k Keeper) SetSnapshotOnChain(ctx context.Context, snapshotID uint64, chain
 }
 
 func (k Keeper) GetLatestSnapshotOnChain(ctx context.Context, chainReferenceID string) (*types.Snapshot, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	snapshotId := k.ider.GetLastID(sdkCtx, snapshotIDKey)
 
 	// Walk backwards from the most recent snapshot until we find one for this chainReferenceID
@@ -484,7 +483,7 @@ func (k Keeper) GetLatestSnapshotOnChain(ctx context.Context, chainReferenceID s
 
 // GetCurrentSnapshot returns the currently active snapshot.
 func (k Keeper) GetCurrentSnapshot(ctx context.Context) (*types.Snapshot, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	snapStore := k.snapshotStore(ctx)
 	lastID := k.ider.GetLastID(sdkCtx, snapshotIDKey)
 	snapshot, err := keeperutil.Load[*types.Snapshot](snapStore, k.cdc, keeperutil.Uint64ToByte(lastID))
@@ -559,7 +558,7 @@ func (k Keeper) IsJailed(ctx context.Context, val sdk.ValAddress) (bool, error) 
 }
 
 func (k Keeper) Jail(_ctx context.Context, valAddr sdk.ValAddress, reason string) error {
-	ctx := common.SdkContext(_ctx)
+	ctx := sdk.UnwrapSDKContext(_ctx)
 	jailTime := ctx.BlockTime()
 	val, err := k.staking.Validator(ctx, valAddr)
 	if err != nil {

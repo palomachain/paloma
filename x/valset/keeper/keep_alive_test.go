@@ -8,7 +8,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/mock"
@@ -17,7 +16,7 @@ import (
 
 func TestJailingInactiveValidators(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	sdkCtx = sdkCtx.WithBlockHeight(1000)
 
@@ -134,7 +133,7 @@ func TestCanAcceptKeepAlive(t *testing.T) {
 
 func TestUpdateGracePeriod(t *testing.T) {
 	k, ms, newCtx := newValsetKeeper(t)
-	sdkCtx := common.SdkContext(newCtx)
+	sdkCtx := sdk.UnwrapSDKContext(newCtx)
 	sdkCtx = sdkCtx.WithBlockHeight(1000)
 
 	valBuild := func(id int) (*mocks.StakingValidatorI, sdk.ValAddress) {
@@ -201,7 +200,7 @@ func TestUpdateGracePeriod(t *testing.T) {
 
 func TestJailBackoff(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	sdkCtx = sdkCtx.WithBlockHeight(1000).WithBlockTime(time.Date(2020, 1, 1, 12, 30, 0, 0, time.UTC))
 

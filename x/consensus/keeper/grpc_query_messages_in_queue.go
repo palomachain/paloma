@@ -4,7 +4,7 @@ import (
 	"context"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/palomachain/paloma/util/common"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,7 +15,7 @@ func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesI
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	msgs, err := k.GetMessagesFromQueue(ctx, req.QueueTypeName, 0)
 	if err != nil {

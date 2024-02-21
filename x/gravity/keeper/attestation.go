@@ -13,7 +13,6 @@ import (
 	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/types"
@@ -61,7 +60,7 @@ func (k Keeper) Attest(
 		return nil, sdkerrors.Wrap(err, "unable to compute claim hash")
 	}
 	att := k.GetAttestation(ctx, claim.GetEventNonce(), hash)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// If it does not exist, create a new one.
 	if att == nil {
 		att = &types.Attestation{
@@ -180,7 +179,7 @@ func (k Keeper) processAttestation(ctx context.Context, att *types.Attestation, 
 	if err != nil {
 		return fmt.Errorf("unable to compute claim hash")
 	}
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// then execute in a new Tx so that we can store state on failure
 	xCtx, commit := sdkCtx.CacheContext()
 	if err := k.AttestationHandler.Handle(xCtx, *att, claim); err != nil { // execute with a transient storage
@@ -209,7 +208,7 @@ func (k Keeper) emitObservedEvent(ctx context.Context, att *types.Attestation, c
 	if err != nil {
 		return err
 	}
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventObservation{
 			AttestationType: string(claim.GetType()),
@@ -435,7 +434,7 @@ func (k Keeper) SetLastObservedEthereumBlockHeight(ctx context.Context, ethereum
 	if previous.EthereumBlockHeight > ethereumHeight {
 		return fmt.Errorf("attempt to roll back Ethereum block height")
 	}
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	height := types.LastObservedEthereumBlockHeight{
 		EthereumBlockHeight: ethereumHeight,
 		PalomaBlockHeight:   uint64(sdkCtx.BlockHeight()),

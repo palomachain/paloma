@@ -7,7 +7,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -20,22 +19,22 @@ func NewHandler(k keeper.Keeper) baseapp.MsgServiceHandler {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
 		case *types.MsgSendToEth:
-			res, err := msgServer.SendToEth(common.SdkContext(ctx), msg)
+			res, err := msgServer.SendToEth(sdk.UnwrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgConfirmBatch:
-			res, err := msgServer.ConfirmBatch(common.SdkContext(ctx), msg)
+			res, err := msgServer.ConfirmBatch(sdk.UnwrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgSendToPalomaClaim:
-			res, err := msgServer.SendToPalomaClaim(common.SdkContext(ctx), msg)
+			res, err := msgServer.SendToPalomaClaim(sdk.UnwrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgBatchSendToEthClaim:
-			res, err := msgServer.BatchSendToEthClaim(common.SdkContext(ctx), msg)
+			res, err := msgServer.BatchSendToEthClaim(sdk.UnwrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgCancelSendToEth:
-			res, err := msgServer.CancelSendToEth(common.SdkContext(ctx), msg)
+			res, err := msgServer.CancelSendToEth(sdk.UnwrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgSubmitBadSignatureEvidence:
-			res, err := msgServer.SubmitBadSignatureEvidence(common.SdkContext(ctx), msg)
+			res, err := msgServer.SubmitBadSignatureEvidence(sdk.UnwrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
 		default:

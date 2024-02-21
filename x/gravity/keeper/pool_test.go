@@ -7,7 +7,6 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +16,7 @@ import (
 func TestAddToOutgoingPool(t *testing.T) {
 	input := CreateTestEnv(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -106,7 +105,7 @@ func TestAddToOutgoingPool(t *testing.T) {
 func TestAddToOutgoingPoolEdgeCases(t *testing.T) {
 	input := CreateTestEnv(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -160,7 +159,7 @@ func TestAddToOutgoingPoolEdgeCases(t *testing.T) {
 func TestRemoveFromOutgoingPoolAndRefund(t *testing.T) {
 	input := CreateTestEnv(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -226,7 +225,7 @@ func TestRemoveFromOutgoingPoolAndRefund(t *testing.T) {
 func TestRemoveFromOutgoingPoolAndRefundCosmosOriginated(t *testing.T) {
 	input := CreateTestEnv(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -340,7 +339,7 @@ func checkRemovedTx(
 func TestRefundInconsistentTx(t *testing.T) {
 	input := CreateTestEnv(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -376,7 +375,7 @@ func TestRefundInconsistentTx(t *testing.T) {
 func TestRefundNonexistentTx(t *testing.T) {
 	input := CreateTestEnv(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -395,7 +394,7 @@ func TestRefundNonexistentTx(t *testing.T) {
 func TestRefundTwice(t *testing.T) {
 	input := CreateTestEnv(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -450,7 +449,7 @@ func TestRefundTwice(t *testing.T) {
 func TestGetUnbatchedTransactions(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
 	defer func() {
-		common.SdkContext(ctx).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(ctx).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -536,7 +535,7 @@ func TestGetUnbatchedTransactions(t *testing.T) {
 func TestIterateUnbatchedTransactions(t *testing.T) {
 	input := CreateTestEnv(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -619,7 +618,7 @@ func TestIterateUnbatchedTransactions(t *testing.T) {
 func TestAddToOutgoingPoolExportGenesis(t *testing.T) {
 	input := CreateTestEnv(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 

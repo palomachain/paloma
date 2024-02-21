@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/metrix/types"
 )
 
@@ -22,7 +21,7 @@ func (k Keeper) Validator(goCtx context.Context, req *types.QueryValidatorReques
 		return nil, fmt.Errorf("query validator: %w", err)
 	}
 
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	metrics, err := k.GetValidatorMetrics(ctx, valAddr)
 	if err != nil {
 		return nil, fmt.Errorf("query metrics: %w", err)
@@ -38,7 +37,7 @@ func (k Keeper) Validator(goCtx context.Context, req *types.QueryValidatorReques
 
 // Validators implements types.QueryServer.
 func (k Keeper) Validators(goCtx context.Context, _ *types.Empty) (*types.QueryValidatorsResponse, error) {
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	metrics := make([]types.ValidatorMetrics, 0, 200)
 	if err := k.metrics.Iterate(ctx, func(_ []byte, m *types.ValidatorMetrics) bool {
@@ -67,7 +66,7 @@ func (k Keeper) HistoricRelayData(goCtx context.Context, req *types.QueryHistori
 		return nil, fmt.Errorf("query validator: %w", err)
 	}
 
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	history, err := k.GetValidatorHistory(ctx, valAddr)
 	if err != nil {
 		return nil, fmt.Errorf("query history: %w", err)

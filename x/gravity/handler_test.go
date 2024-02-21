@@ -7,7 +7,6 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +31,7 @@ func TestHandleMsgSendToEth(t *testing.T) {
 	require.NoError(t, e1)
 
 	// we start by depositing some funds into the users balance to send
-	sdkCtx := common.SdkContext(input.Context)
+	sdkCtx := sdk.UnwrapSDKContext(input.Context)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	ctx := input.Context

@@ -11,7 +11,6 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +21,7 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 	//	Test if a non-validator confirm won't panic
 
 	input, ctx := keeper.SetupFiveValChain(t)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	pk := input.GravityKeeper
@@ -116,7 +115,7 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 // Test batch timeout
 func TestBatchTimeout(t *testing.T) {
 	input, ctx := keeper.SetupFiveValChain(t)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	pk := input.GravityKeeper

@@ -69,7 +69,6 @@ import (
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	chainparams "github.com/palomachain/paloma/app/params"
-	"github.com/palomachain/paloma/util/common"
 	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus"
 	consensuskeeper "github.com/palomachain/paloma/x/consensus/keeper"
@@ -299,7 +298,7 @@ func addValidators(t *testing.T, input *TestInput, count int) {
 
 		// Create a validator for that account using some of the tokens in the account
 		// and the staking handler
-		_, err := stakingMsgSvr.CreateValidator(common.SdkContext(input.Context), NewTestMsgCreateValidator(ValAddrs[i], ConsPubKeys[i], StakingAmount))
+		_, err := stakingMsgSvr.CreateValidator(sdk.UnwrapSDKContext(input.Context), NewTestMsgCreateValidator(ValAddrs[i], ConsPubKeys[i], StakingAmount))
 
 		// Return error if one exists
 		require.NoError(t, err)
@@ -323,7 +322,7 @@ func addValidators(t *testing.T, input *TestInput, count int) {
 		if err != nil {
 			require.NoError(t, err)
 		}
-		sdkCtx := common.SdkContext(input.Context)
+		sdkCtx := sdk.UnwrapSDKContext(input.Context)
 		err = input.ValsetKeeper.AddExternalChainInfo(sdkCtx, valAddress, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
@@ -336,7 +335,7 @@ func addValidators(t *testing.T, input *TestInput, count int) {
 	}
 
 	// Create a Snapshot
-	sdkCtx := common.SdkContext(input.Context)
+	sdkCtx := sdk.UnwrapSDKContext(input.Context)
 	_, err = input.ValsetKeeper.TriggerSnapshotBuild(sdkCtx)
 	require.NoError(t, err)
 }
@@ -392,7 +391,7 @@ func SetupTestChain(t *testing.T, weights []uint64) (TestInput, context.Context)
 
 		// Create a validator for that account using some of the tokens in the account
 		// and the staking handler
-		_, err := stakingMsgSvr.CreateValidator(common.SdkContext(input.Context), NewTestMsgCreateValidator(valAddr, consPubKey, math.NewIntFromUint64(weight)))
+		_, err := stakingMsgSvr.CreateValidator(sdk.UnwrapSDKContext(input.Context), NewTestMsgCreateValidator(valAddr, consPubKey, math.NewIntFromUint64(weight)))
 
 		require.NoError(t, err)
 
@@ -401,7 +400,7 @@ func SetupTestChain(t *testing.T, weights []uint64) (TestInput, context.Context)
 		require.NoError(t, err)
 
 		// increase block height by 100 blocks
-		sdkCtx := common.SdkContext(input.Context)
+		sdkCtx := sdk.UnwrapSDKContext(input.Context)
 		input.Context = sdkCtx.WithBlockHeight(sdkCtx.BlockHeight() + 100)
 
 		// Run the staking endblocker to ensure valset is correct in state
@@ -817,7 +816,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		LegacyAmino:       legacyAmino,
 	}
 
-	sdkCtx := common.SdkContext(testInput.Context)
+	sdkCtx := sdk.UnwrapSDKContext(testInput.Context)
 	// check invariants before starting
 	sdkCtx.Logger().Info("Asserting invariants on new test env")
 	testInput.AssertInvariants()
@@ -833,7 +832,7 @@ func (t TestInput) AssertInvariants() {
 	govInvariantFunc := govkeeper.ModuleAccountInvariant(&t.GovKeeper, t.BankKeeper)
 	stakeInvariantFunc := stakingkeeper.AllInvariants(&t.StakingKeeper)
 	gravInvariantFunc := AllInvariants(t.GravityKeeper)
-	sdkCtx := common.SdkContext(t.Context)
+	sdkCtx := sdk.UnwrapSDKContext(t.Context)
 	invariantStr, invariantViolated := distrInvariantFunc(sdkCtx)
 	if invariantViolated {
 		panic(invariantStr)

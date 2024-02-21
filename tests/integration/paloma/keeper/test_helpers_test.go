@@ -49,7 +49,6 @@ import (
 	params2 "github.com/palomachain/paloma/app/params"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	helper "github.com/palomachain/paloma/tests/integration/helper"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/consensus"
 	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
@@ -280,7 +279,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		return
 	})
 
-	sdkCtx := common.SdkContext(integrationApp.Context())
+	sdkCtx := sdk.UnwrapSDKContext(integrationApp.Context())
 
 	queryClient := v1.NewQueryClient(integrationApp.QueryHelper())
 	legacyQueryClient := v1beta1.NewQueryClient(integrationApp.QueryHelper())
