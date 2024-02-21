@@ -10,7 +10,7 @@ import (
 func (k msgServer) AddEvidence(goCtx context.Context, msg *types.MsgAddEvidence) (*types.MsgAddEvidenceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
+	creator, _ := sdk.AccAddressFromBech32(msg.Metadata.Creator)
 	valAddr := sdk.ValAddress(creator.Bytes())
 
 	if err := k.Keeper.valset.CanAcceptValidator(ctx, valAddr); err != nil {

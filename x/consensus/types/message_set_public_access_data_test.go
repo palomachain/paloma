@@ -18,7 +18,6 @@ func TestMsgSetPublicAccessData_ValidateBasic(t *testing.T) {
 		{
 			name: "invalid address",
 			msg: MsgSetPublicAccessData{
-				Creator: "invalid_address",
 				Metadata: types.MsgMetadata{
 					Creator: "invalid_address",
 					Signers: []string{"invalid_address"},
@@ -28,7 +27,6 @@ func TestMsgSetPublicAccessData_ValidateBasic(t *testing.T) {
 		}, {
 			name: "valid address",
 			msg: MsgSetPublicAccessData{
-				Creator: sample.AccAddress(),
 				Metadata: types.MsgMetadata{
 					Creator: sample.AccAddress(),
 					Signers: []string{sample.AccAddress()},

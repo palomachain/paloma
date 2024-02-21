@@ -12,7 +12,6 @@ var _ sdk.Msg = &MsgDeleteJob{}
 
 func NewMsgDeleteJob(creator string, queueTypeName string, messageID uint64) *MsgDeleteJob {
 	return &MsgDeleteJob{
-		Creator:       creator,
 		QueueTypeName: queueTypeName,
 		MessageID:     messageID,
 		Metadata: types.MsgMetadata{

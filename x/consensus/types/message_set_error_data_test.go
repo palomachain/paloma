@@ -18,7 +18,6 @@ func TestMsgSetErrorData_ValidateBasic(t *testing.T) {
 		{
 			name: "invalid address",
 			msg: MsgSetErrorData{
-				Creator: "invalid_address",
 				Metadata: types.MsgMetadata{
 					Creator: "invalid_address",
 					Signers: []string{"invalid_address"},
@@ -28,7 +27,6 @@ func TestMsgSetErrorData_ValidateBasic(t *testing.T) {
 		}, {
 			name: "valid address",
 			msg: MsgSetErrorData{
-				Creator: sample.AccAddress(),
 				Metadata: types.MsgMetadata{
 					Creator: sample.AccAddress(),
 					Signers: []string{sample.AccAddress()},

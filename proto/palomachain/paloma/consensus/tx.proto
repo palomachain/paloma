@@ -21,7 +21,8 @@ service Msg {
 
 message MsgAddMessagesSignatures {
   option (cosmos.msg.v1.signer) = "metadata";
-  string creator = 1 [ deprecated = true ];
+  reserved 1;  
+  reserved "creator";  
   repeated ConsensusMessageSignature signedMessages = 2;
   palomachain.paloma.valset.MsgMetadata metadata = 3
       [ (gogoproto.nullable) = false ];
@@ -38,7 +39,8 @@ message MsgAddMessagesSignaturesResponse {}
 
 message MsgDeleteJob {
   option (cosmos.msg.v1.signer) = "metadata";
-  string creator = 1 [ deprecated = true ];
+  reserved 1;  
+  reserved "creator";  
   string queueTypeName = 2;
   uint64 messageID = 3;
   palomachain.paloma.valset.MsgMetadata metadata = 4
@@ -49,7 +51,8 @@ message MsgDeleteJobResponse {}
 
 message MsgAddEvidence {
   option (cosmos.msg.v1.signer) = "metadata";
-  string creator = 1 [ deprecated = true ];
+  reserved 1;  
+  reserved "creator";  
   google.protobuf.Any proof = 2;
   uint64 messageID = 3;
   string queueTypeName = 4;
@@ -61,7 +64,8 @@ message MsgAddEvidenceResponse {}
 
 message MsgSetPublicAccessData {
   option (cosmos.msg.v1.signer) = "metadata";
-  string creator = 1 [ deprecated = true ];
+  reserved 1;  
+  reserved "creator";  
   uint64 messageID = 2;
   string queueTypeName = 3;
   bytes data = 4;
@@ -73,7 +77,8 @@ message MsgSetPublicAccessDataResponse {}
 
 message MsgSetErrorData {
   option (cosmos.msg.v1.signer) = "metadata";
-  string creator = 1 [ deprecated = true ];
+  reserved 1;  
+  reserved "creator";  
   uint64 messageID = 2;
   string queueTypeName = 3;
   bytes data = 4;

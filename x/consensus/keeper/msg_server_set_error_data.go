@@ -10,7 +10,7 @@ import (
 func (k msgServer) SetErrorData(goCtx context.Context, msg *types.MsgSetErrorData) (*types.MsgSetErrorDataResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
+	creator, _ := sdk.AccAddressFromBech32(msg.Metadata.Creator)
 
 	valAddr := sdk.ValAddress(creator.Bytes())
 
