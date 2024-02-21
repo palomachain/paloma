@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/palomachain/paloma/util/common"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/valset/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,7 +14,7 @@ func (k Keeper) GetValidatorAliveUntil(goCtx context.Context, req *types.QueryGe
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	aliveUntil, err := k.ValidatorAliveUntil(ctx, req.GetValAddress())
 	if err != nil {

@@ -8,8 +8,8 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/app"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/require"
@@ -21,7 +21,7 @@ func TestQueryGetAttestations(t *testing.T) {
 	encCfg := app.MakeEncodingConfig()
 	k := input.GravityKeeper
 	ctx := input.Context
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Some query functions use additional logic to determine if they should look up values using the v1 key, or the new
 	// hashed bytes keys used post-Mercury, so we must set the block height high enough here for the correct data to be found
 	ctx = sdkCtx.WithBlockHeight(int64(keeper.MERCURY_UPGRADE_HEIGHT) + sdkCtx.BlockHeight())
@@ -147,7 +147,7 @@ func createAttestations(t *testing.T, k keeper.Keeper, ctx context.Context, leng
 
 		any, err := codectypes.NewAnyWithValue(&msg)
 		require.NoError(t, err)
-		sdkCtx := common.SdkContext(ctx)
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		att := &types.Attestation{
 			Observed: false,
 			Votes:    []string{},

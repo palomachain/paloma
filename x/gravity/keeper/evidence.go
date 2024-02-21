@@ -9,7 +9,6 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -84,7 +83,7 @@ func (k Keeper) checkBadSignatureEvidenceInternal(ctx context.Context, subject t
 	if err != nil {
 		return sdkerrors.Wrap(err, "Could not get consensus key address for validator")
 	}
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params := k.GetParams(ctx)
 	if !val.IsJailed() {
 		err := k.StakingKeeper.Jail(ctx, cons)

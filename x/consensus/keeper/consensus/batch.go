@@ -6,7 +6,6 @@ import (
 	"cosmossdk.io/store/prefix"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -31,7 +30,7 @@ func NewBatchQueue(qo QueueOptions) BatchQueue {
 }
 
 func (c BatchQueue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if !c.batchedTypeChecker(msg) {
 		return 0, ErrIncorrectMessageType.Format(msg)
 	}
@@ -56,7 +55,7 @@ func (c BatchQueue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions)
 }
 
 func (c BatchQueue) ProcessBatches(ctx context.Context) error {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	queue := c.batchQueue(sdkCtx)
 	deleteKeys := [][]byte{}
 
@@ -106,33 +105,33 @@ func (c BatchQueue) ProcessBatches(ctx context.Context) error {
 
 // batchQueue returns queue of messages that have been batched
 func (c BatchQueue) batchQueue(ctx context.Context) prefix.Store {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	store := c.base.qo.Sg.Store(sdkCtx)
 	return prefix.NewStore(store, []byte("batching:"+c.base.signingQueueKey()))
 }
 
 func (c BatchQueue) AddSignature(ctx context.Context, id uint64, signData *types.SignData) error {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return c.base.AddSignature(sdkCtx, id, signData)
 }
 
 func (c BatchQueue) Remove(ctx context.Context, msgID uint64) error {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return c.base.Remove(sdkCtx, msgID)
 }
 
 func (c BatchQueue) GetMsgByID(ctx context.Context, id uint64) (types.QueuedSignedMessageI, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return c.base.GetMsgByID(sdkCtx, id)
 }
 
 func (c BatchQueue) GetAll(ctx context.Context) ([]types.QueuedSignedMessageI, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return c.base.GetAll(sdkCtx)
 }
 
 func (c BatchQueue) AddEvidence(ctx context.Context, id uint64, evidence *types.Evidence) error {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return c.base.AddEvidence(sdkCtx, id, evidence)
 }
 
@@ -145,17 +144,17 @@ func (c BatchQueue) SetPublicAccessData(ctx context.Context, id uint64, data *ty
 }
 
 func (c BatchQueue) GetPublicAccessData(ctx context.Context, id uint64) (*types.PublicAccessData, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return c.base.GetPublicAccessData(sdkCtx, id)
 }
 
 func (c BatchQueue) SetErrorData(ctx context.Context, id uint64, data *types.ErrorData) error {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return c.base.SetErrorData(sdkCtx, id, data)
 }
 
 func (c BatchQueue) GetErrorData(ctx context.Context, id uint64) (*types.ErrorData, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return c.base.GetErrorData(sdkCtx, id)
 }
 

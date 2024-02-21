@@ -8,7 +8,6 @@ import (
 	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +15,7 @@ import (
 // nolint: exhaustruct
 func TestSubmitBadSignatureEvidenceBatchExists(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	var (
@@ -74,7 +73,7 @@ func TestSubmitBadSignatureEvidenceBatchExists(t *testing.T) {
 func TestSubmitBadSignatureEvidenceSlash(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 

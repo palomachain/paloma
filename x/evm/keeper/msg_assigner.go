@@ -6,8 +6,8 @@ import (
 	"math"
 	"sort"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -215,7 +215,7 @@ func rankValidators(validatorsInfos map[string]ValidatorInfo, relayWeights types
 
 func pickValidator(ctx context.Context, validatorsInfos map[string]ValidatorInfo, weights types.RelayWeightsFloat64) string {
 	scored := rankValidators(validatorsInfos, weights)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	highScore := 0
 	var highScorers []string
 

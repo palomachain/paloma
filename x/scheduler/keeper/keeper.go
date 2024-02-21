@@ -16,7 +16,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
-	"github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
@@ -64,7 +63,7 @@ func (k Keeper) GetAccount(ctx context.Context, addr sdk.AccAddress) authtypes.A
 }
 
 func (k Keeper) Logger(ctx context.Context) log.Logger {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return liblog.FromSDKLogger(sdkCtx.Logger()).With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 

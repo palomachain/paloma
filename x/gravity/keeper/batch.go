@@ -11,7 +11,6 @@ import (
 	"cosmossdk.io/store/prefix"
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -28,7 +27,7 @@ func (k Keeper) BuildOutgoingTXBatch(
 	contract types.EthAddress,
 	maxElements uint,
 ) (*types.InternalOutgoingTxBatch, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if maxElements == 0 {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "max elements value")
 	}
@@ -90,7 +89,7 @@ func (k Keeper) BuildOutgoingTXBatch(
 }
 
 func (k Keeper) getBatchTimeoutHeight(ctx context.Context) uint64 {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return uint64(sdkCtx.BlockTime().Add(10 * time.Minute).Unix())
 }
 
@@ -250,7 +249,7 @@ func (k Keeper) CancelOutgoingTXBatch(ctx context.Context, tokenContract types.E
 	if err != nil {
 		return err
 	}
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventOutgoingBatchCanceled{
 			BridgeContract: bridgeContract.GetAddress().Hex(),

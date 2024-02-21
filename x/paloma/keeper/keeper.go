@@ -11,8 +11,8 @@ import (
 	cosmoslog "cosmossdk.io/log"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/palomachain/paloma/util/common"
 	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/paloma/types"
@@ -65,14 +65,14 @@ func NewKeeper(
 }
 
 func (k Keeper) Logger(ctx context.Context) cosmoslog.Logger {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return liblog.FromSDKLogger(sdkCtx.Logger()).With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context) error {
 	liblog.FromSDKLogger(k.Logger(ctx)).Info("start jailing validators with invalid external chain infos")
 	vals := k.Valset.GetUnjailedValidators(ctx)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// making a map of chain types and their external chains
 	type mapkey [2]string
 	mmap := make(map[mapkey]struct{})
@@ -123,7 +123,7 @@ func (k Keeper) CheckChainVersion(ctx context.Context) {
 	// app needs to be in the [major].[minor] space,
 	// but needs to be running at least [major].[minor].[patch]
 	govVer, govHeight, err := k.Upgrade.GetLastCompletedUpgrade(ctx)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err != nil {
 		liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err)
 	}

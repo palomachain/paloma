@@ -13,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/libvalid"
@@ -38,7 +37,7 @@ type keepAliveData struct {
 }
 
 func (k Keeper) KeepValidatorAlive(ctx context.Context, valAddr sdk.ValAddress, pigeonVersion string) error {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err := k.CanAcceptKeepAlive(ctx, valAddr, pigeonVersion); err != nil {
 		return err
 	}
@@ -58,7 +57,7 @@ func (k Keeper) KeepValidatorAlive(ctx context.Context, valAddr sdk.ValAddress, 
 }
 
 func (k Keeper) IsValidatorAlive(ctx context.Context, valAddr sdk.ValAddress) (bool, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	aliveUntil, err := k.ValidatorAliveUntil(ctx, valAddr)
 	if err != nil {
 		return false, err
@@ -68,7 +67,7 @@ func (k Keeper) IsValidatorAlive(ctx context.Context, valAddr sdk.ValAddress) (b
 }
 
 func (k Keeper) ValidatorAliveUntil(ctx context.Context, valAddr sdk.ValAddress) (int64, error) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	store := k.keepAliveStore(ctx)
 	if !store.Has(valAddr) {
 		return 0, ErrValidatorNotInKeepAlive.Format(valAddr)
@@ -132,7 +131,7 @@ func (k Keeper) CanAcceptValidator(ctx context.Context, valAddr sdk.ValAddress) 
 // reads every block.
 // Call this during the EndBlock logic.
 func (k Keeper) UpdateGracePeriod(ctx context.Context) error {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	us := k.unjailedSnapshotStore(ctx)
 	gs := k.gracePeriodStore(ctx)
 
@@ -206,7 +205,7 @@ func (k Keeper) JailInactiveValidators(ctx context.Context) error {
 }
 
 func (k Keeper) isValidatorInGracePeriod(ctx context.Context, valAddr sdk.ValAddress) bool {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	store := k.gracePeriodStore(ctx)
 	bytes := store.Get(valAddr)
 	return libvalid.NotNil(bytes) && sdkCtx.BlockHeight()-int64(sdk.BigEndianToUint64(bytes)) <= cJailingGracePeriodBlockHeight

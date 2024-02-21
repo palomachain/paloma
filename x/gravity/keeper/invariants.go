@@ -7,7 +7,6 @@ import (
 	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -43,7 +42,7 @@ func AllInvariants(k Keeper) sdk.Invariant {
 // Note that the returned bool should be true if there is an error, e.g. an unexpected module balance
 func ModuleBalanceInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		sdkCtx := common.SdkContext(ctx)
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		modAcc := k.accountKeeper.GetModuleAddress(types.ModuleName)
 		actualBals := k.bankKeeper.GetAllBalances(ctx, modAcc)
 		expectedBals := make(map[string]*math.Int, len(actualBals)) // Collect balances by contract

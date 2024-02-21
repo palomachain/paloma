@@ -13,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/consensus/client/cli"
 	"github.com/palomachain/paloma/x/consensus/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
@@ -168,7 +167,7 @@ func (am AppModule) BeginBlock(context.Context) {
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
 func (am AppModule) EEndBlock(ct context.Context) ([]abci.ValidatorUpdate, error) {
-	ctx := common.SdkContext(ct)
+	ctx := sdk.UnwrapSDKContext(ct)
 	am.keeper.Logger(ctx).Info("abci-validator-size", abci.ValidatorUpdates{}.Len())
 	if err := am.keeper.CheckAndProcessAttestedMessages(ctx); err != nil {
 		am.keeper.Logger(ctx).Error("error while attesting to messages", "err", err)

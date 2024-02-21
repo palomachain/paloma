@@ -4,13 +4,12 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/scheduler/types"
 )
 
 func (msgSrv msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJob) (*types.MsgExecuteJobResponse, error) {
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := liblog.FromSDKLogger(msgSrv.Keeper.Logger(ctx)).WithFields("job-id", msg.GetJobID())
 	logger.Debug("Received ExecuteJob message.")
 

@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/palomachain/paloma/util/common"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"google.golang.org/grpc/codes"
@@ -17,7 +17,7 @@ func (k Keeper) GetValsetByID(goCtx context.Context, req *types.QueryGetValsetBy
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	logger := k.Logger(ctx)
 	logger.Info("request info",

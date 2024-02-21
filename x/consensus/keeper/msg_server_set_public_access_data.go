@@ -4,12 +4,11 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
 func (k msgServer) SetPublicAccessData(goCtx context.Context, msg *types.MsgSetPublicAccessData) (*types.MsgSetPublicAccessDataResponse, error) {
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
 

@@ -7,7 +7,6 @@ import (
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/palomachain/paloma/util/common"
 	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
@@ -40,8 +39,8 @@ func (k Keeper) LastPendingBatchRequestByAddr(
 	var pendingBatchReq types.InternalOutgoingTxBatches
 
 	found := false
-	err = k.IterateOutgoingTxBatches(common.SdkContext(c), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
-		batchConfirm, err := k.GetBatchConfirm(common.SdkContext(c), batch.BatchNonce, batch.TokenContract, addr)
+	err = k.IterateOutgoingTxBatches(sdk.UnwrapSDKContext(c), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
+		batchConfirm, err := k.GetBatchConfirm(sdk.UnwrapSDKContext(c), batch.BatchNonce, batch.TokenContract, addr)
 		if err != nil {
 			return false
 		}
@@ -74,7 +73,7 @@ func (k Keeper) OutgoingTxBatches(
 	req *types.QueryOutgoingTxBatchesRequest,
 ) (*types.QueryOutgoingTxBatchesResponse, error) {
 	var batches []types.OutgoingTxBatch
-	err := k.IterateOutgoingTxBatches(common.SdkContext(c), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
+	err := k.IterateOutgoingTxBatches(sdk.UnwrapSDKContext(c), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
 		batchChainReferenceID := batch.ChainReferenceID
 		reqChainReferenceID := req.ChainReferenceId
 		batchAssignee := batch.Assignee
@@ -105,7 +104,7 @@ func (k Keeper) BatchRequestByNonce(
 		return nil, errors.Wrap(sdkerrors.ErrUnknownRequest, err.Error())
 	}
 
-	foundBatch, err := k.GetOutgoingTXBatch(common.SdkContext(c), *addr, req.Nonce)
+	foundBatch, err := k.GetOutgoingTXBatch(sdk.UnwrapSDKContext(c), *addr, req.Nonce)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +125,7 @@ func (k Keeper) BatchConfirms(
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid contract address in request")
 	}
-	err = k.IterateBatchConfirmByNonceAndTokenContract(common.SdkContext(c),
+	err = k.IterateBatchConfirmByNonceAndTokenContract(sdk.UnwrapSDKContext(c),
 		req.Nonce, *contract, func(_ []byte, c types.MsgConfirmBatch) bool {
 			confirms = append(confirms, c)
 			return false
@@ -142,7 +141,7 @@ func (k Keeper) LastEventNonce(
 	c context.Context,
 	req *types.QueryLastEventNonceRequest,
 ) (*types.QueryLastEventNonceResponse, error) {
-	ctx := common.SdkContext(c)
+	ctx := sdk.UnwrapSDKContext(c)
 	var ret types.QueryLastEventNonceResponse
 	lastEventNonce, err := k.GetLastObservedEventNonce(ctx)
 	if err != nil {
@@ -158,7 +157,7 @@ func (k Keeper) LastEventNonceByAddr(
 	c context.Context,
 	req *types.QueryLastEventNonceByAddrRequest,
 ) (*types.QueryLastEventNonceResponse, error) {
-	ctx := common.SdkContext(c)
+	ctx := sdk.UnwrapSDKContext(c)
 	var ret types.QueryLastEventNonceResponse
 	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
@@ -188,7 +187,7 @@ func (k Keeper) DenomToERC20(
 	c context.Context,
 	req *types.QueryDenomToERC20Request,
 ) (*types.QueryDenomToERC20Response, error) {
-	ctx := common.SdkContext(c)
+	ctx := sdk.UnwrapSDKContext(c)
 	erc20, err := k.GetERC20OfDenom(ctx, req.GetChainReferenceId(), req.GetDenom())
 	if err != nil {
 		return nil, errors.Wrapf(err, "invalid denom (%v) queried", req.Denom)
@@ -204,7 +203,7 @@ func (k Keeper) ERC20ToDenom(
 	c context.Context,
 	req *types.QueryERC20ToDenomRequest,
 ) (*types.QueryERC20ToDenomResponse, error) {
-	ctx := common.SdkContext(c)
+	ctx := sdk.UnwrapSDKContext(c)
 	ethAddr, err := types.NewEthAddress(req.Erc20)
 	if err != nil {
 		return nil, errors.Wrapf(err, "invalid Erc20 in request: %s", req.Erc20)
@@ -224,7 +223,7 @@ func (k Keeper) GetLastObservedEthBlock(
 	c context.Context,
 	req *types.QueryLastObservedEthBlockRequest,
 ) (*types.QueryLastObservedEthBlockResponse, error) {
-	ctx := common.SdkContext(c)
+	ctx := sdk.UnwrapSDKContext(c)
 
 	locator := k.GetLastObservedEthereumBlockHeight
 
@@ -238,7 +237,7 @@ func (k Keeper) GetLastObservedEthNonce(
 	c context.Context,
 	req *types.QueryLastObservedEthNonceRequest,
 ) (*types.QueryLastObservedEthNonceResponse, error) {
-	ctx := common.SdkContext(c)
+	ctx := sdk.UnwrapSDKContext(c)
 
 	locator := k.GetLastObservedEventNonce
 
@@ -254,7 +253,7 @@ func (k Keeper) GetAttestations(
 	c context.Context,
 	req *types.QueryAttestationsRequest,
 ) (*types.QueryAttestationsResponse, error) {
-	ctx := common.SdkContext(c)
+	ctx := sdk.UnwrapSDKContext(c)
 
 	iterator := k.IterateAttestations
 
@@ -320,7 +319,7 @@ func (k Keeper) GetAttestations(
 }
 
 func (k Keeper) GetErc20ToDenoms(c context.Context, denoms *types.QueryErc20ToDenoms) (*types.QueryErc20ToDenomsResponse, error) {
-	ctx := common.SdkContext(c)
+	ctx := sdk.UnwrapSDKContext(c)
 
 	erc20ToDenomsPtrs, err := k.GetAllERC20ToDenoms(ctx)
 	if err != nil {
@@ -342,7 +341,7 @@ func (k Keeper) GetPendingSendToEth(
 	c context.Context,
 	req *types.QueryPendingSendToEth,
 ) (*types.QueryPendingSendToEthResponse, error) {
-	ctx := common.SdkContext(c)
+	ctx := sdk.UnwrapSDKContext(c)
 	batches, err := k.GetOutgoingTxBatches(ctx)
 	if err != nil {
 		return nil, err

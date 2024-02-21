@@ -20,7 +20,6 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
 	ibctmmigrations "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint/migrations"
-	"github.com/palomachain/paloma/util/common"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
@@ -82,7 +81,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			// Migrate CometBFT consensus parameters from x/params module to a
 			// dedicated x/consensus module.
-			sdkCtx := common.SdkContext(ctx)
+			sdkCtx := sdk.UnwrapSDKContext(ctx)
 			err := baseapp.MigrateParams(sdkCtx, baseAppLegacySS, &app.ConsensusParamsKeeper.ParamsStore)
 			if err != nil {
 				return nil, err

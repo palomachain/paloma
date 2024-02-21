@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/palomachain/paloma/util/common"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/liblog"
 )
 
@@ -11,7 +11,7 @@ import (
 // EndBlocker. It will get messages for the attestators that have reached a
 // consensus and process them.
 func (k Keeper) CheckAndProcessAttestedMessages(ctx context.Context) error {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	for _, supportedConsensusQueue := range k.registry.slice {
 		opts, err := supportedConsensusQueue.SupportedQueues(sdkCtx)
 		if err != nil {

@@ -7,7 +7,6 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/require"
 )
@@ -17,7 +16,7 @@ func TestBatchAndTxImportExport(t *testing.T) {
 	// SETUP ENV + DATA
 	// ==================
 	input := CreateTestEnv(t)
-	sdkCtx := common.SdkContext(input.Context)
+	sdkCtx := sdk.UnwrapSDKContext(input.Context)
 
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 

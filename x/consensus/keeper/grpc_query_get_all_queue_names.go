@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/VolumeFi/whoops"
-	"github.com/palomachain/paloma/util/common"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,7 +16,7 @@ func (k Keeper) GetAllQueueNames(goCtx context.Context, req *types.QueryGetAllQu
 	}
 	names := []string{}
 
-	ctx := common.SdkContext(goCtx)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	for _, supported := range k.registry.slice {
 		queues := whoops.Must(supported.SupportedQueues(ctx))

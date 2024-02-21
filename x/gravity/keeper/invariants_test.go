@@ -8,7 +8,6 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	"github.com/palomachain/paloma/util/common"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +17,7 @@ func TestModuleBalanceUnbatchedTxs(t *testing.T) {
 	////////////////// SETUP //////////////////
 	input := CreateTestEnv(t)
 	defer func() {
-		common.SdkContext(input.Context).Logger().Info("Asserting invariants at test end")
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
 		input.AssertInvariants()
 	}()
 
@@ -78,7 +77,7 @@ func TestModuleBalanceUnbatchedTxs(t *testing.T) {
 func TestModuleBalanceBatchedTxs(t *testing.T) {
 	////////////////// SETUP //////////////////
 	input, ctx := SetupFiveValChain(t)
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	var (
@@ -163,7 +162,7 @@ func TestModuleBalanceBatchedTxs(t *testing.T) {
 }
 
 func checkInvariant(t *testing.T, ctx context.Context, k Keeper, succeed bool) {
-	sdkCtx := common.SdkContext(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	res, ok := ModuleBalanceInvariant(k)(sdkCtx)
 	if succeed {
 		require.False(t, ok, "Invariant should have returned false")
