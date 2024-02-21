@@ -8,6 +8,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -75,6 +76,10 @@ func (k Keeper) processValidatorBalanceProof(
 	case *types.ValidatorBalancesAttestationRes:
 		for i := range request.GetHexAddresses() {
 			valAddr := request.ValAddresses[i]
+			valAddrString, err := k.AddressCodec.BytesToString(valAddr)
+			if err != nil {
+				k.Logger(ctx).Error("error while getting validator address", err)
+			}
 			hexAddr, balanceStr := common.HexToAddress(request.HexAddresses[i]), winner.Balances[i]
 			balance, ok := new(big.Int).SetString(balanceStr, 10)
 			if !ok {
@@ -100,12 +105,7 @@ func (k Keeper) processValidatorBalanceProof(
 			if balance.Cmp(minBalance) == -1 || balance.Cmp(big.NewInt(0)) == 0 {
 				isJailed, err := k.Valset.IsJailed(ctx, valAddr)
 				if err != nil {
-					k.Logger(ctx).Error(
-						"error in checking jailed validator",
-						"err", err,
-						"val-addr", valAddr,
-						"eth-addr", hexAddr,
-					)
+					liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithValidator(valAddrString).WithFields("val-addr", valAddr, "hex-addr", hexAddr).Error("attestValidatorBalances: error in checking jailed validator")
 				}
 
 				if !isJailed {
