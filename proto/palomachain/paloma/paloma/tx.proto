@@ -20,7 +20,8 @@ message MsgAddStatusUpdate {
     string key = 1;
     string value = 2;
   }
-  string creator = 1 [ deprecated = true ];
+  reserved 1;  
+  reserved "creator";  
   string status = 2;
   Level level = 3;
   palomachain.paloma.valset.MsgMetadata metadata = 4

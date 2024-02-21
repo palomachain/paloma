@@ -32,7 +32,6 @@ func CmdRemoveSmartContractDeployment() *cobra.Command {
 
 			creator := clientCtx.GetFromAddress().String()
 			msg := &types.MsgRemoveSmartContractDeploymentRequest{
-				Sender:           creator,
 				SmartContractID:  uint64(smartContractID),
 				ChainReferenceID: chainReferenceID,
 				Metadata: vtypes.MsgMetadata{

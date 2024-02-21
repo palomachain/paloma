@@ -59,8 +59,7 @@ func CmdCreateJob() *cobra.Command {
 
 			creator := clientCtx.GetFromAddress().String()
 			msg := &types.MsgCreateJob{
-				Creator: creator,
-				Job:     job,
+				Job: job,
 				Metadata: vtypes.MsgMetadata{
 					Creator: creator,
 					Signers: []string{creator},

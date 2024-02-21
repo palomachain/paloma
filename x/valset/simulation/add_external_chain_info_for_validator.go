@@ -19,7 +19,9 @@ func SimulateMsgAddExternalChainInfoForValidator(
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 		msg := &types.MsgAddExternalChainInfoForValidator{
-			Creator: simAccount.Address.String(),
+			Metadata: types.MsgMetadata{
+				Creator: simAccount.Address.String(),
+			},
 		}
 
 		// TODO: Handling the AddExternalChainInfoForValidator simulation

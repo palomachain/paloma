@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/util/libmeta"
+	"github.com/palomachain/paloma/x/valset/types"
 )
 
 // nolint: exhaustruct
@@ -25,7 +26,6 @@ var (
 // NewMsgSendToEth returns a new msgSendToEth
 func NewMsgSendToEth(sender sdk.AccAddress, destAddress EthAddress, send sdk.Coin, chainReferenceID string) *MsgSendToEth {
 	return &MsgSendToEth{
-		Sender:           sender.String(),
 		EthDest:          destAddress.GetAddress().Hex(),
 		Amount:           send,
 		ChainReferenceId: chainReferenceID,
@@ -278,7 +278,9 @@ const (
 // NewMsgCancelSendToEth returns a new msgSetOrchestratorAddress
 func NewMsgCancelSendToEth(user sdk.AccAddress, id uint64) *MsgCancelSendToEth {
 	return &MsgCancelSendToEth{
-		Sender:        user.String(),
+		Metadata: types.MsgMetadata{
+			Creator: user.String(),
+		},
 		TransactionId: id,
 	}
 }

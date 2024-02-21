@@ -43,7 +43,6 @@ func CmdExecuteJob() *cobra.Command {
 
 			creator := clientCtx.GetFromAddress().String()
 			msg := &types.MsgExecuteJob{
-				Creator: creator,
 				JobID:   argJobID,
 				Payload: payload,
 				Metadata: vtypes.MsgMetadata{

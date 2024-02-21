@@ -92,7 +92,6 @@ func TestExecuteJob(t *testing.T) {
 			ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
 			creator := "cosmos1l2j8vaykh03zenzytntj3cza6zfxwlj6lgqvd5"
 			msg := types.MsgExecuteJob{
-				Creator: creator,
 				JobID:   "test_job_1",
 				Payload: []byte(``),
 				Metadata: vtypes.MsgMetadata{

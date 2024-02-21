@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -43,10 +44,12 @@ func TestHandleMsgSendToEth(t *testing.T) {
 
 	// send some coins
 	msg := &types.MsgSendToEth{
-		Sender:           userCosmosAddr.String(),
 		EthDest:          ethDestination,
 		Amount:           sendingCoin,
 		ChainReferenceId: "test-chain",
+		Metadata: valsettypes.MsgMetadata{
+			Creator: userCosmosAddr.String(),
+		},
 	}
 	ctx = sdkCtx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
 	_, err := h(sdkCtx, msg)
@@ -56,10 +59,12 @@ func TestHandleMsgSendToEth(t *testing.T) {
 
 	// do the same thing again and make sure it works twice
 	msg1 := &types.MsgSendToEth{
-		Sender:           userCosmosAddr.String(),
 		EthDest:          ethDestination,
 		Amount:           sendingCoin,
 		ChainReferenceId: "test-chain",
+		Metadata: valsettypes.MsgMetadata{
+			Creator: userCosmosAddr.String(),
+		},
 	}
 	ctx = sdkCtx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
 	_, err1 := h(sdkCtx, msg1)
@@ -70,10 +75,12 @@ func TestHandleMsgSendToEth(t *testing.T) {
 
 	// now we should be out of coins and error
 	msg2 := &types.MsgSendToEth{
-		Sender:           userCosmosAddr.String(),
 		EthDest:          ethDestination,
 		Amount:           sendingCoin,
 		ChainReferenceId: "test-chain",
+		Metadata: valsettypes.MsgMetadata{
+			Creator: userCosmosAddr.String(),
+		},
 	}
 	ctx = sdkCtx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
 	_, err2 := h(sdkCtx, msg2)
@@ -84,10 +91,12 @@ func TestHandleMsgSendToEth(t *testing.T) {
 	// these should all produce an error
 	for _, val := range invalidEthDestinations {
 		msg := &types.MsgSendToEth{
-			Sender:           userCosmosAddr.String(),
 			EthDest:          val,
 			Amount:           sendingCoin,
 			ChainReferenceId: "test-chain",
+			Metadata: valsettypes.MsgMetadata{
+				Creator: userCosmosAddr.String(),
+			},
 		}
 		ctx = sdkCtx.WithBlockTime(blockTime).WithBlockHeight(blockHeight)
 		_, err := h(sdkCtx, msg)

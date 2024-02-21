@@ -109,9 +109,8 @@ func Test_VerifyAuthorisedSignatureDecorator(t *testing.T) {
 				return &tx{
 					msgs: []sdk.Msg{
 						&types.MsgAddStatusUpdate{
-							Creator: valAddr.String(),
-							Status:  "bar",
-							Level:   0,
+							Status: "bar",
+							Level:  0,
 							Metadata: vtypes.MsgMetadata{
 								Creator: valAddr.String(),
 								Signers: []string{valAddr.String()},
@@ -139,9 +138,8 @@ func Test_VerifyAuthorisedSignatureDecorator(t *testing.T) {
 				return &tx{
 					msgs: []sdk.Msg{
 						&types.MsgAddStatusUpdate{
-							Creator: valAddr.String(),
-							Status:  "bar",
-							Level:   0,
+							Status: "bar",
+							Level:  0,
 							Metadata: vtypes.MsgMetadata{
 								Creator: valAddr.String(),
 								Signers: []string{grantee.String()},
@@ -174,9 +172,8 @@ func Test_VerifyAuthorisedSignatureDecorator(t *testing.T) {
 				return &tx{
 					msgs: []sdk.Msg{
 						&types.MsgAddStatusUpdate{
-							Creator: valAddr.String(),
-							Status:  "bar",
-							Level:   0,
+							Status: "bar",
+							Level:  0,
 							Metadata: vtypes.MsgMetadata{
 								Creator: valAddr.String(),
 								Signers: []string{grantee.String(), grantee2.String()},
@@ -205,9 +202,8 @@ func Test_VerifyAuthorisedSignatureDecorator(t *testing.T) {
 				return &tx{
 					msgs: []sdk.Msg{
 						&types.MsgAddStatusUpdate{
-							Creator: valAddr.String(),
-							Status:  "bar",
-							Level:   0,
+							Status: "bar",
+							Level:  0,
 							Metadata: vtypes.MsgMetadata{
 								Creator: valAddr.String(),
 								Signers: []string{grantee.String(), grantee2.String()},
@@ -232,9 +228,8 @@ func Test_VerifyAuthorisedSignatureDecorator(t *testing.T) {
 				return &tx{
 					msgs: []sdk.Msg{
 						&types.MsgAddStatusUpdate{
-							Creator: valAddr.String(),
-							Status:  "bar",
-							Level:   0,
+							Status: "bar",
+							Level:  0,
 							Metadata: vtypes.MsgMetadata{
 								Creator: valAddr.String(),
 								Signers: []string{grantee.String(), grantee2.String()},

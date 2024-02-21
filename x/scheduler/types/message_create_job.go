@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/libmeta"
+	"github.com/palomachain/paloma/x/valset/types"
 )
 
 const TypeMsgCreateJob = "create_job"
@@ -11,7 +12,9 @@ var _ sdk.Msg = &MsgCreateJob{}
 
 func NewMsgCreateJob(creator string) *MsgCreateJob {
 	return &MsgCreateJob{
-		Creator: creator,
+		Metadata: types.MsgMetadata{
+			Creator: creator,
+		},
 	}
 }
 

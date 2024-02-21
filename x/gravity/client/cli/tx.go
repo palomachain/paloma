@@ -57,7 +57,6 @@ func CmdSendToEth() *cobra.Command {
 
 			// Make the message
 			msg := types.MsgSendToEth{
-				Sender:           cosmosAddr.String(),
 				EthDest:          ethDest,
 				Amount:           amount[0],
 				ChainReferenceId: chainReferenceID,
@@ -99,7 +98,6 @@ func CmdCancelSendToEth() *cobra.Command {
 
 			// Make the message
 			msg := types.MsgCancelSendToEth{
-				Sender:        cosmosAddr.String(),
 				TransactionId: txId,
 				Metadata: vtypes.MsgMetadata{
 					Creator: cosmosAddr.String(),

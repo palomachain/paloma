@@ -8,6 +8,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/palomachain/paloma/x/scheduler/keeper"
 	"github.com/palomachain/paloma/x/scheduler/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 func SimulateMsgExecuteJob(
@@ -19,7 +20,9 @@ func SimulateMsgExecuteJob(
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 		msg := &types.MsgExecuteJob{
-			Creator: simAccount.Address.String(),
+			Metadata: valsettypes.MsgMetadata{
+				Creator: simAccount.Address.String(),
+			},
 		}
 
 		// TODO: Handling the ExecuteJob simulation

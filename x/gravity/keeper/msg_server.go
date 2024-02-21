@@ -28,7 +28,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 // SendToEth handles MsgSendToEth
 func (k msgServer) SendToEth(c context.Context, msg *types.MsgSendToEth) (*types.MsgSendToEthResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	sender, err := sdk.AccAddressFromBech32(msg.Metadata.Creator)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid sender")
 	}
@@ -297,7 +297,7 @@ func additionalPatchChecks(ctx context.Context, k msgServer, msg *types.MsgBatch
 
 func (k msgServer) CancelSendToEth(c context.Context, msg *types.MsgCancelSendToEth) (*types.MsgCancelSendToEthResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	sender, err := sdk.AccAddressFromBech32(msg.Metadata.Creator)
 	if err != nil {
 		return nil, err
 	}
