@@ -17,6 +17,7 @@ import (
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	params2 "github.com/palomachain/paloma/app/params"
+	"github.com/palomachain/paloma/testutil/common"
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/require"
@@ -29,7 +30,7 @@ type mockedServices struct {
 }
 
 func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, context.Context) {
-	CreateTestEnv()
+	common.SetupPalomaPrefixes()
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 
 	storeKeyService := runtime.NewKVStoreService(storeKey)
@@ -80,11 +81,4 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, context.Context) {
 	k.SetParams(ctx, types.DefaultParams())
 
 	return k, ms, ctx
-}
-
-// CreateTestEnv sets the Prefix for validator and Account
-func CreateTestEnv() {
-	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount("paloma", "pub")
-	config.SetBech32PrefixForValidator("palomavaloper", "valoperpub")
 }

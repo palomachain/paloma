@@ -69,6 +69,7 @@ import (
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	chainparams "github.com/palomachain/paloma/app/params"
+	"github.com/palomachain/paloma/testutil/common"
 	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus"
 	consensuskeeper "github.com/palomachain/paloma/x/consensus/keeper"
@@ -423,10 +424,7 @@ func SetupTestChain(t *testing.T, weights []uint64) (TestInput, context.Context)
 func CreateTestEnv(t *testing.T) TestInput {
 	t.Helper()
 
-	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount("paloma", "pub")
-	config.SetBech32PrefixForValidator("palomavaloper", "valoperpub")
-
+	common.SetupPalomaPrefixes()
 	// Initialize store keys
 	gravityKey := storetypes.NewKVStoreKey(types.StoreKey)
 	keyAcc := storetypes.NewKVStoreKey(authtypes.StoreKey)
