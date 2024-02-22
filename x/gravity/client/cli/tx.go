@@ -104,9 +104,6 @@ func CmdCancelSendToEth() *cobra.Command {
 					Signers: []string{cosmosAddr.String()},
 				},
 			}
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
 			// Send it
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), &msg)
 		},

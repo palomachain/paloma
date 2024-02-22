@@ -75,7 +75,7 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 		return nil
 	}
 
-	ctx1, writeCache := sdkCtx.CacheContext()
+	cacheCtx, writeCache := sdkCtx.CacheContext()
 	defer func() {
 		if err != nil {
 			logger.WithError(err).Error("failed to attest. Skipping writeback.")
@@ -90,7 +90,7 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 		return err
 	}
 
-	evidence, err := k.findEvidenceThatWon(ctx1, msg.GetEvidence())
+	evidence, err := k.findEvidenceThatWon(cacheCtx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			logger.WithError(err).Error("consensus not achieved")
@@ -112,15 +112,15 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 			success = true
 			tx, err := winner.GetTX()
 			if err == nil {
-				k.setTxAsAlreadyProcessed(ctx1, tx)
+				k.setTxAsAlreadyProcessed(cacheCtx, tx)
 			}
 		}
 
 		handledAt := msg.GetHandledAtBlockHeight()
 		if handledAt == nil {
-			handledAt = func(i math.Int) *math.Int { return &i }(sdkmath.NewInt(ctx1.BlockHeight()))
+			handledAt = func(i math.Int) *math.Int { return &i }(sdkmath.NewInt(cacheCtx.BlockHeight()))
 		}
-		publishMessageAttestedEvent(sdkCtx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
+		publishMessageAttestedEvent(cacheCtx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
 
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
@@ -141,11 +141,11 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 	}
 	switch rawAction.(type) {
 	case *types.Message_UploadSmartContract:
-		return newUploadSmartContractAttester(&k, logger, params).Execute(ctx1)
+		return newUploadSmartContractAttester(&k, logger, params).Execute(cacheCtx)
 	case *types.Message_UpdateValset:
-		return newUpdateValsetAttester(&k, logger, q, params).Execute(ctx1)
+		return newUpdateValsetAttester(&k, logger, q, params).Execute(cacheCtx)
 	case *types.Message_SubmitLogicCall:
-		return newSubmitLogicCallAttester(&k, logger, params).Execute(ctx1)
+		return newSubmitLogicCallAttester(&k, logger, params).Execute(cacheCtx)
 	}
 
 	return nil

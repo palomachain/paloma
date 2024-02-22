@@ -175,10 +175,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	if sdkCtx.BlockHeight()%cUpdateUptimeBlockInterval == 0 {
 		am.keeper.PurgeRelayMetrics(ctx)
 		am.keeper.UpdateRelayMetrics(ctx)
-		err := am.keeper.UpdateUptime(ctx)
-		if err != nil {
-			return err
-		}
+		am.keeper.UpdateUptime(ctx)
 	}
 
 	return nil

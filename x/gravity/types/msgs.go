@@ -286,16 +286,6 @@ func (msg *MsgCancelSendToEth) Route() string { return RouterKey }
 // Type should return the action
 func (msg *MsgCancelSendToEth) Type() string { return "cancel_send_to_eth" }
 
-// ValidateBasic performs stateless checks
-func (msg *MsgCancelSendToEth) ValidateBasic() (err error) {
-	return libmeta.ValidateBasic(msg)
-}
-
-// GetSignBytes encodes the message for signing
-func (msg *MsgCancelSendToEth) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
 // GetSigners defines whose signature is required
 func (msg *MsgCancelSendToEth) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(msg)

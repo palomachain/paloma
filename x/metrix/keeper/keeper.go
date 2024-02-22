@@ -344,11 +344,11 @@ func (k *Keeper) UpdateRelayMetrics(ctx context.Context) {
 	logger.Debug("Updating relay metrics finished!")
 }
 
-func (k *Keeper) UpdateUptime(ctx context.Context) error {
+func (k *Keeper) UpdateUptime(ctx context.Context) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	window, err := k.slashing.SignedBlocksWindow(ctx)
 	if err != nil {
-		return err
+		k.Logger(sdkCtx).With("Err", err).Error("Error while getting the SignedBlocksWindow")
 	}
 	logger := liblog.FromSDKLogger(k.Logger(sdkCtx)).WithComponent("metrix.UpdateUptime").WithFields("signed-blocks-window", window)
 	logger.Debug("Running uptime update loop.")
@@ -363,7 +363,7 @@ func (k *Keeper) UpdateUptime(ctx context.Context) error {
 		return false
 	})
 	if err != nil {
-		return err
+		k.Logger(sdkCtx).With("err", err).Error("Error while IteratingValidators")
 	}
 
 	err = k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
@@ -384,18 +384,15 @@ func (k *Keeper) UpdateUptime(ctx context.Context) error {
 			WithFields(
 				"missed-blocks-counter", info.MissedBlocksCounter,
 				"uptime", uptime,
-				"is-jailed", isJailed,
-				"uptime", uptime,
 				"is-jailed", isJailed).
 			Debug("Calculated uptime, updating record.")
 		k.updateRecord(ctx, bz, recordPatch{uptime: &uptime})
 		return false
 	})
 	if err != nil {
-		return err
+		k.Logger(sdkCtx).With("err", err).Error("Error while IterateValidatorSigningInfos")
 	}
 	logger.Debug("Updating uptime finished!")
-	return nil
 }
 
 type recordPatch struct {

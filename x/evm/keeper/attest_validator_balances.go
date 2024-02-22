@@ -21,7 +21,7 @@ func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer,
 		return nil
 	}
 
-	ctx, writeCache := sdkCtx.CacheContext()
+	cacheCtx, writeCache := sdkCtx.CacheContext()
 	defer func() {
 		if retErr == nil {
 			writeCache()
@@ -35,7 +35,7 @@ func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer,
 
 	request := consensusMsg.(*types.ValidatorBalancesAttestation)
 
-	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
+	evidence, err := k.findEvidenceThatWon(cacheCtx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			return nil
@@ -46,7 +46,7 @@ func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer,
 	defer func() {
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
-		if err := q.Remove(sdkCtx, msg.GetId()); err != nil {
+		if err := q.Remove(cacheCtx, msg.GetId()); err != nil {
 			k.Logger(sdkCtx).Error("error removing message, attestValidatorBalances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
 		}
 	}()
@@ -62,7 +62,7 @@ func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer,
 		return err
 	}
 
-	return k.processValidatorBalanceProof(sdkCtx, request, evidence, chainReferenceID, minBalance)
+	return k.processValidatorBalanceProof(cacheCtx, request, evidence, chainReferenceID, minBalance)
 }
 
 func (k Keeper) processValidatorBalanceProof(
