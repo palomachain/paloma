@@ -562,7 +562,7 @@ func (k Keeper) Jail(_ctx context.Context, valAddr sdk.ValAddress, reason string
 	jailTime := ctx.BlockTime()
 	val, err := k.staking.Validator(ctx, valAddr)
 	if err != nil {
-		return ErrValidatorWithAddrNotFound.Format(valAddr)
+		return whoops.Errorf(err.Error()).Format()
 	}
 	if val == nil {
 		return ErrValidatorWithAddrNotFound.Format(valAddr)
@@ -721,7 +721,6 @@ func (k Keeper) _externalChainInfoStore(ctx context.Context) storetypes.KVStore 
 
 func (k Keeper) snapshotStore(ctx context.Context) storetypes.KVStore {
 	store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
-	k.Logger(ctx).Debug("snapshot store", "store-key-name", "store-key-string", k.storeKey)
 	return prefix.NewStore(store, []byte("snapshot"))
 }
 

@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	ErrValidatorWithAddrNotFound   = whoops.Errorf("validator with addr %s was not found")
+	ErrValidatorWithAddrNotFound   = whoops.Errorf("validator does not exist")
 	ErrValidatorNotInKeepAlive     = whoops.Errorf("validator is not in keep alive store %s")
 	ErrMaxNumberOfExternalAccounts = whoops.Errorf("trying to submit %d accounts while the limit is %d")
 	ErrValidatorCannotBePigeon     = whoops.Errorf("validator %s cannot be a pigeon")
