@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 	. "github.com/onsi/ginkgo/v2"
@@ -32,6 +33,7 @@ var _ = Describe("jailing validators", func() {
 			val, err := a.valsetKeeper.AddressCodec.StringToBytes(validators[0].GetOperator())
 			Expect(err).To(BeNil())
 			err1 := a.valsetKeeper.Jail(ctx, val, "i am bored")
+			err1 = whoops.Errorf(err1.Error()).Format()
 			Expect(err1).To(MatchError(keeper.ErrValidatorWithAddrNotFound))
 		})
 	})
