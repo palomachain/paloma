@@ -243,11 +243,6 @@ func (msg *MsgBatchSendToEthClaim) ClaimHash() ([]byte, error) {
 	return tmhash.Sum([]byte(path)), nil
 }
 
-// GetSignBytes encodes the message for signing
-func (msg MsgBatchSendToEthClaim) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
 func (msg MsgBatchSendToEthClaim) GetClaimer() sdk.AccAddress {
 	err := msg.ValidateBasic()
 	if err != nil {
