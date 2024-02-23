@@ -348,7 +348,7 @@ func (k *Keeper) UpdateUptime(ctx context.Context) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	window, err := k.slashing.SignedBlocksWindow(ctx)
 	if err != nil {
-		k.Logger(sdkCtx).With("Err", err).Error("Error while getting the SignedBlocksWindow")
+		liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error while getting the SignedBlocksWindow")
 	}
 	logger := liblog.FromSDKLogger(k.Logger(sdkCtx)).WithComponent("metrix.UpdateUptime").WithFields("signed-blocks-window", window)
 	logger.Debug("Running uptime update loop.")
@@ -363,7 +363,7 @@ func (k *Keeper) UpdateUptime(ctx context.Context) {
 		return false
 	})
 	if err != nil {
-		k.Logger(sdkCtx).With("err", err).Error("Error while IteratingValidators")
+		liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error while IteratingValidators")
 	}
 
 	err = k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
@@ -390,7 +390,7 @@ func (k *Keeper) UpdateUptime(ctx context.Context) {
 		return false
 	})
 	if err != nil {
-		k.Logger(sdkCtx).With("err", err).Error("Error while IterateValidatorSigningInfos")
+		liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error while IterateValidatorSigningInfos")
 	}
 	logger.Debug("Updating uptime finished!")
 }
