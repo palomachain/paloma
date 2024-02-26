@@ -47,6 +47,7 @@ func (m *mock) Warn(msg string, keyvals ...any) {
 	m.args = append(m.args, msg)
 	m.args = append(m.args, keyvals...)
 }
+
 func Test_Liblog(t *testing.T) {
 	testErr := fmt.Errorf("Romanes eunt domus")
 	for _, tt := range []struct {
