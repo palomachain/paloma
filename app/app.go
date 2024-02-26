@@ -758,7 +758,7 @@ func New(
 	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
-	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper)
+	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper, app.GetSubspace(gravitymoduletypes.ModuleName))
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	metrixModule := metrix.NewAppModule(appCodec, app.MetrixKeeper)
 
@@ -1188,7 +1188,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
-	paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
+	paramsKeeper.Subspace(gravitymoduletypes.ModuleName).WithKeyTable(gravitymoduletypes.ParamKeyTable())
 	paramsKeeper.Subspace(metrixmoduletypes.ModuleName)
 
 	paramsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)

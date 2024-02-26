@@ -224,4 +224,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		// configure store loader that checks if version == upgradeHeight and applies store upgrades
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
+	app.UpgradeKeeper.SetUpgradeHandler("v0.50-upgrade", func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		return app.ModuleManager.RunMigrations(ctx, app.configurator, fromVM)
+	})
 }

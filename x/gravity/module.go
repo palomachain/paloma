@@ -120,11 +120,13 @@ func NewAppModule(
 	cdc codec.Codec,
 	k keeper.Keeper,
 	bankKeeper bankkeeper.Keeper,
+	ss exported.Subspace,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
 		keeper:         k,
 		bankKeeper:     bankKeeper,
+		legacySubspace: ss,
 	}
 }
 
