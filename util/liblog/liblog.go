@@ -59,3 +59,7 @@ func (l *lgwr) WithValidator(v string) Logr {
 func (l *lgwr) WithError(err error) Logr {
 	return l.WithFields("error", err)
 }
+
+func (l *lgwr) Warn(msg string, keyvals ...any) {
+	l.l.Warn(msg)
+}

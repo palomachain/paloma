@@ -42,6 +42,11 @@ func (m *mock) With(keyvals ...interface{}) log.Logger {
 	return m
 }
 
+func (m *mock) Warn(msg string, keyvals ...any) {
+	m.invocations = append(m.invocations, "Warn")
+	m.args = append(m.args, msg)
+	m.args = append(m.args, keyvals...)
+}
 func Test_Liblog(t *testing.T) {
 	testErr := fmt.Errorf("Romanes eunt domus")
 	for _, tt := range []struct {
