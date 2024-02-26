@@ -16,6 +16,7 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/palomachain/paloma/x/gravity/client/cli"
+	"github.com/palomachain/paloma/x/gravity/exported"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/spf13/cobra"
@@ -103,12 +104,15 @@ type AppModule struct {
 	AppModuleBasic
 	keeper     keeper.Keeper
 	bankKeeper bankkeeper.Keeper
+
+	// legacySubspace is used solely for migration of x/gravity managed parameters
+	legacySubspace exported.Subspace
 }
 
 func (m AppModule) IsOnePerModuleType() {}
 func (m AppModule) IsAppModule()        {}
 func (am AppModule) ConsensusVersion() uint64 {
-	return 4
+	return 5
 }
 
 // NewAppModule creates a new AppModule Object
@@ -139,6 +143,11 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	m := keeper.NewMigrator(&am.keeper, am.legacySubspace)
+	if err := cfg.RegisterMigration(types.ModuleName, 4, m.Migrate4to5); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 4 to 5: %v", types.ModuleName, err))
+	}
+
 }
 
 // InitGenesis initializes the genesis state for this module and implements app module.

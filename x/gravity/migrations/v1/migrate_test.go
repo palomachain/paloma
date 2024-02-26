@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	st "cosmossdk.io/store/types"
-	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/exported"
@@ -30,18 +29,16 @@ func TestMigration(t *testing.T) {
 	encCfg := keeper.MakeTestEncodingConfig()
 	cdc := encCfg.Codec
 	storeKey := st.NewKVStoreKey(types.ModuleName)
-	storeService := runtime.NewKVStoreService(storeKey)
-
 	tkey := st.NewTransientStoreKey("test")
 	ctx := testutil.DefaultContext(storeKey, tkey)
-	store := storeService.OpenKVStore(ctx)
+
 	b := types.DefaultParams()
+	store := ctx.KVStore(storeKey)
 	legacySubspace := newMockSubspace(*b)
-	require.NoError(t, v1.MigrateParams(ctx, storeService, legacySubspace, cdc))
+	require.NoError(t, v1.MigrateParams(ctx, store, legacySubspace, cdc))
 
 	var res types.Params
-	bz, err := store.Get(types.ParamsKey)
-	require.NoError(t, err)
+	bz := store.Get(types.ParamsKey)
 	require.NoError(t, cdc.Unmarshal(bz, &res))
 	require.Equal(t, legacySubspace.ps, res)
 }

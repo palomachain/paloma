@@ -356,12 +356,13 @@ func New(
 	}
 
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
+	authorityAddress := authtypes.NewModuleAddress(govtypes.ModuleName).String()
 
 	// set the BaseApp's parameter store
 	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 		runtime.EventService{},
 	)
 	bApp.SetParamStore(app.ConsensusParamsKeeper.ParamsStore)
@@ -388,14 +389,14 @@ func New(
 		maccPerms,
 		authcodec.NewBech32Codec(chainparams.AccountAddressPrefix),
 		chainparams.AccountAddressPrefix,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		app.AccountKeeper,
 		BlockedAddresses(),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 		logger,
 	)
 	app.StakingKeeper = stakingkeeper.NewKeeper(
@@ -403,7 +404,7 @@ func New(
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
 		authcodec.NewBech32Codec(chainparams.ConsNodeAddressPrefix),
 	)
@@ -413,7 +414,7 @@ func New(
 		app.StakingKeeper, app.AccountKeeper,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 	)
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec,
@@ -422,14 +423,14 @@ func New(
 		app.BankKeeper,
 		app.StakingKeeper,
 		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 	)
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec,
 		legacyAmino,
 		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
 		app.StakingKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 	)
 
 	app.invCheckPeriod = cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod))
@@ -439,7 +440,7 @@ func New(
 		app.invCheckPeriod,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 		app.AccountKeeper.AddressCodec(),
 	)
 
@@ -459,7 +460,7 @@ func New(
 		appCodec,
 		homePath,
 		app.BaseApp,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 	)
 
 	app.IBCKeeper = ibckeeper.NewKeeper(
@@ -469,7 +470,7 @@ func New(
 		app.StakingKeeper,
 		app.UpgradeKeeper,
 		scopedIBCKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 	)
 	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(
 		appCodec,
@@ -490,7 +491,7 @@ func New(
 		app.AccountKeeper,
 		app.BankKeeper,
 		scopedTransferKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 	)
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
 		appCodec,
@@ -502,7 +503,7 @@ func New(
 		app.AccountKeeper,
 		scopedICAHostKeeper,
 		app.MsgServiceRouter(),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 	)
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec,
@@ -513,7 +514,7 @@ func New(
 		app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper,
 		app.MsgServiceRouter(),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 	)
 
 	semverVersion := app.Version()
@@ -581,7 +582,7 @@ func New(
 		app.TransferKeeper,
 		app.EvmKeeper,
 		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
 	)
 	// TODO: Use proper dependency resolution instead of
@@ -656,7 +657,7 @@ func New(
 		app.DistrKeeper,
 		app.MsgServiceRouter(),
 		govtypes.Config{},
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 	)
 
 	// set legacy router for backwards compatibility with gov v1beta1
@@ -691,7 +692,7 @@ func New(
 		wasmDir,
 		wasmConfig,
 		wasmAvailableCapabilities,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authorityAddress,
 		wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 			return wasmkeeper.NewMessageHandlerChain(
 				old,

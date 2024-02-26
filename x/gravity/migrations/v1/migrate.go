@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"cosmossdk.io/core/store"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/exported"
@@ -12,11 +12,10 @@ import (
 
 func MigrateParams(
 	ctx sdk.Context,
-	storeService store.KVStoreService,
+	store storetypes.KVStore,
 	subspace exported.Subspace,
 	cdc codec.BinaryCodec,
 ) error {
-	store := storeService.OpenKVStore(ctx)
 	var currParams types.Params
 	subspace.GetParamSet(ctx, &currParams)
 	if err := currParams.ValidateBasic(); err != nil {
@@ -26,5 +25,6 @@ func MigrateParams(
 	if err != nil {
 		return err
 	}
-	return store.Set(types.ParamsKey, bz)
+	store.Set(types.ParamsKey, bz)
+	return nil
 }
