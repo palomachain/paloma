@@ -1,0 +1,77 @@
+syntax = "proto3";
+package palomachain.paloma.gravity;
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/palomachain/paloma/x/gravity/types";
+
+// Params represent the Gravity genesis and store parameters
+// contract_hash:
+// the code hash of a known good version of the Gravity contract
+// solidity code. This can be used to verify the correct version
+// of the contract has been deployed. This is a reference value for
+// governance action only it is never read by any Gravity code
+//
+// bridge_ethereum_address:
+// is address of the bridge contract on the Ethereum side, this is a
+// reference value for governance only and is not actually used by any
+// Gravity code
+//
+// bridge_chain_id:
+// the unique identifier of the Ethereum chain, this is a reference value
+// only and is not actually used by any Gravity code
+//
+// These reference values may be used by future Gravity client implementations
+// to allow for safety features or convenience features like the Gravity address
+// in your relayer. A relayer would require a configured Gravity address if
+// governance had not set the address on the chain it was relaying for.
+//
+// signed_batches_window
+// signed_claims_window
+//
+// These values represent the time in blocks that a validator has to submit
+// a signature for a batch, or to submit a claim for a particular
+// attestation nonce. In the case of attestations this clock starts when the
+// attestation is created, but only allows for slashing once the event has
+// passed
+//
+// target_batch_timeout:
+//
+// This is the 'target' value for when batches time out, this is a target
+// because Ethereum is a probabilistic chain and you can't say for sure what the
+// block frequency is ahead of time.
+//
+// average_block_time
+// average_ethereum_block_time
+
+// These values are the average Cosmos block time and Ethereum block time
+// repsectively and they are used to compute what the target batch timeout is.
+// It is important that governance updates these in case of any major, prolonged
+// change in the time it takes to produce a block
+
+// slash_fraction_batch
+// slash_fraction_claim
+// slash_fraction_conflicting_claim
+
+// The slashing fractions for the various gravity related slashing conditions.
+// The first three refer to not submitting a particular message, the third for
+// submitting a different claim for the same Ethereum event
+message Params {
+  option (gogoproto.stringer) = false;
+
+  string contract_source_hash = 1;
+  string bridge_ethereum_address = 2;
+  uint64 bridge_chain_id = 3;
+  uint64 signed_batches_window = 4;
+  uint64 target_batch_timeout = 5;
+  uint64 average_block_time = 6;
+  uint64 average_ethereum_block_time = 7;
+  bytes slash_fraction_batch = 8 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  bytes slash_fraction_bad_eth_signature = 9 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}

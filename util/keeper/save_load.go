@@ -3,11 +3,11 @@ package keeper
 import (
 	"reflect"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/gogoproto/proto"
 )
 
-func Save(store sdk.KVStore, pm ProtoMarshaler, key []byte, val codec.ProtoMarshaler) error {
+func Save(store storetypes.KVStore, pm ProtoMarshaler, key []byte, val proto.Message) error {
 	bytez, err := pm.Marshal(val)
 	if err != nil {
 		return err
@@ -16,7 +16,7 @@ func Save(store sdk.KVStore, pm ProtoMarshaler, key []byte, val codec.ProtoMarsh
 	return nil
 }
 
-func Load[T codec.ProtoMarshaler](store sdk.KVStore, pu ProtoUnmarshaler, key []byte) (T, error) {
+func Load[T proto.Message](store storetypes.KVStore, pu ProtoUnmarshaler, key []byte) (T, error) {
 	var val T
 	if key == nil {
 		return val, ErrNotFound.Format(val, key)

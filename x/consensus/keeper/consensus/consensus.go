@@ -2,12 +2,14 @@ package consensus
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
 	"cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
@@ -17,13 +19,6 @@ import (
 var _ Queuer = Queue{}
 
 type ConsensusMsg = types.ConsensusMsg
-
-type codecMarshaler interface {
-	types.AnyUnpacker
-	MarshalInterface(i proto.Message) ([]byte, error)
-	UnmarshalInterface(bz []byte, ptr interface{}) error
-	Unmarshal(bz []byte, ptr codec.ProtoMarshaler) error
-}
 
 // Queue is a database storing messages that need to be signed.
 type Queue struct {
@@ -35,7 +30,7 @@ type QueueOptions struct {
 	QueueTypeName         string
 	Sg                    keeperutil.StoreGetter
 	Ider                  keeperutil.IDGenerator
-	Cdc                   codecMarshaler
+	Cdc                   codec.BinaryCodec
 	TypeCheck             types.TypeChecker
 	BytesToSignCalculator types.BytesToSignFunc
 	VerifySignature       types.VerifySignatureFunc
@@ -127,7 +122,8 @@ func NewQueue(qo QueueOptions) Queue {
 }
 
 // Put puts raw message into a signing queue.
-func (c Queue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
+func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	requireSignatures := true
 	var publicAccessData *types.PublicAccessData
 
@@ -142,7 +138,7 @@ func (c Queue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) (uint64,
 	if !c.qo.TypeCheck(msg) {
 		return 0, ErrIncorrectMessageType.Format(msg)
 	}
-	newID := c.qo.Ider.IncrementNextID(ctx, consensusQueueIDCounterKey)
+	newID := c.qo.Ider.IncrementNextID(sdkCtx, consensusQueueIDCounterKey)
 	// just so it's clear that nonce is an actual ID
 	nonce := newID
 	anyMsg, err := codectypes.NewAnyWithValue(msg)
@@ -153,24 +149,25 @@ func (c Queue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) (uint64,
 		Id:                 newID,
 		Msg:                anyMsg,
 		SignData:           []*types.SignData{},
-		AddedAtBlockHeight: ctx.BlockHeight(),
-		AddedAt:            ctx.BlockTime(),
+		AddedAtBlockHeight: sdkCtx.BlockHeight(),
+		AddedAt:            sdkCtx.BlockTime(),
 		RequireSignatures:  requireSignatures,
 		PublicAccessData:   publicAccessData,
 		BytesToSign: c.qo.BytesToSignCalculator(msg, types.Salt{
 			Nonce: nonce,
 		}),
 	}
-	if err := c.save(ctx, queuedMsg); err != nil {
+	if err := c.save(sdkCtx, queuedMsg); err != nil {
 		return 0, err
 	}
 	return newID, nil
 }
 
 // getAll returns all messages from a signing queu
-func (c Queue) GetAll(ctx sdk.Context) ([]types.QueuedSignedMessageI, error) {
+func (c Queue) GetAll(ctx context.Context) ([]types.QueuedSignedMessageI, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	var msgs []types.QueuedSignedMessageI
-	queue := c.queue(ctx)
+	queue := c.queue(sdkCtx)
 	iterator := queue.Iterator(nil, nil)
 	defer iterator.Close()
 
@@ -188,15 +185,16 @@ func (c Queue) GetAll(ctx sdk.Context) ([]types.QueuedSignedMessageI, error) {
 	return msgs, nil
 }
 
-func (c Queue) AddEvidence(ctx sdk.Context, msgID uint64, evidence *types.Evidence) error {
-	msg, err := c.GetMsgByID(ctx, msgID)
+func (c Queue) AddEvidence(ctx context.Context, msgID uint64, evidence *types.Evidence) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
 	}
 
 	msg.AddEvidence(*evidence)
 
-	return c.save(ctx, msg)
+	return c.save(sdkCtx, msg)
 }
 
 type assignableMessage interface {
@@ -214,15 +212,15 @@ func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) erro
 	if err := c.qo.Cdc.UnpackAny(imsg.GetMsg(), &m); err != nil {
 		return err
 	}
-
 	assignable, ok := m.(assignableMessage)
 	if !ok {
 		return fmt.Errorf("message does not support setting assignee")
 	}
 	assignable.SetAssignee(ctx, val)
-
+	var a proto.Message
+	a = assignable
 	msg := imsg.(*types.QueuedSignedMessage)
-	anyMsg, err := codectypes.NewAnyWithValue(assignable)
+	anyMsg, err := codectypes.NewAnyWithValue(a)
 	if err != nil {
 		return err
 	}
@@ -233,8 +231,9 @@ func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) erro
 }
 
 // SetPublicAccessData sets data that should be visible publically so that other can provide proofs.
-func (c Queue) SetPublicAccessData(ctx sdk.Context, msgID uint64, data *types.PublicAccessData) error {
-	msg, err := c.GetMsgByID(ctx, msgID)
+func (c Queue) SetPublicAccessData(ctx context.Context, msgID uint64, data *types.PublicAccessData) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
 	}
@@ -244,13 +243,14 @@ func (c Queue) SetPublicAccessData(ctx sdk.Context, msgID uint64, data *types.Pu
 	}
 
 	msg.SetPublicAccessData(data)
-	msg.SetHandledAtBlockHeight(math.NewInt(ctx.BlockHeight()))
+	msg.SetHandledAtBlockHeight(math.NewInt(sdkCtx.BlockHeight()))
 
-	return c.save(ctx, msg)
+	return c.save(sdkCtx, msg)
 }
 
-func (c Queue) GetPublicAccessData(ctx sdk.Context, msgID uint64) (*types.PublicAccessData, error) {
-	msg, err := c.GetMsgByID(ctx, msgID)
+func (c Queue) GetPublicAccessData(ctx context.Context, msgID uint64) (*types.PublicAccessData, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return nil, err
 	}
@@ -258,8 +258,9 @@ func (c Queue) GetPublicAccessData(ctx sdk.Context, msgID uint64) (*types.Public
 	return msg.GetPublicAccessData(), nil
 }
 
-func (c Queue) SetErrorData(ctx sdk.Context, msgID uint64, data *types.ErrorData) error {
-	msg, err := c.GetMsgByID(ctx, msgID)
+func (c Queue) SetErrorData(ctx context.Context, msgID uint64, data *types.ErrorData) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
 	}
@@ -269,13 +270,14 @@ func (c Queue) SetErrorData(ctx sdk.Context, msgID uint64, data *types.ErrorData
 	}
 
 	msg.SetErrorData(data)
-	msg.SetHandledAtBlockHeight(math.NewInt(ctx.BlockHeight()))
+	msg.SetHandledAtBlockHeight(math.NewInt(sdkCtx.BlockHeight()))
 
-	return c.save(ctx, msg)
+	return c.save(sdkCtx, msg)
 }
 
-func (c Queue) GetErrorData(ctx sdk.Context, msgID uint64) (*types.ErrorData, error) {
-	msg, err := c.GetMsgByID(ctx, msgID)
+func (c Queue) GetErrorData(ctx context.Context, msgID uint64) (*types.ErrorData, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return nil, err
 	}
@@ -284,8 +286,9 @@ func (c Queue) GetErrorData(ctx sdk.Context, msgID uint64) (*types.ErrorData, er
 }
 
 // AddSignature adds a signature to the message and checks if the signature is valid.
-func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignData) error {
-	msg, err := c.GetMsgByID(ctx, msgID)
+func (c Queue) AddSignature(ctx context.Context, msgID uint64, signData *types.SignData) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
 	}
@@ -307,19 +310,20 @@ func (c Queue) AddSignature(ctx sdk.Context, msgID uint64, signData *types.SignD
 
 	msg.AddSignData(signData)
 
-	return c.save(ctx, msg)
+	return c.save(sdkCtx, msg)
 }
 
 // remove removes the message from the queue.
-func (c Queue) Remove(ctx sdk.Context, msgID uint64) error {
-	_, err := c.GetMsgByID(ctx, msgID)
+func (c Queue) Remove(ctx context.Context, msgID uint64) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	_, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
 	}
-	queue := c.queue(ctx)
+	queue := c.queue(sdkCtx)
 	queue.Delete(sdk.Uint64ToBigEndian(msgID))
 
-	keeperutil.EmitEvent(keeperutil.ModuleNameFunc(types.ModuleName), ctx, types.ItemRemovedEventKey,
+	keeperutil.EmitEvent(keeperutil.ModuleNameFunc(types.ModuleName), sdkCtx, types.ItemRemovedEventKey,
 		types.ItemRemovedEventID.With(fmt.Sprintf("%d", msgID)),
 		types.ItemRemovedChainReferenceID.With(c.qo.ChainReferenceID),
 	)
@@ -327,8 +331,9 @@ func (c Queue) Remove(ctx sdk.Context, msgID uint64) error {
 }
 
 // getMsgByID given a message ID, it returns the message
-func (c Queue) GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error) {
-	queue := c.queue(ctx)
+func (c Queue) GetMsgByID(ctx context.Context, id uint64) (types.QueuedSignedMessageI, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	queue := c.queue(sdkCtx)
 	data := queue.Get(sdk.Uint64ToBigEndian(id))
 
 	if data == nil {
@@ -344,7 +349,7 @@ func (c Queue) GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessage
 }
 
 // save saves the message into the queue
-func (c Queue) save(ctx sdk.Context, msg types.QueuedSignedMessageI) error {
+func (c Queue) save(ctx context.Context, msg types.QueuedSignedMessageI) error {
 	if msg.GetId() == 0 {
 		return ErrUnableToSaveMessageWithoutID
 	}
@@ -357,8 +362,9 @@ func (c Queue) save(ctx sdk.Context, msg types.QueuedSignedMessageI) error {
 }
 
 // queue is a simple helper function to return the queue store
-func (c Queue) queue(ctx sdk.Context) prefix.Store {
-	store := c.qo.Sg.Store(ctx)
+func (c Queue) queue(ctx context.Context) prefix.Store {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	store := c.qo.Sg.Store(sdkCtx)
 	return prefix.NewStore(store, []byte(c.signingQueueKey()))
 }
 
@@ -374,13 +380,14 @@ func (c Queue) ChainInfo() (types.ChainType, string) {
 	return c.qo.ChainType, c.qo.ChainReferenceID
 }
 
-func RemoveQueueCompletely(ctx sdk.Context, cq Queuer) {
-	var store sdk.KVStore
+func RemoveQueueCompletely(ctx context.Context, cq Queuer) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	var store storetypes.KVStore
 	switch typ := cq.(type) {
 	case Queue:
-		store = typ.queue(ctx)
+		store = typ.queue(sdkCtx)
 	case BatchQueue:
-		store = typ.batchQueue(ctx)
+		store = typ.batchQueue(sdkCtx)
 	default:
 		panic("cq type is unknown!")
 	}

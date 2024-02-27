@@ -9,6 +9,6 @@ option go_package = "github.com/palomachain/paloma/x/treasury/types";
 
 // GenesisState defines the treasury module's genesis state.
 message GenesisState {
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
   Fees treasuryFees = 2;
 }

@@ -17,7 +17,11 @@ func (k Keeper) GetValidatorJailReason(goCtx context.Context, req *types.QueryGe
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if !k.IsJailed(ctx, req.GetValAddress()) {
+	jailed, err := k.IsJailed(ctx, req.GetValAddress())
+	if err != nil {
+		return nil, err
+	}
+	if !jailed {
 		return nil, whoops.String("validator is not jailed")
 	}
 

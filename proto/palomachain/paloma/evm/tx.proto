@@ -2,32 +2,40 @@ syntax = "proto3";
 package palomachain.paloma.evm;
 
 import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
 import "palomachain/paloma/valset/common.proto";
-
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 service Msg {
-    rpc DeployNewSmartContract(MsgDeployNewSmartContractRequest) returns (DeployNewSmartContractResponse);
-    rpc RemoveSmartContractDeployment(MsgRemoveSmartContractDeploymentRequest) returns (RemoveSmartContractDeploymentResponse);
+  rpc DeployNewSmartContract(MsgDeployNewSmartContractRequest)
+      returns (DeployNewSmartContractResponse);
+  rpc RemoveSmartContractDeployment(MsgRemoveSmartContractDeploymentRequest)
+      returns (RemoveSmartContractDeploymentResponse);
 }
 
 message MsgDeployNewSmartContractRequest {
-  string creator = 1 [deprecated = true];
+  option (cosmos.msg.v1.signer) = "metadata";
+  reserved 1;  
+  reserved "creator";
   string title = 2;
   string description = 3;
-  
-  string abiJSON = 4; 
-  string bytecodeHex = 5; 
 
-  palomachain.paloma.valset.MsgMetadata metadata = 6 [(gogoproto.nullable) = false];
+  string abiJSON = 4;
+  string bytecodeHex = 5;
+
+  palomachain.paloma.valset.MsgMetadata metadata = 6
+      [ (gogoproto.nullable) = false ];
 }
 message DeployNewSmartContractResponse {}
 
 message MsgRemoveSmartContractDeploymentRequest {
-  string Sender = 1 [deprecated = true];
+  option (cosmos.msg.v1.signer) = "metadata";
+  reserved 1;  
+  reserved "Sender";
   uint64 smartContractID = 2;
   string chainReferenceID = 3;
 
-  palomachain.paloma.valset.MsgMetadata metadata = 4 [(gogoproto.nullable) = false];
+  palomachain.paloma.valset.MsgMetadata metadata = 4
+      [ (gogoproto.nullable) = false ];
 }
 message RemoveSmartContractDeploymentResponse {}

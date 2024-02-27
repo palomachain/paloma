@@ -49,32 +49,26 @@ message QueryParamsRequest {}
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
 message QueryGetValsetByIDRequest {
-  uint64 valsetID         = 1;
+  uint64 valsetID = 1;
   string chainReferenceID = 2;
 }
 
-message QueryGetValsetByIDResponse {
-  Valset valset = 1;
-}
+message QueryGetValsetByIDResponse { Valset valset = 1; }
 
 message QueryChainsInfosRequest {}
 
-message QueryChainsInfosResponse {
-  repeated ChainInfo chainsInfos = 1;
-}
+message QueryChainsInfosResponse { repeated ChainInfo chainsInfos = 1; }
 
-message QueryGetSmartContractRequest {
-  uint64 smartContractID = 1;
-}
+message QueryGetSmartContractRequest { uint64 smartContractID = 1; }
 
 message QueryGetSmartContractResponse {
-  uint64 ID       = 1;
-  string abi      = 2;
-  bytes  bytecode = 3;
+  uint64 ID = 1;
+  string abi = 2;
+  bytes bytecode = 3;
 }
 
 message QueryGetSmartContractDeploymentsRequest {}

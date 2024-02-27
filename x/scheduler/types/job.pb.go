@@ -29,7 +29,8 @@ type Job struct {
 	ID      string                                        `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	Owner   github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,2,opt,name=owner,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"owner,omitempty"`
 	Routing Routing                                       `protobuf:"bytes,3,opt,name=routing,proto3" json:"routing"`
-	// this is the job definition. It is something arbitrary as it's different for every chain.
+	// this is the job definition. It is something arbitrary as it's different for
+	// every chain.
 	Definition []byte `protobuf:"bytes,5,opt,name=definition,proto3" json:"definition,omitempty"`
 	// this is the payload for the job
 	Payload             []byte      `protobuf:"bytes,6,opt,name=payload,proto3" json:"payload,omitempty"`
@@ -345,8 +346,9 @@ func (m *Permissions) GetBlacklist() []*Runner {
 	return nil
 }
 
-// Runner defines an actor that runs the job. It can be a smart contract from any other
-// external chain, a direct user on paloma, a smart contract in paloma, etc,...
+// Runner defines an actor that runs the job. It can be a smart contract from
+// any other external chain, a direct user on paloma, a smart contract in
+// paloma, etc,...
 type Runner struct {
 	ChainType        string `protobuf:"bytes,1,opt,name=chainType,proto3" json:"chainType,omitempty"`
 	ChainReferenceID string `protobuf:"bytes,2,opt,name=chainReferenceID,proto3" json:"chainReferenceID,omitempty"`

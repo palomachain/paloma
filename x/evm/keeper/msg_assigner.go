@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"math"
 	"sort"
@@ -212,9 +213,9 @@ func rankValidators(validatorsInfos map[string]ValidatorInfo, relayWeights types
 	return ranked
 }
 
-func pickValidator(ctx sdk.Context, validatorsInfos map[string]ValidatorInfo, weights types.RelayWeightsFloat64) string {
+func pickValidator(ctx context.Context, validatorsInfos map[string]ValidatorInfo, weights types.RelayWeightsFloat64) string {
 	scored := rankValidators(validatorsInfos, weights)
-
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	highScore := 0
 	var highScorers []string
 
@@ -231,10 +232,10 @@ func pickValidator(ctx sdk.Context, validatorsInfos map[string]ValidatorInfo, we
 
 	// All else equal, grab one of our high scorers, but not always the same one
 	sort.Strings(highScorers)
-	return highScorers[int(ctx.BlockHeight())%len(highScorers)]
+	return highScorers[int(sdkCtx.BlockHeight())%len(highScorers)]
 }
 
-func (ma MsgAssigner) PickValidatorForMessage(ctx sdk.Context, weights *types.RelayWeights, chainID string, req *xchain.JobRequirements) (string, error) {
+func (ma MsgAssigner) PickValidatorForMessage(ctx context.Context, weights *types.RelayWeights, chainID string, req *xchain.JobRequirements) (string, error) {
 	currentSnapshot, err := ma.ValsetKeeper.GetCurrentSnapshot(ctx)
 	if err != nil {
 		return "", err

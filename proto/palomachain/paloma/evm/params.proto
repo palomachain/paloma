@@ -6,7 +6,4 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 // Params defines the parameters for the module.
-message Params {
-  option (gogoproto.goproto_stringer) = false;
-}
-
+message Params {}

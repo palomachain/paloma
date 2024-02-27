@@ -9,9 +9,7 @@ message SimpleMessage {
   string world = 3;
 }
 
-
 message EvenSimplerMessage {
   string sender = 1;
   string boo = 2;
 }
-

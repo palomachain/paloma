@@ -1,9 +1,9 @@
 package keeper
 
 import (
+	"context"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
@@ -14,13 +14,13 @@ import (
 func TestGetLatestPublishedSnapshot(t *testing.T) {
 	testcases := []struct {
 		name          string
-		setup         func(sdk.Context, *Keeper, mockedServices) *types.QueryGetLatestPublishedSnapshotResponse
+		setup         func(context.Context, *Keeper, mockedServices) *types.QueryGetLatestPublishedSnapshotResponse
 		request       *types.QueryGetLatestPublishedSnapshotRequest
 		expectedError error
 	}{
 		{
 			name: "returns the latest published snapshot",
-			setup: func(ctx sdk.Context, k *Keeper, ms mockedServices) *types.QueryGetLatestPublishedSnapshotResponse {
+			setup: func(ctx context.Context, k *Keeper, ms mockedServices) *types.QueryGetLatestPublishedSnapshotResponse {
 				ms.StakingKeeper.On("IterateValidators", mock.Anything, mock.Anything).Return(nil)
 
 				snapshot, err := k.createNewSnapshot(ctx)
@@ -47,7 +47,7 @@ func TestGetLatestPublishedSnapshot(t *testing.T) {
 		},
 		{
 			name: "returns error when no snapshot published",
-			setup: func(ctx sdk.Context, k *Keeper, ms mockedServices) *types.QueryGetLatestPublishedSnapshotResponse {
+			setup: func(ctx context.Context, k *Keeper, ms mockedServices) *types.QueryGetLatestPublishedSnapshotResponse {
 				return nil
 			},
 			request: &types.QueryGetLatestPublishedSnapshotRequest{

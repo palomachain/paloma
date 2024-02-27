@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -9,22 +10,15 @@ import (
 	"strings"
 	"time"
 
-	tmcfg "github.com/cometbft/cometbft/config"
-	tmcli "github.com/cometbft/cometbft/libs/cli"
+	cosmoslog "cosmossdk.io/log"
+	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
-	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/keys"
-	"github.com/cosmos/cosmos-sdk/client/rpc"
-	"github.com/cosmos/cosmos-sdk/client/snapshot"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/palomachain/paloma/app"
 	palomaapp "github.com/palomachain/paloma/app"
 	"github.com/palomachain/paloma/app/params"
@@ -36,7 +30,14 @@ func NewRootCmd() *cobra.Command {
 	// set Bech32 address configuration
 	params.SetAddressConfig()
 
-	encCfg := palomaapp.MakeEncodingConfig()
+	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, db.OptionsMap{})
+	encCfg := params.EncodingConfig{
+		InterfaceRegistry: tempApp.InterfaceRegistry(),
+		Codec:             tempApp.AppCodec(),
+		TxConfig:          tempApp.TxConfig(),
+		Amino:             tempApp.LegacyAmino(),
+	}
+
 	initClientCtx := client.Context{}.
 		WithCodec(encCfg.Codec).
 		WithInterfaceRegistry(encCfg.InterfaceRegistry).
@@ -72,7 +73,7 @@ func NewRootCmd() *cobra.Command {
 			}
 
 			customAppTemplate, customAppConfig := initAppConfig()
-			customTMConfig := initTendermintConfig()
+			customTMConfig := initCometBFTConfig()
 
 			if err := server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customTMConfig); err != nil {
 				return err
@@ -81,12 +82,7 @@ func NewRootCmd() *cobra.Command {
 			return applyForcedConfigOptions(cmd)
 		},
 	}
-
-	ac := appCreator{
-		encCfg:        encCfg,
-		moduleManager: palomaapp.ModuleBasics,
-	}
-	initRootCmd(rootCmd, ac)
+	initRootCmd(rootCmd, encCfg, encCfg.InterfaceRegistry, encCfg, tempApp.BasicModuleManager)
 
 	if err := overwriteFlagDefaults(rootCmd, map[string]string{
 		flags.FlagChainID:        palomaapp.Name,
@@ -124,6 +120,23 @@ func NewRootCmd() *cobra.Command {
 		}
 	}
 
+	// add keyring to autocli opts
+	autoCliOpts := tempApp.AutoCliOpts()
+	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
+	autoCliOpts.Keyring, _ = keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
+	autoCliOpts.ClientCtx = initClientCtx
+	autoCliOpts.AddressCodec = address.Bech32Codec{
+		Bech32Prefix: params.AccountAddressPrefix,
+	}
+	autoCliOpts.ValidatorAddressCodec = address.Bech32Codec{
+		Bech32Prefix: params.ValidatorAddressPrefix,
+	}
+	autoCliOpts.ConsensusAddressCodec = address.Bech32Codec{
+		Bech32Prefix: params.ConsNodeAddressPrefix,
+	}
+	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
+		panic(err)
+	}
 	return rootCmd
 }
 
@@ -146,16 +159,6 @@ func applyForcedConfigOptions(cmd *cobra.Command) error {
 	serverCtx := server.GetServerContextFromCmd(cmd)
 	serverCtx.Config.Consensus.TimeoutCommit = 1 * time.Second
 	return server.SetCmdServerContext(cmd, serverCtx)
-}
-
-func initTendermintConfig() *tmcfg.Config {
-	cfg := tmcfg.DefaultConfig()
-
-	// these values put a higher strain on node memory
-	// cfg.P2P.MaxNumInboundPeers = 100
-	// cfg.P2P.MaxNumOutboundPeers = 40
-
-	return cfg
 }
 
 func rootPreRunE(cmd *cobra.Command, args []string) error {
@@ -183,93 +186,4 @@ func rootPreRunE(cmd *cobra.Command, args []string) error {
 	}()
 
 	return nil
-}
-
-func initRootCmd(rootCmd *cobra.Command, ac appCreator) {
-	rootCmd.AddCommand(
-		genutilcli.InitCmd(ac.moduleManager, palomaapp.DefaultNodeHome),
-		genesisCommand(ac.encCfg),
-		tmcli.NewCompletionCmd(rootCmd, true),
-		debug.Cmd(),
-		config.Cmd(),
-	)
-
-	application := ac.newApp
-	server.AddCommands(rootCmd, palomaapp.DefaultNodeHome, application, ac.appExport, addModuleInitFlags)
-
-	// add keybase, auxiliary RPC, query, and tx child commands
-	rootCmd.AddCommand(
-		rpc.StatusCommand(),
-		queryCommand(ac.moduleManager),
-		txCommand(ac.moduleManager),
-		keys.Commands(palomaapp.DefaultNodeHome),
-	)
-
-	rootCmd.AddCommand(
-		snapshot.Cmd(application),
-	)
-}
-
-// genesisCommand builds genesis-related `palomad genesis` command. Users may provide application specific commands as a parameter
-func genesisCommand(encodingConfig params.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
-	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, palomaapp.ModuleBasics, palomaapp.DefaultNodeHome)
-
-	for _, sub_cmd := range cmds {
-		cmd.AddCommand(sub_cmd)
-	}
-	return cmd
-}
-
-func addModuleInitFlags(startCmd *cobra.Command) {
-	crisis.AddModuleInitFlags(startCmd)
-}
-
-func queryCommand(mm module.BasicManager) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:                        "query",
-		Aliases:                    []string{"q"},
-		Short:                      "Querying subcommands",
-		DisableFlagParsing:         true,
-		SuggestionsMinimumDistance: 2,
-		RunE:                       client.ValidateCmd,
-	}
-
-	cmd.AddCommand(
-		authcmd.GetAccountCmd(),
-		rpc.ValidatorCommand(),
-		rpc.BlockCommand(),
-		authcmd.QueryTxsByEventsCmd(),
-		authcmd.QueryTxCmd(),
-	)
-
-	mm.AddQueryCommands(cmd)
-	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
-
-	return cmd
-}
-
-func txCommand(mm module.BasicManager) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:                        "tx",
-		Short:                      "Transactions sub-commands",
-		DisableFlagParsing:         false,
-		SuggestionsMinimumDistance: 2,
-		RunE:                       client.ValidateCmd,
-	}
-
-	cmd.AddCommand(
-		authcmd.GetSignCommand(),
-		authcmd.GetSignBatchCommand(),
-		authcmd.GetMultiSignCommand(),
-		authcmd.GetMultiSignBatchCmd(),
-		authcmd.GetValidateSignaturesCommand(),
-		authcmd.GetBroadcastCommand(),
-		authcmd.GetEncodeCommand(),
-		authcmd.GetDecodeCommand(),
-	)
-
-	mm.AddTxCommands(cmd)
-	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
-
-	return cmd
 }

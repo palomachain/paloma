@@ -8,17 +8,23 @@ import "palomachain/paloma/valset/common.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/any.proto";
-
+import "cosmos/msg/v1/msg.proto";
+import "palomachain/paloma/gravity/params.proto";
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
 // Msg defines the state transitions possible within gravity
 service Msg {
   rpc SendToEth(MsgSendToEth) returns (MsgSendToEthResponse) {}
   rpc ConfirmBatch(MsgConfirmBatch) returns (MsgConfirmBatchResponse) {}
-  rpc SendToPalomaClaim(MsgSendToPalomaClaim) returns (MsgSendToPalomaClaimResponse) {}
-  rpc BatchSendToEthClaim(MsgBatchSendToEthClaim) returns (MsgBatchSendToEthClaimResponse) {}
-  rpc CancelSendToEth(MsgCancelSendToEth) returns (MsgCancelSendToEthResponse) {}
-  rpc SubmitBadSignatureEvidence(MsgSubmitBadSignatureEvidence) returns (MsgSubmitBadSignatureEvidenceResponse) {}
+  rpc SendToPalomaClaim(MsgSendToPalomaClaim)
+      returns (MsgSendToPalomaClaimResponse) {}
+  rpc BatchSendToEthClaim(MsgBatchSendToEthClaim)
+      returns (MsgBatchSendToEthClaimResponse) {}
+  rpc CancelSendToEth(MsgCancelSendToEth) returns (MsgCancelSendToEthResponse) {
+  }
+  rpc SubmitBadSignatureEvidence(MsgSubmitBadSignatureEvidence)
+      returns (MsgSubmitBadSignatureEvidenceResponse) {}
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 
 // MsgSendToEth
@@ -30,13 +36,14 @@ service Msg {
 // the coin to send across the bridge, note the restriction that this is a
 // single coin not a set of coins that is normal in other Cosmos messages
 message MsgSendToEth {
-  string                   sender   = 1 [deprecated = true];
-  string                   eth_dest = 2;
-  cosmos.base.v1beta1.Coin amount   = 3 [
-    (gogoproto.nullable) = false
-  ];
+  option (cosmos.msg.v1.signer) = "metadata";
+  reserved 1;  
+  reserved "sender";  
+  string eth_dest = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [ (gogoproto.nullable) = false ];
   string chain_reference_id = 4;
-  palomachain.paloma.valset.MsgMetadata metadata       = 5 [(gogoproto.nullable) = false];
+  palomachain.paloma.valset.MsgMetadata metadata = 5
+      [ (gogoproto.nullable) = false ];
 }
 
 message MsgSendToEthResponse {}
@@ -50,12 +57,14 @@ message MsgSendToEthResponse {}
 // as well as an Ethereum signature over this batch by the validator
 // -------------
 message MsgConfirmBatch {
-  uint64 nonce          = 1;
+  option (cosmos.msg.v1.signer) = "metadata";
+  uint64 nonce = 1;
   string token_contract = 2;
-  string eth_signer     = 3;
-  string orchestrator   = 4;
-  string signature      = 5;
-  palomachain.paloma.valset.MsgMetadata metadata       = 6 [(gogoproto.nullable) = false];
+  string eth_signer = 3;
+  string orchestrator = 4;
+  string signature = 5;
+  palomachain.paloma.valset.MsgMetadata metadata = 6
+      [ (gogoproto.nullable) = false ];
 }
 
 message MsgConfirmBatchResponse {}
@@ -66,18 +75,20 @@ message MsgConfirmBatchResponse {}
 // issued to the Cosmos address in question
 // -------------
 message MsgSendToPalomaClaim {
-  uint64 event_nonce    = 1;
-  uint64 eth_block_height   = 2;
+  option (cosmos.msg.v1.signer) = "metadata";
+  uint64 event_nonce = 1;
+  uint64 eth_block_height = 2;
   string token_contract = 3;
-  string amount         = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable)   = false
+  string amount = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
   ];
   string ethereum_sender = 5;
   string paloma_receiver = 6;
-  string orchestrator    = 7;
+  string orchestrator = 7;
   string chain_reference_id = 8;
-  palomachain.paloma.valset.MsgMetadata metadata       = 9 [(gogoproto.nullable) = false];
+  palomachain.paloma.valset.MsgMetadata metadata = 9
+      [ (gogoproto.nullable) = false ];
 }
 
 message MsgSendToPalomaClaimResponse {}
@@ -85,13 +96,15 @@ message MsgSendToPalomaClaimResponse {}
 // BatchSendToEthClaim claims that a batch of send to eth
 // operations on the bridge contract was executed.
 message MsgBatchSendToEthClaim {
-  uint64 event_nonce    = 1;
-  uint64 eth_block_height   = 2;
-  uint64 batch_nonce    = 3;
+  option (cosmos.msg.v1.signer) = "metadata";
+  uint64 event_nonce = 1;
+  uint64 eth_block_height = 2;
+  uint64 batch_nonce = 3;
   string token_contract = 4;
   string chain_reference_id = 5;
-  string orchestrator   = 6;
-  palomachain.paloma.valset.MsgMetadata metadata       = 7 [(gogoproto.nullable) = false];
+  string orchestrator = 6;
+  palomachain.paloma.valset.MsgMetadata metadata = 7
+      [ (gogoproto.nullable) = false ];
 }
 
 message MsgBatchSendToEthClaimResponse {}
@@ -100,24 +113,29 @@ message MsgBatchSendToEthClaimResponse {}
 // to cancel a given MsgSendToEth and recieve a refund
 // of the tokens
 message MsgCancelSendToEth {
+  option (cosmos.msg.v1.signer) = "metadata";
   uint64 transaction_id = 1;
-  string sender         = 2 [deprecated = true];
-  palomachain.paloma.valset.MsgMetadata metadata       = 3 [(gogoproto.nullable) = false];
+  reserved 2;  
+  reserved "sender";  
+  palomachain.paloma.valset.MsgMetadata metadata = 3
+      [ (gogoproto.nullable) = false ];
 }
 
 message MsgCancelSendToEthResponse {}
 
 // This call allows anyone to submit evidence that a
 // validator has signed a batch that never
-// existed on the Cosmos chain. 
+// existed on the Cosmos chain.
 // Subject contains the batch.
 message MsgSubmitBadSignatureEvidence {
+  option (cosmos.msg.v1.signer) = "metadata";
   google.protobuf.Any subject = 1
       [ (cosmos_proto.accepts_interface) = "EthereumSigned" ];
-  string              signature = 2;
-  string              sender    = 3 [deprecated = true];
+  string signature = 2;
+  string sender = 3 [ deprecated = true ];
   string chain_reference_id = 4;
-  palomachain.paloma.valset.MsgMetadata metadata       = 5 [(gogoproto.nullable) = false];
+  palomachain.paloma.valset.MsgMetadata metadata = 5
+      [ (gogoproto.nullable) = false ];
 }
 
 message MsgSubmitBadSignatureEvidenceResponse {}
@@ -128,44 +146,61 @@ message EventSetOperatorAddress {
 }
 
 message EventBatchCreated {
-  string message      = 1;
-  string batch_nonce  = 2;
+  string message = 1;
+  string batch_nonce = 2;
 }
 
 message EventBatchConfirmKey {
-  string message           = 1;
+  string message = 1;
   string batch_confirm_key = 2;
 }
 
-message EventBatchSendToEthClaim {
-  string nonce = 1;
-}
+message EventBatchSendToEthClaim { string nonce = 1; }
 
 message EventClaim {
-  string message        = 1;
-  string claim_hash     = 2;
+  string message = 1;
+  string claim_hash = 2;
   string attestation_id = 3;
 }
 
 message EventBadSignatureEvidence {
-  string message                   = 1;
-  string bad_eth_signature         = 2;
+  string message = 1;
+  string bad_eth_signature = 2;
   string bad_eth_signature_subject = 3;
 }
 
 message EventMultisigUpdateRequest {
   string bridge_contract = 1;
   string bridge_chain_id = 2;
-  string multisig_id     = 3;
-  string nonce           = 4;
+  string multisig_id = 3;
+  string nonce = 4;
 }
 
 message EventSignatureSlashing {
-  string type     = 1;
-  string address  = 2;
+  string type = 1;
+  string address = 2;
 }
 
 message EventOutgoingTxId {
-    string message = 1;
-    string tx_id = 2;
+  string message = 1;
+  string tx_id = 2;
 }
+
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  // authority is the address that controls the module (defaults to x/gov unless
+  // overwritten).
+  string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  // params defines the x/gravity parameters to update.
+  //
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [ (gogoproto.nullable) = false ];
+
+  palomachain.paloma.valset.MsgMetadata metadata = 3
+      [ (gogoproto.nullable) = false ];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+message MsgUpdateParamsResponse {}

@@ -62,36 +62,26 @@ message QueryParamsRequest {}
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
-message QueryValidatorInfoRequest {
-  string valAddr = 1;
-}
+message QueryValidatorInfoRequest { string valAddr = 1; }
 
 message QueryValidatorInfoResponse {
   repeated ExternalChainInfo chainInfos = 1;
 }
 
-message QueryGetSnapshotByIDRequest {
-  uint64 snapshotId = 1;
-}
+message QueryGetSnapshotByIDRequest { uint64 snapshotId = 1; }
 
-message QueryGetSnapshotByIDResponse {
-  Snapshot snapshot = 1;
-}
+message QueryGetSnapshotByIDResponse { Snapshot snapshot = 1; }
 
-message QueryGetLatestPublishedSnapshotRequest {
-  string chainReferenceID = 1;
-}
+message QueryGetLatestPublishedSnapshotRequest { string chainReferenceID = 1; }
 
-message QueryGetLatestPublishedSnapshotResponse {
-  Snapshot snapshot = 1;
-}
+message QueryGetLatestPublishedSnapshotResponse { Snapshot snapshot = 1; }
 
 message QueryGetValidatorAliveUntilRequest {
-  bytes valAddress = 1
-      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
+  bytes valAddress = 1 [ (gogoproto.casttype) =
+                             "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
 }
 
 message QueryGetValidatorAliveUntilResponse {
@@ -101,20 +91,19 @@ message QueryGetValidatorAliveUntilResponse {
 }
 
 message QueryGetValidatorJailReasonRequest {
-  bytes valAddress = 1
-      [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"];
+  bytes valAddress = 1 [ (gogoproto.casttype) =
+                             "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
 }
 
-message QueryGetValidatorJailReasonResponse {
-  string reason = 1;
-}
+message QueryGetValidatorJailReasonResponse { string reason = 1; }
 
 message QueryGetAlivePigeonsRequest {}
 
 message QueryGetAlivePigeonsResponse {
   message ValidatorAlive {
-    bytes                     valAddress = 1 [(gogoproto.casttype) =
-                              "github.com/cosmos/cosmos-sdk/types.ValAddress"];
+    bytes valAddress = 1
+        [ (gogoproto.casttype) =
+              "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
     reserved 2; // deprecated
     reserved 3; // deprecated
     string error = 4;

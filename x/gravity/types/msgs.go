@@ -4,10 +4,12 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/util/libmeta"
+	"github.com/palomachain/paloma/x/valset/types"
 )
 
 // nolint: exhaustruct
@@ -18,12 +20,12 @@ var (
 	_ sdk.Msg = &MsgSendToPalomaClaim{}
 	_ sdk.Msg = &MsgBatchSendToEthClaim{}
 	_ sdk.Msg = &MsgSubmitBadSignatureEvidence{}
+	_ sdk.Msg = &MsgUpdateParams{}
 )
 
 // NewMsgSendToEth returns a new msgSendToEth
 func NewMsgSendToEth(sender sdk.AccAddress, destAddress EthAddress, send sdk.Coin, chainReferenceID string) *MsgSendToEth {
 	return &MsgSendToEth{
-		Sender:           sender.String(),
 		EthDest:          destAddress.GetAddress().Hex(),
 		Amount:           send,
 		ChainReferenceId: chainReferenceID,
@@ -44,7 +46,7 @@ func (msg MsgSendToEth) ValidateBasic() error {
 	}
 
 	if !msg.Amount.IsValid() || msg.Amount.IsZero() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "amount")
+		return sdkerrors.Wrap(errorsmod.ErrInvalidCoins, "amount")
 	}
 
 	if err := ValidateEthAddress(msg.EthDest); err != nil {
@@ -241,11 +243,6 @@ func (msg *MsgBatchSendToEthClaim) ClaimHash() ([]byte, error) {
 	return tmhash.Sum([]byte(path)), nil
 }
 
-// GetSignBytes encodes the message for signing
-func (msg MsgBatchSendToEthClaim) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
 func (msg MsgBatchSendToEthClaim) GetClaimer() sdk.AccAddress {
 	err := msg.ValidateBasic()
 	if err != nil {
@@ -276,7 +273,9 @@ const (
 // NewMsgCancelSendToEth returns a new msgSetOrchestratorAddress
 func NewMsgCancelSendToEth(user sdk.AccAddress, id uint64) *MsgCancelSendToEth {
 	return &MsgCancelSendToEth{
-		Sender:        user.String(),
+		Metadata: types.MsgMetadata{
+			Creator: user.String(),
+		},
 		TransactionId: id,
 	}
 }
@@ -286,16 +285,6 @@ func (msg *MsgCancelSendToEth) Route() string { return RouterKey }
 
 // Type should return the action
 func (msg *MsgCancelSendToEth) Type() string { return "cancel_send_to_eth" }
-
-// ValidateBasic performs stateless checks
-func (msg *MsgCancelSendToEth) ValidateBasic() (err error) {
-	return libmeta.ValidateBasic(msg)
-}
-
-// GetSignBytes encodes the message for signing
-func (msg *MsgCancelSendToEth) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
 
 // GetSigners defines whose signature is required
 func (msg *MsgCancelSendToEth) GetSigners() []sdk.AccAddress {
@@ -329,3 +318,21 @@ func (msg MsgSubmitBadSignatureEvidence) Type() string { return "Submit_Bad_Sign
 
 // Route should return the name of the module
 func (msg MsgSubmitBadSignatureEvidence) Route() string { return RouterKey }
+
+// MsgUpdateParams
+
+// ValidateBasic performs stateless checks
+func (msg *MsgUpdateParams) ValidateBasic() (err error) {
+	return libmeta.ValidateBasic(msg)
+}
+
+// GetSigners defines whose signature is required
+func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
+	return libmeta.GetSigners(msg)
+}
+
+// Type should return the action
+func (msg MsgUpdateParams) Type() string { return "update_params" }
+
+// Route should return the name of the module
+func (msg MsgUpdateParams) Route() string { return RouterKey }

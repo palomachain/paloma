@@ -3,7 +3,6 @@ package keeper_test
 import (
 	"testing"
 
-	// using any test that that extends protobuf
 	"github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"github.com/stretchr/testify/assert"

@@ -4,7 +4,7 @@ import (
 	"math"
 	"sort"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 )
 
 //////////////////////////////////////

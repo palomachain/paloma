@@ -311,8 +311,7 @@ func (_m *QueuedSignedMessageI) String() string {
 func NewQueuedSignedMessageI(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *QueuedSignedMessageI {
+}) *QueuedSignedMessageI {
 	mock := &QueuedSignedMessageI{}
 	mock.Mock.Test(t)
 

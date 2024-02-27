@@ -1,9 +1,11 @@
 package gravity
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
+	"cosmossdk.io/core/appmodule"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -14,6 +16,7 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/palomachain/paloma/x/gravity/client/cli"
+	"github.com/palomachain/paloma/x/gravity/exported"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/spf13/cobra"
@@ -22,8 +25,19 @@ import (
 // type check to ensure the interface is properly implemented
 // nolint: exhaustruct
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.HasServices         = AppModule{}
+	_ module.AppModuleGenesis    = AppModule{}
+	_ module.AppModuleSimulation = AppModule{}
+	_ module.HasABCIGenesis      = AppModule{}
+	_ module.HasConsensusVersion = AppModule{}
+	_ module.HasInvariants       = AppModule{}
+	_ module.HasName             = AppModule{}
+	_ module.HasGenesisBasics    = AppModule{}
+	_ module.HasProposalContents = AppModule{}
+	_ appmodule.HasEndBlocker    = AppModule{}
+	_ appmodule.HasBeginBlocker  = AppModule{}
+	_ appmodule.AppModule        = AppModule{}
 )
 
 // AppModuleBasic object for module implementation
@@ -90,10 +104,15 @@ type AppModule struct {
 	AppModuleBasic
 	keeper     keeper.Keeper
 	bankKeeper bankkeeper.Keeper
+
+	// legacySubspace is used solely for migration of x/gravity managed parameters
+	legacySubspace exported.Subspace
 }
 
+func (m AppModule) IsOnePerModuleType() {}
+func (m AppModule) IsAppModule()        {}
 func (am AppModule) ConsensusVersion() uint64 {
-	return 4
+	return 5
 }
 
 // NewAppModule creates a new AppModule Object
@@ -101,11 +120,13 @@ func NewAppModule(
 	cdc codec.Codec,
 	k keeper.Keeper,
 	bankKeeper bankkeeper.Keeper,
+	ss exported.Subspace,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
 		keeper:         k,
 		bankKeeper:     bankKeeper,
+		legacySubspace: ss,
 	}
 }
 
@@ -124,6 +145,10 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	m := keeper.NewMigrator(&am.keeper, am.legacySubspace)
+	if err := cfg.RegisterMigration(types.ModuleName, 4, m.Migrate4to5); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 4 to 5: %v", types.ModuleName, err))
+	}
 }
 
 // InitGenesis initializes the genesis state for this module and implements app module.
@@ -141,12 +166,15 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 // BeginBlock implements app module
-func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	return nil
+}
 
 // EndBlock implements app module
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	EndBlocker(ctx, am.keeper)
-	return []abci.ValidatorUpdate{}
+func (am AppModule) EndBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	EndBlocker(sdkCtx, am.keeper)
+	return nil
 }
 
 //____________________________________________________________________________
@@ -167,7 +195,7 @@ func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes
 }
 
 // RegisterStoreDecoder registers a decoder for distribution module's types
-func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
+func (am AppModule) RegisterStoreDecoder(sdr simtypes.StoreDecoderRegistry) {
 	// TODO: implement gravity simulation stuffs
 	// sdr[types.StoreKey] = simulation.NewDecodeStore(am.cdc)
 }

@@ -10,7 +10,6 @@ const TypeMsgDeployNewSmartContractRequest = "deploy_new_smart_contract_request"
 
 func NewMsgDeployNewSmartContractRequest(creator sdk.AccAddress, title string, description string, abiJSON string, bytecode string) *MsgDeployNewSmartContractRequest {
 	return &MsgDeployNewSmartContractRequest{
-		Creator:     creator.String(),
 		Title:       title,
 		Description: description,
 		AbiJSON:     abiJSON,

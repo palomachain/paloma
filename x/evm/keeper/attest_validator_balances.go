@@ -1,24 +1,27 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
-func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
-	k.Logger(ctx).Debug("attest-validator-balances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	k.Logger(sdkCtx).Debug("attest-validator-balances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
 	if len(msg.GetEvidence()) == 0 {
 		return nil
 	}
 
-	ctx, writeCache := ctx.CacheContext()
+	cacheCtx, writeCache := sdkCtx.CacheContext()
 	defer func() {
 		if retErr == nil {
 			writeCache()
@@ -32,7 +35,7 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 
 	request := consensusMsg.(*types.ValidatorBalancesAttestation)
 
-	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
+	evidence, err := k.findEvidenceThatWon(cacheCtx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			return nil
@@ -43,8 +46,8 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 	defer func() {
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
-		if err := q.Remove(ctx, msg.GetId()); err != nil {
-			k.Logger(ctx).Error("error removing message, attestValidatorBalances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+		if err := q.Remove(cacheCtx, msg.GetId()); err != nil {
+			k.Logger(sdkCtx).Error("error removing message, attestValidatorBalances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
 		}
 	}()
 
@@ -59,7 +62,7 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 		return err
 	}
 
-	return k.processValidatorBalanceProof(ctx, request, evidence, chainReferenceID, minBalance)
+	return k.processValidatorBalanceProof(cacheCtx, request, evidence, chainReferenceID, minBalance)
 }
 
 func (k Keeper) processValidatorBalanceProof(
@@ -73,6 +76,10 @@ func (k Keeper) processValidatorBalanceProof(
 	case *types.ValidatorBalancesAttestationRes:
 		for i := range request.GetHexAddresses() {
 			valAddr := request.ValAddresses[i]
+			valAddrString, err := k.AddressCodec.BytesToString(valAddr)
+			if err != nil {
+				k.Logger(ctx).Error("error while getting validator address", err)
+			}
 			hexAddr, balanceStr := common.HexToAddress(request.HexAddresses[i]), winner.Balances[i]
 			balance, ok := new(big.Int).SetString(balanceStr, 10)
 			if !ok {
@@ -96,7 +103,12 @@ func (k Keeper) processValidatorBalanceProof(
 				)
 			}
 			if balance.Cmp(minBalance) == -1 || balance.Cmp(big.NewInt(0)) == 0 {
-				if !k.Valset.IsJailed(ctx, valAddr) {
+				isJailed, err := k.Valset.IsJailed(ctx, valAddr)
+				if err != nil {
+					liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithValidator(valAddrString).WithFields("val-addr", valAddr, "hex-addr", hexAddr).Error("attestValidatorBalances: error in checking jailed validator")
+				}
+
+				if !isJailed {
 					if err := k.Valset.Jail(ctx, valAddr, fmt.Sprintf(types.JailReasonNotEnoughFunds, chainReferenceID, balanceStr, minBalance)); err != nil {
 						k.Logger(ctx).Error(
 							"error jailing validator",

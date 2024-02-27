@@ -12,12 +12,12 @@ func (k msgServer) CreateJob(goCtx context.Context, msg *types.MsgCreateJob) (*t
 
 	var err error
 	job := msg.Job
-	job.Owner, err = sdk.AccAddressFromBech32(msg.GetCreator())
+	job.Owner, err = sdk.AccAddressFromBech32(msg.Metadata.Creator)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = k.AddNewJob(ctx, job); err != nil {
+	if err = k.Keeper.AddNewJob(ctx, job); err != nil {
 		return nil, err
 	}
 

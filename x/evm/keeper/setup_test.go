@@ -1,15 +1,18 @@
 package keeper
 
 import (
-	tmdb "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	"cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
+	storetypes "cosmossdk.io/store/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmdb "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/store"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+	"github.com/palomachain/paloma/app/params"
 	"github.com/palomachain/paloma/testutil"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/evm/types/mocks"
@@ -24,11 +27,13 @@ type mockedServices struct {
 }
 
 func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
-	storeKey := sdk.NewKVStoreKey(types.StoreKey)
+	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
+	storeService := runtime.NewKVStoreService(storeKey)
+
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
 	db := tmdb.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db)
+	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
 	stateStore.MountStoreWithDB(memStoreKey, storetypes.StoreTypeMemory, nil)
 	require.NoError(t, stateStore.LoadLatestVersion())
@@ -38,13 +43,6 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 
 	types.RegisterInterfaces(registry)
 
-	paramsSubspace := typesparams.NewSubspace(appCodec,
-		types.Amino,
-		storeKey,
-		memStoreKey,
-		"EvmParams",
-	)
-
 	ms := mockedServices{
 		ConsensusKeeper: mocks.NewConsensusKeeper(t),
 		ValsetKeeper:    mocks.NewValsetKeeper(t),
@@ -53,11 +51,10 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 	}
 	k := NewKeeper(
 		appCodec,
-		storeKey,
-		memStoreKey,
-		paramsSubspace,
+		storeService,
 		ms.ConsensusKeeper,
 		ms.ValsetKeeper,
+		authcodec.NewBech32Codec(params.ValidatorAddressPrefix),
 	)
 
 	k.msgSender = ms.MsgSender

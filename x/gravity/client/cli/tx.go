@@ -3,11 +3,11 @@ package cli
 import (
 	"strconv"
 
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/x/gravity/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cobra"
@@ -57,7 +57,6 @@ func CmdSendToEth() *cobra.Command {
 
 			// Make the message
 			msg := types.MsgSendToEth{
-				Sender:           cosmosAddr.String(),
 				EthDest:          ethDest,
 				Amount:           amount[0],
 				ChainReferenceId: chainReferenceID,
@@ -99,15 +98,11 @@ func CmdCancelSendToEth() *cobra.Command {
 
 			// Make the message
 			msg := types.MsgCancelSendToEth{
-				Sender:        cosmosAddr.String(),
 				TransactionId: txId,
 				Metadata: vtypes.MsgMetadata{
 					Creator: cosmosAddr.String(),
 					Signers: []string{cosmosAddr.String()},
 				},
-			}
-			if err := msg.ValidateBasic(); err != nil {
-				return err
 			}
 			// Send it
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), &msg)

@@ -9,13 +9,11 @@ option go_package = "github.com/palomachain/paloma/x/evm/types";
 message ValidatorBalancesAttestation {
   repeated string hexAddresses = 1;
 
-  repeated bytes valAddresses = 2 [
-    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"
-  ];
-  google.protobuf.Timestamp fromBlockTime = 3 [
-    (gogoproto.nullable) = false,
-    (gogoproto.stdtime) = true
-  ];
+  repeated bytes valAddresses = 2
+      [ (gogoproto.casttype) =
+            "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+  google.protobuf.Timestamp fromBlockTime = 3
+      [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
   string assignee = 7;
 }
 

@@ -10,7 +10,7 @@ import (
 func (k msgServer) SetPublicAccessData(goCtx context.Context, msg *types.MsgSetPublicAccessData) (*types.MsgSetPublicAccessDataResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
+	creator, _ := sdk.AccAddressFromBech32(msg.Metadata.Creator)
 
 	valAddr := sdk.ValAddress(creator.Bytes())
 

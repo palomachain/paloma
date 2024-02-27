@@ -7,7 +7,6 @@ package palomachain.paloma.evm;
 
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
-
 message Valset {
   // hex addresses on the EVM network
   repeated string validators = 1;
@@ -16,22 +15,19 @@ message Valset {
 }
 
 message SubmitLogicCall {
-  message ExecutionRequirements {
-    bool enforceMEVRelay = 1;
-  }
+  message ExecutionRequirements { bool enforceMEVRelay = 1; }
   string hexContractAddress = 1;
   bytes abi = 2;
   bytes payload = 3;
   int64 deadline = 4;
   bytes senderAddress = 5;
   bytes contractAddress = 6;
-  ExecutionRequirements executionRequirements = 7 [(gogoproto.nullable) = false];
+  ExecutionRequirements executionRequirements = 7
+      [ (gogoproto.nullable) = false ];
   uint32 retries = 8;
 }
 
-message UpdateValset {
-  Valset valset = 1;
-}
+message UpdateValset { Valset valset = 1; }
 
 message UploadSmartContract {
   bytes bytecode = 1;
@@ -57,24 +53,20 @@ message Message {
 
   string compassAddr = 6;
   string assignee = 7;
-  
+
   // block height at which the message was assinged to the
   // current relayer. Updated when message is reassigned.
-  string assigned_at_block_height   = 9 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+  string assigned_at_block_height = 9 [
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (amino.dont_omitempty) = true,
-    (gogoproto.nullable)   = false
+    (gogoproto.nullable) = false
   ];
 }
 
-message TxExecutedProof {
-  bytes serializedTX = 1;
-}
+message TxExecutedProof { bytes serializedTX = 1; }
 
-message SmartContractExecutionErrorProof {
-  string errorMessage = 1;
-}
+message SmartContractExecutionErrorProof { string errorMessage = 1; }
 
 // This is no longer in active use.
 message TransferERC20Ownership {

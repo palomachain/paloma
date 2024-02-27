@@ -20,7 +20,7 @@ func GenValidators(numValidators, totalConsPower int) []stakingtypes.Validator {
 			power += remainder
 		}
 
-		protoPK, err := cryptocodec.FromTmPubKeyInterface(ed25519.GenPrivKey().PubKey())
+		protoPK, err := cryptocodec.FromCmtPubKeyInterface(ed25519.GenPrivKey().PubKey())
 		if err != nil {
 			panic(err)
 		}

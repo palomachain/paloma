@@ -6,9 +6,9 @@ option go_package = "github.com/palomachain/paloma/x/evm/types";
 message AddChainProposal {
   string title = 1;
   string description = 2;
-  string chainReferenceID = 3; 
+  string chainReferenceID = 3;
   uint64 chainID = 4;
   uint64 blockHeight = 5;
-  string blockHashAtHeight = 6; 
+  string blockHashAtHeight = 6;
   string minOnChainBalance = 7;
 }

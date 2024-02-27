@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/assert"
@@ -13,7 +15,10 @@ import (
 // Tests that the pool is populated with the created transactions before any batch is created
 func TestAddToOutgoingPool(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 	var (
@@ -26,7 +31,7 @@ func TestAddToOutgoingPool(t *testing.T) {
 	tokenContract, err := types.NewEthAddress(testERC20Address)
 	require.NoError(t, err)
 	// mint some voucher first
-	allVouchersToken, err := types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+	allVouchersToken, err := types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, allVouchersToken.Amount)}
 	err = input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers)
@@ -39,7 +44,7 @@ func TestAddToOutgoingPool(t *testing.T) {
 
 	// when
 	for i := 0; i < 4; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), testERC20Address, "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 
@@ -59,13 +64,13 @@ func TestAddToOutgoingPool(t *testing.T) {
 
 	receiverAddr, err := types.NewEthAddress(myReceiver)
 	require.NoError(t, err)
-	oneHundredTok, err := types.NewInternalERC20Token(sdk.NewInt(100), testERC20Address, "test-chain")
+	oneHundredTok, err := types.NewInternalERC20Token(math.NewInt(100), testERC20Address, "test-chain")
 	require.NoError(t, err)
-	oneHundredOneTok, err := types.NewInternalERC20Token(sdk.NewInt(101), testERC20Address, "test-chain")
+	oneHundredOneTok, err := types.NewInternalERC20Token(math.NewInt(101), testERC20Address, "test-chain")
 	require.NoError(t, err)
-	oneHundredTwoTok, err := types.NewInternalERC20Token(sdk.NewInt(102), testERC20Address, "test-chain")
+	oneHundredTwoTok, err := types.NewInternalERC20Token(math.NewInt(102), testERC20Address, "test-chain")
 	require.NoError(t, err)
-	oneHundredThreeTok, err := types.NewInternalERC20Token(sdk.NewInt(103), testERC20Address, "test-chain")
+	oneHundredThreeTok, err := types.NewInternalERC20Token(math.NewInt(103), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	exp := []*types.InternalOutgoingTransferTx{
 		{
@@ -99,7 +104,10 @@ func TestAddToOutgoingPool(t *testing.T) {
 // Checks some common edge cases like invalid inputs, user doesn't have enough tokens, token doesn't exist, inconsistent entry
 func TestAddToOutgoingPoolEdgeCases(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 	var (
@@ -109,7 +117,7 @@ func TestAddToOutgoingPoolEdgeCases(t *testing.T) {
 	require.NoError(t, e1)
 	receiver, err := types.NewEthAddress(myReceiver)
 	require.NoError(t, err)
-	amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(100)), testERC20Address, "test-chain")
+	amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(100)), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	amount := sdk.NewCoin(testDenom, amountToken.Amount)
 
@@ -119,7 +127,7 @@ func TestAddToOutgoingPoolEdgeCases(t *testing.T) {
 	require.Zero(t, r)
 
 	// mint some voucher first
-	allVouchersToken, err := types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+	allVouchersToken, err := types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, allVouchersToken.Amount)}
 	err = input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers)
@@ -131,7 +139,7 @@ func TestAddToOutgoingPoolEdgeCases(t *testing.T) {
 	require.NoError(t, err)
 
 	//////// Insufficient Balance from Amount ////////
-	badAmountToken, err := types.NewInternalERC20Token(sdk.NewInt(999999), testERC20Address, "test-chain")
+	badAmountToken, err := types.NewInternalERC20Token(math.NewInt(999999), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	badAmount := sdk.NewCoin(testDenom, badAmountToken.Amount)
 	r, err = input.GravityKeeper.AddToOutgoingPool(ctx, mySender, *receiver, badAmount, "test-chain")
@@ -139,18 +147,21 @@ func TestAddToOutgoingPoolEdgeCases(t *testing.T) {
 	require.Zero(t, r)
 
 	//////// Zero inputs ////////
-	mtCtx := new(sdk.Context)
+
 	mtSend := new(sdk.AccAddress)
 	mtRecieve := types.ZeroAddress() // This address should not actually cause an issue
 	mtCoin := new(sdk.Coin)
-	r, err = input.GravityKeeper.AddToOutgoingPool(*mtCtx, *mtSend, mtRecieve, *mtCoin, "test-chain")
+	r, err = input.GravityKeeper.AddToOutgoingPool(input.Context, *mtSend, mtRecieve, *mtCoin, "test-chain")
 	require.Error(t, err)
 	require.Zero(t, r)
 }
 
 func TestRemoveFromOutgoingPoolAndRefund(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 	var (
@@ -163,7 +174,7 @@ func TestRemoveFromOutgoingPoolAndRefund(t *testing.T) {
 	// mint some voucher first
 	originalBal := uint64(99999)
 
-	allVouchersToken, err := types.NewInternalERC20Token(sdk.NewIntFromUint64(originalBal), testERC20Address, "test-chain")
+	allVouchersToken, err := types.NewInternalERC20Token(math.NewIntFromUint64(originalBal), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, allVouchersToken.Amount)}
 	err = input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers)
@@ -182,7 +193,7 @@ func TestRemoveFromOutgoingPoolAndRefund(t *testing.T) {
 	amountSum := uint64(0)
 	amounts := []uint64{100, 101, 102, 103}
 	for i, v := range amounts {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewIntFromUint64(amounts[i]), testERC20Address, "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewIntFromUint64(amounts[i]), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 		amountSum += v
@@ -213,7 +224,10 @@ func TestRemoveFromOutgoingPoolAndRefund(t *testing.T) {
 
 func TestRemoveFromOutgoingPoolAndRefundCosmosOriginated(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 
@@ -241,7 +255,7 @@ func TestRemoveFromOutgoingPoolAndRefundCosmosOriginated(t *testing.T) {
 	require.Equal(t, tokenAddr.GetAddress().Hex(), myTokenContractAddr)
 	require.Equal(t, tokenAddr, addr)
 
-	allVouchers := sdk.Coins{sdk.NewCoin(myTokenDenom, sdk.NewIntFromUint64(originalBal))}
+	allVouchers := sdk.Coins{sdk.NewCoin(myTokenDenom, math.NewIntFromUint64(originalBal))}
 	err = input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers)
 	require.NoError(t, err)
 
@@ -258,7 +272,7 @@ func TestRemoveFromOutgoingPoolAndRefundCosmosOriginated(t *testing.T) {
 	ids := make([]uint64, 4)
 	amounts := []uint64{100, 101, 102, 103}
 	for i, v := range amounts {
-		amount := sdk.NewCoin(myTokenDenom, sdk.NewIntFromUint64(amounts[i]))
+		amount := sdk.NewCoin(myTokenDenom, math.NewIntFromUint64(amounts[i]))
 
 		amountSum += v
 		r, err := input.GravityKeeper.AddToOutgoingPool(ctx, mySender, *receiver, amount, "test-chain")
@@ -294,7 +308,7 @@ func TestRemoveFromOutgoingPoolAndRefundCosmosOriginated(t *testing.T) {
 func checkRemovedTx(
 	t *testing.T,
 	input TestInput,
-	ctx sdk.Context,
+	ctx context.Context,
 	id uint64,
 	amount uint64,
 	amountSum *uint64,
@@ -324,7 +338,10 @@ func checkRemovedTx(
 // Checks some common edge cases like invalid inputs, user didn't submit the transaction, tx doesn't exist, inconsistent entry
 func TestRefundInconsistentTx(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 	var (
@@ -337,7 +354,7 @@ func TestRefundInconsistentTx(t *testing.T) {
 	require.NoError(t, e3)
 
 	//////// Refund an inconsistent tx ////////
-	amountToken, err := types.NewInternalERC20Token(sdk.NewInt(100), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+	amountToken, err := types.NewInternalERC20Token(math.NewInt(100), myTokenContractAddr.GetAddress().Hex(), "test-chain")
 	require.NoError(t, err)
 
 	// This unsafe override won't fail
@@ -357,7 +374,10 @@ func TestRefundInconsistentTx(t *testing.T) {
 
 func TestRefundNonexistentTx(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 	mySender, e1 := sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
@@ -373,7 +393,10 @@ func TestRefundNonexistentTx(t *testing.T) {
 
 func TestRefundTwice(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 	var (
@@ -388,7 +411,7 @@ func TestRefundTwice(t *testing.T) {
 
 	// mint some voucher first
 	originalBal := uint64(99999)
-	allVouchersToken, err := types.NewInternalERC20Token(sdk.NewIntFromUint64(originalBal), testERC20Address, "test-chain")
+	allVouchersToken, err := types.NewInternalERC20Token(math.NewIntFromUint64(originalBal), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, allVouchersToken.Amount)}
 	err = input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers)
@@ -399,7 +422,7 @@ func TestRefundTwice(t *testing.T) {
 	err = input.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, mySender, allVouchers)
 	require.NoError(t, err)
 
-	amountToken, err := types.NewInternalERC20Token(sdk.NewInt(100), testERC20Address, "test-chain")
+	amountToken, err := types.NewInternalERC20Token(math.NewInt(100), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	origBalances := input.BankKeeper.GetAllBalances(ctx, mySender)
 
@@ -425,7 +448,10 @@ func TestRefundTwice(t *testing.T) {
 // Check the various getter methods for the pool
 func TestGetUnbatchedTransactions(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
-	defer func() { ctx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(ctx).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	// token1
 	var (
@@ -438,7 +464,7 @@ func TestGetUnbatchedTransactions(t *testing.T) {
 	tokenContract1, err := types.NewEthAddress(testERC20Address)
 	require.NoError(t, err)
 	// mint some vouchers first
-	allVouchersToken, err := types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+	allVouchersToken, err := types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, allVouchersToken.Amount)}
 	err = input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers)
@@ -453,7 +479,7 @@ func TestGetUnbatchedTransactions(t *testing.T) {
 	amounts := []uint64{100, 101, 102, 103}
 	idToTxMap := make(map[uint64]*types.OutgoingTransferTx)
 	for i := 0; i < 4; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewIntFromUint64(amounts[i]), testERC20Address, "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewIntFromUint64(amounts[i]), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount1 := sdk.NewCoin(testDenom, amountToken.Amount)
 
@@ -469,7 +495,7 @@ func TestGetUnbatchedTransactions(t *testing.T) {
 	}
 
 	// GetUnbatchedTxByAmountAndId
-	tokenAmount, err := types.NewInternalERC20Token(sdk.NewIntFromUint64(amounts[0]), testERC20Address, "test-chain")
+	tokenAmount, err := types.NewInternalERC20Token(math.NewIntFromUint64(amounts[0]), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	tokenId := ids[0]
 	tx, err := input.GravityKeeper.GetUnbatchedTxByAmountAndId(ctx, *tokenAmount, tokenId)
@@ -508,7 +534,10 @@ func TestGetUnbatchedTransactions(t *testing.T) {
 // Check the various iteration methods for the pool
 func TestIterateUnbatchedTransactions(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 
@@ -523,7 +552,7 @@ func TestIterateUnbatchedTransactions(t *testing.T) {
 	tokenContract1, err := types.NewEthAddress(testERC20Address)
 	require.NoError(t, err)
 	// mint some vouchers first
-	token, err := types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+	token, err := types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, token.Amount)}
 	err = input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers)
@@ -538,7 +567,7 @@ func TestIterateUnbatchedTransactions(t *testing.T) {
 	amounts := []uint64{100, 101, 102, 103}
 	idToTxMap := make(map[uint64]*types.OutgoingTransferTx)
 	for i := 0; i < 4; i++ {
-		amount1, err := types.NewInternalERC20Token(sdk.NewIntFromUint64(amounts[i]), testERC20Address, "test-chain")
+		amount1, err := types.NewInternalERC20Token(math.NewIntFromUint64(amounts[i]), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		r, err := input.GravityKeeper.AddToOutgoingPool(ctx, mySender, *receiver, sdk.NewCoin(testDenom, amount1.Amount), "test-chain")
 		require.NoError(t, err)
@@ -588,7 +617,10 @@ func TestIterateUnbatchedTransactions(t *testing.T) {
 // Ensures that any unbatched tx will make its way into the exported data from ExportGenesis
 func TestAddToOutgoingPoolExportGenesis(t *testing.T) {
 	input := CreateTestEnv(t)
-	defer func() { input.Context.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
 
 	ctx := input.Context
 	k := input.GravityKeeper
@@ -600,7 +632,7 @@ func TestAddToOutgoingPoolExportGenesis(t *testing.T) {
 	receiver, err := types.NewEthAddress(myReceiver)
 	require.NoError(t, err)
 	// mint some voucher first
-	allVouchersToken, err := types.NewInternalERC20Token(sdk.NewInt(99999), testERC20Address, "test-chain")
+	allVouchersToken, err := types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 	require.NoError(t, err)
 	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, allVouchersToken.Amount)}
 
@@ -616,7 +648,7 @@ func TestAddToOutgoingPoolExportGenesis(t *testing.T) {
 	foundTxsMap := make(map[uint64]bool)
 	// when
 	for i := 0; i < 4; i++ {
-		amountToken, err := types.NewInternalERC20Token(sdk.NewInt(int64(i+100)), testERC20Address, "test-chain")
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), testERC20Address, "test-chain")
 		require.NoError(t, err)
 		amount := sdk.NewCoin(testDenom, amountToken.Amount)
 

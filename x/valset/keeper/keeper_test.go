@@ -3,7 +3,8 @@ package keeper
 import (
 	"testing"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -20,8 +21,8 @@ func TestIfValidatorCanBeAccepted(t *testing.T) {
 
 	vali := mocks.NewStakingValidatorI(t)
 
-	ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
-	ms.StakingKeeper.On("Validator", mock.Anything, nonExistingVal).Return(nil)
+	ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali, nil)
+	ms.StakingKeeper.On("Validator", mock.Anything, nonExistingVal).Return(nil, nil)
 
 	t.Run("when validator is jailed it returns an error", func(t *testing.T) {
 		vali.On("IsJailed").Return(true).Once()
@@ -45,11 +46,14 @@ func TestIfValidatorCanBeAccepted(t *testing.T) {
 		err := k.CanAcceptValidator(ctx, nonExistingVal)
 		require.ErrorIs(t, err, ErrValidatorWithAddrNotFound)
 	})
+
+	// t.Run("Retu ")
 }
 
 func TestRegisteringPigeon(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
-	ctx = ctx.WithBlockHeight(3000)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	ctx = sdkCtx.WithBlockHeight(3000)
 	val := sdk.ValAddress("validator")
 	val2 := sdk.ValAddress("validator2")
 	nonExistingVal := sdk.ValAddress("i dont exist")
@@ -62,12 +66,12 @@ func TestRegisteringPigeon(t *testing.T) {
 	vali2.On("IsJailed").Return(false)
 	vali2.On("IsBonded").Return(true)
 
-	ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
-	ms.StakingKeeper.On("Validator", mock.Anything, val2).Return(vali2)
-	ms.StakingKeeper.On("Validator", mock.Anything, nonExistingVal).Return(nil)
+	ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali, nil)
+	ms.StakingKeeper.On("Validator", mock.Anything, val2).Return(vali2, nil)
+	ms.StakingKeeper.On("Validator", mock.Anything, nonExistingVal).Return(nil, nil)
 
 	t.Run("if validator has been alive before, but it's not now, then it returns an error", func(t *testing.T) {
-		err := k.KeepValidatorAlive(ctx.WithBlockHeight(500), val, "v1.4.0")
+		err := k.KeepValidatorAlive(sdkCtx.WithBlockHeight(500), val, "v1.4.0")
 		require.NoError(t, err)
 		alive, err := k.IsValidatorAlive(ctx, val)
 		require.NoError(t, err)
@@ -154,29 +158,28 @@ func TestCreatingSnapshots(t *testing.T) {
 	val1, val2 := sdk.ValAddress("validator1"), sdk.ValAddress("validator2")
 	vali1, vali2 := mocks.NewStakingValidatorI(t), mocks.NewStakingValidatorI(t)
 
-	vali1.On("GetOperator").Return(val1)
-	vali2.On("GetOperator").Return(val2)
+	vali1.On("GetOperator").Return(val1.String())
+	vali2.On("GetOperator").Return(val2.String())
 
 	vali1.On("IsJailed").Return(false)
 	vali2.On("IsJailed").Return(false)
 
-	vali1.On("GetBondedTokens").Return(sdk.NewInt(888))
-	vali2.On("GetBondedTokens").Return(sdk.NewInt(222))
+	vali1.On("GetBondedTokens").Return(sdkmath.NewInt(888))
+	vali2.On("GetBondedTokens").Return(sdkmath.NewInt(222))
 
 	vali1.On("IsBonded").Return(true)
 	vali2.On("IsBonded").Return(true)
 
 	k, ms, ctx := newValsetKeeper(t)
-
-	ms.StakingKeeper.On("Validator", ctx, val1).Return(vali1)
-	ms.StakingKeeper.On("Validator", ctx, val2).Return(vali2)
+	ms.StakingKeeper.On("Validator", ctx, val1).Return(vali1, nil)
+	ms.StakingKeeper.On("Validator", ctx, val2).Return(vali2, nil)
 
 	ms.StakingKeeper.On("IterateValidators", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
 		type fnc = func(int64, stakingtypes.ValidatorI) bool
 		f := args.Get(1).(fnc)
 		f(0, vali1)
 		f(1, vali2)
-	})
+	}).Return(nil)
 
 	ms.EvmKeeper.On("MissingChains", mock.Anything, mock.Anything).Return([]string(nil), nil)
 	ms.EvmKeeper.On("MissingChains", mock.Anything, mock.Anything).Return([]string(nil), nil)
@@ -300,17 +303,17 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: true,
 			name:   "two snapshots have same validators but different power orders",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(20)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(80)},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(20)},
 				},
 			},
 		},
@@ -318,17 +321,17 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: true,
 			name:   "two snapshots have same validators and same relative power orders, but differ in their absolute power more than 1 percent",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(20)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(30)},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(30)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 		},
@@ -336,29 +339,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: true,
 			name:   "two snapshots are same, but they have removed one of their accounts",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{}, {},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 		},
@@ -366,29 +369,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: true,
 			name:   "two snapshots are same, but they have different external chain infos",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc"}, {Address: "def"},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc"}, {Address: "123"},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 		},
@@ -396,29 +399,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: false,
 			name:   "two snapshots have same validators and same relative power orders",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc"}, {Address: "def"},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(1000),
+				TotalShares: sdkmath.NewInt(1000),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(200),
+						ShareCount: sdkmath.NewInt(200),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc"}, {Address: "def"},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(800)},
 				},
 			},
 		},
@@ -426,29 +429,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: false,
 			name:   "two snapshots have same validators and same traits",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(1000),
+				TotalShares: sdkmath.NewInt(1000),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(200),
+						ShareCount: sdkmath.NewInt(200),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(800)},
 				},
 			},
 		},
@@ -456,29 +459,29 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: true,
 			name:   "two snapshots have same validators and different traits",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(20),
+						ShareCount: sdkmath.NewInt(20),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"abc"}},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(80)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(80)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(1000),
+				TotalShares: sdkmath.NewInt(1000),
 				Validators: []types.Validator{
 					{
 						Address:    sdk.ValAddress("123"),
-						ShareCount: sdk.NewInt(200),
+						ShareCount: sdkmath.NewInt(200),
 						ExternalChainInfos: []*types.ExternalChainInfo{
 							{Address: "abc", Traits: []string{"abc"}}, {Address: "def", Traits: []string{"def"}},
 						},
 					},
-					{Address: sdk.ValAddress("456"), ShareCount: sdk.NewInt(800)},
+					{Address: sdk.ValAddress("456"), ShareCount: sdkmath.NewInt(800)},
 				},
 			},
 		},
@@ -486,15 +489,15 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: false,
 			name:   "if the powers are still the same then it's not worthy",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(20)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(100),
+				TotalShares: sdkmath.NewInt(100),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(20)},
 				},
 			},
 		},
@@ -502,15 +505,15 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 			expRes: false,
 			name:   "if the powers have change for less than 1%, then it's not worthy",
 			curr: &types.Snapshot{
-				TotalShares: sdk.NewInt(1000),
+				TotalShares: sdkmath.NewInt(1000),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(20)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(20)},
 				},
 			},
 			neww: &types.Snapshot{
-				TotalShares: sdk.NewInt(1000),
+				TotalShares: sdkmath.NewInt(1000),
 				Validators: []types.Validator{
-					{Address: sdk.ValAddress("123"), ShareCount: sdk.NewInt(21)},
+					{Address: sdk.ValAddress("123"), ShareCount: sdkmath.NewInt(21)},
 				},
 			},
 		},
@@ -529,26 +532,46 @@ func TestIsNewSnapshotWorthy(t *testing.T) {
 
 func TestGracePeriodCoverage(t *testing.T) {
 	k, _, ctx := newValsetKeeper(t)
-	ctx = ctx.WithBlockHeight(100)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx = sdkCtx.WithBlockHeight(100)
 
 	t.Run("with unjailed validator covered by grace period", func(t *testing.T) {
 		for i := cJailingGracePeriodBlockHeight; i >= 0; i-- {
 			val := sdk.ValAddress("validator")
-			bh := sdk.Uint64ToBigEndian(uint64(ctx.BlockHeight() - int64(i)))
-			k.gracePeriodStore(ctx).Set(val, bh)
-			require.True(t, k.isValidatorInGracePeriod(ctx, val))
+			bh := sdk.Uint64ToBigEndian(uint64(sdkCtx.BlockHeight() - int64(i)))
+			k.gracePeriodStore(sdkCtx).Set(val, bh)
+			require.True(t, k.isValidatorInGracePeriod(sdkCtx, val))
 		}
 	})
 
 	t.Run("with unjailed validator no longer covered by grace period", func(t *testing.T) {
 		val := sdk.ValAddress("validator")
-		bh := sdk.Uint64ToBigEndian(uint64(ctx.BlockHeight() - cJailingGracePeriodBlockHeight - 1))
-		k.gracePeriodStore(ctx).Set(val, bh)
-		require.False(t, k.isValidatorInGracePeriod(ctx, val), "bh = %d", bh)
+		bh := sdk.Uint64ToBigEndian(uint64(sdkCtx.BlockHeight() - cJailingGracePeriodBlockHeight - 1))
+		k.gracePeriodStore(sdkCtx).Set(val, bh)
+		require.False(t, k.isValidatorInGracePeriod(sdkCtx, val), "bh = %d", bh)
 	})
 
 	t.Run("with not present in grace period store", func(t *testing.T) {
 		val := sdk.ValAddress("validator-bonded")
-		require.False(t, k.isValidatorInGracePeriod(ctx, val))
+		require.False(t, k.isValidatorInGracePeriod(sdkCtx, val))
+	})
+}
+
+func TestJailedValidaotors(t *testing.T) {
+	k, ms, ctx := newValsetKeeper(t)
+	val := sdk.ValAddress("validator")
+	vali := mocks.NewStakingValidatorI(t)
+
+	ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali, nil)
+	t.Run("Return true when validator is jailed", func(t *testing.T) {
+		vali.On("IsJailed").Return(false).Once()
+		flag, err := k.IsJailed(ctx, val)
+		require.NoError(t, err)
+		require.False(t, flag)
+	})
+	t.Run("Return true when the validator is jailed", func(t *testing.T) {
+		vali.On("IsJailed").Return(true).Once()
+		err := k.Jail(ctx, val, "i don't know")
+		require.Error(t, err)
 	})
 }

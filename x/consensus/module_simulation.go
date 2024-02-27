@@ -4,7 +4,6 @@ import (
 	"math/rand"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
@@ -55,14 +54,14 @@ func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedP
 }
 
 // RegisterStoreDecoder registers a decoder
-func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
+func (am AppModule) RegisterStoreDecoder(_ simtypes.StoreDecoderRegistry) {}
 
 // WeightedOperations returns the all the gov module operations with their respective weights.
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	operations := make([]simtypes.WeightedOperation, 0)
 
 	var weightMsgAddMessagesSignatures int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgAddMessagesSignatures, &weightMsgAddMessagesSignatures, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgAddMessagesSignatures, &weightMsgAddMessagesSignatures, nil,
 		func(_ *rand.Rand) {
 			weightMsgAddMessagesSignatures = defaultWeightMsgAddMessagesSignatures
 		},
@@ -73,7 +72,7 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	))
 
 	var weightMsgDeleteJob int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgDeleteJob, &weightMsgDeleteJob, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgDeleteJob, &weightMsgDeleteJob, nil,
 		func(_ *rand.Rand) {
 			weightMsgDeleteJob = defaultWeightMsgDeleteJob
 		},
@@ -84,7 +83,7 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	))
 
 	var weightMsgAddEvidence int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgAddEvidence, &weightMsgAddEvidence, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgAddEvidence, &weightMsgAddEvidence, nil,
 		func(_ *rand.Rand) {
 			weightMsgAddEvidence = defaultWeightMsgAddEvidence
 		},
@@ -95,7 +94,7 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	))
 
 	var weightMsgSetPublicAccessData int
-	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgSetPublicAccessData, &weightMsgSetPublicAccessData, nil,
+	simState.AppParams.GetOrGenerate(opWeightMsgSetPublicAccessData, &weightMsgSetPublicAccessData, nil,
 		func(_ *rand.Rand) {
 			weightMsgSetPublicAccessData = defaultWeightMsgSetPublicAccessData
 		},

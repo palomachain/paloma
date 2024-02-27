@@ -16,28 +16,33 @@ import (
 
 func TestJailingInactiveValidators(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
-	ctx = ctx.WithBlockHeight(1000)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	sdkCtx = sdkCtx.WithBlockHeight(1000)
 
 	valBuild := func(id int, toBeJailed bool) (*mocks.StakingValidatorI, sdk.ValAddress) {
-		val := sdk.ValAddress(fmt.Sprintf("validator_%d", id))
+		valAddr := sdk.ValAddress(fmt.Sprintf("validator___________%d", id))
+		valStr := valAddr.String()
+
 		vali := mocks.NewStakingValidatorI(t)
 		stake := sdk.DefaultPowerReduction
-		ms.StakingKeeper.On("Validator", mock.Anything, val).Return(vali)
+		ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(vali, nil)
 		vali.On("IsJailed").Return(false)
 		vali.On("GetConsensusPower", k.powerReduction).Return(stake.Int64())
 		vali.On("IsBonded").Return(true)
-		vali.On("GetOperator").Return(val)
+		vali.On("GetOperator").Return(valStr)
 		vali.On("GetStatus").Return(stakingtypes.Bonded)
-		consAddr := sdk.ConsAddress(val)
+
 		if toBeJailed {
-			vali.On("GetConsAddr").Return(consAddr, nil)
-			ms.SlashingKeeper.On("Jail", mock.Anything, consAddr)
-			ms.SlashingKeeper.On("JailUntil", mock.Anything, mock.Anything, mock.Anything)
+			consAddr := sdk.ConsAddress(valAddr)
+			vali.On("GetConsAddr").Return(consAddr.Bytes(), nil)
+			ms.SlashingKeeper.On("Jail", mock.Anything, consAddr).Return(nil)
+			ms.SlashingKeeper.On("JailUntil", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		} else {
-			err := k.KeepValidatorAlive(ctx.WithBlockHeight(ctx.BlockHeight()-(cJailingDefaultKeepAliveBlockHeight/2)), val, "v1.4.0")
+			err := k.KeepValidatorAlive(sdk.WrapSDKContext(sdkCtx.WithBlockHeight(sdkCtx.BlockHeight()-(cJailingDefaultKeepAliveBlockHeight/2))), valAddr, "v1.4.0")
 			require.NoError(t, err)
 		}
-		return vali, val
+		return vali, valAddr
 	}
 
 	v1, a1 := valBuild(1, false)
@@ -54,9 +59,9 @@ func TestJailingInactiveValidators(t *testing.T) {
 		callback(0, v3)
 		callback(0, v4)
 		callback(0, newUnjailed)
-	}).Return(false)
+	}).Return(nil)
 
-	err := k.JailInactiveValidators(ctx)
+	err := k.JailInactiveValidators(sdkCtx)
 	require.NoError(t, err)
 }
 
@@ -73,7 +78,7 @@ func TestCanAcceptKeepAlive(t *testing.T) {
 			name:               "validator not found",
 			inputPigeonVersion: "v1.4.0",
 			setup: func(services mockedServices) {
-				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(nil)
+				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(nil, nil)
 			},
 			expectedErr: ErrValidatorWithAddrNotFound.Format(valAddr.String()),
 		},
@@ -81,7 +86,7 @@ func TestCanAcceptKeepAlive(t *testing.T) {
 			name:               "pigeon version too low",
 			inputPigeonVersion: "v1.3.100",
 			setup: func(services mockedServices) {
-				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t))
+				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t), nil)
 			},
 			expectedErr: ErrValidatorPigeonOutOfDate.Format(valAddr.String(), "v1.3.100", "v1.4.0"),
 		},
@@ -89,28 +94,28 @@ func TestCanAcceptKeepAlive(t *testing.T) {
 			name:               "pigeon version equal, validator found",
 			inputPigeonVersion: "v1.4.0",
 			setup: func(services mockedServices) {
-				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t))
+				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t), nil)
 			},
 		},
 		{
 			name:               "pigeon version major higher, validator found",
 			inputPigeonVersion: "v2.0.0",
 			setup: func(services mockedServices) {
-				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t))
+				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t), nil)
 			},
 		},
 		{
 			name:               "pigeon version patch higher, validator found",
 			inputPigeonVersion: "v1.4.1",
 			setup: func(services mockedServices) {
-				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t))
+				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t), nil)
 			},
 		},
 		{
 			name:               "pigeon version minor higher, validator found",
 			inputPigeonVersion: "v1.5.0",
 			setup: func(services mockedServices) {
-				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t))
+				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t), nil)
 			},
 		},
 	}
@@ -127,14 +132,15 @@ func TestCanAcceptKeepAlive(t *testing.T) {
 }
 
 func TestUpdateGracePeriod(t *testing.T) {
-	k, ms, ctx := newValsetKeeper(t)
-	ctx = ctx.WithBlockHeight(1000)
+	k, ms, newCtx := newValsetKeeper(t)
+	sdkCtx := sdk.UnwrapSDKContext(newCtx)
+	sdkCtx = sdkCtx.WithBlockHeight(1000)
 
 	valBuild := func(id int) (*mocks.StakingValidatorI, sdk.ValAddress) {
 		val := sdk.ValAddress(fmt.Sprintf("validator_%d", id))
 		vali := mocks.NewStakingValidatorI(t)
 		vali.On("IsJailed").Return(false)
-		vali.On("GetOperator").Return(val)
+		vali.On("GetOperator").Return(val.String())
 		return vali, val
 	}
 
@@ -147,9 +153,9 @@ func TestUpdateGracePeriod(t *testing.T) {
 	v3, a3 := valBuild(3)
 
 	teardown := func() {
-		k.unjailedSnapshotStore(ctx).Delete([]byte(cUnjailedSnapshotStoreKey))
+		k.unjailedSnapshotStore(sdkCtx).Delete([]byte(cUnjailedSnapshotStoreKey))
 		for _, v := range []sdk.ValAddress{a1, a2, a3} {
-			k.gracePeriodStore(ctx).Delete(v)
+			k.gracePeriodStore(sdkCtx).Delete(v)
 		}
 	}
 
@@ -158,43 +164,45 @@ func TestUpdateGracePeriod(t *testing.T) {
 		callback(0, v1)
 		callback(0, v2)
 		callback(0, v3)
-	}).Return(false)
+	}).Return(nil)
 
 	t.Run("with no elements in past snapshot", func(t *testing.T) {
 		t.Cleanup(teardown)
-		k.UpdateGracePeriod(ctx)
+		k.UpdateGracePeriod(sdkCtx)
 		for _, v := range []sdk.ValAddress{a1, a2, a3} {
-			x := int64(sdk.BigEndianToUint64(k.gracePeriodStore(ctx).Get(v)))
-			require.Equal(t, ctx.BlockHeight(), x)
+			x := int64(sdk.BigEndianToUint64(k.gracePeriodStore(sdkCtx).Get(v)))
+			require.Equal(t, sdkCtx.BlockHeight(), x)
 		}
 	})
 
 	t.Run("with all elements in past snapshot", func(t *testing.T) {
 		t.Cleanup(teardown)
-		putSn(ctx, a1, a2, a3)
-		k.UpdateGracePeriod(ctx)
+		putSn(sdkCtx, a1, a2, a3)
+		k.UpdateGracePeriod(sdkCtx)
 		for _, v := range []sdk.ValAddress{a1, a2, a3} {
-			x := k.gracePeriodStore(ctx).Get(v)
+			x := k.gracePeriodStore(sdkCtx).Get(v)
 			require.Nil(t, x)
 		}
 	})
 
 	t.Run("with some elements in past snapshot", func(t *testing.T) {
 		t.Cleanup(teardown)
-		putSn(ctx, a1, a3)
-		k.UpdateGracePeriod(ctx)
+		putSn(sdkCtx, a1, a3)
+		k.UpdateGracePeriod(sdkCtx)
 		for _, v := range []sdk.ValAddress{a1, a3} {
-			x := k.gracePeriodStore(ctx).Get(v)
+			x := k.gracePeriodStore(sdkCtx).Get(v)
 			require.Nil(t, x)
 		}
-		x := int64(sdk.BigEndianToUint64(k.gracePeriodStore(ctx).Get(a2)))
-		require.Equal(t, ctx.BlockHeight(), x)
+		x := int64(sdk.BigEndianToUint64(k.gracePeriodStore(sdkCtx).Get(a2)))
+		require.Equal(t, sdkCtx.BlockHeight(), x)
 	})
 }
 
 func TestJailBackoff(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
-	ctx = ctx.WithBlockHeight(1000).WithBlockTime(time.Date(2020, 1, 1, 12, 30, 0, 0, time.UTC))
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	sdkCtx = sdkCtx.WithBlockHeight(1000).WithBlockTime(time.Date(2020, 1, 1, 12, 30, 0, 0, time.UTC))
 
 	valBuild := func(id int) (*mocks.StakingValidatorI, sdk.ValAddress) {
 		valAddr := sdk.ValAddress(fmt.Sprintf("validator_%d", id))
@@ -214,7 +222,7 @@ func TestJailBackoff(t *testing.T) {
 		callback(0, v1)
 		callback(0, v2)
 		callback(0, v3)
-	}).Return(false).Maybe()
+	}).Return(nil)
 
 	// Should reset jail backoff if recovered
 	t.Run("with non-recovering validator", func(t *testing.T) {
@@ -222,21 +230,21 @@ func TestJailBackoff(t *testing.T) {
 			t.Run(fmt.Sprintf("[%d] Paloma should increase the jail sentence with every occurrence", i), func(t *testing.T) {
 				val, valAddr := valBuild(10 + i)
 				consAddr := sdk.ConsAddress(valAddr)
-				ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(val)
+				ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(val, nil)
 				val.On("IsBonded").Unset()
 				val.On("GetConsensusPower", k.powerReduction).Unset()
 				val.On("GetConsensusPower", k.powerReduction).Return(int64(100))
-				val.On("GetConsAddr").Return(consAddr, nil)
-				ms.SlashingKeeper.On("Jail", mock.Anything, consAddr)
-				ms.SlashingKeeper.On("JailUntil", mock.Anything, consAddr, ctx.BlockTime().Add(v))
+				val.On("GetConsAddr").Return(consAddr.Bytes(), nil)
+				ms.SlashingKeeper.On("Jail", mock.Anything, consAddr).Return(nil)
+				ms.SlashingKeeper.On("JailUntil", sdkCtx, consAddr, sdkCtx.BlockTime().Add(v)).Return(nil)
 				if i > 0 {
-					k.jailLog.Set(ctx, consAddr, &types.JailRecord{
+					k.jailLog.Set(sdkCtx, consAddr, &types.JailRecord{
 						Address:  consAddr.Bytes(),
 						Duration: jailSentences[i-1],
-						JailedAt: ctx.BlockTime().Add(-1 * jailSentences[i-1]),
+						JailedAt: sdkCtx.BlockTime().Add(-1 * jailSentences[i-1]),
 					})
 				}
-				err := k.Jail(ctx, valAddr, "foobar")
+				err := k.Jail(sdkCtx, valAddr.Bytes(), "foobar")
 				require.NoError(t, err)
 			})
 		}
@@ -244,19 +252,19 @@ func TestJailBackoff(t *testing.T) {
 		t.Run("Paloma should cap the jail sentence at max sentence level", func(t *testing.T) {
 			val, valAddr := valBuild(30)
 			consAddr := sdk.ConsAddress(valAddr)
-			ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(val)
+			ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(val, nil)
 			val.On("IsBonded").Unset()
 			val.On("GetConsensusPower", k.powerReduction).Unset()
 			val.On("GetConsensusPower", k.powerReduction).Return(int64(100))
-			val.On("GetConsAddr").Return(consAddr, nil)
-			ms.SlashingKeeper.On("Jail", mock.Anything, consAddr)
-			ms.SlashingKeeper.On("JailUntil", mock.Anything, consAddr, ctx.BlockTime().Add(jailSentences[len(jailSentences)-1]))
-			k.jailLog.Set(ctx, consAddr, &types.JailRecord{
+			val.On("GetConsAddr").Return(consAddr.Bytes(), nil)
+			ms.SlashingKeeper.On("Jail", mock.Anything, consAddr).Return(nil)
+			ms.SlashingKeeper.On("JailUntil", sdkCtx, consAddr, sdkCtx.BlockTime().Add(jailSentences[len(jailSentences)-1])).Return(nil)
+			k.jailLog.Set(sdkCtx, consAddr, &types.JailRecord{
 				Address:  consAddr.Bytes(),
 				Duration: jailSentences[len(jailSentences)-1],
-				JailedAt: ctx.BlockTime().Add(-1 * jailSentences[len(jailSentences)-1]),
+				JailedAt: sdkCtx.BlockTime().Add(-1 * jailSentences[len(jailSentences)-1]),
 			})
-			err := k.Jail(ctx, valAddr, "foobar")
+			err := k.Jail(sdkCtx, valAddr.Bytes(), "foobar")
 			require.NoError(t, err)
 		})
 	})
@@ -267,21 +275,21 @@ func TestJailBackoff(t *testing.T) {
 			t.Run(fmt.Sprintf("[%d] Paloma should reset the jail sentence, no matter the last duration", i), func(t *testing.T) {
 				val, valAddr := valBuild(50 + i)
 				consAddr := sdk.ConsAddress(valAddr)
-				ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(val)
+				ms.StakingKeeper.On("Validator", mock.Anything, valAddr).Return(val, nil)
 				val.On("IsBonded").Unset()
 				val.On("GetConsensusPower", k.powerReduction).Unset()
 				val.On("GetConsensusPower", k.powerReduction).Return(int64(100))
-				val.On("GetConsAddr").Return(consAddr, nil)
-				ms.SlashingKeeper.On("Jail", mock.Anything, consAddr)
-				ms.SlashingKeeper.On("JailUntil", mock.Anything, consAddr, ctx.BlockTime().Add(jailSentences[0]))
+				val.On("GetConsAddr").Return(consAddr.Bytes(), nil)
+				ms.SlashingKeeper.On("Jail", mock.Anything, consAddr).Return(nil)
+				ms.SlashingKeeper.On("JailUntil", sdkCtx, consAddr, sdkCtx.BlockTime().Add(jailSentences[0])).Return(nil)
 				if i > 0 {
-					k.jailLog.Set(ctx, consAddr, &types.JailRecord{
+					k.jailLog.Set(sdkCtx, consAddr, &types.JailRecord{
 						Address:  consAddr.Bytes(),
 						Duration: jailSentences[i-1],
-						JailedAt: ctx.BlockTime().Add(-1 * jailSentences[i-1]).Add(-1 * time.Hour * 48),
+						JailedAt: sdkCtx.BlockTime().Add(-1 * jailSentences[i-1]).Add(-1 * time.Hour * 48),
 					})
 				}
-				err := k.Jail(ctx, valAddr, "foobar")
+				err := k.Jail(sdkCtx, valAddr.Bytes(), "foobar")
 				require.NoError(t, err)
 			})
 		}

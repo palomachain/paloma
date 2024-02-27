@@ -8,6 +8,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/palomachain/paloma/x/consensus/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 func SimulateMsgAddMessagesSignatures(
@@ -19,7 +20,9 @@ func SimulateMsgAddMessagesSignatures(
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 		msg := &types.MsgAddMessagesSignatures{
-			Creator: simAccount.Address.String(),
+			Metadata: valsettypes.MsgMetadata{
+				Creator: simAccount.Address.String(),
+			},
 		}
 
 		// TODO: Handling the AddMessagesSignatures simulation

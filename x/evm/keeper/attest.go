@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -8,8 +9,10 @@ import (
 
 	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/VolumeFi/whoops"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/palomachain/paloma/util/liblog"
@@ -40,7 +43,7 @@ func (c *consensusPower) setTotal(total sdkmath.Int) {
 func (c *consensusPower) add(power sdkmath.Int) {
 	var zero sdkmath.Int
 	if c.runningSum == zero {
-		c.runningSum = sdk.NewInt(0)
+		c.runningSum = sdkmath.NewInt(0)
 	}
 	c.runningSum = c.runningSum.Add(power)
 }
@@ -55,13 +58,14 @@ func (c *consensusPower) consensus() bool {
 		===
 		3 * sum >= totalPower * 2
 	*/
-	return c.runningSum.Mul(sdk.NewInt(3)).GTE(
-		c.totalPower.Mul(sdk.NewInt(2)),
+	return c.runningSum.Mul(sdkmath.NewInt(3)).GTE(
+		c.totalPower.Mul(sdkmath.NewInt(2)),
 	)
 }
 
-func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
-	logger := k.Logger(ctx).WithFields(
+func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(sdkCtx).WithFields(
 		"component", "attest-router",
 		"msg-id", msg.GetId(),
 		"msg-nonce", msg.Nonce())
@@ -71,8 +75,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return nil
 	}
 
-	// Use transactionalsed context only!
-	ctx, writeCache := ctx.CacheContext()
+	cacheCtx, writeCache := sdkCtx.CacheContext()
 	defer func() {
 		if err != nil {
 			logger.WithError(err).Error("failed to attest. Skipping writeback.")
@@ -87,7 +90,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return err
 	}
 
-	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
+	evidence, err := k.findEvidenceThatWon(cacheCtx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			logger.WithError(err).Error("consensus not achieved")
@@ -109,15 +112,15 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 			success = true
 			tx, err := winner.GetTX()
 			if err == nil {
-				k.setTxAsAlreadyProcessed(ctx, tx)
+				k.setTxAsAlreadyProcessed(cacheCtx, tx)
 			}
 		}
 
 		handledAt := msg.GetHandledAtBlockHeight()
 		if handledAt == nil {
-			handledAt = func(i math.Int) *math.Int { return &i }(sdk.NewInt(ctx.BlockHeight()))
+			handledAt = func(i math.Int) *math.Int { return &i }(sdkmath.NewInt(cacheCtx.BlockHeight()))
 		}
-		publishMessageAttestedEvent(ctx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
+		publishMessageAttestedEvent(cacheCtx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
 
 		// given that there was enough evidence for a proof, regardless of the outcome,
 		// we should remove this from the queue as there isn't much that we can do about it.
@@ -138,17 +141,17 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	}
 	switch rawAction.(type) {
 	case *types.Message_UploadSmartContract:
-		return newUploadSmartContractAttester(&k, logger, params).Execute(ctx)
+		return newUploadSmartContractAttester(&k, logger, params).Execute(cacheCtx)
 	case *types.Message_UpdateValset:
-		return newUpdateValsetAttester(&k, logger, q, params).Execute(ctx)
+		return newUpdateValsetAttester(&k, logger, q, params).Execute(cacheCtx)
 	case *types.Message_SubmitLogicCall:
-		return newSubmitLogicCallAttester(&k, logger, params).Execute(ctx)
+		return newSubmitLogicCallAttester(&k, logger, params).Execute(cacheCtx)
 	}
 
 	return nil
 }
 
-func publishMessageAttestedEvent(ctx sdk.Context, k *Keeper, msgID uint64, assignee string, assignedAt math.Int, handledAt math.Int, successful bool) {
+func publishMessageAttestedEvent(ctx context.Context, k *Keeper, msgID uint64, assignee string, assignedAt math.Int, handledAt math.Int, successful bool) {
 	valAddr, err := sdk.ValAddressFromBech32(assignee)
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithFields("assignee", assignee, "msg-id", msgID).Error("failed to get validator address from bech32.")
@@ -166,7 +169,7 @@ func publishMessageAttestedEvent(ctx sdk.Context, k *Keeper, msgID uint64, assig
 }
 
 func attestTransactionIntegrity(
-	ctx sdk.Context,
+	ctx context.Context,
 	k *Keeper,
 	proof *types.TxExecutedProof,
 	verifyTx func(tx *ethtypes.Transaction) error,
@@ -191,7 +194,7 @@ func attestTransactionIntegrity(
 }
 
 func (k Keeper) findEvidenceThatWon(
-	ctx sdk.Context,
+	ctx context.Context,
 	evidences []*consensustypes.Evidence,
 ) (any, error) {
 	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
@@ -275,7 +278,7 @@ func (k Keeper) findEvidenceThatWon(
 	return nil, ErrConsensusNotAchieved
 }
 
-func (k Keeper) SetSmartContractAsActive(ctx sdk.Context, smartContractID uint64, chainReferenceID string) (err error) {
+func (k Keeper) SetSmartContractAsActive(ctx context.Context, smartContractID uint64, chainReferenceID string) (err error) {
 	logger := liblog.FromSDKLogger(k.Logger(ctx))
 	defer func() {
 		if err == nil {
@@ -311,17 +314,17 @@ func (k Keeper) SetSmartContractAsActive(ctx sdk.Context, smartContractID uint64
 	return nil
 }
 
-func (k Keeper) txAlreadyProcessedStore(ctx sdk.Context) sdk.KVStore {
-	kv := ctx.KVStore(k.storeKey)
-	return prefix.NewStore(kv, []byte("tx-processed"))
+func (k Keeper) txAlreadyProcessedStore(ctx context.Context) storetypes.KVStore {
+	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(s, []byte("tx-processed"))
 }
 
-func (k Keeper) setTxAsAlreadyProcessed(ctx sdk.Context, tx *ethtypes.Transaction) {
+func (k Keeper) setTxAsAlreadyProcessed(ctx context.Context, tx *ethtypes.Transaction) {
 	kv := k.txAlreadyProcessedStore(ctx)
 	kv.Set(tx.Hash().Bytes(), []byte{1})
 }
 
-func (k Keeper) isTxProcessed(ctx sdk.Context, tx *ethtypes.Transaction) bool {
+func (k Keeper) isTxProcessed(ctx context.Context, tx *ethtypes.Transaction) bool {
 	kv := k.txAlreadyProcessedStore(ctx)
 	return kv.Has(tx.Hash().Bytes())
 }

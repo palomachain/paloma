@@ -8,6 +8,6 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 
 // GenesisState defines the consensus module's genesis state.
 message GenesisState {
-  Params params  = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
   string port_id = 2;
 }

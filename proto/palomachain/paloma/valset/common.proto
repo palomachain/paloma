@@ -2,16 +2,17 @@ syntax = "proto3";
 package palomachain.paloma.valset;
 
 import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
 
 option go_package = "github.com/palomachain/paloma/x/valset/types";
 
 // MsgMetadata contains a record of the message creator (validator address)
 // as well as a list of message signers (e.g. operator keys, multisigs, etc...)
-// Getters are implemented manually to avoid use of pointer methods, which breaks
-// interface casting.
+// Getters are implemented manually to avoid use of pointer methods, which
+// breaks interface casting.
 message MsgMetadata {
+  option (cosmos.msg.v1.signer) = "signers";
   option (gogoproto.goproto_getters) = false;
   string creator = 1;
   repeated string signers = 2;
 }
-

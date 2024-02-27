@@ -6,10 +6,6 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
@@ -20,14 +16,15 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -36,7 +33,8 @@ var (
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Empty represents an empty message
-type Empty struct{}
+type Empty struct {
+}
 
 func (m *Empty) Reset()         { *m = Empty{} }
 func (m *Empty) String() string { return proto.CompactTextString(m) }
@@ -44,11 +42,9 @@ func (*Empty) ProtoMessage()    {}
 func (*Empty) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3c46127e87024275, []int{0}
 }
-
 func (m *Empty) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Empty) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Empty.Marshal(b, m, deterministic)
@@ -61,15 +57,12 @@ func (m *Empty) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Empty) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Empty.Merge(m, src)
 }
-
 func (m *Empty) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Empty) XXX_DiscardUnknown() {
 	xxx_messageInfo_Empty.DiscardUnknown(m)
 }
@@ -77,7 +70,8 @@ func (m *Empty) XXX_DiscardUnknown() {
 var xxx_messageInfo_Empty proto.InternalMessageInfo
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
-type QueryParamsRequest struct{}
+type QueryParamsRequest struct {
+}
 
 func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
 func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
@@ -85,11 +79,9 @@ func (*QueryParamsRequest) ProtoMessage()    {}
 func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3c46127e87024275, []int{1}
 }
-
 func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsRequest.Marshal(b, m, deterministic)
@@ -102,15 +94,12 @@ func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-
 func (m *QueryParamsRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsRequest.Merge(m, src)
 }
-
 func (m *QueryParamsRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsRequest.DiscardUnknown(m)
 }
@@ -129,11 +118,9 @@ func (*QueryParamsResponse) ProtoMessage()    {}
 func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3c46127e87024275, []int{2}
 }
-
 func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsResponse.Marshal(b, m, deterministic)
@@ -146,15 +133,12 @@ func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-
 func (m *QueryParamsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsResponse.Merge(m, src)
 }
-
 func (m *QueryParamsResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryParamsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsResponse.DiscardUnknown(m)
 }
@@ -170,7 +154,8 @@ func (m *QueryParamsResponse) GetParams() Params {
 
 // QueryValidatorRequest is the request type for the Query/Validator RPC method.
 type QueryValidatorRequest struct {
-	// val_address holds the validator address of the validator you want to query for.
+	// val_address holds the validator address of the validator you want to query
+	// for.
 	ValAddress string `protobuf:"bytes,1,opt,name=val_address,json=valAddress,proto3" json:"val_address,omitempty"`
 }
 
@@ -180,11 +165,9 @@ func (*QueryValidatorRequest) ProtoMessage()    {}
 func (*QueryValidatorRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3c46127e87024275, []int{3}
 }
-
 func (m *QueryValidatorRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryValidatorRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryValidatorRequest.Marshal(b, m, deterministic)
@@ -197,15 +180,12 @@ func (m *QueryValidatorRequest) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
-
 func (m *QueryValidatorRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryValidatorRequest.Merge(m, src)
 }
-
 func (m *QueryValidatorRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryValidatorRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryValidatorRequest.DiscardUnknown(m)
 }
@@ -221,7 +201,8 @@ func (m *QueryValidatorRequest) GetValAddress() string {
 
 // QueryValidatorResponse is response type for the Query/Validator RPC method.
 type QueryValidatorResponse struct {
-	// validator_metrics holds the collected metrics info of requested val cons address
+	// validator_metrics holds the collected metrics info of requested val cons
+	// address
 	ValMetrics ValidatorMetrics `protobuf:"bytes,1,opt,name=val_metrics,json=valMetrics,proto3" json:"val_metrics"`
 }
 
@@ -231,11 +212,9 @@ func (*QueryValidatorResponse) ProtoMessage()    {}
 func (*QueryValidatorResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3c46127e87024275, []int{4}
 }
-
 func (m *QueryValidatorResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryValidatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryValidatorResponse.Marshal(b, m, deterministic)
@@ -248,15 +227,12 @@ func (m *QueryValidatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-
 func (m *QueryValidatorResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryValidatorResponse.Merge(m, src)
 }
-
 func (m *QueryValidatorResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryValidatorResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryValidatorResponse.DiscardUnknown(m)
 }
@@ -272,7 +248,8 @@ func (m *QueryValidatorResponse) GetValMetrics() ValidatorMetrics {
 
 // QueryValidatorsResponse is response type for the Query/Validators RPC method.
 type QueryValidatorsResponse struct {
-	// validator_metrics holds the collected metrics info of all validators on record
+	// validator_metrics holds the collected metrics info of all validators on
+	// record
 	ValMetrics []ValidatorMetrics `protobuf:"bytes,1,rep,name=val_metrics,json=valMetrics,proto3" json:"val_metrics"`
 }
 
@@ -282,11 +259,9 @@ func (*QueryValidatorsResponse) ProtoMessage()    {}
 func (*QueryValidatorsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3c46127e87024275, []int{5}
 }
-
 func (m *QueryValidatorsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryValidatorsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryValidatorsResponse.Marshal(b, m, deterministic)
@@ -299,15 +274,12 @@ func (m *QueryValidatorsResponse) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-
 func (m *QueryValidatorsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryValidatorsResponse.Merge(m, src)
 }
-
 func (m *QueryValidatorsResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryValidatorsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryValidatorsResponse.DiscardUnknown(m)
 }
@@ -321,9 +293,11 @@ func (m *QueryValidatorsResponse) GetValMetrics() []ValidatorMetrics {
 	return nil
 }
 
-// QueryHistoricRelayDataRequest is the request type for the Query/HistoricRelayData RPC method.
+// QueryHistoricRelayDataRequest is the request type for the
+// Query/HistoricRelayData RPC method.
 type QueryHistoricRelayDataRequest struct {
-	// val_address holds the validator address of the validator you want to query for.
+	// val_address holds the validator address of the validator you want to query
+	// for.
 	ValAddress string `protobuf:"bytes,1,opt,name=val_address,json=valAddress,proto3" json:"val_address,omitempty"`
 }
 
@@ -333,11 +307,9 @@ func (*QueryHistoricRelayDataRequest) ProtoMessage()    {}
 func (*QueryHistoricRelayDataRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3c46127e87024275, []int{6}
 }
-
 func (m *QueryHistoricRelayDataRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryHistoricRelayDataRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryHistoricRelayDataRequest.Marshal(b, m, deterministic)
@@ -350,15 +322,12 @@ func (m *QueryHistoricRelayDataRequest) XXX_Marshal(b []byte, deterministic bool
 		return b[:n], nil
 	}
 }
-
 func (m *QueryHistoricRelayDataRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryHistoricRelayDataRequest.Merge(m, src)
 }
-
 func (m *QueryHistoricRelayDataRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryHistoricRelayDataRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryHistoricRelayDataRequest.DiscardUnknown(m)
 }
@@ -372,7 +341,8 @@ func (m *QueryHistoricRelayDataRequest) GetValAddress() string {
 	return ""
 }
 
-// QueryHistoricRelayDataResponse is response type for the Query/HistoricRelayData RPC method.
+// QueryHistoricRelayDataResponse is response type for the
+// Query/HistoricRelayData RPC method.
 type QueryHistoricRelayDataResponse struct {
 	// history contains the historic relay data for the queried validator.
 	History ValidatorHistory `protobuf:"bytes,1,opt,name=history,proto3" json:"history"`
@@ -384,11 +354,9 @@ func (*QueryHistoricRelayDataResponse) ProtoMessage()    {}
 func (*QueryHistoricRelayDataResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3c46127e87024275, []int{7}
 }
-
 func (m *QueryHistoricRelayDataResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryHistoricRelayDataResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryHistoricRelayDataResponse.Marshal(b, m, deterministic)
@@ -401,15 +369,12 @@ func (m *QueryHistoricRelayDataResponse) XXX_Marshal(b []byte, deterministic boo
 		return b[:n], nil
 	}
 }
-
 func (m *QueryHistoricRelayDataResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryHistoricRelayDataResponse.Merge(m, src)
 }
-
 func (m *QueryHistoricRelayDataResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryHistoricRelayDataResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryHistoricRelayDataResponse.DiscardUnknown(m)
 }
@@ -480,10 +445,8 @@ var fileDescriptor_3c46127e87024275 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -562,20 +525,18 @@ type QueryServer interface {
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
-type UnimplementedQueryServer struct{}
+type UnimplementedQueryServer struct {
+}
 
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
-
 func (*UnimplementedQueryServer) Validator(ctx context.Context, req *QueryValidatorRequest) (*QueryValidatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Validator not implemented")
 }
-
 func (*UnimplementedQueryServer) Validators(ctx context.Context, req *Empty) (*QueryValidatorsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Validators not implemented")
 }
-
 func (*UnimplementedQueryServer) HistoricRelayData(ctx context.Context, req *QueryHistoricRelayDataRequest) (*QueryHistoricRelayDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HistoricRelayData not implemented")
 }
@@ -934,7 +895,6 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *Empty) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1030,11 +990,9 @@ func (m *QueryHistoricRelayDataResponse) Size() (n int) {
 func sovQuery(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *Empty) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1085,7 +1043,6 @@ func (m *Empty) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1136,7 +1093,6 @@ func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1220,7 +1176,6 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryValidatorRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1303,7 +1258,6 @@ func (m *QueryValidatorRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryValidatorResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1387,7 +1341,6 @@ func (m *QueryValidatorResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryValidatorsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1472,7 +1425,6 @@ func (m *QueryValidatorsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryHistoricRelayDataRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1555,7 +1507,6 @@ func (m *QueryHistoricRelayDataRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryHistoricRelayDataResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1639,7 +1590,6 @@ func (m *QueryHistoricRelayDataResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipQuery(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

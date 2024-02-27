@@ -11,8 +11,7 @@ var _ sdk.Msg = &MsgExecuteJob{}
 
 func NewMsgExecuteJob(creator string, jobID string) *MsgExecuteJob {
 	return &MsgExecuteJob{
-		Creator: creator,
-		JobID:   jobID,
+		JobID: jobID,
 	}
 }
 

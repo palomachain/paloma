@@ -10,7 +10,7 @@ import (
 
 func (msgSrv msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJob) (*types.MsgExecuteJobResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	logger := liblog.FromSDKLogger(msgSrv.Logger(ctx)).WithFields("job-id", msg.GetJobID())
+	logger := liblog.FromSDKLogger(msgSrv.Keeper.Logger(ctx)).WithFields("job-id", msg.GetJobID())
 	logger.Debug("Received ExecuteJob message.")
 
 	// Find the public key of the sender
@@ -20,7 +20,7 @@ func (msgSrv msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJ
 		return nil, err
 	}
 
-	senderAddress := msgSrv.GetAccount(ctx, creator).GetAddress()
+	senderAddress := msgSrv.Keeper.GetAccount(ctx, creator).GetAddress()
 
 	msgID, err := msgSrv.Keeper.ExecuteJob(ctx, msg.GetJobID(), msg.GetPayload(), senderAddress, nil)
 	if err != nil {

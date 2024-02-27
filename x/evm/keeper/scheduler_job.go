@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -22,7 +23,7 @@ func (k Keeper) XChainType() xchain.Type {
 	return xchainType
 }
 
-func (k Keeper) XChainReferenceIDs(ctx sdk.Context) []xchain.ReferenceID {
+func (k Keeper) XChainReferenceIDs(ctx context.Context) []xchain.ReferenceID {
 	chainInfos, err := k.GetAllChainInfos(ctx)
 	if err != nil {
 		panic(err)
@@ -51,13 +52,13 @@ func (k Keeper) unmarshalJob(definition, payload []byte, chainReferenceID xchain
 	return jobDefinition, jobPayload, nil
 }
 
-func (k Keeper) VerifyJob(ctx sdk.Context, definition, payload []byte, chainReferenceID xchain.ReferenceID) error {
+func (k Keeper) VerifyJob(ctx context.Context, definition, payload []byte, chainReferenceID xchain.ReferenceID) error {
 	_, _, err := k.unmarshalJob(definition, payload, chainReferenceID)
 	return err
 }
 
 // ExecuteJob schedules the definition and payload for execution via consensus queue
-func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) (uint64, error) {
+func (k Keeper) ExecuteJob(ctx context.Context, jcfg *xchain.JobConfiguration) (uint64, error) {
 	def, load, err := k.unmarshalJob(jcfg.Definition, jcfg.Payload, jcfg.RefID)
 	if err != nil {
 		return 0, err
@@ -86,6 +87,7 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) (uint
 		return 0, fmt.Errorf("inject sender into payload: %w", err)
 	}
 
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return k.AddSmartContractExecutionToConsensus(
 		ctx,
 		jcfg.RefID,
@@ -94,7 +96,7 @@ func (k Keeper) ExecuteJob(ctx sdk.Context, jcfg *xchain.JobConfiguration) (uint
 			HexContractAddress: def.GetAddress(),
 			Abi:                common.FromHex(def.GetABI()),
 			Payload:            modifiedPayload,
-			Deadline:           ctx.BlockTime().Add(10 * time.Minute).Unix(),
+			Deadline:           sdkCtx.BlockTime().Add(10 * time.Minute).Unix(),
 			SenderAddress:      jcfg.SenderAddress,
 			ContractAddress:    jcfg.ContractAddress,
 			ExecutionRequirements: types.SubmitLogicCall_ExecutionRequirements{

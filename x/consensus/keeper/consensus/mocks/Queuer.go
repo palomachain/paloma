@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	"context"
 	consensus "github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 
@@ -17,7 +18,7 @@ type Queuer struct {
 }
 
 // AddEvidence provides a mock function with given fields: ctx, id, evidence
-func (_m *Queuer) AddEvidence(ctx types.Context, id uint64, evidence *consensustypes.Evidence) error {
+func (_m *Queuer) AddEvidence(ctx context.Context, id uint64, evidence *consensustypes.Evidence) error {
 	ret := _m.Called(ctx, id, evidence)
 
 	if len(ret) == 0 {
@@ -25,7 +26,7 @@ func (_m *Queuer) AddEvidence(ctx types.Context, id uint64, evidence *consensust
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, uint64, *consensustypes.Evidence) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64, *consensustypes.Evidence) error); ok {
 		r0 = rf(ctx, id, evidence)
 	} else {
 		r0 = ret.Error(0)
@@ -35,7 +36,7 @@ func (_m *Queuer) AddEvidence(ctx types.Context, id uint64, evidence *consensust
 }
 
 // AddSignature provides a mock function with given fields: ctx, id, signData
-func (_m *Queuer) AddSignature(ctx types.Context, id uint64, signData *consensustypes.SignData) error {
+func (_m *Queuer) AddSignature(ctx context.Context, id uint64, signData *consensustypes.SignData) error {
 	ret := _m.Called(ctx, id, signData)
 
 	if len(ret) == 0 {
@@ -43,7 +44,7 @@ func (_m *Queuer) AddSignature(ctx types.Context, id uint64, signData *consensus
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, uint64, *consensustypes.SignData) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64, *consensustypes.SignData) error); ok {
 		r0 = rf(ctx, id, signData)
 	} else {
 		r0 = ret.Error(0)
@@ -81,7 +82,7 @@ func (_m *Queuer) ChainInfo() (string, string) {
 }
 
 // GetAll provides a mock function with given fields: _a0
-func (_m *Queuer) GetAll(_a0 types.Context) ([]consensustypes.QueuedSignedMessageI, error) {
+func (_m *Queuer) GetAll(_a0 context.Context) ([]consensustypes.QueuedSignedMessageI, error) {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
@@ -90,10 +91,10 @@ func (_m *Queuer) GetAll(_a0 types.Context) ([]consensustypes.QueuedSignedMessag
 
 	var r0 []consensustypes.QueuedSignedMessageI
 	var r1 error
-	if rf, ok := ret.Get(0).(func(types.Context) ([]consensustypes.QueuedSignedMessageI, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) ([]consensustypes.QueuedSignedMessageI, error)); ok {
 		return rf(_a0)
 	}
-	if rf, ok := ret.Get(0).(func(types.Context) []consensustypes.QueuedSignedMessageI); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) []consensustypes.QueuedSignedMessageI); ok {
 		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
@@ -101,7 +102,7 @@ func (_m *Queuer) GetAll(_a0 types.Context) ([]consensustypes.QueuedSignedMessag
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(types.Context) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
@@ -111,7 +112,7 @@ func (_m *Queuer) GetAll(_a0 types.Context) ([]consensustypes.QueuedSignedMessag
 }
 
 // GetErrorData provides a mock function with given fields: ctx, id
-func (_m *Queuer) GetErrorData(ctx types.Context, id uint64) (*consensustypes.ErrorData, error) {
+func (_m *Queuer) GetErrorData(ctx context.Context, id uint64) (*consensustypes.ErrorData, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -120,10 +121,10 @@ func (_m *Queuer) GetErrorData(ctx types.Context, id uint64) (*consensustypes.Er
 
 	var r0 *consensustypes.ErrorData
 	var r1 error
-	if rf, ok := ret.Get(0).(func(types.Context, uint64) (*consensustypes.ErrorData, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64) (*consensustypes.ErrorData, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(types.Context, uint64) *consensustypes.ErrorData); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64) *consensustypes.ErrorData); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -131,7 +132,7 @@ func (_m *Queuer) GetErrorData(ctx types.Context, id uint64) (*consensustypes.Er
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(types.Context, uint64) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, uint64) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -141,7 +142,7 @@ func (_m *Queuer) GetErrorData(ctx types.Context, id uint64) (*consensustypes.Er
 }
 
 // GetMsgByID provides a mock function with given fields: ctx, id
-func (_m *Queuer) GetMsgByID(ctx types.Context, id uint64) (consensustypes.QueuedSignedMessageI, error) {
+func (_m *Queuer) GetMsgByID(ctx context.Context, id uint64) (consensustypes.QueuedSignedMessageI, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -150,10 +151,10 @@ func (_m *Queuer) GetMsgByID(ctx types.Context, id uint64) (consensustypes.Queue
 
 	var r0 consensustypes.QueuedSignedMessageI
 	var r1 error
-	if rf, ok := ret.Get(0).(func(types.Context, uint64) (consensustypes.QueuedSignedMessageI, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64) (consensustypes.QueuedSignedMessageI, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(types.Context, uint64) consensustypes.QueuedSignedMessageI); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64) consensustypes.QueuedSignedMessageI); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -161,7 +162,7 @@ func (_m *Queuer) GetMsgByID(ctx types.Context, id uint64) (consensustypes.Queue
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(types.Context, uint64) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, uint64) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -171,7 +172,7 @@ func (_m *Queuer) GetMsgByID(ctx types.Context, id uint64) (consensustypes.Queue
 }
 
 // GetPublicAccessData provides a mock function with given fields: ctx, id
-func (_m *Queuer) GetPublicAccessData(ctx types.Context, id uint64) (*consensustypes.PublicAccessData, error) {
+func (_m *Queuer) GetPublicAccessData(ctx context.Context, id uint64) (*consensustypes.PublicAccessData, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -180,10 +181,10 @@ func (_m *Queuer) GetPublicAccessData(ctx types.Context, id uint64) (*consensust
 
 	var r0 *consensustypes.PublicAccessData
 	var r1 error
-	if rf, ok := ret.Get(0).(func(types.Context, uint64) (*consensustypes.PublicAccessData, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64) (*consensustypes.PublicAccessData, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(types.Context, uint64) *consensustypes.PublicAccessData); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64) *consensustypes.PublicAccessData); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -191,7 +192,7 @@ func (_m *Queuer) GetPublicAccessData(ctx types.Context, id uint64) (*consensust
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(types.Context, uint64) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, uint64) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -201,7 +202,7 @@ func (_m *Queuer) GetPublicAccessData(ctx types.Context, id uint64) (*consensust
 }
 
 // Put provides a mock function with given fields: _a0, _a1, _a2
-func (_m *Queuer) Put(_a0 types.Context, _a1 consensustypes.ConsensusMsg, _a2 *consensus.PutOptions) (uint64, error) {
+func (_m *Queuer) Put(_a0 context.Context, _a1 consensustypes.ConsensusMsg, _a2 *consensus.PutOptions) (uint64, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	if len(ret) == 0 {
@@ -210,16 +211,16 @@ func (_m *Queuer) Put(_a0 types.Context, _a1 consensustypes.ConsensusMsg, _a2 *c
 
 	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(types.Context, consensustypes.ConsensusMsg, *consensus.PutOptions) (uint64, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, consensustypes.ConsensusMsg, *consensus.PutOptions) (uint64, error)); ok {
 		return rf(_a0, _a1, _a2)
 	}
-	if rf, ok := ret.Get(0).(func(types.Context, consensustypes.ConsensusMsg, *consensus.PutOptions) uint64); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, consensustypes.ConsensusMsg, *consensus.PutOptions) uint64); ok {
 		r0 = rf(_a0, _a1, _a2)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
-	if rf, ok := ret.Get(1).(func(types.Context, consensustypes.ConsensusMsg, *consensus.PutOptions) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, consensustypes.ConsensusMsg, *consensus.PutOptions) error); ok {
 		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
@@ -247,7 +248,7 @@ func (_m *Queuer) ReassignValidator(ctx types.Context, id uint64, val string) er
 }
 
 // Remove provides a mock function with given fields: _a0, _a1
-func (_m *Queuer) Remove(_a0 types.Context, _a1 uint64) error {
+func (_m *Queuer) Remove(_a0 context.Context, _a1 uint64) error {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
@@ -255,7 +256,7 @@ func (_m *Queuer) Remove(_a0 types.Context, _a1 uint64) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, uint64) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64) error); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
@@ -265,7 +266,7 @@ func (_m *Queuer) Remove(_a0 types.Context, _a1 uint64) error {
 }
 
 // SetErrorData provides a mock function with given fields: ctx, id, data
-func (_m *Queuer) SetErrorData(ctx types.Context, id uint64, data *consensustypes.ErrorData) error {
+func (_m *Queuer) SetErrorData(ctx context.Context, id uint64, data *consensustypes.ErrorData) error {
 	ret := _m.Called(ctx, id, data)
 
 	if len(ret) == 0 {
@@ -273,7 +274,7 @@ func (_m *Queuer) SetErrorData(ctx types.Context, id uint64, data *consensustype
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, uint64, *consensustypes.ErrorData) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64, *consensustypes.ErrorData) error); ok {
 		r0 = rf(ctx, id, data)
 	} else {
 		r0 = ret.Error(0)
@@ -283,7 +284,7 @@ func (_m *Queuer) SetErrorData(ctx types.Context, id uint64, data *consensustype
 }
 
 // SetPublicAccessData provides a mock function with given fields: ctx, id, data
-func (_m *Queuer) SetPublicAccessData(ctx types.Context, id uint64, data *consensustypes.PublicAccessData) error {
+func (_m *Queuer) SetPublicAccessData(ctx context.Context, id uint64, data *consensustypes.PublicAccessData) error {
 	ret := _m.Called(ctx, id, data)
 
 	if len(ret) == 0 {
@@ -291,7 +292,7 @@ func (_m *Queuer) SetPublicAccessData(ctx types.Context, id uint64, data *consen
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.Context, uint64, *consensustypes.PublicAccessData) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint64, *consensustypes.PublicAccessData) error); ok {
 		r0 = rf(ctx, id, data)
 	} else {
 		r0 = ret.Error(0)
@@ -305,8 +306,7 @@ func (_m *Queuer) SetPublicAccessData(ctx types.Context, id uint64, data *consen
 func NewQueuer(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *Queuer {
+}) *Queuer {
 	mock := &Queuer{}
 	mock.Mock.Test(t)
 

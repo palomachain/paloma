@@ -1,22 +1,23 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
+	"cosmossdk.io/core/address"
 	sdkerrors "cosmossdk.io/errors"
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -29,45 +30,38 @@ var (
 
 // Keeper maintains the link to storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	paramSpace paramtypes.Subspace
-
 	cdc               codec.BinaryCodec // The wire codec for binary encoding/decoding.
 	bankKeeper        types.BankKeeper
 	StakingKeeper     types.StakingKeeper
 	SlashingKeeper    types.SlashingKeeper
-	DistKeeper        types.DistributionKeeper
+	DistKeeper        distrkeeper.Keeper
 	accountKeeper     types.AccountKeeper
 	ibcTransferKeeper ibctransferkeeper.Keeper
 	evmKeeper         types.EVMKeeper
-
-	storeGetter keeperutil.StoreGetter
+	AddressCodec      address.Codec
+	storeGetter       keeperutil.StoreGetter
 
 	AttestationHandler interface {
-		Handle(sdk.Context, types.Attestation, types.EthereumClaim) error
+		Handle(context.Context, types.Attestation, types.EthereumClaim) error
 	}
+	authority string
 }
 
 // NewKeeper returns a new instance of the gravity keeper
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	paramSpace paramtypes.Subspace,
 	accKeeper types.AccountKeeper,
 	stakingKeeper types.StakingKeeper,
 	bankKeeper types.BankKeeper,
 	slashingKeeper types.SlashingKeeper,
-	distributionKeeper types.DistributionKeeper,
+	distributionKeeper distrkeeper.Keeper,
 	ibcTransferKeeper ibctransferkeeper.Keeper,
 	evmKeeper types.EVMKeeper,
 	storeGetter keeperutil.StoreGetter,
+	authority string,
+	valAddressCodec address.Codec,
 ) Keeper {
-	// set KeyTable if it has not already been set
-	if !paramSpace.HasKeyTable() {
-		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
-	}
-
 	k := Keeper{
-		paramSpace: paramSpace,
-
 		cdc:                cdc,
 		bankKeeper:         bankKeeper,
 		StakingKeeper:      stakingKeeper,
@@ -78,11 +72,12 @@ func NewKeeper(
 		evmKeeper:          evmKeeper,
 		storeGetter:        storeGetter,
 		AttestationHandler: nil,
+		AddressCodec:       valAddressCodec,
 	}
 	attestationHandler := AttestationHandler{keeper: &k}
 	attestationHandler.ValidateMembers()
 	k.AttestationHandler = attestationHandler
-
+	k.authority = authority
 	return k
 }
 
@@ -93,49 +88,41 @@ func NewKeeper(
 // SendToCommunityPool handles incorrect SendToPaloma calls to the community pool, since the calls
 // have already been made on Ethereum there's nothing we can do to reverse them, and we should at least
 // make use of the tokens which would otherwise be lost
-func (k Keeper) SendToCommunityPool(ctx sdk.Context, coins sdk.Coins) error {
+func (k Keeper) SendToCommunityPool(ctx context.Context, coins sdk.Coins) error {
 	if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, distrtypes.ModuleName, coins); err != nil {
 		return sdkerrors.Wrap(err, "transfer to community pool failed")
 	}
-	feePool := k.DistKeeper.GetFeePool(ctx)
+	feePool, err := k.DistKeeper.FeePool.Get(ctx)
+	if err != nil {
+		return err
+	}
 	feePool.CommunityPool = feePool.CommunityPool.Add(sdk.NewDecCoinsFromCoins(coins...)...)
-	k.DistKeeper.SetFeePool(ctx, feePool)
-	return nil
+	return k.DistKeeper.FeePool.Set(ctx, feePool)
 }
 
 /////////////////////////////
 //////// PARAMETERS /////////
 /////////////////////////////
 
-// GetParamsIfSet returns the parameters from the store if they exist, or an error
-// This is useful for certain contexts where the store is not yet set up, like
-// in an AnteHandler during InitGenesis
-func (k Keeper) GetParamsIfSet(ctx sdk.Context) (params types.Params, err error) {
-	for _, pair := range params.ParamSetPairs() {
-		if !k.paramSpace.Has(ctx, pair.Key) {
-			return types.Params{}, sdkerrors.Wrapf(sdkerrortypes.ErrNotFound, "the param key %s has not been set", string(pair.Key))
-		}
-		k.paramSpace.Get(ctx, pair.Key, pair.Value)
-	}
-
-	return
-}
-
 // GetParams returns the parameters from the store
-func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
-	k.paramSpace.GetParamSet(ctx, &params)
-	return
+func (k Keeper) GetParams(ctx context.Context) (params types.Params) {
+	bz := k.GetStore(ctx).Get([]byte(types.ParamsKey))
+	if bz == nil {
+		return params
+	}
+	k.cdc.MustUnmarshal(bz, &params)
+	return params
 }
 
 // SetParams sets the parameters in the store
-func (k Keeper) SetParams(ctx sdk.Context, ps types.Params) {
-	k.paramSpace.SetParamSet(ctx, &ps)
+func (k Keeper) SetParams(ctx context.Context, params types.Params) {
+	bz := k.cdc.MustMarshal(&params)
+	k.GetStore(ctx).Set([]byte(types.ParamsKey), bz)
 }
 
 // GetBridgeContractAddress returns the bridge contract address on ETH
-func (k Keeper) GetBridgeContractAddress(ctx sdk.Context) (*types.EthAddress, error) {
-	var a string
-	k.paramSpace.Get(ctx, types.ParamsStoreKeyBridgeEthereumAddress, &a)
+func (k Keeper) GetBridgeContractAddress(ctx context.Context) (*types.EthAddress, error) {
+	a := k.GetParams(ctx).BridgeEthereumAddress
 	addr, err := types.NewEthAddress(a)
 	if err != nil {
 		return nil, sdkerrors.Wrapf(err, "found invalid bridge contract address in store: %v", a)
@@ -144,15 +131,15 @@ func (k Keeper) GetBridgeContractAddress(ctx sdk.Context) (*types.EthAddress, er
 }
 
 // GetBridgeChainID returns the chain id of the ETH chain we are running against
-func (k Keeper) GetBridgeChainID(ctx sdk.Context) uint64 {
-	var a uint64
-	k.paramSpace.Get(ctx, types.ParamsStoreKeyBridgeContractChainID, &a)
+func (k Keeper) GetBridgeChainID(ctx context.Context) uint64 {
+	a := k.GetParams(ctx).BridgeChainId
 	return a
 }
 
 // Logger returns a module-specific Logger.
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+func (k Keeper) Logger(ctx context.Context) log.Logger {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return liblog.FromSDKLogger(sdkCtx.Logger()).With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 func (k Keeper) UnpackAttestationClaim(att *types.Attestation) (types.EthereumClaim, error) {
@@ -220,12 +207,13 @@ func (k Keeper) DeserializeValidatorIterator(vals []byte) stakingtypes.ValAddres
 // it is invalid for a subset of ERC20 addresses. (2) is not yet implemented
 // Blocking some addresses is technically motivated, if any ERC20 transfers in a batch fail the entire batch
 // becomes impossible to execute.
-func (k Keeper) InvalidSendToEthAddress(ctx sdk.Context, addr types.EthAddress, _erc20Addr types.EthAddress) bool {
+func (k Keeper) InvalidSendToEthAddress(ctx context.Context, addr types.EthAddress, _erc20Addr types.EthAddress) bool {
 	return addr == types.ZeroAddress()
 }
 
-func (k Keeper) GetStore(ctx sdk.Context) sdk.KVStore {
-	return k.storeGetter.Store(ctx)
+func (k Keeper) GetStore(ctx context.Context) storetypes.KVStore {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return k.storeGetter.Store(sdkCtx)
 }
 
 type GravityStoreGetter struct {
@@ -238,6 +226,11 @@ func NewGravityStoreGetter(storeKey storetypes.StoreKey) GravityStoreGetter {
 	}
 }
 
-func (gsg GravityStoreGetter) Store(ctx sdk.Context) sdk.KVStore {
-	return ctx.KVStore(gsg.storeKey)
+func (gsg GravityStoreGetter) Store(ctx context.Context) storetypes.KVStore {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.KVStore(gsg.storeKey)
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }

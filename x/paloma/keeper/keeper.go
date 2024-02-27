@@ -1,42 +1,45 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
 
+	"cosmossdk.io/core/address"
+	cosmosstore "cosmossdk.io/core/store"
+	cosmoslog "cosmossdk.io/log"
 	"github.com/VolumeFi/whoops"
-	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	utilkeeper "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/paloma/types"
 	"golang.org/x/mod/semver"
 )
 
 type (
 	Keeper struct {
-		cdc        codec.BinaryCodec
-		storeKey   storetypes.StoreKey
-		memKey     storetypes.StoreKey
-		paramstore paramtypes.Subspace
-		Valset     types.ValsetKeeper
-		Upgrade    types.UpgradeKeeper
-		AppVersion string
-
+		cdc            codec.BinaryCodec
+		storeKey       cosmosstore.KVStoreService
+		paramstore     paramtypes.Subspace
+		Valset         types.ValsetKeeper
+		Upgrade        types.UpgradeKeeper
+		AppVersion     string
+		AddressCodec   address.Codec
 		ExternalChains []types.ExternalChainSupporterKeeper
 	}
 )
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey,
-	memKey storetypes.StoreKey,
+	storeKey cosmosstore.KVStoreService,
 	ps paramtypes.Subspace,
 	appVersion string,
 	valset types.ValsetKeeper,
 	upgrade types.UpgradeKeeper,
+	addressCodec address.Codec,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -51,38 +54,43 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
-		Valset:     valset,
-		Upgrade:    upgrade,
-
-		AppVersion: appVersion,
+		cdc:          cdc,
+		storeKey:     storeKey,
+		paramstore:   ps,
+		Valset:       valset,
+		Upgrade:      upgrade,
+		AddressCodec: addressCodec,
+		AppVersion:   appVersion,
 	}
 }
 
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+func (k Keeper) Logger(ctx context.Context) cosmoslog.Logger {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return liblog.FromSDKLogger(sdkCtx.Logger()).With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx sdk.Context) error {
-	k.Logger(ctx).Info("start jailing validators with invalid external chain infos")
+func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context) error {
+	liblog.FromSDKLogger(k.Logger(ctx)).Info("start jailing validators with invalid external chain infos")
 	vals := k.Valset.GetUnjailedValidators(ctx)
-
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// making a map of chain types and their external chains
 	type mapkey [2]string
 	mmap := make(map[mapkey]struct{})
 	for _, supported := range k.ExternalChains {
 		chainType := supported.XChainType()
-		for _, cri := range supported.XChainReferenceIDs(ctx) {
+		for _, cri := range supported.XChainReferenceIDs(sdkCtx) {
 			mmap[mapkey{string(chainType), string(cri)}] = struct{}{}
 		}
 	}
 
 	var g whoops.Group
 	for _, val := range vals {
-		exts, err := k.Valset.GetValidatorChainInfos(ctx, val.GetOperator())
+		valAddr, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+		if err != nil {
+			g.Add(err)
+			continue
+		}
+		exts, err := k.Valset.GetValidatorChainInfos(ctx, valAddr)
 		if err != nil {
 			g.Add(err)
 			continue
@@ -96,15 +104,13 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx sdk.Context) err
 		notSupported := []string{}
 		for mustExistKey := range mmap {
 			if _, ok := valmap[mustExistKey]; !ok {
-				// well well well
 				notSupported = append(notSupported, fmt.Sprintf("[%s, %s]", mustExistKey[0], mustExistKey[1]))
 			}
 		}
 
 		sort.Strings(notSupported)
-
 		if len(notSupported) > 0 {
-			g.Add(k.Valset.Jail(ctx, val.GetOperator(), fmt.Sprintf(types.JailReasonNotSupportingTheseExternalChains, strings.Join(notSupported, ", "))))
+			g.Add(k.Valset.Jail(ctx, valAddr, fmt.Sprintf(types.JailReasonNotSupportingTheseExternalChains, strings.Join(notSupported, ", "))))
 		}
 	}
 
@@ -113,11 +119,14 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx sdk.Context) err
 
 // CheckChainVersion will exit if the app version and the government proposed
 // versions do not match.
-func (k Keeper) CheckChainVersion(ctx sdk.Context) {
+func (k Keeper) CheckChainVersion(ctx context.Context) {
 	// app needs to be in the [major].[minor] space,
 	// but needs to be running at least [major].[minor].[patch]
-	govVer, govHeight := k.Upgrade.GetLastCompletedUpgrade(ctx)
-
+	govVer, govHeight, err := k.Upgrade.GetLastCompletedUpgrade(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if err != nil {
+		liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err)
+	}
 	if len(govVer) == 0 || govHeight == 0 {
 		return
 	}

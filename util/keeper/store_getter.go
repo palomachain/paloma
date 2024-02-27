@@ -1,21 +1,23 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"context"
+
+	storetypes "cosmossdk.io/store/types"
 )
 
 type StoreGetter interface {
-	Store(ctx sdk.Context) sdk.KVStore
+	Store(ctx context.Context) storetypes.KVStore
 }
 
-type StoreGetterFn func(ctx sdk.Context) sdk.KVStore
+type StoreGetterFn func(ctx context.Context) storetypes.KVStore
 
-func (s StoreGetterFn) Store(ctx sdk.Context) sdk.KVStore {
+func (s StoreGetterFn) Store(ctx context.Context) storetypes.KVStore {
 	return s(ctx)
 }
 
-func SimpleStoreGetter(s sdk.KVStore) StoreGetter {
-	return StoreGetterFn(func(sdk.Context) sdk.KVStore {
+func SimpleStoreGetter(s storetypes.KVStore) StoreGetter {
+	return StoreGetterFn(func(context.Context) storetypes.KVStore {
 		return s
 	})
 }

@@ -7,11 +7,14 @@ import (
 	"math/big"
 	"slices"
 
+	"cosmossdk.io/core/address"
+	corestore "cosmossdk.io/core/store"
+	"cosmossdk.io/log"
 	"cosmossdk.io/math"
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -56,15 +59,17 @@ type (
 		metrics           *keeperutil.KVStoreWrapper[*types.ValidatorMetrics]
 		history           *keeperutil.KVStoreWrapper[*types.ValidatorHistory]
 		messageNonceCache *keeperutil.KVStoreWrapper[*types.HistoricRelayData]
+		AddressCodec      address.Codec
 	}
 )
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey storetypes.StoreKey,
+	storeKey corestore.KVStoreService,
 	ps paramtypes.Subspace,
 	slashing types.SlashingKeeper,
 	staking types.StakingKeeper,
+	addressCodec address.Codec,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -79,28 +84,30 @@ func NewKeeper(
 		metrics:           keeperutil.NewKvStoreWrapper[*types.ValidatorMetrics](storeFactory(storeKey, types.MetricsStorePrefix), cdc),
 		history:           keeperutil.NewKvStoreWrapper[*types.ValidatorHistory](storeFactory(storeKey, types.HistoryStorePrefix), cdc),
 		messageNonceCache: keeperutil.NewKvStoreWrapper[*types.HistoricRelayData](storeFactory(storeKey, types.MessageNonceCacheStorePrefix), cdc),
+		AddressCodec:      addressCodec,
 	}
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 // GetValidatorMetrics returns the metrics for a validator. Will return nil if no metrics found
 // for the given validator address.
-func (k Keeper) GetValidatorMetrics(ctx sdk.Context, address sdk.ValAddress) (*types.ValidatorMetrics, error) {
+func (k Keeper) GetValidatorMetrics(ctx context.Context, address sdk.ValAddress) (*types.ValidatorMetrics, error) {
 	return getFromStore(ctx, k.metrics, address)
 }
 
 // GetValidatorHistory returns the historic relay data for a validator. Will return nil if no history found
 // for the given validator address.
-func (k Keeper) GetValidatorHistory(ctx sdk.Context, address sdk.ValAddress) (*types.ValidatorHistory, error) {
+func (k Keeper) GetValidatorHistory(ctx context.Context, address sdk.ValAddress) (*types.ValidatorHistory, error) {
 	return getFromStore(ctx, k.history, address)
 }
 
 // GetValidatorMetrics returns the metrics for a validator. Will return nil if no metrics found
 // for the given validator address.
-func (k Keeper) GetMessageNonceCache(ctx sdk.Context) (*types.HistoricRelayData, error) {
+func (k Keeper) GetMessageNonceCache(ctx context.Context) (*types.HistoricRelayData, error) {
 	return getFromStore(ctx, k.messageNonceCache, types.MessageNonceCacheKey)
 }
 
@@ -174,14 +181,20 @@ func (k Keeper) OnConsensusMessageAttested(goCtx context.Context, e types.Messag
 }
 
 // OnSnapshotBuilt implements types.OnSnapshotBuiltListener.
-func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot) {
-	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("metrix.OnSnapshotBuilt")
+func (k Keeper) OnSnapshotBuilt(ctx context.Context, snapshot *valsettypes.Snapshot) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := liblog.FromSDKLogger(k.Logger(sdkCtx)).WithComponent("metrix.OnSnapshotBuilt")
 	logger.Debug("Updating snapshot metrics...")
 
 	// Building the feature set is currently only taking MEV support into consideration.
 	for _, v := range snapshot.Validators {
 		logger := logger.WithValidator(v.GetAddress().String())
 		scoreMax := int64(len(v.ExternalChainInfos))
+		if scoreMax < 1 {
+			logger.Info("Skip updating metrics, no chains found.")
+			return
+		}
+		scoreMax = int64(len(v.ExternalChainInfos))
 		if scoreMax < 1 {
 			logger.Info("Skip updating metrics, no chains found.")
 			return
@@ -204,12 +217,13 @@ func (k Keeper) OnSnapshotBuilt(ctx sdk.Context, snapshot *valsettypes.Snapshot)
 		}()
 
 		score := palomath.BigIntDiv(big.NewInt(matches), big.NewInt(scoreMax))
-		k.updateRecord(ctx, v.GetAddress(), recordPatch{featureSet: &score})
+		k.updateRecord(sdkCtx, v.GetAddress(), recordPatch{featureSet: &score})
 	}
 }
 
-func (k *Keeper) PurgeRelayMetrics(ctx sdk.Context) {
-	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("metrix.PurgeRelayMetrics")
+func (k *Keeper) PurgeRelayMetrics(ctx context.Context) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := liblog.FromSDKLogger(k.Logger(sdkCtx)).WithComponent("metrix.PurgeRelayMetrics")
 	logger.Debug("Running relay metrics purging loop...")
 
 	cache, err := k.GetMessageNonceCache(ctx)
@@ -232,7 +246,7 @@ func (k *Keeper) PurgeRelayMetrics(ctx sdk.Context) {
 	logger = logger.WithFields("threshold", threshold)
 
 	// Purge records outside scoring window
-	if err := k.history.Iterate(ctx, func(key []byte, history *types.ValidatorHistory) bool {
+	if err := k.history.Iterate(sdkCtx, func(key []byte, history *types.ValidatorHistory) bool {
 		logger := logger.WithValidator(history.ValAddress)
 		logger.Debug("Puring records for validator.")
 
@@ -269,18 +283,19 @@ func (k *Keeper) PurgeRelayMetrics(ctx sdk.Context) {
 	logger.Debug("Executing purge...")
 	for key, val := range updates {
 		memcpy := val
-		if err := k.history.Set(ctx, sdk.ValAddress([]byte(key)), &memcpy); err != nil {
+		if err := k.history.Set(sdkCtx, sdk.ValAddress([]byte(key)), &memcpy); err != nil {
 			logger.WithError(err).WithValidator(val.ValAddress).Error("Failed to purge history")
 		}
 	}
 	logger.Debug("Purge finished!")
 }
 
-func (k *Keeper) UpdateRelayMetrics(ctx sdk.Context) {
-	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("metrix.UpdateRelayMetrics")
+func (k *Keeper) UpdateRelayMetrics(ctx context.Context) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := liblog.FromSDKLogger(k.Logger(sdkCtx)).WithComponent("metrix.UpdateRelayMetrics")
 	logger.Debug("Running relay metrics update loop.")
 
-	if err := k.history.Iterate(ctx, func(key []byte, history *types.ValidatorHistory) bool {
+	if err := k.history.Iterate(sdkCtx, func(key []byte, history *types.ValidatorHistory) bool {
 		logger := logger.WithValidator(history.ValAddress)
 		valAddress := sdk.ValAddress(key)
 
@@ -329,29 +344,37 @@ func (k *Keeper) UpdateRelayMetrics(ctx sdk.Context) {
 	logger.Debug("Updating relay metrics finished!")
 }
 
-func (k *Keeper) UpdateUptime(ctx sdk.Context) {
-	window := k.slashing.SignedBlocksWindow(ctx)
-	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("metrix.UpdateUptime").WithFields("signed-blocks-window", window)
+func (k *Keeper) UpdateUptime(ctx context.Context) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	window, err := k.slashing.SignedBlocksWindow(ctx)
+	if err != nil {
+		liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error while getting the SignedBlocksWindow")
+	}
+	logger := liblog.FromSDKLogger(k.Logger(sdkCtx)).WithComponent("metrix.UpdateUptime").WithFields("signed-blocks-window", window)
 	logger.Debug("Running uptime update loop.")
 
 	jailed := make(map[string]struct{})
-	k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
+	err = k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
+		bz, _ := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+		valAddr, _ := k.AddressCodec.BytesToString(bz)
 		if val.IsJailed() {
-			jailed[val.GetOperator().String()] = struct{}{}
+			jailed[valAddr] = struct{}{}
 		}
 		return false
 	})
+	if err != nil {
+		liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error while IteratingValidators")
+	}
 
-	k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
+	err = k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
 		logger := logger.WithFields("validator-conspub", info.GetAddress())
-		val, found := k.staking.GetValidatorByConsAddr(ctx, consAddr)
-		if !found {
+		val, err := k.staking.GetValidatorByConsAddr(ctx, consAddr)
+		if err != nil {
 			logger.Error("no validator found for cons pub address.")
-
 			return false
 		}
-
-		valAddr := val.GetOperator().String()
+		bz, _ := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+		valAddr, _ := k.AddressCodec.BytesToString(bz)
 		uptime := math.LegacyNewDec(0)
 		_, isJailed := jailed[valAddr]
 		if !isJailed {
@@ -363,9 +386,12 @@ func (k *Keeper) UpdateUptime(ctx sdk.Context) {
 				"uptime", uptime,
 				"is-jailed", isJailed).
 			Debug("Calculated uptime, updating record.")
-		k.updateRecord(ctx, val.GetOperator(), recordPatch{uptime: &uptime})
+		k.updateRecord(ctx, bz, recordPatch{uptime: &uptime})
 		return false
 	})
+	if err != nil {
+		liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error while IterateValidatorSigningInfos")
+	}
 	logger.Debug("Updating uptime finished!")
 }
 
@@ -401,9 +427,10 @@ func (p recordPatch) apply(data types.ValidatorMetrics) *types.ValidatorMetrics 
 	return &data
 }
 
-func (k Keeper) updateRecord(ctx sdk.Context, valAddr sdk.ValAddress, patch recordPatch) {
+func (k Keeper) updateRecord(ctx context.Context, valAddr sdk.ValAddress, patch recordPatch) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err := k.tryUpdateRecord(ctx, valAddr, patch); err != nil {
-		liblog.FromSDKLogger(k.Logger(ctx)).
+		liblog.FromSDKLogger(k.Logger(sdkCtx)).
 			WithError(err).
 			WithComponent("metrix.updateRecord").
 			WithValidator(valAddr.String()).
@@ -411,7 +438,8 @@ func (k Keeper) updateRecord(ctx sdk.Context, valAddr sdk.ValAddress, patch reco
 	}
 }
 
-func (k Keeper) tryUpdateRecord(ctx sdk.Context, valAddr sdk.ValAddress, patch recordPatch) error {
+func (k Keeper) tryUpdateRecord(ctx context.Context, valAddr sdk.ValAddress, patch recordPatch) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	record, err := k.GetValidatorMetrics(ctx, valAddr)
 	if err != nil {
 		return fmt.Errorf("update record: %w", err)
@@ -435,7 +463,7 @@ func (k Keeper) tryUpdateRecord(ctx sdk.Context, valAddr sdk.ValAddress, patch r
 		return nil
 	}
 
-	err = k.metrics.Set(ctx, valAddr, patched)
+	err = k.metrics.Set(sdkCtx, valAddr, patched)
 	if err != nil {
 		return fmt.Errorf("update record: %w", err)
 	}
@@ -443,9 +471,10 @@ func (k Keeper) tryUpdateRecord(ctx sdk.Context, valAddr sdk.ValAddress, patch r
 	return nil
 }
 
-func storeFactory(storeKey storetypes.StoreKey, p string) func(ctx sdk.Context) sdk.KVStore {
-	return func(ctx sdk.Context) sdk.KVStore {
-		return prefix.NewStore(ctx.KVStore(storeKey), types.KeyPrefix(p))
+func storeFactory(storeKey corestore.KVStoreService, p string) func(ctx context.Context) storetypes.KVStore {
+	return func(ctx context.Context) storetypes.KVStore {
+		s := runtime.KVStoreAdapter(storeKey.OpenKVStore(ctx))
+		return prefix.NewStore(s, types.KeyPrefix(p))
 	}
 }
 
@@ -462,9 +491,10 @@ func calculateUptime(window, missed int64) math.LegacyDec {
 	return palomath.BigIntDiv(diff, w)
 }
 
-func getFromStore[T codec.ProtoMarshaler](ctx sdk.Context, store *keeperutil.KVStoreWrapper[T], key keeperutil.Byter) (T, error) {
+func getFromStore[T codec.ProtoMarshaler](ctx context.Context, store *keeperutil.KVStoreWrapper[T], key keeperutil.Byter) (T, error) {
 	var empty T
-	data, err := store.Get(ctx, key)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	data, err := store.Get(sdkCtx, key)
 	if err != nil {
 		if !errors.Is(err, keeperutil.ErrNotFound) {
 			return empty, fmt.Errorf("get from store: %w", err)

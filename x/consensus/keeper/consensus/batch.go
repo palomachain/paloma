@@ -1,8 +1,10 @@
 package consensus
 
 import (
+	"context"
+
+	"cosmossdk.io/store/prefix"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
@@ -27,12 +29,13 @@ func NewBatchQueue(qo QueueOptions) BatchQueue {
 	}
 }
 
-func (c BatchQueue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
+func (c BatchQueue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if !c.batchedTypeChecker(msg) {
 		return 0, ErrIncorrectMessageType.Format(msg)
 	}
 
-	newID := c.base.qo.Ider.IncrementNextID(ctx, consensusBatchQueueIDCounterKey)
+	newID := c.base.qo.Ider.IncrementNextID(sdkCtx, consensusBatchQueueIDCounterKey)
 
 	anyMsg, err := codectypes.NewAnyWithValue(msg)
 	if err != nil {
@@ -47,12 +50,13 @@ func (c BatchQueue) Put(ctx sdk.Context, msg ConsensusMsg, opts *PutOptions) (ui
 	if err != nil {
 		return 0, err
 	}
-	c.batchQueue(ctx).Set(sdk.Uint64ToBigEndian(newID), data)
+	c.batchQueue(sdkCtx).Set(sdk.Uint64ToBigEndian(newID), data)
 	return newID, nil
 }
 
-func (c BatchQueue) ProcessBatches(ctx sdk.Context) error {
-	queue := c.batchQueue(ctx)
+func (c BatchQueue) ProcessBatches(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	queue := c.batchQueue(sdkCtx)
 	deleteKeys := [][]byte{}
 
 	iterator := queue.Iterator(nil, nil)
@@ -90,7 +94,7 @@ func (c BatchQueue) ProcessBatches(ctx sdk.Context) error {
 	}
 
 	for _, batch := range batches {
-		_, err := c.base.Put(ctx, batch, nil)
+		_, err := c.base.Put(sdkCtx, batch, nil)
 		if err != nil {
 			return err
 		}
@@ -100,49 +104,58 @@ func (c BatchQueue) ProcessBatches(ctx sdk.Context) error {
 }
 
 // batchQueue returns queue of messages that have been batched
-func (c BatchQueue) batchQueue(ctx sdk.Context) prefix.Store {
-	store := c.base.qo.Sg.Store(ctx)
+func (c BatchQueue) batchQueue(ctx context.Context) prefix.Store {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	store := c.base.qo.Sg.Store(sdkCtx)
 	return prefix.NewStore(store, []byte("batching:"+c.base.signingQueueKey()))
 }
 
-func (c BatchQueue) AddSignature(ctx sdk.Context, id uint64, signData *types.SignData) error {
-	return c.base.AddSignature(ctx, id, signData)
+func (c BatchQueue) AddSignature(ctx context.Context, id uint64, signData *types.SignData) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return c.base.AddSignature(sdkCtx, id, signData)
 }
 
-func (c BatchQueue) Remove(ctx sdk.Context, msgID uint64) error {
-	return c.base.Remove(ctx, msgID)
+func (c BatchQueue) Remove(ctx context.Context, msgID uint64) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return c.base.Remove(sdkCtx, msgID)
 }
 
-func (c BatchQueue) GetMsgByID(ctx sdk.Context, id uint64) (types.QueuedSignedMessageI, error) {
-	return c.base.GetMsgByID(ctx, id)
+func (c BatchQueue) GetMsgByID(ctx context.Context, id uint64) (types.QueuedSignedMessageI, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return c.base.GetMsgByID(sdkCtx, id)
 }
 
-func (c BatchQueue) GetAll(ctx sdk.Context) ([]types.QueuedSignedMessageI, error) {
-	return c.base.GetAll(ctx)
+func (c BatchQueue) GetAll(ctx context.Context) ([]types.QueuedSignedMessageI, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return c.base.GetAll(sdkCtx)
 }
 
-func (c BatchQueue) AddEvidence(ctx sdk.Context, id uint64, evidence *types.Evidence) error {
-	return c.base.AddEvidence(ctx, id, evidence)
+func (c BatchQueue) AddEvidence(ctx context.Context, id uint64, evidence *types.Evidence) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return c.base.AddEvidence(sdkCtx, id, evidence)
 }
 
 func (c BatchQueue) ReassignValidator(ctx sdk.Context, id uint64, val string) error {
 	return c.base.ReassignValidator(ctx, id, val)
 }
 
-func (c BatchQueue) SetPublicAccessData(ctx sdk.Context, id uint64, data *types.PublicAccessData) error {
+func (c BatchQueue) SetPublicAccessData(ctx context.Context, id uint64, data *types.PublicAccessData) error {
 	return c.base.SetPublicAccessData(ctx, id, data)
 }
 
-func (c BatchQueue) GetPublicAccessData(ctx sdk.Context, id uint64) (*types.PublicAccessData, error) {
-	return c.base.GetPublicAccessData(ctx, id)
+func (c BatchQueue) GetPublicAccessData(ctx context.Context, id uint64) (*types.PublicAccessData, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return c.base.GetPublicAccessData(sdkCtx, id)
 }
 
-func (c BatchQueue) SetErrorData(ctx sdk.Context, id uint64, data *types.ErrorData) error {
-	return c.base.SetErrorData(ctx, id, data)
+func (c BatchQueue) SetErrorData(ctx context.Context, id uint64, data *types.ErrorData) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return c.base.SetErrorData(sdkCtx, id, data)
 }
 
-func (c BatchQueue) GetErrorData(ctx sdk.Context, id uint64) (*types.ErrorData, error) {
-	return c.base.GetErrorData(ctx, id)
+func (c BatchQueue) GetErrorData(ctx context.Context, id uint64) (*types.ErrorData, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return c.base.GetErrorData(sdkCtx, id)
 }
 
 func (c BatchQueue) ChainInfo() (types.ChainType, string) {

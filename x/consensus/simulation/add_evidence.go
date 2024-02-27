@@ -8,6 +8,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/palomachain/paloma/x/consensus/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 func SimulateMsgAddEvidence(
@@ -19,9 +20,10 @@ func SimulateMsgAddEvidence(
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 		msg := &types.MsgAddEvidence{
-			Creator: simAccount.Address.String(),
+			Metadata: valsettypes.MsgMetadata{
+				Creator: simAccount.Address.String(),
+			},
 		}
-
 		// TODO: Handling the AddEvidence simulation
 
 		return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "AddEvidence simulation not implemented"), nil, nil

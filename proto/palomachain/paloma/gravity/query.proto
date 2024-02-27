@@ -9,39 +9,51 @@ import "google/api/annotations.proto";
 import "palomachain/paloma/gravity/genesis.proto";
 import "palomachain/paloma/gravity/types.proto";
 import "palomachain/paloma/gravity/msgs.proto";
+import "palomachain/paloma/gravity/params.proto";
 
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
 // Query defines the gRPC querier service
 service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {}
-  rpc LastPendingBatchRequestByAddr(QueryLastPendingBatchRequestByAddrRequest) returns (QueryLastPendingBatchRequestByAddrResponse) {}
-  rpc LastEventNonce(QueryLastEventNonceRequest) returns (QueryLastEventNonceResponse) {}
-  rpc LastEventNonceByAddr(QueryLastEventNonceByAddrRequest) returns (QueryLastEventNonceResponse) {}
-  rpc OutgoingTxBatches(QueryOutgoingTxBatchesRequest) returns (QueryOutgoingTxBatchesResponse) {}
-  rpc BatchRequestByNonce(QueryBatchRequestByNonceRequest) returns (QueryBatchRequestByNonceResponse) {}
-  rpc BatchConfirms(QueryBatchConfirmsRequest) returns (QueryBatchConfirmsResponse) {}
-  rpc ERC20ToDenom(QueryERC20ToDenomRequest) returns (QueryERC20ToDenomResponse) {}
-  rpc DenomToERC20(QueryDenomToERC20Request) returns (QueryDenomToERC20Response) {}
-  rpc GetLastObservedEthBlock(QueryLastObservedEthBlockRequest) returns (QueryLastObservedEthBlockResponse) {}
-  rpc GetLastObservedEthNonce(QueryLastObservedEthNonceRequest) returns (QueryLastObservedEthNonceResponse) {}
-  rpc GetAttestations(QueryAttestationsRequest) returns (QueryAttestationsResponse) {}
+  rpc LastPendingBatchRequestByAddr(QueryLastPendingBatchRequestByAddrRequest)
+      returns (QueryLastPendingBatchRequestByAddrResponse) {}
+  rpc LastEventNonce(QueryLastEventNonceRequest)
+      returns (QueryLastEventNonceResponse) {}
+  rpc LastEventNonceByAddr(QueryLastEventNonceByAddrRequest)
+      returns (QueryLastEventNonceResponse) {}
+  rpc OutgoingTxBatches(QueryOutgoingTxBatchesRequest)
+      returns (QueryOutgoingTxBatchesResponse) {}
+  rpc BatchRequestByNonce(QueryBatchRequestByNonceRequest)
+      returns (QueryBatchRequestByNonceResponse) {}
+  rpc BatchConfirms(QueryBatchConfirmsRequest)
+      returns (QueryBatchConfirmsResponse) {}
+  rpc ERC20ToDenom(QueryERC20ToDenomRequest)
+      returns (QueryERC20ToDenomResponse) {}
+  rpc DenomToERC20(QueryDenomToERC20Request)
+      returns (QueryDenomToERC20Response) {}
+  rpc GetLastObservedEthBlock(QueryLastObservedEthBlockRequest)
+      returns (QueryLastObservedEthBlockResponse) {}
+  rpc GetLastObservedEthNonce(QueryLastObservedEthNonceRequest)
+      returns (QueryLastObservedEthNonceResponse) {}
+  rpc GetAttestations(QueryAttestationsRequest)
+      returns (QueryAttestationsResponse) {}
 
-  rpc GetErc20ToDenoms(QueryErc20ToDenoms) returns (QueryErc20ToDenomsResponse) {}
+  rpc GetErc20ToDenoms(QueryErc20ToDenoms)
+      returns (QueryErc20ToDenomsResponse) {}
 
-  rpc GetPendingSendToEth(QueryPendingSendToEth) returns (QueryPendingSendToEthResponse) {}
+  rpc GetPendingSendToEth(QueryPendingSendToEth)
+      returns (QueryPendingSendToEthResponse) {}
 }
 
 message QueryParamsRequest {}
 message QueryParamsResponse {
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
-message QueryLastPendingBatchRequestByAddrRequest {
-  string address = 1;
-}
+message QueryLastPendingBatchRequestByAddrRequest { string address = 1; }
 message QueryLastPendingBatchRequestByAddrResponse {
-  repeated OutgoingTxBatch batch = 1 [(gogoproto.nullable) = false];
+  repeated OutgoingTxBatch batch = 1 [ (gogoproto.nullable) = false ];
 }
 message QueryOutgoingTxBatchesRequest {
   string chain_reference_id = 1;
@@ -49,76 +61,70 @@ message QueryOutgoingTxBatchesRequest {
 }
 
 message QueryOutgoingTxBatchesResponse {
-  repeated OutgoingTxBatch batches = 1 [(gogoproto.nullable) = false];
+  repeated OutgoingTxBatch batches = 1 [ (gogoproto.nullable) = false ];
 }
 
 message QueryBatchRequestByNonceRequest {
-  uint64 nonce            = 1;
+  uint64 nonce = 1;
   string contract_address = 2;
 }
 message QueryBatchRequestByNonceResponse {
-  OutgoingTxBatch batch = 1 [(gogoproto.nullable) = false];
+  OutgoingTxBatch batch = 1 [ (gogoproto.nullable) = false ];
 }
 
 message QueryBatchConfirmsRequest {
-  uint64 nonce            = 1;
+  uint64 nonce = 1;
   string contract_address = 2;
 }
 message QueryBatchConfirmsResponse {
-  repeated MsgConfirmBatch confirms = 1 [(gogoproto.nullable) = false];
+  repeated MsgConfirmBatch confirms = 1 [ (gogoproto.nullable) = false ];
 }
 
 message QueryLastEventNonceRequest {}
-message QueryLastEventNonceByAddrRequest {
-  string address = 1;
-}
-message QueryLastEventNonceResponse {
-  uint64 event_nonce = 1;
-}
+message QueryLastEventNonceByAddrRequest { string address = 1; }
+message QueryLastEventNonceResponse { uint64 event_nonce = 1; }
 
 message QueryERC20ToDenomRequest {
   string erc20 = 1;
   string chain_reference_id = 2;
 }
-message QueryERC20ToDenomResponse {
-  string denom             = 1;
-}
+message QueryERC20ToDenomResponse { string denom = 1; }
 
 message QueryDenomToERC20Request {
   string denom = 1;
   string chain_reference_id = 2;
 }
-message QueryDenomToERC20Response {
-  string erc20             = 1;
-}
+message QueryDenomToERC20Response { string erc20 = 1; }
 
-// QueryLastObservedEthBlockRequest defines the request for getting the height of the
-// last applied Ethereum Event on the bridge. This is expected to lag the actual
-// Ethereum block height significantly due to 1. Ethereum Finality and
+// QueryLastObservedEthBlockRequest defines the request for getting the height
+// of the last applied Ethereum Event on the bridge. This is expected to lag the
+// actual Ethereum block height significantly due to 1. Ethereum Finality and
 //  2. Consensus mirroring the state on Ethereum
-message QueryLastObservedEthBlockRequest{
-  // indicates whether to search for store data using the old Gravity v1 key "LastObservedEthereumBlockHeightKey"
-  // Note that queries before the Mercury upgrade at height 1282013 must set this to true
+message QueryLastObservedEthBlockRequest {
+  // indicates whether to search for store data using the old Gravity v1 key
+  // "LastObservedEthereumBlockHeightKey" Note that queries before the Mercury
+  // upgrade at height 1282013 must set this to true
   bool use_v1_key = 1;
 }
-message QueryLastObservedEthBlockResponse{
-  // a response of 0 indicates that no Ethereum events have been observed, and thus
-  // the bridge is inactive
+message QueryLastObservedEthBlockResponse {
+  // a response of 0 indicates that no Ethereum events have been observed, and
+  // thus the bridge is inactive
   uint64 block = 1;
 }
 
-// QueryLastObservedEthNonceRequest defines the request for getting the event nonce
-// of the last applied Ethereum Event on the bridge.
-// Note that this is likely to lag the last executed event a little
-// due to 1. Ethereum Finality and 2. Consensus mirroring the Ethereum state
-message QueryLastObservedEthNonceRequest{
-  // indicates whether to search for store data using the old Gravity v1 key "LastObservedEventNonceKey"
-  // Note that queries before the Mercury upgrade at height 1282013 must set this to true
+// QueryLastObservedEthNonceRequest defines the request for getting the event
+// nonce of the last applied Ethereum Event on the bridge. Note that this is
+// likely to lag the last executed event a little due to 1. Ethereum Finality
+// and 2. Consensus mirroring the Ethereum state
+message QueryLastObservedEthNonceRequest {
+  // indicates whether to search for store data using the old Gravity v1 key
+  // "LastObservedEventNonceKey" Note that queries before the Mercury upgrade at
+  // height 1282013 must set this to true
   bool use_v1_key = 1;
 }
-message QueryLastObservedEthNonceResponse{
-  // a response of 0 indicates that no Ethereum events have been observed, and thus
-  // the bridge is inactive
+message QueryLastObservedEthNonceResponse {
+  // a response of 0 indicates that no Ethereum events have been observed, and
+  // thus the bridge is inactive
   uint64 nonce = 1;
 }
 
@@ -142,24 +148,25 @@ message QueryAttestationsRequest {
   uint64 nonce = 4;
   // height allows filtering attestations by Ethereum claim height.
   uint64 height = 5;
-  // indicates whether to search for store data using the old Gravity v1 key "OracleAttestationKey"
-  // Note that queries before the Mercury upgrade at height 1282013 must set this to true
+  // indicates whether to search for store data using the old Gravity v1 key
+  // "OracleAttestationKey" Note that queries before the Mercury upgrade at
+  // height 1282013 must set this to true
   bool use_v1_key = 6;
 }
 
 message QueryAttestationsResponse {
-  repeated Attestation attestations = 1 [(gogoproto.nullable) = false];
+  repeated Attestation attestations = 1 [ (gogoproto.nullable) = false ];
 }
 
 message QueryErc20ToDenoms {}
 message QueryErc20ToDenomsResponse {
-  repeated ERC20ToDenom erc20_to_denom = 1 [(gogoproto.nullable) = false];
+  repeated ERC20ToDenom erc20_to_denom = 1 [ (gogoproto.nullable) = false ];
 }
 
-message QueryPendingSendToEth {
-  string sender_address = 1;
-}
+message QueryPendingSendToEth { string sender_address = 1; }
 message QueryPendingSendToEthResponse {
-  repeated OutgoingTransferTx transfers_in_batches = 1 [(gogoproto.nullable) = false];
-  repeated OutgoingTransferTx unbatched_transfers  = 2 [(gogoproto.nullable) = false];
+  repeated OutgoingTransferTx transfers_in_batches = 1
+      [ (gogoproto.nullable) = false ];
+  repeated OutgoingTransferTx unbatched_transfers = 2
+      [ (gogoproto.nullable) = false ];
 }
