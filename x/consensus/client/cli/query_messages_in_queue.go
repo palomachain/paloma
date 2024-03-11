@@ -46,7 +46,7 @@ func CmdMessagesInQueue() *cobra.Command {
 
 func CmdMessageByID() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "messages-by-id [queue-type-name] [message-id]",
+		Use:   "message-by-id [queue-type-name] [message-id]",
 		Short: "Query a message by queue name and ID",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {

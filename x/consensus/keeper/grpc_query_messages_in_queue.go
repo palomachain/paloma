@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -24,6 +25,12 @@ func (k Keeper) MessageByID(goCtx context.Context, req *types.QueryMessageByIDRe
 		return nil, err
 	}
 	msg, err := cq.GetMsgByID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	if msg == nil {
+		return nil, fmt.Errorf("message not found")
+	}
 	approvedMessage, err := toMessageWithSignatures(msg, k.cdc)
 	if err != nil {
 		return nil, err
