@@ -41,7 +41,6 @@ func (k Keeper) KeepValidatorAlive(ctx context.Context, valAddr sdk.ValAddress, 
 	if err := k.CanAcceptKeepAlive(ctx, valAddr, pigeonVersion); err != nil {
 		return err
 	}
-
 	store := k.keepAliveStore(ctx)
 	data := keepAliveData{
 		ValAddr:               valAddr,
@@ -62,7 +61,6 @@ func (k Keeper) IsValidatorAlive(ctx context.Context, valAddr sdk.ValAddress) (b
 	if err != nil {
 		return false, err
 	}
-
 	return sdkCtx.BlockHeight() < aliveUntil, nil
 }
 
@@ -72,14 +70,12 @@ func (k Keeper) ValidatorAliveUntil(ctx context.Context, valAddr sdk.ValAddress)
 	if !store.Has(valAddr) {
 		return 0, ErrValidatorNotInKeepAlive.Format(valAddr)
 	}
-
 	dataBz := store.Get(valAddr)
 	var data keepAliveData
 	err := json.Unmarshal(dataBz, &data)
 	if err != nil {
 		return 0, err
 	}
-
 	if data.AliveUntilBlockHeight-sdkCtx.BlockHeight() <= cJailingImminentThresholdBlockHeight {
 		liblog.FromSDKLogger(k.Logger(ctx)).WithFields("validator-address", data.ValAddr).Info("Validator TTL is about to run out. Jailing is imminent.")
 	}
