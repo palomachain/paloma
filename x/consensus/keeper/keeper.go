@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/libcons"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -23,8 +24,9 @@ type (
 
 		valset types.ValsetKeeper
 
-		registry  *registry
-		evmKeeper types.EvmKeeper
+		registry         *registry
+		evmKeeper        types.EvmKeeper
+		consensusChecker *libcons.ConsensusChecker
 	}
 )
 
@@ -51,6 +53,7 @@ func NewKeeper(
 	}
 	ider := keeperutil.NewIDGenerator(k, nil)
 	k.ider = ider
+	k.consensusChecker = libcons.New(k.valset.GetCurrentSnapshot, k.cdc)
 
 	return k
 }

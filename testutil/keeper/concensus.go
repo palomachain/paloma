@@ -14,6 +14,7 @@ import (
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/consensus/keeper"
 	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/consensus/types/mocks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -43,7 +44,7 @@ func ConsensusKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		nil,
+		mocks.NewValsetKeeper(t),
 		keeper.NewRegistry(),
 	)
 

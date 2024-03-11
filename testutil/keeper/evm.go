@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"testing"
+
 	tmdb "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -12,10 +14,11 @@ import (
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/x/evm/types/mocks"
 	"github.com/stretchr/testify/require"
 )
 
-func EvmKeeper(t require.TestingT) (*keeper.Keeper, sdk.Context) {
+func EvmKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -40,7 +43,7 @@ func EvmKeeper(t require.TestingT) (*keeper.Keeper, sdk.Context) {
 		memStoreKey,
 		paramsSubspace,
 		nil,
-		nil,
+		mocks.NewValsetKeeper(t),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

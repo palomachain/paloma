@@ -7,6 +7,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -32,9 +33,14 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 
 	request := consensusMsg.(*types.ValidatorBalancesAttestation)
 
-	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
+	result, err := k.consensusChecker.VerifyEvidence(ctx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
+			liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
+				"total-shares", result.TotalShares,
+				"total-votes", result.TotalVotes,
+				"distribution", result.Distribution,
+			).WithError(err).Error("Consensus not achieved.")
 			return nil
 		}
 		return err
@@ -59,7 +65,7 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 		return err
 	}
 
-	return k.processValidatorBalanceProof(ctx, request, evidence, chainReferenceID, minBalance)
+	return k.processValidatorBalanceProof(ctx, request, result.Winner, chainReferenceID, minBalance)
 }
 
 func (k Keeper) processValidatorBalanceProof(

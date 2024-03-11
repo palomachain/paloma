@@ -25,6 +25,7 @@ type ValsetKeeper interface {
 	GetCurrentSnapshot(ctx sdk.Context) (*valsettypes.Snapshot, error)
 	CanAcceptValidator(ctx sdk.Context, valAddr sdk.ValAddress) error
 	KeepValidatorAlive(ctx sdk.Context, valAddr sdk.ValAddress, pigeonVersion string) error
+	Jail(ctx sdk.Context, valAddr sdk.ValAddress, reason string) error
 }
 
 //go:generate mockery --name=EvmKeeper

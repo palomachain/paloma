@@ -3,8 +3,11 @@ package keeper
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/testutil/rand"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensusmock "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	"github.com/palomachain/paloma/x/consensus/types"
@@ -82,6 +85,160 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 		t.Run("it then sends a signature for the message", func(t *testing.T) {
 			// TODO: test this once we've implemented message signature adding
 			// keeper.AddMessageSignature()
+		})
+	})
+}
+
+func TestJailValidatorsWhichMissedAttestation(t *testing.T) {
+	queue := types.Queue(defaultQueueName, chainType, chainReferenceID)
+	keeper, ms, ctx := newConsensusKeeper(t)
+	msgType := &types.SimpleMessage{}
+
+	keeper.registry.Add(
+		queueSupporter{
+			opt: consensus.ApplyOpts(nil,
+				consensus.WithQueueTypeName(queue),
+				consensus.WithStaticTypeCheck(msgType),
+				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
+				consensus.WithChainInfo(chainType, chainReferenceID),
+				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
+					return true
+				}),
+			),
+		},
+	)
+
+	t.Run("with unsupported queue name", func(t *testing.T) {
+		err := keeper.jailValidatorsWhichMissedAttestation(ctx, "no support", 0)
+		require.ErrorContains(t, err, "getConsensusQueue", "returns an error")
+	})
+
+	t.Run("with unknown message ID", func(t *testing.T) {
+		err := keeper.jailValidatorsWhichMissedAttestation(ctx, queue, 42)
+		require.ErrorContains(t, err, "getMsgByID", "returns an error")
+	})
+
+	t.Run("with unknown message ID", func(t *testing.T) {
+		err := keeper.jailValidatorsWhichMissedAttestation(ctx, queue, 42)
+		require.ErrorContains(t, err, "getMsgByID", "returns an error")
+	})
+
+	testMsg := types.SimpleMessage{Sender: "user", Hello: "foo", World: "bar"}
+	t.Run("with message that actually forms consensus", func(t *testing.T) {
+		mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg, &consensus.PutOptions{PublicAccessData: []byte{1}})
+		require.NoError(t, err)
+
+		validators := []valsettypes.Validator{}
+		for range []int{1, 2, 3, 4} {
+			validators = append(validators, valsettypes.Validator{
+				ShareCount: math.NewInt(1000),
+				State:      valsettypes.ValidatorState_ACTIVE,
+				Address:    rand.ValAddress(),
+			})
+		}
+		anyProof, _ := codectypes.NewAnyWithValue(&evmtypes.TxExecutedProof{
+			SerializedTX: []byte{1},
+		})
+		for _, v := range validators {
+			err := keeper.AddMessageEvidence(ctx, v.GetAddress(), &types.MsgAddEvidence{
+				Creator:       v.GetAddress().String(),
+				Proof:         anyProof,
+				MessageID:     mID,
+				QueueTypeName: queue,
+				Metadata: valsettypes.MsgMetadata{
+					Creator: v.GetAddress().String(),
+					Signers: []string{v.GetAddress().String()},
+				},
+			})
+			require.NoError(t, err)
+		}
+
+		ms.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(&valsettypes.Snapshot{
+			Validators:  validators,
+			TotalShares: math.NewInt(4000),
+		}, nil).Times(2)
+
+		err = keeper.jailValidatorsWhichMissedAttestation(ctx, queue, mID)
+		require.NoError(t, err, "should not do anything")
+	})
+
+	t.Run("with message that fails to form consensus", func(t *testing.T) {
+		t.Run("with all expected validators present", func(t *testing.T) {
+			mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg, &consensus.PutOptions{PublicAccessData: []byte{1}})
+			require.NoError(t, err)
+
+			validators := []valsettypes.Validator{}
+			for range []int{1, 2, 3, 4} {
+				validators = append(validators, valsettypes.Validator{
+					ShareCount: math.NewInt(1000),
+					State:      valsettypes.ValidatorState_ACTIVE,
+					Address:    rand.ValAddress(),
+				})
+			}
+			anyProof, _ := codectypes.NewAnyWithValue(&evmtypes.TxExecutedProof{
+				SerializedTX: []byte{1},
+			})
+			for _, v := range validators {
+				err := keeper.AddMessageEvidence(ctx, v.GetAddress(), &types.MsgAddEvidence{
+					Creator:       v.GetAddress().String(),
+					Proof:         anyProof,
+					MessageID:     mID,
+					QueueTypeName: queue,
+					Metadata: valsettypes.MsgMetadata{
+						Creator: v.GetAddress().String(),
+						Signers: []string{v.GetAddress().String()},
+					},
+				})
+				require.NoError(t, err)
+			}
+
+			ms.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(&valsettypes.Snapshot{
+				Validators:  validators,
+				TotalShares: math.NewInt(10000),
+			}, nil).Times(2)
+
+			err = keeper.jailValidatorsWhichMissedAttestation(ctx, queue, mID)
+			require.NoError(t, err, "should not do anything")
+		})
+		t.Run("with expected validators missing", func(t *testing.T) {
+			mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg, &consensus.PutOptions{PublicAccessData: []byte{1}})
+			require.NoError(t, err)
+
+			validators := []valsettypes.Validator{}
+			for range []int{1, 2, 3, 4} {
+				validators = append(validators, valsettypes.Validator{
+					ShareCount: math.NewInt(1000),
+					State:      valsettypes.ValidatorState_ACTIVE,
+					Address:    rand.ValAddress(),
+				})
+			}
+			anyProof, _ := codectypes.NewAnyWithValue(&evmtypes.TxExecutedProof{
+				SerializedTX: []byte{1},
+			})
+			for _, v := range validators[2:] {
+				err := keeper.AddMessageEvidence(ctx, v.GetAddress(), &types.MsgAddEvidence{
+					Creator:       v.GetAddress().String(),
+					Proof:         anyProof,
+					MessageID:     mID,
+					QueueTypeName: queue,
+					Metadata: valsettypes.MsgMetadata{
+						Creator: v.GetAddress().String(),
+						Signers: []string{v.GetAddress().String()},
+					},
+				})
+				require.NoError(t, err)
+			}
+
+			ms.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(&valsettypes.Snapshot{
+				Validators:  validators,
+				TotalShares: math.NewInt(4000),
+			}, nil).Times(2)
+
+			ms.ValsetKeeper.On("Jail", mock.Anything, validators[0].GetAddress(), mock.Anything).Return(nil)
+			ms.ValsetKeeper.On("Jail", mock.Anything, validators[1].GetAddress(), mock.Anything).Return(nil)
+
+			err = keeper.jailValidatorsWhichMissedAttestation(ctx, queue, mID)
+			require.NoError(t, err, "should not do anything")
 		})
 	})
 }
