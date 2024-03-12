@@ -449,7 +449,6 @@ func (k Keeper) AddMessageEvidence(
 			"chain-type", chainType,
 			"chain-reference-id", chainReferenceID,
 			"validator", valAddr.String(),
-			"evidence", msg.GetProof(),
 		)
 	})
 	if err != nil {
