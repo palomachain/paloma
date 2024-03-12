@@ -77,7 +77,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 	baseAppLegacySS := app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable())
 
 	app.UpgradeKeeper.SetUpgradeHandler(
-		semverVersion,
+		"v1.1.0",
 		func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			// Migrate CometBFT consensus parameters from x/params module to a
 			// dedicated x/consensus module.
@@ -224,6 +224,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		// configure store loader that checks if version == upgradeHeight and applies store upgrades
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
+
 	app.UpgradeKeeper.SetUpgradeHandler(semverVersion, func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 		return app.ModuleManager.RunMigrations(ctx, app.configurator, fromVM)
 	})

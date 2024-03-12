@@ -57,13 +57,13 @@ func appExport(
 
 	var App *app.App
 	if height != -1 {
-		App = app.New(logger, db, traceStore, false, nil)
+		App = app.New(logger, db, traceStore, false, appOpts)
 
 		if err := App.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		App = app.New(logger, db, traceStore, true, nil)
+		App = app.New(logger, db, traceStore, true, appOpts)
 	}
 
 	return App.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
