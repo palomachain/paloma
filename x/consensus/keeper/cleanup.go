@@ -27,7 +27,7 @@ func (k Keeper) PruneOldMessages(ctx sdk.Context, blocksAgo int64) error {
 			}
 
 			for _, msg := range msgs {
-				err = k.DeleteJob(ctx, opt.QueueTypeName, msg.GetId())
+				err = k.PruneJob(ctx, opt.QueueTypeName, msg.GetId())
 				if err != nil {
 					return err
 				}

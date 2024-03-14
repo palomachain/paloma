@@ -7,14 +7,17 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
 func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
-	k.Logger(ctx).Debug("attest-validator-balances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+	logger := k.Logger(ctx).WithFields(
+		"component", "attest-validator-balances",
+		"msg-id", msg.GetId(),
+		"msg-nonce", msg.Nonce())
+	logger.Debug("attest-validator-balances")
 	if len(msg.GetEvidence()) == 0 {
 		return nil
 	}
@@ -36,7 +39,7 @@ func (k Keeper) attestValidatorBalances(ctx sdk.Context, q consensus.Queuer, msg
 	result, err := k.consensusChecker.VerifyEvidence(ctx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
-			liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
+			logger.WithFields(
 				"total-shares", result.TotalShares,
 				"total-votes", result.TotalVotes,
 				"distribution", result.Distribution,

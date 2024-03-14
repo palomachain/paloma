@@ -47,7 +47,7 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 	result, err := k.consensusChecker.VerifyEvidence(ctx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
-			liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
+			logger.WithFields(
 				"total-shares", result.TotalShares,
 				"total-votes", result.TotalVotes,
 				"distribution", result.Distribution,
