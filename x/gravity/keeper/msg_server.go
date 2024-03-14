@@ -301,6 +301,7 @@ func (k msgServer) CancelSendToEth(c context.Context, msg *types.MsgCancelSendTo
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("The MsgCancelSendtoEth is>>>>>>>>>>>>>", msg)
 	err = k.RemoveFromOutgoingPoolAndRefund(ctx, msg.TransactionId, sender)
 	if err != nil {
 		return nil, err

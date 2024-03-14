@@ -97,6 +97,8 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64
 	}
 	// check that we actually have a tx with that id and what it's details are
 	tx, err := k.GetUnbatchedTxById(ctx, txId)
+	fmt.Println("GetUnbatchedTXbyId>>>>>>>>>>>>>>>", tx)
+	fmt.Println("The sender is >>>>>>>>>>>", sender)
 	if err != nil {
 		return sdkerrors.Wrapf(err, "unknown transaction with id %d from sender %s", txId, sender.String())
 	}
