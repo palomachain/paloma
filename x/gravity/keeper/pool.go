@@ -76,6 +76,7 @@ func (k Keeper) AddToOutgoingPool(
 	if err != nil {
 		return 0, err
 	}
+	fmt.Println("bridgeContractAddress>>>>>>>", bridgeContractAddress)
 	return nextID, sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventWithdrawalReceived{
 			BridgeContract: bridgeContractAddress.GetAddress().Hex(),
@@ -165,6 +166,8 @@ func (k Keeper) addUnbatchedTX(ctx context.Context, val *types.InternalOutgoingT
 	}
 
 	store.Set(idxKey, bz)
+	store.Has(idxKey)
+	fmt.Println("Added successfully>>>>>>>>>", store.Has(idxKey))
 	return nil
 }
 
