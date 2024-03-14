@@ -32,26 +32,26 @@ func (k msgServer) SendToEth(c context.Context, msg *types.MsgSendToEth) (*types
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid sender")
 	}
-
+	fmt.Println("The sender is>>>>>>>>>>.", sender)
 	dest, err := types.NewEthAddress(msg.EthDest)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid eth dest")
 	}
-
+	fmt.Println("The destination address>>>>>>>>", dest)
 	erc20, err := k.GetERC20OfDenom(ctx, msg.GetChainReferenceId(), msg.Amount.Denom)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid denom")
 	}
-
+	fmt.Println("erc20 address>>>>>>>>>>.", erc20)
 	if k.InvalidSendToEthAddress(ctx, *dest, *erc20) {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "destination address is invalid")
 	}
-
+	fmt.Println("Its a valid eth-address>>>>>>>>>>>")
 	txID, err := k.AddToOutgoingPool(ctx, sender, *dest, msg.Amount, msg.GetChainReferenceId())
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "Could not add to outgoing pool")
 	}
-
+	fmt.Println("The txId is>>>>>>>>>>>>>>>>>>>", txID)
 	return &types.MsgSendToEthResponse{}, ctx.EventManager().EmitTypedEvent(
 		&types.EventOutgoingTxId{
 			Message: msg.Type(),
