@@ -29,6 +29,9 @@ func NewMsgSendToEth(sender sdk.AccAddress, destAddress EthAddress, send sdk.Coi
 		EthDest:          destAddress.GetAddress().Hex(),
 		Amount:           send,
 		ChainReferenceId: chainReferenceID,
+		Metadata: types.MsgMetadata{
+			Creator: sender.String(),
+		},
 	}
 }
 
