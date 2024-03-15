@@ -76,6 +76,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 	// making a map of chain types and their external chains
 	type mapkey [2]string
 	mmap := make(map[mapkey]struct{})
+	fmt.Printf("k.ExternalChains>>>>>>>>>>>>>>>>>>>: %v\n", k.ExternalChains)
 	for _, supported := range k.ExternalChains {
 		chainType := supported.XChainType()
 		for _, cri := range supported.XChainReferenceIDs(sdkCtx) {
@@ -95,6 +96,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 			g.Add(err)
 			continue
 		}
+		fmt.Printf("exts>>>>>>>>>>>>>>>>>: %v\n", exts)
 		valmap := make(map[mapkey]struct{})
 		for _, ext := range exts {
 			key := mapkey{ext.GetChainType(), ext.GetChainReferenceID()}
@@ -107,6 +109,8 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 				notSupported = append(notSupported, fmt.Sprintf("[%s, %s]", mustExistKey[0], mustExistKey[1]))
 			}
 		}
+
+		fmt.Printf("notSupported >>>>>>>>>>>>>>>>>>: %v\n", notSupported)
 
 		sort.Strings(notSupported)
 		if len(notSupported) > 0 {
