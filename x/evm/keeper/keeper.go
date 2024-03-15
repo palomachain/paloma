@@ -227,6 +227,8 @@ func (k Keeper) SupportedQueues(ctx context.Context) ([]consensus.SupportsConsen
 
 func (k Keeper) GetAllChainInfos(ctx context.Context) ([]*types.ChainInfo, error) {
 	_, all, err := keeperutil.IterAll[*types.ChainInfo](k.chainInfoStore(ctx), k.cdc)
+	fmt.Printf("all chains info >>>>>>>>>>: %v\n", all)
+	fmt.Printf("err Getallchainsinfos >>>>>>>>>>>: %v\n", err)
 	return all, err
 }
 
@@ -254,6 +256,8 @@ func (k Keeper) MissingChains(ctx context.Context, inputChainReferenceIDs []stri
 		supportedChainMap[chainReferenceID] = true
 	}
 
+	fmt.Printf("supportedChainMap >>>>>>>>>>>>>>>>>: %v\n", supportedChainMap)
+
 	// Walk through all chains and aggregate the ones not supported
 	var unsuportedChainReferenceIDs []string
 	for _, chain := range allChains {
@@ -265,10 +269,12 @@ func (k Keeper) MissingChains(ctx context.Context, inputChainReferenceIDs []stri
 			unsuportedChainReferenceIDs = append(unsuportedChainReferenceIDs, chainReferenceID)
 		}
 	}
+	fmt.Printf("unsuportedChainReferenceIDs >>>>>>>>>>>>>>>>>>: %v\n", unsuportedChainReferenceIDs)
 	return unsuportedChainReferenceIDs, nil
 }
 
 func (k Keeper) updateChainInfo(ctx context.Context, chainInfo *types.ChainInfo) error {
+	fmt.Printf("chainInfo  Update chain info >>>>>>>>>>>>>>>>>>: %v\n", chainInfo)
 	return keeperutil.Save(k.chainInfoStore(ctx), k.cdc, []byte(chainInfo.GetChainReferenceID()), chainInfo)
 }
 
@@ -293,6 +299,7 @@ func (k Keeper) AddSupportForNewChain(
 	if err != nil {
 		return err
 	}
+	fmt.Printf("all AddSupportforcnewchaiin >>>>>>>>>>>>>>>: %v\n", all)
 	for _, existing := range all {
 		if existing.GetChainID() == chainID {
 			return ErrCannotAddSupportForChainThatExists.Format(chainReferenceID).
@@ -313,6 +320,8 @@ func (k Keeper) AddSupportForNewChain(
 			ExecutionTime: "1.0",
 		},
 	}
+
+	fmt.Printf("chainInfo Support for new chain >>>>>>>>>>>.: %v\n", chainInfo)
 
 	err = k.updateChainInfo(ctx, chainInfo)
 	if err != nil {
@@ -353,6 +362,7 @@ func (k Keeper) ActivateChainReferenceID(
 	if err != nil {
 		return err
 	}
+	fmt.Printf("chainInfo ActivateChainReferenceID >>>>>>>>>>>>>: %v\n", chainInfo)
 	// if this is called with version lower than the current one, then do nothing
 	if chainInfo.GetActiveSmartContractID() >= smartContract.GetId() {
 		return nil
@@ -366,7 +376,7 @@ func (k Keeper) ActivateChainReferenceID(
 	chainInfo.SmartContractUniqueID = smartContractUniqueID
 
 	k.DeleteSmartContractDeploymentByContractID(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID())
-
+	fmt.Printf("chainInfo ActivateChainReferenceID before update >>>>>>>>>>>>>>>>.: %v\n", chainInfo)
 	return k.updateChainInfo(ctx, chainInfo)
 }
 
