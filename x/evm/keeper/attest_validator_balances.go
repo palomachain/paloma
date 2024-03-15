@@ -52,7 +52,7 @@ func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer,
 	}()
 
 	_, chainReferenceID := q.ChainInfo()
-	ci, err := k.GetChainInfo(ctx, chainReferenceID)
+	ci, err := k.GetChainInfo(cacheCtx, chainReferenceID)
 	if err != nil {
 		return err
 	}
