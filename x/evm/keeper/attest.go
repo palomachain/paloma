@@ -1,19 +1,14 @@
 package keeper
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"fmt"
 
 	"cosmossdk.io/math"
-	sdkmath "cosmossdk.io/math"
-	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -21,44 +16,6 @@ import (
 )
 
 const cMaxSubmitLogicCallRetries uint32 = 2
-
-func hashSha256(data []byte) []byte {
-	h := sha256.New()
-	h.Write(data)
-	return h.Sum(nil)
-}
-
-type consensusPower struct {
-	runningSum sdkmath.Int
-	totalPower sdkmath.Int
-}
-
-func (c *consensusPower) setTotal(total sdkmath.Int) {
-	c.totalPower = total
-}
-
-func (c *consensusPower) add(power sdkmath.Int) {
-	var zero sdkmath.Int
-	if c.runningSum == zero {
-		c.runningSum = sdk.NewInt(0)
-	}
-	c.runningSum = c.runningSum.Add(power)
-}
-
-func (c *consensusPower) consensus() bool {
-	var zero sdkmath.Int
-	if c.runningSum == zero {
-		return false
-	}
-	/*
-		sum >= totalPower * 2 / 3
-		===
-		3 * sum >= totalPower * 2
-	*/
-	return c.runningSum.Mul(sdk.NewInt(3)).GTE(
-		c.totalPower.Mul(sdk.NewInt(2)),
-	)
-}
 
 func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
 	logger := k.Logger(ctx).WithFields(
@@ -87,15 +44,21 @@ func (k Keeper) attestRouter(ctx sdk.Context, q consensus.Queuer, msg consensust
 		return err
 	}
 
-	evidence, err := k.findEvidenceThatWon(ctx, msg.GetEvidence())
+	result, err := k.consensusChecker.VerifyEvidence(ctx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
-			logger.WithError(err).Error("consensus not achieved")
+			logger.WithFields(
+				"total-shares", result.TotalShares,
+				"total-votes", result.TotalVotes,
+				"distribution", result.Distribution,
+			).WithError(err).Error("Consensus not achieved.")
 			return nil
 		}
 		logger.WithError(err).Error("failed to find evidence")
 		return err
 	}
+
+	evidence := result.Winner
 
 	message := consensusMsg.(*types.Message)
 
@@ -188,91 +151,6 @@ func attestTransactionIntegrity(
 	}
 
 	return tx, nil
-}
-
-func (k Keeper) findEvidenceThatWon(
-	ctx sdk.Context,
-	evidences []*consensustypes.Evidence,
-) (any, error) {
-	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
-	if err != nil {
-		return nil, err
-	}
-	// check if there is enough power to reach the consensus
-	// in the best case scenario
-	var cp consensusPower
-	cp.setTotal(snapshot.TotalShares)
-
-	for _, evidence := range evidences {
-		val, found := snapshot.GetValidator(evidence.GetValAddress())
-		if !found {
-			continue
-		}
-		cp.add(val.ShareCount)
-	}
-
-	if !cp.consensus() {
-		return nil, ErrConsensusNotAchieved
-	}
-
-	groups := make(map[string]struct {
-		evidence   types.Hashable
-		validators []sdk.ValAddress
-	})
-
-	var g whoops.Group
-	for _, evidence := range evidences {
-		rawProof := evidence.GetProof()
-		var hashable types.Hashable
-		err := k.cdc.UnpackAny(rawProof, &hashable)
-		if err != nil {
-			return nil, err
-		}
-
-		bytesToHash, err := hashable.BytesToHash()
-		if err != nil {
-			return nil, err
-		}
-		hash := hex.EncodeToString(hashSha256(bytesToHash))
-		val := groups[hash]
-		if val.evidence == nil {
-			val.evidence = hashable
-		}
-		val.validators = append(val.validators, evidence.ValAddress)
-		groups[hash] = val
-	}
-
-	// TODO: gas management
-	// TODO: punishing validators who misbehave
-	// TODO: check for every tx if it seems genuine
-
-	for _, group := range slice.FromMapValues(groups) {
-
-		var cp consensusPower
-		cp.setTotal(snapshot.TotalShares)
-
-		for _, val := range group.validators {
-			snapshotVal, ok := snapshot.GetValidator(val)
-			if !ok {
-				// strange...
-				continue
-			}
-			cp.add(snapshotVal.ShareCount)
-		}
-
-		if cp.consensus() {
-			// consensus reached
-			return group.evidence, nil
-		}
-
-		// TODO: punish other validators that are a part of different groups?
-	}
-
-	if g.Err() {
-		return nil, g
-	}
-
-	return nil, ErrConsensusNotAchieved
 }
 
 func (k Keeper) SetSmartContractAsActive(ctx sdk.Context, smartContractID uint64, chainReferenceID string) (err error) {

@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -241,18 +243,78 @@ func (k Keeper) GetMessagesFromQueue(ctx sdk.Context, queueTypeName string, n in
 	return
 }
 
+// PruneJob should only be called during the EndBlocker, it will automatically jail
+// any validators who failed to supply evidence for this message.
+// Any message that actually reached consensus will be removed from the queue during
+// attestation, other messages like superfluous valset updates will get removed
+// in their respective logic flows, but none of them should be using this function.
+func (k Keeper) PruneJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
+	if err := k.jailValidatorsWhichMissedAttestation(ctx, queueTypeName, id); err != nil {
+		liblog.FromSDKLogger(k.Logger(ctx)).
+			WithError(err).
+			WithFields("msg-id", id).
+			WithFields("queue-type-name", queueTypeName).
+			Error("Failed to jail validators that missed attestation.")
+	}
+
+	return k.DeleteJob(ctx, queueTypeName, id)
+}
+
 func (k Keeper) DeleteJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
 	cq, err := k.getConsensusQueue(ctx, queueTypeName)
 	if err != nil {
-		k.Logger(ctx).Error("error while getting consensus queue", "err", err)
+		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("Failed to get consensus queue.")
 		return err
 	}
+
 	return cq.Remove(ctx, id)
+}
+
+func (k Keeper) jailValidatorsWhichMissedAttestation(ctx sdk.Context, queueTypeName string, id uint64) error {
+	cq, err := k.getConsensusQueue(ctx, queueTypeName)
+	if err != nil {
+		return fmt.Errorf("getConsensusQueue: %w", err)
+	}
+
+	msg, err := cq.GetMsgByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("getMsgByID: %w", err)
+	}
+
+	if _, err := k.consensusChecker.VerifyEvidence(ctx, msg.GetEvidence()); err == nil {
+		return fmt.Errorf("unexpected message with valid consensus found, skipping jailing steps")
+	}
+
+	snapshot, err := k.valset.GetCurrentSnapshot(ctx)
+	if err != nil {
+		return fmt.Errorf("get snapshot: %w", err)
+	}
+	if len(snapshot.Validators) == 0 || snapshot.TotalShares.Equal(sdk.ZeroInt()) {
+		return nil
+	}
+
+	vlkUp := make(map[string]struct{})
+	for _, evidence := range msg.GetEvidence() {
+		vlkUp[evidence.GetValAddress().String()] = struct{}{}
+	}
+
+	for _, v := range snapshot.Validators {
+		if _, fnd := vlkUp[v.GetAddress().String()]; !fnd {
+			// This validator is part of the active valset but did not supply evidence.
+			// That's not very nice. Let's jail them.
+			if err := k.valset.Jail(ctx, v.GetAddress(), fmt.Sprintf("No evidence supplied for contentious message %d", msg.GetId())); err != nil {
+				liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithValidator(v.GetAddress().String()).WithFields("msg-id", id).Error("Failed to jail validator.")
+			}
+		}
+	}
+
+	return nil
 }
 
 // GetMessagesThatHaveReachedConsensus returns messages from a given
 // queueTypeName that have reached consensus based on the latest snapshot
 // available.
+// TODO: This is never used?
 func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx sdk.Context, queueTypeName string) ([]types.QueuedSignedMessageI, error) {
 	var consensusReached []types.QueuedSignedMessageI
 
@@ -386,6 +448,7 @@ func (k Keeper) AddMessageEvidence(
 			"queue-type-name", msg.GetQueueTypeName(),
 			"chain-type", chainType,
 			"chain-reference-id", chainReferenceID,
+			"validator", valAddr.String(),
 		)
 	})
 	if err != nil {
