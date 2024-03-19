@@ -72,6 +72,7 @@ func (k Keeper) Logger(ctx context.Context) cosmoslog.Logger {
 func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context) error {
 	liblog.FromSDKLogger(k.Logger(ctx)).Info("start jailing validators with invalid external chain infos")
 	vals := k.Valset.GetUnjailedValidators(ctx)
+	fmt.Println("The unjailed validators are >>>>>>>", vals)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// making a map of chain types and their external chains
 	type mapkey [2]string
