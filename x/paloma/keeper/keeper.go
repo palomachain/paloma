@@ -78,6 +78,8 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 	mmap := make(map[mapkey]struct{})
 	fmt.Printf("k.ExternalChains>>>>>>>>>>>>>>>>>>>: %v\n", k.ExternalChains)
 	for _, supported := range k.ExternalChains {
+		fmt.Printf("supported.XChainType()>>>>>>>>>>: %v\n", supported.XChainType())
+		fmt.Printf("supported.XChainReferenceIDs()>>>>>>>.: %v\n", supported.XChainReferenceIDs(sdkCtx))
 		chainType := supported.XChainType()
 		for _, cri := range supported.XChainReferenceIDs(sdkCtx) {
 			mmap[mapkey{string(chainType), string(cri)}] = struct{}{}
@@ -103,6 +105,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 			valmap[key] = struct{}{}
 		}
 
+		fmt.Println("The valmap is>>>>>>>>>>>", valmap)
 		notSupported := []string{}
 		for mustExistKey := range mmap {
 			if _, ok := valmap[mustExistKey]; !ok {
