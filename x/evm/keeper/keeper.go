@@ -250,6 +250,10 @@ func (k Keeper) MissingChains(ctx context.Context, inputChainReferenceIDs []stri
 		return nil, err
 	}
 
+	fmt.Printf("allChains >>>>>>. Missing chains: %v\n", allChains)
+
+	fmt.Printf("inputChainReferenceIDs: >>>>>>>>>>..%v\n", inputChainReferenceIDs)
+
 	// Build a map to use for efficient comparison
 	supportedChainMap := make(map[string]bool, len(inputChainReferenceIDs))
 	for _, chainReferenceID := range inputChainReferenceIDs {
