@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/valset/types"
@@ -14,9 +15,10 @@ func (k msgServer) AddExternalChainInfoForValidator(goCtx context.Context, msg *
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("The accAddr is>>>>>>>>>>>>>.", accAddr)
 	valAddr := sdk.ValAddress(accAddr)
-
+	fmt.Printf("valAddr: >>>>>>>>>>>>>>>>>>%v\n", valAddr)
+	fmt.Println("The chainsInfos are>>>>>>>>>>>>>>>", msg.ChainInfos)
 	err = k.AddExternalChainInfo(ctx, valAddr, msg.ChainInfos)
 	if err != nil {
 		return nil, err
