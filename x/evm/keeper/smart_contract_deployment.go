@@ -129,7 +129,6 @@ func (k Keeper) SaveNewSmartContract(ctx context.Context, abiJSON string, byteco
 
 func (k Keeper) TryDeployingLastCompassContractToAllChains(ctx context.Context) {
 	smartContract, err := k.GetLastCompassContract(ctx)
-	fmt.Printf("smartContract>>>>>>>>>>>>>>>>>>> %v\n", smartContract)
 	if err != nil {
 		k.Logger(ctx).Error("error while getting latest smart contract", "err", err)
 		return
@@ -329,9 +328,6 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx context.Context, smartC
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("chainInfos tryDeployingSmartContractToAllChains >>>>>>>>>>>.: %v\n", chainInfos)
-
 	for _, chainInfo := range chainInfos {
 		k.Logger(ctx).Info("trying to deploy smart contract to EVM chain", "smart-contract-id", smartContract.GetId(), "chain-reference-id", chainInfo.GetChainReferenceID())
 		if k.HasAnySmartContractDeployment(ctx, chainInfo.GetChainReferenceID()) {

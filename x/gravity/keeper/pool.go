@@ -76,7 +76,6 @@ func (k Keeper) AddToOutgoingPool(
 	if err != nil {
 		return 0, err
 	}
-	fmt.Println("bridgeContractAddress>>>>>>>", bridgeContractAddress)
 	return nextID, sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventWithdrawalReceived{
 			BridgeContract: bridgeContractAddress.GetAddress().Hex(),
@@ -98,8 +97,6 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64
 	}
 	// check that we actually have a tx with that id and what it's details are
 	tx, err := k.GetUnbatchedTxById(ctx, txId)
-	fmt.Println("GetUnbatchedTXbyId>>>>>>>>>>>>>>>", tx)
-	fmt.Println("The sender is >>>>>>>>>>>", sender)
 	if err != nil {
 		return sdkerrors.Wrapf(err, "unknown transaction with id %d from sender %s", txId, sender.String())
 	}
@@ -167,7 +164,6 @@ func (k Keeper) addUnbatchedTX(ctx context.Context, val *types.InternalOutgoingT
 
 	store.Set(idxKey, bz)
 	store.Has(idxKey)
-	fmt.Println("Added successfully>>>>>>>>>", store.Has(idxKey))
 	return nil
 }
 
