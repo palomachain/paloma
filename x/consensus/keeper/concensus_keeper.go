@@ -281,6 +281,12 @@ func (k Keeper) jailValidatorsWhichMissedAttestation(ctx sdk.Context, queueTypeN
 		return fmt.Errorf("getMsgByID: %w", err)
 	}
 
+	if msg.GetPublicAccessData() == nil && msg.GetErrorData() == nil {
+		// This message was never successfully handled, attestation flock
+		// should not be punished for this.
+		return nil
+	}
+
 	if _, err := k.consensusChecker.VerifyEvidence(ctx, msg.GetEvidence()); err == nil {
 		return fmt.Errorf("unexpected message with valid consensus found, skipping jailing steps")
 	}
