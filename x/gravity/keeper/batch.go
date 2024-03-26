@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
+	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 )
 
 const OutgoingTxBatchSize = 100
@@ -24,7 +25,7 @@ func (k Keeper) BuildOutgoingTXBatch(
 	chainReferenceID string,
 	contract types.EthAddress,
 	maxElements uint,
-) (*types.InternalOutgoingTxBatch, error) {
+) (res *types.InternalOutgoingTxBatch, err error) {
 	if maxElements == 0 {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "max elements value")
 	}
@@ -42,39 +43,57 @@ func (k Keeper) BuildOutgoingTXBatch(
 	}
 	turnstoneID := string(ci.SmartContractUniqueID)
 
-	nextID, err := k.autoIncrementID(ctx, types.KeyLastOutgoingBatchID)
+	// Make the batch construction an all-or-nothing operation
+	atomicCtx, commit := ctx.CacheContext()
+	defer func() {
+		if err == nil {
+			commit()
+		}
+	}()
+
+	nextID, err := k.autoIncrementID(atomicCtx, types.KeyLastOutgoingBatchID)
 	if err != nil {
 		return nil, err
 	}
 
-	assignee, err := k.evmKeeper.PickValidatorForMessage(ctx, chainReferenceID, nil)
+	assignee, err := k.evmKeeper.PickValidatorForMessage(atomicCtx, chainReferenceID, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	batch, err := types.NewInternalOutgingTxBatch(nextID, k.getBatchTimeoutHeight(ctx), selectedTxs, contract, 0, chainReferenceID, turnstoneID, assignee)
+	batch, err := types.NewInternalOutgingTxBatch(nextID, k.getBatchTimeoutHeight(atomicCtx), selectedTxs, contract, 0, chainReferenceID, turnstoneID, assignee)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "unable to create batch")
 	}
 	// set the current block height when storing the batch
-	batch.PalomaBlockCreated = uint64(ctx.BlockHeight())
-	err = k.StoreBatch(ctx, *batch)
+	batch.PalomaBlockCreated = uint64(atomicCtx.BlockHeight())
+	err = k.StoreBatch(atomicCtx, *batch)
 	if err != nil {
 		return nil, err
 	}
+
+	// Submit a JIT valset to to make sure we avoid a checkpoint mismatch on delivery
+	if err := k.evmKeeper.PreJobExecution(atomicCtx, &schedulertypes.Job{
+		Routing: schedulertypes.Routing{
+			ChainReferenceID: chainReferenceID,
+		},
+	}); err != nil {
+		return nil, fmt.Errorf("PreJobExecution: %w", err)
+	}
+
 	// Get the checkpoint and store it as a legit past batch
 	checkpoint, err := batch.GetCheckpoint(turnstoneID)
 	if err != nil {
 		return nil, err
 	}
-	k.SetPastEthSignatureCheckpoint(ctx, checkpoint)
+	k.SetPastEthSignatureCheckpoint(atomicCtx, checkpoint)
 
-	bridgeContract, err := k.GetBridgeContractAddress(ctx)
+	bridgeContract, err := k.GetBridgeContractAddress(atomicCtx)
 	if err != nil {
 		return nil, err
 	}
 
-	return batch, ctx.EventManager().EmitTypedEvent(
+	return batch, atomicCtx.EventManager().EmitTypedEvent(
 		&types.EventOutgoingBatch{
 			BridgeContract: bridgeContract.GetAddress().Hex(),
 			BridgeChainId:  strconv.Itoa(int(k.GetBridgeChainID(ctx))),

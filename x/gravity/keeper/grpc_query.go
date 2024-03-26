@@ -7,6 +7,8 @@ import (
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/palomachain/paloma/util/liblog"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -14,8 +16,9 @@ import (
 var _ types.QueryServer = Keeper{}
 
 const (
-	MERCURY_UPGRADE_HEIGHT   uint64 = 1282013
-	QUERY_ATTESTATIONS_LIMIT uint64 = 1000
+	MERCURY_UPGRADE_HEIGHT     uint64 = 1282013
+	QUERY_ATTESTATIONS_LIMIT   uint64 = 1000
+	cConsensusTurnstoneMessage        = "evm-turnstone-message"
 )
 
 // Params queries the params of the gravity module
@@ -83,6 +86,27 @@ func (k Keeper) OutgoingTxBatches(
 			return false
 		}
 		if reqAssignee != "" && batchAssignee != reqAssignee {
+			return false
+		}
+
+		queueTypeName := consensustypes.Queue(cConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, reqChainReferenceID)
+		pendingValsetLkup, err := k.consensusKeeper.GetOutstandingValsetUpdates(sdk.UnwrapSDKContext(c), queueTypeName)
+		if err != nil {
+			liblog.FromSDKLogger(k.Logger(sdk.UnwrapSDKContext(c))).
+				WithError(err).
+				WithFields("component", "outgoing-tx-batches").
+				WithFields("chain-reference-id", batch.GetChainReferenceID()).
+				WithFields("batch-nonce", batch.BatchNonce).
+				Error("failed to retrieve pending valset messages")
+			return false
+		}
+
+		if _, f := pendingValsetLkup[batch.GetChainReferenceID()]; f {
+			liblog.FromSDKLogger(k.Logger(sdk.UnwrapSDKContext(c))).
+				WithFields("component", "outgoing-tx-batches").
+				WithFields("chain-reference-id", batch.GetChainReferenceID()).
+				WithFields("batch-nonce", batch.BatchNonce).
+				Info("Skipping outgoing tx batch for pending valset message.")
 			return false
 		}
 

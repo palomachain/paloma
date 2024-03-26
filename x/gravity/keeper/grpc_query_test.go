@@ -237,6 +237,11 @@ func TestLastBatchesRequest(t *testing.T) {
 
 	lastBatches, err := k.OutgoingTxBatches(ctx, &types.QueryOutgoingTxBatchesRequest{})
 	require.NoError(t, err)
+	require.Empty(t, lastBatches.GetBatches(), "should be empty due to blocking valset message")
+
+	pendingValsets, err := k.consensusKeeper.GetOutstandingValsetUpdates(ctx, "test-chain")
+	require.NoError(t, err)
+	require.Len(t, pendingValsets, 1, "should have pending valset updates")
 
 	expectedRes := types.QueryOutgoingTxBatchesResponse{
 		Batches: []types.OutgoingTxBatch{

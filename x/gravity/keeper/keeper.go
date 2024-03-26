@@ -38,7 +38,9 @@ type Keeper struct {
 	DistKeeper        types.DistributionKeeper
 	accountKeeper     types.AccountKeeper
 	ibcTransferKeeper ibctransferkeeper.Keeper
-	evmKeeper         types.EVMKeeper
+
+	evmKeeper       types.EVMKeeper
+	consensusKeeper types.ConsensusKeeper
 
 	storeGetter keeperutil.StoreGetter
 
@@ -58,6 +60,7 @@ func NewKeeper(
 	distributionKeeper types.DistributionKeeper,
 	ibcTransferKeeper ibctransferkeeper.Keeper,
 	evmKeeper types.EVMKeeper,
+	consensusKeeper types.ConsensusKeeper,
 	storeGetter keeperutil.StoreGetter,
 ) Keeper {
 	// set KeyTable if it has not already been set
@@ -75,9 +78,10 @@ func NewKeeper(
 		DistKeeper:         distributionKeeper,
 		accountKeeper:      accKeeper,
 		ibcTransferKeeper:  ibcTransferKeeper,
-		evmKeeper:          evmKeeper,
 		storeGetter:        storeGetter,
 		AttestationHandler: nil,
+		evmKeeper:          evmKeeper,
+		consensusKeeper:    consensusKeeper,
 	}
 	attestationHandler := AttestationHandler{keeper: &k}
 	attestationHandler.ValidateMembers()

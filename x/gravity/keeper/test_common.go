@@ -258,6 +258,7 @@ var (
 type TestInput struct {
 	GravityKeeper     Keeper
 	AccountKeeper     authkeeper.AccountKeeper
+	ConsensusKeeper   consensuskeeper.Keeper
 	StakingKeeper     stakingkeeper.Keeper
 	ValsetKeeper      valsetkeeper.Keeper
 	SlashingKeeper    slashingkeeper.Keeper
@@ -337,6 +338,15 @@ func SetupFiveValChain(t *testing.T) (TestInput, sdk.Context) {
 	require.NoError(t, err)
 
 	addValidators(t, &input, 5)
+
+	// Set valset deployed on target chain (needed for valset integratin)
+	snapshot, err := input.ValsetKeeper.GetCurrentSnapshot(input.Context)
+	require.NoError(t, err)
+	err = input.ValsetKeeper.SetSnapshotOnChain(input.Context, snapshot.Id, "test-chain")
+	require.NoError(t, err)
+
+	// Add consensus queue support (also needed for valset integratin)
+	// TODO: SHOULD ALRADY BE HERE NO???
 
 	// Return the test input
 	return input, input.Context
@@ -675,6 +685,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 	)
 
 	valsetKeeper.EvmKeeper = evmKeeper
+	consensusRegistry.Add(evmKeeper)
 
 	err = evmKeeper.AddSupportForNewChain(
 		ctx,
@@ -696,6 +707,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		distKeeper,
 		ibcTransferKeeper,
 		evmKeeper,
+		consensusKeeper,
 		NewGravityStoreGetter(gravityKey),
 	)
 
@@ -771,6 +783,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		Context:           ctx,
 		Marshaler:         marshaler,
 		LegacyAmino:       cdc,
+		ConsensusKeeper:   *consensusKeeper,
 	}
 
 	// check invariants before starting

@@ -584,6 +584,7 @@ func New(
 		app.DistrKeeper,
 		app.TransferKeeper,
 		app.EvmKeeper,
+		app.ConsensusKeeper,
 		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
 	)
 	// TODO: Use proper dependency resolution instead of

@@ -12,6 +12,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	evmtypes "github.com/palomachain/paloma/x/evm/types"
+	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 )
 
 // StakingKeeper defines the expected staking keeper methods
@@ -72,4 +73,9 @@ type EVMKeeper interface {
 	PickValidatorForMessage(ctx sdk.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error)
 	GetEthAddressByValidator(ctx sdk.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *EthAddress, found bool, err error)
 	GetValidatorAddressByEthAddress(ctx sdk.Context, ethAddr EthAddress, chainReferenceId string) (valAddr sdk.ValAddress, found bool, err error)
+	PreJobExecution(ctx sdk.Context, job *schedulertypes.Job) error
+}
+
+type ConsensusKeeper interface {
+	GetOutstandingValsetUpdates(ctx sdk.Context, queueTypeName string) (map[string]uint64, error)
 }

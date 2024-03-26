@@ -109,9 +109,12 @@ func (k Keeper) GetMessagesForSigning(ctx sdk.Context, queueTypeName string, val
 	return msgs, nil
 }
 
-// GetMessagesForRelaying returns messages for a single validator to relay.
-func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
-	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 0)
+// TODO: Move this fn to EVM module where I think it belongs
+// Not sure why, because this stuff should not be directly connected to EVM
+// buuuuut oh well
+func (k Keeper) GetOutstandingValsetUpdates(ctx sdk.Context, chainReferenceID string) (map[string]uint64, error) {
+	// qn := types.Queue(qu, chainType, chainReferenceID)
+	msgs, err := k.GetMessagesFromQueue(ctx, chainReferenceID, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -141,6 +144,22 @@ func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, va
 			}
 			valsetUpdatesOnChainLkUp[m.GetChainReferenceID()] = v.GetId()
 		}
+	}
+
+	return valsetUpdatesOnChainLkUp, nil
+}
+
+// GetMessagesForRelaying returns messages for a single validator to relay.
+func (k Keeper) GetMessagesForRelaying(ctx sdk.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+	msgs, err = k.GetMessagesFromQueue(ctx, queueTypeName, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check for existing valset update messages on any target chains
+	valsetUpdatesOnChainLkUp, err := k.GetOutstandingValsetUpdates(ctx, queueTypeName)
+	if err != nil {
+		return nil, fmt.Errorf("GetOutstandingValsetUpdates: %w", err)
 	}
 
 	// Filter down to just messages for target chains without pending valset updates on them
