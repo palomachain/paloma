@@ -29,8 +29,7 @@ var (
 	_ module.HasConsensusVersion = AppModule{}
 	_ module.HasName             = AppModule{}
 
-	_ appmodule.HasEndBlocker   = AppModule{}
-	_ appmodule.HasBeginBlocker = AppModule{}
+	_ appmodule.HasEndBlocker = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
