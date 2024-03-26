@@ -291,6 +291,7 @@ func New(
 
 	std.RegisterLegacyAminoCodec(legacyAmino)
 	std.RegisterInterfaces(interfaceRegistry)
+	baseAppOptions = append(baseAppOptions, baseapp.SetOptimisticExecution())
 	bApp := baseapp.NewBaseApp(Name, logger, db, txConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetTxEncoder(txConfig.TxEncoder())
 	bApp.SetCommitMultiStoreTracer(traceStore)
