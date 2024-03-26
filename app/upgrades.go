@@ -77,7 +77,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 	baseAppLegacySS := app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable())
 
 	app.UpgradeKeeper.SetUpgradeHandler(
-		"v1.1.0",
+		semverVersion,
 		func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			// Migrate CometBFT consensus parameters from x/params module to a
 			// dedicated x/consensus module.

@@ -161,9 +161,7 @@ func (k Keeper) addUnbatchedTX(ctx context.Context, val *types.InternalOutgoingT
 	if err != nil {
 		return err
 	}
-
 	store.Set(idxKey, bz)
-	store.Has(idxKey)
 	return nil
 }
 
