@@ -1,8 +1,9 @@
-![Logo!](assets/Paloma_black.png)
-
 <div align="center">
     <img alt="Paloma" src="https://github.com/palomachain/paloma/blob/master/assets/Paloma_black.png" />
 </div>
+
+> A Golang implementation of Paloma Chain, a decentralized, automation network for smart contracts
+> deployed in the Cosmos, EVM, Solana, and Polkadot networks.
 
 <div align="center">
   <a href="https://github.com/palomachain/paloma/blob/master/LICENSE">
@@ -21,17 +22,13 @@
 </div>
 <div align="center">
   <a href="https://github.com/palomachain/paloma/actions/workflows/ci-test.yml">
-    <img alt="Code Coverage" src="https://github.com/palomachain/paloma/actions/workflows/ci-test.yml" />
+    <img alt="Code Coverage" src="https://github.com/palomachain/paloma/actions/workflows/ci-test.yml/badge.svg" />
   </a>
   <a href="https://github.com/palomachain/paloma/actions/workflows/release.yml">
     <img alt="Code Coverage" src="https://github.com/palomachain/paloma/actions/workflows/release.yml/badge.svg" />
   </a>
   <img alt="Lines of code" src="https://img.shields.io/tokei/lines/github/palomachain/paloma" />
 </div>
-
-
-> A Golang implementation of Paloma Chain, a decentralized, automation network for smart contracts
-> deployed in the Cosmos, EVM, Solana, and Polkadot networks.
 
 Paloma is the fastest, secure crosschain communications blockchain. For Crosschain Software engineers who want simultaneous control of multiple, cross-chain-deployed, smart contracts, Paloma is decentralized and consensus-driven message delivery. Paloma is fast state awareness, low cost state computation, and a powerful attestation system. Polama blockchain enables scalable, crosschain, smart contract execution with any data source.
 
