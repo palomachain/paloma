@@ -43,3 +43,41 @@ func CmdMessagesInQueue() *cobra.Command {
 
 	return cmd
 }
+
+func CmdMessageByID() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "message-by-id [queue-type-name] [message-id]",
+		Short: "Query a message by queue name and ID",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			reqQueueTypeName := args[0]
+			reqID, err := strconv.ParseUint(args[1], 10, 64)
+			if err != nil {
+				return err
+			}
+
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			params := &types.QueryMessageByIDRequest{
+				QueueTypeName: reqQueueTypeName,
+				Id:            reqID,
+			}
+
+			res, err := queryClient.MessageByID(cmd.Context(), params)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}

@@ -22,7 +22,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	cmd.AddCommand(CmdQueryParams())
 	cmd.AddCommand(CmdQueuedMessagesForSigning())
 	cmd.AddCommand(CmdMessagesInQueue())
-
+	cmd.AddCommand(CmdMessageByID())
 	cmd.AddCommand(CmdGetAllQueueNames())
 
 	return cmd

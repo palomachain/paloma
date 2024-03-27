@@ -1,7 +1,10 @@
 package liblog
 
 import (
+	"context"
+
 	"cosmossdk.io/log"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type Logr interface {
@@ -10,6 +13,15 @@ type Logr interface {
 	WithError(err error) Logr
 	WithComponent(string) Logr
 	WithValidator(string) Logr
+}
+
+type LogProvider interface {
+	Logger(sdk.Context) log.Logger
+}
+
+func FromKeeper(ctx context.Context, p LogProvider) Logr {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return FromSDKLogger(p.Logger(sdkCtx))
 }
 
 func FromSDKLogger(l log.Logger) Logr {
