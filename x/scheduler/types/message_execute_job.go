@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/libmeta"
+	vtypes "github.com/palomachain/paloma/x/valset/types"
 )
 
 const TypeMsgExecuteJob = "execute_job"
@@ -12,6 +13,9 @@ var _ sdk.Msg = &MsgExecuteJob{}
 func NewMsgExecuteJob(creator string, jobID string) *MsgExecuteJob {
 	return &MsgExecuteJob{
 		JobID: jobID,
+		Metadata: vtypes.MsgMetadata{
+			Creator: creator,
+		},
 	}
 }
 

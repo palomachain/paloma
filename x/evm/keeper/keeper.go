@@ -247,7 +247,6 @@ func (k Keeper) MissingChains(ctx context.Context, inputChainReferenceIDs []stri
 		k.Logger(sdkCtx).Error("Unable to get chains infos from keeper")
 		return nil, err
 	}
-
 	// Build a map to use for efficient comparison
 	supportedChainMap := make(map[string]bool, len(inputChainReferenceIDs))
 	for _, chainReferenceID := range inputChainReferenceIDs {
@@ -313,7 +312,6 @@ func (k Keeper) AddSupportForNewChain(
 			ExecutionTime: "1.0",
 		},
 	}
-
 	err = k.updateChainInfo(ctx, chainInfo)
 	if err != nil {
 		return err
@@ -366,7 +364,6 @@ func (k Keeper) ActivateChainReferenceID(
 	chainInfo.SmartContractUniqueID = smartContractUniqueID
 
 	k.DeleteSmartContractDeploymentByContractID(ctx, smartContract.GetId(), chainInfo.GetChainReferenceID())
-
 	return k.updateChainInfo(ctx, chainInfo)
 }
 
