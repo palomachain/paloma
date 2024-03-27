@@ -1,10 +1,34 @@
 ![Logo!](assets/Paloma_black.png)
 
-[![Continuous integration](https://github.com/palomachain/paloma/actions/workflows/ci-test.yml/badge.svg?branch=master)](https://github.com/palomachain/paloma/actions/workflows/ci-test.yml)
-[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://img.shields.io/badge/repo%20status-WIP-yellow.svg?style=flat-square)](https://www.repostatus.org/#wip)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/palomachain/paloma?logo=paloma)
-[![License: Apache-2.0](https://img.shields.io/github/license/umee-network/umee.svg?style=flat-square)](https://github.com/palomachain/paloma/blob/main/LICENSE)
-![Lines of code](https://img.shields.io/tokei/lines/github/palomachain/paloma)
+<div align="center">
+    <img alt="Paloma" src="https://github.com/palomachain/paloma/blob/master/assets/Paloma_black.png" />
+</div>
+
+<div align="center">
+  <a href="https://github.com/palomachain/paloma/blob/master/LICENSE">
+    <img alt="License: Apache-2.0" src="https://img.shields.io/github/license/palomachain/paloma.svg" />
+  </a>
+  <a href="https://www.repostatus.org/#wip">
+    <img alt="Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public." src="https://img.shields.io/badge/repo%20status-WIP-yellow.svg?style=flat-square" />
+  </a>
+  <img alt="Go Version" src="https://img.shields.io/github/go-mod/go-version/palomachain/paloma?logo=paloma" />
+  <a href="https://pkg.go.dev/github.com/palomachain/paloma">
+    <img src="https://pkg.go.dev/badge/github.com/palomachain/paloma.svg" alt="Go Reference">
+  </a>
+  <a href="https://goreportcard.com/report/github.com/palomachain/paloma">
+    <img alt="Go report card" src="https://goreportcard.com/badge/github.com/palomachain/paloma" />
+  </a>
+</div>
+<div align="center">
+  <a href="https://github.com/palomachain/paloma/actions/workflows/ci-test.yml">
+    <img alt="Code Coverage" src="https://github.com/palomachain/paloma/actions/workflows/ci-test.yml" />
+  </a>
+  <a href="https://github.com/palomachain/paloma/actions/workflows/release.yml">
+    <img alt="Code Coverage" src="https://github.com/palomachain/paloma/actions/workflows/release.yml/badge.svg" />
+  </a>
+  <img alt="Lines of code" src="https://img.shields.io/tokei/lines/github/palomachain/paloma" />
+</div>
+
 
 > A Golang implementation of Paloma Chain, a decentralized, automation network for smart contracts
 > deployed in the Cosmos, EVM, Solana, and Polkadot networks.
