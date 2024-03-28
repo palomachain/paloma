@@ -25,10 +25,6 @@ const (
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgAddMessagesSignatures int = 100
 
-	opWeightMsgDeleteJob = "op_weight_msg_delete_job"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgDeleteJob int = 100
-
 	opWeightMsgAddEvidence = "op_weight_msg_add_evidence"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgAddEvidence int = 100
