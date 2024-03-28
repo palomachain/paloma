@@ -148,7 +148,6 @@ func (c ConsensusChecker) VerifyEvidence(ctx sdk.Context, evidences []*consensus
 	// TODO: gas management
 	// TODO: punishing validators who misbehave
 	// TODO: check for every tx if it seems genuine
-
 	for hash, group := range groups {
 
 		var cp consensusPower

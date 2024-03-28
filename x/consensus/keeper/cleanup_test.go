@@ -6,9 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,7 +21,7 @@ func TestDeleteOldMessages(t *testing.T) {
 			name:      "deletes messages over a number of blocks ago, but not messages under",
 			blocksAgo: 50,
 			setup: func() (Keeper, sdk.Context, string) {
-				k, ms, ctx := newConsensusKeeper(t)
+				k, _, ctx := newConsensusKeeper(t)
 				queue := types.Queue(defaultQueueName, chainType, chainReferenceID)
 
 				msgType := &types.SimpleMessage{}
@@ -64,7 +62,6 @@ func TestDeleteOldMessages(t *testing.T) {
 
 				// Advance to block 61
 				ctx = ctx.WithBlockHeight(61)
-				ms.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(&valsettypes.Snapshot{}, nil)
 
 				return *k, ctx, queue
 			},
