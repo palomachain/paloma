@@ -279,8 +279,43 @@ func (k Keeper) jailValidatorsWhichMissedAttestation(ctx sdk.Context, queueTypeN
 		return fmt.Errorf("getMsgByID: %w", err)
 	}
 
-	if _, err := k.consensusChecker.VerifyEvidence(ctx, msg.GetEvidence()); err == nil {
-		return fmt.Errorf("unexpected message with valid consensus found, skipping jailing steps")
+	if msg.GetPublicAccessData() == nil && msg.GetErrorData() == nil {
+		// This message was never successfully handled, attestation flock
+		// should not be punished for this.
+		return nil
+	}
+
+	r, err := k.consensusChecker.VerifyEvidence(ctx, msg.GetEvidence())
+	if err == nil {
+		// We expect only messages which fail this verification to be in the queue at this point.
+		return fmt.Errorf("VerifyEvidence: unexpected message with valid consensus found, skipping jailing steps")
+	}
+	if r == nil {
+		// We expect only messages which fail this verification to be in the queue at this point.
+		return fmt.Errorf("VerifyEvidence: %w", err)
+	}
+
+	if likelyFaultyMsg := func() bool {
+		// It's possible a relayer will register error or public access data
+		// that others aren't able to attest: i.e. incorrect tx hash, empty blocks, etc...
+		// In those cases, we obviously don't want to punish anyone.
+		// The best indicator for a failed consensus due to faulty response data
+		// is a very low count of supplied evidence.
+		// Therefore, if only 10% of validators or less attest to the message,
+		// we will assume this was a case of faulty response data.
+		// In the future, attestation itself should be done smarter.
+		var zero math.Int
+		if r.TotalVotes == zero {
+			return true
+		}
+		/*
+			sum >= totalPower * 1 / 10
+			===
+			10 * sum >= totalPower
+		*/
+		return r.TotalVotes.Mul(math.NewInt(10)).LT(r.TotalShares)
+	}(); likelyFaultyMsg {
+		return fmt.Errorf("message consensus failure likely caused by faulty response data")
 	}
 
 	snapshot, err := k.valset.GetCurrentSnapshot(ctx)
