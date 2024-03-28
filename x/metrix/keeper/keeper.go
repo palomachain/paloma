@@ -367,10 +367,16 @@ func (k *Keeper) UpdateUptime(ctx context.Context) {
 	}
 
 	err = k.slashing.IterateValidatorSigningInfos(ctx, func(consAddr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
-		logger := logger.WithFields("validator-conspub", info.GetAddress())
+		logger := liblog.FromKeeper(ctx, k).
+			WithComponent("metrix.UpdateUptime").
+			WithFields("signed-blocks-window", window).
+			WithFields("validator-conspub", info.GetAddress())
 		val, err := k.staking.GetValidatorByConsAddr(ctx, consAddr)
 		if err != nil {
-			logger.Error("no validator found for cons pub address.")
+			// SigningInfos might hold infos of validators not staking or bonded
+			// This is expected.
+			// TODO: A better solution would be to invert the loop and look up signing infos
+			// while iterating over vaidators with stake.
 			return false
 		}
 		bz, _ := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())

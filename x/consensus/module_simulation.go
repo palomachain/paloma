@@ -25,10 +25,6 @@ const (
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgAddMessagesSignatures int = 100
 
-	opWeightMsgDeleteJob = "op_weight_msg_delete_job"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgDeleteJob int = 100
-
 	opWeightMsgAddEvidence = "op_weight_msg_add_evidence"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgAddEvidence int = 100
@@ -69,17 +65,6 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	operations = append(operations, simulation.NewWeightedOperation(
 		weightMsgAddMessagesSignatures,
 		consensussimulation.SimulateMsgAddMessagesSignatures(am.accountKeeper, am.bankKeeper, am.keeper),
-	))
-
-	var weightMsgDeleteJob int
-	simState.AppParams.GetOrGenerate(opWeightMsgDeleteJob, &weightMsgDeleteJob, nil,
-		func(_ *rand.Rand) {
-			weightMsgDeleteJob = defaultWeightMsgDeleteJob
-		},
-	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgDeleteJob,
-		consensussimulation.SimulateMsgDeleteJob(am.accountKeeper, am.bankKeeper, am.keeper),
 	))
 
 	var weightMsgAddEvidence int

@@ -3,6 +3,7 @@ package palomachain.paloma.consensus;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "palomachain/paloma/consensus/consensus_queue.proto";
 import "palomachain/paloma/consensus/params.proto";
 import "google/protobuf/any.proto";
 
@@ -40,6 +41,13 @@ service Query {
       returns (QueryMessagesInQueueResponse) {
     option (google.api.http).get =
         "/palomachain/paloma/consensus/messages_in_queue/{queueTypeName}";
+  }
+
+  // Queries one message by ID.
+  rpc MessageByID(QueryMessageByIDRequest)
+      returns (MessageWithSignatures) {
+    option (google.api.http).get =
+        "/palomachain/paloma/consensus/{queueTypeName}/message/{id}";
   }
 
   // Queries a list of GetAllQueueNames items.
@@ -94,6 +102,12 @@ message MessageWithSignatures {
   bytes bytesToSign = 5;
   bytes publicAccessData = 6;
   bytes errorData = 7;
+  repeated Evidence evidence = 8;
+}
+
+message QueryMessageByIDRequest {
+  string queueTypeName                    = 1;
+  uint64 id                               = 2;
 }
 
 message QueryMessagesInQueueRequest {

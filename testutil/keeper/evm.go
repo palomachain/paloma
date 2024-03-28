@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"testing"
+
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
@@ -15,10 +17,11 @@ import (
 	params2 "github.com/palomachain/paloma/app/params"
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/x/evm/types/mocks"
 	"github.com/stretchr/testify/require"
 )
 
-func EvmKeeper(t require.TestingT) (*keeper.Keeper, sdk.Context) {
+func EvmKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 
@@ -35,7 +38,7 @@ func EvmKeeper(t require.TestingT) (*keeper.Keeper, sdk.Context) {
 		cdc,
 		runtime.NewKVStoreService(storeKey),
 		nil,
-		nil,
+		mocks.NewValsetKeeper(t),
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
 	)
 

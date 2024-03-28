@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
@@ -250,6 +251,64 @@ func (k Keeper) GetMessagesFromQueue(ctx context.Context, queueTypeName string, 
 	return
 }
 
+// PruneJob should only be called during the EndBlocker, it will automatically jail
+// any validators who failed to supply evidence for this message.
+// Any message that actually reached consensus will be removed from the queue during
+// attestation, other messages like superfluous valset updates will get removed
+// in their respective logic flows, but none of them should be using this function.
+func (k Keeper) PruneJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
+	if err := k.jailValidatorsWhichMissedAttestation(ctx, queueTypeName, id); err != nil {
+		liblog.FromSDKLogger(k.Logger(ctx)).
+			WithError(err).
+			WithFields("msg-id", id).
+			WithFields("queue-type-name", queueTypeName).
+			Error("Failed to jail validators that missed attestation.")
+	}
+
+	return k.DeleteJob(ctx, queueTypeName, id)
+}
+
+func (k Keeper) jailValidatorsWhichMissedAttestation(ctx sdk.Context, queueTypeName string, id uint64) error {
+	cq, err := k.getConsensusQueue(ctx, queueTypeName)
+	if err != nil {
+		return fmt.Errorf("getConsensusQueue: %w", err)
+	}
+
+	msg, err := cq.GetMsgByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("getMsgByID: %w", err)
+	}
+
+	if _, err := k.consensusChecker.VerifyEvidence(ctx, msg.GetEvidence()); err == nil {
+		return fmt.Errorf("unexpected message with valid consensus found, skipping jailing steps")
+	}
+
+	snapshot, err := k.valset.GetCurrentSnapshot(ctx)
+	if err != nil {
+		return fmt.Errorf("get snapshot: %w", err)
+	}
+	if len(snapshot.Validators) == 0 || snapshot.TotalShares.Equal(math.ZeroInt()) {
+		return nil
+	}
+
+	vlkUp := make(map[string]struct{})
+	for _, evidence := range msg.GetEvidence() {
+		vlkUp[evidence.GetValAddress().String()] = struct{}{}
+	}
+
+	for _, v := range snapshot.Validators {
+		if _, fnd := vlkUp[v.GetAddress().String()]; !fnd {
+			// This validator is part of the active valset but did not supply evidence.
+			// That's not very nice. Let's jail them.
+			if err := k.valset.Jail(ctx, v.GetAddress(), fmt.Sprintf("No evidence supplied for contentious message %d", msg.GetId())); err != nil {
+				liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithValidator(v.GetAddress().String()).WithFields("msg-id", id).Error("Failed to jail validator.")
+			}
+		}
+	}
+
+	return nil
+}
+
 func (k Keeper) DeleteJob(ctx context.Context, queueTypeName string, id uint64) (err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
@@ -263,6 +322,7 @@ func (k Keeper) DeleteJob(ctx context.Context, queueTypeName string, id uint64) 
 // GetMessagesThatHaveReachedConsensus returns messages from a given
 // queueTypeName that have reached consensus based on the latest snapshot
 // available.
+// TODO: This is never used?
 func (k Keeper) GetMessagesThatHaveReachedConsensus(ctx context.Context, queueTypeName string) ([]types.QueuedSignedMessageI, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	var consensusReached []types.QueuedSignedMessageI
@@ -354,10 +414,14 @@ func (k Keeper) AddMessageSignature(
 				),
 			)
 
-			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("message-id", msg.GetId(), "queue-type-name", msg.GetQueueTypeName(),
+			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(
+				"message-id", msg.GetId(),
+				"queue-type-name", msg.GetQueueTypeName(),
 				"signed-by-address", msg.GetSignedByAddress(),
 				"chain-type", chainType,
-				"chain-reference-id", chainReferenceID).Info("added message signature.")
+				"validator", valAddr.String(),
+				"chain-reference-id", chainReferenceID).
+				Info("added message signature.")
 		}
 	})
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -391,8 +455,13 @@ func (k Keeper) AddMessageEvidence(
 			),
 		)
 		chainType, chainReferenceID := cq.ChainInfo()
-		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("message-id", msg.GetMessageID(), "queue-type-name", msg.GetQueueTypeName(),
-			"chain-type", chainType, "chain-reference-id", chainReferenceID).Info("added message evidence.")
+		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(
+			"message-id", msg.GetMessageID(),
+			"queue-type-name", msg.GetQueueTypeName(),
+			"chain-type", chainType,
+			"validator", valAddr.String(),
+			"chain-reference-id", chainReferenceID).
+			Info("added message evidence.")
 	})
 	if err != nil {
 		liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("error while adding message evidence.")
@@ -424,8 +493,14 @@ func (k Keeper) SetMessagePublicAccessData(
 	}
 
 	chainType, chainReferenceID := cq.ChainInfo()
-	liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("message-id", msg.GetMessageID(), "queue-type-name",
-		msg.GetQueueTypeName(), "chain-type", chainType, "chain-reference-id", chainReferenceID, "public-access-data", hexutil.Encode(payload.Data)).Info("added message public access data.")
+	liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(
+		"message-id", msg.GetMessageID(),
+		"queue-type-name", msg.GetQueueTypeName(),
+		"chain-type", chainType,
+		"chain-reference-id", chainReferenceID,
+		"validator", valAddr.String(),
+		"public-access-data", hexutil.Encode(payload.Data)).
+		Info("added message public access data.")
 
 	return nil
 }
@@ -452,11 +527,14 @@ func (k Keeper) SetMessageErrorData(
 	}
 
 	chainType, chainReferenceID := cq.ChainInfo()
-	liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields("message-id", msg.GetMessageID(),
+	liblog.FromSDKLogger(k.Logger(sdkCtx)).WithFields(
+		"message-id", msg.GetMessageID(),
 		"queue-type-name", msg.GetQueueTypeName(),
 		"chain-type", chainType,
 		"chain-reference-id", chainReferenceID,
-		"error-data", hexutil.Encode(payload.Data)).Info("added error data.")
+		"validator", valAddr.String(),
+		"error-data", hexutil.Encode(payload.Data)).
+		Info("added error data.")
 
 	return nil
 }

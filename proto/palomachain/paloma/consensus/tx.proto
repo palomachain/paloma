@@ -12,7 +12,6 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 service Msg {
   rpc AddMessagesSignatures(MsgAddMessagesSignatures)
       returns (MsgAddMessagesSignaturesResponse);
-  rpc DeleteJob(MsgDeleteJob) returns (MsgDeleteJobResponse);
   rpc AddEvidence(MsgAddEvidence) returns (MsgAddEvidenceResponse);
   rpc SetPublicAccessData(MsgSetPublicAccessData)
       returns (MsgSetPublicAccessDataResponse);
@@ -36,18 +35,6 @@ message ConsensusMessageSignature {
 }
 
 message MsgAddMessagesSignaturesResponse {}
-
-message MsgDeleteJob {
-  option (cosmos.msg.v1.signer) = "metadata";
-  reserved 1;  
-  reserved "creator";  
-  string queueTypeName = 2;
-  uint64 messageID = 3;
-  palomachain.paloma.valset.MsgMetadata metadata = 4
-      [ (gogoproto.nullable) = false ];
-}
-
-message MsgDeleteJobResponse {}
 
 message MsgAddEvidence {
   option (cosmos.msg.v1.signer) = "metadata";

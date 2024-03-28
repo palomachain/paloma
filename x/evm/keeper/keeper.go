@@ -24,6 +24,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/libcons"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -111,6 +112,7 @@ type Keeper struct {
 	deploymentCache *deployment.Cache
 
 	onMessageAttestedListeners []metrixtypes.OnConsensusMessageAttestedListener
+	consensusChecker           *libcons.ConsensusChecker
 }
 
 func NewKeeper(
@@ -137,7 +139,7 @@ func NewKeeper(
 
 	k.deploymentCache = deployment.NewCache(provideDeploymentCacheBootstrapper(k))
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.provideSmartContractStore), []byte("id-key"))
-
+	k.consensusChecker = libcons.New(k.Valset.GetCurrentSnapshot, k.cdc)
 	return k
 }
 

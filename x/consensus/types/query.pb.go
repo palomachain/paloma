@@ -6,6 +6,10 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
@@ -15,15 +19,14 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	io "io"
-	math "math"
-	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -32,8 +35,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
-type QueryParamsRequest struct {
-}
+type QueryParamsRequest struct{}
 
 func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
 func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
@@ -41,9 +43,11 @@ func (*QueryParamsRequest) ProtoMessage()    {}
 func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{0}
 }
+
 func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsRequest.Marshal(b, m, deterministic)
@@ -56,12 +60,15 @@ func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
+
 func (m *QueryParamsRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsRequest.Merge(m, src)
 }
+
 func (m *QueryParamsRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsRequest.DiscardUnknown(m)
 }
@@ -80,9 +87,11 @@ func (*QueryParamsResponse) ProtoMessage()    {}
 func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{1}
 }
+
 func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsResponse.Marshal(b, m, deterministic)
@@ -95,12 +104,15 @@ func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
+
 func (m *QueryParamsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsResponse.Merge(m, src)
 }
+
 func (m *QueryParamsResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryParamsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsResponse.DiscardUnknown(m)
 }
@@ -125,9 +137,11 @@ func (*QueryQueuedMessagesForSigningRequest) ProtoMessage()    {}
 func (*QueryQueuedMessagesForSigningRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{2}
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForSigningRequest.Marshal(b, m, deterministic)
@@ -140,12 +154,15 @@ func (m *QueryQueuedMessagesForSigningRequest) XXX_Marshal(b []byte, determinist
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForSigningRequest.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForSigningRequest.DiscardUnknown(m)
 }
@@ -176,9 +193,11 @@ func (*QueryQueuedMessagesForSigningResponse) ProtoMessage()    {}
 func (*QueryQueuedMessagesForSigningResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{3}
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForSigningResponse.Marshal(b, m, deterministic)
@@ -191,12 +210,15 @@ func (m *QueryQueuedMessagesForSigningResponse) XXX_Marshal(b []byte, determinis
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForSigningResponse.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForSigningResponse.DiscardUnknown(m)
 }
@@ -223,9 +245,11 @@ func (*MessageToSign) ProtoMessage()    {}
 func (*MessageToSign) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{4}
 }
+
 func (m *MessageToSign) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MessageToSign) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MessageToSign.Marshal(b, m, deterministic)
@@ -238,12 +262,15 @@ func (m *MessageToSign) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 		return b[:n], nil
 	}
 }
+
 func (m *MessageToSign) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MessageToSign.Merge(m, src)
 }
+
 func (m *MessageToSign) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MessageToSign) XXX_DiscardUnknown() {
 	xxx_messageInfo_MessageToSign.DiscardUnknown(m)
 }
@@ -292,9 +319,11 @@ func (*ValidatorSignature) ProtoMessage()    {}
 func (*ValidatorSignature) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{5}
 }
+
 func (m *ValidatorSignature) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *ValidatorSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ValidatorSignature.Marshal(b, m, deterministic)
@@ -307,12 +336,15 @@ func (m *ValidatorSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
+
 func (m *ValidatorSignature) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ValidatorSignature.Merge(m, src)
 }
+
 func (m *ValidatorSignature) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *ValidatorSignature) XXX_DiscardUnknown() {
 	xxx_messageInfo_ValidatorSignature.DiscardUnknown(m)
 }
@@ -362,6 +394,7 @@ type MessageWithSignatures struct {
 	BytesToSign      []byte                `protobuf:"bytes,5,opt,name=bytesToSign,proto3" json:"bytesToSign,omitempty"`
 	PublicAccessData []byte                `protobuf:"bytes,6,opt,name=publicAccessData,proto3" json:"publicAccessData,omitempty"`
 	ErrorData        []byte                `protobuf:"bytes,7,opt,name=errorData,proto3" json:"errorData,omitempty"`
+	Evidence         []*Evidence           `protobuf:"bytes,8,rep,name=evidence,proto3" json:"evidence,omitempty"`
 }
 
 func (m *MessageWithSignatures) Reset()         { *m = MessageWithSignatures{} }
@@ -370,9 +403,11 @@ func (*MessageWithSignatures) ProtoMessage()    {}
 func (*MessageWithSignatures) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{6}
 }
+
 func (m *MessageWithSignatures) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MessageWithSignatures) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MessageWithSignatures.Marshal(b, m, deterministic)
@@ -385,12 +420,15 @@ func (m *MessageWithSignatures) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
+
 func (m *MessageWithSignatures) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MessageWithSignatures.Merge(m, src)
 }
+
 func (m *MessageWithSignatures) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MessageWithSignatures) XXX_DiscardUnknown() {
 	xxx_messageInfo_MessageWithSignatures.DiscardUnknown(m)
 }
@@ -446,6 +484,70 @@ func (m *MessageWithSignatures) GetErrorData() []byte {
 	return nil
 }
 
+func (m *MessageWithSignatures) GetEvidence() []*Evidence {
+	if m != nil {
+		return m.Evidence
+	}
+	return nil
+}
+
+type QueryMessageByIDRequest struct {
+	QueueTypeName string `protobuf:"bytes,1,opt,name=queueTypeName,proto3" json:"queueTypeName,omitempty"`
+	Id            uint64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (m *QueryMessageByIDRequest) Reset()         { *m = QueryMessageByIDRequest{} }
+func (m *QueryMessageByIDRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryMessageByIDRequest) ProtoMessage()    {}
+func (*QueryMessageByIDRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_186b66ae011355e3, []int{7}
+}
+
+func (m *QueryMessageByIDRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *QueryMessageByIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryMessageByIDRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *QueryMessageByIDRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryMessageByIDRequest.Merge(m, src)
+}
+
+func (m *QueryMessageByIDRequest) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *QueryMessageByIDRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryMessageByIDRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryMessageByIDRequest proto.InternalMessageInfo
+
+func (m *QueryMessageByIDRequest) GetQueueTypeName() string {
+	if m != nil {
+		return m.QueueTypeName
+	}
+	return ""
+}
+
+func (m *QueryMessageByIDRequest) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
 type QueryMessagesInQueueRequest struct {
 	QueueTypeName                    string                                        `protobuf:"bytes,1,opt,name=queueTypeName,proto3" json:"queueTypeName,omitempty"`
 	SkipEvidenceProvidedByValAddress github_com_cosmos_cosmos_sdk_types.ValAddress `protobuf:"bytes,2,opt,name=skipEvidenceProvidedByValAddress,proto3,casttype=github.com/cosmos/cosmos-sdk/types.ValAddress" json:"skipEvidenceProvidedByValAddress,omitempty"`
@@ -455,11 +557,13 @@ func (m *QueryMessagesInQueueRequest) Reset()         { *m = QueryMessagesInQueu
 func (m *QueryMessagesInQueueRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryMessagesInQueueRequest) ProtoMessage()    {}
 func (*QueryMessagesInQueueRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{7}
+	return fileDescriptor_186b66ae011355e3, []int{8}
 }
+
 func (m *QueryMessagesInQueueRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryMessagesInQueueRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryMessagesInQueueRequest.Marshal(b, m, deterministic)
@@ -472,12 +576,15 @@ func (m *QueryMessagesInQueueRequest) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
+
 func (m *QueryMessagesInQueueRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryMessagesInQueueRequest.Merge(m, src)
 }
+
 func (m *QueryMessagesInQueueRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryMessagesInQueueRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryMessagesInQueueRequest.DiscardUnknown(m)
 }
@@ -506,11 +613,13 @@ func (m *QueryMessagesInQueueResponse) Reset()         { *m = QueryMessagesInQue
 func (m *QueryMessagesInQueueResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryMessagesInQueueResponse) ProtoMessage()    {}
 func (*QueryMessagesInQueueResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{8}
+	return fileDescriptor_186b66ae011355e3, []int{9}
 }
+
 func (m *QueryMessagesInQueueResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryMessagesInQueueResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryMessagesInQueueResponse.Marshal(b, m, deterministic)
@@ -523,12 +632,15 @@ func (m *QueryMessagesInQueueResponse) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
+
 func (m *QueryMessagesInQueueResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryMessagesInQueueResponse.Merge(m, src)
 }
+
 func (m *QueryMessagesInQueueResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryMessagesInQueueResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryMessagesInQueueResponse.DiscardUnknown(m)
 }
@@ -551,11 +663,13 @@ func (m *QueryQueuedMessagesForRelayingRequest) Reset()         { *m = QueryQueu
 func (m *QueryQueuedMessagesForRelayingRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryQueuedMessagesForRelayingRequest) ProtoMessage()    {}
 func (*QueryQueuedMessagesForRelayingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{9}
+	return fileDescriptor_186b66ae011355e3, []int{10}
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForRelayingRequest.Marshal(b, m, deterministic)
@@ -568,12 +682,15 @@ func (m *QueryQueuedMessagesForRelayingRequest) XXX_Marshal(b []byte, determinis
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForRelayingRequest.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForRelayingRequest.DiscardUnknown(m)
 }
@@ -604,11 +721,13 @@ func (m *QueryQueuedMessagesForRelayingResponse) Reset() {
 func (m *QueryQueuedMessagesForRelayingResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryQueuedMessagesForRelayingResponse) ProtoMessage()    {}
 func (*QueryQueuedMessagesForRelayingResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{10}
+	return fileDescriptor_186b66ae011355e3, []int{11}
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForRelayingResponse.Marshal(b, m, deterministic)
@@ -621,12 +740,15 @@ func (m *QueryQueuedMessagesForRelayingResponse) XXX_Marshal(b []byte, determini
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForRelayingResponse.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForRelayingResponse.DiscardUnknown(m)
 }
@@ -651,11 +773,13 @@ func (m *QueryQueuedMessagesForAttestingRequest) Reset() {
 func (m *QueryQueuedMessagesForAttestingRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryQueuedMessagesForAttestingRequest) ProtoMessage()    {}
 func (*QueryQueuedMessagesForAttestingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{11}
+	return fileDescriptor_186b66ae011355e3, []int{12}
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForAttestingRequest.Marshal(b, m, deterministic)
@@ -668,12 +792,15 @@ func (m *QueryQueuedMessagesForAttestingRequest) XXX_Marshal(b []byte, determini
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForAttestingRequest.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForAttestingRequest.DiscardUnknown(m)
 }
@@ -704,11 +831,13 @@ func (m *QueryQueuedMessagesForAttestingResponse) Reset() {
 func (m *QueryQueuedMessagesForAttestingResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryQueuedMessagesForAttestingResponse) ProtoMessage()    {}
 func (*QueryQueuedMessagesForAttestingResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{12}
+	return fileDescriptor_186b66ae011355e3, []int{13}
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForAttestingResponse.Marshal(b, m, deterministic)
@@ -721,12 +850,15 @@ func (m *QueryQueuedMessagesForAttestingResponse) XXX_Marshal(b []byte, determin
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForAttestingResponse.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForAttestingResponse.DiscardUnknown(m)
 }
@@ -740,18 +872,19 @@ func (m *QueryQueuedMessagesForAttestingResponse) GetMessages() []MessageWithSig
 	return nil
 }
 
-type QueryGetAllQueueNamesRequest struct {
-}
+type QueryGetAllQueueNamesRequest struct{}
 
 func (m *QueryGetAllQueueNamesRequest) Reset()         { *m = QueryGetAllQueueNamesRequest{} }
 func (m *QueryGetAllQueueNamesRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryGetAllQueueNamesRequest) ProtoMessage()    {}
 func (*QueryGetAllQueueNamesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{13}
+	return fileDescriptor_186b66ae011355e3, []int{14}
 }
+
 func (m *QueryGetAllQueueNamesRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryGetAllQueueNamesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetAllQueueNamesRequest.Marshal(b, m, deterministic)
@@ -764,12 +897,15 @@ func (m *QueryGetAllQueueNamesRequest) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
+
 func (m *QueryGetAllQueueNamesRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetAllQueueNamesRequest.Merge(m, src)
 }
+
 func (m *QueryGetAllQueueNamesRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryGetAllQueueNamesRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetAllQueueNamesRequest.DiscardUnknown(m)
 }
@@ -784,11 +920,13 @@ func (m *QueryGetAllQueueNamesResponse) Reset()         { *m = QueryGetAllQueueN
 func (m *QueryGetAllQueueNamesResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryGetAllQueueNamesResponse) ProtoMessage()    {}
 func (*QueryGetAllQueueNamesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{14}
+	return fileDescriptor_186b66ae011355e3, []int{15}
 }
+
 func (m *QueryGetAllQueueNamesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryGetAllQueueNamesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetAllQueueNamesResponse.Marshal(b, m, deterministic)
@@ -801,12 +939,15 @@ func (m *QueryGetAllQueueNamesResponse) XXX_Marshal(b []byte, deterministic bool
 		return b[:n], nil
 	}
 }
+
 func (m *QueryGetAllQueueNamesResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetAllQueueNamesResponse.Merge(m, src)
 }
+
 func (m *QueryGetAllQueueNamesResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryGetAllQueueNamesResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetAllQueueNamesResponse.DiscardUnknown(m)
 }
@@ -828,6 +969,7 @@ func init() {
 	proto.RegisterType((*MessageToSign)(nil), "palomachain.paloma.consensus.MessageToSign")
 	proto.RegisterType((*ValidatorSignature)(nil), "palomachain.paloma.consensus.ValidatorSignature")
 	proto.RegisterType((*MessageWithSignatures)(nil), "palomachain.paloma.consensus.MessageWithSignatures")
+	proto.RegisterType((*QueryMessageByIDRequest)(nil), "palomachain.paloma.consensus.QueryMessageByIDRequest")
 	proto.RegisterType((*QueryMessagesInQueueRequest)(nil), "palomachain.paloma.consensus.QueryMessagesInQueueRequest")
 	proto.RegisterType((*QueryMessagesInQueueResponse)(nil), "palomachain.paloma.consensus.QueryMessagesInQueueResponse")
 	proto.RegisterType((*QueryQueuedMessagesForRelayingRequest)(nil), "palomachain.paloma.consensus.QueryQueuedMessagesForRelayingRequest")
@@ -843,75 +985,82 @@ func init() {
 }
 
 var fileDescriptor_186b66ae011355e3 = []byte{
-	// 1000 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x56, 0xcb, 0x6f, 0x1b, 0x45,
-	0x18, 0xcf, 0x38, 0x8e, 0x69, 0xbe, 0x34, 0x50, 0x0d, 0xa1, 0x72, 0x4d, 0x70, 0xad, 0x55, 0x08,
-	0xe1, 0xd1, 0x5d, 0x92, 0x48, 0xa0, 0x34, 0x20, 0x64, 0xb7, 0xa5, 0xaa, 0xa0, 0xa8, 0x59, 0x4a,
-	0x11, 0x5c, 0xac, 0xf1, 0xee, 0x74, 0xb3, 0xea, 0x7a, 0xc6, 0xd9, 0x99, 0xad, 0x62, 0x50, 0x55,
-	0xc4, 0x8d, 0x1b, 0x12, 0x47, 0x0e, 0x85, 0x7f, 0x85, 0x03, 0xea, 0xb1, 0x88, 0x0b, 0xa7, 0x08,
-	0x25, 0x88, 0x03, 0x07, 0xee, 0x70, 0x42, 0x3b, 0x33, 0x76, 0xfc, 0x88, 0x1f, 0x71, 0x88, 0xd4,
-	0x93, 0xd7, 0x33, 0xdf, 0xf7, 0x9b, 0xdf, 0xef, 0x7b, 0xcd, 0xc0, 0x4a, 0x83, 0x44, 0xbc, 0x4e,
-	0xbc, 0x6d, 0x12, 0x32, 0x47, 0x7f, 0x3b, 0x1e, 0x67, 0x82, 0x32, 0x91, 0x08, 0x67, 0x27, 0xa1,
-	0x71, 0xd3, 0x6e, 0xc4, 0x5c, 0x72, 0xbc, 0xd8, 0x61, 0x69, 0xeb, 0x6f, 0xbb, 0x6d, 0x59, 0x58,
-	0x08, 0x78, 0xc0, 0x95, 0xa1, 0x93, 0x7e, 0x69, 0x9f, 0xc2, 0x62, 0xc0, 0x79, 0x10, 0x51, 0x87,
-	0x34, 0x42, 0x87, 0x30, 0xc6, 0x25, 0x91, 0x21, 0x67, 0xc2, 0xec, 0xbe, 0x3a, 0xf4, 0xec, 0x06,
-	0x89, 0x49, 0xbd, 0x65, 0x7a, 0xc1, 0x00, 0xa9, 0x7f, 0xb5, 0xe4, 0xae, 0x43, 0x98, 0xe1, 0x65,
-	0x2d, 0x00, 0xde, 0x4a, 0x69, 0xde, 0x52, 0xf6, 0x2e, 0xdd, 0x49, 0xa8, 0x90, 0xd6, 0x67, 0xf0,
-	0x7c, 0xd7, 0xaa, 0x68, 0xa4, 0xc0, 0xb8, 0x02, 0x39, 0x8d, 0x9b, 0x47, 0x25, 0xb4, 0x32, 0xb7,
-	0xb6, 0x64, 0x0f, 0x53, 0x65, 0x6b, 0xef, 0x4a, 0xf6, 0xf1, 0xde, 0xc5, 0x29, 0xd7, 0x78, 0x5a,
-	0x8f, 0x10, 0x2c, 0x29, 0xec, 0xad, 0x84, 0x26, 0xd4, 0xbf, 0x49, 0x85, 0x20, 0x01, 0x15, 0xef,
-	0xf3, 0xf8, 0xe3, 0x30, 0x60, 0x21, 0x0b, 0x0c, 0x07, 0xbc, 0x05, 0x70, 0x9f, 0x44, 0x65, 0xdf,
-	0x8f, 0xa9, 0xd0, 0x07, 0x9e, 0xad, 0xac, 0xfe, 0xbb, 0x77, 0xf1, 0x52, 0x10, 0xca, 0xed, 0xa4,
-	0x66, 0x7b, 0xbc, 0xee, 0x78, 0x5c, 0xd4, 0xb9, 0x30, 0x3f, 0x97, 0x84, 0x7f, 0xcf, 0x91, 0xcd,
-	0x06, 0x15, 0xf6, 0x9d, 0xb6, 0xa3, 0xdb, 0x01, 0x82, 0x97, 0x60, 0x7e, 0x27, 0x3d, 0xf5, 0x76,
-	0xb3, 0x41, 0x3f, 0x22, 0x75, 0x9a, 0xcf, 0x94, 0xd0, 0xca, 0xac, 0xdb, 0xbd, 0x68, 0x7d, 0x01,
-	0x2f, 0x8f, 0x20, 0x68, 0xc2, 0xb1, 0x05, 0xf3, 0x75, 0xbd, 0x7b, 0x9b, 0xa7, 0x7b, 0x79, 0x54,
-	0x9a, 0x5e, 0x99, 0x5b, 0x7b, 0x7d, 0x78, 0x54, 0x6e, 0x76, 0xba, 0xb8, 0xdd, 0x08, 0xd6, 0x43,
-	0x98, 0xef, 0xda, 0xc7, 0x0b, 0x30, 0xc3, 0x38, 0xf3, 0xa8, 0x0e, 0x80, 0xab, 0xff, 0xe0, 0x67,
-	0x21, 0x13, 0xfa, 0x8a, 0x7d, 0xd6, 0xcd, 0x84, 0x3e, 0x2e, 0xc1, 0x5c, 0xad, 0x29, 0xa9, 0x30,
-	0x3c, 0xa6, 0x95, 0x6d, 0xe7, 0x12, 0x5e, 0x86, 0xe9, 0xba, 0x08, 0xf2, 0x59, 0x95, 0xb7, 0x05,
-	0x5b, 0x17, 0x84, 0xdd, 0x2a, 0x08, 0xbb, 0xcc, 0x9a, 0x6e, 0x6a, 0x60, 0xfd, 0x83, 0x00, 0xdf,
-	0x21, 0x51, 0xe8, 0x13, 0xa9, 0x05, 0x13, 0x99, 0xc4, 0xf4, 0x34, 0x92, 0xb1, 0x08, 0xb3, 0xa2,
-	0x85, 0xaf, 0xa4, 0x9c, 0x75, 0x0f, 0x17, 0xd2, 0x5d, 0xba, 0x2b, 0x63, 0x72, 0x95, 0x48, 0x62,
-	0xf4, 0x1c, 0x2e, 0xe0, 0xb7, 0xe0, 0x3c, 0xdd, 0x95, 0x34, 0x66, 0x24, 0x2a, 0x7b, 0x1e, 0x4f,
-	0x98, 0x6c, 0x51, 0xcb, 0xaa, 0x8c, 0x0e, 0xd8, 0x4d, 0x51, 0x1b, 0x49, 0x2d, 0x0a, 0xbd, 0x0f,
-	0x68, 0x33, 0x3f, 0xa3, 0x51, 0xdb, 0x0b, 0xd6, 0xa3, 0x0c, 0xbc, 0x60, 0xa2, 0xff, 0x69, 0x28,
-	0xb7, 0xdb, 0xea, 0xc5, 0x98, 0x59, 0x30, 0x31, 0x9e, 0x1e, 0x11, 0x63, 0xfc, 0x21, 0x9c, 0x49,
-	0x85, 0x2a, 0x69, 0x59, 0x55, 0x32, 0x6f, 0x0e, 0x2f, 0x99, 0xfe, 0x84, 0xb8, 0x6d, 0x84, 0xde,
-	0xdc, 0xcf, 0xf4, 0xe7, 0xfe, 0x35, 0x38, 0xa7, 0x45, 0x96, 0x3d, 0x8f, 0x0a, 0xa1, 0xce, 0xcd,
-	0x29, 0xb3, 0xbe, 0x75, 0x15, 0xf7, 0x38, 0xe6, 0xb1, 0x32, 0x7a, 0xc6, 0xc4, 0xbd, 0xb5, 0x60,
-	0xfd, 0x84, 0xe0, 0x45, 0xd5, 0x1b, 0xad, 0xae, 0xb8, 0xc1, 0x54, 0x97, 0xb4, 0x7a, 0xb6, 0xaf,
-	0xc1, 0xd0, 0x11, 0x0d, 0x86, 0x1f, 0x40, 0x49, 0xdc, 0x0b, 0x1b, 0xd7, 0xee, 0x87, 0x3e, 0x65,
-	0x1e, 0xbd, 0x15, 0xf3, 0xf4, 0xcb, 0xaf, 0x34, 0x0f, 0x2b, 0x45, 0x17, 0xc4, 0x24, 0x25, 0x36,
-	0x12, 0xda, 0x4a, 0x60, 0xf1, 0x68, 0x0d, 0xa6, 0xad, 0x3f, 0x81, 0x33, 0xa6, 0x29, 0x85, 0xe9,
-	0xe8, 0xf5, 0xb1, 0x3a, 0xba, 0xbb, 0x66, 0xcc, 0xd8, 0x6b, 0x43, 0x59, 0x3f, 0xa0, 0x41, 0x73,
-	0xc5, 0xa5, 0x11, 0x69, 0x76, 0x4c, 0xbe, 0xf1, 0xa2, 0xd8, 0xdd, 0x92, 0x99, 0xff, 0xa1, 0x25,
-	0xad, 0x87, 0xb0, 0x3c, 0x8a, 0xe1, 0xe9, 0xc6, 0xe8, 0x47, 0x34, 0x88, 0x41, 0x59, 0x4a, 0x2a,
-	0xe4, 0xd3, 0x10, 0xa4, 0xaf, 0x10, 0xbc, 0x32, 0x92, 0xe3, 0xe9, 0x86, 0xa9, 0x68, 0x2a, 0xf8,
-	0x3a, 0x95, 0xe5, 0x28, 0x52, 0x3c, 0x52, 0xb5, 0xed, 0xeb, 0xfb, 0x6d, 0x78, 0x69, 0xc0, 0xbe,
-	0xe1, 0x75, 0x1e, 0x72, 0x2a, 0x4e, 0x9a, 0xd5, 0xac, 0x6b, 0xfe, 0xad, 0x7d, 0x03, 0x30, 0xa3,
-	0x3c, 0xf1, 0xf7, 0x08, 0x72, 0xfa, 0xfe, 0xc6, 0x23, 0x86, 0x53, 0xff, 0xf3, 0xa1, 0xb0, 0x7a,
-	0x0c, 0x0f, 0xcd, 0xc8, 0x7a, 0xe3, 0xeb, 0x5f, 0xff, 0xf8, 0x2e, 0xb3, 0x8c, 0x97, 0x9c, 0x31,
-	0x9e, 0x35, 0xf8, 0x4f, 0x04, 0xf9, 0x41, 0xd7, 0x33, 0xae, 0x8c, 0x71, 0xfa, 0x88, 0xc7, 0x47,
-	0xe1, 0xca, 0x89, 0x30, 0x8c, 0xa6, 0xb2, 0xd2, 0xb4, 0x89, 0x37, 0x9c, 0x51, 0xcf, 0xc4, 0x84,
-	0xfa, 0xd5, 0x56, 0x76, 0xab, 0x77, 0x79, 0x5c, 0x15, 0x46, 0xcb, 0x5f, 0x08, 0x2e, 0x0c, 0xec,
-	0x46, 0x3c, 0x11, 0xcb, 0x9e, 0x69, 0x53, 0xb8, 0x7a, 0x32, 0x10, 0xa3, 0xb5, 0xa2, 0xb4, 0xbe,
-	0x83, 0x2f, 0x1f, 0x5f, 0x6b, 0xdc, 0x92, 0xf3, 0x37, 0x82, 0xc2, 0xe0, 0xa6, 0xc2, 0x13, 0x11,
-	0xed, 0x9d, 0x1b, 0x85, 0x6b, 0x27, 0x44, 0x31, 0x7a, 0xaf, 0x28, 0xbd, 0xef, 0xe2, 0xcd, 0xe3,
-	0xeb, 0x25, 0x6d, 0x45, 0xbf, 0x20, 0x78, 0xae, 0xe7, 0x16, 0xc2, 0x1b, 0x63, 0xf0, 0x3b, 0xfa,
-	0xf6, 0x2d, 0x5c, 0x9e, 0xc4, 0xd5, 0xe8, 0xb9, 0xae, 0xf4, 0x94, 0xf1, 0x7b, 0xc3, 0xf5, 0xb4,
-	0x85, 0x84, 0xac, 0xaa, 0xb4, 0x39, 0x5f, 0x76, 0x0d, 0xdc, 0x07, 0xf8, 0x67, 0x04, 0xe7, 0x7a,
-	0xe7, 0x0e, 0x1e, 0x87, 0xd9, 0x80, 0x61, 0x56, 0xd8, 0x9c, 0xc8, 0xd7, 0xc8, 0xda, 0x50, 0xb2,
-	0xd6, 0xf1, 0xea, 0x70, 0x59, 0x01, 0x95, 0x55, 0x12, 0x45, 0x5a, 0x52, 0x95, 0xa5, 0x10, 0x95,
-	0x1b, 0x8f, 0xf7, 0x8b, 0xe8, 0xc9, 0x7e, 0x11, 0xfd, 0xbe, 0x5f, 0x44, 0xdf, 0x1e, 0x14, 0xa7,
-	0x9e, 0x1c, 0x14, 0xa7, 0x7e, 0x3b, 0x28, 0x4e, 0x7d, 0xee, 0x74, 0x5c, 0x1e, 0x47, 0xc0, 0xee,
-	0x76, 0x00, 0xab, 0x9b, 0xa4, 0x96, 0x53, 0x6f, 0xc0, 0xf5, 0xff, 0x02, 0x00, 0x00, 0xff, 0xff,
-	0x14, 0x47, 0x48, 0x78, 0x2f, 0x0e, 0x00, 0x00,
+	// 1074 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x57, 0xcf, 0x6f, 0xdc, 0x44,
+	0x14, 0xce, 0x6c, 0x36, 0x4b, 0xf2, 0xb6, 0x81, 0x6a, 0x08, 0x65, 0x6b, 0xc2, 0x76, 0x65, 0x85,
+	0x10, 0x7e, 0xd4, 0x26, 0x89, 0x00, 0xa5, 0x01, 0xa1, 0xdd, 0xa6, 0x54, 0x11, 0x14, 0x1a, 0x53,
+	0x8a, 0xe0, 0xb2, 0x9a, 0xb5, 0xa7, 0x8e, 0x55, 0xaf, 0x67, 0xe3, 0xb1, 0xab, 0x2c, 0x55, 0x54,
+	0xc4, 0x5f, 0x80, 0xc4, 0x91, 0x03, 0xf0, 0x87, 0x70, 0xe1, 0x80, 0xca, 0xad, 0x88, 0x0b, 0xa7,
+	0x08, 0x25, 0x88, 0x03, 0x07, 0xee, 0x70, 0x42, 0x1e, 0x8f, 0x1d, 0xef, 0x6e, 0xf6, 0x47, 0x36,
+	0x44, 0xea, 0x29, 0xde, 0x99, 0x79, 0x9f, 0xbf, 0xef, 0x7b, 0x6f, 0x9e, 0x5f, 0x60, 0xa9, 0x45,
+	0x5c, 0xd6, 0x24, 0xe6, 0x36, 0x71, 0x3c, 0x3d, 0x7e, 0xd6, 0x4d, 0xe6, 0x71, 0xea, 0xf1, 0x90,
+	0xeb, 0x3b, 0x21, 0xf5, 0xdb, 0x5a, 0xcb, 0x67, 0x01, 0xc3, 0xf3, 0x99, 0x93, 0x5a, 0xfc, 0xac,
+	0xa5, 0x27, 0x95, 0x39, 0x9b, 0xd9, 0x4c, 0x1c, 0xd4, 0xa3, 0xa7, 0x38, 0x46, 0x99, 0xb7, 0x19,
+	0xb3, 0x5d, 0xaa, 0x93, 0x96, 0xa3, 0x13, 0xcf, 0x63, 0x01, 0x09, 0x1c, 0xe6, 0x71, 0xb9, 0xbb,
+	0x32, 0xf0, 0xdd, 0xe9, 0x53, 0x7d, 0x27, 0xa4, 0x21, 0x95, 0x31, 0x2f, 0x0d, 0x8c, 0x69, 0x11,
+	0x9f, 0x34, 0x13, 0xf8, 0x8b, 0xf2, 0xe5, 0xe2, 0x57, 0x23, 0xbc, 0xa3, 0x13, 0x4f, 0x6a, 0x51,
+	0xe7, 0x00, 0x6f, 0x45, 0xd2, 0x6e, 0x8a, 0xf3, 0x06, 0xdd, 0x09, 0x29, 0x0f, 0xd4, 0x4f, 0xe1,
+	0xe9, 0x8e, 0x55, 0xde, 0x8a, 0x80, 0x71, 0x0d, 0x0a, 0x31, 0x6e, 0x09, 0x55, 0xd0, 0x52, 0x71,
+	0x65, 0x41, 0x1b, 0xe4, 0x84, 0x16, 0x47, 0xd7, 0xf2, 0x0f, 0xf7, 0x2f, 0x4d, 0x18, 0x32, 0x52,
+	0xfd, 0x16, 0xc1, 0x82, 0xc0, 0xde, 0x8a, 0xb4, 0x58, 0x37, 0x28, 0xe7, 0xc4, 0xa6, 0xfc, 0x5d,
+	0xe6, 0x7f, 0xe4, 0xd8, 0x9e, 0xe3, 0xd9, 0x92, 0x03, 0xde, 0x02, 0xb8, 0x47, 0xdc, 0xaa, 0x65,
+	0xf9, 0x94, 0xc7, 0x2f, 0x3c, 0x57, 0x5b, 0xfe, 0x77, 0xff, 0xd2, 0x65, 0xdb, 0x09, 0xb6, 0xc3,
+	0x86, 0x66, 0xb2, 0xa6, 0x6e, 0x32, 0xde, 0x64, 0x5c, 0xfe, 0xb9, 0xcc, 0xad, 0xbb, 0x7a, 0xd0,
+	0x6e, 0x51, 0xae, 0xdd, 0x4e, 0x03, 0x8d, 0x0c, 0x08, 0x5e, 0x80, 0x59, 0xe1, 0xe0, 0xad, 0x76,
+	0x8b, 0x7e, 0x40, 0x9a, 0xb4, 0x94, 0xab, 0xa0, 0xa5, 0x19, 0xa3, 0x73, 0x51, 0xfd, 0x1c, 0x5e,
+	0x18, 0x42, 0x50, 0xda, 0xb1, 0x05, 0xb3, 0xcd, 0x78, 0xf7, 0x16, 0x8b, 0xf6, 0x4a, 0xa8, 0x32,
+	0xb9, 0x54, 0x5c, 0x79, 0x65, 0xb0, 0x2b, 0x37, 0xb2, 0x21, 0x46, 0x27, 0x82, 0xfa, 0x00, 0x66,
+	0x3b, 0xf6, 0xf1, 0x1c, 0x4c, 0x79, 0xcc, 0x33, 0x69, 0x6c, 0x80, 0x11, 0xff, 0xc0, 0x4f, 0x42,
+	0xce, 0xb1, 0x04, 0xfb, 0xbc, 0x91, 0x73, 0x2c, 0x5c, 0x81, 0x62, 0xa3, 0x1d, 0x50, 0x2e, 0x79,
+	0x4c, 0x8a, 0xb3, 0xd9, 0x25, 0xbc, 0x08, 0x93, 0x4d, 0x6e, 0x97, 0xf2, 0x22, 0x6f, 0x73, 0x5a,
+	0x5c, 0x10, 0x5a, 0x52, 0x10, 0x5a, 0xd5, 0x6b, 0x1b, 0xd1, 0x01, 0xf5, 0x1f, 0x04, 0xf8, 0x36,
+	0x71, 0x1d, 0x8b, 0x04, 0xb1, 0x60, 0x12, 0x84, 0x3e, 0x3d, 0x8b, 0x64, 0xcc, 0xc3, 0x0c, 0x4f,
+	0xf0, 0x85, 0x94, 0x73, 0xc6, 0xd1, 0x42, 0xb4, 0x4b, 0x77, 0x03, 0x9f, 0x6c, 0x90, 0x80, 0x48,
+	0x3d, 0x47, 0x0b, 0xf8, 0x0d, 0xb8, 0x40, 0x77, 0x03, 0xea, 0x7b, 0xc4, 0xad, 0x9a, 0x26, 0x0b,
+	0xbd, 0x20, 0xa1, 0x96, 0x17, 0x19, 0xed, 0xb3, 0x1b, 0xa1, 0xb6, 0xc2, 0x86, 0xeb, 0x98, 0xef,
+	0xd1, 0x76, 0x69, 0x2a, 0x46, 0x4d, 0x17, 0xd4, 0xc3, 0x1c, 0x3c, 0x23, 0xdd, 0xff, 0xc4, 0x09,
+	0xb6, 0x53, 0xf5, 0x7c, 0xc4, 0x2c, 0x48, 0x8f, 0x27, 0x87, 0x78, 0x8c, 0xdf, 0x87, 0xe9, 0x48,
+	0xa8, 0x90, 0x96, 0x17, 0x25, 0xf3, 0xda, 0xe0, 0x92, 0xe9, 0x4d, 0x88, 0x91, 0x22, 0x74, 0xe7,
+	0x7e, 0xaa, 0x37, 0xf7, 0x2f, 0xc3, 0xf9, 0x58, 0x64, 0xd5, 0x34, 0x29, 0xe7, 0xe2, 0xbd, 0x05,
+	0x71, 0xac, 0x67, 0x5d, 0xf8, 0xee, 0xfb, 0xcc, 0x17, 0x87, 0x9e, 0x90, 0xbe, 0x27, 0x0b, 0xb8,
+	0x06, 0xd3, 0xf4, 0x9e, 0x63, 0xd1, 0xc8, 0x8a, 0x69, 0xc1, 0x7c, 0x71, 0x30, 0xf3, 0x6b, 0xf2,
+	0xb4, 0x91, 0xc6, 0xa9, 0x1f, 0xc2, 0xb3, 0xe2, 0x7a, 0x49, 0xa7, 0x6b, 0xed, 0xcd, 0x8d, 0xe4,
+	0xca, 0xf7, 0xdc, 0x4f, 0x74, 0xcc, 0xfd, 0xec, 0xb6, 0x5d, 0xfd, 0x11, 0xc1, 0x73, 0x59, 0x44,
+	0xbe, 0xe9, 0x89, 0xab, 0x7b, 0x32, 0xd4, 0x3d, 0xa8, 0xf0, 0xbb, 0x4e, 0x2b, 0x21, 0x7c, 0xd3,
+	0x67, 0xd1, 0x93, 0x55, 0x6b, 0x1f, 0x95, 0x6f, 0x5c, 0xa5, 0xe3, 0xd4, 0xfd, 0x50, 0x68, 0x35,
+	0x84, 0xf9, 0xe3, 0x35, 0xc8, 0x5e, 0xf3, 0x31, 0x4c, 0xcb, 0x4e, 0xc1, 0x65, 0x9b, 0x59, 0x1d,
+	0xa9, 0xcd, 0x74, 0x16, 0xb2, 0xec, 0xc5, 0x29, 0x94, 0xfa, 0x1d, 0xea, 0xd7, 0xec, 0x0c, 0xea,
+	0x92, 0x76, 0xa6, 0x1d, 0x8f, 0xe6, 0x62, 0x67, 0x9f, 0xc8, 0xfd, 0x0f, 0x7d, 0x42, 0x7d, 0x00,
+	0x8b, 0xc3, 0x18, 0x9e, 0xad, 0x47, 0xdf, 0xa3, 0x7e, 0x0c, 0xaa, 0x41, 0x40, 0x79, 0xf0, 0x38,
+	0x98, 0xf4, 0x05, 0x82, 0x17, 0x87, 0x72, 0x3c, 0x5b, 0x9b, 0xca, 0xb2, 0x82, 0xaf, 0xd3, 0xa0,
+	0xea, 0xba, 0x82, 0x47, 0xa4, 0x36, 0x9d, 0x29, 0xde, 0x84, 0xe7, 0xfb, 0xec, 0x4b, 0x5e, 0x17,
+	0xa0, 0x20, 0x7c, 0x8a, 0x59, 0xcd, 0x18, 0xf2, 0xd7, 0xca, 0xcf, 0x45, 0x98, 0x12, 0x91, 0xf8,
+	0x1b, 0x04, 0x85, 0x78, 0xa8, 0xc0, 0x43, 0x3a, 0x66, 0xef, 0x4c, 0xa3, 0x2c, 0x9f, 0x20, 0x22,
+	0x66, 0xa4, 0xbe, 0xfa, 0xe5, 0xaf, 0x7f, 0x7c, 0x9d, 0x5b, 0xc4, 0x0b, 0xfa, 0x08, 0xb3, 0x16,
+	0xfe, 0x13, 0x41, 0xa9, 0xdf, 0xcc, 0x80, 0x6b, 0x23, 0xbc, 0x7d, 0xc8, 0x44, 0xa4, 0x5c, 0x3d,
+	0x15, 0x86, 0xd4, 0x54, 0x15, 0x9a, 0xd6, 0xf1, 0x9a, 0x3e, 0x6c, 0xde, 0x0d, 0xa9, 0x55, 0x4f,
+	0xb2, 0x5b, 0xbf, 0xc3, 0xfc, 0x3a, 0x97, 0x5a, 0xfe, 0x42, 0x70, 0xb1, 0xef, 0x6d, 0xc4, 0x63,
+	0xb1, 0xec, 0xea, 0x36, 0xca, 0xc6, 0xe9, 0x40, 0xa4, 0xd6, 0x9a, 0xd0, 0xfa, 0x16, 0xbe, 0x72,
+	0x72, 0xad, 0x7e, 0x22, 0xe7, 0x6f, 0x04, 0x4a, 0xff, 0x4b, 0x85, 0xc7, 0x22, 0xda, 0xdd, 0x37,
+	0x94, 0x6b, 0xa7, 0x44, 0x91, 0x7a, 0xaf, 0x0a, 0xbd, 0x6f, 0xe3, 0xf5, 0x93, 0xeb, 0x25, 0xa9,
+	0xa2, 0x5f, 0x10, 0x3c, 0xd5, 0xf5, 0x15, 0xc2, 0x6b, 0x23, 0xf0, 0x3b, 0xfe, 0xeb, 0xab, 0x5c,
+	0x19, 0x27, 0x54, 0xea, 0xb9, 0x2e, 0xf4, 0x54, 0xf1, 0x3b, 0x83, 0xf5, 0xa4, 0x42, 0x1c, 0x2f,
+	0xfe, 0x0f, 0x49, 0xbf, 0xdf, 0xd1, 0x70, 0xf7, 0xf0, 0x0f, 0x08, 0x8a, 0x99, 0x79, 0x03, 0xbf,
+	0x3e, 0x3a, 0xa9, 0xcc, 0x7c, 0xa2, 0x8c, 0xd3, 0x27, 0x47, 0x2d, 0xc2, 0x2e, 0xca, 0x89, 0x28,
+	0xfd, 0xbe, 0x63, 0xed, 0xe1, 0x9f, 0x10, 0x9c, 0xef, 0xee, 0x9b, 0x78, 0x14, 0x67, 0xfb, 0x34,
+	0x63, 0x65, 0x7d, 0xac, 0x58, 0x99, 0x96, 0x35, 0xa1, 0x68, 0x15, 0x2f, 0x0f, 0x56, 0x64, 0xd3,
+	0xa0, 0x4e, 0x5c, 0x37, 0x4e, 0x49, 0xdd, 0x8b, 0x20, 0x6a, 0x9b, 0x0f, 0x0f, 0xca, 0xe8, 0xd1,
+	0x41, 0x19, 0xfd, 0x7e, 0x50, 0x46, 0x5f, 0x1d, 0x96, 0x27, 0x1e, 0x1d, 0x96, 0x27, 0x7e, 0x3b,
+	0x2c, 0x4f, 0x7c, 0xa6, 0x67, 0x3e, 0x7e, 0xc7, 0xc0, 0xee, 0x66, 0x80, 0xc5, 0x97, 0xb0, 0x51,
+	0x10, 0x83, 0xf5, 0xea, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xa0, 0x1f, 0x5b, 0xbd, 0xb8, 0x0f,
+	0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -931,6 +1080,8 @@ type QueryClient interface {
 	QueuedMessagesForAttesting(ctx context.Context, in *QueryQueuedMessagesForAttestingRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForAttestingResponse, error)
 	// Queries a list of MessagesInQueue items.
 	MessagesInQueue(ctx context.Context, in *QueryMessagesInQueueRequest, opts ...grpc.CallOption) (*QueryMessagesInQueueResponse, error)
+	// Queries one message by ID.
+	MessageByID(ctx context.Context, in *QueryMessageByIDRequest, opts ...grpc.CallOption) (*MessageWithSignatures, error)
 	// Queries a list of GetAllQueueNames items.
 	GetAllQueueNames(ctx context.Context, in *QueryGetAllQueueNamesRequest, opts ...grpc.CallOption) (*QueryGetAllQueueNamesResponse, error)
 }
@@ -988,6 +1139,15 @@ func (c *queryClient) MessagesInQueue(ctx context.Context, in *QueryMessagesInQu
 	return out, nil
 }
 
+func (c *queryClient) MessageByID(ctx context.Context, in *QueryMessageByIDRequest, opts ...grpc.CallOption) (*MessageWithSignatures, error) {
+	out := new(MessageWithSignatures)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.consensus.Query/MessageByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) GetAllQueueNames(ctx context.Context, in *QueryGetAllQueueNamesRequest, opts ...grpc.CallOption) (*QueryGetAllQueueNamesResponse, error) {
 	out := new(QueryGetAllQueueNamesResponse)
 	err := c.cc.Invoke(ctx, "/palomachain.paloma.consensus.Query/GetAllQueueNames", in, out, opts...)
@@ -1009,29 +1169,39 @@ type QueryServer interface {
 	QueuedMessagesForAttesting(context.Context, *QueryQueuedMessagesForAttestingRequest) (*QueryQueuedMessagesForAttestingResponse, error)
 	// Queries a list of MessagesInQueue items.
 	MessagesInQueue(context.Context, *QueryMessagesInQueueRequest) (*QueryMessagesInQueueResponse, error)
+	// Queries one message by ID.
+	MessageByID(context.Context, *QueryMessageByIDRequest) (*MessageWithSignatures, error)
 	// Queries a list of GetAllQueueNames items.
 	GetAllQueueNames(context.Context, *QueryGetAllQueueNamesRequest) (*QueryGetAllQueueNamesResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
-type UnimplementedQueryServer struct {
-}
+type UnimplementedQueryServer struct{}
 
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
+
 func (*UnimplementedQueryServer) QueuedMessagesForSigning(ctx context.Context, req *QueryQueuedMessagesForSigningRequest) (*QueryQueuedMessagesForSigningResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueuedMessagesForSigning not implemented")
 }
+
 func (*UnimplementedQueryServer) QueuedMessagesForRelaying(ctx context.Context, req *QueryQueuedMessagesForRelayingRequest) (*QueryQueuedMessagesForRelayingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueuedMessagesForRelaying not implemented")
 }
+
 func (*UnimplementedQueryServer) QueuedMessagesForAttesting(ctx context.Context, req *QueryQueuedMessagesForAttestingRequest) (*QueryQueuedMessagesForAttestingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueuedMessagesForAttesting not implemented")
 }
+
 func (*UnimplementedQueryServer) MessagesInQueue(ctx context.Context, req *QueryMessagesInQueueRequest) (*QueryMessagesInQueueResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MessagesInQueue not implemented")
 }
+
+func (*UnimplementedQueryServer) MessageByID(ctx context.Context, req *QueryMessageByIDRequest) (*MessageWithSignatures, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MessageByID not implemented")
+}
+
 func (*UnimplementedQueryServer) GetAllQueueNames(ctx context.Context, req *QueryGetAllQueueNamesRequest) (*QueryGetAllQueueNamesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllQueueNames not implemented")
 }
@@ -1130,6 +1300,24 @@ func _Query_MessagesInQueue_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_MessageByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryMessageByIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).MessageByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/palomachain.paloma.consensus.Query/MessageByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).MessageByID(ctx, req.(*QueryMessageByIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_GetAllQueueNames_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryGetAllQueueNamesRequest)
 	if err := dec(in); err != nil {
@@ -1171,6 +1359,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MessagesInQueue",
 			Handler:    _Query_MessagesInQueue_Handler,
+		},
+		{
+			MethodName: "MessageByID",
+			Handler:    _Query_MessageByID_Handler,
 		},
 		{
 			MethodName: "GetAllQueueNames",
@@ -1443,6 +1635,20 @@ func (m *MessageWithSignatures) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.Evidence) > 0 {
+		for iNdEx := len(m.Evidence) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Evidence[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x42
+		}
+	}
 	if len(m.ErrorData) > 0 {
 		i -= len(m.ErrorData)
 		copy(dAtA[i:], m.ErrorData)
@@ -1499,6 +1705,41 @@ func (m *MessageWithSignatures) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.Nonce)
 		copy(dAtA[i:], m.Nonce)
 		i = encodeVarintQuery(dAtA, i, uint64(len(m.Nonce)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryMessageByIDRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryMessageByIDRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryMessageByIDRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Id != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.QueueTypeName) > 0 {
+		i -= len(m.QueueTypeName)
+		copy(dAtA[i:], m.QueueTypeName)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.QueueTypeName)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1793,6 +2034,7 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
 func (m *QueryParamsRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1933,6 +2175,28 @@ func (m *MessageWithSignatures) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
+	if len(m.Evidence) > 0 {
+		for _, e := range m.Evidence {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *QueryMessageByIDRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.QueueTypeName)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.Id != 0 {
+		n += 1 + sovQuery(uint64(m.Id))
+	}
 	return n
 }
 
@@ -2059,9 +2323,11 @@ func (m *QueryGetAllQueueNamesResponse) Size() (n int) {
 func sovQuery(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
+
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+
 func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2112,6 +2378,7 @@ func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2195,6 +2462,7 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2311,6 +2579,7 @@ func (m *QueryQueuedMessagesForSigningRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2395,6 +2664,7 @@ func (m *QueryQueuedMessagesForSigningResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MessageToSign) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2568,6 +2838,7 @@ func (m *MessageToSign) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *ValidatorSignature) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2786,6 +3057,7 @@ func (m *ValidatorSignature) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MessageWithSignatures) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3040,6 +3312,40 @@ func (m *MessageWithSignatures) Unmarshal(dAtA []byte) error {
 				m.ErrorData = []byte{}
 			}
 			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Evidence", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Evidence = append(m.Evidence, &Evidence{})
+			if err := m.Evidence[len(m.Evidence)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -3061,6 +3367,109 @@ func (m *MessageWithSignatures) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
+func (m *QueryMessageByIDRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryMessageByIDRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryMessageByIDRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueueTypeName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.QueueTypeName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
 func (m *QueryMessagesInQueueRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3177,6 +3586,7 @@ func (m *QueryMessagesInQueueRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryMessagesInQueueResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3261,6 +3671,7 @@ func (m *QueryMessagesInQueueResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3377,6 +3788,7 @@ func (m *QueryQueuedMessagesForRelayingRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3461,6 +3873,7 @@ func (m *QueryQueuedMessagesForRelayingResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3577,6 +3990,7 @@ func (m *QueryQueuedMessagesForAttestingRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3661,6 +4075,7 @@ func (m *QueryQueuedMessagesForAttestingResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryGetAllQueueNamesRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3711,6 +4126,7 @@ func (m *QueryGetAllQueueNamesRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryGetAllQueueNamesResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3793,6 +4209,7 @@ func (m *QueryGetAllQueueNamesResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func skipQuery(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

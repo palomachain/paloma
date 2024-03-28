@@ -15,11 +15,16 @@ import (
 )
 
 func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	k.Logger(sdkCtx).Debug("attest-validator-balances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
 	if len(msg.GetEvidence()) == 0 {
 		return nil
 	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(ctx).WithFields(
+		"component", "attest-validator-balances",
+		"msg-id", msg.GetId(),
+		"msg-nonce", msg.Nonce())
+	logger.Debug("attest-validator-balances")
 
 	cacheCtx, writeCache := sdkCtx.CacheContext()
 	defer func() {
@@ -35,9 +40,14 @@ func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer,
 
 	request := consensusMsg.(*types.ValidatorBalancesAttestation)
 
-	evidence, err := k.findEvidenceThatWon(cacheCtx, msg.GetEvidence())
+	result, err := k.consensusChecker.VerifyEvidence(cacheCtx, msg.GetEvidence())
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
+			logger.WithFields(
+				"total-shares", result.TotalShares,
+				"total-votes", result.TotalVotes,
+				"distribution", result.Distribution,
+			).WithError(err).Error("Consensus not achieved.")
 			return nil
 		}
 		return err
@@ -62,7 +72,7 @@ func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer,
 		return err
 	}
 
-	return k.processValidatorBalanceProof(cacheCtx, request, evidence, chainReferenceID, minBalance)
+	return k.processValidatorBalanceProof(cacheCtx, request, result.Winner, chainReferenceID, minBalance)
 }
 
 func (k Keeper) processValidatorBalanceProof(

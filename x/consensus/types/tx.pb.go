@@ -6,6 +6,10 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+
 	types1 "github.com/cosmos/cosmos-sdk/codec/types"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/cosmos/gogoproto/gogoproto"
@@ -15,15 +19,14 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	io "io"
-	math "math"
-	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -42,9 +45,11 @@ func (*MsgAddMessagesSignatures) ProtoMessage()    {}
 func (*MsgAddMessagesSignatures) Descriptor() ([]byte, []int) {
 	return fileDescriptor_9a053a9b8cda05fe, []int{0}
 }
+
 func (m *MsgAddMessagesSignatures) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgAddMessagesSignatures) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAddMessagesSignatures.Marshal(b, m, deterministic)
@@ -57,12 +62,15 @@ func (m *MsgAddMessagesSignatures) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
+
 func (m *MsgAddMessagesSignatures) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAddMessagesSignatures.Merge(m, src)
 }
+
 func (m *MsgAddMessagesSignatures) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgAddMessagesSignatures) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAddMessagesSignatures.DiscardUnknown(m)
 }
@@ -96,9 +104,11 @@ func (*ConsensusMessageSignature) ProtoMessage()    {}
 func (*ConsensusMessageSignature) Descriptor() ([]byte, []int) {
 	return fileDescriptor_9a053a9b8cda05fe, []int{1}
 }
+
 func (m *ConsensusMessageSignature) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *ConsensusMessageSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ConsensusMessageSignature.Marshal(b, m, deterministic)
@@ -111,12 +121,15 @@ func (m *ConsensusMessageSignature) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
+
 func (m *ConsensusMessageSignature) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ConsensusMessageSignature.Merge(m, src)
 }
+
 func (m *ConsensusMessageSignature) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *ConsensusMessageSignature) XXX_DiscardUnknown() {
 	xxx_messageInfo_ConsensusMessageSignature.DiscardUnknown(m)
 }
@@ -151,8 +164,7 @@ func (m *ConsensusMessageSignature) GetSignedByAddress() string {
 	return ""
 }
 
-type MsgAddMessagesSignaturesResponse struct {
-}
+type MsgAddMessagesSignaturesResponse struct{}
 
 func (m *MsgAddMessagesSignaturesResponse) Reset()         { *m = MsgAddMessagesSignaturesResponse{} }
 func (m *MsgAddMessagesSignaturesResponse) String() string { return proto.CompactTextString(m) }
@@ -160,9 +172,11 @@ func (*MsgAddMessagesSignaturesResponse) ProtoMessage()    {}
 func (*MsgAddMessagesSignaturesResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_9a053a9b8cda05fe, []int{2}
 }
+
 func (m *MsgAddMessagesSignaturesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgAddMessagesSignaturesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAddMessagesSignaturesResponse.Marshal(b, m, deterministic)
@@ -175,113 +189,20 @@ func (m *MsgAddMessagesSignaturesResponse) XXX_Marshal(b []byte, deterministic b
 		return b[:n], nil
 	}
 }
+
 func (m *MsgAddMessagesSignaturesResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAddMessagesSignaturesResponse.Merge(m, src)
 }
+
 func (m *MsgAddMessagesSignaturesResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgAddMessagesSignaturesResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAddMessagesSignaturesResponse.DiscardUnknown(m)
 }
 
 var xxx_messageInfo_MsgAddMessagesSignaturesResponse proto.InternalMessageInfo
-
-type MsgDeleteJob struct {
-	QueueTypeName string            `protobuf:"bytes,2,opt,name=queueTypeName,proto3" json:"queueTypeName,omitempty"`
-	MessageID     uint64            `protobuf:"varint,3,opt,name=messageID,proto3" json:"messageID,omitempty"`
-	Metadata      types.MsgMetadata `protobuf:"bytes,4,opt,name=metadata,proto3" json:"metadata"`
-}
-
-func (m *MsgDeleteJob) Reset()         { *m = MsgDeleteJob{} }
-func (m *MsgDeleteJob) String() string { return proto.CompactTextString(m) }
-func (*MsgDeleteJob) ProtoMessage()    {}
-func (*MsgDeleteJob) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a053a9b8cda05fe, []int{3}
-}
-func (m *MsgDeleteJob) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgDeleteJob) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgDeleteJob.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgDeleteJob) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgDeleteJob.Merge(m, src)
-}
-func (m *MsgDeleteJob) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgDeleteJob) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgDeleteJob.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgDeleteJob proto.InternalMessageInfo
-
-func (m *MsgDeleteJob) GetQueueTypeName() string {
-	if m != nil {
-		return m.QueueTypeName
-	}
-	return ""
-}
-
-func (m *MsgDeleteJob) GetMessageID() uint64 {
-	if m != nil {
-		return m.MessageID
-	}
-	return 0
-}
-
-func (m *MsgDeleteJob) GetMetadata() types.MsgMetadata {
-	if m != nil {
-		return m.Metadata
-	}
-	return types.MsgMetadata{}
-}
-
-type MsgDeleteJobResponse struct {
-}
-
-func (m *MsgDeleteJobResponse) Reset()         { *m = MsgDeleteJobResponse{} }
-func (m *MsgDeleteJobResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgDeleteJobResponse) ProtoMessage()    {}
-func (*MsgDeleteJobResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a053a9b8cda05fe, []int{4}
-}
-func (m *MsgDeleteJobResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgDeleteJobResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgDeleteJobResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgDeleteJobResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgDeleteJobResponse.Merge(m, src)
-}
-func (m *MsgDeleteJobResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgDeleteJobResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgDeleteJobResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgDeleteJobResponse proto.InternalMessageInfo
 
 type MsgAddEvidence struct {
 	Proof         *types1.Any       `protobuf:"bytes,2,opt,name=proof,proto3" json:"proof,omitempty"`
@@ -294,11 +215,13 @@ func (m *MsgAddEvidence) Reset()         { *m = MsgAddEvidence{} }
 func (m *MsgAddEvidence) String() string { return proto.CompactTextString(m) }
 func (*MsgAddEvidence) ProtoMessage()    {}
 func (*MsgAddEvidence) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a053a9b8cda05fe, []int{5}
+	return fileDescriptor_9a053a9b8cda05fe, []int{3}
 }
+
 func (m *MsgAddEvidence) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgAddEvidence) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAddEvidence.Marshal(b, m, deterministic)
@@ -311,12 +234,15 @@ func (m *MsgAddEvidence) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return b[:n], nil
 	}
 }
+
 func (m *MsgAddEvidence) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAddEvidence.Merge(m, src)
 }
+
 func (m *MsgAddEvidence) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgAddEvidence) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAddEvidence.DiscardUnknown(m)
 }
@@ -351,18 +277,19 @@ func (m *MsgAddEvidence) GetMetadata() types.MsgMetadata {
 	return types.MsgMetadata{}
 }
 
-type MsgAddEvidenceResponse struct {
-}
+type MsgAddEvidenceResponse struct{}
 
 func (m *MsgAddEvidenceResponse) Reset()         { *m = MsgAddEvidenceResponse{} }
 func (m *MsgAddEvidenceResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgAddEvidenceResponse) ProtoMessage()    {}
 func (*MsgAddEvidenceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a053a9b8cda05fe, []int{6}
+	return fileDescriptor_9a053a9b8cda05fe, []int{4}
 }
+
 func (m *MsgAddEvidenceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgAddEvidenceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAddEvidenceResponse.Marshal(b, m, deterministic)
@@ -375,12 +302,15 @@ func (m *MsgAddEvidenceResponse) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
+
 func (m *MsgAddEvidenceResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAddEvidenceResponse.Merge(m, src)
 }
+
 func (m *MsgAddEvidenceResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgAddEvidenceResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAddEvidenceResponse.DiscardUnknown(m)
 }
@@ -398,11 +328,13 @@ func (m *MsgSetPublicAccessData) Reset()         { *m = MsgSetPublicAccessData{}
 func (m *MsgSetPublicAccessData) String() string { return proto.CompactTextString(m) }
 func (*MsgSetPublicAccessData) ProtoMessage()    {}
 func (*MsgSetPublicAccessData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a053a9b8cda05fe, []int{7}
+	return fileDescriptor_9a053a9b8cda05fe, []int{5}
 }
+
 func (m *MsgSetPublicAccessData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgSetPublicAccessData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgSetPublicAccessData.Marshal(b, m, deterministic)
@@ -415,12 +347,15 @@ func (m *MsgSetPublicAccessData) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
+
 func (m *MsgSetPublicAccessData) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgSetPublicAccessData.Merge(m, src)
 }
+
 func (m *MsgSetPublicAccessData) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgSetPublicAccessData) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgSetPublicAccessData.DiscardUnknown(m)
 }
@@ -455,18 +390,19 @@ func (m *MsgSetPublicAccessData) GetMetadata() types.MsgMetadata {
 	return types.MsgMetadata{}
 }
 
-type MsgSetPublicAccessDataResponse struct {
-}
+type MsgSetPublicAccessDataResponse struct{}
 
 func (m *MsgSetPublicAccessDataResponse) Reset()         { *m = MsgSetPublicAccessDataResponse{} }
 func (m *MsgSetPublicAccessDataResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgSetPublicAccessDataResponse) ProtoMessage()    {}
 func (*MsgSetPublicAccessDataResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a053a9b8cda05fe, []int{8}
+	return fileDescriptor_9a053a9b8cda05fe, []int{6}
 }
+
 func (m *MsgSetPublicAccessDataResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgSetPublicAccessDataResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgSetPublicAccessDataResponse.Marshal(b, m, deterministic)
@@ -479,12 +415,15 @@ func (m *MsgSetPublicAccessDataResponse) XXX_Marshal(b []byte, deterministic boo
 		return b[:n], nil
 	}
 }
+
 func (m *MsgSetPublicAccessDataResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgSetPublicAccessDataResponse.Merge(m, src)
 }
+
 func (m *MsgSetPublicAccessDataResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgSetPublicAccessDataResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgSetPublicAccessDataResponse.DiscardUnknown(m)
 }
@@ -502,11 +441,13 @@ func (m *MsgSetErrorData) Reset()         { *m = MsgSetErrorData{} }
 func (m *MsgSetErrorData) String() string { return proto.CompactTextString(m) }
 func (*MsgSetErrorData) ProtoMessage()    {}
 func (*MsgSetErrorData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a053a9b8cda05fe, []int{9}
+	return fileDescriptor_9a053a9b8cda05fe, []int{7}
 }
+
 func (m *MsgSetErrorData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgSetErrorData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgSetErrorData.Marshal(b, m, deterministic)
@@ -519,12 +460,15 @@ func (m *MsgSetErrorData) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
+
 func (m *MsgSetErrorData) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgSetErrorData.Merge(m, src)
 }
+
 func (m *MsgSetErrorData) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgSetErrorData) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgSetErrorData.DiscardUnknown(m)
 }
@@ -559,18 +503,19 @@ func (m *MsgSetErrorData) GetMetadata() types.MsgMetadata {
 	return types.MsgMetadata{}
 }
 
-type MsgSetErrorDataResponse struct {
-}
+type MsgSetErrorDataResponse struct{}
 
 func (m *MsgSetErrorDataResponse) Reset()         { *m = MsgSetErrorDataResponse{} }
 func (m *MsgSetErrorDataResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgSetErrorDataResponse) ProtoMessage()    {}
 func (*MsgSetErrorDataResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a053a9b8cda05fe, []int{10}
+	return fileDescriptor_9a053a9b8cda05fe, []int{8}
 }
+
 func (m *MsgSetErrorDataResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MsgSetErrorDataResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgSetErrorDataResponse.Marshal(b, m, deterministic)
@@ -583,12 +528,15 @@ func (m *MsgSetErrorDataResponse) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
+
 func (m *MsgSetErrorDataResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgSetErrorDataResponse.Merge(m, src)
 }
+
 func (m *MsgSetErrorDataResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MsgSetErrorDataResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgSetErrorDataResponse.DiscardUnknown(m)
 }
@@ -599,8 +547,6 @@ func init() {
 	proto.RegisterType((*MsgAddMessagesSignatures)(nil), "palomachain.paloma.consensus.MsgAddMessagesSignatures")
 	proto.RegisterType((*ConsensusMessageSignature)(nil), "palomachain.paloma.consensus.ConsensusMessageSignature")
 	proto.RegisterType((*MsgAddMessagesSignaturesResponse)(nil), "palomachain.paloma.consensus.MsgAddMessagesSignaturesResponse")
-	proto.RegisterType((*MsgDeleteJob)(nil), "palomachain.paloma.consensus.MsgDeleteJob")
-	proto.RegisterType((*MsgDeleteJobResponse)(nil), "palomachain.paloma.consensus.MsgDeleteJobResponse")
 	proto.RegisterType((*MsgAddEvidence)(nil), "palomachain.paloma.consensus.MsgAddEvidence")
 	proto.RegisterType((*MsgAddEvidenceResponse)(nil), "palomachain.paloma.consensus.MsgAddEvidenceResponse")
 	proto.RegisterType((*MsgSetPublicAccessData)(nil), "palomachain.paloma.consensus.MsgSetPublicAccessData")
@@ -614,55 +560,54 @@ func init() {
 }
 
 var fileDescriptor_9a053a9b8cda05fe = []byte{
-	// 674 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xdc, 0x56, 0xcf, 0x4f, 0xd4, 0x40,
-	0x14, 0xde, 0xd9, 0x2d, 0x0a, 0x6f, 0x17, 0x30, 0x15, 0xa1, 0x34, 0xa4, 0x6e, 0x36, 0x4a, 0x36,
-	0x44, 0xdb, 0xb8, 0xfe, 0x4a, 0x8c, 0x31, 0x59, 0x84, 0x44, 0x48, 0xd6, 0x98, 0xe2, 0xc9, 0x8b,
-	0x99, 0x6d, 0x87, 0xa1, 0x71, 0xdb, 0x59, 0x3a, 0x53, 0xc2, 0x5e, 0xbd, 0x79, 0xd2, 0xab, 0xff,
-	0x85, 0x67, 0xff, 0x02, 0x8e, 0x78, 0xe3, 0x64, 0x0c, 0x7b, 0xd0, 0x7f, 0xc1, 0x9b, 0xa1, 0xdd,
-	0x0e, 0xbb, 0x58, 0xd8, 0x85, 0x04, 0x0f, 0x9e, 0xfa, 0x3a, 0xef, 0x7b, 0xdf, 0x7c, 0xdf, 0xeb,
-	0xf4, 0x65, 0xe0, 0x76, 0x1b, 0xb7, 0x98, 0x8f, 0x9d, 0x2d, 0xec, 0x05, 0x56, 0x12, 0x5b, 0x0e,
-	0x0b, 0x38, 0x09, 0x78, 0xc4, 0x2d, 0xb1, 0x6b, 0xb6, 0x43, 0x26, 0x98, 0xba, 0xd0, 0x07, 0x33,
-	0x93, 0xd8, 0x94, 0x30, 0x7d, 0x86, 0x32, 0xca, 0x62, 0xa0, 0x75, 0x14, 0x25, 0x35, 0xfa, 0x9c,
-	0xc3, 0xb8, 0xcf, 0xb8, 0xe5, 0x73, 0x6a, 0xed, 0xdc, 0x3b, 0x7a, 0xf4, 0x12, 0xf3, 0x94, 0x31,
-	0xda, 0x22, 0x56, 0xfc, 0xd6, 0x8c, 0x36, 0x2d, 0x1c, 0x74, 0x7a, 0xa9, 0xc5, 0x0c, 0x39, 0x3b,
-	0xb8, 0xc5, 0x89, 0xb0, 0x1c, 0xe6, 0xfb, 0x2c, 0x48, 0x70, 0x95, 0x2e, 0x02, 0xad, 0xc1, 0x69,
-	0xdd, 0x75, 0x1b, 0x84, 0x73, 0x4c, 0x09, 0xdf, 0xf0, 0x68, 0x80, 0x45, 0x14, 0x12, 0xae, 0xbe,
-	0x85, 0x29, 0xee, 0xd1, 0x80, 0xc8, 0x9c, 0x96, 0x2f, 0x17, 0xaa, 0xc5, 0xda, 0x63, 0xf3, 0x2c,
-	0x17, 0xe6, 0xf3, 0x34, 0xea, 0x95, 0x49, 0x46, 0xfb, 0x04, 0x9d, 0xfa, 0x02, 0xc6, 0x7d, 0x22,
-	0xb0, 0x8b, 0x05, 0xd6, 0x0a, 0x65, 0x54, 0x2d, 0xd6, 0x16, 0xb3, 0xa8, 0x13, 0xe1, 0x66, 0x83,
-	0xd3, 0x46, 0x0f, 0xbd, 0xac, 0xec, 0x7d, 0xbf, 0x99, 0xb3, 0x65, 0xf5, 0x93, 0xc9, 0xf7, 0x3f,
-	0xbf, 0x2c, 0xc9, 0xd7, 0x75, 0x65, 0x1c, 0x5d, 0xcb, 0xdb, 0x57, 0x9d, 0x90, 0x60, 0xc1, 0xc2,
-	0xca, 0x67, 0x04, 0xf3, 0xa7, 0xaa, 0x52, 0xa7, 0x20, 0xef, 0xb9, 0x1a, 0x2a, 0xa3, 0xaa, 0x62,
-	0xe7, 0x3d, 0x57, 0xbd, 0x05, 0x93, 0xdb, 0x11, 0x89, 0xc8, 0xeb, 0x4e, 0x9b, 0xbc, 0xc4, 0x3e,
-	0xd1, 0xf2, 0x65, 0x54, 0x9d, 0xb0, 0x07, 0x17, 0xd5, 0x05, 0x98, 0xe0, 0x29, 0x45, 0x2c, 0xbe,
-	0x64, 0x1f, 0x2f, 0xa8, 0x55, 0x98, 0x4e, 0xbc, 0x2e, 0x77, 0xea, 0xae, 0x1b, 0x12, 0xce, 0xb5,
-	0xb1, 0x98, 0xe5, 0xe4, 0x72, 0xa5, 0x02, 0xe5, 0xd3, 0x3e, 0x80, 0x4d, 0x78, 0xfb, 0x48, 0x75,
-	0xe5, 0x2b, 0x82, 0x52, 0x83, 0xd3, 0x15, 0xd2, 0x22, 0x82, 0xac, 0xb3, 0xe6, 0xe8, 0x12, 0xfd,
-	0x84, 0x74, 0x6d, 0x25, 0x96, 0xa8, 0xd8, 0xc7, 0x0b, 0x03, 0xcd, 0x57, 0x2e, 0xb1, 0xf9, 0xb3,
-	0x30, 0xd3, 0xaf, 0x5d, 0x9a, 0xfa, 0x85, 0x60, 0x2a, 0x71, 0xbe, 0xba, 0xe3, 0xb9, 0x24, 0x70,
-	0x88, 0xba, 0x04, 0x63, 0xed, 0x90, 0xb1, 0xcd, 0xd8, 0x4e, 0xb1, 0x36, 0x63, 0x26, 0x07, 0xdc,
-	0x4c, 0x0f, 0xb8, 0x59, 0x0f, 0x3a, 0x76, 0x02, 0x19, 0x62, 0xee, 0xaf, 0x06, 0x29, 0x59, 0x0d,
-	0xea, 0x6f, 0xc1, 0xd8, 0x25, 0xb6, 0x40, 0x83, 0xd9, 0x41, 0xa7, 0xb2, 0x09, 0x07, 0x28, 0x4e,
-	0x6d, 0x10, 0xf1, 0x2a, 0x6a, 0xb6, 0x3c, 0xa7, 0xee, 0x38, 0x84, 0xf3, 0x15, 0x2c, 0xf0, 0xa0,
-	0xc1, 0xfc, 0x50, 0x83, 0x85, 0x2c, 0x83, 0x2a, 0x28, 0xf2, 0xfb, 0x96, 0xec, 0x38, 0xfe, 0x67,
-	0xa6, 0xcb, 0x60, 0x64, 0x3b, 0x93, 0xe6, 0xbf, 0x21, 0x98, 0x4e, 0x20, 0xab, 0x61, 0xc8, 0xc2,
-	0xff, 0xc2, 0xf5, 0x3c, 0xcc, 0x9d, 0xb0, 0x94, 0xda, 0xad, 0xfd, 0x56, 0xa0, 0xd0, 0xe0, 0x54,
-	0xfd, 0x88, 0xe0, 0x46, 0xf6, 0xc0, 0x7d, 0x74, 0xf6, 0x60, 0x3d, 0x6d, 0x4e, 0xe8, 0xcf, 0x2e,
-	0x56, 0x97, 0x2a, 0x53, 0xdf, 0xc1, 0xc4, 0xf1, 0x6c, 0x59, 0x1a, 0x4a, 0x26, 0xb1, 0x7a, 0x6d,
-	0x74, 0xac, 0xdc, 0x6c, 0x1b, 0x8a, 0xfd, 0xff, 0xfc, 0x9d, 0x51, 0xb4, 0xa7, 0x68, 0xfd, 0xc1,
-	0x79, 0xd0, 0x72, 0xcb, 0x0f, 0x08, 0xae, 0x67, 0xfd, 0x62, 0xc3, 0xd9, 0x32, 0xaa, 0xf4, 0xa7,
-	0x17, 0xa9, 0x92, 0x5a, 0x04, 0x94, 0x06, 0x0e, 0xfc, 0xdd, 0x51, 0xd8, 0x24, 0x5c, 0x7f, 0x78,
-	0x2e, 0x78, 0xba, 0xeb, 0xf2, 0xda, 0xde, 0xa1, 0x81, 0xf6, 0x0f, 0x0d, 0xf4, 0xe3, 0xd0, 0x40,
-	0x9f, 0xba, 0x46, 0x6e, 0xbf, 0x6b, 0xe4, 0x0e, 0xba, 0x46, 0xee, 0x8d, 0x45, 0x3d, 0xb1, 0x15,
-	0x35, 0x4d, 0x87, 0xf9, 0x56, 0xc6, 0xa5, 0x61, 0xb7, 0xff, 0x16, 0xd3, 0x69, 0x13, 0xde, 0xbc,
-	0x12, 0x4f, 0xe3, 0xfb, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0xde, 0x19, 0xe5, 0xb7, 0xf2, 0x08,
-	0x00, 0x00,
+	// 628 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xdc, 0x55, 0x4f, 0x6f, 0xd3, 0x4e,
+	0x10, 0xcd, 0x3a, 0xee, 0xef, 0xd7, 0x6e, 0xda, 0x14, 0x99, 0x42, 0x1d, 0xab, 0x32, 0x56, 0x04,
+	0x55, 0x54, 0x81, 0x2d, 0xc2, 0x3f, 0x09, 0x21, 0xa4, 0x84, 0x56, 0xa2, 0x48, 0x41, 0xc8, 0xe5,
+	0xc4, 0x05, 0x6d, 0xec, 0xed, 0xd6, 0x52, 0xec, 0x75, 0x3d, 0x76, 0xd4, 0x5c, 0xb9, 0x21, 0x21,
+	0xc1, 0x95, 0x6f, 0xc1, 0xc7, 0xe8, 0xb1, 0xdc, 0x7a, 0x42, 0x28, 0x39, 0xc0, 0xc7, 0x40, 0xb1,
+	0x63, 0x37, 0x09, 0x4e, 0xff, 0x49, 0x70, 0xe0, 0x94, 0xf1, 0xcc, 0x9b, 0xe7, 0xf7, 0x32, 0xe3,
+	0x5d, 0x7c, 0xcb, 0x27, 0x1d, 0xee, 0x12, 0x6b, 0x8f, 0x38, 0x9e, 0x91, 0xc4, 0x86, 0xc5, 0x3d,
+	0xa0, 0x1e, 0x44, 0x60, 0x84, 0x07, 0xba, 0x1f, 0xf0, 0x90, 0x4b, 0x6b, 0x63, 0x30, 0x3d, 0x89,
+	0xf5, 0x0c, 0xa6, 0xac, 0x30, 0xce, 0x78, 0x0c, 0x34, 0x86, 0x51, 0xd2, 0xa3, 0xac, 0x5a, 0x1c,
+	0x5c, 0x0e, 0x86, 0x0b, 0xcc, 0xe8, 0xde, 0x1d, 0xfe, 0x8c, 0x0a, 0x15, 0xc6, 0x39, 0xeb, 0x50,
+	0x23, 0x7e, 0x6a, 0x47, 0xbb, 0x06, 0xf1, 0x7a, 0xa3, 0xd2, 0x7a, 0x8e, 0x9c, 0x2e, 0xe9, 0x00,
+	0x0d, 0x0d, 0x8b, 0xbb, 0x2e, 0xf7, 0x12, 0x5c, 0x75, 0x80, 0xb0, 0xdc, 0x02, 0xd6, 0xb0, 0xed,
+	0x16, 0x05, 0x20, 0x8c, 0xc2, 0x8e, 0xc3, 0x3c, 0x12, 0x46, 0x01, 0x05, 0xe9, 0x2d, 0x2e, 0x83,
+	0xc3, 0x3c, 0x9a, 0xd5, 0x64, 0x41, 0x2b, 0xd6, 0x4a, 0xf5, 0x47, 0xfa, 0x69, 0x2e, 0xf4, 0x67,
+	0x69, 0x34, 0x6a, 0xcb, 0x18, 0xcd, 0x29, 0x3a, 0xe9, 0x39, 0x9e, 0x77, 0x69, 0x48, 0x6c, 0x12,
+	0x12, 0xb9, 0xa8, 0xa1, 0x5a, 0xa9, 0xbe, 0x9e, 0x47, 0x9d, 0x08, 0xd7, 0x5b, 0xc0, 0x5a, 0x23,
+	0x74, 0x53, 0x3c, 0xfc, 0x76, 0xa3, 0x60, 0x66, 0xdd, 0x8f, 0x97, 0xde, 0xfd, 0xf8, 0xb2, 0x91,
+	0x3d, 0xbe, 0x10, 0xe7, 0xd1, 0x15, 0xc1, 0xfc, 0xdf, 0x0a, 0x28, 0x09, 0x79, 0x50, 0xfd, 0x8c,
+	0x70, 0x65, 0xa6, 0x2a, 0xa9, 0x8c, 0x05, 0xc7, 0x96, 0x91, 0x86, 0x6a, 0xa2, 0x29, 0x38, 0xb6,
+	0x74, 0x13, 0x2f, 0xed, 0x47, 0x34, 0xa2, 0xaf, 0x7b, 0x3e, 0x7d, 0x49, 0x5c, 0x2a, 0x0b, 0x1a,
+	0xaa, 0x2d, 0x98, 0x93, 0x49, 0x69, 0x0d, 0x2f, 0x40, 0x4a, 0x11, 0x8b, 0x5f, 0x34, 0x4f, 0x12,
+	0x52, 0x0d, 0x2f, 0x27, 0x5e, 0x9b, 0xbd, 0x86, 0x6d, 0x07, 0x14, 0x40, 0x9e, 0x8b, 0x59, 0xa6,
+	0xd3, 0xd5, 0x2a, 0xd6, 0x66, 0x0d, 0xc0, 0xa4, 0xe0, 0x0f, 0x55, 0x57, 0x7f, 0x22, 0x5c, 0x4e,
+	0x40, 0x5b, 0x5d, 0xc7, 0xa6, 0x9e, 0x45, 0xa5, 0x0d, 0x3c, 0xe7, 0x07, 0x9c, 0xef, 0xc6, 0xe2,
+	0x4a, 0xf5, 0x15, 0x3d, 0xd9, 0x05, 0x3d, 0xdd, 0x05, 0xbd, 0xe1, 0xf5, 0xcc, 0x04, 0x32, 0x94,
+	0xea, 0x26, 0xe4, 0xdb, 0x9b, 0xb1, 0x54, 0xd1, 0x3c, 0x49, 0xfc, 0x6e, 0x57, 0xcc, 0xb3, 0x3b,
+	0x3e, 0xaa, 0xb9, 0x3f, 0x38, 0x2a, 0x19, 0x5f, 0x9f, 0x74, 0x9a, 0xfd, 0x09, 0xc7, 0x28, 0x2e,
+	0xed, 0xd0, 0xf0, 0x55, 0xd4, 0xee, 0x38, 0x56, 0xc3, 0xb2, 0x28, 0xc0, 0x26, 0x09, 0xc9, 0xa4,
+	0x41, 0xe1, 0x4c, 0x83, 0xc5, 0x3c, 0x83, 0x12, 0x16, 0x63, 0x73, 0x62, 0x3c, 0xca, 0x38, 0xfe,
+	0x6b, 0xa6, 0x35, 0xac, 0xe6, 0x3b, 0xcb, 0xcc, 0x7f, 0x45, 0x78, 0x39, 0x81, 0x6c, 0x05, 0x01,
+	0x0f, 0xfe, 0x09, 0xd7, 0x15, 0xbc, 0x3a, 0x65, 0x29, 0xb5, 0x5b, 0xff, 0x20, 0xe2, 0x62, 0x0b,
+	0x98, 0xf4, 0x11, 0xe1, 0x6b, 0xf9, 0x67, 0xd3, 0xc3, 0xd3, 0xcf, 0xa0, 0x59, 0x9f, 0x94, 0xf2,
+	0xf4, 0x72, 0x7d, 0xa9, 0x32, 0x69, 0x1f, 0x97, 0xc6, 0x3f, 0xc3, 0xdb, 0xe7, 0xa1, 0x4b, 0xd1,
+	0xca, 0xfd, 0x8b, 0xa0, 0xb3, 0x57, 0xbe, 0x47, 0xf8, 0x6a, 0xde, 0xd6, 0x9f, 0xcd, 0x96, 0xd3,
+	0xa5, 0x3c, 0xb9, 0x4c, 0x57, 0xa6, 0x25, 0xc4, 0x8b, 0x13, 0x3b, 0x78, 0xe7, 0x3c, 0x6c, 0x19,
+	0x5c, 0x79, 0x70, 0x21, 0x78, 0xfa, 0xd6, 0xe6, 0xf6, 0x61, 0x5f, 0x45, 0x47, 0x7d, 0x15, 0x7d,
+	0xef, 0xab, 0xe8, 0xd3, 0x40, 0x2d, 0x1c, 0x0d, 0xd4, 0xc2, 0xf1, 0x40, 0x2d, 0xbc, 0x31, 0x98,
+	0x13, 0xee, 0x45, 0x6d, 0xdd, 0xe2, 0xae, 0x91, 0x73, 0xe5, 0x1d, 0x8c, 0xdf, 0xc1, 0x3d, 0x9f,
+	0x42, 0xfb, 0xbf, 0xf8, 0x80, 0xbc, 0xf7, 0x2b, 0x00, 0x00, 0xff, 0xff, 0xec, 0xd6, 0xf3, 0x3b,
+	0xb0, 0x07, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -673,7 +618,6 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
 	AddMessagesSignatures(ctx context.Context, in *MsgAddMessagesSignatures, opts ...grpc.CallOption) (*MsgAddMessagesSignaturesResponse, error)
-	DeleteJob(ctx context.Context, in *MsgDeleteJob, opts ...grpc.CallOption) (*MsgDeleteJobResponse, error)
 	AddEvidence(ctx context.Context, in *MsgAddEvidence, opts ...grpc.CallOption) (*MsgAddEvidenceResponse, error)
 	SetPublicAccessData(ctx context.Context, in *MsgSetPublicAccessData, opts ...grpc.CallOption) (*MsgSetPublicAccessDataResponse, error)
 	SetErrorData(ctx context.Context, in *MsgSetErrorData, opts ...grpc.CallOption) (*MsgSetErrorDataResponse, error)
@@ -690,15 +634,6 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 func (c *msgClient) AddMessagesSignatures(ctx context.Context, in *MsgAddMessagesSignatures, opts ...grpc.CallOption) (*MsgAddMessagesSignaturesResponse, error) {
 	out := new(MsgAddMessagesSignaturesResponse)
 	err := c.cc.Invoke(ctx, "/palomachain.paloma.consensus.Msg/AddMessagesSignatures", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) DeleteJob(ctx context.Context, in *MsgDeleteJob, opts ...grpc.CallOption) (*MsgDeleteJobResponse, error) {
-	out := new(MsgDeleteJobResponse)
-	err := c.cc.Invoke(ctx, "/palomachain.paloma.consensus.Msg/DeleteJob", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -735,28 +670,26 @@ func (c *msgClient) SetErrorData(ctx context.Context, in *MsgSetErrorData, opts 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	AddMessagesSignatures(context.Context, *MsgAddMessagesSignatures) (*MsgAddMessagesSignaturesResponse, error)
-	DeleteJob(context.Context, *MsgDeleteJob) (*MsgDeleteJobResponse, error)
 	AddEvidence(context.Context, *MsgAddEvidence) (*MsgAddEvidenceResponse, error)
 	SetPublicAccessData(context.Context, *MsgSetPublicAccessData) (*MsgSetPublicAccessDataResponse, error)
 	SetErrorData(context.Context, *MsgSetErrorData) (*MsgSetErrorDataResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
-type UnimplementedMsgServer struct {
-}
+type UnimplementedMsgServer struct{}
 
 func (*UnimplementedMsgServer) AddMessagesSignatures(ctx context.Context, req *MsgAddMessagesSignatures) (*MsgAddMessagesSignaturesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddMessagesSignatures not implemented")
 }
-func (*UnimplementedMsgServer) DeleteJob(ctx context.Context, req *MsgDeleteJob) (*MsgDeleteJobResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteJob not implemented")
-}
+
 func (*UnimplementedMsgServer) AddEvidence(ctx context.Context, req *MsgAddEvidence) (*MsgAddEvidenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddEvidence not implemented")
 }
+
 func (*UnimplementedMsgServer) SetPublicAccessData(ctx context.Context, req *MsgSetPublicAccessData) (*MsgSetPublicAccessDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetPublicAccessData not implemented")
 }
+
 func (*UnimplementedMsgServer) SetErrorData(ctx context.Context, req *MsgSetErrorData) (*MsgSetErrorDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetErrorData not implemented")
 }
@@ -779,24 +712,6 @@ func _Msg_AddMessagesSignatures_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).AddMessagesSignatures(ctx, req.(*MsgAddMessagesSignatures))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_DeleteJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgDeleteJob)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).DeleteJob(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/palomachain.paloma.consensus.Msg/DeleteJob",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).DeleteJob(ctx, req.(*MsgDeleteJob))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -862,10 +777,6 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddMessagesSignatures",
 			Handler:    _Msg_AddMessagesSignatures_Handler,
-		},
-		{
-			MethodName: "DeleteJob",
-			Handler:    _Msg_DeleteJob_Handler,
 		},
 		{
 			MethodName: "AddEvidence",
@@ -996,74 +907,6 @@ func (m *MsgAddMessagesSignaturesResponse) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *MsgAddMessagesSignaturesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgDeleteJob) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgDeleteJob) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgDeleteJob) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size, err := m.Metadata.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x22
-	if m.MessageID != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.MessageID))
-		i--
-		dAtA[i] = 0x18
-	}
-	if len(m.QueueTypeName) > 0 {
-		i -= len(m.QueueTypeName)
-		copy(dAtA[i:], m.QueueTypeName)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.QueueTypeName)))
-		i--
-		dAtA[i] = 0x12
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgDeleteJobResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgDeleteJobResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgDeleteJobResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1312,6 +1155,7 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
 func (m *MsgAddMessagesSignatures) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1354,33 +1198,6 @@ func (m *ConsensusMessageSignature) Size() (n int) {
 }
 
 func (m *MsgAddMessagesSignaturesResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *MsgDeleteJob) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.QueueTypeName)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	if m.MessageID != 0 {
-		n += 1 + sovTx(uint64(m.MessageID))
-	}
-	l = m.Metadata.Size()
-	n += 1 + l + sovTx(uint64(l))
-	return n
-}
-
-func (m *MsgDeleteJobResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1485,9 +1302,11 @@ func (m *MsgSetErrorDataResponse) Size() (n int) {
 func sovTx(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
+
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+
 func (m *MsgAddMessagesSignatures) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1605,6 +1424,7 @@ func (m *MsgAddMessagesSignatures) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *ConsensusMessageSignature) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1772,6 +1592,7 @@ func (m *ConsensusMessageSignature) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MsgAddMessagesSignaturesResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1822,190 +1643,7 @@ func (m *MsgAddMessagesSignaturesResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgDeleteJob) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgDeleteJob: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgDeleteJob: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field QueueTypeName", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.QueueTypeName = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MessageID", wireType)
-			}
-			m.MessageID = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.MessageID |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
 
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgDeleteJobResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgDeleteJobResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgDeleteJobResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *MsgAddEvidence) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2176,6 +1814,7 @@ func (m *MsgAddEvidence) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MsgAddEvidenceResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2226,6 +1865,7 @@ func (m *MsgAddEvidenceResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MsgSetPublicAccessData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2394,6 +2034,7 @@ func (m *MsgSetPublicAccessData) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MsgSetPublicAccessDataResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2444,6 +2085,7 @@ func (m *MsgSetPublicAccessDataResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MsgSetErrorData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2612,6 +2254,7 @@ func (m *MsgSetErrorData) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MsgSetErrorDataResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2662,6 +2305,7 @@ func (m *MsgSetErrorDataResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func skipTx(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
