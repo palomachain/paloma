@@ -62,7 +62,6 @@ func TestDeleteOldMessages(t *testing.T) {
 
 				// Advance to block 61
 				ctx = ctx.WithBlockHeight(61)
-				// ms.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(&valsettypes.Snapshot{}, nil)
 
 				return *k, ctx, queue
 			},
