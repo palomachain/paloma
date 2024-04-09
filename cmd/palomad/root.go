@@ -18,6 +18,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/palomachain/paloma/app"
 	palomaapp "github.com/palomachain/paloma/app"
@@ -66,6 +69,22 @@ func NewRootCmd() *cobra.Command {
 			initClientCtx, err = config.ReadFromClientConfig(initClientCtx)
 			if err != nil {
 				return err
+			}
+			if !initClientCtx.Offline {
+				enabledSignModes := append(tx.DefaultSignModes, signing.SignMode_SIGN_MODE_TEXTUAL)
+				txConfigOpts := tx.ConfigOptions{
+					EnabledSignModes:           enabledSignModes,
+					TextualCoinMetadataQueryFn: authtxconfig.NewGRPCCoinMetadataQueryFn(initClientCtx),
+				}
+				txConfig, err := tx.NewTxConfigWithOptions(
+					initClientCtx.Codec,
+					txConfigOpts,
+				)
+				if err != nil {
+					return err
+				}
+
+				initClientCtx = initClientCtx.WithTxConfig(txConfig)
 			}
 
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
