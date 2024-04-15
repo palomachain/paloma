@@ -18,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
@@ -33,7 +34,7 @@ func NewRootCmd() *cobra.Command {
 	// set Bech32 address configuration
 	params.SetAddressConfig()
 
-	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, db.OptionsMap{})
+	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, simtestutil.NewAppOptionsWithFlagHome(palomaapp.DefaultNodeHome))
 	encCfg := params.EncodingConfig{
 		InterfaceRegistry: tempApp.InterfaceRegistry(),
 		Codec:             tempApp.AppCodec(),
@@ -61,6 +62,7 @@ func NewRootCmd() *cobra.Command {
 			cmd.SetOut(cmd.OutOrStdout())
 			cmd.SetErr(cmd.ErrOrStderr())
 
+			initClientCtx = initClientCtx.WithCmdContext(cmd.Context())
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
 				return err
