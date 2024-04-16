@@ -1,6 +1,6 @@
 module github.com/palomachain/paloma
 
-go 1.21
+go 1.22.2
 
 require (
 	cosmossdk.io/errors v1.0.1
