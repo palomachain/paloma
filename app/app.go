@@ -117,6 +117,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	palomamempool "github.com/palomachain/paloma/app/mempool"
 	chainparams "github.com/palomachain/paloma/app/params"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
@@ -814,6 +815,7 @@ func New(
 		ibcfee.NewAppModule(app.IBCFeeKeeper),
 		ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
+		ibctm.NewAppModule(),
 	)
 
 	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
