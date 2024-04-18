@@ -16,7 +16,7 @@ GOLANGCILINT_VERSION := 1.51.2
 ###############################################################################
 
 ifeq (,$(VERSION))
-  VERSION := $(shell git describe --exact-match --tags 2>/dev/null | sed 's/^v//')
+  VERSION := $(shell git describe --exact-match --tags 2>/dev/null)
   # if VERSION is empty, then populate it with branch's name and raw commit hash
   ifeq (,$(VERSION))
     VERSION := $(BRANCH)-$(COMMIT)
