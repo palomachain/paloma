@@ -18,7 +18,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
@@ -33,8 +32,9 @@ import (
 func NewRootCmd() *cobra.Command {
 	// set Bech32 address configuration
 	params.SetAddressConfig()
-
-	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, simtestutil.NewAppOptionsWithFlagHome(palomaapp.DefaultNodeHome))
+	appOptions := make(db.OptionsMap, 0)
+	appOptions[flags.FlagHome] = palomaapp.DefaultNodeHome
+	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, appOptions)
 	encCfg := params.EncodingConfig{
 		InterfaceRegistry: tempApp.InterfaceRegistry(),
 		Codec:             tempApp.AppCodec(),
