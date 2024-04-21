@@ -243,20 +243,28 @@ require (
 )
 
 replace (
-	cosmossdk.io/store v1.0.2 => cosmossdk.io/store v1.1.0
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	// TODO: This is to fix  the issue
 	//(../../go/pkg/mod/github.com/ethereum/go-ethereum@v1.13.13/ethdb/pebble/pebble.go:592:21
 	//assignment mismatch: 4 variables but reader.Next returns 5 values)
 	github.com/cockroachdb/pebble => github.com/cockroachdb/pebble v0.0.0-20230928194634-aa077af62593
-	github.com/cosmos/iavl => github.com/cosmos/iavl v1.1.2
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134
 	// Link to op-geth, which is built on top of go-ethereum
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
-	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.18.0
-	github.com/prometheus/common => github.com/prometheus/common v0.47.0
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
+)
+
+replace (
+	// TODO: Remove replace directives once changes have been released in Cosmos.
+	// Raising IAVL to the latest version which hasn't been released to Cosmos yet
+	// in order to try and avoid consensus hash mismatches.
+	// See: https://github.com/palomachain/paloma/issues/1144
+	// See https://github.com/palomachain/paloma/pull/1139
+	cosmossdk.io/store v1.0.2 => cosmossdk.io/store v1.1.0
+	github.com/cosmos/iavl => github.com/cosmos/iavl v1.1.2
+	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.18.0
+	github.com/prometheus/common => github.com/prometheus/common v0.47.0
 )
