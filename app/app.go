@@ -673,7 +673,7 @@ func New(
 		app.StakingKeeper,
 		app.DistrKeeper,
 		app.MsgServiceRouter(),
-		govtypes.Config{},
+		govtypes.DefaultConfig(),
 		authorityAddress,
 	)
 
