@@ -74,7 +74,7 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 
 ## Active Networks
 * Testnet `paloma-testnet-15` (January 20, 2023)
-* Mainnet `tumbler` (April 22, 2023)
+* Mainnet `tumbler` (April 22, 2024)
 
 ## Join an active Network
 
