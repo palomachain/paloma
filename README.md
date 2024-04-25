@@ -74,7 +74,7 @@ See [Release procedure](CONTRIBUTING.md#release-procedure) for more information 
 
 ## Active Networks
 * Testnet `paloma-testnet-15` (January 20, 2023)
-* Mainnet `messenger` (February 2, 2023)
+* Mainnet `tumbler` (April 22, 2024)
 
 ## Join an active Network
 
@@ -126,7 +126,7 @@ palomad init "$MONIKER"
 #for testnet
 CHAIN_ID="paloma-testnet-15" 
 #for mainnet
-CHAIN_ID="messenger" 
+CHAIN_ID="tumbler" 
 
 ```
 
@@ -140,8 +140,8 @@ wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomac
 
 Mainnet:
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/mainnet/master/messenger/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/mainnet/master/messenger/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/mainnet/master/tumbler/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/mainnet/master/tumbler/addrbook.json
 ```
 
 Next you can generate a new set of keys to the new machine, or reuse an existing key.
