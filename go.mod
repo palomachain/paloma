@@ -1,12 +1,12 @@
 module github.com/palomachain/paloma
 
 go 1.22.2
+
 require (
 	cosmossdk.io/errors v1.0.1
 	github.com/CosmWasm/wasmd v0.50.0
 	github.com/CosmWasm/wasmvm v1.5.2
 	github.com/VolumeFi/whoops v0.7.2
-	github.com/cometbft/cometbft v0.38.6
 	github.com/cometbft/cometbft v0.38.6
 	github.com/cometbft/cometbft-db v0.9.1 // indirect
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
@@ -44,8 +44,6 @@ require (
 	cosmossdk.io/x/upgrade v0.1.1
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
-	github.com/cosmos/ibc-go/v8 v8.2.0
-	github.com/ethereum/go-ethereum v1.13.15
 	github.com/cosmos/ibc-go/v8 v8.2.0
 	github.com/ethereum/go-ethereum v1.13.15
 	github.com/golang/protobuf v1.5.4
@@ -257,14 +255,4 @@ replace (
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-)
-
-replace (
-	// TODO: Remove replace directives once changes have been released in Cosmos.
-	// Raising IAVL to the latest version which hasn't been released to Cosmos yet
-	// in order to try and avoid consensus hash mismatches.
-	// See: https://github.com/palomachain/paloma/issues/1144
-	// See https://github.com/palomachain/paloma/pull/1139
-	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.19.0
-	github.com/prometheus/common => github.com/prometheus/common v0.52.2
 )
