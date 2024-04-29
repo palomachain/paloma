@@ -1,12 +1,12 @@
 module github.com/palomachain/paloma
 
 go 1.22.2
-
 require (
 	cosmossdk.io/errors v1.0.1
 	github.com/CosmWasm/wasmd v0.50.0
 	github.com/CosmWasm/wasmvm v1.5.2
 	github.com/VolumeFi/whoops v0.7.2
+	github.com/cometbft/cometbft v0.38.6
 	github.com/cometbft/cometbft v0.38.6
 	github.com/cometbft/cometbft-db v0.9.1 // indirect
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
@@ -46,6 +46,8 @@ require (
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
 	github.com/cosmos/ibc-go/v8 v8.2.0
 	github.com/ethereum/go-ethereum v1.13.15
+	github.com/cosmos/ibc-go/v8 v8.2.0
+	github.com/ethereum/go-ethereum v1.13.15
 	github.com/golang/protobuf v1.5.4
 	github.com/onsi/ginkgo/v2 v2.13.0
 	golang.org/x/mod v0.17.0
@@ -59,6 +61,8 @@ require (
 	cloud.google.com/go/storage v1.36.0 // indirect
 	cosmossdk.io/collections v0.4.0 // indirect
 	cosmossdk.io/depinject v1.0.0-alpha.4 // indirect
+	cosmossdk.io/x/circuit v0.1.0 // indirect
+	cosmossdk.io/x/nft v0.1.0 // indirect
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.1 // indirect
