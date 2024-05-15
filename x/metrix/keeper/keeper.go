@@ -105,8 +105,9 @@ func (k Keeper) GetValidatorHistory(ctx context.Context, address sdk.ValAddress)
 	return getFromStore(ctx, k.history, address)
 }
 
-// GetValidatorMetrics returns the metrics for a validator. Will return nil if no metrics found
-// for the given validator address.
+// GetMessageNonceCache returns the cached historic relay data. This data is used to keep track
+// of the message nonce's across validators to prevent replay attacks. It will return nil if no
+// cached data is found.
 func (k Keeper) GetMessageNonceCache(ctx context.Context) (*types.HistoricRelayData, error) {
 	return getFromStore(ctx, k.messageNonceCache, types.MessageNonceCacheKey)
 }
