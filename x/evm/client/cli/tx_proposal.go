@@ -249,7 +249,7 @@ func CmdEvmProposalChangeRelayWeights() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "propose-relay-weights [chain-reference-id] [weights]",
 		Short:   "Changes the relay weights for a given EVM chain referenced by the chain-reference-id",
-		Example: "change-relay-weights eth-main {\"fee\": 0.50, \"uptime\": 0.75, \"successRate\": 0.90, \"executionTime\": 0.20}",
+		Example: "propose-relay-weights eth-main {\"fee\": \"0.50\", \"uptime\": \"0.75\", \"successRate\": \"0.90\", \"executionTime\": \"0.20\", \"featureSet\": \"0.95\"}",
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			return whoops.Try(func() {
@@ -270,6 +270,7 @@ func CmdEvmProposalChangeRelayWeights() *cobra.Command {
 					Uptime:           weights.Uptime,
 					SuccessRate:      weights.SuccessRate,
 					ExecutionTime:    weights.ExecutionTime,
+					FeatureSet:       weights.FeatureSet,
 				}
 
 				from := clientCtx.GetFromAddress()
