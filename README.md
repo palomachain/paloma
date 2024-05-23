@@ -73,7 +73,7 @@ We have active, helpful communities on Twitter and Telegram.
 See [Release procedure](CONTRIBUTING.md#release-procedure) for more information about the release model.
 
 ## Active Networks
-* Testnet `paloma-testnet-15` (January 20, 2023)
+* Testnet `paloma-testnet-16` (May 23, 2024)
 * Mainnet `tumbler` (April 22, 2024)
 
 ## Join an active Network
@@ -124,7 +124,7 @@ MONIKER="$(hostname)"
 palomad init "$MONIKER"
 
 #for testnet
-CHAIN_ID="paloma-testnet-15" 
+CHAIN_ID="paloma-testnet-16" 
 #for mainnet
 CHAIN_ID="tumbler" 
 
@@ -134,8 +134,8 @@ Copy the configs of the network we wish to connect to
 
 Testnet:
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-15/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-15/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-16/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-16/addrbook.json
 ```
 
 Mainnet:
