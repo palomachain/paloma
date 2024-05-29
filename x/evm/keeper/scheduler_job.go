@@ -26,7 +26,8 @@ func (k Keeper) XChainType() xchain.Type {
 func (k Keeper) XChainReferenceIDs(ctx context.Context) []xchain.ReferenceID {
 	chainInfos, err := k.GetAllChainInfos(ctx)
 	if err != nil {
-		panic(err)
+		k.Logger(ctx).WithError(err).Warn("Failed to get all chains infos")
+		return nil
 	}
 
 	return slice.Map(chainInfos, func(ci *types.ChainInfo) xchain.ReferenceID {
