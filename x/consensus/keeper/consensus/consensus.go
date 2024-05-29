@@ -94,31 +94,34 @@ func ApplyOpts(opts *QueueOptions, fncs ...OptFnc) *QueueOptions {
 	return opts
 }
 
-func NewQueue(qo QueueOptions) Queue {
+func NewQueue(qo QueueOptions) (Queue, error) {
 	if qo.TypeCheck == nil {
-		panic("TypeCheck can't be nil")
+		return Queue{}, ErrNilTypeCheck
 	}
+
 	if qo.BytesToSignCalculator == nil {
-		panic("BytesToSignCalculator can't be nil")
+		return Queue{}, ErrNilBytesToSignCalculator
 	}
+
 	if qo.VerifySignature == nil {
-		panic("VerifySignature can't be nil")
+		return Queue{}, ErrNilVerifySignature
 	}
 
 	if len(qo.ChainType) == 0 {
-		panic("chain type can't be empty")
+		return Queue{}, ErrEmptyChainType
 	}
 
 	if len(qo.ChainReferenceID) == 0 {
-		panic("chain id can't be empty")
+		return Queue{}, ErrEmptyChainReferenceID
 	}
 
 	if len(qo.QueueTypeName) == 0 {
-		panic("queue type name can't be empty")
+		return Queue{}, ErrEmptyQueueTypeName
 	}
+
 	return Queue{
 		qo: qo,
-	}
+	}, nil
 }
 
 // Put puts raw message into a signing queue.

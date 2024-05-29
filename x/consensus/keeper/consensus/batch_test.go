@@ -40,7 +40,7 @@ func TestBatching(t *testing.T) {
 
 	sg := keeperutil.SimpleStoreGetter(stateStore.GetKVStore(storeKey))
 	msgType := &types.SimpleMessage{}
-	cq := NewBatchQueue(
+	cq, _ := NewBatchQueue(
 		QueueOptions{
 			QueueTypeName: "simple-message",
 			Sg:            sg,

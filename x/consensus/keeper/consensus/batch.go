@@ -18,15 +18,21 @@ type BatchQueue struct {
 	batchedTypeChecker types.TypeChecker
 }
 
-func NewBatchQueue(qo QueueOptions) BatchQueue {
+func NewBatchQueue(qo QueueOptions) (BatchQueue, error) {
 	staticTypeCheck := qo.TypeCheck
 	batchedTypeCheck := types.BatchedTypeChecker(staticTypeCheck)
 
 	qo.TypeCheck = batchedTypeCheck
-	return BatchQueue{
-		base:               NewQueue(qo),
-		batchedTypeChecker: staticTypeCheck,
+
+	base, err := NewQueue(qo)
+	if err != nil {
+		return BatchQueue{}, err
 	}
+
+	return BatchQueue{
+		base:               base,
+		batchedTypeChecker: staticTypeCheck,
+	}, nil
 }
 
 func (c BatchQueue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
