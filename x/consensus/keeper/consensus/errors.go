@@ -1,6 +1,8 @@
 package consensus
 
 import (
+	"errors"
+
 	"github.com/VolumeFi/whoops"
 )
 
@@ -13,11 +15,13 @@ const (
 	ErrValidatorAlreadySigned       = whoops.Errorf("validator already signed: %s")
 
 	ErrAttestorNotSetForMessage = whoops.Errorf("attestator must be set for message: %T")
+)
 
-	ErrNilTypeCheck             = whoops.String("TypeCheck can't be nil")
-	ErrNilBytesToSignCalculator = whoops.String("BytesToSignCalculator can't be nil")
-	ErrNilVerifySignature       = whoops.String("VerifySignature can't be nil")
-	ErrEmptyChainType           = whoops.String("chain type can't be empty")
-	ErrEmptyChainReferenceID    = whoops.String("chain id can't be empty")
-	ErrEmptyQueueTypeName       = whoops.String("queue type name can't be empty")
+var (
+	ErrNilTypeCheck             = errors.New("TypeCheck can't be nil")
+	ErrNilBytesToSignCalculator = errors.New("BytesToSignCalculator can't be nil")
+	ErrNilVerifySignature       = errors.New("VerifySignature can't be nil")
+	ErrEmptyChainType           = errors.New("chain type can't be empty")
+	ErrEmptyChainReferenceID    = errors.New("chain id can't be empty")
+	ErrEmptyQueueTypeName       = errors.New("queue type name can't be empty")
 )

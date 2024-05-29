@@ -3,6 +3,7 @@ package consensus
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/math"
@@ -13,6 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -170,7 +172,12 @@ func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uin
 func (c Queue) GetAll(ctx context.Context) ([]types.QueuedSignedMessageI, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	var msgs []types.QueuedSignedMessageI
-	queue := c.queue(sdkCtx)
+
+	queue, err := c.queue(sdkCtx)
+	if err != nil {
+		return nil, err
+	}
+
 	iterator := queue.Iterator(nil, nil)
 	defer iterator.Close()
 
@@ -323,7 +330,12 @@ func (c Queue) Remove(ctx context.Context, msgID uint64) error {
 	if err != nil {
 		return err
 	}
-	queue := c.queue(sdkCtx)
+
+	queue, err := c.queue(sdkCtx)
+	if err != nil {
+		return err
+	}
+
 	queue.Delete(sdk.Uint64ToBigEndian(msgID))
 
 	keeperutil.EmitEvent(keeperutil.ModuleNameFunc(types.ModuleName), sdkCtx, types.ItemRemovedEventKey,
@@ -336,7 +348,12 @@ func (c Queue) Remove(ctx context.Context, msgID uint64) error {
 // getMsgByID given a message ID, it returns the message
 func (c Queue) GetMsgByID(ctx context.Context, id uint64) (types.QueuedSignedMessageI, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	queue := c.queue(sdkCtx)
+
+	queue, err := c.queue(sdkCtx)
+	if err != nil {
+		return nil, err
+	}
+
 	data := queue.Get(sdk.Uint64ToBigEndian(id))
 
 	if data == nil {
@@ -360,23 +377,36 @@ func (c Queue) save(ctx context.Context, msg types.QueuedSignedMessageI) error {
 	if err != nil {
 		return err
 	}
-	c.queue(ctx).Set(sdk.Uint64ToBigEndian(msg.GetId()), data)
+
+	q, err := c.queue(ctx)
+	if err != nil {
+		return err
+	}
+
+	q.Set(sdk.Uint64ToBigEndian(msg.GetId()), data)
 	return nil
 }
 
 // queue is a simple helper function to return the queue store
-func (c Queue) queue(ctx context.Context) prefix.Store {
+func (c Queue) queue(ctx context.Context) (prefix.Store, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	store := c.qo.Sg.Store(sdkCtx)
-	return prefix.NewStore(store, []byte(c.signingQueueKey()))
+
+	key, err := c.signingQueueKey()
+	if err != nil {
+		return prefix.Store{}, err
+	}
+
+	return prefix.NewStore(store, []byte(key)), nil
 }
 
 // signingQueueKey builds a key for the store where are we going to store those.
-func (c Queue) signingQueueKey() string {
+func (c Queue) signingQueueKey() (string, error) {
 	if c.qo.QueueTypeName == "" {
-		panic("queueTypeName can't be empty")
+		return "", ErrEmptyQueueTypeName
 	}
-	return fmt.Sprintf("%s-%s", consensusQueueSigningKey, c.qo.QueueTypeName)
+
+	return fmt.Sprintf("%s-%s", consensusQueueSigningKey, c.qo.QueueTypeName), nil
 }
 
 func (c Queue) ChainInfo() (types.ChainType, string) {
@@ -386,14 +416,22 @@ func (c Queue) ChainInfo() (types.ChainType, string) {
 func RemoveQueueCompletely(ctx context.Context, cq Queuer) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	var store storetypes.KVStore
+	var err error
+
 	switch typ := cq.(type) {
 	case Queue:
-		store = typ.queue(sdkCtx)
+		store, err = typ.queue(sdkCtx)
 	case BatchQueue:
-		store = typ.batchQueue(sdkCtx)
+		store, err = typ.batchQueue(sdkCtx)
 	default:
-		panic("cq type is unknown!")
+		err = errors.New("cq type is unknown!")
 	}
+
+	if err != nil {
+		liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error while removing the queue")
+		return
+	}
+
 	iterator := store.Iterator(nil, nil)
 	deleteKeys := [][]byte{}
 	for ; iterator.Valid(); iterator.Valid() {

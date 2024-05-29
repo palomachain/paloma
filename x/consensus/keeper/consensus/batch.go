@@ -56,13 +56,24 @@ func (c BatchQueue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions)
 	if err != nil {
 		return 0, err
 	}
-	c.batchQueue(sdkCtx).Set(sdk.Uint64ToBigEndian(newID), data)
+
+	batchQueue, err := c.batchQueue(sdkCtx)
+	if err != nil {
+		return 0, err
+	}
+
+	batchQueue.Set(sdk.Uint64ToBigEndian(newID), data)
 	return newID, nil
 }
 
 func (c BatchQueue) ProcessBatches(ctx context.Context) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	queue := c.batchQueue(sdkCtx)
+
+	queue, err := c.batchQueue(sdkCtx)
+	if err != nil {
+		return err
+	}
+
 	deleteKeys := [][]byte{}
 
 	iterator := queue.Iterator(nil, nil)
@@ -110,10 +121,16 @@ func (c BatchQueue) ProcessBatches(ctx context.Context) error {
 }
 
 // batchQueue returns queue of messages that have been batched
-func (c BatchQueue) batchQueue(ctx context.Context) prefix.Store {
+func (c BatchQueue) batchQueue(ctx context.Context) (prefix.Store, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	store := c.base.qo.Sg.Store(sdkCtx)
-	return prefix.NewStore(store, []byte("batching:"+c.base.signingQueueKey()))
+
+	key, err := c.base.signingQueueKey()
+	if err != nil {
+		return prefix.Store{}, err
+	}
+
+	return prefix.NewStore(store, []byte("batching:"+key)), nil
 }
 
 func (c BatchQueue) AddSignature(ctx context.Context, id uint64, signData *types.SignData) error {
