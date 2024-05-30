@@ -1,11 +1,10 @@
 ###########################
 ####     Base image    ####
 ###########################
-FROM golang:1.21-buster AS base
+FROM golang:1.22-buster AS base
 
 # TODO add non-root user
-
-MAINTAINER Matija Martinic <matija@volume.finance>
+LABEL org.opencontainers.image.authors="christian@volume.finance"
 WORKDIR /app
 
 ###########################
@@ -14,17 +13,17 @@ WORKDIR /app
 FROM base AS builder
 COPY . /app
 RUN \
-	--mount=type=cache,target=/go/pkg/mod \
-	--mount=type=cache,target=/root/.cache/go-build \
-	cd /app && go build -o /palomad ./cmd/palomad
-
+  --mount=type=cache,target=/go/pkg/mod \
+   --mount=type=cache,target=/root/.cache/go-build \
+   cd /app && go build -o /palomad ./cmd/palomad
+  
 #################################
 ####    Local chain setup    ####
 #################################
 FROM ubuntu AS setup-chain-locally
 RUN apt-get update && \
-	apt-get install -y jq
-COPY --from=builder /palomad /palomad
+  apt-get install -y jq
+  OPY --from=builder /palomad /palomad
 COPY --from=builder /app/scripts/setup-chain-validator.sh /app/scripts/setup-chain-validator.sh
 RUN PALOMA_CMD="/palomad" /app/scripts/setup-chain-validator.sh
 
@@ -46,7 +45,7 @@ CMD ["air"]
 FROM ubuntu AS local-testnet
 ENTRYPOINT ["/palomad"]
 COPY --from=builder /palomad /palomad
- 
+
 
 ###########################
 ####     Release       ####
