@@ -558,7 +558,8 @@ func (k Keeper) PublishSnapshotToAllChains(ctx context.Context, snapshot *valset
 func (k Keeper) OnSnapshotBuilt(ctx context.Context, snapshot *valsettypes.Snapshot) {
 	err := k.PublishSnapshotToAllChains(ctx, snapshot, false)
 	if err != nil {
-		panic(err)
+		k.Logger(ctx).WithError(err).Warn("Failed to publish snapshot to all chains.")
+		return
 	}
 
 	k.TryDeployingLastCompassContractToAllChains(ctx)
