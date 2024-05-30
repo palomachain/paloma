@@ -40,19 +40,18 @@ func (k Keeper) Attest(
 	if err := sdk.VerifyAddressFormat(valAddress); err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid orchestrator validator address")
 	}
-
-	// The original bridge implementation checks that this event nonce is exactly one higher than the last
-	// one stored by this validator.
-	// The compass implementation does not keep the gravity nonce separate from the regular SLC call.
-	// Given that Pigeons may also be offline for prolongued periods of time or otherwise miss an update,
-	// the Paloma team has adapted the source to verify that the nonce is HIGHER than the last reported
-	// nonce instead.
+	// Check that the nonce of this event is exactly one higher than the last nonce stored by this validator.
+	// We check the event nonce in processAttestation as well,
+	// but checking it here gives individual eth signers a chance to retry,
+	// and prevents validators from submitting two claims with the same nonce.
+	// This prevents there being two attestations with the same nonce that get 2/3s of the votes
+	// in the endBlocker.
 	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, valAddress)
 	if err != nil {
 		return nil, err
 	}
-	if claim.GetEventNonce() < lastEventNonce+1 {
-		return nil, fmt.Errorf(types.ErrNonIncrementalEventNonce.Error(), lastEventNonce+1, claim.GetEventNonce())
+	if claim.GetEventNonce() != lastEventNonce+1 {
+		return nil, fmt.Errorf(types.ErrNonContiguousEventNonce.Error(), lastEventNonce+1, claim.GetEventNonce())
 	}
 
 	// Tries to get an attestation with the same eventNonce and claim as the claim that was submitted.

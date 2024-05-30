@@ -13,7 +13,7 @@ var (
 	ErrEmpty                    = sdkerrors.Register(ModuleName, 6, "empty")
 	ErrOutdated                 = sdkerrors.Register(ModuleName, 7, "outdated")
 	ErrUnsupported              = sdkerrors.Register(ModuleName, 8, "unsupported")
-	ErrNonIncrementalEventNonce = sdkerrors.Register(ModuleName, 9, "non incremental event nonce, expected: %v received: %v")
+	ErrNonContiguousEventNonce  = sdkerrors.Register(ModuleName, 9, "non contiguous event nonce, expected: %v received: %v")
 	ErrResetDelegateKeys        = sdkerrors.Register(ModuleName, 10, "can not set orchestrator addresses more than once")
 	ErrMismatched               = sdkerrors.Register(ModuleName, 11, "mismatched")
 	ErrInvalidEthAddress        = sdkerrors.Register(ModuleName, 14, "discovered invalid eth address stored for validator %v")
