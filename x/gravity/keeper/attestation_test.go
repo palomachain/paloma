@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: Add test coverage for multi chain support
 func TestGetAndDeleteAttestation(t *testing.T) {
 	input := CreateTestEnv(t)
 	k := input.GravityKeeper
@@ -29,9 +28,14 @@ func TestGetAndDeleteAttestation(t *testing.T) {
 		nonce := uint64(1 + i)
 		att := k.GetAttestation(ctx, chainReferenceID, nonce, hashes[i])
 		require.NotNil(t, att)
+		att = k.GetAttestation(ctx, "fake-chain", nonce, hashes[i])
+		require.Nil(t, att)
 	}
 
-	recentAttestations, err := k.GetMostRecentAttestations(ctx, chainReferenceID, uint64(length))
+	recentAttestations, err := k.GetMostRecentAttestations(ctx, "wrong-chain", uint64(length))
+	require.NoError(t, err)
+	require.Empty(t, recentAttestations)
+	recentAttestations, err = k.GetMostRecentAttestations(ctx, chainReferenceID, uint64(length))
 	require.NoError(t, err)
 	require.True(t, len(recentAttestations) == length)
 
