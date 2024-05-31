@@ -45,7 +45,7 @@ require (
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
 	github.com/cosmos/ibc-go/v8 v8.2.0
-	github.com/ethereum/go-ethereum v1.13.15
+	github.com/ethereum/go-ethereum v1.14.3
 	github.com/golang/protobuf v1.5.4
 	github.com/onsi/ginkgo/v2 v2.17.2
 	golang.org/x/mod v0.17.0
@@ -94,7 +94,7 @@ require (
 	github.com/cosmos/ics23/go v0.10.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.13.3 // indirect
 	github.com/crate-crypto/go-ipa v0.0.0-20231025140028-3c0104f4b233 // indirect
-	github.com/crate-crypto/go-kzg-4844 v0.7.0 // indirect
+	github.com/crate-crypto/go-kzg-4844 v1.0.0 // indirect
 	github.com/creachadair/atomicfile v0.3.1 // indirect
 	github.com/creachadair/tomledit v0.0.24 // indirect
 	github.com/danieljoos/wincred v1.1.2 // indirect
@@ -109,7 +109,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/dvsekhvalnov/jose2go v1.6.0 // indirect
 	github.com/emicklei/dot v1.6.1 // indirect
-	github.com/ethereum/c-kzg-4844 v0.4.0 // indirect
+	github.com/ethereum/c-kzg-4844 v1.0.0 // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
