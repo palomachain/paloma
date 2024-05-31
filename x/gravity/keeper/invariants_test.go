@@ -102,7 +102,7 @@ func TestModuleBalanceBatchedTxs(t *testing.T) {
 	input.AccountKeeper.NewAccountWithAddress(ctx, mySender)
 	require.NoError(t, input.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, mySender, tokenCoin))
 
-	err = input.GravityKeeper.SetLastObservedEthereumBlockHeight(ctx, 1234567)
+	err = input.GravityKeeper.SetLastObservedEthereumBlockHeight(ctx, "test-chain", 1234567)
 	require.NoError(t, err)
 
 	////////////////// EXECUTE //////////////////

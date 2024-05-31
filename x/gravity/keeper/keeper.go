@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/core/address"
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/log"
+	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -106,7 +107,7 @@ func (k Keeper) SendToCommunityPool(ctx context.Context, coins sdk.Coins) error 
 
 // GetParams returns the parameters from the store
 func (k Keeper) GetParams(ctx context.Context) (params types.Params) {
-	bz := k.GetStore(ctx).Get([]byte(types.ParamsKey))
+	bz := k.GetStore(ctx, types.StoreModulePrefix).Get([]byte(types.ParamsKey))
 	if bz == nil {
 		return params
 	}
@@ -117,7 +118,7 @@ func (k Keeper) GetParams(ctx context.Context) (params types.Params) {
 // SetParams sets the parameters in the store
 func (k Keeper) SetParams(ctx context.Context, params types.Params) {
 	bz := k.cdc.MustMarshal(&params)
-	k.GetStore(ctx).Set([]byte(types.ParamsKey), bz)
+	k.GetStore(ctx, types.StoreModulePrefix).Set([]byte(types.ParamsKey), bz)
 }
 
 // GetBridgeContractAddress returns the bridge contract address on ETH
@@ -211,9 +212,10 @@ func (k Keeper) InvalidSendToEthAddress(ctx context.Context, addr types.EthAddre
 	return addr == types.ZeroAddress()
 }
 
-func (k Keeper) GetStore(ctx context.Context) storetypes.KVStore {
+// Returns the module store, prefixed with the passed chainReferenceID.
+func (k Keeper) GetStore(ctx context.Context, chainReferenceID string) storetypes.KVStore {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return k.storeGetter.Store(sdkCtx)
+	return prefix.NewStore(k.storeGetter.Store(sdkCtx), []byte(chainReferenceID))
 }
 
 type GravityStoreGetter struct {

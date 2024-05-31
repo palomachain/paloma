@@ -103,15 +103,15 @@ func TestAttestationIterator(t *testing.T) {
 	hash2, err := claim2.ClaimHash()
 	require.NoError(t, err)
 
-	input.GravityKeeper.SetAttestation(ctx, claim1.EventNonce, hash1, att1)
-	err = input.GravityKeeper.setLastObservedEventNonce(ctx, claim1.EventNonce)
+	input.GravityKeeper.SetAttestation(ctx, "test-chain", claim1.EventNonce, hash1, att1)
+	err = input.GravityKeeper.setLastObservedEventNonce(ctx, "test-chain", claim1.EventNonce)
 	require.NoError(t, err)
-	input.GravityKeeper.SetAttestation(ctx, claim2.EventNonce, hash2, att2)
-	err = input.GravityKeeper.setLastObservedEventNonce(ctx, claim2.EventNonce)
+	input.GravityKeeper.SetAttestation(ctx, "test-chain", claim2.EventNonce, hash2, att2)
+	err = input.GravityKeeper.setLastObservedEventNonce(ctx, "test-chain", claim2.EventNonce)
 	require.NoError(t, err)
 
 	atts := []types.Attestation{}
-	err = input.GravityKeeper.IterateAttestations(ctx, false, func(_ []byte, att types.Attestation) bool {
+	err = input.GravityKeeper.IterateAttestations(ctx, "test-chain", false, func(_ []byte, att types.Attestation) bool {
 		atts = append(atts, att)
 		return false
 	})

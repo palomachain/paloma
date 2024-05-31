@@ -160,41 +160,85 @@ func ValidateStore(ctx sdk.Context, k Keeper) error {
 	var g whoops.Group
 	var err error
 
-	// LastObservedEventNonceKey (type checked when fetching)
-	lastObservedEventNonce, err := k.GetLastObservedEventNonce(ctx)
+	// DenomToERC20Key
+	allErc20ToDenoms, err := k.GetAllERC20ToDenoms(ctx)
 	if err != nil {
 		return err
 	}
+	for _, erc20 := range allErc20ToDenoms {
+		if err = erc20.ValidateBasic(); err != nil {
+			return fmt.Errorf("discovered invalid erc20 %v for %s:%s: %v", erc20, erc20.GetChainReferenceId(), erc20.GetDenom(), err)
+		}
+	}
 
-	lastObservedEthereumClaimHeight := uint64(0) // used later to validate ethereum claim height
-	// OracleAttestationKey
-	g.Add(
-		k.IterateAttestations(ctx, false, func(key []byte, att types.Attestation) (stop bool) {
-			er := att.ValidateBasic(k.cdc)
-			if er != nil {
-				g.Add(fmt.Errorf("Invalid attestation %v in IterateAttestations: %v", att, er))
-				return true
-			}
-			claim, er := k.UnpackAttestationClaim(&att) // Already unpacked in ValidateBasic
-			if er != nil {
-				g.Add(fmt.Errorf("Invalid attestation claim %v in IterateAttestations: %v", att, er))
-				return true
-			}
-			if att.Observed {
-				if claim.GetEventNonce() > lastObservedEventNonce {
-					g.Add(fmt.Errorf("last observed event nonce <> observed attestation nonce mismatch (%v < %v)", lastObservedEventNonce, claim.GetEventNonce()))
+	// ERC20ToDenomKey
+	allDenomToERC20s, err := k.GetAllDenomToERC20s(ctx)
+	if err != nil {
+		return err
+	}
+	for _, erc20 := range allDenomToERC20s {
+		if err = erc20.ValidateBasic(); err != nil {
+			return fmt.Errorf("discovered invalid erc20 %v for %s:%s: %v", erc20, erc20.GetChainReferenceId(), erc20.GetDenom(), err)
+		}
+	}
+
+	chains := k.GetChainsWithTokens(ctx)
+	for _, chain := range chains {
+		// LastObservedEventNonceKey (type checked when fetching)
+		lastObservedEventNonce, err := k.GetLastObservedEventNonce(ctx, chain)
+		if err != nil {
+			return err
+		}
+		lastObservedEthereumClaimHeight := uint64(0) // used later to validate ethereum claim height
+		// OracleAttestationKey
+		g.Add(
+			k.IterateAttestations(ctx, chain, false, func(_ []byte, att types.Attestation) (stop bool) {
+				er := att.ValidateBasic(k.cdc)
+				if er != nil {
+					g.Add(fmt.Errorf("unvalid attestation %v in IterateAttestations: %v", att, er))
 					return true
 				}
-				claimHeight := claim.GetEthBlockHeight()
-				if claimHeight > lastObservedEthereumClaimHeight {
-					lastObservedEthereumClaimHeight = claimHeight
+				claim, er := k.UnpackAttestationClaim(&att) // Already unpacked in ValidateBasic
+				if er != nil {
+					g.Add(fmt.Errorf("invalid attestation claim %v in IterateAttestations: %v", att, er))
+					return true
 				}
-			}
+				if att.Observed {
+					if claim.GetEventNonce() > lastObservedEventNonce {
+						g.Add(fmt.Errorf("last observed event nonce <> observed attestation nonce mismatch (%v < %v)", lastObservedEventNonce, claim.GetEventNonce()))
+						return true
+					}
+					claimHeight := claim.GetEthBlockHeight()
+					if claimHeight > lastObservedEthereumClaimHeight {
+						lastObservedEthereumClaimHeight = claimHeight
+					}
+				}
+				return false
+			}),
+		)
+		if len(g) > 0 {
+			return g
+		}
+		// LastEventNonceByValidatorKey (type checked when fetching)
+		err = k.IterateValidatorLastEventNonces(ctx, chain, func(key []byte, nonce uint64) (stop bool) {
 			return false
-		}),
-	)
-	if len(g) > 0 {
-		return g
+		})
+		if err != nil {
+			return err
+		}
+
+		// LastObservedEthereumBlockHeightKey
+		lastEthHeight := k.GetLastObservedEthereumBlockHeight(ctx, chain)
+		if lastEthHeight.EthereumBlockHeight < lastObservedEthereumClaimHeight {
+			err = fmt.Errorf(
+				"stored last observed ethereum block height is less than the actual last observed height (%d < %d)",
+				lastEthHeight.EthereumBlockHeight,
+				lastObservedEthereumClaimHeight,
+			)
+		}
+		if err != nil {
+			return err
+		}
 	}
 
 	// OutgoingTXPoolKey
@@ -202,7 +246,7 @@ func ValidateStore(ctx sdk.Context, k Keeper) error {
 		k.IterateUnbatchedTransactions(ctx, func(key []byte, tx *types.InternalOutgoingTransferTx) (stop bool) {
 			err = tx.ValidateBasic()
 			if err != nil {
-				g.Add(fmt.Errorf("Invalid unbatched transaction %v under key %v in IterateUnbatchedTransactions: %v", tx, key, err))
+				g.Add(fmt.Errorf("invalid unbatched transaction %v under key %v in IterateUnbatchedTransactions: %v", tx, key, err))
 				return true
 			}
 			return false
@@ -217,7 +261,7 @@ func ValidateStore(ctx sdk.Context, k Keeper) error {
 		k.IterateOutgoingTxBatches(ctx, func(key []byte, batch types.InternalOutgoingTxBatch) (stop bool) {
 			err = batch.ValidateBasic()
 			if err != nil {
-				g.Add(fmt.Errorf("Invalid outgoing batch %v under key %v in IterateOutgoingTxBatches: %v", batch, key, err))
+				g.Add(fmt.Errorf("invalid outgoing batch %v under key %v in IterateOutgoingTxBatches: %v", batch, key, err))
 				return true
 			}
 			return false
@@ -231,16 +275,9 @@ func ValidateStore(ctx sdk.Context, k Keeper) error {
 	k.IterateBatchConfirms(ctx, func(key []byte, confirm types.MsgConfirmBatch) (stop bool) {
 		err = confirm.ValidateBasic()
 		if err != nil {
-			err = fmt.Errorf("Invalid batch confirm %v under key %v in IterateBatchConfirms: %v", confirm, key, err)
+			err = fmt.Errorf("invalid batch confirm %v under key %v in IterateBatchConfirms: %v", confirm, key, err)
 			return true
 		}
-		return false
-	})
-	if err != nil {
-		return err
-	}
-	// LastEventNonceByValidatorKey (type checked when fetching)
-	err = k.IterateValidatorLastEventNonces(ctx, func(key []byte, nonce uint64) (stop bool) {
 		return false
 	})
 	if err != nil {
@@ -257,39 +294,6 @@ func ValidateStore(ctx sdk.Context, k Keeper) error {
 	_, err = k.getID(ctx, types.KeyLastOutgoingBatchID)
 	if err != nil {
 		return err
-	}
-	// LastObservedEthereumBlockHeightKey
-	lastEthHeight := k.GetLastObservedEthereumBlockHeight(ctx)
-	if lastEthHeight.EthereumBlockHeight < lastObservedEthereumClaimHeight {
-		err = fmt.Errorf(
-			"Stored last observed ethereum block height is less than the actual last observed height (%d < %d)",
-			lastEthHeight.EthereumBlockHeight,
-			lastObservedEthereumClaimHeight,
-		)
-	}
-	if err != nil {
-		return err
-	}
-	// DenomToERC20Key
-	allErc20ToDenoms, err := k.GetAllERC20ToDenoms(ctx)
-	if err != nil {
-		return err
-	}
-	for _, erc20 := range allErc20ToDenoms {
-		if err = erc20.ValidateBasic(); err != nil {
-			return fmt.Errorf("Discovered invalid erc20 %v for %s:%s: %v", erc20, erc20.GetChainReferenceId(), erc20.GetDenom(), err)
-		}
-	}
-
-	// ERC20ToDenomKey
-	allDenomToERC20s, err := k.GetAllDenomToERC20s(ctx)
-	if err != nil {
-		return err
-	}
-	for _, erc20 := range allDenomToERC20s {
-		if err = erc20.ValidateBasic(); err != nil {
-			return fmt.Errorf("Discovered invalid erc20 %v for %s:%s: %v", erc20, erc20.GetChainReferenceId(), erc20.GetDenom(), err)
-		}
 	}
 
 	// LastSlashedBatchBlock (type is checked when fetching)
@@ -311,7 +315,7 @@ func ValidateStore(ctx sdk.Context, k Keeper) error {
 	params := k.GetParams(ctx)
 	err = params.ValidateBasic()
 	if err != nil {
-		return fmt.Errorf("Discovered invalid params %v: %v", params, err)
+		return fmt.Errorf("discovered invalid params %v: %v", params, err)
 	}
 
 	return nil
@@ -352,22 +356,24 @@ func CheckBatches(ctx sdk.Context, k Keeper) error {
 	}
 
 	var g whoops.Group
-	g.Add(
-		k.IterateClaims(ctx, true, types.CLAIM_TYPE_BATCH_SEND_TO_ETH, func(key []byte, att types.Attestation, claim types.EthereumClaim) (stop bool) {
-			batchClaim := claim.(*types.MsgBatchSendToEthClaim)
-			// Executed (aka observed) batches should have strictly lesser batch nonces than the in progress batches for the same token contract
-			// note that batches for different tokens have the same nonce stream but don't invalidate each other (nonces should probably be separate per token type)
-			if att.Observed {
-				for _, val := range inProgressBatches {
-					if batchClaim.BatchNonce >= val.BatchNonce && batchClaim.TokenContract == val.TokenContract.GetAddress().String() {
-						g.Add(fmt.Errorf("in-progress batches have incorrect nonce, should be > %d", batchClaim.BatchNonce))
-						return true
+	for _, chain := range k.GetChainsWithTokens(ctx) {
+		g.Add(
+			k.IterateClaims(ctx, chain, true, types.CLAIM_TYPE_BATCH_SEND_TO_ETH, func(_ []byte, att types.Attestation, claim types.EthereumClaim) (stop bool) {
+				batchClaim := claim.(*types.MsgBatchSendToEthClaim)
+				// Executed (aka observed) batches should have strictly lesser batch nonces than the in progress batches for the same token contract
+				// note that batches for different tokens have the same nonce stream but don't invalidate each other (nonces should probably be separate per token type)
+				if att.Observed {
+					for _, val := range inProgressBatches {
+						if batchClaim.BatchNonce >= val.BatchNonce && batchClaim.TokenContract == val.TokenContract.GetAddress().String() {
+							g.Add(fmt.Errorf("in-progress batches have incorrect nonce, should be > %d", batchClaim.BatchNonce))
+							return true
+						}
 					}
 				}
-			}
-			return false
-		}),
-	)
+				return false
+			}),
+		)
+	}
 	if len(g) > 0 {
 		return g
 	}

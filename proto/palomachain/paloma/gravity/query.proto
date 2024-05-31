@@ -80,8 +80,13 @@ message QueryBatchConfirmsResponse {
   repeated MsgConfirmBatch confirms = 1 [ (gogoproto.nullable) = false ];
 }
 
-message QueryLastEventNonceRequest {}
-message QueryLastEventNonceByAddrRequest { string address = 1; }
+message QueryLastEventNonceRequest { 
+  string chain_reference_id = 1;
+}
+message QueryLastEventNonceByAddrRequest { 
+  string address = 1; 
+  string chain_reference_id = 2;
+}
 message QueryLastEventNonceResponse { uint64 event_nonce = 1; }
 
 message QueryERC20ToDenomRequest {
@@ -101,10 +106,10 @@ message QueryDenomToERC20Response { string erc20 = 1; }
 // actual Ethereum block height significantly due to 1. Ethereum Finality and
 //  2. Consensus mirroring the state on Ethereum
 message QueryLastObservedEthBlockRequest {
-  // indicates whether to search for store data using the old Gravity v1 key
-  // "LastObservedEthereumBlockHeightKey" Note that queries before the Mercury
-  // upgrade at height 1282013 must set this to true
-  bool use_v1_key = 1;
+  reserved 1;
+  reserved "use_v1_key";
+
+  string chain_reference_id = 2;
 }
 message QueryLastObservedEthBlockResponse {
   // a response of 0 indicates that no Ethereum events have been observed, and
@@ -117,10 +122,10 @@ message QueryLastObservedEthBlockResponse {
 // likely to lag the last executed event a little due to 1. Ethereum Finality
 // and 2. Consensus mirroring the Ethereum state
 message QueryLastObservedEthNonceRequest {
-  // indicates whether to search for store data using the old Gravity v1 key
-  // "LastObservedEventNonceKey" Note that queries before the Mercury upgrade at
-  // height 1282013 must set this to true
-  bool use_v1_key = 1;
+  reserved 1;
+  reserved "use_v1_key";
+
+  string chain_reference_id = 2;
 }
 message QueryLastObservedEthNonceResponse {
   // a response of 0 indicates that no Ethereum events have been observed, and
@@ -136,6 +141,9 @@ message QueryLastObservedEthNonceResponse {
 // height. Note, that an attestation will be returned if it matches ANY of the
 // filter query parameters provided.
 message QueryAttestationsRequest {
+  reserved 6;
+  reserved "use_v1_key";
+
   // limit defines how many attestations to limit in the response.
   uint64 limit = 1;
   // order_by provides ordering of atteststions by nonce in the response. Either
@@ -148,10 +156,8 @@ message QueryAttestationsRequest {
   uint64 nonce = 4;
   // height allows filtering attestations by Ethereum claim height.
   uint64 height = 5;
-  // indicates whether to search for store data using the old Gravity v1 key
-  // "OracleAttestationKey" Note that queries before the Mercury upgrade at
-  // height 1282013 must set this to true
-  bool use_v1_key = 6;
+  // reference id of remote chain for which to query.
+  string chain_reference_id = 7;
 }
 
 message QueryAttestationsResponse {

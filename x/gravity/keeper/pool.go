@@ -149,7 +149,7 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64
 // addUnbatchedTx creates a new transaction in the pool
 // WARNING: Do not make this function public
 func (k Keeper) addUnbatchedTX(ctx context.Context, val *types.InternalOutgoingTransferTx) error {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	idxKey := types.GetOutgoingTxPoolKey(*val.Erc20Token, val.Id)
 	if store.Has(idxKey) {
 		return sdkerrors.Wrap(types.ErrDuplicate, "transaction already in pool")
@@ -168,7 +168,7 @@ func (k Keeper) addUnbatchedTX(ctx context.Context, val *types.InternalOutgoingT
 // removeUnbatchedTX removes the tx from the pool
 // WARNING: Do not make this function public
 func (k Keeper) removeUnbatchedTX(ctx context.Context, token types.InternalERC20Token, txID uint64) error {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	idxKey := types.GetOutgoingTxPoolKey(token, txID)
 	if !store.Has(idxKey) {
 		return sdkerrors.Wrap(types.ErrUnknown, "pool transaction")
@@ -183,7 +183,7 @@ func (k Keeper) removeUnbatchedTX(ctx context.Context, token types.InternalERC20
 
 // GetUnbatchedTxByAmountAndId grabs a tx from the pool given its txID
 func (k Keeper) GetUnbatchedTxByAmountAndId(ctx context.Context, token types.InternalERC20Token, txID uint64) (*types.InternalOutgoingTransferTx, error) {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	bz := store.Get(types.GetOutgoingTxPoolKey(token, txID))
 	if bz == nil {
 		return nil, sdkerrors.Wrap(types.ErrUnknown, "pool transaction")
@@ -259,7 +259,7 @@ func (k Keeper) IterateUnbatchedTransactions(ctx context.Context, cb func(key []
 // filterAndIterateUnbatchedTransactions iterates through all unbatched transactions whose keys begin with prefixKey in DESC order
 // prefixKey should be either OutgoingTXPoolKey or some more granular key, passing the wrong key will cause an error
 func (k Keeper) filterAndIterateUnbatchedTransactions(ctx context.Context, prefixKey []byte, cb func(key []byte, tx *types.InternalOutgoingTransferTx) bool) error {
-	prefixStore := k.GetStore(ctx)
+	prefixStore := k.GetStore(ctx, types.StoreModulePrefix)
 	start, end, err := prefixRange(prefixKey)
 	if err != nil {
 		return err
@@ -297,7 +297,7 @@ func (k Keeper) autoIncrementID(ctx context.Context, idKey []byte) (uint64, erro
 
 // gets a generic uint64 counter from the store, initializing to 1 if no value exists
 func (k Keeper) getID(ctx context.Context, idKey []byte) (uint64, error) {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	bz := store.Get(idKey)
 	id, err := types.UInt64FromBytes(bz)
 	if err != nil {
@@ -308,7 +308,7 @@ func (k Keeper) getID(ctx context.Context, idKey []byte) (uint64, error) {
 
 // sets a generic uint64 counter in the store
 func (k Keeper) setID(ctx context.Context, id uint64, idKey []byte) {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	bz := sdk.Uint64ToBigEndian(id)
 	store.Set(idKey, bz)
 }

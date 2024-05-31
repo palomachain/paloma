@@ -42,7 +42,7 @@ func TestQueryGetAttestations(t *testing.T) {
 	}{
 		{
 			name:      "no params (all attestations ascending)",
-			req:       &types.QueryAttestationsRequest{},
+			req:       &types.QueryAttestationsRequest{ChainReferenceId: "test-chain"},
 			numResult: numAttestations,
 			nonces:    []uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
 			expectErr: false,
@@ -50,7 +50,8 @@ func TestQueryGetAttestations(t *testing.T) {
 		{
 			name: "all attestations descending",
 			req: &types.QueryAttestationsRequest{
-				OrderBy: "desc",
+				OrderBy:          "desc",
+				ChainReferenceId: "test-chain",
 			},
 			numResult: numAttestations,
 			nonces:    []uint64{10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
@@ -59,7 +60,8 @@ func TestQueryGetAttestations(t *testing.T) {
 		{
 			name: "all attestations descending",
 			req: &types.QueryAttestationsRequest{
-				OrderBy: "desc",
+				OrderBy:          "desc",
+				ChainReferenceId: "test-chain",
 			},
 			numResult: numAttestations,
 			nonces:    []uint64{10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
@@ -68,8 +70,9 @@ func TestQueryGetAttestations(t *testing.T) {
 		{
 			name: "filter by height and limit",
 			req: &types.QueryAttestationsRequest{
-				Height: 1,
-				Limit:  5,
+				Height:           1,
+				Limit:            5,
+				ChainReferenceId: "test-chain",
 			},
 			numResult: 5,
 			nonces:    []uint64{1, 2, 3, 4, 5},
@@ -78,8 +81,9 @@ func TestQueryGetAttestations(t *testing.T) {
 		{
 			name: "filter by nonce and limit",
 			req: &types.QueryAttestationsRequest{
-				Nonce: 7,
-				Limit: 5,
+				Nonce:            7,
+				Limit:            5,
+				ChainReferenceId: "test-chain",
 			},
 			numResult: 1,
 			nonces:    []uint64{7},
@@ -88,8 +92,9 @@ func TestQueryGetAttestations(t *testing.T) {
 		{
 			name: "filter by missing nonce",
 			req: &types.QueryAttestationsRequest{
-				Nonce: 100000,
-				Limit: 5,
+				Nonce:            100000,
+				Limit:            5,
+				ChainReferenceId: "test-chain",
 			},
 			numResult: 0,
 			nonces:    []uint64{},
@@ -98,8 +103,9 @@ func TestQueryGetAttestations(t *testing.T) {
 		{
 			name: "filter by invalid claim type",
 			req: &types.QueryAttestationsRequest{
-				ClaimType: "foo",
-				Limit:     5,
+				ClaimType:        "foo",
+				Limit:            5,
+				ChainReferenceId: "test-chain",
 			},
 			numResult: 0,
 			nonces:    []uint64{},
@@ -158,6 +164,6 @@ func createAttestations(t *testing.T, k keeper.Keeper, ctx context.Context, leng
 		hash, err := msg.ClaimHash()
 		require.NoError(t, err)
 
-		k.SetAttestation(ctx, nonce, hash, att)
+		k.SetAttestation(ctx, "test-chain", nonce, hash, att)
 	}
 }

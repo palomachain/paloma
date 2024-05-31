@@ -28,7 +28,7 @@ func applyFlags(cmd *cobra.Command) {
 	flags.AddTxFlagsToCmd(cmd)
 
 	cmd.Flags().String(cli.FlagTitle, "", "title of proposal")
-	cmd.Flags().String(cli.FlagDescription, "", "description of proposal")
+	cmd.Flags().String(cli.FlagSummary, "", "description of proposal")
 	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
 }
 
@@ -55,7 +55,7 @@ func CmdSetErc20ToDenom() *cobra.Command {
 
 				setERC20ToDenomProposal := &types.SetERC20ToDenomProposal{
 					Title:            whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					ChainReferenceId: chainReferenceID,
 					Erc20:            erc20,
 					Denom:            denom,

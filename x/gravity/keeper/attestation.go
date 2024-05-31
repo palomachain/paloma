@@ -46,7 +46,7 @@ func (k Keeper) Attest(
 	// and prevents validators from submitting two claims with the same nonce.
 	// This prevents there being two attestations with the same nonce that get 2/3s of the votes
 	// in the endBlocker.
-	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, valAddress)
+	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, valAddress, claim.GetChainReferenceId())
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (k Keeper) Attest(
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "unable to compute claim hash")
 	}
-	att := k.GetAttestation(ctx, claim.GetEventNonce(), hash)
+	att := k.GetAttestation(ctx, claim.GetChainReferenceId(), claim.GetEventNonce(), hash)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// If it does not exist, create a new one.
 	if att == nil {
@@ -81,8 +81,8 @@ func (k Keeper) Attest(
 		// Add the validator's vote to this attestation // TODO : Only do if it's not already there
 		att.Votes = append(att.Votes, valAddr)
 
-		k.SetAttestation(ctx, claim.GetEventNonce(), hash, att)
-		err = k.SetLastEventNonceByValidator(ctx, valAddress, claim.GetEventNonce())
+		k.SetAttestation(ctx, claim.GetChainReferenceId(), claim.GetEventNonce(), hash, att)
+		err = k.SetLastEventNonceByValidator(ctx, valAddress, claim.GetChainReferenceId(), claim.GetEventNonce())
 		if err != nil {
 			return nil, err
 		}
@@ -131,7 +131,7 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 			// If the power of all the validators that have voted on the attestation is higher or equal to the threshold,
 			// process the attestation, set Observed to true, and break
 			if attestationPower.GT(requiredPower) {
-				lastEventNonce, err := k.GetLastObservedEventNonce(ctx)
+				lastEventNonce, err := k.GetLastObservedEventNonce(ctx, claim.GetChainReferenceId())
 				if err != nil {
 					return err
 				}
@@ -140,18 +140,18 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 					return fmt.Errorf("attempting to apply events to state out of order")
 				}
 
-				err = k.setLastObservedEventNonce(ctx, claim.GetEventNonce())
+				err = k.setLastObservedEventNonce(ctx, claim.GetChainReferenceId(), claim.GetEventNonce())
 				if err != nil {
 					return err
 				}
 
-				err = k.SetLastObservedEthereumBlockHeight(ctx, claim.GetEthBlockHeight())
+				err = k.SetLastObservedEthereumBlockHeight(ctx, claim.GetChainReferenceId(), claim.GetEthBlockHeight())
 				if err != nil {
 					return err
 				}
 
 				att.Observed = true
-				k.SetAttestation(ctx, claim.GetEventNonce(), hash, att)
+				k.SetAttestation(ctx, claim.GetChainReferenceId(), claim.GetEventNonce(), hash, att)
 
 				err = k.processAttestation(ctx, att, claim)
 				if err != nil {
@@ -221,15 +221,15 @@ func (k Keeper) emitObservedEvent(ctx context.Context, att *types.Attestation, c
 }
 
 // SetAttestation sets the attestation in the store
-func (k Keeper) SetAttestation(ctx context.Context, eventNonce uint64, claimHash []byte, att *types.Attestation) {
-	store := k.GetStore(ctx)
+func (k Keeper) SetAttestation(ctx context.Context, chainReferenceID string, eventNonce uint64, claimHash []byte, att *types.Attestation) {
+	store := k.GetStore(ctx, chainReferenceID)
 	aKey := types.GetAttestationKey(eventNonce, claimHash)
 	store.Set(aKey, k.cdc.MustMarshal(att))
 }
 
 // GetAttestation return an attestation given a nonce
-func (k Keeper) GetAttestation(ctx context.Context, eventNonce uint64, claimHash []byte) *types.Attestation {
-	store := k.GetStore(ctx)
+func (k Keeper) GetAttestation(ctx context.Context, chainReferenceID string, eventNonce uint64, claimHash []byte) *types.Attestation {
+	store := k.GetStore(ctx, chainReferenceID)
 	aKey := types.GetAttestationKey(eventNonce, claimHash)
 	bz := store.Get(aKey)
 	if len(bz) == 0 {
@@ -241,7 +241,7 @@ func (k Keeper) GetAttestation(ctx context.Context, eventNonce uint64, claimHash
 }
 
 // DeleteAttestation deletes the given attestation
-func (k Keeper) DeleteAttestation(ctx context.Context, att types.Attestation) error {
+func (k Keeper) DeleteAttestation(ctx context.Context, chainReferenceID string, att types.Attestation) error {
 	claim, err := k.UnpackAttestationClaim(&att)
 	if err != nil {
 		return fmt.Errorf("bad attestation in DeleteAttestation")
@@ -250,7 +250,7 @@ func (k Keeper) DeleteAttestation(ctx context.Context, att types.Attestation) er
 	if err != nil {
 		return sdkerrors.Wrap(err, "unable to compute claim hash")
 	}
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, chainReferenceID)
 
 	store.Delete(types.GetAttestationKey(claim.GetEventNonce(), hash))
 	return nil
@@ -260,11 +260,11 @@ func (k Keeper) DeleteAttestation(ctx context.Context, att types.Attestation) er
 // it also returns a pre-sorted array of the keys, this assists callers of this function
 // by providing a deterministic iteration order. You should always iterate over ordered keys
 // if you are iterating this map at all.
-func (k Keeper) GetAttestationMapping(ctx context.Context) (attestationMapping map[uint64][]types.Attestation, orderedKeys []uint64, err error) {
+func (k Keeper) GetAttestationMapping(ctx context.Context, chainReferenceID string) (attestationMapping map[uint64][]types.Attestation, orderedKeys []uint64, err error) {
 	attestationMapping = make(map[uint64][]types.Attestation)
 	var g whoops.Group
 	g.Add(
-		k.IterateAttestations(ctx, false, func(_ []byte, att types.Attestation) bool {
+		k.IterateAttestations(ctx, chainReferenceID, false, func(_ []byte, att types.Attestation) bool {
 			claim, err := k.UnpackAttestationClaim(&att)
 			if err != nil {
 				g.Add(err)
@@ -294,8 +294,8 @@ func (k Keeper) GetAttestationMapping(ctx context.Context) (attestationMapping m
 // IterateAttestations iterates through all attestations executing a given callback on each discovered attestation
 // If reverse is true, attestations will be returned in descending order by key (aka by event nonce and then claim hash)
 // cb should return true to stop iteration, false to continue
-func (k Keeper) IterateAttestations(ctx context.Context, reverse bool, cb func(key []byte, att types.Attestation) (stop bool)) error {
-	store := k.GetStore(ctx)
+func (k Keeper) IterateAttestations(ctx context.Context, chainReferenceID string, reverse bool, cb func(key []byte, att types.Attestation) (stop bool)) error {
+	store := k.GetStore(ctx, chainReferenceID)
 	keyPrefix := types.OracleAttestationKey
 	start, end, err := prefixRange(keyPrefix)
 	if err != nil {
@@ -340,12 +340,12 @@ func (k Keeper) IterateAttestations(ctx context.Context, reverse bool, cb func(k
 // IterateClaims iterates through all attestations, filtering them for claims of a given type
 // If reverse is true, attestations will be returned in descending order by key (aka by event nonce and then claim hash)
 // cb should return true to stop iteration, false to continue
-func (k Keeper) IterateClaims(ctx context.Context, reverse bool, claimType types.ClaimType, cb func(key []byte, att types.Attestation, claim types.EthereumClaim) (stop bool)) error {
+func (k Keeper) IterateClaims(ctx context.Context, chainReferenceID string, reverse bool, claimType types.ClaimType, cb func(key []byte, att types.Attestation, claim types.EthereumClaim) (stop bool)) error {
 	typeUrl := types.ClaimTypeToTypeUrl(claimType) // Used to avoid unpacking undesired attestations
 
 	var g whoops.Group
 	g.Add(
-		k.IterateAttestations(ctx, reverse, func(key []byte, att types.Attestation) bool {
+		k.IterateAttestations(ctx, chainReferenceID, reverse, func(key []byte, att types.Attestation) bool {
 			if att.Claim.TypeUrl == typeUrl {
 				claim, err := k.UnpackAttestationClaim(&att)
 				if err != nil {
@@ -367,8 +367,8 @@ func (k Keeper) IterateClaims(ctx context.Context, reverse bool, claimType types
 // GetMostRecentAttestations returns sorted (by nonce) attestations up to a provided limit number of attestations
 // Note: calls GetAttestationMapping in the hopes that there are potentially many attestations
 // which are distributed between few nonces to minimize sorting time
-func (k Keeper) GetMostRecentAttestations(ctx context.Context, limit uint64) ([]types.Attestation, error) {
-	attestationMapping, keys, err := k.GetAttestationMapping(ctx)
+func (k Keeper) GetMostRecentAttestations(ctx context.Context, chainReferenceID string, limit uint64) ([]types.Attestation, error) {
+	attestationMapping, keys, err := k.GetAttestationMapping(ctx, chainReferenceID)
 	if err != nil {
 		return nil, err
 	}
@@ -393,8 +393,8 @@ func (k Keeper) GetMostRecentAttestations(ctx context.Context, limit uint64) ([]
 }
 
 // GetLastObservedEventNonce returns the latest observed event nonce
-func (k Keeper) GetLastObservedEventNonce(ctx context.Context) (uint64, error) {
-	store := k.GetStore(ctx)
+func (k Keeper) GetLastObservedEventNonce(ctx context.Context, chainReferenceID string) (uint64, error) {
+	store := k.GetStore(ctx, chainReferenceID)
 	bytes := store.Get(types.LastObservedEventNonceKey)
 
 	if len(bytes) == 0 {
@@ -409,8 +409,8 @@ func (k Keeper) GetLastObservedEventNonce(ctx context.Context) (uint64, error) {
 
 // GetLastObservedEthereumBlockHeight height gets the block height to of the last observed attestation from
 // the store
-func (k Keeper) GetLastObservedEthereumBlockHeight(ctx context.Context) types.LastObservedEthereumBlockHeight {
-	store := k.GetStore(ctx)
+func (k Keeper) GetLastObservedEthereumBlockHeight(ctx context.Context, chainReferenceID string) types.LastObservedEthereumBlockHeight {
+	store := k.GetStore(ctx, chainReferenceID)
 	bytes := store.Get(types.LastObservedEthereumBlockHeightKey)
 
 	if len(bytes) == 0 {
@@ -428,9 +428,9 @@ func (k Keeper) GetLastObservedEthereumBlockHeight(ctx context.Context) types.La
 }
 
 // SetLastObservedEthereumBlockHeight sets the block height in the store.
-func (k Keeper) SetLastObservedEthereumBlockHeight(ctx context.Context, ethereumHeight uint64) error {
-	store := k.GetStore(ctx)
-	previous := k.GetLastObservedEthereumBlockHeight(ctx)
+func (k Keeper) SetLastObservedEthereumBlockHeight(ctx context.Context, chainReferenceID string, ethereumHeight uint64) error {
+	store := k.GetStore(ctx, chainReferenceID)
+	previous := k.GetLastObservedEthereumBlockHeight(ctx, chainReferenceID)
 	if previous.EthereumBlockHeight > ethereumHeight {
 		return fmt.Errorf("attempt to roll back Ethereum block height")
 	}
@@ -444,9 +444,9 @@ func (k Keeper) SetLastObservedEthereumBlockHeight(ctx context.Context, ethereum
 }
 
 // setLastObservedEventNonce sets the latest observed event nonce
-func (k Keeper) setLastObservedEventNonce(ctx context.Context, nonce uint64) error {
-	store := k.GetStore(ctx)
-	last, err := k.GetLastObservedEventNonce(ctx)
+func (k Keeper) setLastObservedEventNonce(ctx context.Context, chainReferenceID string, nonce uint64) error {
+	store := k.GetStore(ctx, chainReferenceID)
+	last, err := k.GetLastObservedEventNonce(ctx, chainReferenceID)
 	if err != nil {
 		return err
 	}
@@ -461,23 +461,23 @@ func (k Keeper) setLastObservedEventNonce(ctx context.Context, nonce uint64) err
 }
 
 // GetLastEventNonceByValidator returns the latest event nonce for a given validator
-func (k Keeper) GetLastEventNonceByValidator(ctx context.Context, validator sdk.ValAddress) (uint64, error) {
+func (k Keeper) GetLastEventNonceByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceID string) (uint64, error) {
 	if err := sdk.VerifyAddressFormat(validator); err != nil {
 		return 0, sdkerrors.Wrap(err, "invalid validator address")
 	}
-	store := k.GetStore(ctx)
-	lastEventNonceByValidator, err := types.GetLastEventNonceByValidatorKey(validator)
+	store := k.GetStore(ctx, chainReferenceID)
+	key, err := types.GetLastEventNonceByValidatorKey(validator)
 	if err != nil {
 		return 0, err
 	}
-	bytes := store.Get(lastEventNonceByValidator)
+	bytes := store.Get(key)
 
 	if len(bytes) == 0 {
 		// in the case that we have no existing value this is the first
 		// time a validator is submitting a claim. Since we don't want to force
 		// them to replay the entire history of all events ever we can't start
 		// at zero
-		lastEventNonce, err := k.GetLastObservedEventNonce(ctx)
+		lastEventNonce, err := k.GetLastObservedEventNonce(ctx, chainReferenceID)
 		if err != nil {
 			return 0, err
 		}
@@ -491,22 +491,22 @@ func (k Keeper) GetLastEventNonceByValidator(ctx context.Context, validator sdk.
 }
 
 // SetLastEventNonceByValidator sets the latest event nonce for a give validator
-func (k Keeper) SetLastEventNonceByValidator(ctx context.Context, validator sdk.ValAddress, nonce uint64) error {
+func (k Keeper) SetLastEventNonceByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceID string, nonce uint64) error {
 	if err := sdk.VerifyAddressFormat(validator); err != nil {
 		return sdkerrors.Wrap(err, "invalid validator address")
 	}
-	store := k.GetStore(ctx)
-	lastEventNoneByValidator, err := types.GetLastEventNonceByValidatorKey(validator)
+	store := k.GetStore(ctx, chainReferenceID)
+	key, err := types.GetLastEventNonceByValidatorKey(validator)
 	if err != nil {
 		return err
 	}
-	store.Set(lastEventNoneByValidator, types.UInt64Bytes(nonce))
+	store.Set(key, types.UInt64Bytes(nonce))
 	return nil
 }
 
 // IterateValidatorLastEventNonces iterates through all batch confirmations
-func (k Keeper) IterateValidatorLastEventNonces(ctx context.Context, cb func(key []byte, nonce uint64) (stop bool)) error {
-	store := k.GetStore(ctx)
+func (k Keeper) IterateValidatorLastEventNonces(ctx context.Context, chainReferenceID string, cb func(key []byte, nonce uint64) (stop bool)) error {
+	store := k.GetStore(ctx, chainReferenceID)
 	prefixStore := prefix.NewStore(store, types.LastEventNonceByValidatorKey)
 	iter := prefixStore.Iterator(nil, nil)
 
