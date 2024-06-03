@@ -5,30 +5,41 @@ import (
 
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	log "github.com/sirupsen/logrus"
 )
 
 // EndBlocker is called at the end of every block
 func EndBlocker(ctx context.Context, k keeper.Keeper) {
+	defer func() {
+		if r := recover(); r != nil {
+			liblog.FromSDKLogger(k.Logger(ctx)).
+				WithFields("original-error", r).
+				Warn("Recovered panic.")
+		}
+	}()
 	// slashing(ctx, k)
+	chains := k.GetChainsWithTokens(ctx)
 
 	err := createBatch(ctx, k)
 	if err != nil {
 		log.Error(err)
 	}
 
-	err = attestationTally(ctx, k)
-	if err != nil {
-		log.Error(err)
+	for _, v := range chains {
+		err = attestationTally(ctx, k, v)
+		if err != nil {
+			log.Error(err)
+		}
+
+		err = pruneAttestations(ctx, k, v)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	err = cleanupTimedOutBatches(ctx, k)
-	if err != nil {
-		log.Error(err)
-	}
-
-	err = pruneAttestations(ctx, k)
 	if err != nil {
 		log.Error(err)
 	}
@@ -60,8 +71,8 @@ func createBatch(ctx context.Context, k keeper.Keeper) error {
 // Iterate over all attestations currently being voted on in order of nonce and
 // "Observe" those who have passed the threshold. Break the loop once we see
 // an attestation that has not passed the threshold
-func attestationTally(ctx context.Context, k keeper.Keeper) error {
-	attmap, keys, err := k.GetAttestationMapping(ctx)
+func attestationTally(ctx context.Context, k keeper.Keeper, chainReferenceID string) error {
+	attmap, keys, err := k.GetAttestationMapping(ctx, chainReferenceID)
 	if err != nil {
 		return err
 	}
@@ -90,7 +101,7 @@ func attestationTally(ctx context.Context, k keeper.Keeper) error {
 			// we skip the other attestations and move on to the next nonce again.
 			// If no attestation becomes observed, when we get to the next nonce, every attestation in
 			// it will be skipped. The same will happen for every nonce after that.
-			lastEventNonce, err := k.GetLastObservedEventNonce(ctx)
+			lastEventNonce, err := k.GetLastObservedEventNonce(ctx, chainReferenceID)
 			if err != nil {
 				return err
 			}
@@ -130,8 +141,8 @@ func cleanupTimedOutBatches(ctx context.Context, k keeper.Keeper) error {
 // use. This could be combined with create attestation and save some computation
 // but (A) pruning keeps the iteration small in the first place and (B) there is
 // already enough nuance in the other handler that it's best not to complicate it further
-func pruneAttestations(ctx context.Context, k keeper.Keeper) error {
-	attmap, keys, err := k.GetAttestationMapping(ctx)
+func pruneAttestations(ctx context.Context, k keeper.Keeper, chainReferenceID string) error {
+	attmap, keys, err := k.GetAttestationMapping(ctx, chainReferenceID)
 	if err != nil {
 		return err
 	}
@@ -140,7 +151,7 @@ func pruneAttestations(ctx context.Context, k keeper.Keeper) error {
 	// minus some buffer value. This buffer value is purely to allow
 	// frontends and other UI components to view recent oracle history
 	const eventsToKeep = 1000
-	lastNonce, err := k.GetLastObservedEventNonce(ctx)
+	lastNonce, err := k.GetLastObservedEventNonce(ctx, chainReferenceID)
 	if err != nil {
 		return err
 	}
@@ -162,7 +173,7 @@ func pruneAttestations(ctx context.Context, k keeper.Keeper) error {
 		for _, att := range attmap[nonce] {
 			// delete all before the cutoff
 			if nonce < cutoff {
-				err := k.DeleteAttestation(ctx, att)
+				err := k.DeleteAttestation(ctx, chainReferenceID, att)
 				if err != nil {
 					return err
 				}

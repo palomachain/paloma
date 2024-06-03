@@ -37,17 +37,19 @@ func initBridgeDataFromGenesis(ctx context.Context, k Keeper, data types.Genesis
 func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 	k.SetParams(ctx, *data.Params)
 
-	// restore various nonces, this MUST match GravityNonces in genesis
-	err := k.setLastObservedEventNonce(ctx, data.GravityNonces.LastObservedNonce)
-	if err != nil {
-		panic(err)
+	for _, nonce := range data.GravityNonces {
+		// restore various nonces, this MUST match GravityNonces in genesis
+		err := k.setLastObservedEventNonce(ctx, nonce.ChainReferenceId, nonce.LastObservedNonce)
+		if err != nil {
+			panic(err)
+		}
+		err = k.SetLastSlashedBatchBlock(ctx, nonce.LastSlashedBatchBlock)
+		if err != nil {
+			panic(err)
+		}
+		k.setID(ctx, nonce.LastTxPoolId, []byte(types.KeyLastTXPoolID))
+		k.setID(ctx, nonce.LastBatchId, []byte(types.KeyLastOutgoingBatchID))
 	}
-	err = k.SetLastSlashedBatchBlock(ctx, data.GravityNonces.LastSlashedBatchBlock)
-	if err != nil {
-		panic(err)
-	}
-	k.setID(ctx, data.GravityNonces.LastTxPoolId, []byte(types.KeyLastTXPoolID))
-	k.setID(ctx, data.GravityNonces.LastBatchId, []byte(types.KeyLastOutgoingBatchID))
 
 	initBridgeDataFromGenesis(ctx, k, data)
 
@@ -75,7 +77,7 @@ func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 		if err != nil {
 			panic(fmt.Errorf("error when computing ClaimHash for %v", hash))
 		}
-		k.SetAttestation(ctx, claim.GetEventNonce(), hash, &att)
+		k.SetAttestation(ctx, claim.GetChainReferenceId(), claim.GetEventNonce(), hash, &att)
 	}
 
 	// reset attestation state of specific validators
@@ -102,12 +104,12 @@ func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 			if err != nil {
 				panic(err)
 			}
-			last, err := k.GetLastEventNonceByValidator(ctx, val)
+			last, err := k.GetLastEventNonceByValidator(ctx, val, claim.GetChainReferenceId())
 			if err != nil {
 				panic(err)
 			}
 			if claim.GetEventNonce() > last {
-				err = k.SetLastEventNonceByValidator(ctx, val, claim.GetEventNonce())
+				err = k.SetLastEventNonceByValidator(ctx, val, claim.GetChainReferenceId(), claim.GetEventNonce())
 				if err != nil {
 					panic(err)
 				}
@@ -141,7 +143,7 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		panic(err)
 	}
 
-	attmap, attKeys, err := k.GetAttestationMapping(ctx)
+	denoms, err := k.GetAllERC20ToDenoms(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -151,45 +153,8 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		batchconfs    = []types.MsgConfirmBatch{}
 		attestations  = []types.Attestation{}
 		erc20ToDenoms = []types.ERC20ToDenom{}
+		nonces        = []types.GravityNonces{}
 	)
-
-	// export batch confirmations from state
-	extBatches := make([]types.OutgoingTxBatch, len(batches))
-	for i, batch := range batches {
-		// TODO: set height = 0?
-		batchConfirms, err := k.GetBatchConfirmByNonceAndTokenContract(ctx, batch.BatchNonce, batch.TokenContract)
-		if err != nil {
-			panic(err)
-		}
-		batchconfs = append(batchconfs,
-			batchConfirms...)
-		extBatches[i] = batch.ToExternal()
-	}
-
-	// export attestations from state
-	for _, key := range attKeys {
-		// TODO: set height = 0?
-		attestations = append(attestations, attmap[key]...)
-	}
-
-	// export erc20 to denom relations
-	allDenomToERC20s, err := k.GetAllDenomToERC20s(ctx)
-	if err != nil {
-		panic(err)
-	}
-	for _, erc20ToDenom := range allDenomToERC20s {
-		erc20ToDenoms = append(erc20ToDenoms, *erc20ToDenom)
-	}
-
-	unbatchedTxs := make([]types.OutgoingTransferTx, len(unbatchedTransfers))
-	for i, v := range unbatchedTransfers {
-		unbatchedTxs[i] = v.ToExternal()
-	}
-
-	lastObservedNonce, err := k.GetLastObservedEventNonce(ctx)
-	if err != nil {
-		panic(err)
-	}
 
 	lastSlashedBlock, err := k.GetLastSlashedBatchBlock(ctx)
 	if err != nil {
@@ -206,14 +171,55 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		panic(err)
 	}
 
-	return types.GenesisState{
-		Params: &p,
-		GravityNonces: types.GravityNonces{
+	for _, chain := range k.GetChainsWithTokens(ctx) {
+		lastObservedNonce, err := k.GetLastObservedEventNonce(ctx, chain)
+		if err != nil {
+			panic(err)
+		}
+		nonces = append(nonces, types.GravityNonces{
 			LastObservedNonce:     lastObservedNonce,
 			LastSlashedBatchBlock: lastSlashedBlock,
 			LastTxPoolId:          lastTxPoolId,
 			LastBatchId:           lastBatchId,
-		},
+		})
+
+		attmap, attKeys, err := k.GetAttestationMapping(ctx, chain)
+		if err != nil {
+			panic(err)
+		}
+		// export attestations from state
+		for _, key := range attKeys {
+			// TODO: set height = 0?
+			attestations = append(attestations, attmap[key]...)
+		}
+	}
+
+	// export batch confirmations from state
+	extBatches := make([]types.OutgoingTxBatch, len(batches))
+	for i, batch := range batches {
+		// TODO: set height = 0?
+		batchConfirms, err := k.GetBatchConfirmByNonceAndTokenContract(ctx, batch.BatchNonce, batch.TokenContract)
+		if err != nil {
+			panic(err)
+		}
+		batchconfs = append(batchconfs,
+			batchConfirms...)
+		extBatches[i] = batch.ToExternal()
+	}
+
+	// export erc20 to denom relations
+	for _, erc20ToDenom := range denoms {
+		erc20ToDenoms = append(erc20ToDenoms, *erc20ToDenom)
+	}
+
+	unbatchedTxs := make([]types.OutgoingTransferTx, len(unbatchedTransfers))
+	for i, v := range unbatchedTransfers {
+		unbatchedTxs[i] = v.ToExternal()
+	}
+
+	return types.GenesisState{
+		Params:             &p,
+		GravityNonces:      nonces,
 		Batches:            extBatches,
 		BatchConfirms:      batchconfs,
 		Attestations:       attestations,

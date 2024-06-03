@@ -128,6 +128,8 @@ type EthereumClaim interface {
 	ClaimHash() ([]byte, error)
 	// Sets the orchestrator value on the claim
 	SetOrchestrator(sdk.AccAddress)
+	// Returns the reference ID of the remote chain on which this claim was observed.
+	GetChainReferenceId() string
 }
 
 // nolint: exhaustruct

@@ -14,7 +14,7 @@ option go_package = "github.com/palomachain/paloma/x/gravity/types";
 // module
 message GenesisState {
   Params params = 1;
-  GravityNonces gravity_nonces = 2 [ (gogoproto.nullable) = false ];
+  repeated GravityNonces gravity_nonces = 2 [ (gogoproto.nullable) = false ];
   repeated OutgoingTxBatch batches = 3 [ (gogoproto.nullable) = false ];
   repeated MsgConfirmBatch batch_confirms = 4 [ (gogoproto.nullable) = false ];
   repeated Attestation attestations = 7 [ (gogoproto.nullable) = false ];
@@ -38,4 +38,6 @@ message GravityNonces {
   // the last batch id from the Gravity batch pool, this prevents ID duplication
   // during chain upgrades
   uint64 last_batch_id = 4;
+  // the reference id of the remote chain this data applies to.
+  string chain_reference_id = 5;
 }

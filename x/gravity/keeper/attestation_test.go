@@ -18,18 +18,24 @@ func TestGetAndDeleteAttestation(t *testing.T) {
 	k := input.GravityKeeper
 	ctx := input.Context
 	sdkCtx := sdktypes.UnwrapSDKContext(ctx)
+	chainReferenceID := "test-chain"
 
 	length := 10
-	_, _, hashes := createAttestations(t, length, k, sdkCtx)
+	_, _, hashes := createAttestations(t, chainReferenceID, length, k, sdkCtx)
 
 	// Get created attestations
 	for i := 0; i < length; i++ {
 		nonce := uint64(1 + i)
-		att := k.GetAttestation(ctx, nonce, hashes[i])
+		att := k.GetAttestation(ctx, chainReferenceID, nonce, hashes[i])
 		require.NotNil(t, att)
+		att = k.GetAttestation(ctx, "fake-chain", nonce, hashes[i])
+		require.Nil(t, att)
 	}
 
-	recentAttestations, err := k.GetMostRecentAttestations(ctx, uint64(length))
+	recentAttestations, err := k.GetMostRecentAttestations(ctx, "wrong-chain", uint64(length))
+	require.NoError(t, err)
+	require.Empty(t, recentAttestations)
+	recentAttestations, err = k.GetMostRecentAttestations(ctx, chainReferenceID, uint64(length))
 	require.NoError(t, err)
 	require.True(t, len(recentAttestations) == length)
 
@@ -37,26 +43,26 @@ func TestGetAndDeleteAttestation(t *testing.T) {
 	var nilAtt *types.Attestation
 	for i := 7; i < length; i++ {
 		nonce := uint64(1 + i)
-		att := k.GetAttestation(ctx, nonce, hashes[i])
-		err = k.DeleteAttestation(ctx, *att)
+		att := k.GetAttestation(ctx, chainReferenceID, nonce, hashes[i])
+		err = k.DeleteAttestation(ctx, chainReferenceID, *att)
 		require.NoError(t, err)
 
-		att = k.GetAttestation(ctx, nonce, hashes[i])
+		att = k.GetAttestation(ctx, chainReferenceID, nonce, hashes[i])
 		require.Equal(t, nilAtt, att)
 	}
-	recentAttestations, err = k.GetMostRecentAttestations(ctx, uint64(10))
+	recentAttestations, err = k.GetMostRecentAttestations(ctx, chainReferenceID, uint64(10))
 	require.NoError(t, err)
 	require.True(t, len(recentAttestations) == 7)
 
 	// Check all attestations again
 	for i := 0; i < 7; i++ {
 		nonce := uint64(1 + i)
-		att := k.GetAttestation(ctx, nonce, hashes[i])
+		att := k.GetAttestation(ctx, chainReferenceID, nonce, hashes[i])
 		require.NotNil(t, att)
 	}
 	for i := 7; i < length; i++ {
 		nonce := uint64(1 + i)
-		att := k.GetAttestation(ctx, nonce, hashes[i])
+		att := k.GetAttestation(ctx, chainReferenceID, nonce, hashes[i])
 		require.Equal(t, nilAtt, att)
 	}
 }
@@ -72,11 +78,12 @@ func TestGetMostRecentAttestations(t *testing.T) {
 
 	k := input.GravityKeeper
 	ctx := input.Context
+	chainReferenceID := "test-chain"
 
 	length := 10
-	msgs, anys, _ := createAttestations(t, length, k, sdktypes.UnwrapSDKContext(ctx))
+	msgs, anys, _ := createAttestations(t, chainReferenceID, length, k, sdktypes.UnwrapSDKContext(ctx))
 
-	recentAttestations, err := k.GetMostRecentAttestations(ctx, uint64(length))
+	recentAttestations, err := k.GetMostRecentAttestations(ctx, chainReferenceID, uint64(length))
 	require.NoError(t, err)
 	require.True(t, len(recentAttestations) == length,
 		"recentAttestations should have len %v but instead has %v", length, len(recentAttestations))
@@ -86,7 +93,7 @@ func TestGetMostRecentAttestations(t *testing.T) {
 	}
 }
 
-func createAttestations(t *testing.T, length int, k Keeper, ctx sdktypes.Context) ([]types.MsgSendToPalomaClaim, []codectypes.Any, [][]byte) {
+func createAttestations(t *testing.T, chainReferenceID string, length int, k Keeper, ctx sdktypes.Context) ([]types.MsgSendToPalomaClaim, []codectypes.Any, [][]byte) {
 	msgs := make([]types.MsgSendToPalomaClaim, 0, length)
 	anys := make([]codectypes.Any, 0, length)
 	hashes := make([][]byte, 0, length)
@@ -128,7 +135,7 @@ func createAttestations(t *testing.T, length int, k Keeper, ctx sdktypes.Context
 		hash, err := msg.ClaimHash()
 		hashes = append(hashes, hash)
 		require.NoError(t, err)
-		k.SetAttestation(ctx, nonce, hash, att)
+		k.SetAttestation(ctx, chainReferenceID, nonce, hash, att)
 	}
 
 	return msgs, anys, hashes
@@ -138,13 +145,14 @@ func TestGetSetLastObservedEthereumBlockHeight(t *testing.T) {
 	input := CreateTestEnv(t)
 	k := input.GravityKeeper
 	ctx := input.Context
+	chainReferenceID := "test-chain"
 
 	ethereumHeight := uint64(7654321)
 
-	err := k.SetLastObservedEthereumBlockHeight(ctx, ethereumHeight)
+	err := k.SetLastObservedEthereumBlockHeight(ctx, chainReferenceID, ethereumHeight)
 	require.NoError(t, err)
 
-	ethHeight := k.GetLastObservedEthereumBlockHeight(ctx)
+	ethHeight := k.GetLastObservedEthereumBlockHeight(ctx, chainReferenceID)
 	require.Equal(t, uint64(sdktypes.UnwrapSDKContext(ctx).BlockHeight()), ethHeight.PalomaBlockHeight)
 	require.Equal(t, ethereumHeight, ethHeight.EthereumBlockHeight)
 }
@@ -152,6 +160,7 @@ func TestGetSetLastObservedEthereumBlockHeight(t *testing.T) {
 func TestGetSetLastEventNonceByValidator(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
 	k := input.GravityKeeper
+	chainReferenceID := "test-chain"
 
 	valAddrString := "paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk"
 	valAccAddress, err := sdktypes.AccAddressFromBech32(valAddrString)
@@ -163,17 +172,17 @@ func TestGetSetLastEventNonceByValidator(t *testing.T) {
 	addrInBytes := valAccount.GetAddress().Bytes()
 
 	// In case this is first time validator is submiting claim, nonce is expected to be LastObservedNonce-1
-	err = k.setLastObservedEventNonce(ctx, nonce)
+	err = k.setLastObservedEventNonce(ctx, chainReferenceID, nonce)
 	require.NoError(t, err)
-	getEventNonce, err := k.GetLastEventNonceByValidator(ctx, addrInBytes)
+	getEventNonce, err := k.GetLastEventNonceByValidator(ctx, addrInBytes, chainReferenceID)
 	require.NoError(t, err)
 
 	require.Equal(t, nonce-1, getEventNonce)
 
-	err = k.SetLastEventNonceByValidator(ctx, addrInBytes, nonce)
+	err = k.SetLastEventNonceByValidator(ctx, addrInBytes, chainReferenceID, nonce)
 	require.NoError(t, err)
 
-	getEventNonce, err = k.GetLastEventNonceByValidator(ctx, addrInBytes)
+	getEventNonce, err = k.GetLastEventNonceByValidator(ctx, addrInBytes, chainReferenceID)
 	require.NoError(t, err)
 	require.Equal(t, nonce, getEventNonce)
 }
@@ -181,6 +190,7 @@ func TestGetSetLastEventNonceByValidator(t *testing.T) {
 func TestInvalidHeight(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
 	sdkCtx := sdktypes.UnwrapSDKContext(ctx)
+	chainReferenceID := "test-chain"
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 	pk := input.GravityKeeper
 	msgServer := NewMsgServerImpl(pk)
@@ -190,10 +200,10 @@ func TestInvalidHeight(t *testing.T) {
 	sender := AccAddrs[0]
 	receiver := EthAddrs[0]
 
-	lastNonce, err := pk.GetLastObservedEventNonce(ctx)
+	lastNonce, err := pk.GetLastObservedEventNonce(ctx, chainReferenceID)
 	require.NoError(t, err)
 
-	lastEthHeight := pk.GetLastObservedEthereumBlockHeight(ctx).EthereumBlockHeight
+	lastEthHeight := pk.GetLastObservedEthereumBlockHeight(ctx, chainReferenceID).EthereumBlockHeight
 	lastBatchNonce := 0
 	tokenContract := "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"
 	goodHeight := lastEthHeight + 1
@@ -245,7 +255,7 @@ func TestInvalidHeight(t *testing.T) {
 	// Assert that there is no attestation since the above failed
 	badHash, err := bad.ClaimHash()
 	require.NoError(t, err)
-	att := pk.GetAttestation(ctx, bad.GetEventNonce(), badHash)
+	att := pk.GetAttestation(ctx, chainReferenceID, bad.GetEventNonce(), badHash)
 	require.Nil(t, att)
 
 	// Attest the actual batch, and assert the votes are correct
@@ -269,7 +279,7 @@ func TestInvalidHeight(t *testing.T) {
 		goodHash, err := good.ClaimHash()
 		require.NoError(t, err)
 
-		att := pk.GetAttestation(ctx, good.GetEventNonce(), goodHash)
+		att := pk.GetAttestation(ctx, chainReferenceID, good.GetEventNonce(), goodHash)
 		require.NotNil(t, att)
 		log.Info("Asserting that the bad attestation only has one claimer", "attVotes", att.Votes)
 		require.Equal(t, len(att.Votes), i+1) // Only these good orchestrators votes should be counted

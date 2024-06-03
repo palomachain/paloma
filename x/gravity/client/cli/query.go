@@ -14,7 +14,6 @@ const (
 	FlagClaimType = "claim-type"
 	FlagNonce     = "nonce"
 	FlagEthHeight = "eth-height"
-	FlagUseV1Key  = "use-v1-key"
 )
 
 // GetQueryCmd bundles all the query subcmds together so they appear under `gravity query` or `gravity q`
@@ -168,8 +167,8 @@ func CmdGetAttestations() *cobra.Command {
 
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "attestations [optional limit]",
-		Args:  cobra.MaximumNArgs(1),
+		Use:   "attestations [chain-reference-id] [optional limit]",
+		Args:  cobra.MinimumNArgs(1),
 		Short: short,
 		Long:  long,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -179,12 +178,13 @@ func CmdGetAttestations() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
+			chainReferenceID := args[0]
 			var limit uint64
 			// Limit is 0 or whatever the user put in
-			if len(args) == 0 || args[0] == "" {
+			if len(args) < 2 || args[1] == "" {
 				limit = 0
 			} else {
-				limit, err = strconv.ParseUint(args[0], 10, 64)
+				limit, err = strconv.ParseUint(args[1], 10, 64)
 				if err != nil {
 					return err
 				}
@@ -205,18 +205,14 @@ func CmdGetAttestations() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			useV1Key, err := cmd.Flags().GetBool(FlagUseV1Key)
-			if err != nil {
-				return err
-			}
 
 			req := &types.QueryAttestationsRequest{
-				Limit:     limit,
-				OrderBy:   orderBy,
-				ClaimType: claimType,
-				Nonce:     nonce,
-				Height:    height,
-				UseV1Key:  useV1Key,
+				Limit:            limit,
+				OrderBy:          orderBy,
+				ClaimType:        claimType,
+				Nonce:            nonce,
+				Height:           height,
+				ChainReferenceId: chainReferenceID,
 			}
 			res, err := queryClient.GetAttestations(cmd.Context(), req)
 			if err != nil {
@@ -234,7 +230,6 @@ func CmdGetAttestations() *cobra.Command {
 	cmd.Flags().String(FlagClaimType, "", "which types of claims to filter, empty for all or one of: CLAIM_TYPE_SEND_TO_PALOMA, CLAIM_TYPE_BATCH_SEND_TO_ETH")
 	cmd.Flags().Uint64(FlagNonce, 0, "the exact nonce to find, 0 for any")
 	cmd.Flags().Uint64(FlagEthHeight, 0, "the exact ethereum block height an event happened at, 0 for any")
-	cmd.Flags().Bool(FlagUseV1Key, false, "if querying with --height less than 1282013 this flag must be provided to locate the attestations")
 
 	return cmd
 }
@@ -250,10 +245,10 @@ func CmdGetLastObservedEthBlock() *cobra.Command {
 
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "last-observed-eth-block",
+		Use:   "last-observed-eth-block [chain-reference-id]",
 		Short: short,
 		Long:  long,
-		Args:  cobra.NoArgs,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -261,13 +256,8 @@ func CmdGetLastObservedEthBlock() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
-			useV1Key, err := cmd.Flags().GetBool(FlagUseV1Key)
-			if err != nil {
-				return err
-			}
-
 			req := &types.QueryLastObservedEthBlockRequest{
-				UseV1Key: useV1Key,
+				ChainReferenceId: args[0],
 			}
 			res, err := queryClient.GetLastObservedEthBlock(cmd.Context(), req)
 			if err != nil {
@@ -278,7 +268,6 @@ func CmdGetLastObservedEthBlock() *cobra.Command {
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
-	cmd.Flags().Bool(FlagUseV1Key, false, "if querying with --height less than 1282013 this flag must be provided to locate the Last Observed Ethereum Height")
 	return cmd
 }
 
@@ -293,10 +282,10 @@ func CmdGetLastObservedEthNonce() *cobra.Command {
 
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "last-observed-eth-nonce",
+		Use:   "last-observed-eth-nonce [chain-reference-id]",
 		Short: short,
 		Long:  long,
-		Args:  cobra.NoArgs,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -304,13 +293,8 @@ func CmdGetLastObservedEthNonce() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
-			useV1Key, err := cmd.Flags().GetBool(FlagUseV1Key)
-			if err != nil {
-				return err
-			}
-
 			req := &types.QueryLastObservedEthNonceRequest{
-				UseV1Key: useV1Key,
+				ChainReferenceId: args[0],
 			}
 			res, err := queryClient.GetLastObservedEthNonce(cmd.Context(), req)
 			if err != nil {
@@ -321,7 +305,6 @@ func CmdGetLastObservedEthNonce() *cobra.Command {
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
-	cmd.Flags().Bool(FlagUseV1Key, false, "if querying with --height less than 1282013 this must be set to true to locate the Last Observed Ethereum Event Nonce")
 	return cmd
 }
 

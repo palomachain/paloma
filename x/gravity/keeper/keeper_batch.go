@@ -16,7 +16,7 @@ import (
 
 // GetBatchConfirm returns a batch confirmation given its nonce, the token contract, and a validator address
 func (k Keeper) GetBatchConfirm(ctx context.Context, nonce uint64, tokenContract types.EthAddress, validator sdk.AccAddress) (*types.MsgConfirmBatch, error) {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	if err := sdk.VerifyAddressFormat(validator); err != nil {
 		liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).Error("invalid validator address")
 		return nil, nil
@@ -42,7 +42,7 @@ func (k Keeper) GetBatchConfirm(ctx context.Context, nonce uint64, tokenContract
 
 // SetBatchConfirm sets a batch confirmation by a validator
 func (k Keeper) SetBatchConfirm(ctx context.Context, batch *types.MsgConfirmBatch) ([]byte, error) {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	acc, err := sdk.AccAddressFromBech32(batch.Orchestrator)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid Orchestrator address")
@@ -61,7 +61,7 @@ func (k Keeper) SetBatchConfirm(ctx context.Context, batch *types.MsgConfirmBatc
 
 // DeleteBatchConfirms deletes confirmations for an outgoing transaction batch
 func (k Keeper) DeleteBatchConfirms(ctx context.Context, batch types.InternalOutgoingTxBatch) error {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	batchConfirms, err := k.GetBatchConfirmByNonceAndTokenContract(ctx, batch.BatchNonce, batch.TokenContract)
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func (k Keeper) DeleteBatchConfirms(ctx context.Context, batch types.InternalOut
 // MARK finish-batches: this is where the key is iterated in the old (presumed working) code
 // TODO: specify which nonce this is
 func (k Keeper) IterateBatchConfirmByNonceAndTokenContract(ctx context.Context, nonce uint64, tokenContract types.EthAddress, cb func([]byte, types.MsgConfirmBatch) bool) error {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	prefix := types.GetBatchConfirmNonceContractPrefix(tokenContract, nonce)
 	start, end, err := prefixRange(prefix)
 	if err != nil {
@@ -124,7 +124,7 @@ func (k Keeper) GetBatchConfirmByNonceAndTokenContract(ctx context.Context, nonc
 
 // IterateBatchConfirms iterates through all batch confirmations
 func (k Keeper) IterateBatchConfirms(ctx context.Context, cb func([]byte, types.MsgConfirmBatch) (stop bool)) {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	prefixStore := prefix.NewStore(store, types.BatchConfirmKey)
 	iter := prefixStore.Iterator(nil, nil)
 

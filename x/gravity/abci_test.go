@@ -163,7 +163,7 @@ func TestBatchTimeout(t *testing.T) {
 	require.NoError(t, err1)
 	require.Equal(t, b1.BatchTimeout, uint64(1693425290))
 
-	pk.SetLastObservedEthereumBlockHeight(ctx, 500)
+	pk.SetLastObservedEthereumBlockHeight(ctx, "test-chain", 500)
 
 	// create another batch
 	b2, err2 := pk.BuildOutgoingTXBatch(ctx, "test-chain", *tokenContract, 2)
