@@ -1,147 +1,155 @@
 [
   {
-    "name": "ValsetUpdated",
+    "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
         "name": "checkpoint",
-        "type": "bytes32",
-        "indexed": false
+        "type": "bytes32"
       },
       {
+        "indexed": false,
         "name": "valset_id",
-        "type": "uint256",
-        "indexed": false
+        "type": "uint256"
       },
       {
+        "indexed": false,
         "name": "event_id",
-        "type": "uint256",
-        "indexed": false
+        "type": "uint256"
       }
     ],
-    "anonymous": false,
+    "name": "ValsetUpdated",
     "type": "event"
   },
   {
-    "name": "LogicCallEvent",
+    "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
         "name": "logic_contract_address",
-        "type": "address",
-        "indexed": false
+        "type": "address"
       },
       {
+        "indexed": false,
         "name": "payload",
-        "type": "bytes",
-        "indexed": false
+        "type": "bytes"
       },
       {
+        "indexed": false,
         "name": "message_id",
-        "type": "uint256",
-        "indexed": false
+        "type": "uint256"
       },
       {
+        "indexed": false,
         "name": "event_id",
-        "type": "uint256",
-        "indexed": false
+        "type": "uint256"
       }
     ],
-    "anonymous": false,
+    "name": "LogicCallEvent",
     "type": "event"
   },
   {
-    "name": "SendToPalomaEvent",
+    "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
         "name": "token",
-        "type": "address",
-        "indexed": false
+        "type": "address"
       },
       {
+        "indexed": false,
         "name": "sender",
-        "type": "address",
-        "indexed": false
+        "type": "address"
       },
       {
+        "indexed": false,
         "name": "receiver",
-        "type": "string",
-        "indexed": false
+        "type": "string"
       },
       {
+        "indexed": false,
         "name": "amount",
-        "type": "uint256",
-        "indexed": false
+        "type": "uint256"
       },
       {
+        "indexed": false,
+        "name": "nonce",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "name": "event_id",
-        "type": "uint256",
-        "indexed": false
+        "type": "uint256"
       }
     ],
-    "anonymous": false,
+    "name": "SendToPalomaEvent",
     "type": "event"
   },
   {
-    "name": "BatchSendEvent",
+    "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
         "name": "token",
-        "type": "address",
-        "indexed": false
+        "type": "address"
       },
       {
+        "indexed": false,
         "name": "batch_id",
-        "type": "uint256",
-        "indexed": false
+        "type": "uint256"
       },
       {
+        "indexed": false,
+        "name": "nonce",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "name": "event_id",
-        "type": "uint256",
-        "indexed": false
+        "type": "uint256"
       }
     ],
-    "anonymous": false,
+    "name": "BatchSendEvent",
     "type": "event"
   },
   {
-    "name": "ERC20DeployedEvent",
+    "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
         "name": "paloma_denom",
-        "type": "string",
-        "indexed": false
+        "type": "string"
       },
       {
+        "indexed": false,
         "name": "token_contract",
-        "type": "address",
-        "indexed": false
+        "type": "address"
       },
       {
+        "indexed": false,
         "name": "name",
-        "type": "string",
-        "indexed": false
+        "type": "string"
       },
       {
+        "indexed": false,
         "name": "symbol",
-        "type": "string",
-        "indexed": false
+        "type": "string"
       },
       {
+        "indexed": false,
         "name": "decimals",
-        "type": "uint8",
-        "indexed": false
+        "type": "uint8"
       },
       {
+        "indexed": false,
         "name": "event_id",
-        "type": "uint256",
-        "indexed": false
+        "type": "uint256"
       }
     ],
-    "anonymous": false,
+    "name": "ERC20DeployedEvent",
     "type": "event"
   },
   {
-    "stateMutability": "nonpayable",
-    "type": "constructor",
     "inputs": [
       {
         "name": "_compass_id",
@@ -152,38 +160,36 @@
         "type": "uint256"
       },
       {
+        "name": "_gravity_nonce",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "name": "validators",
+            "type": "address[]"
+          },
+          {
+            "name": "powers",
+            "type": "uint256[]"
+          },
+          {
+            "name": "valset_id",
+            "type": "uint256"
+          }
+        ],
         "name": "valset",
-        "type": "tuple",
-        "components": [
-          {
-            "name": "validators",
-            "type": "address[]"
-          },
-          {
-            "name": "powers",
-            "type": "uint256[]"
-          },
-          {
-            "name": "valset_id",
-            "type": "uint256"
-          }
-        ]
+        "type": "tuple"
       }
     ],
-    "outputs": []
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
-    "stateMutability": "nonpayable",
-    "type": "function",
-    "name": "update_valset",
     "inputs": [
       {
-        "name": "consensus",
-        "type": "tuple",
         "components": [
           {
-            "name": "valset",
-            "type": "tuple",
             "components": [
               {
                 "name": "validators",
@@ -197,11 +203,11 @@
                 "name": "valset_id",
                 "type": "uint256"
               }
-            ]
+            ],
+            "name": "valset",
+            "type": "tuple"
           },
           {
-            "name": "signatures",
-            "type": "tuple[]",
             "components": [
               {
                 "name": "v",
@@ -215,43 +221,43 @@
                 "name": "s",
                 "type": "uint256"
               }
-            ]
+            ],
+            "name": "signatures",
+            "type": "tuple[]"
           }
-        ]
+        ],
+        "name": "consensus",
+        "type": "tuple"
       },
       {
+        "components": [
+          {
+            "name": "validators",
+            "type": "address[]"
+          },
+          {
+            "name": "powers",
+            "type": "uint256[]"
+          },
+          {
+            "name": "valset_id",
+            "type": "uint256"
+          }
+        ],
         "name": "new_valset",
-        "type": "tuple",
-        "components": [
-          {
-            "name": "validators",
-            "type": "address[]"
-          },
-          {
-            "name": "powers",
-            "type": "uint256[]"
-          },
-          {
-            "name": "valset_id",
-            "type": "uint256"
-          }
-        ]
+        "type": "tuple"
       }
     ],
-    "outputs": []
+    "name": "update_valset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    "stateMutability": "nonpayable",
-    "type": "function",
-    "name": "submit_logic_call",
     "inputs": [
       {
-        "name": "consensus",
-        "type": "tuple",
         "components": [
           {
-            "name": "valset",
-            "type": "tuple",
             "components": [
               {
                 "name": "validators",
@@ -265,11 +271,11 @@
                 "name": "valset_id",
                 "type": "uint256"
               }
-            ]
+            ],
+            "name": "valset",
+            "type": "tuple"
           },
           {
-            "name": "signatures",
-            "type": "tuple[]",
             "components": [
               {
                 "name": "v",
@@ -283,13 +289,15 @@
                 "name": "s",
                 "type": "uint256"
               }
-            ]
+            ],
+            "name": "signatures",
+            "type": "tuple[]"
           }
-        ]
+        ],
+        "name": "consensus",
+        "type": "tuple"
       },
       {
-        "name": "args",
-        "type": "tuple",
         "components": [
           {
             "name": "logic_contract_address",
@@ -299,7 +307,9 @@
             "name": "payload",
             "type": "bytes"
           }
-        ]
+        ],
+        "name": "args",
+        "type": "tuple"
       },
       {
         "name": "message_id",
@@ -310,12 +320,12 @@
         "type": "uint256"
       }
     ],
-    "outputs": []
+    "name": "submit_logic_call",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    "stateMutability": "nonpayable",
-    "type": "function",
-    "name": "send_token_to_paloma",
     "inputs": [
       {
         "name": "token",
@@ -330,20 +340,16 @@
         "type": "uint256"
       }
     ],
-    "outputs": []
+    "name": "send_token_to_paloma",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    "stateMutability": "nonpayable",
-    "type": "function",
-    "name": "submit_batch",
     "inputs": [
       {
-        "name": "consensus",
-        "type": "tuple",
         "components": [
           {
-            "name": "valset",
-            "type": "tuple",
             "components": [
               {
                 "name": "validators",
@@ -357,11 +363,11 @@
                 "name": "valset_id",
                 "type": "uint256"
               }
-            ]
+            ],
+            "name": "valset",
+            "type": "tuple"
           },
           {
-            "name": "signatures",
-            "type": "tuple[]",
             "components": [
               {
                 "name": "v",
@@ -375,17 +381,19 @@
                 "name": "s",
                 "type": "uint256"
               }
-            ]
+            ],
+            "name": "signatures",
+            "type": "tuple[]"
           }
-        ]
+        ],
+        "name": "consensus",
+        "type": "tuple"
       },
       {
         "name": "token",
         "type": "address"
       },
       {
-        "name": "args",
-        "type": "tuple",
         "components": [
           {
             "name": "receiver",
@@ -395,7 +403,9 @@
             "name": "amount",
             "type": "uint256[]"
           }
-        ]
+        ],
+        "name": "args",
+        "type": "tuple"
       },
       {
         "name": "batch_id",
@@ -406,12 +416,12 @@
         "type": "uint256"
       }
     ],
-    "outputs": []
+    "name": "submit_batch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    "stateMutability": "nonpayable",
-    "type": "function",
-    "name": "deploy_erc20",
     "inputs": [
       {
         "name": "_paloma_denom",
@@ -434,88 +444,103 @@
         "type": "address"
       }
     ],
-    "outputs": []
+    "name": "deploy_erc20",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    "stateMutability": "view",
-    "type": "function",
+    "inputs": [],
     "name": "compass_id",
-    "inputs": [],
     "outputs": [
       {
         "name": "",
         "type": "bytes32"
       }
-    ]
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    "stateMutability": "view",
-    "type": "function",
+    "inputs": [],
     "name": "last_checkpoint",
-    "inputs": [],
     "outputs": [
       {
         "name": "",
         "type": "bytes32"
       }
-    ]
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    "stateMutability": "view",
-    "type": "function",
+    "inputs": [],
     "name": "last_valset_id",
-    "inputs": [],
     "outputs": [
       {
         "name": "",
         "type": "uint256"
       }
-    ]
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    "stateMutability": "view",
-    "type": "function",
+    "inputs": [],
     "name": "last_event_id",
-    "inputs": [],
     "outputs": [
       {
         "name": "",
         "type": "uint256"
       }
-    ]
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
+    "inputs": [],
+    "name": "last_gravity_nonce",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
-    "type": "function",
-    "name": "last_batch_id",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "name": "arg0",
         "type": "address"
       }
     ],
+    "name": "last_batch_id",
     "outputs": [
       {
         "name": "",
         "type": "uint256"
       }
-    ]
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    "stateMutability": "view",
-    "type": "function",
-    "name": "message_id_used",
     "inputs": [
       {
         "name": "arg0",
         "type": "uint256"
       }
     ],
+    "name": "message_id_used",
     "outputs": [
       {
         "name": "",
         "type": "bool"
       }
-    ]
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ]
