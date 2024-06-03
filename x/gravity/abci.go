@@ -5,12 +5,20 @@ import (
 
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/keeper"
 	log "github.com/sirupsen/logrus"
 )
 
 // EndBlocker is called at the end of every block
 func EndBlocker(ctx context.Context, k keeper.Keeper) {
+	defer func() {
+		if r := recover(); r != nil {
+			liblog.FromSDKLogger(k.Logger(ctx)).
+				WithFields("original-error", r).
+				Warn("Recovered panic.")
+		}
+	}()
 	// slashing(ctx, k)
 	chains := k.GetChainsWithTokens(ctx)
 
