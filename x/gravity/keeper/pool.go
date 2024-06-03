@@ -299,6 +299,9 @@ func (k Keeper) autoIncrementID(ctx context.Context, idKey []byte) (uint64, erro
 func (k Keeper) getID(ctx context.Context, idKey []byte) (uint64, error) {
 	store := k.GetStore(ctx, types.StoreModulePrefix)
 	bz := store.Get(idKey)
+	if bz == nil {
+		return 1, nil
+	}
 	id, err := types.UInt64FromBytes(bz)
 	if err != nil {
 		return 0, err
