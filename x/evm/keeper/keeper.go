@@ -45,6 +45,7 @@ const (
 const (
 	ConsensusTurnstoneMessage     = "evm-turnstone-message"
 	ConsensusGetValidatorBalances = "validators-balances"
+	ConsensusGetReferenceBlock    = "reference-block"
 	ConsensusCollectFundEvents    = "collect-fund-events"
 	SignaturePrefix               = "\x19Ethereum Signed Message:\n32"
 )
@@ -81,6 +82,14 @@ var SupportedConsensusQueues = []supportedChainInfo{
 		msgType:  &types.CollectFunds{},
 		processAttesationFunc: func(k Keeper) func(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
 			return k.attestCollectedFunds
+		},
+	},
+	{
+		subqueue: ConsensusGetReferenceBlock,
+		batch:    false,
+		msgType:  &types.ReferenceBlockAttestation{},
+		processAttesationFunc: func(k Keeper) func(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
+			return k.attestReferenceBlock
 		},
 	},
 }
@@ -166,6 +175,21 @@ func (k Keeper) ChangeMinOnChainBalance(ctx sdk.Context, chainReferenceID string
 		return err
 	}
 	ci.MinOnChainBalance = balance.Text(10)
+	return k.updateChainInfo(ctx, ci)
+}
+
+func (k Keeper) UpdateChainReferenceBlock(ctx sdk.Context, chainReferenceID string, referenceBlockHeight uint64, referenceBlockHash string) error {
+	ci, err := k.GetChainInfo(ctx, chainReferenceID)
+	if err != nil {
+		return err
+	}
+
+	if referenceBlockHeight <= ci.ReferenceBlockHeight {
+		return ErrInvalidReferenceBlockHeight
+	}
+
+	ci.ReferenceBlockHeight = referenceBlockHeight
+	ci.ReferenceBlockHash = referenceBlockHash
 	return k.updateChainInfo(ctx, ci)
 }
 
@@ -670,6 +694,25 @@ func (k Keeper) CheckExternalBalancesForChain(ctx context.Context, chainReferenc
 	_, err = k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(ConsensusGetValidatorBalances, xchainType, chainReferenceID),
+		&msg,
+		&consensus.PutOptions{
+			RequireSignatures: false,
+			PublicAccessData:  []byte{1}, // anything because pigeon cares if public access data exists to be able to provide evidence
+		},
+	)
+
+	return err
+}
+
+func (k Keeper) ScheduleReferenceBlockForChain(ctx context.Context, chainReferenceID string) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	var msg types.ReferenceBlockAttestation
+	msg.FromBlockTime = sdkCtx.BlockTime().UTC()
+
+	_, err := k.ConsensusKeeper.PutMessageInQueue(
+		ctx,
+		consensustypes.Queue(ConsensusGetReferenceBlock, xchainType, chainReferenceID),
 		&msg,
 		&consensus.PutOptions{
 			RequireSignatures: false,

@@ -46,3 +46,11 @@ func (h *ValidatorBalancesAttestationRes) BytesToHash() ([]byte, error) {
 	}
 	return res, nil
 }
+
+func (h *ReferenceBlockAttestationRes) BytesToHash() ([]byte, error) {
+	var res []byte
+	res = append(res, []byte(fmt.Sprintf("%d", h.BlockHeight))...)
+	res = append(res, []byte(h.BlockHash)...)
+
+	return res, nil
+}

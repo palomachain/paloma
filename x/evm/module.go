@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/evm/client/cli"
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -32,6 +33,8 @@ var (
 	_ appmodule.HasBeginBlocker = AppModule{}
 	_ appmodule.AppModule       = AppModule{}
 )
+
+const updateXChainsReferencesPeriod = 10_000
 
 // ----------------------------------------------------------------------------
 // AppModuleBasic
@@ -178,19 +181,53 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	am.keeper.TryDeployingLastCompassContractToAllChains(sdkCtx)
 
 	if sdkCtx.BlockHeight()%300 == 0 {
-		func() {
-			cis, err := am.keeper.GetAllChainInfos(sdkCtx)
-			if err != nil {
-				am.keeper.Logger(sdkCtx).Error("error while trying to get all chain infos to check external balances", "error", err)
-				return
-			}
-			for _, ci := range cis {
-				err := am.keeper.CheckExternalBalancesForChain(sdkCtx, ci.GetChainReferenceID())
-				if err != nil {
-					am.keeper.Logger(sdkCtx).Error("error while adding request to get the external chain balance for chain", "error", err, "chain-reference-id", ci.GetChainReferenceID())
-				}
-			}
-		}()
+		if err := am.scheduleExternalBalances(sdkCtx); err != nil {
+			liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error scheduling external balances updates")
+		}
 	}
+
+	if sdkCtx.BlockHeight()%updateXChainsReferencesPeriod == 0 {
+		if err := am.scheduleReferenceBlocks(sdkCtx); err != nil {
+			liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error scheduling reference block updates")
+		}
+	}
+
+	return nil
+}
+
+func (am AppModule) scheduleExternalBalances(sdkCtx sdk.Context) error {
+	cis, err := am.keeper.GetAllChainInfos(sdkCtx)
+	if err != nil {
+		return err
+	}
+	for _, ci := range cis {
+		err := am.keeper.CheckExternalBalancesForChain(sdkCtx, ci.GetChainReferenceID())
+		if err != nil {
+			liblog.FromSDKLogger(sdkCtx.Logger()).
+				WithFields("chain-id", ci.GetChainReferenceID()).
+				WithError(err).
+				Error("Error adding request to get the external chain balance")
+		}
+	}
+
+	return nil
+}
+
+func (am AppModule) scheduleReferenceBlocks(sdkCtx sdk.Context) error {
+	cis, err := am.keeper.GetAllChainInfos(sdkCtx)
+	if err != nil {
+		return err
+	}
+
+	for _, ci := range cis {
+		err := am.keeper.ScheduleReferenceBlockForChain(sdkCtx, ci.GetChainReferenceID())
+		if err != nil {
+			liblog.FromSDKLogger(sdkCtx.Logger()).
+				WithFields("chain-id", ci.GetChainReferenceID()).
+				WithError(err).
+				Error("Error scheduling reference block updates")
+		}
+	}
+
 	return nil
 }

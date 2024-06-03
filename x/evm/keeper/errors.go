@@ -12,4 +12,5 @@ const (
 	ErrConsensusNotAchieved                        = liberr.Error("evm: consensus not achieved")
 	ErrCannotAddSupportForChainThatExists          = liberr.Error("chain info already exists: %s")
 	ErrCannotActiveSmartContractThatIsNotDeploying = liberr.Error("trying to activate a smart contract that is not currently deploying")
+	ErrInvalidReferenceBlockHeight                 = liberr.Error("new reference block height is invalid")
 )
