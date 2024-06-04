@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "palomachain/paloma/valset/params.proto";
 import "palomachain/paloma/valset/snapshot.proto";
+import "palomachain/paloma/valset/pigeon_requirements.proto";
 import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/palomachain/paloma/x/valset/types";
@@ -53,6 +54,13 @@ service Query {
       returns (QueryGetAlivePigeonsResponse) {
     option (google.api.http).get =
         "/palomachain/paloma/valset/get_alive_pigeons";
+  }
+
+  // Queries the PigeonRequirements
+  rpc GetPigeonRequirements(QueryGetPigeonRequirementsRequest)
+      returns (QueryGetPigeonRequirementsResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/valset/get_pigeon_requirements";
   }
 }
 
@@ -111,4 +119,11 @@ message QueryGetAlivePigeonsResponse {
   }
 
   repeated ValidatorAlive aliveValidators = 1;
+}
+
+message QueryGetPigeonRequirementsRequest {}
+
+message QueryGetPigeonRequirementsResponse {
+  PigeonRequirements pigeonRequirements = 1;
+  ScheduledPigeonRequirements scheduledPigeonRequirements = 2;
 }

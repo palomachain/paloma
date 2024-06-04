@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/valset/client/cli"
 	"github.com/palomachain/paloma/x/valset/keeper"
 	"github.com/palomachain/paloma/x/valset/types"
@@ -169,7 +170,27 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
-func (am AppModule) BeginBlock(context.Context) error { return nil }
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := liblog.FromSDKLogger(am.keeper.Logger(ctx)).
+		WithFields("block-height", sdkCtx.BlockHeight())
+
+	reqs, err := am.keeper.ScheduledPigeonRequirements(ctx)
+	if err != nil {
+		logger.WithError(err).Error("error checking pigeon requirements")
+		return nil
+	}
+
+	if reqs != nil && int64(reqs.TargetBlockHeight) <= sdkCtx.BlockHeight() {
+		err = am.keeper.SetPigeonRequirements(ctx, reqs.Requirements)
+		if err != nil {
+			logger.WithError(err).Error("error setting pigeon requirements")
+			return nil
+		}
+	}
+
+	return nil
+}
 
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.

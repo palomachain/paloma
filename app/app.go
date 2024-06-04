@@ -145,6 +145,7 @@ import (
 	treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
 	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	valsetmodule "github.com/palomachain/paloma/x/valset"
+	valsetclient "github.com/palomachain/paloma/x/valset/client"
 	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cast"
@@ -154,8 +155,6 @@ const (
 	Name = "paloma"
 
 	wasmAvailableCapabilities = "iterator,staking,stargate,paloma"
-
-	minimumPigeonVersion = "v1.11.2"
 )
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -165,6 +164,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		treasuryclient.ProposalHandler,
 		evmclient.ProposalHandler,
 		treasuryclient.ProposalHandler,
+		valsetclient.ProposalHandler,
 	}
 }
 
@@ -558,7 +558,6 @@ func New(
 		app.GetSubspace(valsetmoduletypes.ModuleName),
 		app.StakingKeeper,
 		app.SlashingKeeper,
-		minimumPigeonVersion,
 		sdk.DefaultPowerReduction,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
 	)
@@ -661,7 +660,8 @@ func New(
 		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
-		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper))
+		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper)).
+		AddRoute(valsetmoduletypes.RouterKey, valsetmodule.NewValsetProposalHandler(app.ValsetKeeper))
 
 	// Example of setting gov params:
 	govKeeper := govkeeper.NewKeeper(

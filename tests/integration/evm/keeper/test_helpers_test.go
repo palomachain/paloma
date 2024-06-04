@@ -77,10 +77,6 @@ import (
 	"github.com/spf13/cast"
 )
 
-const (
-	minimumPigeonVersion = "v1.10.0"
-)
-
 type fixture struct {
 	ctx               sdk.Context
 	codec             codec.Codec
@@ -207,7 +203,6 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		helper.GetSubspace(valsetmoduletypes.ModuleName, paramsKeeper),
 		stakingKeeper,
 		slashingKeeper,
-		minimumPigeonVersion,
 		sdk.DefaultPowerReduction,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
 	)

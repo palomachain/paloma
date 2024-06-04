@@ -47,7 +47,6 @@ func ValsetKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		paramsSubspace,
 		nil,
 		nil,
-		"v1.4.0",
 		sdk.DefaultPowerReduction,
 		address.NewBech32Codec("paloma"),
 	)

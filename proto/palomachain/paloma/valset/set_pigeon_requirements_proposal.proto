@@ -1,0 +1,11 @@
+syntax = "proto3";
+package palomachain.paloma.valset;
+
+option go_package = "github.com/palomachain/paloma/x/valset/types";
+
+message SetPigeonRequirementsProposal {
+  string title = 1;
+  string description = 2;
+  string minVersion = 3;
+  uint64 targetBlockHeight = 4;
+}
