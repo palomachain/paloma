@@ -18,14 +18,9 @@ type QueryServer struct {
 }
 
 // GetAllQueueNames provides a mock function with given fields: ctx, in, opts
-func (_m *QueryServer) GetAllQueueNames(ctx context.Context, in *types.QueryGetAllQueueNamesRequest, opts ...grpc.CallOption) (*types.QueryGetAllQueueNamesResponse, error) {
-	_va := make([]interface{}, len(opts))
-	for _i := range opts {
-		_va[_i] = opts[_i]
-	}
+func (_m *QueryServer) GetAllQueueNames(ctx context.Context, in *types.QueryGetAllQueueNamesRequest) (*types.QueryGetAllQueueNamesResponse, error) {
 	var _ca []interface{}
 	_ca = append(_ca, ctx, in)
-	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
 	if len(ret) == 0 {
@@ -34,19 +29,19 @@ func (_m *QueryServer) GetAllQueueNames(ctx context.Context, in *types.QueryGetA
 
 	var r0 *types.QueryGetAllQueueNamesResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryGetAllQueueNamesRequest, ...grpc.CallOption) (*types.QueryGetAllQueueNamesResponse, error)); ok {
-		return rf(ctx, in, opts...)
+	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryGetAllQueueNamesRequest) (*types.QueryGetAllQueueNamesResponse, error)); ok {
+		return rf(ctx, in)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryGetAllQueueNamesRequest, ...grpc.CallOption) *types.QueryGetAllQueueNamesResponse); ok {
-		r0 = rf(ctx, in, opts...)
+	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryGetAllQueueNamesRequest) *types.QueryGetAllQueueNamesResponse); ok {
+		r0 = rf(ctx, in)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.QueryGetAllQueueNamesResponse)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *types.QueryGetAllQueueNamesRequest, ...grpc.CallOption) error); ok {
-		r1 = rf(ctx, in, opts...)
+	if rf, ok := ret.Get(1).(func(context.Context, *types.QueryGetAllQueueNamesRequest) error); ok {
+		r1 = rf(ctx, in)
 	} else {
 		r1 = ret.Error(1)
 	}
