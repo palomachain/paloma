@@ -34,12 +34,14 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		(*consensustypes.ConsensusMsg)(nil),
 		&Message{},
 		&ValidatorBalancesAttestation{},
+		&ReferenceBlockAttestation{},
 	)
 	registry.RegisterImplementations(
 		(*Hashable)(nil),
 		&TxExecutedProof{},
 		&SmartContractExecutionErrorProof{},
 		&ValidatorBalancesAttestationRes{},
+		&ReferenceBlockAttestationRes{},
 	)
 	registry.RegisterImplementations(
 		(*TurnstoneMsg)(nil),
@@ -51,6 +53,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*proto.Message)(nil),
 		&ValidatorBalancesAttestationRes{},
+		&ReferenceBlockAttestationRes{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
