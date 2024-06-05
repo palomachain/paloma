@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"testing"
 
 	"cosmossdk.io/log"
@@ -8,6 +9,7 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/valset/types"
 	"github.com/palomachain/paloma/x/valset/types/mocks"
 	"github.com/stretchr/testify/mock"
@@ -557,7 +559,7 @@ func TestGracePeriodCoverage(t *testing.T) {
 	})
 }
 
-func TestJailedValidaotors(t *testing.T) {
+func TestJailedValidators(t *testing.T) {
 	k, ms, ctx := newValsetKeeper(t)
 	val := sdk.ValAddress("validator")
 	vali := mocks.NewStakingValidatorI(t)
@@ -573,5 +575,65 @@ func TestJailedValidaotors(t *testing.T) {
 		vali.On("IsJailed").Return(true).Once()
 		err := k.Jail(ctx, val, "i don't know")
 		require.Error(t, err)
+	})
+}
+
+func TestSetPigeonRequirements(t *testing.T) {
+	k, _, ctx := newValsetKeeper(t)
+
+	t.Run("Return new requirements after setting them", func(t *testing.T) {
+		err := k.SetPigeonRequirements(ctx, &types.PigeonRequirements{
+			MinVersion: "v20.0.0",
+		})
+		require.NoError(t, err)
+		req, err := k.PigeonRequirements(ctx)
+		require.NoError(t, err)
+		require.Equal(t, req.MinVersion, "v20.0.0")
+	})
+
+	t.Run("Return error when trying to set a lower version", func(t *testing.T) {
+		err := k.SetPigeonRequirements(ctx, &types.PigeonRequirements{
+			MinVersion: "v1.0.0",
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("Return error when trying to set an invalid version", func(t *testing.T) {
+		err := k.SetPigeonRequirements(ctx, &types.PigeonRequirements{
+			MinVersion: "1.0.0",
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("Return error when trying to schedule a lower version", func(t *testing.T) {
+		err := k.SetScheduledPigeonRequirements(ctx, &types.ScheduledPigeonRequirements{
+			Requirements: &types.PigeonRequirements{
+				MinVersion: "v1.0.0",
+			},
+			TargetBlockHeight: 1000,
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("Clear scheduled requirements after setting new ones", func(t *testing.T) {
+		err := k.SetScheduledPigeonRequirements(ctx, &types.ScheduledPigeonRequirements{
+			Requirements: &types.PigeonRequirements{
+				MinVersion: "v30.0.0",
+			},
+			TargetBlockHeight: 1000,
+		})
+		require.NoError(t, err)
+
+		req, err := k.ScheduledPigeonRequirements(ctx)
+		require.NoError(t, err)
+		require.Equal(t, req.Requirements.MinVersion, "v30.0.0")
+
+		err = k.SetPigeonRequirements(ctx, &types.PigeonRequirements{
+			MinVersion: "v25.0.0",
+		})
+		require.NoError(t, err)
+
+		_, err = k.ScheduledPigeonRequirements(ctx)
+		require.True(t, errors.Is(err, keeperutil.ErrNotFound))
 	})
 }

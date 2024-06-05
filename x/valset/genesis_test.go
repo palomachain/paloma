@@ -13,6 +13,15 @@ import (
 func TestGenesis(t *testing.T) {
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
+		PigeonRequirements: &types.PigeonRequirements{
+			MinVersion: "v10.5.0",
+		},
+		ScheduledPigeonRequirements: &types.ScheduledPigeonRequirements{
+			Requirements: &types.PigeonRequirements{
+				MinVersion: "v10.5.0",
+			},
+			TargetBlockHeight: 1000,
+		},
 	}
 
 	k, ctx := keepertest.ValsetKeeper(t)
@@ -22,4 +31,7 @@ func TestGenesis(t *testing.T) {
 
 	nullify.Fill(&genesisState)
 	nullify.Fill(got)
+
+	require.Equal(t, genesisState.PigeonRequirements, got.PigeonRequirements)
+	require.Equal(t, genesisState.ScheduledPigeonRequirements, got.ScheduledPigeonRequirements)
 }
