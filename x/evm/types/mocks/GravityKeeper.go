@@ -44,12 +44,12 @@ func (_m *GravityKeeper) CastAllERC20ToDenoms(ctx context.Context) ([]types.ERC2
 	return r0, r1
 }
 
-// GetLastObservedEventNonce provides a mock function with given fields: ctx, chainReferenceID
-func (_m *GravityKeeper) GetLastObservedEventNonce(ctx context.Context, chainReferenceID string) (uint64, error) {
+// GetLastObservedGravityNonce provides a mock function with given fields: ctx, chainReferenceID
+func (_m *GravityKeeper) GetLastObservedGravityNonce(ctx context.Context, chainReferenceID string) (uint64, error) {
 	ret := _m.Called(ctx, chainReferenceID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetLastObservedEventNonce")
+		panic("no return value specified for GetLastObservedGravityNonce")
 	}
 
 	var r0 uint64

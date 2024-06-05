@@ -33,7 +33,7 @@ func setOrchestratorOnClaims(orch sdk.AccAddress, claims ...EthereumClaim) (ret 
 // The only field which MUST NOT affect ClaimHash is Orchestrator
 func TestMsgSendToPalomaClaimHash(t *testing.T) {
 	base := MsgSendToPalomaClaim{
-		EventNonce:     0,
+		GravityNonce:   0,
 		EthBlockHeight: 0,
 		TokenContract:  "",
 		Amount:         math.Int{},
@@ -45,7 +45,7 @@ func TestMsgSendToPalomaClaimHash(t *testing.T) {
 	// Copy and populate base with values, saving orchestrator for a special check
 	orchestrator := NonemptySdkAccAddress()
 	mNonce := base
-	mNonce.EventNonce = NonzeroUint64()
+	mNonce.GravityNonce = NonzeroUint64()
 	mBlock := base
 	mBlock.EthBlockHeight = NonzeroUint64()
 	mCtr := base
@@ -73,7 +73,7 @@ func TestMsgSendToPalomaClaimHash(t *testing.T) {
 // The only field which MUST NOT affect ClaimHash is Orchestrator
 func TestMsgBatchSendToEthClaimHash(t *testing.T) {
 	base := MsgBatchSendToEthClaim{
-		EventNonce:     0,
+		GravityNonce:   0,
 		EthBlockHeight: 0,
 		BatchNonce:     0,
 		TokenContract:  "",
@@ -82,7 +82,7 @@ func TestMsgBatchSendToEthClaimHash(t *testing.T) {
 
 	orchestrator := NonemptySdkAccAddress()
 	mNonce := base
-	mNonce.EventNonce = NonzeroUint64()
+	mNonce.GravityNonce = NonzeroUint64()
 	mBlock := base
 	mBlock.EthBlockHeight = NonzeroUint64()
 	mBatch := base

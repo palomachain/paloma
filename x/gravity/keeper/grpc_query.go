@@ -144,11 +144,11 @@ func (k Keeper) LastEventNonce(
 ) (*types.QueryLastEventNonceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	var ret types.QueryLastEventNonceResponse
-	lastEventNonce, err := k.GetLastObservedEventNonce(ctx, req.GetChainReferenceId())
+	lastGravityNonce, err := k.GetLastObservedGravityNonce(ctx, req.GetChainReferenceId())
 	if err != nil {
 		return nil, err
 	}
-	ret.EventNonce = lastEventNonce
+	ret.EventNonce = lastGravityNonce
 	return &ret, nil
 }
 
@@ -178,11 +178,11 @@ func (k Keeper) LastEventNonceByAddr(
 	if err := sdk.VerifyAddressFormat(valAddress); err != nil {
 		return nil, errors.Wrap(err, "invalid validator address")
 	}
-	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, valAddress, req.GetChainReferenceId())
+	lastGravityNonce, err := k.GetLastGravityNonceByValidator(ctx, valAddress, req.GetChainReferenceId())
 	if err != nil {
 		return nil, err
 	}
-	ret.EventNonce = lastEventNonce
+	ret.EventNonce = lastGravityNonce
 	return &ret, nil
 }
 
@@ -243,7 +243,7 @@ func (k Keeper) GetLastObservedEthNonce(
 ) (*types.QueryLastObservedEthNonceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
-	locator := k.GetLastObservedEventNonce
+	locator := k.GetLastObservedGravityNonce
 
 	nonce, err := locator(ctx, req.GetChainReferenceId())
 	if err != nil {
@@ -291,7 +291,7 @@ func (k Keeper) GetAttestations(
 			attestations = append(attestations, att)
 			match = true
 
-		case filter && claim.GetEventNonce() == req.Nonce:
+		case filter && claim.GetGravityNonce() == req.Nonce:
 			attestations = append(attestations, att)
 			match = true
 

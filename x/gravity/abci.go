@@ -101,7 +101,7 @@ func attestationTally(ctx context.Context, k keeper.Keeper, chainReferenceID str
 			// we skip the other attestations and move on to the next nonce again.
 			// If no attestation becomes observed, when we get to the next nonce, every attestation in
 			// it will be skipped. The same will happen for every nonce after that.
-			lastEventNonce, err := k.GetLastObservedEventNonce(ctx, chainReferenceID)
+			lastEventNonce, err := k.GetLastObservedGravityNonce(ctx, chainReferenceID)
 			if err != nil {
 				return err
 			}
@@ -151,7 +151,7 @@ func pruneAttestations(ctx context.Context, k keeper.Keeper, chainReferenceID st
 	// minus some buffer value. This buffer value is purely to allow
 	// frontends and other UI components to view recent oracle history
 	const eventsToKeep = 1000
-	lastNonce, err := k.GetLastObservedEventNonce(ctx, chainReferenceID)
+	lastNonce, err := k.GetLastObservedGravityNonce(ctx, chainReferenceID)
 	if err != nil {
 		return err
 	}

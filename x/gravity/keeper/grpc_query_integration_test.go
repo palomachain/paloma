@@ -128,7 +128,7 @@ func TestQueryGetAttestations(t *testing.T) {
 				for i, att := range result.Attestations {
 					claim, err := k.UnpackAttestationClaim(&att)
 					require.NoError(t, err)
-					nonces[i] = claim.GetEventNonce()
+					nonces[i] = claim.GetGravityNonce()
 				}
 				require.Equal(t, tc.nonces, nonces)
 			}
@@ -142,7 +142,7 @@ func createAttestations(t *testing.T, k keeper.Keeper, ctx context.Context, leng
 	for i := 0; i < length; i++ {
 		nonce := uint64(1 + i)
 		msg := types.MsgSendToPalomaClaim{
-			EventNonce:     nonce,
+			GravityNonce:   nonce,
 			EthBlockHeight: 1,
 			TokenContract:  "0x00000000000000000001",
 			Amount:         math.NewInt(10000000000 + int64(i)),

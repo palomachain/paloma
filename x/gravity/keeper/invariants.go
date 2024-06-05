@@ -185,7 +185,7 @@ func ValidateStore(ctx sdk.Context, k Keeper) error {
 	chains := k.GetChainsWithTokens(ctx)
 	for _, chain := range chains {
 		// LastObservedEventNonceKey (type checked when fetching)
-		lastObservedEventNonce, err := k.GetLastObservedEventNonce(ctx, chain)
+		lastObservedGravityNonce, err := k.GetLastObservedGravityNonce(ctx, chain)
 		if err != nil {
 			return err
 		}
@@ -204,8 +204,8 @@ func ValidateStore(ctx sdk.Context, k Keeper) error {
 					return true
 				}
 				if att.Observed {
-					if claim.GetEventNonce() > lastObservedEventNonce {
-						g.Add(fmt.Errorf("last observed event nonce <> observed attestation nonce mismatch (%v < %v)", lastObservedEventNonce, claim.GetEventNonce()))
+					if claim.GetGravityNonce() > lastObservedGravityNonce {
+						g.Add(fmt.Errorf("last observed event nonce <> observed attestation nonce mismatch (%v < %v)", lastObservedGravityNonce, claim.GetGravityNonce()))
 						return true
 					}
 					claimHeight := claim.GetEthBlockHeight()

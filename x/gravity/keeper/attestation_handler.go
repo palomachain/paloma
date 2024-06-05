@@ -64,8 +64,8 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 			"address", receiverAddress,
 			"cause", addressErr.Error(),
 			"claim type", claim.GetType(),
-			"id", types.GetAttestationKey(claim.GetEventNonce(), hash),
-			"nonce", fmt.Sprint(claim.GetEventNonce())).Error("Invalid SendToPaloma receiver")
+			"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
+			"nonce", claim.GetGravityNonce()).Error("Invalid SendToPaloma receiver")
 	}
 	tokenAddress, errTokenAddress := types.NewEthAddress(claim.TokenContract)
 	_, errEthereumSender := types.NewEthAddress(claim.EthereumSender)
@@ -80,8 +80,8 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 		liblog.FromSDKLogger(a.keeper.Logger(ctx)).WithFields(
 			"cause", errTokenAddress.Error(),
 			"claim type", claim.GetType(),
-			"id", types.GetAttestationKey(claim.GetEventNonce(), hash),
-			"nonce", fmt.Sprint(claim.GetEventNonce())).Error("Invalid token contract")
+			"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
+			"nonce", claim.GetGravityNonce()).Error("Invalid token contract")
 		return sdkerrors.Wrap(errTokenAddress, "invalid token contract on claim")
 	}
 	// likewise nil sender would have to be caused by a bogus event
@@ -93,8 +93,8 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 		liblog.FromSDKLogger(a.keeper.Logger(ctx)).WithFields(
 			"cause", errEthereumSender.Error(),
 			"claim type", claim.GetType(),
-			"id", types.GetAttestationKey(claim.GetEventNonce(), hash),
-			"nonce", fmt.Sprint(claim.GetEventNonce())).Error("Invalid ethereum sender")
+			"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
+			"nonce", claim.GetGravityNonce()).Error("Invalid ethereum sender")
 		return sdkerrors.Wrap(errTokenAddress, "invalid ethereum sender on claim")
 	}
 
@@ -143,15 +143,15 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 			liblog.FromSDKLogger(a.keeper.Logger(ctx)).WithFields(
 				"cause", err.Error(),
 				"claim type", claim.GetType(),
-				"id", types.GetAttestationKey(claim.GetEventNonce(), hash),
-				"nonce", fmt.Sprint(claim.GetEventNonce())).Error("Failed community pool send")
+				"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
+				"nonce", claim.GetGravityNonce()).Error("Failed community pool send")
 			return sdkerrors.Wrap(err, "failed to send to Community pool")
 		}
 
 		if err := sdkCtx.EventManager().EmitTypedEvent(
 			&types.EventInvalidSendToPalomaReceiver{
 				Amount: claim.Amount.String(),
-				Nonce:  strconv.Itoa(int(claim.GetEventNonce())),
+				Nonce:  strconv.Itoa(int(claim.GetGravityNonce())),
 				Token:  tokenAddress.GetAddress().Hex(),
 				Sender: claim.EthereumSender,
 			},
@@ -163,7 +163,7 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 		if err := sdkCtx.EventManager().EmitTypedEvent(
 			&types.EventSendToPaloma{
 				Amount: claim.Amount.String(),
-				Nonce:  strconv.Itoa(int(claim.GetEventNonce())),
+				Nonce:  strconv.Itoa(int(claim.GetGravityNonce())),
 				Token:  tokenAddress.GetAddress().Hex(),
 			},
 		); err != nil {
@@ -237,20 +237,20 @@ func (a AttestationHandler) sendCoinToLocalAddress(
 		liblog.FromSDKLogger(a.keeper.Logger(ctx)).WithFields(
 			"cause", err.Error(),
 			"claim type", claim.GetType(),
-			"id", types.GetAttestationKey(claim.GetEventNonce(), hash),
-			"nonce", fmt.Sprint(claim.GetEventNonce())).Error("Failed deposit")
+			"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
+			"nonce", claim.GetGravityNonce()).Error("Failed deposit")
 	} else { // no error
 		liblog.FromSDKLogger(a.keeper.Logger(ctx)).WithFields(
 			"ethSender", claim.EthereumSender,
 			"receiver", receiver,
 			"denom", coin.Denom,
 			"amount", coin.Amount.String(),
-			"nonce", claim.EventNonce,
+			"gravity-nonce", claim.GravityNonce,
 			"ethContract", claim.TokenContract,
 			"ethBlockHeight", claim.EthBlockHeight,
 			"palomaBlockHeight", sdkCtx.BlockHeight()).Info("SendToPaloma to local gravity receiver")
 		if err := sdkCtx.EventManager().EmitTypedEvent(&types.EventSendToPalomaLocal{
-			Nonce:    fmt.Sprint(claim.EventNonce),
+			Nonce:    fmt.Sprint(claim.GravityNonce),
 			Receiver: receiver.String(),
 			Token:    coin.Denom,
 			Amount:   coin.Amount.String(),

@@ -164,7 +164,7 @@ func (k msgServer) claimHandlerCommon(ctx context.Context, msgAny *codectypes.An
 		&types.EventClaim{
 			Message:       msg.GetType().String(),
 			ClaimHash:     fmt.Sprintf("%x", hash),
-			AttestationId: fmt.Sprintf("%x", types.GetAttestationKey(msg.GetEventNonce(), hash)),
+			AttestationId: fmt.Sprintf("%x", types.GetAttestationKey(msg.GetGravityNonce(), hash)),
 		},
 	)
 }

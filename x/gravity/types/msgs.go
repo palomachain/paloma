@@ -130,6 +130,8 @@ type EthereumClaim interface {
 	SetOrchestrator(sdk.AccAddress)
 	// Returns the reference ID of the remote chain on which this claim was observed.
 	GetChainReferenceId() string
+	// Returns the reference ID of the remote chain on which this claim was observed.
+	GetGravityNonce() uint64
 }
 
 // nolint: exhaustruct
@@ -167,7 +169,10 @@ func (msg *MsgSendToPalomaClaim) ValidateBasic() error {
 	// on cosmos. The attestation handler deals with this by managing invalid deposits and placing
 	// them into the community pool
 	if msg.EventNonce == 0 {
-		return fmt.Errorf("nonce == 0")
+		return fmt.Errorf("event_nonce must be positive")
+	}
+	if msg.GravityNonce == 0 {
+		return fmt.Errorf("gravity_nonce must be positive")
 	}
 	return nil
 }
@@ -212,7 +217,7 @@ const (
 // note that the Orchestrator is the only field excluded from this hash, this is because that value is used higher up in the store
 // structure for who has made what claim and is verified by the msg ante-handler for signatures
 func (msg *MsgSendToPalomaClaim) ClaimHash() ([]byte, error) {
-	path := fmt.Sprintf("%d/%d/%s/%s/%s/%s", msg.EventNonce, msg.EthBlockHeight, msg.TokenContract, msg.Amount.String(), msg.EthereumSender, msg.PalomaReceiver)
+	path := fmt.Sprintf("%d/%d/%s/%s/%s/%s", msg.GravityNonce, msg.EthBlockHeight, msg.TokenContract, msg.Amount.String(), msg.EthereumSender, msg.PalomaReceiver)
 	return tmhash.Sum([]byte(path)), nil
 }
 
@@ -233,6 +238,9 @@ func (e *MsgBatchSendToEthClaim) ValidateBasic() error {
 	if e.EventNonce == 0 {
 		return fmt.Errorf("event_nonce == 0")
 	}
+	if e.GravityNonce == 0 {
+		return fmt.Errorf("gravity_nonce == 0")
+	}
 	if e.BatchNonce == 0 {
 		return fmt.Errorf("batch_nonce == 0")
 	}
@@ -244,7 +252,7 @@ func (e *MsgBatchSendToEthClaim) ValidateBasic() error {
 
 // Hash implements WithdrawBatch.Hash
 func (msg *MsgBatchSendToEthClaim) ClaimHash() ([]byte, error) {
-	path := fmt.Sprintf("%d/%d/%d/%s", msg.EventNonce, msg.EthBlockHeight, msg.BatchNonce, msg.TokenContract)
+	path := fmt.Sprintf("%d/%d/%d/%s", msg.GravityNonce, msg.EthBlockHeight, msg.BatchNonce, msg.TokenContract)
 	return tmhash.Sum([]byte(path)), nil
 }
 

@@ -60,12 +60,12 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 	// test-chain mocks
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), nil)
-	mockServices.GravityKeeper.On("GetLastObservedEventNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
+	mockServices.GravityKeeper.On("GetLastObservedGravityNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
 
 	// invalid-test-chain mocks
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), nil)
-	mockServices.GravityKeeper.On("GetLastObservedEventNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
+	mockServices.GravityKeeper.On("GetLastObservedGravityNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
 
 	// Add 2 new chains for our tests to use
 	err := k.AddSupportForNewChain(
