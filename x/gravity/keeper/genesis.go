@@ -51,6 +51,12 @@ func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 		k.setID(ctx, nonce.LastBatchId, []byte(types.KeyLastOutgoingBatchID))
 	}
 
+	if len(data.GravityNonces) == 0 {
+		if err := k.SetLastSlashedBatchBlock(ctx, 0); err != nil {
+			panic(err)
+		}
+	}
+
 	initBridgeDataFromGenesis(ctx, k, data)
 
 	// reset pool transactions in state
