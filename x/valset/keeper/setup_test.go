@@ -80,7 +80,7 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, context.Context) {
 	k.SetParams(ctx, types.DefaultParams())
 
 	k.SetPigeonRequirements(ctx, &types.PigeonRequirements{
-		MinVersion: "v1.4.0",
+		MinVersion: "v10.4.0",
 	})
 
 	return k, ms, ctx
