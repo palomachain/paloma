@@ -89,7 +89,7 @@ func (AppModuleBasic) GetTxCmd() *cobra.Command {
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the distribution module.
-// also implements app modeul basic
+// also implements app module basic
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {}
 
 // RegisterInterfaces implements app bmodule basic

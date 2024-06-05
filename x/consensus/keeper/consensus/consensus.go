@@ -240,7 +240,7 @@ func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) erro
 	return c.save(ctx, msg)
 }
 
-// SetPublicAccessData sets data that should be visible publically so that other can provide proofs.
+// SetPublicAccessData sets data that should be visible publicly so that other can provide proofs.
 func (c Queue) SetPublicAccessData(ctx context.Context, msgID uint64, data *types.PublicAccessData) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	msg, err := c.GetMsgByID(sdkCtx, msgID)
