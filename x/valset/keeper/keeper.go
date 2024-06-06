@@ -37,12 +37,6 @@ const (
 	defaultMinimumPigeonVersion = "v1.11.2"
 )
 
-var (
-	pigeonStoreKey                 = []byte("pigeon-requirements")
-	pigeonRequirementsKey          = []byte("current")
-	pigeonScheduledRequirementsKey = []byte("scheduled")
-)
-
 var jailSentences = []time.Duration{
 	time.Minute,
 	time.Minute * 5,
@@ -760,13 +754,13 @@ func (k Keeper) SetPigeonRequirements(ctx context.Context, req *types.PigeonRequ
 		return errors.New("new version cannot be lower than current")
 	}
 
-	err = keeperutil.Save(pigeonStore, k.cdc, pigeonRequirementsKey, req)
+	err = keeperutil.Save(pigeonStore, k.cdc, types.PigeonRequirementsKey, req)
 	if err != nil {
 		return err
 	}
 
 	// Delete scheduled requirements
-	pigeonStore.Delete(pigeonScheduledRequirementsKey)
+	pigeonStore.Delete(types.PigeonScheduledRequirementsKey)
 
 	return nil
 }
@@ -793,7 +787,7 @@ func (k Keeper) SetScheduledPigeonRequirements(ctx context.Context, req *types.S
 		return errors.New("new version cannot be lower than current")
 	}
 
-	return keeperutil.Save(pigeonStore, k.cdc, pigeonScheduledRequirementsKey, req)
+	return keeperutil.Save(pigeonStore, k.cdc, types.PigeonScheduledRequirementsKey, req)
 }
 
 // Get the scheduled requirements for pigeon. These will be applied at a higher
@@ -801,14 +795,14 @@ func (k Keeper) SetScheduledPigeonRequirements(ctx context.Context, req *types.S
 func (k Keeper) ScheduledPigeonRequirements(ctx context.Context) (*types.ScheduledPigeonRequirements, error) {
 	pigeonStore := k.pigeonStore(ctx)
 
-	return keeperutil.Load[*types.ScheduledPigeonRequirements](pigeonStore, k.cdc, pigeonScheduledRequirementsKey)
+	return keeperutil.Load[*types.ScheduledPigeonRequirements](pigeonStore, k.cdc, types.PigeonScheduledRequirementsKey)
 }
 
 // Get the current requirements for pigeon
 func (k Keeper) PigeonRequirements(ctx context.Context) (*types.PigeonRequirements, error) {
 	pigeonStore := k.pigeonStore(ctx)
 
-	req, err := keeperutil.Load[*types.PigeonRequirements](pigeonStore, k.cdc, pigeonRequirementsKey)
+	req, err := keeperutil.Load[*types.PigeonRequirements](pigeonStore, k.cdc, types.PigeonRequirementsKey)
 	if err != nil {
 		if errors.Is(err, keeperutil.ErrNotFound) {
 			// During the rollout phase we won't have any information on the
@@ -827,5 +821,5 @@ func (k Keeper) PigeonRequirements(ctx context.Context) (*types.PigeonRequiremen
 
 func (k Keeper) pigeonStore(ctx context.Context) storetypes.KVStore {
 	store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
-	return prefix.NewStore(store, pigeonStoreKey)
+	return prefix.NewStore(store, types.PigeonStoreKey)
 }

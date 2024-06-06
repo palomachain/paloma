@@ -19,7 +19,7 @@ func TestGetPigeonRequirements(t *testing.T) {
 			setup: func(ctx context.Context, k *Keeper, ms mockedServices) *types.QueryGetPigeonRequirementsResponse {
 				// Clear the requirements
 				pigeonStore := k.pigeonStore(ctx)
-				pigeonStore.Delete(pigeonRequirementsKey)
+				pigeonStore.Delete(types.PigeonRequirementsKey)
 
 				return &types.QueryGetPigeonRequirementsResponse{
 					PigeonRequirements: &types.PigeonRequirements{
@@ -47,7 +47,7 @@ func TestGetPigeonRequirements(t *testing.T) {
 			setup: func(ctx context.Context, k *Keeper, ms mockedServices) *types.QueryGetPigeonRequirementsResponse {
 				// Clear the requirements
 				pigeonStore := k.pigeonStore(ctx)
-				pigeonStore.Delete(pigeonRequirementsKey)
+				pigeonStore.Delete(types.PigeonRequirementsKey)
 
 				k.SetScheduledPigeonRequirements(ctx, &types.ScheduledPigeonRequirements{
 					Requirements: &types.PigeonRequirements{
