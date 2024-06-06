@@ -34,7 +34,7 @@ const (
 	cJailingNetworkShareProtection  = 0.25
 	// We set the default to the last pigeon version enforced in code to keep
 	// backwards compatibility
-	defaultMinimumPigeonVersion = "v1.11.2"
+	defaultMinimumPigeonVersion = "v1.11.3"
 )
 
 var jailSentences = []time.Duration{
