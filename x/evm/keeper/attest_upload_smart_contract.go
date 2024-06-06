@@ -56,12 +56,12 @@ func (a *uploadSmartContractAttester) Execute(ctx sdk.Context) error {
 			types.SmartContractExecutionFailedError.With(evidence.GetErrorMessage()),
 			types.SmartContractExecutionMessageType.With(fmt.Sprintf("%T", a.action)),
 		)
+		a.attemptRetry(ctx)
+		return nil
 	default:
 		a.logger.Error("unknown type %t when attesting", evidence)
 		return ErrUnexpectedError.JoinErrorf("unknown type %t when attesting", evidence)
 	}
-
-	return nil
 }
 
 func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.TxExecutedProof) error {
@@ -197,4 +197,35 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 	a.k.deploymentCache.Add(ctx, a.chainReferenceID, smartContractID, msgIDs...)
 	a.logger.Debug("attestation successful")
 	return nil
+}
+
+func (a *uploadSmartContractAttester) attemptRetry(ctx sdk.Context) {
+	contract := a.action
+
+	if contract.Retries >= cMaxSubmitLogicCallRetries {
+		a.logger.Error("max retries for UploadSmartContract message reached",
+			"message-id", a.msgID,
+			"retries", contract.Retries,
+			"chain-reference-id", a.chainReferenceID)
+		return
+	}
+
+	contract.Retries++
+
+	a.logger.Info("retrying failed UploadSmartContract message",
+		"message-id", a.msgID,
+		"retries", contract.Retries,
+		"chain-reference-id", a.chainReferenceID)
+
+	newMsgID, err := a.k.AddUploadSmartContractToConsensus(ctx, a.chainReferenceID, contract)
+	if err != nil {
+		a.logger.WithError(err).Error("Failed to retry UploadSmartContract")
+		return
+	}
+
+	a.logger.Info("retried failed UploadSmartContract message",
+		"message-id", a.msgID,
+		"new-message-id", newMsgID,
+		"retries", contract.Retries,
+		"chain-reference-id", a.chainReferenceID)
 }

@@ -180,7 +180,6 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 }
 
 func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) (retErr error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	defer func() {
 		args := []any{
 			"chain-reference-id", chainInfo.GetChainReferenceID(),
@@ -281,31 +280,49 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 		"constructor-input", input,
 	)
 
-	assignee, err := k.PickValidatorForMessage(ctx, chainInfo.GetChainReferenceID(), nil)
-	if err != nil {
-		return err
+	contract := &types.UploadSmartContract{
+		Id:               smartContract.GetId(),
+		Bytecode:         smartContract.GetBytecode(),
+		Abi:              smartContract.GetAbiJSON(),
+		ConstructorInput: input,
 	}
-	_, err = k.ConsensusKeeper.PutMessageInQueue(
+
+	_, err = k.AddUploadSmartContractToConsensus(
+		ctx,
+		chainInfo.GetChainReferenceID(),
+		contract,
+	)
+
+	return err
+}
+
+func (k Keeper) AddUploadSmartContractToConsensus(
+	ctx context.Context,
+	chainReferenceID string,
+	smartContract *types.UploadSmartContract,
+) (uint64, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
 			ConsensusTurnstoneMessage,
 			xchainType,
-			chainInfo.GetChainReferenceID(),
+			chainReferenceID,
 		),
 		&types.Message{
-			ChainReferenceID: chainInfo.GetChainReferenceID(),
+			ChainReferenceID: chainReferenceID,
 			Action: &types.Message_UploadSmartContract{
-				UploadSmartContract: &types.UploadSmartContract{
-					Id:               smartContract.GetId(),
-					Bytecode:         smartContract.GetBytecode(),
-					Abi:              smartContract.GetAbiJSON(),
-					ConstructorInput: input,
-				},
+				UploadSmartContract: smartContract,
 			},
 			Assignee:              assignee,
 			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
 		}, nil)
-	return err
 }
 
 func (k Keeper) getSmartContract(ctx context.Context, id uint64) (*types.SmartContract, error) {

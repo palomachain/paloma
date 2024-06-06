@@ -19,7 +19,10 @@ import (
 	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 )
 
-const cMaxSubmitLogicCallRetries uint32 = 2
+const (
+	cMaxSubmitLogicCallRetries     uint32 = 2
+	cMaxUploadSmartContractRetries uint32 = 2
+)
 
 type msgAttester func(sdk.Context, consensus.Queuer, consensustypes.QueuedSignedMessageI, any) error
 
