@@ -738,8 +738,6 @@ func (k Keeper) SetPigeonRequirements(ctx context.Context, req *types.PigeonRequ
 		return nil
 	}
 
-	pigeonStore := k.pigeonStore(ctx)
-
 	pigeonReq, err := k.PigeonRequirements(ctx)
 	if err != nil {
 		return err
@@ -754,6 +752,11 @@ func (k Keeper) SetPigeonRequirements(ctx context.Context, req *types.PigeonRequ
 		return errors.New("new version cannot be lower than current")
 	}
 
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	// Use a cached context to keep both Save and Delete operations in sync
+	txCtx, commit := sdkCtx.CacheContext()
+	pigeonStore := k.pigeonStore(txCtx)
+
 	err = keeperutil.Save(pigeonStore, k.cdc, types.PigeonRequirementsKey, req)
 	if err != nil {
 		return err
@@ -761,6 +764,8 @@ func (k Keeper) SetPigeonRequirements(ctx context.Context, req *types.PigeonRequ
 
 	// Delete scheduled requirements
 	pigeonStore.Delete(types.PigeonScheduledRequirementsKey)
+
+	commit()
 
 	return nil
 }
