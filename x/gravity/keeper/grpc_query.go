@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"cosmossdk.io/errors"
@@ -143,7 +144,7 @@ func (k Keeper) LastEventNonce(
 ) (*types.QueryLastEventNonceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	var ret types.QueryLastEventNonceResponse
-	lastEventNonce, err := k.GetLastObservedEventNonce(ctx)
+	lastEventNonce, err := k.GetLastObservedEventNonce(ctx, req.GetChainReferenceId())
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +175,7 @@ func (k Keeper) LastEventNonceByAddr(
 	if err := sdk.VerifyAddressFormat(valAddress); err != nil {
 		return nil, errors.Wrap(err, "invalid validator address")
 	}
-	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, valAddress)
+	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, valAddress, req.GetChainReferenceId())
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +228,7 @@ func (k Keeper) GetLastObservedEthBlock(
 
 	locator := k.GetLastObservedEthereumBlockHeight
 
-	ethHeight := locator(ctx)
+	ethHeight := locator(ctx, req.GetChainReferenceId())
 
 	return &types.QueryLastObservedEthBlockResponse{Block: ethHeight.EthereumBlockHeight}, nil
 }
@@ -241,7 +242,7 @@ func (k Keeper) GetLastObservedEthNonce(
 
 	locator := k.GetLastObservedEventNonce
 
-	nonce, err := locator(ctx)
+	nonce, err := locator(ctx, req.GetChainReferenceId())
 	if err != nil {
 		return nil, err
 	}
@@ -254,6 +255,9 @@ func (k Keeper) GetAttestations(
 	req *types.QueryAttestationsRequest,
 ) (*types.QueryAttestationsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
+	if len(req.GetChainReferenceId()) < 1 {
+		return nil, fmt.Errorf("missing chainReferenceId filter")
+	}
 
 	iterator := k.IterateAttestations
 
@@ -271,7 +275,7 @@ func (k Keeper) GetAttestations(
 	reverse := strings.EqualFold(req.OrderBy, "desc")
 	filter := req.Height > 0 || req.Nonce > 0 || req.ClaimType != ""
 
-	err := iterator(ctx, reverse, func(_ []byte, att types.Attestation) (abort bool) {
+	err := iterator(ctx, req.GetChainReferenceId(), reverse, func(_ []byte, att types.Attestation) (abort bool) {
 		claim, err := k.UnpackAttestationClaim(&att)
 		if err != nil {
 			iterErr = errors.Wrap(sdkerrors.ErrUnpackAny, "failed to unmarshal Ethereum claim")

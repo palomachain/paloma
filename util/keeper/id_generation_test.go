@@ -46,7 +46,7 @@ func TestStoreIDs(t *testing.T) {
 	t.Run("test that ID names are not coupled", func(t *testing.T) {
 		ider, ctx := prepareTest()
 		const name1, name2 = "name-1", "name-2"
-		// increse it 3 times for name1
+		// increase it 3 times for name1
 		ider.IncrementNextID(ctx, name1)
 		ider.IncrementNextID(ctx, name1)
 		ider.IncrementNextID(ctx, name1)

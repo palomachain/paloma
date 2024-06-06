@@ -21,32 +21,26 @@ import (
 
 const cMaxSubmitLogicCallRetries uint32 = 2
 
-func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	logger := k.Logger(sdkCtx).WithFields(
-		"component", "attest-router",
-		"msg-id", msg.GetId(),
-		"msg-nonce", msg.Nonce())
-	logger.Debug("attest-router")
+type msgAttester func(sdk.Context, consensus.Queuer, consensustypes.QueuedSignedMessageI, any) error
 
+func (k Keeper) attestMessageWrapper(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI, fn msgAttester) (retErr error) {
 	if len(msg.GetEvidence()) == 0 {
 		return nil
 	}
 
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := k.Logger(ctx).WithFields(
+		"component", "attest-message",
+		"msg-id", msg.GetId(),
+		"msg-nonce", msg.Nonce())
+	logger.Debug("attest-message")
+
 	cacheCtx, writeCache := sdkCtx.CacheContext()
 	defer func() {
-		if err != nil {
-			logger.WithError(err).Error("failed to attest. Skipping writeback.")
-			return
+		if retErr == nil {
+			writeCache()
 		}
-		writeCache()
 	}()
-
-	consensusMsg, err := msg.ConsensusMsg(k.cdc)
-	if err != nil {
-		logger.WithError(err).Error("failed to cast to consensus message")
-		return err
-	}
 
 	result, err := k.consensusChecker.VerifyEvidence(cacheCtx, msg.GetEvidence())
 	if err != nil {
@@ -58,57 +52,70 @@ func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consen
 			).WithError(err).Error("Consensus not achieved.")
 			return nil
 		}
-		logger.WithError(err).Error("failed to find evidence")
 		return err
 	}
 
-	evidence := result.Winner
+	defer func() {
+		// given that there was enough evidence for a proof, regardless of the outcome,
+		// we should remove this from the queue as there isn't much that we can do about it.
+		if err := q.Remove(cacheCtx, msg.GetId()); err != nil {
+			k.Logger(sdkCtx).Error("error removing message, attestMessage", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
+		}
+	}()
+
+	return fn(cacheCtx, q, msg, result.Winner)
+}
+
+func (k Keeper) attestRouter(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (err error) {
+	return k.attestMessageWrapper(ctx, q, msg, k.routerAttester)
+}
+
+func (k Keeper) routerAttester(sdkCtx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI, winner any) error {
+	consensusMsg, err := msg.ConsensusMsg(k.cdc)
+	if err != nil {
+		k.Logger(sdkCtx).WithError(err).Error("failed to cast to consensus message")
+		return err
+	}
+
 	message := consensusMsg.(*types.Message)
 
-	// If we got up to here it means that the enough evidence was provided
 	defer func() {
 		success := false
 
 		// if the input type is a TX, then regardles, we want to set it as already processed
-		switch winner := evidence.(type) {
+		switch winner := winner.(type) {
 		case *types.TxExecutedProof:
 			success = true
 			tx, err := winner.GetTX()
 			if err == nil {
-				k.setTxAsAlreadyProcessed(cacheCtx, tx)
+				k.setTxAsAlreadyProcessed(sdkCtx, tx)
 			}
 		}
 
 		handledAt := msg.GetHandledAtBlockHeight()
 		if handledAt == nil {
-			handledAt = func(i math.Int) *math.Int { return &i }(sdkmath.NewInt(cacheCtx.BlockHeight()))
+			handledAt = func(i math.Int) *math.Int { return &i }(sdkmath.NewInt(sdkCtx.BlockHeight()))
 		}
-		publishMessageAttestedEvent(cacheCtx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
-
-		// given that there was enough evidence for a proof, regardless of the outcome,
-		// we should remove this from the queue as there isn't much that we can do about it.
-		if err := q.Remove(ctx, msg.GetId()); err != nil {
-			logger.WithError(err).Error("error removing message, attestRouter")
-		}
+		publishMessageAttestedEvent(sdkCtx, &k, msg.GetId(), message.Assignee, message.AssignedAtBlockHeight, *handledAt, success)
 	}()
 
 	rawAction := message.GetAction()
 	_, chainReferenceID := q.ChainInfo()
-	logger = logger.WithFields("chain-reference-id", chainReferenceID)
+	logger := k.Logger(sdkCtx).WithFields("chain-reference-id", chainReferenceID)
 
 	params := attestionParameters{
 		msgID:            msg.GetId(),
 		chainReferenceID: chainReferenceID,
-		rawEvidence:      evidence,
+		rawEvidence:      winner,
 		msg:              message,
 	}
 	switch rawAction.(type) {
 	case *types.Message_UploadSmartContract:
-		return newUploadSmartContractAttester(&k, logger, params).Execute(cacheCtx)
+		return newUploadSmartContractAttester(&k, logger, params).Execute(sdkCtx)
 	case *types.Message_UpdateValset:
-		return newUpdateValsetAttester(&k, logger, q, params).Execute(cacheCtx)
+		return newUpdateValsetAttester(&k, logger, q, params).Execute(sdkCtx)
 	case *types.Message_SubmitLogicCall:
-		return newSubmitLogicCallAttester(&k, logger, params).Execute(cacheCtx)
+		return newSubmitLogicCallAttester(&k, logger, params).Execute(sdkCtx)
 	}
 
 	return nil

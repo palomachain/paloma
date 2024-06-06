@@ -77,7 +77,7 @@ func (s GenesisState) ValidateBasic() error {
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		Params:             DefaultParams(),
-		GravityNonces:      GravityNonces{},
+		GravityNonces:      []GravityNonces{},
 		Batches:            []OutgoingTxBatch{},
 		BatchConfirms:      []MsgConfirmBatch{},
 		Attestations:       []Attestation{},

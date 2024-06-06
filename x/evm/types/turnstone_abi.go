@@ -137,6 +137,10 @@ func (m *ValidatorBalancesAttestation) Keccak256(nonce uint64) []byte {
 	return crypto.Keccak256([]byte(sb.String()))
 }
 
+func (m *ReferenceBlockAttestation) Keccak256(nonce uint64) []byte {
+	return crypto.Keccak256([]byte(m.FromBlockTime.String()))
+}
+
 func TransformValsetToABIValset(val Valset) any {
 	return struct {
 		Validators []common.Address

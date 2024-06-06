@@ -102,13 +102,13 @@ func (k Keeper) checkBadSignatureEvidenceInternal(ctx context.Context, subject t
 // SetPastEthSignatureCheckpoint puts the checkpoint of a batch into a set
 // in order to prove later that it existed at one point.
 func (k Keeper) SetPastEthSignatureCheckpoint(ctx context.Context, checkpoint []byte) {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	store.Set(types.GetPastEthSignatureCheckpointKey(checkpoint), []byte{0x1})
 }
 
 // GetPastEthSignatureCheckpoint tells you whether a given checkpoint has ever existed
 func (k Keeper) GetPastEthSignatureCheckpoint(ctx context.Context, checkpoint []byte) (found bool) {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	if bytes.Equal(store.Get(types.GetPastEthSignatureCheckpointKey(checkpoint)), []byte{0x1}) {
 		return true
 	} else {
@@ -117,7 +117,7 @@ func (k Keeper) GetPastEthSignatureCheckpoint(ctx context.Context, checkpoint []
 }
 
 func (k Keeper) IteratePastEthSignatureCheckpoints(ctx context.Context, cb func(key []byte, value []byte) (stop bool)) error {
-	prefixStore := prefix.NewStore(k.GetStore(ctx), types.PastEthSignatureCheckpointKey)
+	prefixStore := prefix.NewStore(k.GetStore(ctx, types.StoreModulePrefix), types.PastEthSignatureCheckpointKey)
 	iter := prefixStore.Iterator(nil, nil)
 	defer iter.Close()
 

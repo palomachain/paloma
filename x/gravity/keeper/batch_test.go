@@ -64,7 +64,7 @@ func TestBatches(t *testing.T) {
 
 	// when
 	ctx = sdkCtx.WithBlockTime(now)
-	err = input.GravityKeeper.SetLastObservedEthereumBlockHeight(ctx, 1234567)
+	err = input.GravityKeeper.SetLastObservedEthereumBlockHeight(ctx, "test-chain", 1234567)
 	require.NoError(t, err)
 	// maxElements must be greater than 0, otherwise the batch would not be created
 	noBatch, err = input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", *myTokenContractAddr, 0)
@@ -171,7 +171,7 @@ func TestBatches(t *testing.T) {
 	secondBatch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", *myTokenContractAddr, 2)
 	require.NoError(t, err)
 
-	err = input.GravityKeeper.SetLastObservedEthereumBlockHeight(ctx, 1234567)
+	err = input.GravityKeeper.SetLastObservedEthereumBlockHeight(ctx, "test-chain", 1234567)
 	require.NoError(t, err)
 
 	// Should have the remaining transactions
@@ -388,7 +388,7 @@ func TestBatchesFullCoins(t *testing.T) {
 	}
 
 	ctx = sdkCtx.WithBlockTime(now)
-	err = input.GravityKeeper.SetLastObservedEthereumBlockHeight(ctx, 1234567)
+	err = input.GravityKeeper.SetLastObservedEthereumBlockHeight(ctx, "test-chain", 1234567)
 	require.NoError(t, err)
 	// tx batch size is 2, so that some of them stay behind
 	secondBatch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", *tokenContract, 2)

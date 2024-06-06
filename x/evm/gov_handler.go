@@ -53,6 +53,7 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govv1beta1type
 					Uptime:        c.Uptime,
 					SuccessRate:   c.SuccessRate,
 					ExecutionTime: c.ExecutionTime,
+					FeatureSet:    c.FeatureSet,
 				},
 			)
 		}

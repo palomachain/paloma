@@ -609,7 +609,7 @@ func (k Keeper) Jail(_ctx context.Context, valAddr sdk.ValAddress, reason string
 			case string:
 				jailingErr = whoops.String(t)
 			default:
-				panic(r)
+				jailingErr = keeperutil.ErrUnknownPanic
 			}
 		}()
 

@@ -1,0 +1,17 @@
+syntax = "proto3";
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+package palomachain.paloma.evm;
+
+option go_package = "github.com/palomachain/paloma/x/evm/types";
+
+message ReferenceBlockAttestation {
+  google.protobuf.Timestamp fromBlockTime = 1
+      [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
+}
+
+message ReferenceBlockAttestationRes {
+  uint64 blockHeight = 1;
+  string blockHash = 2;
+}

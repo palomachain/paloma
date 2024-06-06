@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/big"
 
@@ -15,24 +14,10 @@ import (
 )
 
 func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) (retErr error) {
-	if len(msg.GetEvidence()) == 0 {
-		return nil
-	}
+	return k.attestMessageWrapper(ctx, q, msg, k.validatorBalancesAttester)
+}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	logger := k.Logger(ctx).WithFields(
-		"component", "attest-validator-balances",
-		"msg-id", msg.GetId(),
-		"msg-nonce", msg.Nonce())
-	logger.Debug("attest-validator-balances")
-
-	cacheCtx, writeCache := sdkCtx.CacheContext()
-	defer func() {
-		if retErr == nil {
-			writeCache()
-		}
-	}()
-
+func (k Keeper) validatorBalancesAttester(sdkCtx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI, winner any) error {
 	consensusMsg, err := msg.ConsensusMsg(k.cdc)
 	if err != nil {
 		return err
@@ -40,29 +25,8 @@ func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer,
 
 	request := consensusMsg.(*types.ValidatorBalancesAttestation)
 
-	result, err := k.consensusChecker.VerifyEvidence(cacheCtx, msg.GetEvidence())
-	if err != nil {
-		if errors.Is(err, ErrConsensusNotAchieved) {
-			logger.WithFields(
-				"total-shares", result.TotalShares,
-				"total-votes", result.TotalVotes,
-				"distribution", result.Distribution,
-			).WithError(err).Error("Consensus not achieved.")
-			return nil
-		}
-		return err
-	}
-
-	defer func() {
-		// given that there was enough evidence for a proof, regardless of the outcome,
-		// we should remove this from the queue as there isn't much that we can do about it.
-		if err := q.Remove(cacheCtx, msg.GetId()); err != nil {
-			k.Logger(sdkCtx).Error("error removing message, attestValidatorBalances", "msg-id", msg.GetId(), "msg-nonce", msg.Nonce())
-		}
-	}()
-
 	_, chainReferenceID := q.ChainInfo()
-	ci, err := k.GetChainInfo(cacheCtx, chainReferenceID)
+	ci, err := k.GetChainInfo(sdkCtx, chainReferenceID)
 	if err != nil {
 		return err
 	}
@@ -72,7 +36,7 @@ func (k Keeper) attestValidatorBalances(ctx context.Context, q consensus.Queuer,
 		return err
 	}
 
-	return k.processValidatorBalanceProof(cacheCtx, request, result.Winner, chainReferenceID, minBalance)
+	return k.processValidatorBalanceProof(sdkCtx, request, winner, chainReferenceID, minBalance)
 }
 
 func (k Keeper) processValidatorBalanceProof(

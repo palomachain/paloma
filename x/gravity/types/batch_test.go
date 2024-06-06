@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestOutgoingTxBatchCheckpointGold1 tests an outgoing tx batch checkpoint
+// TestOutgoingTxBatchCheckpoint tests an outgoing tx batch checkpoint
 // nolint: exhaustruct
 func TestOutgoingTxBatchCheckpoint(t *testing.T) {
 	config := sdk.GetConfig()

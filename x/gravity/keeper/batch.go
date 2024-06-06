@@ -139,7 +139,7 @@ func (k Keeper) StoreBatch(ctx context.Context, batch types.InternalOutgoingTxBa
 		return sdkerrors.Wrap(err, "attempted to store invalid batch")
 	}
 	externalBatch := batch.ToExternal()
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	key := types.GetOutgoingTxBatchKey(batch.TokenContract, batch.BatchNonce)
 	if store.Has(key) {
 		return fmt.Errorf("should never overwrite batch")
@@ -153,7 +153,7 @@ func (k Keeper) DeleteBatch(ctx context.Context, batch types.InternalOutgoingTxB
 	if err := batch.ValidateBasic(); err != nil {
 		return sdkerrors.Wrap(err, "attempted to delete invalid batch")
 	}
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	outgoingTxBatchKey := types.GetOutgoingTxBatchKey(batch.TokenContract, batch.BatchNonce)
 	store.Delete(outgoingTxBatchKey)
 	return nil
@@ -199,7 +199,7 @@ func (k Keeper) pickUnbatchedTxs(
 
 // GetOutgoingTXBatch loads a batch object. Returns nil when not exists.
 func (k Keeper) GetOutgoingTXBatch(ctx context.Context, tokenContract types.EthAddress, nonce uint64) (*types.InternalOutgoingTxBatch, error) {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	key := types.GetOutgoingTxBatchKey(tokenContract, nonce)
 	bz := store.Get(key)
 	if len(bz) == 0 {
@@ -262,7 +262,7 @@ func (k Keeper) CancelOutgoingTXBatch(ctx context.Context, tokenContract types.E
 
 // IterateOutgoingTxBatches iterates through all outgoing batches in ASC order.
 func (k Keeper) IterateOutgoingTxBatches(ctx context.Context, cb func(key []byte, batch types.InternalOutgoingTxBatch) bool) error {
-	prefixStore := prefix.NewStore(k.GetStore(ctx), types.OutgoingTXBatchKey)
+	prefixStore := prefix.NewStore(k.GetStore(ctx, types.StoreModulePrefix), types.OutgoingTXBatchKey)
 	iter := prefixStore.ReverseIterator(nil, nil)
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
@@ -327,7 +327,7 @@ func (k Keeper) GetLastOutgoingBatchByTokenType(ctx context.Context, token types
 
 // HasLastSlashedBatchBlock returns true if the last slashed batch block has been set in the store
 func (k Keeper) HasLastSlashedBatchBlock(ctx context.Context) bool {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	return store.Has(types.LastSlashedBatchBlock)
 }
 
@@ -344,14 +344,14 @@ func (k Keeper) SetLastSlashedBatchBlock(ctx context.Context, blockHeight uint64
 		}
 	}
 
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	store.Set(types.LastSlashedBatchBlock, types.UInt64Bytes(blockHeight))
 	return nil
 }
 
 // GetLastSlashedBatchBlock returns the latest slashed Batch block
 func (k Keeper) GetLastSlashedBatchBlock(ctx context.Context) (uint64, error) {
-	store := k.GetStore(ctx)
+	store := k.GetStore(ctx, types.StoreModulePrefix)
 	bytes := store.Get(types.LastSlashedBatchBlock)
 
 	if len(bytes) == 0 {

@@ -73,7 +73,7 @@ We have active, helpful communities on Twitter and Telegram.
 See [Release procedure](CONTRIBUTING.md#release-procedure) for more information about the release model.
 
 ## Active Networks
-* Testnet `paloma-testnet-15` (January 20, 2023)
+* Testnet `paloma-testnet-16` (May 23, 2024)
 * Mainnet `tumbler` (April 22, 2024)
 
 ## Join an active Network
@@ -97,7 +97,7 @@ rm -r ~/.paloma/data/wasm/cache
 ### To get the latest prebuilt `palomad` binary:
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v1.13.3/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v1.13.5/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 ```
@@ -107,7 +107,7 @@ sudo chmod +x /usr/local/bin/palomad
 ```shell
 git clone https://github.com/palomachain/paloma.git
 cd paloma
-git checkout v1.13.3
+git checkout v1.13.5
 make build
 sudo mv ./build/palomad /usr/local/bin/palomad
 ```
@@ -124,7 +124,7 @@ MONIKER="$(hostname)"
 palomad init "$MONIKER"
 
 #for testnet
-CHAIN_ID="paloma-testnet-15" 
+CHAIN_ID="paloma-testnet-16" 
 #for mainnet
 CHAIN_ID="tumbler" 
 
@@ -134,8 +134,8 @@ Copy the configs of the network we wish to connect to
 
 Testnet:
 ```shell
-wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-15/genesis.json
-wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-15/addrbook.json
+wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-16/genesis.json
+wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-16/addrbook.json
 ```
 
 Mainnet:
