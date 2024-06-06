@@ -31,5 +31,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 
 	cmd.AddCommand(CmdGetAlivePigeons())
 
+	cmd.AddCommand(CmdGetPigeonRequirements())
+
 	return cmd
 }

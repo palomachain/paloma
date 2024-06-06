@@ -93,8 +93,13 @@ func (k Keeper) CanAcceptKeepAlive(ctx context.Context, valAddr sdk.ValAddress, 
 		return ErrValidatorWithAddrNotFound.Format(valAddr.String())
 	}
 
-	if semver.Compare(pigeonVersion, k.minimumPigeonVersion) < 0 {
-		return ErrValidatorPigeonOutOfDate.Format(valAddr.String(), pigeonVersion, k.minimumPigeonVersion)
+	req, err := k.PigeonRequirements(ctx)
+	if err != nil {
+		return err
+	}
+
+	if semver.Compare(pigeonVersion, req.MinVersion) < 0 {
+		return ErrValidatorPigeonOutOfDate.Format(valAddr.String(), pigeonVersion, req.MinVersion)
 	}
 
 	return nil

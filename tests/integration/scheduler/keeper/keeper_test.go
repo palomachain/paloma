@@ -50,10 +50,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-const (
-	minimumPigeonVersion = "v1.10.0"
-)
-
 type fixture struct {
 	ctx sdk.Context
 
@@ -152,7 +148,6 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		helper.GetSubspace(valsetmoduletypes.ModuleName, paramsKeeper),
 		stakingKeeper,
 		slashingKeeper,
-		minimumPigeonVersion,
 		sdk.DefaultPowerReduction,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
 	)

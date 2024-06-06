@@ -25,12 +25,16 @@ import (
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/valset/types"
+	"golang.org/x/mod/semver"
 )
 
 const (
 	snapshotIDKey                   = "snapshot-id"
 	maxNumOfAllowedExternalAccounts = 100
 	cJailingNetworkShareProtection  = 0.25
+	// We set the default to the last pigeon version enforced in code to keep
+	// backwards compatibility
+	defaultMinimumPigeonVersion = "v1.11.3"
 )
 
 var jailSentences = []time.Duration{
@@ -45,15 +49,14 @@ type Keeper struct {
 	EvmKeeper         types.EvmKeeper
 	SnapshotListeners []types.OnSnapshotBuiltListener
 
-	cdc                  codec.BinaryCodec
-	ider                 keeperutil.IDGenerator
-	minimumPigeonVersion string
-	paramstore           paramtypes.Subspace
-	powerReduction       sdkmath.Int
-	staking              types.StakingKeeper
-	storeKey             cosmosstore.KVStoreService
-	AddressCodec         address.Codec
-	slashing             types.SlashingKeeper
+	cdc            codec.BinaryCodec
+	ider           keeperutil.IDGenerator
+	paramstore     paramtypes.Subspace
+	powerReduction sdkmath.Int
+	staking        types.StakingKeeper
+	storeKey       cosmosstore.KVStoreService
+	AddressCodec   address.Codec
+	slashing       types.SlashingKeeper
 
 	jailLog *keeperutil.KVStoreWrapper[*types.JailRecord]
 }
@@ -64,7 +67,6 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	staking types.StakingKeeper,
 	slashing types.SlashingKeeper,
-	minimumPigeonVersion string,
 	powerReduction sdkmath.Int,
 	addressCodec address.Codec,
 ) *Keeper {
@@ -74,14 +76,13 @@ func NewKeeper(
 	}
 
 	k := &Keeper{
-		cdc:                  cdc,
-		storeKey:             storeKey,
-		paramstore:           ps,
-		staking:              staking,
-		slashing:             slashing,
-		minimumPigeonVersion: minimumPigeonVersion,
-		powerReduction:       powerReduction,
-		AddressCodec:         addressCodec,
+		cdc:            cdc,
+		storeKey:       storeKey,
+		paramstore:     ps,
+		staking:        staking,
+		slashing:       slashing,
+		powerReduction: powerReduction,
+		AddressCodec:   addressCodec,
 	}
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx context.Context) storetypes.KVStore {
 		store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
@@ -728,4 +729,102 @@ func (k Keeper) snapshotStore(ctx context.Context) storetypes.KVStore {
 func (k Keeper) SaveModifiedSnapshot(ctx context.Context, snapshot *types.Snapshot) error {
 	snapStore := k.snapshotStore(ctx)
 	return keeperutil.Save(snapStore, k.cdc, keeperutil.Uint64ToByte(snapshot.GetId()), snapshot)
+}
+
+// Set the current requirements for pigeon. This will also clear any scheduled
+// requirements.
+func (k Keeper) SetPigeonRequirements(ctx context.Context, req *types.PigeonRequirements) error {
+	if req == nil {
+		return nil
+	}
+
+	pigeonReq, err := k.PigeonRequirements(ctx)
+	if err != nil {
+		return err
+	}
+
+	if semver.Compare(req.MinVersion, pigeonReq.MinVersion) < 0 {
+		liblog.FromSDKLogger(k.Logger(ctx)).
+			WithFields(
+				"req-min-version", req.MinVersion,
+				"cur-min-version", pigeonReq.MinVersion,
+			).Error("new version cannot be lower than current")
+		return errors.New("new version cannot be lower than current")
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	// Use a cached context to keep both Save and Delete operations in sync
+	txCtx, commit := sdkCtx.CacheContext()
+	pigeonStore := k.pigeonStore(txCtx)
+
+	err = keeperutil.Save(pigeonStore, k.cdc, types.PigeonRequirementsKey, req)
+	if err != nil {
+		return err
+	}
+
+	// Delete scheduled requirements
+	pigeonStore.Delete(types.PigeonScheduledRequirementsKey)
+
+	commit()
+
+	return nil
+}
+
+// Schedule new requirements for pigeon, on a specific block height
+func (k Keeper) SetScheduledPigeonRequirements(ctx context.Context, req *types.ScheduledPigeonRequirements) error {
+	if req == nil {
+		return nil
+	}
+
+	pigeonStore := k.pigeonStore(ctx)
+
+	pigeonReq, err := k.PigeonRequirements(ctx)
+	if err != nil {
+		return err
+	}
+
+	if semver.Compare(req.Requirements.MinVersion, pigeonReq.MinVersion) < 0 {
+		liblog.FromSDKLogger(k.Logger(ctx)).
+			WithFields(
+				"req-min-version", req.Requirements.MinVersion,
+				"cur-min-version", pigeonReq.MinVersion,
+			).Error("new version cannot be lower than current")
+		return errors.New("new version cannot be lower than current")
+	}
+
+	return keeperutil.Save(pigeonStore, k.cdc, types.PigeonScheduledRequirementsKey, req)
+}
+
+// Get the scheduled requirements for pigeon. These will be applied at a higher
+// block height.
+func (k Keeper) ScheduledPigeonRequirements(ctx context.Context) (*types.ScheduledPigeonRequirements, error) {
+	pigeonStore := k.pigeonStore(ctx)
+
+	return keeperutil.Load[*types.ScheduledPigeonRequirements](pigeonStore, k.cdc, types.PigeonScheduledRequirementsKey)
+}
+
+// Get the current requirements for pigeon
+func (k Keeper) PigeonRequirements(ctx context.Context) (*types.PigeonRequirements, error) {
+	pigeonStore := k.pigeonStore(ctx)
+
+	req, err := keeperutil.Load[*types.PigeonRequirements](pigeonStore, k.cdc, types.PigeonRequirementsKey)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			// During the rollout phase we won't have any information on the
+			// store. We return the previous hardcoded pigeon minimum-version
+			// here to keep requirements in one place.
+			return &types.PigeonRequirements{
+				MinVersion: defaultMinimumPigeonVersion,
+			}, nil
+		}
+
+		return nil, err
+	}
+
+	return req, nil
+}
+
+func (k Keeper) pigeonStore(ctx context.Context) storetypes.KVStore {
+	store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(store, types.PigeonStoreKey)
 }

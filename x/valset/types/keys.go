@@ -20,6 +20,12 @@ const (
 	JailLogKey = "jail_log"
 )
 
+var (
+	PigeonStoreKey                 = []byte("pigeon-requirements")
+	PigeonRequirementsKey          = []byte("current")
+	PigeonScheduledRequirementsKey = []byte("scheduled")
+)
+
 func KeyPrefix(p string) []byte {
 	return []byte(p)
 }

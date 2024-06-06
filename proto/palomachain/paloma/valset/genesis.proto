@@ -3,8 +3,13 @@ package palomachain.paloma.valset;
 
 import "gogoproto/gogo.proto";
 import "palomachain/paloma/valset/params.proto";
+import "palomachain/paloma/valset/pigeon_requirements.proto";
 
 option go_package = "github.com/palomachain/paloma/x/valset/types";
 
 // GenesisState defines the valset module's genesis state.
-message GenesisState { Params params = 1 [ (gogoproto.nullable) = false ]; }
+message GenesisState {
+  Params params = 1 [ (gogoproto.nullable) = false ];
+  PigeonRequirements pigeonRequirements = 2;
+  ScheduledPigeonRequirements scheduledPigeonRequirements = 3;
+}

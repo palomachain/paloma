@@ -65,7 +65,6 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, context.Context) {
 		paramsSubspace,
 		ms.StakingKeeper,
 		ms.SlashingKeeper,
-		"v1.4.0",
 		sdk.DefaultPowerReduction,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
 	)
@@ -79,6 +78,10 @@ func newValsetKeeper(t testing.TB) (*Keeper, mockedServices, context.Context) {
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())
+
+	k.SetPigeonRequirements(ctx, &types.PigeonRequirements{
+		MinVersion: "v10.4.0",
+	})
 
 	return k, ms, ctx
 }

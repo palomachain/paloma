@@ -692,7 +692,6 @@ func CreateTestEnv(t *testing.T) TestInput {
 		getSubspace(paramsKeeper, valsettypes.ModuleName),
 		stakingKeeper,
 		slashingKeeper,
-		"v1.5.0",
 		sdk.DefaultPowerReduction,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
 	)

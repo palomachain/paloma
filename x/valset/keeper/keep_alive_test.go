@@ -39,7 +39,7 @@ func TestJailingInactiveValidators(t *testing.T) {
 			ms.SlashingKeeper.On("Jail", mock.Anything, consAddr).Return(nil)
 			ms.SlashingKeeper.On("JailUntil", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		} else {
-			err := k.KeepValidatorAlive(sdk.WrapSDKContext(sdkCtx.WithBlockHeight(sdkCtx.BlockHeight()-(cJailingDefaultKeepAliveBlockHeight/2))), valAddr, "v1.4.0")
+			err := k.KeepValidatorAlive(sdk.WrapSDKContext(sdkCtx.WithBlockHeight(sdkCtx.BlockHeight()-(cJailingDefaultKeepAliveBlockHeight/2))), valAddr, "v10.4.0")
 			require.NoError(t, err)
 		}
 		return vali, valAddr
@@ -76,7 +76,7 @@ func TestCanAcceptKeepAlive(t *testing.T) {
 	}{
 		{
 			name:               "validator not found",
-			inputPigeonVersion: "v1.4.0",
+			inputPigeonVersion: "v10.4.0",
 			setup: func(services mockedServices) {
 				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(nil, nil)
 			},
@@ -84,36 +84,36 @@ func TestCanAcceptKeepAlive(t *testing.T) {
 		},
 		{
 			name:               "pigeon version too low",
-			inputPigeonVersion: "v1.3.100",
+			inputPigeonVersion: "v10.3.100",
 			setup: func(services mockedServices) {
 				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t), nil)
 			},
-			expectedErr: ErrValidatorPigeonOutOfDate.Format(valAddr.String(), "v1.3.100", "v1.4.0"),
+			expectedErr: ErrValidatorPigeonOutOfDate.Format(valAddr.String(), "v10.3.100", "v10.4.0"),
 		},
 		{
 			name:               "pigeon version equal, validator found",
-			inputPigeonVersion: "v1.4.0",
+			inputPigeonVersion: "v10.4.0",
 			setup: func(services mockedServices) {
 				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t), nil)
 			},
 		},
 		{
 			name:               "pigeon version major higher, validator found",
-			inputPigeonVersion: "v2.0.0",
+			inputPigeonVersion: "v20.0.0",
 			setup: func(services mockedServices) {
 				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t), nil)
 			},
 		},
 		{
 			name:               "pigeon version patch higher, validator found",
-			inputPigeonVersion: "v1.4.1",
+			inputPigeonVersion: "v10.4.1",
 			setup: func(services mockedServices) {
 				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t), nil)
 			},
 		},
 		{
 			name:               "pigeon version minor higher, validator found",
-			inputPigeonVersion: "v1.5.0",
+			inputPigeonVersion: "v10.5.0",
 			setup: func(services mockedServices) {
 				services.StakingKeeper.On("Validator", mock.Anything, mock.Anything).Return(mocks.NewStakingValidatorI(t), nil)
 			},
