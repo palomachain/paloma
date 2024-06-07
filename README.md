@@ -32,7 +32,6 @@
 
 Paloma is the fastest, secure crosschain communications blockchain. For Crosschain Software engineers who want simultaneous control of multiple, cross-chain-deployed, smart contracts, Paloma is decentralized and consensus-driven message delivery. Paloma is fast state awareness, low cost state computation, and a powerful attestation system. Polama blockchain enables scalable, crosschain, smart contract execution with any data source.
 
-
 ## Table of Contents
 
 - [Talk To Us](#talk-to-us)
@@ -46,10 +45,10 @@ Paloma is the fastest, secure crosschain communications blockchain. For Crosscha
 
 We have active, helpful communities on Twitter and Telegram.
 
-* [Twitter](https://twitter.com/paloma_chain)
-* [Telegram](https://t.me/palomachain)
-* [Discord](https://discord.gg/HtUvgxvh5N)
-* [Forum](https://forum.palomachain.com/)
+- [Twitter](https://twitter.com/paloma_chain)
+- [Telegram](https://t.me/palomachain)
+- [Discord](https://discord.gg/HtUvgxvh5N)
+- [Forum](https://forum.palomachain.com/)
 
 ## International Community
 
@@ -73,18 +72,19 @@ We have active, helpful communities on Twitter and Telegram.
 See [Release procedure](CONTRIBUTING.md#release-procedure) for more information about the release model.
 
 ## Active Networks
-* Testnet `paloma-testnet-16` (May 23, 2024)
-* Mainnet `tumbler` (April 22, 2024)
+- Testnet `paloma-testnet-16` (May 23, 2024)
+- Mainnet `tumbler` (April 22, 2024)
 
 ## Join an active Network
 
-> #### Note:
+> #### Note
+>
 > Some have seen errors with GLIBC version differences with the downloaded binaries. This is caused by a difference in the libraries of the host that built the binary and the host running the binary.
 >
 > If you experience these errors, please pull down the code and build it, rather than downloading the prebuilt binary
 
-
 ### Install the correct version of libwasm
+
 The current required version of libwasm is `1.5.2`. If you're upgrading from a prior version it is recommended to remove the cache to avoid errors. If you're already have `palomad` running, you will need to stop it before doing these steps.
 
 ```
@@ -94,10 +94,10 @@ sudo mv libwasmvm.x86_64.so /usr/lib/
 rm -r ~/.paloma/data/wasm/cache
 ```
 
-### To get the latest prebuilt `palomad` binary:
+### To get the latest prebuilt `palomad` binary
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v1.13.5/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v1.14.0/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 ```
@@ -107,18 +107,19 @@ sudo chmod +x /usr/local/bin/palomad
 ```shell
 git clone https://github.com/palomachain/paloma.git
 cd paloma
-git checkout v1.13.5
+git checkout v1.14.0
 make build
 sudo mv ./build/palomad /usr/local/bin/palomad
 ```
 
 If you're upgrading to the most recent version, you will need to stop `palomad` before copying the new binary into place.
 
-### Connecting to an existing network.
+### Connecting to an existing network
 
 Download and install the latest release of palomad.
 
 Initialize our configuration. This will populate a `~/.paloma/` directory.
+
 ```shell
 MONIKER="$(hostname)"
 palomad init "$MONIKER"
@@ -133,18 +134,21 @@ CHAIN_ID="tumbler"
 Copy the configs of the network we wish to connect to
 
 Testnet:
+
 ```shell
 wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-16/genesis.json
 wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/testnet/master/paloma-testnet-16/addrbook.json
 ```
 
 Mainnet:
+
 ```shell
 wget -O ~/.paloma/config/genesis.json https://raw.githubusercontent.com/palomachain/mainnet/master/tumbler/genesis.json
 wget -O ~/.paloma/config/addrbook.json https://raw.githubusercontent.com/palomachain/mainnet/master/tumbler/addrbook.json
 ```
 
 Next you can generate a new set of keys to the new machine, or reuse an existing key.
+
 ```shell
 VALIDATOR=<choose a name>
 palomad keys add "$VALIDATOR"
@@ -153,19 +157,22 @@ palomad keys add "$VALIDATOR"
 palomad keys add "$VALIDATOR" --recover
 ```
 
-Head over to https://faucet.palomaswap.com/ and get some funds!
+Head over to <https://faucet.palomaswap.com/> and get some funds!
 
 We can verify the new funds have been deposited.
+
 ```shell
 palomad query bank balances --node tcp://testnet.palomaswap.com:26656 "$ADDRESS"
 ```
 
 And start the node!
+
 ```shell
 palomad start
 ```
 
 If desired we can stake our funds and create a validator.
+
 ```shell
 MONIKER="$(hostname)"
 VALIDATOR="$(palomad keys list --list-names | head -n1)"
@@ -229,7 +236,6 @@ service palomad status
 journalctl -u palomad.service -f
 ```
 
-
 ### Uploading a local contract
 
 ```shell
@@ -237,4 +243,3 @@ CONTRACT=<contract.wasm>
 VALIDATOR="$(palomad keys list --list-names | head -n1)"
 palomad tx wasm store "$CONTRACT" --from "$VALIDATOR" --broadcast-mode block -y --gas auto --fees 3000000000ugrain
 ```
-
