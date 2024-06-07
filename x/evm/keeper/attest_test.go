@@ -63,6 +63,7 @@ var _ = g.Describe("attest router", func() {
 	var consensusMsg *types.Message
 	var evidence []*consensustypes.Evidence
 	var isGoodcase bool
+	var isTxProcessed bool
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "eth-main",
 		Title:             "bla",
@@ -90,6 +91,7 @@ var _ = g.Describe("attest router", func() {
 		consensukeeper = ms.ConsensusKeeper
 		q = consensusmocks.NewQueuer(t)
 		isGoodcase = true
+		isTxProcessed = true
 		ms.GravityKeeper.On("GetLastObservedEventNonce", mock.Anything, mock.Anything).Return(uint64(100), nil).Maybe()
 	})
 
@@ -208,7 +210,7 @@ var _ = g.Describe("attest router", func() {
 				valpowers = []valpower{
 					{
 						valAddr: sdk.ValAddress("123"),
-						power:   5,
+						power:   10,
 						externalChain: []*valsettypes.ExternalChainInfo{
 							{
 								ChainType:        "evm",
@@ -347,34 +349,55 @@ var _ = g.Describe("attest router", func() {
 						})
 					})
 
-					g.When("message has not been retried", func() {
+					g.Context("there is error proof", func() {
 						g.BeforeEach(func() {
-							consensusMsg.Action = &types.Message_SubmitLogicCall{
-								SubmitLogicCall: &types.SubmitLogicCall{
-									Retries: uint32(0),
+							// We're not expecting an error, but the tx won't be
+							// processed either
+							isTxProcessed = false
+							proof, _ := codectypes.NewAnyWithValue(&types.SmartContractExecutionErrorProof{ErrorMessage: "doesn't matter"})
+							evidence = []*consensustypes.Evidence{
+								{
+									ValAddress: sdk.ValAddress("123"),
+									Proof:      proof,
 								},
-							}
-							consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil)
-						})
-
-						g.It("should attempt to retry", func() {
-							setupChainSupport()
-							Expect(subject()).To(BeNil())
-						})
-					})
-
-					g.When("message has been retried too many times", func() {
-						g.BeforeEach(func() {
-							consensusMsg.Action = &types.Message_SubmitLogicCall{
-								SubmitLogicCall: &types.SubmitLogicCall{
-									Retries: uint32(2),
+								{
+									ValAddress: sdk.ValAddress("456"),
+									Proof:      proof,
 								},
 							}
 						})
 
-						g.It("should attempt to retry", func() {
-							setupChainSupport()
-							Expect(subject()).To(BeNil())
+						g.When("message has not been retried", func() {
+							g.BeforeEach(func() {
+								consensusMsg.Action = &types.Message_SubmitLogicCall{
+									SubmitLogicCall: &types.SubmitLogicCall{
+										Retries: uint32(0),
+									},
+								}
+								consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil).Once()
+							})
+
+							g.It("should attempt to retry", func() {
+								setupChainSupport()
+								Expect(subject()).To(BeNil())
+								consensukeeper.AssertNumberOfCalls(g.GinkgoT(), "PutMessageInQueue", 2)
+							})
+						})
+
+						g.When("message has been retried too many times", func() {
+							g.BeforeEach(func() {
+								consensusMsg.Action = &types.Message_SubmitLogicCall{
+									SubmitLogicCall: &types.SubmitLogicCall{
+										Retries: uint32(2),
+									},
+								}
+							})
+
+							g.It("should not attempt to retry", func() {
+								setupChainSupport()
+								Expect(subject()).To(BeNil())
+								consensukeeper.AssertNumberOfCalls(g.GinkgoT(), "PutMessageInQueue", 1)
+							})
 						})
 					})
 				})
@@ -493,7 +516,7 @@ var _ = g.Describe("attest router", func() {
 				})
 
 				g.JustAfterEach(func() {
-					Expect(k.isTxProcessed(ctx, sampleTx1)).To(Equal(isGoodcase))
+					Expect(k.isTxProcessed(ctx, sampleTx1)).To(Equal(isTxProcessed))
 				})
 			})
 		})
