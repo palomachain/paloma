@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"os"
 	"sync"
+	"testing"
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
@@ -45,6 +46,11 @@ type record struct {
 func (r record) GetDenom() string            { return r.denom }
 func (r record) GetErc20() string            { return r.erc20 }
 func (r record) GetChainReferenceId() string { return r.chain }
+
+func TestKeeperGinkgo(t *testing.T) {
+	RegisterFailHandler(g.Fail)
+	g.RunSpecs(t, "Metrix")
+}
 
 var _ = g.Describe("attest router", func() {
 	var k Keeper
