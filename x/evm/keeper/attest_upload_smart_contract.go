@@ -207,6 +207,9 @@ func (a *uploadSmartContractAttester) attemptRetry(ctx sdk.Context) {
 			"message-id", a.msgID,
 			"retries", contract.Retries,
 			"chain-reference-id", a.chainReferenceID)
+
+		smartContractID := a.action.GetId()
+		a.k.DeleteSmartContractDeploymentByContractID(ctx, smartContractID, a.chainReferenceID)
 		return
 	}
 
