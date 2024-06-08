@@ -35,6 +35,7 @@ message UploadSmartContract {
   bytes constructorInput = 3;
 
   uint64 id = 4;
+  uint32 retries = 5;
 }
 
 message Message {
