@@ -7,41 +7,40 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/keeper"
-	log "github.com/sirupsen/logrus"
 )
 
 // EndBlocker is called at the end of every block
 func EndBlocker(ctx context.Context, k keeper.Keeper) {
+	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("gravity-endblocker")
 	defer func() {
 		if r := recover(); r != nil {
-			liblog.FromSDKLogger(k.Logger(ctx)).
-				WithFields("original-error", r).
-				Warn("Recovered panic.")
+			logger.WithFields("original-error", r).Warn("Recovered panic.")
 		}
 	}()
+
 	// slashing(ctx, k)
 	chains := k.GetChainsWithTokens(ctx)
 
 	err := createBatch(ctx, k)
 	if err != nil {
-		log.Error(err)
+		logger.WithError(err).Warn("Failed to create batches")
 	}
 
 	for _, v := range chains {
 		err = attestationTally(ctx, k, v)
 		if err != nil {
-			log.Error(err)
+			logger.WithError(err).Warn("Failed to tally attestations.")
 		}
 
 		err = pruneAttestations(ctx, k, v)
 		if err != nil {
-			log.Error(err)
+			logger.WithError(err).Warn("Failed to prune attestations.")
 		}
 	}
 
 	err = cleanupTimedOutBatches(ctx, k)
 	if err != nil {
-		log.Error(err)
+		logger.WithError(err).Warn("Failed to cleanup timed out batches.")
 	}
 }
 

@@ -48,13 +48,8 @@ func (a AttestationHandler) Handle(ctx context.Context, att types.Attestation, c
 // Upon acceptance of sufficient validator SendToPaloma claims: transfer tokens to the appropriate paloma account
 // The paloma receiver must be a native account (e.g. paloma1abc...)
 // Bank module handles the transfer
-func (a AttestationHandler) handleSendToPaloma(goCtx context.Context, claim types.MsgSendToPalomaClaim) (err error) {
-	ctx, commit := sdk.UnwrapSDKContext(goCtx).CacheContext()
-	defer func() {
-		if err == nil {
-			commit()
-		}
-	}()
+// Should ALWAYS be called with a cached context that writes only in case of no returned error!
+func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.MsgSendToPalomaClaim) (err error) {
 	hash, err := claim.ClaimHash()
 	if err != nil {
 		return sdkerrors.Wrapf(err, "Failed to compute claim hash for %v: %v", claim, err)
@@ -67,6 +62,7 @@ func (a AttestationHandler) handleSendToPaloma(goCtx context.Context, claim type
 			"nonce", claim.GetGravityNonce(),
 			"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
 		)
+	logger.Debug("Handling send-to-paloma event.")
 
 	invalidAddress := false
 	receiverAddress, errReceiverAddr := types.IBCAddressFromBech32(claim.PalomaReceiver)
@@ -104,7 +100,8 @@ func (a AttestationHandler) handleSendToPaloma(goCtx context.Context, claim type
 	}
 	moduleAddr := a.keeper.accountKeeper.GetModuleAddress(types.ModuleName)
 
-	if !invalidAddress { // address appears valid, attempt to send minted/locked coins to receiver
+	if !invalidAddress {
+		logger.Debug("Attempting to send coins to receiver")
 		preSendBalance := a.keeper.bankKeeper.GetBalance(ctx, moduleAddr, denom)
 
 		err := a.sendCoinToLocalAddress(ctx, claim, receiverAddress, coin)
@@ -132,6 +129,7 @@ func (a AttestationHandler) handleSendToPaloma(goCtx context.Context, claim type
 	// the paloma side they will be lost an inaccessible even though they are locked in the bridge.
 	// so we deposit the tokens into the community pool for later use via governance vote
 	if invalidAddress {
+		logger.Debug("Invalid address! Sending tokens to community pool")
 		if err := a.keeper.SendToCommunityPool(ctx, coins); err != nil {
 			logger.WithError(err).Error("Failed community pool send")
 			return sdkerrors.Wrap(err, "failed to send to Community pool")

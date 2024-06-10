@@ -105,6 +105,7 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 	if err != nil {
 		return fmt.Errorf("unable to compute claim hash")
 	}
+
 	// If the attestation has not yet been Observed, sum up the votes and see if it is ready to apply to the state.
 	// This conditional stops the attestation from accidentally being applied twice.
 	if !att.Observed {
@@ -174,22 +175,25 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 }
 
 // processAttestation actually applies the attestation to the consensus state
-func (k Keeper) processAttestation(ctx context.Context, att *types.Attestation, claim types.EthereumClaim) error {
-	hash, err := claim.ClaimHash()
-	if err != nil {
-		return fmt.Errorf("unable to compute claim hash")
-	}
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	// then execute in a new Tx so that we can store state on failure
-	xCtx, commit := sdkCtx.CacheContext()
-	if err := k.AttestationHandler.Handle(xCtx, *att, claim); err != nil { // execute with a transient storage
+func (k Keeper) processAttestation(goCtx context.Context, att *types.Attestation, claim types.EthereumClaim) error {
+	ctx, commit := sdk.UnwrapSDKContext(goCtx).CacheContext()
+	if err := k.AttestationHandler.Handle(ctx, *att, claim); err != nil {
+		// execute with a transient storage
 		// If the attestation fails, something has gone wrong and we can't recover it. Log and move on
 		// The attestation will still be marked "Observed", allowing the oracle to progress properly
-		liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
-			"cause", err.Error(),
-			"claim type", claim.GetType(),
-			"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
-			"nonce", claim.GetGravityNonce()).Error("attestation failed")
+		hash, err := claim.ClaimHash()
+		if err != nil {
+			return fmt.Errorf("processAttestation: unable to compute claim hash: %w", err)
+		}
+
+		liblog.FromSDKLogger(k.Logger(ctx)).
+			WithComponent("process-attestation").
+			WithFields(
+				"claim type", claim.GetType(),
+				"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
+				"nonce", claim.GetGravityNonce()).
+			WithError(err).
+			Warn("attestation failed")
 	} else {
 		commit() // persist transient storage
 	}
