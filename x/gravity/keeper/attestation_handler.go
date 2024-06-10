@@ -55,7 +55,7 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 		return sdkerrors.Wrapf(err, "Failed to compute claim hash for %v: %v", claim, err)
 	}
 
-	logger := liblog.FromSDKLogger(a.keeper.Logger(ctx)).
+	logger := liblog.FromKeeper(ctx, a.keeper).
 		WithComponent("handle-send-to-paloma").
 		WithFields(
 			"claim-type", claim.GetType(),

@@ -186,7 +186,7 @@ func (k Keeper) processAttestation(goCtx context.Context, att *types.Attestation
 			return fmt.Errorf("processAttestation: unable to compute claim hash: %w", err)
 		}
 
-		liblog.FromSDKLogger(k.Logger(ctx)).
+		liblog.FromKeeper(ctx, k).
 			WithComponent("process-attestation").
 			WithFields(
 				"claim type", claim.GetType(),

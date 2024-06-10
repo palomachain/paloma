@@ -11,12 +11,13 @@ import (
 
 // EndBlocker is called at the end of every block
 func EndBlocker(ctx context.Context, k keeper.Keeper) {
-	logger := liblog.FromSDKLogger(k.Logger(ctx)).WithComponent("gravity-endblocker")
+	logger := liblog.FromKeeper(ctx, k).WithComponent("gravity-endblocker")
 	defer func() {
 		if r := recover(); r != nil {
 			logger.WithFields("original-error", r).Warn("Recovered panic.")
 		}
 	}()
+	logger.Debug("Running endblocker")
 
 	// slashing(ctx, k)
 	chains := k.GetChainsWithTokens(ctx)
