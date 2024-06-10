@@ -48,63 +48,60 @@ func (a AttestationHandler) Handle(ctx context.Context, att types.Attestation, c
 // Upon acceptance of sufficient validator SendToPaloma claims: transfer tokens to the appropriate paloma account
 // The paloma receiver must be a native account (e.g. paloma1abc...)
 // Bank module handles the transfer
-func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.MsgSendToPalomaClaim) error {
-	invalidAddress := false
-	// Validate the receiver as a valid bech32 address
-	receiverAddress, addressErr := types.IBCAddressFromBech32(claim.PalomaReceiver)
-
-	if addressErr != nil {
-		invalidAddress = true
-		hash, er := claim.ClaimHash()
-		if er != nil {
-			return sdkerrors.Wrapf(er, "Unable to log error %v, could not compute ClaimHash for claim %v: %v", addressErr, claim, er)
+func (a AttestationHandler) handleSendToPaloma(goCtx context.Context, claim types.MsgSendToPalomaClaim) (err error) {
+	ctx, commit := sdk.UnwrapSDKContext(goCtx).CacheContext()
+	defer func() {
+		if err == nil {
+			commit()
 		}
-
-		liblog.FromSDKLogger(a.keeper.Logger(ctx)).WithFields(
-			"address", receiverAddress,
-			"cause", addressErr.Error(),
-			"claim type", claim.GetType(),
-			"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
-			"nonce", claim.GetGravityNonce()).Error("Invalid SendToPaloma receiver")
+	}()
+	hash, err := claim.ClaimHash()
+	if err != nil {
+		return sdkerrors.Wrapf(err, "Failed to compute claim hash for %v: %v", claim, err)
 	}
+
+	logger := liblog.FromSDKLogger(a.keeper.Logger(ctx)).
+		WithComponent("handle-send-to-paloma").
+		WithFields(
+			"claim-type", claim.GetType(),
+			"nonce", claim.GetGravityNonce(),
+			"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
+		)
+
+	invalidAddress := false
+	receiverAddress, errReceiverAddr := types.IBCAddressFromBech32(claim.PalomaReceiver)
+	logger = logger.WithFields("receiver-address", receiverAddress)
+	if errReceiverAddr != nil {
+		invalidAddress = true
+		logger.WithError(errReceiverAddr).Error("Invalid SendToPaloma receiver")
+	}
+
 	tokenAddress, errTokenAddress := types.NewEthAddress(claim.TokenContract)
 	_, errEthereumSender := types.NewEthAddress(claim.EthereumSender)
 	// nil address is not possible unless the validators get together and submit
 	// a bogus event, this would create lost tokens stuck in the bridge
 	// and not accessible to anyone
 	if errTokenAddress != nil {
-		hash, er := claim.ClaimHash()
-		if er != nil {
-			return sdkerrors.Wrapf(er, "Unable to log error %v, could not compute ClaimHash for claim %v: %v", errTokenAddress, claim, er)
-		}
-		liblog.FromSDKLogger(a.keeper.Logger(ctx)).WithFields(
-			"cause", errTokenAddress.Error(),
-			"claim type", claim.GetType(),
-			"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
-			"nonce", claim.GetGravityNonce()).Error("Invalid token contract")
+		logger.WithError(errTokenAddress).Error("Invalid token contract")
 		return sdkerrors.Wrap(errTokenAddress, "invalid token contract on claim")
 	}
+
 	// likewise nil sender would have to be caused by a bogus event
 	if errEthereumSender != nil {
-		hash, er := claim.ClaimHash()
-		if er != nil {
-			return sdkerrors.Wrapf(er, "Unable to log error %v, could not compute ClaimHash for claim %v: %v", errEthereumSender, claim, er)
-		}
-		liblog.FromSDKLogger(a.keeper.Logger(ctx)).WithFields(
-			"cause", errEthereumSender.Error(),
-			"claim type", claim.GetType(),
-			"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
-			"nonce", claim.GetGravityNonce()).Error("Invalid ethereum sender")
+		logger.WithError(errEthereumSender).Error("Invalid ethereum sender")
 		return sdkerrors.Wrap(errTokenAddress, "invalid ethereum sender on claim")
 	}
 
 	denom, err := a.keeper.GetDenomOfERC20(ctx, claim.GetChainReferenceId(), *tokenAddress)
 	if err != nil {
-		return err
+		return fmt.Errorf("unknown denom %v: %w", *tokenAddress, err)
 	}
 	coin := sdk.NewCoin(denom, claim.Amount)
 	coins := sdk.Coins{coin}
 
+	if err := a.keeper.bankKeeper.MintCoins(ctx, types.ModuleName, coins); err != nil {
+		return fmt.Errorf("failed to mint new coins: %w", err)
+	}
 	moduleAddr := a.keeper.accountKeeper.GetModuleAddress(types.ModuleName)
 
 	if !invalidAddress { // address appears valid, attempt to send minted/locked coins to receiver
@@ -136,15 +133,7 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 	// so we deposit the tokens into the community pool for later use via governance vote
 	if invalidAddress {
 		if err := a.keeper.SendToCommunityPool(ctx, coins); err != nil {
-			hash, er := claim.ClaimHash()
-			if er != nil {
-				return sdkerrors.Wrapf(er, "Unable to log error %v, could not compute ClaimHash for claim %v: %v", err, claim, er)
-			}
-			liblog.FromSDKLogger(a.keeper.Logger(ctx)).WithFields(
-				"cause", err.Error(),
-				"claim type", claim.GetType(),
-				"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
-				"nonce", claim.GetGravityNonce()).Error("Failed community pool send")
+			logger.WithError(err).Error("Failed community pool send")
 			return sdkerrors.Wrap(err, "failed to send to Community pool")
 		}
 
