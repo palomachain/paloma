@@ -259,7 +259,7 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 		"validators-size", len(valset.GetValidators()),
 		"power-size", len(valset.GetPowers()),
 	)
-	input, err := contractABI.Pack("", uniqueID, big.NewInt(0), (&big.Int{}).SetUint64(lastEventNonce), types.TransformValsetToABIValset(valset))
+	input, err := contractABI.Pack("", uniqueID, big.NewInt(0), (&big.Int{}).SetUint64(lastGravityNonce), types.TransformValsetToABIValset(valset))
 	if err != nil {
 		return err
 	}
