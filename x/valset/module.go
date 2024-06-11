@@ -3,6 +3,7 @@ package valset
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/core/appmodule"
@@ -14,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/valset/client/cli"
 	"github.com/palomachain/paloma/x/valset/keeper"
@@ -177,7 +179,10 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 
 	reqs, err := am.keeper.ScheduledPigeonRequirements(ctx)
 	if err != nil {
-		logger.WithError(err).Error("error checking pigeon requirements")
+		// Ignore ErrNotFound to limit noise, but log every other error
+		if !errors.Is(err, keeperutil.ErrNotFound) {
+			logger.WithError(err).Error("error checking pigeon requirements")
+		}
 		return nil
 	}
 
