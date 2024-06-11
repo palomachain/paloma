@@ -247,9 +247,9 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 	}
 	uniqueID := generateSmartContractID(ctx)
 	k.createSmartContractDeployment(ctx, smartContract, chainInfo, uniqueID[:])
-	lastEventNonce, err := k.Gravity.GetLastObservedGravityNonce(ctx, chainInfo.GetChainReferenceID())
+	lastGravityNonce, err := k.Gravity.GetLastObservedGravityNonce(ctx, chainInfo.GetChainReferenceID())
 	if err != nil {
-		return fmt.Errorf("failed to get last observed event nonce: %w", err)
+		return fmt.Errorf("failed to get last observed gravity nonce: %w", err)
 	}
 
 	// set the smart contract constructor arguments
