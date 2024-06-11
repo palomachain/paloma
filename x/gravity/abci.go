@@ -7,41 +7,41 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/gravity/keeper"
-	log "github.com/sirupsen/logrus"
 )
 
 // EndBlocker is called at the end of every block
 func EndBlocker(ctx context.Context, k keeper.Keeper) {
+	logger := liblog.FromKeeper(ctx, k).WithComponent("gravity-endblocker")
 	defer func() {
 		if r := recover(); r != nil {
-			liblog.FromSDKLogger(k.Logger(ctx)).
-				WithFields("original-error", r).
-				Warn("Recovered panic.")
+			logger.WithFields("original-error", r).Warn("Recovered panic.")
 		}
 	}()
+	logger.Debug("Running endblocker")
+
 	// slashing(ctx, k)
 	chains := k.GetChainsWithTokens(ctx)
 
 	err := createBatch(ctx, k)
 	if err != nil {
-		log.Error(err)
+		logger.WithError(err).Warn("Failed to create batches")
 	}
 
 	for _, v := range chains {
 		err = attestationTally(ctx, k, v)
 		if err != nil {
-			log.Error(err)
+			logger.WithError(err).Warn("Failed to tally attestations.")
 		}
 
 		err = pruneAttestations(ctx, k, v)
 		if err != nil {
-			log.Error(err)
+			logger.WithError(err).Warn("Failed to prune attestations.")
 		}
 	}
 
 	err = cleanupTimedOutBatches(ctx, k)
 	if err != nil {
-		log.Error(err)
+		logger.WithError(err).Warn("Failed to cleanup timed out batches.")
 	}
 }
 
@@ -101,7 +101,7 @@ func attestationTally(ctx context.Context, k keeper.Keeper, chainReferenceID str
 			// we skip the other attestations and move on to the next nonce again.
 			// If no attestation becomes observed, when we get to the next nonce, every attestation in
 			// it will be skipped. The same will happen for every nonce after that.
-			lastEventNonce, err := k.GetLastObservedEventNonce(ctx, chainReferenceID)
+			lastEventNonce, err := k.GetLastObservedGravityNonce(ctx, chainReferenceID)
 			if err != nil {
 				return err
 			}
@@ -151,7 +151,7 @@ func pruneAttestations(ctx context.Context, k keeper.Keeper, chainReferenceID st
 	// minus some buffer value. This buffer value is purely to allow
 	// frontends and other UI components to view recent oracle history
 	const eventsToKeep = 1000
-	lastNonce, err := k.GetLastObservedEventNonce(ctx, chainReferenceID)
+	lastNonce, err := k.GetLastObservedGravityNonce(ctx, chainReferenceID)
 	if err != nil {
 		return err
 	}

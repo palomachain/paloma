@@ -18,10 +18,12 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {}
   rpc LastPendingBatchRequestByAddr(QueryLastPendingBatchRequestByAddrRequest)
       returns (QueryLastPendingBatchRequestByAddrResponse) {}
-  rpc LastEventNonce(QueryLastEventNonceRequest)
-      returns (QueryLastEventNonceResponse) {}
-  rpc LastEventNonceByAddr(QueryLastEventNonceByAddrRequest)
-      returns (QueryLastEventNonceResponse) {}
+  rpc LastObservedGravityNonce(QueryLastObservedGravityNonceRequest)
+      returns (QueryLastObservedGravityNonceResponse) {}
+  rpc LastObservedGravityNonceByAddr(QueryLastObservedGravityNonceByAddrRequest)
+      returns (QueryLastObservedGravityNonceResponse) {}
+  rpc LastObservedGravityBlock(QueryLastObservedGravityBlockRequest)
+      returns (QueryLastObservedGravityBlockResponse) {}
   rpc OutgoingTxBatches(QueryOutgoingTxBatchesRequest)
       returns (QueryOutgoingTxBatchesResponse) {}
   rpc BatchRequestByNonce(QueryBatchRequestByNonceRequest)
@@ -32,10 +34,6 @@ service Query {
       returns (QueryERC20ToDenomResponse) {}
   rpc DenomToERC20(QueryDenomToERC20Request)
       returns (QueryDenomToERC20Response) {}
-  rpc GetLastObservedEthBlock(QueryLastObservedEthBlockRequest)
-      returns (QueryLastObservedEthBlockResponse) {}
-  rpc GetLastObservedEthNonce(QueryLastObservedEthNonceRequest)
-      returns (QueryLastObservedEthNonceResponse) {}
   rpc GetAttestations(QueryAttestationsRequest)
       returns (QueryAttestationsResponse) {}
 
@@ -80,14 +78,19 @@ message QueryBatchConfirmsResponse {
   repeated MsgConfirmBatch confirms = 1 [ (gogoproto.nullable) = false ];
 }
 
-message QueryLastEventNonceRequest { 
+message QueryLastObservedGravityNonceRequest { 
   string chain_reference_id = 1;
 }
-message QueryLastEventNonceByAddrRequest { 
+message QueryLastObservedGravityNonceByAddrRequest { 
   string address = 1; 
   string chain_reference_id = 2;
 }
-message QueryLastEventNonceResponse { uint64 event_nonce = 1; }
+message QueryLastObservedGravityNonceResponse { uint64 nonce = 1; }
+
+message QueryLastObservedGravityBlockRequest { 
+  string chain_reference_id = 1;
+}
+message QueryLastObservedGravityBlockResponse { uint64 block = 1; }
 
 message QueryERC20ToDenomRequest {
   string erc20 = 1;
@@ -100,38 +103,6 @@ message QueryDenomToERC20Request {
   string chain_reference_id = 2;
 }
 message QueryDenomToERC20Response { string erc20 = 1; }
-
-// QueryLastObservedEthBlockRequest defines the request for getting the height
-// of the last applied Ethereum Event on the bridge. This is expected to lag the
-// actual Ethereum block height significantly due to 1. Ethereum Finality and
-//  2. Consensus mirroring the state on Ethereum
-message QueryLastObservedEthBlockRequest {
-  reserved 1;
-  reserved "use_v1_key";
-
-  string chain_reference_id = 2;
-}
-message QueryLastObservedEthBlockResponse {
-  // a response of 0 indicates that no Ethereum events have been observed, and
-  // thus the bridge is inactive
-  uint64 block = 1;
-}
-
-// QueryLastObservedEthNonceRequest defines the request for getting the event
-// nonce of the last applied Ethereum Event on the bridge. Note that this is
-// likely to lag the last executed event a little due to 1. Ethereum Finality
-// and 2. Consensus mirroring the Ethereum state
-message QueryLastObservedEthNonceRequest {
-  reserved 1;
-  reserved "use_v1_key";
-
-  string chain_reference_id = 2;
-}
-message QueryLastObservedEthNonceResponse {
-  // a response of 0 indicates that no Ethereum events have been observed, and
-  // thus the bridge is inactive
-  uint64 nonce = 1;
-}
 
 // QueryAttestationsRequest defines the request structure for getting recent
 // attestations with optional query parameters. By default, a limited set of

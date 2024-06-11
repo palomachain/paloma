@@ -105,6 +105,7 @@ func createAttestations(t *testing.T, chainReferenceID string, length int, k Kee
 		orch := sdktypes.AccAddress(bytes.Repeat([]byte{0x3}, 20)).String()
 		receiver := sdktypes.AccAddress(bytes.Repeat([]byte{0x4}, 20)).String()
 		msg := types.MsgSendToPalomaClaim{
+			GravityNonce:   nonce,
 			EventNonce:     nonce,
 			EthBlockHeight: 1,
 			TokenContract:  contract,
@@ -172,19 +173,19 @@ func TestGetSetLastEventNonceByValidator(t *testing.T) {
 	addrInBytes := valAccount.GetAddress().Bytes()
 
 	// In case this is first time validator is submiting claim, nonce is expected to be LastObservedNonce-1
-	err = k.setLastObservedEventNonce(ctx, chainReferenceID, nonce)
+	err = k.setLastObservedGravityNonce(ctx, chainReferenceID, nonce)
 	require.NoError(t, err)
-	getEventNonce, err := k.GetLastEventNonceByValidator(ctx, addrInBytes, chainReferenceID)
-	require.NoError(t, err)
-
-	require.Equal(t, nonce-1, getEventNonce)
-
-	err = k.SetLastEventNonceByValidator(ctx, addrInBytes, chainReferenceID, nonce)
+	gravityNonce, err := k.GetLastGravityNonceByValidator(ctx, addrInBytes, chainReferenceID)
 	require.NoError(t, err)
 
-	getEventNonce, err = k.GetLastEventNonceByValidator(ctx, addrInBytes, chainReferenceID)
+	require.Equal(t, nonce-1, gravityNonce)
+
+	err = k.SetLastGravityNonceByValidator(ctx, addrInBytes, chainReferenceID, nonce)
 	require.NoError(t, err)
-	require.Equal(t, nonce, getEventNonce)
+
+	gravityNonce, err = k.GetLastGravityNonceByValidator(ctx, addrInBytes, chainReferenceID)
+	require.NoError(t, err)
+	require.Equal(t, nonce, gravityNonce)
 }
 
 func TestInvalidHeight(t *testing.T) {
@@ -200,7 +201,7 @@ func TestInvalidHeight(t *testing.T) {
 	sender := AccAddrs[0]
 	receiver := EthAddrs[0]
 
-	lastNonce, err := pk.GetLastObservedEventNonce(ctx, chainReferenceID)
+	lastNonce, err := pk.GetLastObservedGravityNonce(ctx, chainReferenceID)
 	require.NoError(t, err)
 
 	lastEthHeight := pk.GetLastObservedEthereumBlockHeight(ctx, chainReferenceID).EthereumBlockHeight
@@ -235,7 +236,8 @@ func TestInvalidHeight(t *testing.T) {
 	// Submit a bad claim with EthBlockHeight >= timeout
 
 	bad := types.MsgBatchSendToEthClaim{
-		EventNonce:       lastNonce + 1,
+		GravityNonce:     lastNonce + 1,
+		EventNonce:       lastNonce + 15,
 		EthBlockHeight:   badHeight,
 		BatchNonce:       uint64(lastBatchNonce + 1),
 		TokenContract:    tokenContract,
@@ -255,14 +257,15 @@ func TestInvalidHeight(t *testing.T) {
 	// Assert that there is no attestation since the above failed
 	badHash, err := bad.ClaimHash()
 	require.NoError(t, err)
-	att := pk.GetAttestation(ctx, chainReferenceID, bad.GetEventNonce(), badHash)
+	att := pk.GetAttestation(ctx, chainReferenceID, bad.GetGravityNonce(), badHash)
 	require.Nil(t, att)
 
 	// Attest the actual batch, and assert the votes are correct
 	for i, orch := range AccAddrs[1:] {
 		log.Info("Submitting good eth claim from orchestrators", "orch", orch.String())
 		good := types.MsgBatchSendToEthClaim{
-			EventNonce:       lastNonce + 1,
+			GravityNonce:     lastNonce + 1,
+			EventNonce:       lastNonce + 15,
 			EthBlockHeight:   goodHeight,
 			BatchNonce:       uint64(lastBatchNonce + 1),
 			TokenContract:    tokenContract,
@@ -279,7 +282,7 @@ func TestInvalidHeight(t *testing.T) {
 		goodHash, err := good.ClaimHash()
 		require.NoError(t, err)
 
-		att := pk.GetAttestation(ctx, chainReferenceID, good.GetEventNonce(), goodHash)
+		att := pk.GetAttestation(ctx, chainReferenceID, good.GetGravityNonce(), goodHash)
 		require.NotNil(t, att)
 		log.Info("Asserting that the bad attestation only has one claimer", "attVotes", att.Votes)
 		require.Equal(t, len(att.Votes), i+1) // Only these good orchestrators votes should be counted

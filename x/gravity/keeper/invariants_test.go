@@ -147,7 +147,7 @@ func TestModuleBalanceBatchedTxs(t *testing.T) {
 	// Simulate one batch being relayed and observed
 	fakeBlock := batch.PalomaBlockCreated // A fake ethereum block used for the test only
 	msg := types.MsgBatchSendToEthClaim{
-		EventNonce:       0,
+		GravityNonce:     0,
 		EthBlockHeight:   fakeBlock,
 		BatchNonce:       batch.BatchNonce,
 		TokenContract:    testERC20Address,

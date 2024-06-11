@@ -748,7 +748,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 	)
 
 	// set gravityIDs for batches and tx items, simulating genesis setup
-	err = k.setLastObservedEventNonce(ctx, "test-chain", 0)
+	err = k.setLastObservedGravityNonce(ctx, "test-chain", 0)
 	require.NoError(t, err)
 	err = k.SetLastSlashedBatchBlock(ctx, 0)
 	require.NoError(t, err)

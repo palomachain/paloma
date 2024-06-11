@@ -137,29 +137,32 @@ func (k Keeper) BatchConfirms(
 	return &types.QueryBatchConfirmsResponse{Confirms: confirms}, nil
 }
 
-// LastEventNonce returns the last event nonce observed by Paloma.
-func (k Keeper) LastEventNonce(
+// LastObservedGravityNonce returns the last gravity nonce observed by Paloma.
+func (k Keeper) LastObservedGravityNonce(
 	c context.Context,
-	req *types.QueryLastEventNonceRequest,
-) (*types.QueryLastEventNonceResponse, error) {
+	req *types.QueryLastObservedGravityNonceRequest,
+) (*types.QueryLastObservedGravityNonceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	var ret types.QueryLastEventNonceResponse
-	lastEventNonce, err := k.GetLastObservedEventNonce(ctx, req.GetChainReferenceId())
+	var ret types.QueryLastObservedGravityNonceResponse
+	if len(req.ChainReferenceId) < 1 {
+		return nil, fmt.Errorf("missing chain reference ID")
+	}
+	lastGravityNonce, err := k.GetLastObservedGravityNonce(ctx, req.GetChainReferenceId())
 	if err != nil {
 		return nil, err
 	}
-	ret.EventNonce = lastEventNonce
+	ret.Nonce = lastGravityNonce
 	return &ret, nil
 }
 
-// LastEventNonceByAddr returns the last event nonce for the given validator address,
-// this allows eth oracles to figure out where they left off
-func (k Keeper) LastEventNonceByAddr(
+// LastObservedGravityNonceByAddr returns the last gravity nonce for the given validator address,
+// this allows Pigeons to figure out where they left off
+func (k Keeper) LastObservedGravityNonceByAddr(
 	c context.Context,
-	req *types.QueryLastEventNonceByAddrRequest,
-) (*types.QueryLastEventNonceResponse, error) {
+	req *types.QueryLastObservedGravityNonceByAddrRequest,
+) (*types.QueryLastObservedGravityNonceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	var ret types.QueryLastEventNonceResponse
+	var ret types.QueryLastObservedGravityNonceResponse
 	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
 		return nil, errors.Wrap(sdkerrors.ErrInvalidAddress, req.Address)
@@ -171,16 +174,34 @@ func (k Keeper) LastEventNonceByAddr(
 	if !found {
 		return nil, errors.Wrap(types.ErrUnknown, "address")
 	}
+	if len(req.ChainReferenceId) < 1 {
+		return nil, fmt.Errorf("missing chain reference ID")
+	}
 	valAddress, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, validator.GetOperator())
 	if err := sdk.VerifyAddressFormat(valAddress); err != nil {
 		return nil, errors.Wrap(err, "invalid validator address")
 	}
-	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, valAddress, req.GetChainReferenceId())
+	lastGravityNonce, err := k.GetLastGravityNonceByValidator(ctx, valAddress, req.GetChainReferenceId())
 	if err != nil {
 		return nil, err
 	}
-	ret.EventNonce = lastEventNonce
+	ret.Nonce = lastGravityNonce
 	return &ret, nil
+}
+
+// LastObservedGravityBlock returns the last remote chain block height observed by Paloma.
+func (k Keeper) LastObservedGravityBlock(
+	c context.Context,
+	req *types.QueryLastObservedGravityBlockRequest,
+) (*types.QueryLastObservedGravityBlockResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	if len(req.ChainReferenceId) < 1 {
+		return nil, fmt.Errorf("missing chain reference ID")
+	}
+
+	return &types.QueryLastObservedGravityBlockResponse{
+		Block: k.GetLastObservedEthereumBlockHeight(ctx, req.ChainReferenceId).EthereumBlockHeight,
+	}, nil
 }
 
 // DenomToERC20 queries the Paloma Denom that maps to an Ethereum ERC20
@@ -217,36 +238,6 @@ func (k Keeper) ERC20ToDenom(
 	ret.Denom = name
 
 	return &ret, nil
-}
-
-// GetLastObservedEthBlock queries the LastObservedEthereumBlockHeight
-func (k Keeper) GetLastObservedEthBlock(
-	c context.Context,
-	req *types.QueryLastObservedEthBlockRequest,
-) (*types.QueryLastObservedEthBlockResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-
-	locator := k.GetLastObservedEthereumBlockHeight
-
-	ethHeight := locator(ctx, req.GetChainReferenceId())
-
-	return &types.QueryLastObservedEthBlockResponse{Block: ethHeight.EthereumBlockHeight}, nil
-}
-
-// GetLastObservedEthNonce queries the LastObservedEventNonce
-func (k Keeper) GetLastObservedEthNonce(
-	c context.Context,
-	req *types.QueryLastObservedEthNonceRequest,
-) (*types.QueryLastObservedEthNonceResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-
-	locator := k.GetLastObservedEventNonce
-
-	nonce, err := locator(ctx, req.GetChainReferenceId())
-	if err != nil {
-		return nil, err
-	}
-	return &types.QueryLastObservedEthNonceResponse{Nonce: nonce}, nil
 }
 
 // GetAttestations queries the attestation map
@@ -288,7 +279,7 @@ func (k Keeper) GetAttestations(
 			attestations = append(attestations, att)
 			match = true
 
-		case filter && claim.GetEventNonce() == req.Nonce:
+		case filter && claim.GetGravityNonce() == req.Nonce:
 			attestations = append(attestations, att)
 			match = true
 

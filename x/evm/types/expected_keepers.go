@@ -57,6 +57,6 @@ type ERC20Record interface {
 
 //go:generate mockery --name=GravityKeeper
 type GravityKeeper interface {
-	GetLastObservedEventNonce(ctx context.Context, chainReferenceID string) (uint64, error)
+	GetLastObservedGravityNonce(ctx context.Context, chainReferenceID string) (uint64, error)
 	CastAllERC20ToDenoms(ctx context.Context) ([]ERC20Record, error)
 }

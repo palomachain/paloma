@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"cosmossdk.io/log"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type Logr interface {
@@ -16,12 +15,11 @@ type Logr interface {
 }
 
 type LogProvider interface {
-	Logger(sdk.Context) log.Logger
+	Logger(context.Context) log.Logger
 }
 
 func FromKeeper(ctx context.Context, p LogProvider) Logr {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return FromSDKLogger(p.Logger(sdkCtx))
+	return FromSDKLogger(p.Logger(ctx))
 }
 
 func FromSDKLogger(l log.Logger) Logr {

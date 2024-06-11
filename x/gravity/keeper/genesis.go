@@ -39,7 +39,7 @@ func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 
 	for _, nonce := range data.GravityNonces {
 		// restore various nonces, this MUST match GravityNonces in genesis
-		err := k.setLastObservedEventNonce(ctx, nonce.ChainReferenceId, nonce.LastObservedNonce)
+		err := k.setLastObservedGravityNonce(ctx, nonce.ChainReferenceId, nonce.LastObservedNonce)
 		if err != nil {
 			panic(err)
 		}
@@ -83,7 +83,7 @@ func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 		if err != nil {
 			panic(fmt.Errorf("error when computing ClaimHash for %v", hash))
 		}
-		k.SetAttestation(ctx, claim.GetChainReferenceId(), claim.GetEventNonce(), hash, &att)
+		k.SetAttestation(ctx, claim.GetChainReferenceId(), claim.GetGravityNonce(), hash, &att)
 	}
 
 	// reset attestation state of specific validators
@@ -110,12 +110,12 @@ func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 			if err != nil {
 				panic(err)
 			}
-			last, err := k.GetLastEventNonceByValidator(ctx, val, claim.GetChainReferenceId())
+			last, err := k.GetLastGravityNonceByValidator(ctx, val, claim.GetChainReferenceId())
 			if err != nil {
 				panic(err)
 			}
-			if claim.GetEventNonce() > last {
-				err = k.SetLastEventNonceByValidator(ctx, val, claim.GetChainReferenceId(), claim.GetEventNonce())
+			if claim.GetGravityNonce() > last {
+				err = k.SetLastGravityNonceByValidator(ctx, val, claim.GetChainReferenceId(), claim.GetGravityNonce())
 				if err != nil {
 					panic(err)
 				}
@@ -178,7 +178,7 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 	}
 
 	for _, chain := range k.GetChainsWithTokens(ctx) {
-		lastObservedNonce, err := k.GetLastObservedEventNonce(ctx, chain)
+		lastObservedNonce, err := k.GetLastObservedGravityNonce(ctx, chain)
 		if err != nil {
 			panic(err)
 		}

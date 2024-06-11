@@ -46,12 +46,12 @@ func (k Keeper) Attest(
 	// and prevents validators from submitting two claims with the same nonce.
 	// This prevents there being two attestations with the same nonce that get 2/3s of the votes
 	// in the endBlocker.
-	lastEventNonce, err := k.GetLastEventNonceByValidator(ctx, valAddress, claim.GetChainReferenceId())
+	lastGravityNonce, err := k.GetLastGravityNonceByValidator(ctx, valAddress, claim.GetChainReferenceId())
 	if err != nil {
 		return nil, err
 	}
-	if claim.GetEventNonce() != lastEventNonce+1 {
-		return nil, fmt.Errorf(types.ErrNonContiguousEventNonce.Error(), lastEventNonce+1, claim.GetEventNonce())
+	if claim.GetGravityNonce() != lastGravityNonce+1 {
+		return nil, fmt.Errorf(types.ErrNonContiguousEventNonce.Error(), lastGravityNonce+1, claim.GetGravityNonce())
 	}
 
 	// Tries to get an attestation with the same eventNonce and claim as the claim that was submitted.
@@ -59,7 +59,7 @@ func (k Keeper) Attest(
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "unable to compute claim hash")
 	}
-	att := k.GetAttestation(ctx, claim.GetChainReferenceId(), claim.GetEventNonce(), hash)
+	att := k.GetAttestation(ctx, claim.GetChainReferenceId(), claim.GetGravityNonce(), hash)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// If it does not exist, create a new one.
 	if att == nil {
@@ -81,8 +81,8 @@ func (k Keeper) Attest(
 		// Add the validator's vote to this attestation // TODO : Only do if it's not already there
 		att.Votes = append(att.Votes, valAddr)
 
-		k.SetAttestation(ctx, claim.GetChainReferenceId(), claim.GetEventNonce(), hash, att)
-		err = k.SetLastEventNonceByValidator(ctx, valAddress, claim.GetChainReferenceId(), claim.GetEventNonce())
+		k.SetAttestation(ctx, claim.GetChainReferenceId(), claim.GetGravityNonce(), hash, att)
+		err = k.SetLastGravityNonceByValidator(ctx, valAddress, claim.GetChainReferenceId(), claim.GetGravityNonce())
 		if err != nil {
 			return nil, err
 		}
@@ -105,6 +105,7 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 	if err != nil {
 		return fmt.Errorf("unable to compute claim hash")
 	}
+
 	// If the attestation has not yet been Observed, sum up the votes and see if it is ready to apply to the state.
 	// This conditional stops the attestation from accidentally being applied twice.
 	if !att.Observed {
@@ -131,16 +132,16 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 			// If the power of all the validators that have voted on the attestation is higher or equal to the threshold,
 			// process the attestation, set Observed to true, and break
 			if attestationPower.GT(requiredPower) {
-				lastEventNonce, err := k.GetLastObservedEventNonce(ctx, claim.GetChainReferenceId())
+				lastGravityNonce, err := k.GetLastObservedGravityNonce(ctx, claim.GetChainReferenceId())
 				if err != nil {
 					return err
 				}
 
-				if claim.GetEventNonce() != lastEventNonce+1 {
+				if claim.GetGravityNonce() != lastGravityNonce+1 {
 					return fmt.Errorf("attempting to apply events to state out of order")
 				}
 
-				err = k.setLastObservedEventNonce(ctx, claim.GetChainReferenceId(), claim.GetEventNonce())
+				err = k.setLastObservedGravityNonce(ctx, claim.GetChainReferenceId(), claim.GetGravityNonce())
 				if err != nil {
 					return err
 				}
@@ -151,7 +152,7 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 				}
 
 				att.Observed = true
-				k.SetAttestation(ctx, claim.GetChainReferenceId(), claim.GetEventNonce(), hash, att)
+				k.SetAttestation(ctx, claim.GetChainReferenceId(), claim.GetGravityNonce(), hash, att)
 
 				err = k.processAttestation(ctx, att, claim)
 				if err != nil {
@@ -174,22 +175,25 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 }
 
 // processAttestation actually applies the attestation to the consensus state
-func (k Keeper) processAttestation(ctx context.Context, att *types.Attestation, claim types.EthereumClaim) error {
-	hash, err := claim.ClaimHash()
-	if err != nil {
-		return fmt.Errorf("unable to compute claim hash")
-	}
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	// then execute in a new Tx so that we can store state on failure
-	xCtx, commit := sdkCtx.CacheContext()
-	if err := k.AttestationHandler.Handle(xCtx, *att, claim); err != nil { // execute with a transient storage
+func (k Keeper) processAttestation(goCtx context.Context, att *types.Attestation, claim types.EthereumClaim) error {
+	ctx, commit := sdk.UnwrapSDKContext(goCtx).CacheContext()
+	if err := k.AttestationHandler.Handle(ctx, *att, claim); err != nil {
+		// execute with a transient storage
 		// If the attestation fails, something has gone wrong and we can't recover it. Log and move on
 		// The attestation will still be marked "Observed", allowing the oracle to progress properly
-		liblog.FromSDKLogger(k.Logger(ctx)).WithFields(
-			"cause", err.Error(),
-			"claim type", claim.GetType(),
-			"id", types.GetAttestationKey(claim.GetEventNonce(), hash),
-			"nonce", fmt.Sprint(claim.GetEventNonce())).Error("attestation failed")
+		hash, err := claim.ClaimHash()
+		if err != nil {
+			return fmt.Errorf("processAttestation: unable to compute claim hash: %w", err)
+		}
+
+		liblog.FromKeeper(ctx, k).
+			WithComponent("process-attestation").
+			WithFields(
+				"claim type", claim.GetType(),
+				"id", types.GetAttestationKey(claim.GetGravityNonce(), hash),
+				"nonce", claim.GetGravityNonce()).
+			WithError(err).
+			Warn("attestation failed")
 	} else {
 		commit() // persist transient storage
 	}
@@ -214,8 +218,8 @@ func (k Keeper) emitObservedEvent(ctx context.Context, att *types.Attestation, c
 			AttestationType: string(claim.GetType()),
 			BridgeContract:  bridgeContract.GetAddress().Hex(),
 			BridgeChainId:   strconv.Itoa(int(k.GetBridgeChainID(ctx))),
-			AttestationId:   string(types.GetAttestationKey(claim.GetEventNonce(), hash)),
-			Nonce:           fmt.Sprint(claim.GetEventNonce()),
+			AttestationId:   string(types.GetAttestationKey(claim.GetGravityNonce(), hash)),
+			Nonce:           fmt.Sprint(claim.GetGravityNonce()),
 		},
 	)
 }
@@ -252,7 +256,7 @@ func (k Keeper) DeleteAttestation(ctx context.Context, chainReferenceID string, 
 	}
 	store := k.GetStore(ctx, chainReferenceID)
 
-	store.Delete(types.GetAttestationKey(claim.GetEventNonce(), hash))
+	store.Delete(types.GetAttestationKey(claim.GetGravityNonce(), hash))
 	return nil
 }
 
@@ -271,10 +275,10 @@ func (k Keeper) GetAttestationMapping(ctx context.Context, chainReferenceID stri
 				return true
 			}
 
-			if val, ok := attestationMapping[claim.GetEventNonce()]; !ok {
-				attestationMapping[claim.GetEventNonce()] = []types.Attestation{att}
+			if val, ok := attestationMapping[claim.GetGravityNonce()]; !ok {
+				attestationMapping[claim.GetGravityNonce()] = []types.Attestation{att}
 			} else {
-				attestationMapping[claim.GetEventNonce()] = append(val, att)
+				attestationMapping[claim.GetGravityNonce()] = append(val, att)
 			}
 			return false
 		}),
@@ -392,8 +396,8 @@ func (k Keeper) GetMostRecentAttestations(ctx context.Context, chainReferenceID 
 	return attestations, nil
 }
 
-// GetLastObservedEventNonce returns the latest observed event nonce
-func (k Keeper) GetLastObservedEventNonce(ctx context.Context, chainReferenceID string) (uint64, error) {
+// GetLastObservedGravityNonce returns the latest observed event nonce
+func (k Keeper) GetLastObservedGravityNonce(ctx context.Context, chainReferenceID string) (uint64, error) {
 	store := k.GetStore(ctx, chainReferenceID)
 	bytes := store.Get(types.LastObservedEventNonceKey)
 
@@ -443,10 +447,10 @@ func (k Keeper) SetLastObservedEthereumBlockHeight(ctx context.Context, chainRef
 	return nil
 }
 
-// setLastObservedEventNonce sets the latest observed event nonce
-func (k Keeper) setLastObservedEventNonce(ctx context.Context, chainReferenceID string, nonce uint64) error {
+// setLastObservedGravityNonce sets the latest observed event nonce
+func (k Keeper) setLastObservedGravityNonce(ctx context.Context, chainReferenceID string, nonce uint64) error {
 	store := k.GetStore(ctx, chainReferenceID)
-	last, err := k.GetLastObservedEventNonce(ctx, chainReferenceID)
+	last, err := k.GetLastObservedGravityNonce(ctx, chainReferenceID)
 	if err != nil {
 		return err
 	}
@@ -460,8 +464,8 @@ func (k Keeper) setLastObservedEventNonce(ctx context.Context, chainReferenceID 
 	return nil
 }
 
-// GetLastEventNonceByValidator returns the latest event nonce for a given validator
-func (k Keeper) GetLastEventNonceByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceID string) (uint64, error) {
+// GetLastGravityNonceByValidator returns the latest event nonce for a given validator
+func (k Keeper) GetLastGravityNonceByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceID string) (uint64, error) {
 	if err := sdk.VerifyAddressFormat(validator); err != nil {
 		return 0, sdkerrors.Wrap(err, "invalid validator address")
 	}
@@ -477,7 +481,7 @@ func (k Keeper) GetLastEventNonceByValidator(ctx context.Context, validator sdk.
 		// time a validator is submitting a claim. Since we don't want to force
 		// them to replay the entire history of all events ever we can't start
 		// at zero
-		lastEventNonce, err := k.GetLastObservedEventNonce(ctx, chainReferenceID)
+		lastEventNonce, err := k.GetLastObservedGravityNonce(ctx, chainReferenceID)
 		if err != nil {
 			return 0, err
 		}
@@ -490,8 +494,8 @@ func (k Keeper) GetLastEventNonceByValidator(ctx context.Context, validator sdk.
 	return types.UInt64FromBytes(bytes)
 }
 
-// SetLastEventNonceByValidator sets the latest event nonce for a give validator
-func (k Keeper) SetLastEventNonceByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceID string, nonce uint64) error {
+// SetLastGravityNonceByValidator sets the latest event nonce for a give validator
+func (k Keeper) SetLastGravityNonceByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceID string, nonce uint64) error {
 	if err := sdk.VerifyAddressFormat(validator); err != nil {
 		return sdkerrors.Wrap(err, "invalid validator address")
 	}

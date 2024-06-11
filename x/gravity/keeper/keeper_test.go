@@ -59,6 +59,7 @@ func TestAttestationIterator(t *testing.T) {
 	// add some attestations to the store
 
 	claim1 := &types.MsgSendToPalomaClaim{
+		GravityNonce:   1,
 		EventNonce:     1,
 		TokenContract:  TokenContractAddrs[0],
 		Amount:         math.NewInt(100),
@@ -79,7 +80,8 @@ func TestAttestationIterator(t *testing.T) {
 	}
 
 	claim2 := &types.MsgSendToPalomaClaim{
-		EventNonce:     2,
+		GravityNonce:   2,
+		EventNonce:     5,
 		TokenContract:  TokenContractAddrs[0],
 		Amount:         math.NewInt(100),
 		EthereumSender: EthAddrs[0].String(),
@@ -103,11 +105,11 @@ func TestAttestationIterator(t *testing.T) {
 	hash2, err := claim2.ClaimHash()
 	require.NoError(t, err)
 
-	input.GravityKeeper.SetAttestation(ctx, "test-chain", claim1.EventNonce, hash1, att1)
-	err = input.GravityKeeper.setLastObservedEventNonce(ctx, "test-chain", claim1.EventNonce)
+	input.GravityKeeper.SetAttestation(ctx, "test-chain", claim1.GravityNonce, hash1, att1)
+	err = input.GravityKeeper.setLastObservedGravityNonce(ctx, "test-chain", claim1.GravityNonce)
 	require.NoError(t, err)
-	input.GravityKeeper.SetAttestation(ctx, "test-chain", claim2.EventNonce, hash2, att2)
-	err = input.GravityKeeper.setLastObservedEventNonce(ctx, "test-chain", claim2.EventNonce)
+	input.GravityKeeper.SetAttestation(ctx, "test-chain", claim2.GravityNonce, hash2, att2)
+	err = input.GravityKeeper.setLastObservedGravityNonce(ctx, "test-chain", claim2.GravityNonce)
 	require.NoError(t, err)
 
 	atts := []types.Attestation{}

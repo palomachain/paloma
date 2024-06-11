@@ -89,6 +89,7 @@ message MsgSendToPalomaClaim {
   string chain_reference_id = 8;
   palomachain.paloma.valset.MsgMetadata metadata = 9
       [ (gogoproto.nullable) = false ];
+  uint64 gravity_nonce = 10;
 }
 
 message MsgSendToPalomaClaimResponse {}
@@ -105,6 +106,7 @@ message MsgBatchSendToEthClaim {
   string orchestrator = 6;
   palomachain.paloma.valset.MsgMetadata metadata = 7
       [ (gogoproto.nullable) = false ];
+  uint64 gravity_nonce = 8;
 }
 
 message MsgBatchSendToEthClaimResponse {}

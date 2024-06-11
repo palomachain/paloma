@@ -256,10 +256,10 @@ func CmdGetLastObservedEthBlock() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := &types.QueryLastObservedEthBlockRequest{
+			req := &types.QueryLastObservedGravityBlockRequest{
 				ChainReferenceId: args[0],
 			}
-			res, err := queryClient.GetLastObservedEthBlock(cmd.Context(), req)
+			res, err := queryClient.LastObservedGravityBlock(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
@@ -293,10 +293,10 @@ func CmdGetLastObservedEthNonce() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := &types.QueryLastObservedEthNonceRequest{
+			req := &types.QueryLastObservedGravityNonceRequest{
 				ChainReferenceId: args[0],
 			}
-			res, err := queryClient.GetLastObservedEthNonce(cmd.Context(), req)
+			res, err := queryClient.LastObservedGravityNonce(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
