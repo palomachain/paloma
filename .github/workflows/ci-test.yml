@@ -10,13 +10,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - name: Setup gotestsum
+        uses: autero1/action-gotestsum@v2
         with:
-          go-version: '1.21'
-          cache: false
+          gotestsum_version: 1.12.0
       - name: Run tests
-        run: go test -v ./...
+        run: gotestsum --format short-verbose ./...
   run_linters:
     name: Running linters
     runs-on: ubuntu-latest
