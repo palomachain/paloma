@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup gotestsum
-        uses: autero1/action-gotestsum@v2
+        uses: gertd/action-gotestsum@v3.0.0
         with:
           gotestsum_version: 1.12.0
       - name: Run tests
