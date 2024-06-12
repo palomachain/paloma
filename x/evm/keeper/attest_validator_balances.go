@@ -54,6 +54,7 @@ func (k Keeper) processValidatorBalanceProof(
 			if err != nil {
 				k.Logger(ctx).Error("error while getting validator address", err)
 			}
+
 			hexAddr, balanceStr := common.HexToAddress(request.HexAddresses[i]), winner.Balances[i]
 			balance, ok := new(big.Int).SetString(balanceStr, 10)
 			if !ok {
@@ -63,8 +64,17 @@ func (k Keeper) processValidatorBalanceProof(
 					"val-addr", valAddr,
 					"eth-addr", hexAddr,
 				)
-				// WHAT TO DO NOW?!?!?! jail the poor fellow that has invalid balance format??
-				// blame the flock for reporting this??!?
+
+				reason := fmt.Sprintf(types.JailReasonInvalidBalance, chainReferenceID, balanceStr)
+				if err = k.Valset.Jail(ctx, valAddr, reason); err != nil {
+					k.Logger(ctx).Error(
+						"error jailing validator",
+						"err", err,
+						"val-addr", valAddr,
+						"eth-addr", hexAddr,
+					)
+				}
+
 				continue
 			}
 
@@ -76,6 +86,7 @@ func (k Keeper) processValidatorBalanceProof(
 					"eth-addr", hexAddr,
 				)
 			}
+
 			if balance.Cmp(minBalance) == -1 || balance.Cmp(big.NewInt(0)) == 0 {
 				isJailed, err := k.Valset.IsJailed(ctx, valAddr)
 				if err != nil {

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"math/big"
 	"time"
 
@@ -84,6 +85,52 @@ var _ = g.Describe("attest validator balance", func() {
 			}
 		})
 		g.It("updates the balances and jail those that have below min threshold", func() {
+			err := subject()
+			Expect(err).To(BeNil())
+		})
+	})
+
+	g.Context("with invalid balances", func() {
+		g.BeforeEach(func() {
+			minBalance = big.NewInt(50)
+			validatorBalances := []string{"1000", "", "5000"}
+			req = &types.ValidatorBalancesAttestation{
+				FromBlockTime: time.Unix(999, 0),
+				HexAddresses: slice.Map(validatorBalances, func(b string) string {
+					return common.BytesToAddress([]byte("addr_" + b)).Hex()
+				}),
+				ValAddresses: slice.Map(validatorBalances, func(b string) sdk.ValAddress {
+					return sdk.ValAddress("addr_" + b)
+				}),
+			}
+			evidenceThatWon = &types.ValidatorBalancesAttestationRes{
+				BlockHeight: 123,
+				Balances:    validatorBalances,
+			}
+
+			reason := fmt.Sprintf(types.JailReasonInvalidBalance, "chain-id", "")
+			v.On("Jail", mock.Anything, req.ValAddresses[1], reason).Return(nil)
+
+			for i, balance := range validatorBalances {
+				// The ones with invalid balance won't be updated, so we skip
+				if balance == "" {
+					continue
+				}
+
+				n, _ := new(big.Int).SetString(balance, 10)
+				v.On(
+					"SetValidatorBalance",
+					mock.Anything,
+					req.ValAddresses[i],
+					"evm",
+					"chain-id",
+					req.HexAddresses[i],
+					n,
+				).Return(nil)
+			}
+		})
+
+		g.It("updates the balances and jail those with invalid balances", func() {
 			err := subject()
 			Expect(err).To(BeNil())
 		})
