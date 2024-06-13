@@ -72,6 +72,7 @@ We have active, helpful communities on Twitter and Telegram.
 See [Release procedure](CONTRIBUTING.md#release-procedure) for more information about the release model.
 
 ## Active Networks
+
 - Testnet `paloma-testnet-16` (May 23, 2024)
 - Mainnet `tumbler` (April 22, 2024)
 
@@ -97,7 +98,7 @@ rm -r ~/.paloma/data/wasm/cache
 ### To get the latest prebuilt `palomad` binary
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v1.14.0/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v1.15.0/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 ```
@@ -107,7 +108,7 @@ sudo chmod +x /usr/local/bin/palomad
 ```shell
 git clone https://github.com/palomachain/paloma.git
 cd paloma
-git checkout v1.14.0
+git checkout v1.15.0
 make build
 sudo mv ./build/palomad /usr/local/bin/palomad
 ```
