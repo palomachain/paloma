@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"math/big"
 	"testing"
 	"time"
 
@@ -237,12 +238,18 @@ func TestLastBatchesRequest(t *testing.T) {
 
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
+	// evm/test-chain/evm-turnstone-message
+	// evm/test-chain/evm-turnstone-message
+	input.EvmKeeper.AddSupportForNewChain(ctx, "test-chain", 42, 100, "0x123", big.NewInt(0))
+
 	k := input.GravityKeeper
 
 	createTestBatch(t, input, 2)
 	createTestBatch(t, input, 3)
 
-	lastBatches, err := k.OutgoingTxBatches(ctx, &types.QueryOutgoingTxBatchesRequest{})
+	lastBatches, err := k.OutgoingTxBatches(ctx, &types.QueryOutgoingTxBatchesRequest{
+		ChainReferenceId: "test-chain",
+	})
 	require.NoError(t, err)
 
 	expectedRes := types.QueryOutgoingTxBatchesResponse{

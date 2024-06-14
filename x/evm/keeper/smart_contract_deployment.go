@@ -164,7 +164,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
-			ConsensusTurnstoneMessage,
+			types.ConsensusTurnstoneMessage,
 			xchainType,
 			chainReferenceID,
 		),
@@ -311,7 +311,7 @@ func (k Keeper) AddUploadSmartContractToConsensus(
 	return k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
-			ConsensusTurnstoneMessage,
+			types.ConsensusTurnstoneMessage,
 			xchainType,
 			chainReferenceID,
 		),

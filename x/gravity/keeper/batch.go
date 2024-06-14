@@ -11,6 +11,7 @@ import (
 	"cosmossdk.io/store/prefix"
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/eventbus"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -76,6 +77,10 @@ func (k Keeper) BuildOutgoingTXBatch(
 	if err != nil {
 		return nil, err
 	}
+
+	eventbus.GravityBatchBuilt().Publish(ctx, eventbus.GravityBatchBuiltEvent{
+		ChainReferenceID: chainReferenceID,
+	})
 
 	return batch, sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventOutgoingBatch{

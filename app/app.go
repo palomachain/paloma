@@ -595,6 +595,7 @@ func New(
 		app.DistrKeeper,
 		app.TransferKeeper,
 		app.EvmKeeper,
+		app.ConsensusKeeper,
 		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
 		authorityAddress,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),

@@ -277,6 +277,7 @@ type TestInput struct {
 	Marshaler         codec.Codec
 	LegacyAmino       *codec.LegacyAmino
 	GravityStoreKey   *storetypes.KVStoreKey
+	EvmKeeper         evmkeeper.Keeper
 }
 
 func addValidators(t *testing.T, input *TestInput, count int) {
@@ -725,6 +726,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 	)
 	require.NoError(t, err)
 
+	consensusRegistry.Add(evmKeeper)
+
 	k := NewKeeper(
 		marshaler,
 		accountKeeper,
@@ -734,6 +737,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		distKeeper,
 		ibcTransferKeeper,
 		evmKeeper,
+		consensusKeeper,
 		NewGravityStoreGetter(gravityKey),
 		"",
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
@@ -811,6 +815,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		Context:           ctx,
 		Marshaler:         marshaler,
 		LegacyAmino:       legacyAmino,
+		EvmKeeper:         *evmKeeper,
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(testInput.Context)
