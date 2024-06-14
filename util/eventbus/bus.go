@@ -2,6 +2,7 @@ package eventbus
 
 import (
 	"context"
+	"sort"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/liblog"
@@ -23,14 +24,19 @@ func newEvent[E any]() Event[E] {
 }
 
 func (e Event[E]) Publish(ctx context.Context, event E) {
-	for s, fn := range e.subscribers {
-		if fn != nil {
+	keys := make([]string, 0, len(e.subscribers))
+	for k := range e.subscribers {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		if e.subscribers[k] != nil {
 			logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
 				WithComponent("eventbus").
 				WithFields("event", event).
-				WithFields("subscriber", s)
+				WithFields("subscriber", k)
 			logger.Debug("Handling event")
-			if err := fn(ctx, event); err != nil {
+			if err := e.subscribers[k](ctx, event); err != nil {
 				logger.WithError(err).Error("Failed to handle event")
 			}
 		}
