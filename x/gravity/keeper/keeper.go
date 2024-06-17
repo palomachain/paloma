@@ -243,6 +243,11 @@ func (k Keeper) GetAuthority() string {
 func (k Keeper) BridgeTax(ctx context.Context) (*types.BridgeTax, error) {
 	val := k.GetStore(ctx, types.StoreModulePrefix).Get(types.BridgeTaxKey)
 
+	if len(val) == 0 {
+		// We have no bridge tax settings
+		return nil, nil
+	}
+
 	var tax types.BridgeTax
 	if err := k.cdc.Unmarshal(val, &tax); err != nil {
 		return nil, err

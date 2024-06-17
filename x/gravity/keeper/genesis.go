@@ -134,6 +134,12 @@ func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 			panic(err)
 		}
 	}
+
+	if data.BridgeTax != nil {
+		if err := k.SetBridgeTax(ctx, data.BridgeTax); err != nil {
+			panic(err)
+		}
+	}
 }
 
 // ExportGenesis exports all the state needed to restart the chain
@@ -223,6 +229,11 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		unbatchedTxs[i] = v.ToExternal()
 	}
 
+	tax, err := k.BridgeTax(ctx)
+	if err != nil {
+		panic(err)
+	}
+
 	return types.GenesisState{
 		Params:             &p,
 		GravityNonces:      nonces,
@@ -231,5 +242,6 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		Attestations:       attestations,
 		Erc20ToDenoms:      erc20ToDenoms,
 		UnbatchedTransfers: unbatchedTxs,
+		BridgeTax:          tax,
 	}
 }
