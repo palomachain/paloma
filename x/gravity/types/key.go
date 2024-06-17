@@ -117,6 +117,8 @@ var (
 	PastEthSignatureCheckpointKey = HashString("PastEthSignatureCheckpointKey")
 	ParamsKey                     = []byte{0x01}
 	StoreModulePrefix             = "module"
+
+	BridgeTaxKey = HashString("BridgeTaxKey")
 )
 
 // GetOrchestratorAddressKey returns the following key format

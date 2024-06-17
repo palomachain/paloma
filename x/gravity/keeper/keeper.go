@@ -239,3 +239,25 @@ func (gsg GravityStoreGetter) Store(ctx context.Context) storetypes.KVStore {
 func (k Keeper) GetAuthority() string {
 	return k.authority
 }
+
+func (k Keeper) BridgeTax(ctx context.Context) (*types.BridgeTax, error) {
+	val := k.GetStore(ctx, types.StoreModulePrefix).Get(types.BridgeTaxKey)
+
+	var tax types.BridgeTax
+	if err := k.cdc.Unmarshal(val, &tax); err != nil {
+		return nil, err
+	}
+
+	return &tax, nil
+}
+
+func (k Keeper) SetBridgeTax(ctx context.Context, tax *types.BridgeTax) error {
+	val, err := k.cdc.Marshal(tax)
+	if err != nil {
+		return err
+	}
+
+	k.GetStore(ctx, types.StoreModulePrefix).Set(types.BridgeTaxKey, val)
+
+	return nil
+}
