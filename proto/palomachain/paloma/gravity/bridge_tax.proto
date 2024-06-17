@@ -1,0 +1,10 @@
+syntax = "proto3";
+package palomachain.paloma.gravity;
+
+option go_package = "github.com/palomachain/paloma/x/gravity/types";
+
+message BridgeTax {
+  float rate = 1;
+  repeated string excluded_tokens = 2;
+  repeated string exempt_addresses = 3;
+}
