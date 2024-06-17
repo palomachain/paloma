@@ -9,6 +9,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	utilkeeper "github.com/palomachain/paloma/util/keeper"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -74,7 +76,21 @@ func (k Keeper) OutgoingTxBatches(
 	req *types.QueryOutgoingTxBatchesRequest,
 ) (*types.QueryOutgoingTxBatchesResponse, error) {
 	var batches []types.OutgoingTxBatch
-	err := k.IterateOutgoingTxBatches(sdk.UnwrapSDKContext(c), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
+
+	// Check for pending valset messages on the queue
+	queue := consensustypes.Queue(evmtypes.ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, req.ChainReferenceId)
+	valsetMessagesOnQueue, err := k.consensusKeeper.GetPendingValsetUpdates(c, queue)
+	if err != nil {
+		return nil, err
+	}
+
+	// Don't give out batches to relay if there are pending valset messages
+	if len(valsetMessagesOnQueue) > 0 {
+		return &types.QueryOutgoingTxBatchesResponse{
+			Batches: []types.OutgoingTxBatch{},
+		}, nil
+	}
+	err = k.IterateOutgoingTxBatches(sdk.UnwrapSDKContext(c), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
 		batchChainReferenceID := batch.ChainReferenceID
 		reqChainReferenceID := req.ChainReferenceId
 		batchAssignee := batch.Assignee

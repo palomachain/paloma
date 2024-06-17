@@ -11,6 +11,7 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	evmtypes "github.com/palomachain/paloma/x/evm/types"
 )
 
@@ -49,6 +50,10 @@ type BankKeeper interface {
 
 type SlashingKeeper interface {
 	GetValidatorSigningInfo(ctx context.Context, address sdk.ConsAddress) (info slashingtypes.ValidatorSigningInfo, found error)
+}
+
+type ConsensusKeeper interface {
+	GetPendingValsetUpdates(ctx context.Context, queueTypeName string) ([]consensustypes.QueuedSignedMessageI, error)
 }
 
 // AccountKeeper defines the interface contract required for account

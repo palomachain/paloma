@@ -127,7 +127,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	queue := consensustypes.Queue(keeper.ConsensusTurnstoneMessage, chainType, chainReferenceID)
+	queue := consensustypes.Queue(types.ConsensusTurnstoneMessage, chainType, chainReferenceID)
 	msgs, err := f.consensusKeeper.GetMessagesForSigning(ctx, queue, operator)
 	require.NoError(t, err)
 
@@ -208,7 +208,7 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	queue := fmt.Sprintf("evm/%s/%s", newChain.GetChainReferenceID(), keeper.ConsensusTurnstoneMessage)
+	queue := fmt.Sprintf("evm/%s/%s", newChain.GetChainReferenceID(), types.ConsensusTurnstoneMessage)
 	msgs, err := f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
 	require.NoError(t, err)
 	require.Empty(t, msgs)
@@ -279,7 +279,7 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	queue := fmt.Sprintf("evm/%s/%s", newChain.GetChainReferenceID(), keeper.ConsensusTurnstoneMessage)
+	queue := fmt.Sprintf("evm/%s/%s", newChain.GetChainReferenceID(), types.ConsensusTurnstoneMessage)
 
 	msgs, err := f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
 	require.NoError(t, err)
@@ -386,7 +386,7 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	queue := fmt.Sprintf("evm/%s/%s", newChain.GetChainReferenceID(), keeper.ConsensusTurnstoneMessage)
+	queue := fmt.Sprintf("evm/%s/%s", newChain.GetChainReferenceID(), types.ConsensusTurnstoneMessage)
 
 	msgs, err := f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
 	require.NoError(t, err)
@@ -463,7 +463,7 @@ func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 		f.stakingKeeper.SetValidator(ctx, val)
 	}
 
-	queue := fmt.Sprintf("evm/%s/%s", "bob", keeper.ConsensusTurnstoneMessage)
+	queue := fmt.Sprintf("evm/%s/%s", "bob", types.ConsensusTurnstoneMessage)
 
 	_, err := f.valsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)

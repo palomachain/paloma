@@ -23,6 +23,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	"github.com/palomachain/paloma/util/eventbus"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/libcons"
 	"github.com/palomachain/paloma/util/liblog"
@@ -43,7 +44,6 @@ const (
 )
 
 const (
-	ConsensusTurnstoneMessage     = "evm-turnstone-message"
 	ConsensusGetValidatorBalances = "validators-balances"
 	ConsensusGetReferenceBlock    = "reference-block"
 	ConsensusCollectFundEvents    = "collect-fund-events"
@@ -61,7 +61,7 @@ type supportedChainInfo struct {
 
 var SupportedConsensusQueues = []supportedChainInfo{
 	{
-		subqueue: ConsensusTurnstoneMessage,
+		subqueue: types.ConsensusTurnstoneMessage,
 		batch:    false,
 		msgType:  &types.Message{},
 		processAttesationFunc: func(k Keeper) func(ctx context.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI) error {
@@ -149,6 +149,18 @@ func NewKeeper(
 	k.deploymentCache = deployment.NewCache(provideDeploymentCacheBootstrapper(k))
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.provideSmartContractStore), []byte("id-key"))
 	k.consensusChecker = libcons.New(k.Valset.GetCurrentSnapshot, k.cdc)
+
+	eventbus.GravityBatchBuilt().Subscribe(
+		"gravity-keeper",
+		func(ctx context.Context, e eventbus.GravityBatchBuiltEvent) error {
+			ci, err := k.GetChainInfo(ctx, e.ChainReferenceID)
+			if err != nil {
+				return err
+			}
+
+			return k.justInTimeValsetUpdate(ctx, ci)
+		})
+
 	return k
 }
 
@@ -608,7 +620,7 @@ func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.C
 
 	// clear all other instances of the update valset from the queue
 	m.Logger(sdkCtx).Info("clearing previous instances of the update valset from the queue")
-	queueName := consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID()))
+	queueName := consensustypes.Queue(types.ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID()))
 	messages, err := m.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 0)
 	if err != nil {
 		m.Logger(sdkCtx).Error("unable to get messages from queue", "err", err)
@@ -639,7 +651,7 @@ func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.C
 	// put update valset message into the queue
 	msgID, err := m.ConsensusKeeper.PutMessageInQueue(
 		ctx,
-		consensustypes.Queue(ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID())),
+		consensustypes.Queue(types.ConsensusTurnstoneMessage, xchainType, xchain.ReferenceID(chainInfo.GetChainReferenceID())),
 		&types.Message{
 			TurnstoneID:      string(chainInfo.GetSmartContractUniqueID()),
 			ChainReferenceID: chainInfo.GetChainReferenceID(),

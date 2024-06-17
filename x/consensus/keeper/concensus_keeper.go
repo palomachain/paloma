@@ -115,6 +115,35 @@ func (k Keeper) GetMessagesForSigning(ctx context.Context, queueTypeName string,
 	return msgs, nil
 }
 
+// TODO: The infusion of EVM types into the consensus module is a bit of a code smell.
+// We should consider moving the entire logic of message assignment and retrieval
+// to the EVM module to keep the consensus module content-agnostic.
+func (k Keeper) GetPendingValsetUpdates(ctx context.Context, queueTypeName string) ([]types.QueuedSignedMessageI, error) {
+	msgs, err := k.GetMessagesFromQueue(ctx, queueTypeName, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
+		cm, err := msg.ConsensusMsg(k.cdc)
+		if err != nil {
+			liblog.FromKeeper(ctx, k).WithError(err).Error("Failed to get consensus msg")
+			return false
+		}
+		m, ok := cm.(*evmtypes.Message)
+		if !ok {
+			return false
+		}
+		if _, ok = m.GetAction().(*evmtypes.Message_UpdateValset); !ok {
+			return false
+		}
+
+		return true
+	})
+
+	return msgs, nil
+}
+
 // GetMessagesForRelaying returns messages for a single validator to relay.
 func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -124,30 +153,9 @@ func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string
 	}
 
 	// Check for existing valset update messages on any target chains
-	valsetUpdatesOnChainLkUp := make(map[string]uint64)
-	for _, v := range msgs {
-		cm, err := v.ConsensusMsg(k.cdc)
-		if err != nil {
-			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("Failed to get consensus msg")
-			continue
-		}
-
-		m, ok := cm.(*evmtypes.Message)
-		if !ok {
-			continue
-		}
-
-		action := m.GetAction()
-		_, ok = action.(*evmtypes.Message_UpdateValset)
-		if ok {
-			if _, found := valsetUpdatesOnChainLkUp[m.GetChainReferenceID()]; found {
-				// Looks like we already have a pending valset update for this chain,
-				// we want to keep the earlierst message ID for a valset update we found,
-				// so we can skip here.
-				continue
-			}
-			valsetUpdatesOnChainLkUp[m.GetChainReferenceID()] = v.GetId()
-		}
+	valsetUpdatesOnChain, err := k.GetPendingValsetUpdates(ctx, queueTypeName)
+	if err != nil {
+		return nil, err
 	}
 
 	// Filter down to just messages for target chains without pending valset updates on them
@@ -159,21 +167,20 @@ func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string
 			return true
 		}
 
-		m, ok := cm.(*evmtypes.Message)
+		_, ok := cm.(*evmtypes.Message)
 		if !ok {
 			// NO cross chain message, just return true
 			return true
 		}
 
 		// Cross chain message for relaying, return only if no pending valset update on target chain
-		vuMid, found := valsetUpdatesOnChainLkUp[m.GetChainReferenceID()]
-		if !found {
+		if len(valsetUpdatesOnChain) < 1 {
 			return true
 		}
 
 		// Looks like there is a valset update for the target chain,
 		// only return true if this message is younger than the valset update
-		return msg.GetId() <= vuMid
+		return msg.GetId() <= valsetUpdatesOnChain[0].GetId()
 	})
 
 	// Filter down to just messages assigned to this validator
