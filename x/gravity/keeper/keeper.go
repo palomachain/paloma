@@ -252,6 +252,11 @@ func (k Keeper) BridgeTax(ctx context.Context) (*types.BridgeTax, error) {
 }
 
 func (k Keeper) SetBridgeTax(ctx context.Context, tax *types.BridgeTax) error {
+	// Sanity check the tax value
+	if tax.Rate < 0 || tax.Rate > 1 {
+		return fmt.Errorf("invalid tax value: %f", tax.Rate)
+	}
+
 	val, err := k.cdc.Marshal(tax)
 	if err != nil {
 		return err

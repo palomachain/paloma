@@ -121,3 +121,31 @@ func TestAttestationIterator(t *testing.T) {
 
 	require.Len(t, atts, 2)
 }
+
+func TestSetBridgeTax(t *testing.T) {
+	input := CreateTestEnv(t)
+	ctx := input.Context
+	k := input.GravityKeeper
+
+	t.Run("Return new bridge tax after setting it", func(t *testing.T) {
+		expected := types.BridgeTax{
+			Rate:            0.02,
+			ExcludedTokens:  []string{"test"},
+			ExemptAddresses: []string{"addr1"},
+		}
+
+		err := k.SetBridgeTax(ctx, &expected)
+		require.NoError(t, err)
+
+		actual, err := k.BridgeTax(ctx)
+		require.NoError(t, err)
+		require.Equal(t, *actual, expected)
+	})
+
+	t.Run("Return error when trying to set an invalid tax", func(t *testing.T) {
+		err := k.SetBridgeTax(ctx, &types.BridgeTax{
+			Rate: -0.2,
+		})
+		require.Error(t, err)
+	})
+}
