@@ -148,7 +148,7 @@ func TestGenesis(t *testing.T) {
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
 		BridgeTax: &types.BridgeTax{
-			Rate:            0.02,
+			Rate:            "0.02",
 			ExcludedTokens:  []string{"test"},
 			ExemptAddresses: addresses,
 		},

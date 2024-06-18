@@ -260,9 +260,14 @@ func (k Keeper) BridgeTax(ctx context.Context) (*types.BridgeTax, error) {
 }
 
 func (k Keeper) SetBridgeTax(ctx context.Context, tax *types.BridgeTax) error {
-	// Sanity check the tax value
-	if tax.Rate < 0 || tax.Rate > 1 {
-		return fmt.Errorf("invalid tax value: %f", tax.Rate)
+	taxRate, ok := new(big.Rat).SetString(tax.Rate)
+	if !ok {
+		return fmt.Errorf("invalid tax rate value: %s", tax.Rate)
+	}
+
+	// Sanity check the tax value. Must be between [0,1]
+	if taxRate.Sign() < 0 || taxRate.Cmp(big.NewRat(1, 1)) > 0 {
+		return fmt.Errorf("invalid tax rate value: %s", tax.Rate)
 	}
 
 	val, err := k.cdc.Marshal(tax)
@@ -288,8 +293,14 @@ func (k Keeper) bridgeTaxAmount(
 		return math.ZeroInt(), err
 	}
 
-	if bridgeTax == nil || bridgeTax.Rate == 0 {
-		// The bridge tax hasn't been set by governance vote, or is set to zero
+	if bridgeTax == nil {
+		// The bridge tax hasn't been set by governance vote
+		return math.ZeroInt(), nil
+	}
+
+	bRate, _ := new(big.Rat).SetString(bridgeTax.Rate)
+	if bRate.Sign() == 0 {
+		// The bridge tax is set to zero
 		return math.ZeroInt(), nil
 	}
 
@@ -305,9 +316,8 @@ func (k Keeper) bridgeTaxAmount(
 		}
 	}
 
-	bRate := big.NewFloat(float64(bridgeTax.Rate))
-	bAmount := new(big.Float).SetInt(amount.Amount.BigInt())
-	taxedAmount, _ := bRate.Mul(bRate, bAmount).Int(new(big.Int))
+	num := math.NewIntFromBigInt(bRate.Num())
+	denom := math.NewIntFromBigInt(bRate.Denom())
 
-	return math.NewIntFromBigInt(taxedAmount), nil
+	return amount.Amount.Mul(num).Quo(denom), nil
 }

@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"strconv"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -19,11 +17,6 @@ func NewGravityProposalHandler(k Keeper) govv1beta1types.Handler {
 			}
 			return k.setDenomToERC20(ctx, c.GetChainReferenceId(), c.GetDenom(), *ethAddr)
 		case *types.SetBridgeTaxProposal:
-			rate, err := strconv.ParseFloat(c.Rate, 32)
-			if err != nil {
-				return err
-			}
-
 			addresses := make([]sdk.AccAddress, 0, len(c.ExemptAddresses))
 			for _, addr := range c.ExemptAddresses {
 				address, err := sdk.AccAddressFromBech32(addr)
@@ -35,7 +28,7 @@ func NewGravityProposalHandler(k Keeper) govv1beta1types.Handler {
 			}
 
 			bridgeTax := &types.BridgeTax{
-				Rate:            float32(rate),
+				Rate:            c.Rate,
 				ExcludedTokens:  c.ExcludedTokens,
 				ExemptAddresses: addresses,
 			}

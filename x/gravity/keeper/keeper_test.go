@@ -142,7 +142,7 @@ func TestSetBridgeTax(t *testing.T) {
 
 	t.Run("Return new bridge tax after setting it", func(t *testing.T) {
 		expected := types.BridgeTax{
-			Rate:            0.02,
+			Rate:            "0.02",
 			ExcludedTokens:  []string{"test"},
 			ExemptAddresses: addresses,
 		}
@@ -157,7 +157,7 @@ func TestSetBridgeTax(t *testing.T) {
 
 	t.Run("Return error when trying to set an invalid tax", func(t *testing.T) {
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
-			Rate: -0.2,
+			Rate: "-0.2",
 		})
 		require.Error(t, err)
 	})
