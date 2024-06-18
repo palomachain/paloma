@@ -1,5 +1,5 @@
 run:
-  go: '1.21'
+  go: '1.22'
   issues-exit-code: 1
   timeout: 10m
   modules-download-mode: readonly
@@ -38,3 +38,4 @@ issues:
     # gosec
     - G101 # Potential hardcoded credentials
     - G114 # Use of net/http serve function that has no support for setting timeouts
+    - G113 # Potential uncontrolled memory consumption in Rat.SetString - this is fixed since go 1.17.7
