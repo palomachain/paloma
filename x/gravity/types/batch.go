@@ -58,10 +58,11 @@ func NewInternalOutgoingTransferTx(
 
 func (i InternalOutgoingTransferTx) ToExternal() OutgoingTransferTx {
 	return OutgoingTransferTx{
-		Id:          i.Id,
-		Sender:      i.Sender.String(),
-		DestAddress: i.DestAddress.GetAddress().Hex(),
-		Erc20Token:  i.Erc20Token.ToExternal(),
+		Id:              i.Id,
+		Sender:          i.Sender.String(),
+		DestAddress:     i.DestAddress.GetAddress().Hex(),
+		Erc20Token:      i.Erc20Token.ToExternal(),
+		BridgeTaxAmount: i.BridgeTaxAmount,
 	}
 }
 

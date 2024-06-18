@@ -660,10 +660,11 @@ func TestAddToOutgoingPoolExportGenesis(t *testing.T) {
 		require.NoError(t, err)
 
 		unbatchedTxMap[r] = types.OutgoingTransferTx{
-			Id:          r,
-			Sender:      mySender.String(),
-			DestAddress: myReceiver,
-			Erc20Token:  amountToken.ToExternal(),
+			Id:              r,
+			Sender:          mySender.String(),
+			DestAddress:     myReceiver,
+			Erc20Token:      amountToken.ToExternal(),
+			BridgeTaxAmount: math.ZeroInt(),
 		}
 		foundTxsMap[r] = false
 
