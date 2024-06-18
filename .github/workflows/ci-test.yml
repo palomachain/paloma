@@ -25,19 +25,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: '1.22'
           cache: false
       - name: Go lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.55.2
+          version: v1.59.1
           args: --verbose
           # Optional: if set to true then the all caching functionality will be complete disabled,
           #           takes precedence over all other caching options.
           skip-cache: true
-
-          # Optional: if set to true then the action don't cache or restore ~/go/pkg.
-          skip-pkg-cache: true
-
-          # Optional: if set to true then the action don't cache or restore ~/.cache/go-build.
-          skip-build-cache: true
