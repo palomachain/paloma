@@ -132,12 +132,25 @@ func TestBatchAndTxImportExport(t *testing.T) {
 }
 
 func TestGenesis(t *testing.T) {
+	accAddresses := []string{
+		"paloma1dg55rtevlfxh46w88yjpdd08sqhh5cc37jmmth",
+		"paloma164knshrzuuurf05qxf3q5ewpfnwzl4gjd7cwmp",
+	}
+
+	addresses := make([]sdk.AccAddress, len(accAddresses))
+	for i := range accAddresses {
+		addr, err := sdk.AccAddressFromBech32(accAddresses[i])
+		require.NoError(t, err)
+
+		addresses[i] = addr
+	}
+
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
 		BridgeTax: &types.BridgeTax{
 			Rate:            0.02,
 			ExcludedTokens:  []string{"test"},
-			ExemptAddresses: []string{"addr1", "addr2"},
+			ExemptAddresses: addresses,
 		},
 	}
 

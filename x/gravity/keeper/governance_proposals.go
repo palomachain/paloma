@@ -24,10 +24,20 @@ func NewGravityProposalHandler(k Keeper) govv1beta1types.Handler {
 				return err
 			}
 
+			addresses := make([]sdk.AccAddress, 0, len(c.ExemptAddresses))
+			for _, addr := range c.ExemptAddresses {
+				address, err := sdk.AccAddressFromBech32(addr)
+				if err != nil {
+					return err
+				}
+
+				addresses = append(addresses, address)
+			}
+
 			bridgeTax := &types.BridgeTax{
 				Rate:            float32(rate),
 				ExcludedTokens:  c.ExcludedTokens,
-				ExemptAddresses: c.ExemptAddresses,
+				ExemptAddresses: addresses,
 			}
 
 			return k.SetBridgeTax(ctx, bridgeTax)

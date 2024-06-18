@@ -127,11 +127,24 @@ func TestSetBridgeTax(t *testing.T) {
 	ctx := input.Context
 	k := input.GravityKeeper
 
+	accAddresses := []string{
+		"paloma1dg55rtevlfxh46w88yjpdd08sqhh5cc37jmmth",
+		"paloma164knshrzuuurf05qxf3q5ewpfnwzl4gjd7cwmp",
+	}
+
+	addresses := make([]sdk.AccAddress, len(accAddresses))
+	for i := range accAddresses {
+		addr, err := sdk.AccAddressFromBech32(accAddresses[i])
+		require.NoError(t, err)
+
+		addresses[i] = addr
+	}
+
 	t.Run("Return new bridge tax after setting it", func(t *testing.T) {
 		expected := types.BridgeTax{
 			Rate:            0.02,
 			ExcludedTokens:  []string{"test"},
-			ExemptAddresses: []string{"addr1"},
+			ExemptAddresses: addresses,
 		}
 
 		err := k.SetBridgeTax(ctx, &expected)
