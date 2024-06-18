@@ -24,6 +24,10 @@ message OutgoingTransferTx {
   string sender = 2;
   string dest_address = 3;
   ERC20Token erc20_token = 4 [ (gogoproto.nullable) = false ];
+  string bridge_tax_amount = 5 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message EventOutgoingBatchCanceled {

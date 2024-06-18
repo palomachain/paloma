@@ -108,7 +108,7 @@ func TestBatchAndTxImportExport(t *testing.T) {
 		require.NoError(t, err)
 
 		// Record the transaction for later testing
-		tx, err := types.NewInternalOutgoingTransferTx(id, sender.String(), receiver.GetAddress().Hex(), amountToken.ToExternal())
+		tx, err := types.NewInternalOutgoingTransferTx(id, sender.String(), receiver.GetAddress().Hex(), amountToken.ToExternal(), math.ZeroInt())
 		require.NoError(t, err)
 		txs[i] = tx
 	}

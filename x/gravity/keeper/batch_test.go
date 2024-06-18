@@ -149,16 +149,18 @@ func TestBatches(t *testing.T) {
 	// Should still have 1: and 2: above
 	expUnbatchedTx := []*types.InternalOutgoingTransferTx{
 		{
-			Id:          2,
-			Sender:      mySender,
-			DestAddress: myReceiver,
-			Erc20Token:  oneHundredOneTok,
+			Id:              2,
+			Sender:          mySender,
+			DestAddress:     myReceiver,
+			Erc20Token:      oneHundredOneTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 		{
-			Id:          1,
-			Sender:      mySender,
-			DestAddress: myReceiver,
-			Erc20Token:  oneHundredTok,
+			Id:              1,
+			Sender:          mySender,
+			DestAddress:     myReceiver,
+			Erc20Token:      oneHundredTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 	}
 	assert.Equal(t, expUnbatchedTx, gotUnbatchedTx)
@@ -359,16 +361,18 @@ func TestBatchesFullCoins(t *testing.T) {
 	require.NoError(t, err)
 	expUnbatchedTx := []*types.InternalOutgoingTransferTx{
 		{
-			Id:          1,
-			Sender:      mySender,
-			DestAddress: receiverAddr,
-			Erc20Token:  twentyTok,
+			Id:              1,
+			Sender:          mySender,
+			DestAddress:     receiverAddr,
+			Erc20Token:      twentyTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 		{
-			Id:          4,
-			Sender:      mySender,
-			DestAddress: receiverAddr,
-			Erc20Token:  tenTok,
+			Id:              4,
+			Sender:          mySender,
+			DestAddress:     receiverAddr,
+			Erc20Token:      tenTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 	}
 	assert.Equal(t, expUnbatchedTx, gotUnbatchedTx)

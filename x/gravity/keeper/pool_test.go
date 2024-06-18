@@ -74,28 +74,32 @@ func TestAddToOutgoingPool(t *testing.T) {
 	require.NoError(t, err)
 	exp := []*types.InternalOutgoingTransferTx{
 		{
-			Id:          4,
-			Sender:      mySender,
-			DestAddress: receiverAddr,
-			Erc20Token:  oneHundredThreeTok,
+			Id:              4,
+			Sender:          mySender,
+			DestAddress:     receiverAddr,
+			Erc20Token:      oneHundredThreeTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 		{
-			Id:          3,
-			Sender:      mySender,
-			DestAddress: receiverAddr,
-			Erc20Token:  oneHundredTwoTok,
+			Id:              3,
+			Sender:          mySender,
+			DestAddress:     receiverAddr,
+			Erc20Token:      oneHundredTwoTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 		{
-			Id:          2,
-			Sender:      mySender,
-			DestAddress: receiverAddr,
-			Erc20Token:  oneHundredOneTok,
+			Id:              2,
+			Sender:          mySender,
+			DestAddress:     receiverAddr,
+			Erc20Token:      oneHundredOneTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 		{
-			Id:          1,
-			Sender:      mySender,
-			DestAddress: receiverAddr,
-			Erc20Token:  oneHundredTok,
+			Id:              1,
+			Sender:          mySender,
+			DestAddress:     receiverAddr,
+			Erc20Token:      oneHundredTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 	}
 	assert.Equal(t, exp, got)
@@ -500,7 +504,7 @@ func TestGetUnbatchedTransactions(t *testing.T) {
 	tokenId := ids[0]
 	tx, err := input.GravityKeeper.GetUnbatchedTxByAmountAndId(ctx, *tokenAmount, tokenId)
 	require.NoError(t, err)
-	expTx, err := types.NewInternalOutgoingTransferTx(tokenId, mySender.String(), myReceiver, tokenAmount.ToExternal())
+	expTx, err := types.NewInternalOutgoingTransferTx(tokenId, mySender.String(), myReceiver, tokenAmount.ToExternal(), math.ZeroInt())
 	require.NoError(t, err)
 	require.Equal(t, *expTx, *tx)
 

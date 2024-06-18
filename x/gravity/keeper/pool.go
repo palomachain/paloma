@@ -49,7 +49,19 @@ func (k Keeper) AddToOutgoingPool(
 		return 0, err
 	}
 
-	erc20Token, err := types.NewInternalERC20Token(amount.Amount, tokenContract.GetAddress().Hex(), chainReferenceID)
+	// Get the applicable bridge tax
+	taxedAmount, err := k.bridgeTaxAmount(ctx, sender, amount)
+	if err != nil {
+		return 0, err
+	}
+
+	tokenAmount := amount.Amount
+	if taxedAmount.IsPositive() {
+		// Reduce the transferred amount by the amount of taxes
+		tokenAmount = tokenAmount.Sub(taxedAmount)
+	}
+
+	erc20Token, err := types.NewInternalERC20Token(tokenAmount, tokenContract.GetAddress().Hex(), chainReferenceID)
 	if err != nil {
 		return 0, sdkerrors.Wrapf(err, "invalid ERC20Token from amount %d and contract %v",
 			amount.Amount, tokenContract)
@@ -58,10 +70,11 @@ func (k Keeper) AddToOutgoingPool(
 	// the token as an ERC20 token since it is preparing to go to ETH
 	// rather than the denom that is the input to this function.
 	outgoing, err := types.OutgoingTransferTx{
-		Id:          nextID,
-		Sender:      sender.String(),
-		DestAddress: counterpartReceiver.GetAddress().Hex(),
-		Erc20Token:  erc20Token.ToExternal(),
+		Id:              nextID,
+		Sender:          sender.String(),
+		DestAddress:     counterpartReceiver.GetAddress().Hex(),
+		Erc20Token:      erc20Token.ToExternal(),
+		BridgeTaxAmount: taxedAmount,
 	}.ToInternal()
 	if err != nil { // This should never happen since all the components are validated
 		return 0, sdkerrors.Wrap(err, "unable to create InternalOutgoingTransferTx")
@@ -123,7 +136,8 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64
 	if err != nil {
 		return err
 	}
-	totalToRefund := sdk.NewCoin(denom, tx.Erc20Token.Amount)
+	// Total refund must include the transferred amount as well as the tax
+	totalToRefund := sdk.NewCoin(denom, tx.Erc20Token.Amount.Add(tx.BridgeTaxAmount))
 	totalToRefundCoins := sdk.NewCoins(totalToRefund)
 
 	// Perform refund
