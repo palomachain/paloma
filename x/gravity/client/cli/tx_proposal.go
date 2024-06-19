@@ -113,7 +113,7 @@ func CmdSetBridgeTax() *cobra.Command {
 				return err
 			}
 
-			description, err := cmd.Flags().GetString(cli.FlagTitle)
+			description, err := cmd.Flags().GetString(cli.FlagSummary)
 			if err != nil {
 				return err
 			}
@@ -184,7 +184,7 @@ func CmdSetBridgeTransferLimit() *cobra.Command {
 				return err
 			}
 
-			description, err := cmd.Flags().GetString(cli.FlagTitle)
+			description, err := cmd.Flags().GetString(cli.FlagSummary)
 			if err != nil {
 				return err
 			}
