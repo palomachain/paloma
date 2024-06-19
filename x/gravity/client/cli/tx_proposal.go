@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -28,6 +29,7 @@ func CmdGravityProposalHandler() *cobra.Command {
 	cmd.AddCommand([]*cobra.Command{
 		CmdSetErc20ToDenom(),
 		CmdSetBridgeTax(),
+		CmdSetBridgeTransferLimit(),
 	}...)
 
 	return cmd
@@ -152,6 +154,71 @@ func CmdSetBridgeTax() *cobra.Command {
 
 	cmd.Flags().StringSlice(flagExcludedTokens, []string{},
 		"Comma separated list of tokens excluded from the bridge tax. Can be passed multiple times.")
+	cmd.Flags().StringSlice(flagExemptAddresses, []string{},
+		"Comma separated list of addresses exempt from the bridge tax. Can be passed multiple times.")
+
+	applyFlags(cmd)
+	return cmd
+}
+
+func CmdSetBridgeTransferLimit() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-bridge-transfer-limit [token] [limit] [limit-period]",
+		Short: "Sets the bridge transfer limit, and optionally exempt addresses",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			token, limitRaw, limitPeriod := args[0], args[1], args[2]
+
+			limit, ok := math.NewIntFromString(limitRaw)
+			if !ok {
+				return fmt.Errorf("invalid limit: %v", limitRaw)
+			}
+
+			title, err := cmd.Flags().GetString(cli.FlagTitle)
+			if err != nil {
+				return err
+			}
+
+			description, err := cmd.Flags().GetString(cli.FlagTitle)
+			if err != nil {
+				return err
+			}
+
+			exemptAddresses, err := cmd.Flags().GetStringSlice(flagExemptAddresses)
+			if err != nil {
+				return err
+			}
+
+			prop := &types.SetBridgeTransferLimitProposal{
+				Title:           title,
+				Description:     description,
+				Token:           token,
+				Limit:           limit,
+				LimitPeriod:     limitPeriod,
+				ExemptAddresses: exemptAddresses,
+			}
+
+			from := cliCtx.GetFromAddress()
+
+			deposit, err := getDeposit(cmd)
+			if err != nil {
+				return err
+			}
+
+			msg, err := govv1beta1types.NewMsgSubmitProposal(prop, deposit, from)
+			if err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msg)
+		},
+	}
+
 	cmd.Flags().StringSlice(flagExemptAddresses, []string{},
 		"Comma separated list of addresses exempt from the bridge tax. Can be passed multiple times.")
 

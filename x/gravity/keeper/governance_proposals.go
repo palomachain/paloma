@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -34,6 +36,30 @@ func NewGravityProposalHandler(k Keeper) govv1beta1types.Handler {
 			}
 
 			return k.SetBridgeTax(ctx, bridgeTax)
+		case *types.SetBridgeTransferLimitProposal:
+			addresses := make([]sdk.AccAddress, 0, len(c.ExemptAddresses))
+			for _, addr := range c.ExemptAddresses {
+				address, err := sdk.AccAddressFromBech32(addr)
+				if err != nil {
+					return err
+				}
+
+				addresses = append(addresses, address)
+			}
+
+			limitPeriod, ok := types.LimitPeriod_value[c.LimitPeriod]
+			if !ok {
+				return fmt.Errorf("invalid limit period: %v", c.LimitPeriod)
+			}
+
+			limit := &types.BridgeTransferLimit{
+				Token:           c.Token,
+				Limit:           c.Limit,
+				LimitPeriod:     types.LimitPeriod(limitPeriod),
+				ExemptAddresses: addresses,
+			}
+
+			return k.SetBridgeTransferLimit(ctx, limit)
 		}
 
 		return sdkerrors.ErrUnknownRequest

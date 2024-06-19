@@ -11,6 +11,7 @@ import "palomachain/paloma/gravity/types.proto";
 import "palomachain/paloma/gravity/msgs.proto";
 import "palomachain/paloma/gravity/params.proto";
 import "palomachain/paloma/gravity/bridge_tax.proto";
+import "palomachain/paloma/gravity/bridge_transfer_limit.proto";
 import "google/protobuf/empty.proto";
 
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
@@ -47,6 +48,12 @@ service Query {
 
   rpc GetBridgeTax(google.protobuf.Empty) returns (QueryBridgeTaxResponse) {
     option (google.api.http).get = "/palomachain/paloma/gravity/bridge_tax";
+  }
+
+  rpc GetAllBridgeTransferLimits(google.protobuf.Empty)
+      returns (QueryAllBridgeTransferLimitsResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/gravity/all_bridge_transfer_limits";
   }
 }
 
@@ -156,4 +163,8 @@ message QueryPendingSendToEthResponse {
 
 message QueryBridgeTaxResponse {
   BridgeTax bridge_tax = 1;
+}
+
+message QueryAllBridgeTransferLimitsResponse {
+  repeated BridgeTransferLimit bridge_transfer_limits = 1;
 }

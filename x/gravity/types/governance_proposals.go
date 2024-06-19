@@ -5,18 +5,21 @@ import (
 )
 
 const (
-	ProposalTypeSetERC20ToDenomProposal = "SetERC20ToDenomProposal"
-	ProposalTypeSetBridgeTaxProposal    = "SetBridgeTaxProposal"
+	ProposalTypeSetERC20ToDenomProposal        = "SetERC20ToDenomProposal"
+	ProposalTypeSetBridgeTaxProposal           = "SetBridgeTaxProposal"
+	ProposalTypeSetBridgeTransferLimitProposal = "SetBridgeTransferLimitProposal"
 )
 
 var (
 	_ govv1beta1types.Content = &SetERC20ToDenomProposal{}
 	_ govv1beta1types.Content = &SetBridgeTaxProposal{}
+	_ govv1beta1types.Content = &SetBridgeTransferLimitProposal{}
 )
 
 func init() {
 	govv1beta1types.RegisterProposalType(ProposalTypeSetERC20ToDenomProposal)
 	govv1beta1types.RegisterProposalType(ProposalTypeSetBridgeTaxProposal)
+	govv1beta1types.RegisterProposalType(ProposalTypeSetBridgeTransferLimitProposal)
 }
 
 func (p *SetERC20ToDenomProposal) ProposalRoute() string { return RouterKey }
@@ -32,5 +35,15 @@ func (p *SetERC20ToDenomProposal) ValidateBasic() error {
 func (p *SetBridgeTaxProposal) ProposalRoute() string { return RouterKey }
 func (p *SetBridgeTaxProposal) ProposalType() string  { return ProposalTypeSetBridgeTaxProposal }
 func (p *SetBridgeTaxProposal) ValidateBasic() error {
+	return govv1beta1types.ValidateAbstract(p)
+}
+
+func (p *SetBridgeTransferLimitProposal) ProposalRoute() string { return RouterKey }
+
+func (p *SetBridgeTransferLimitProposal) ProposalType() string {
+	return ProposalTypeSetBridgeTransferLimitProposal
+}
+
+func (p *SetBridgeTransferLimitProposal) ValidateBasic() error {
 	return govv1beta1types.ValidateAbstract(p)
 }

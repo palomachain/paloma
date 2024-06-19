@@ -37,6 +37,7 @@ func GetQueryCmd() *cobra.Command {
 		CmdGetLastObservedEthNonce(),
 		GetCmdQueryParams(),
 		GetCmdQueryBridgeTax(),
+		GetCmdQueryAllBridgeTransferLimits(),
 	}...)
 
 	return gravityQueryCmd
@@ -354,6 +355,36 @@ func GetCmdQueryBridgeTax() *cobra.Command {
 			params := &emptypb.Empty{}
 
 			res, err := queryClient.GetBridgeTax(cmd.Context(), params)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+// GetCmdQueryAllBridgeTransferLimits fetches transfer limits for all tokens
+func GetCmdQueryAllBridgeTransferLimits() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "all-bridge-transfer-limits",
+		Short: "Query bridge transfer limits for all tokens",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			params := &emptypb.Empty{}
+
+			res, err := queryClient.GetAllBridgeTransferLimits(cmd.Context(), params)
 			if err != nil {
 				return err
 			}

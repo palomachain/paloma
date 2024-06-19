@@ -1,0 +1,18 @@
+syntax = "proto3";
+package palomachain.paloma.gravity;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/gravity/types";
+
+message SetBridgeTransferLimitProposal {
+  string title = 1;
+  string description = 2;
+  string token = 3;
+  string limit = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string limit_period = 5;
+  repeated string exempt_addresses = 6;
+}
