@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	"strconv"
+	"math/big"
 
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -91,7 +91,7 @@ func CmdSetBridgeTax() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set-bridge-tax [tax-rate]",
 		Short: "Sets the bridge tax rate, and optionally token exceptions and exempt addresses",
-		Long:  "Each outgoing transfer from Paloma will pay a tax. The amount transferred will be the original amount minus the tax. Tax amount is calculated using [tax-rate]. [tax-rate] must be a value in the interval [0, 1]",
+		Long:  "Each outgoing transfer from Paloma will pay a tax. Tax amount is calculated using [tax-rate], which must be non-negative.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
@@ -101,13 +101,9 @@ func CmdSetBridgeTax() *cobra.Command {
 
 			rateRaw := args[0]
 
-			rate, err := strconv.ParseFloat(rateRaw, 32)
-			if err != nil {
-				return err
-			}
-
-			if rate < 0 || rate > 1 {
-				return fmt.Errorf("invalid tax rate: %v", rate)
+			rate, ok := new(big.Rat).SetString(rateRaw)
+			if !ok || rate.Sign() < 0 {
+				return fmt.Errorf("invalid tax rate: %s", rateRaw)
 			}
 
 			title, err := cmd.Flags().GetString(cli.FlagTitle)

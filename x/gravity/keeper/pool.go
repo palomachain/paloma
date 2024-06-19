@@ -29,10 +29,20 @@ func (k Keeper) AddToOutgoingPool(
 		!amount.IsValid() {
 		return 0, sdkerrors.Wrap(types.ErrInvalid, "arguments")
 	}
-	amountInVouchers := sdk.Coins{amount}
 
-	// If the coin is a gravity voucher, burn the coins. If not, check if there is a deployed ERC20 contract representing it.
-	// If there is, lock the coins.
+	// Get the applicable bridge tax
+	taxedAmount, err := k.bridgeTaxAmount(ctx, sender, amount)
+	if err != nil {
+		return 0, err
+	}
+
+	// Total amount includes the bridge tax on top of the original amount
+	totalAmount := sdk.Coin{
+		Denom:  amount.Denom,
+		Amount: amount.Amount.Add(taxedAmount),
+	}
+
+	amountInVouchers := sdk.Coins{totalAmount}
 
 	tokenContract, err := k.GetERC20OfDenom(ctx, chainReferenceID, amount.Denom)
 	if err != nil {
@@ -49,19 +59,7 @@ func (k Keeper) AddToOutgoingPool(
 		return 0, err
 	}
 
-	// Get the applicable bridge tax
-	taxedAmount, err := k.bridgeTaxAmount(ctx, sender, amount)
-	if err != nil {
-		return 0, err
-	}
-
-	tokenAmount := amount.Amount
-	if taxedAmount.IsPositive() {
-		// Reduce the transferred amount by the amount of taxes
-		tokenAmount = tokenAmount.Sub(taxedAmount)
-	}
-
-	erc20Token, err := types.NewInternalERC20Token(tokenAmount, tokenContract.GetAddress().Hex(), chainReferenceID)
+	erc20Token, err := types.NewInternalERC20Token(amount.Amount, tokenContract.GetAddress().Hex(), chainReferenceID)
 	if err != nil {
 		return 0, sdkerrors.Wrapf(err, "invalid ERC20Token from amount %d and contract %v",
 			amount.Amount, tokenContract)

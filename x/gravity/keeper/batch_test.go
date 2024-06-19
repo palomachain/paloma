@@ -810,7 +810,7 @@ func TestBridgeTax(t *testing.T) {
 		Id:              1,
 		Sender:          mySender.String(),
 		DestAddress:     myReceiver.GetAddress().Hex(),
-		Erc20Token:      types.NewERC20Token(98, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
+		Erc20Token:      types.NewERC20Token(100, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
 		BridgeTaxAmount: math.NewInt(2),
 	}
 

@@ -1,23 +1,20 @@
 # Gravity Bridge Tax
 
 All outbound transactions from the bridge to the target EVM and other chains pay
-a tax on the gravity bridge. When sending a Paloma token to EVM, the net tokens
-minted on the target chain will be the total tokens less the token tax % amount.
-A governance vote is needed to define the tax percentage amount, as well as a
-list of tokens and addresses that are exempt from the bridge tax.
+a tax on the gravity bridge. This tax is added to the cost of the transfer.
+A governance vote is needed to define the tax rate, as well as a list of tokens
+and addresses that are exempt from the bridge tax.
 
 ## Tax Rate
 
-The tax rate must be defined as a value between 0 and 1, inclusive. 0 means no
-tax is applied, and 1 would mean the transfer will not go through and just be
-spent on tax instead.
+The tax rate must be defined as a non-negative value, with 0 meaning no tax is
+applied.
 
-The tax is subtracted from the intended transfer amount at the moment the
-transfer is queued for processing. The final amount transferred is calculated as
-`<intended_amount>*(1-<tax_rate>)`.
+The tax is added to the cost of the transfer and will stay locked until the
+transfer is finished.
 If the transfer is successful, the taxed amount is burned on the Paloma side.
-If a transfer is canceled before being executed, the full initial amount,
-including tax, is refunded.
+If a transfer is canceled before being executed, the full initial amount, plus
+tax, is refunded.
 
 ## Excluded Tokens
 

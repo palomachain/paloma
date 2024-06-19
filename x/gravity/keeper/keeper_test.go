@@ -163,11 +163,11 @@ func TestSetBridgeTax(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("Return error when trying to overtax", func(t *testing.T) {
+	t.Run("Return OK with a tax higher than 100%", func(t *testing.T) {
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
 			Rate: "1.1",
 		})
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -279,12 +279,12 @@ func TestBridgeTaxAmount(t *testing.T) {
 		}
 
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
-			Rate: "0.999",
+			Rate: "2",
 		})
 
 		actual, err := k.bridgeTaxAmount(ctx, addresses[0], hugeCoin)
 		require.NoError(t, err)
-		expected, _ := math.NewIntFromString("1498500000000000000000")
+		expected, _ := math.NewIntFromString("3000000000000000000000")
 		require.Equal(t, actual, expected)
 	})
 }

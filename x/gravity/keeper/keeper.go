@@ -263,12 +263,8 @@ func (k Keeper) BridgeTax(ctx context.Context) (*types.BridgeTax, error) {
 
 func (k Keeper) SetBridgeTax(ctx context.Context, tax *types.BridgeTax) error {
 	taxRate, ok := new(big.Rat).SetString(tax.Rate)
-	if !ok {
-		return fmt.Errorf("invalid tax rate value: %s", tax.Rate)
-	}
-
-	// Sanity check the tax value. Must be between [0,1]
-	if taxRate.Sign() < 0 || taxRate.Cmp(big.NewRat(1, 1)) > 0 {
+	// Sanity check the tax value. Must be between >= 0
+	if !ok || taxRate.Sign() < 0 {
 		return fmt.Errorf("invalid tax rate value: %s", tax.Rate)
 	}
 
