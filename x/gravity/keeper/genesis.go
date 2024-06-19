@@ -142,6 +142,14 @@ func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 			panic(err)
 		}
 	}
+
+	if data.BridgeTransferLimits != nil {
+		for _, limit := range data.BridgeTransferLimits {
+			if err := k.SetBridgeTransferLimit(ctx, limit); err != nil {
+				panic(err)
+			}
+		}
+	}
 }
 
 // ExportGenesis exports all the state needed to restart the chain
@@ -236,14 +244,20 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		panic(err)
 	}
 
+	limits, err := k.AllBridgeTransferLimits(ctx)
+	if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
+		panic(err)
+	}
+
 	return types.GenesisState{
-		Params:             &p,
-		GravityNonces:      nonces,
-		Batches:            extBatches,
-		BatchConfirms:      batchconfs,
-		Attestations:       attestations,
-		Erc20ToDenoms:      erc20ToDenoms,
-		UnbatchedTransfers: unbatchedTxs,
-		BridgeTax:          tax,
+		Params:               &p,
+		GravityNonces:        nonces,
+		Batches:              extBatches,
+		BatchConfirms:        batchconfs,
+		Attestations:         attestations,
+		Erc20ToDenoms:        erc20ToDenoms,
+		UnbatchedTransfers:   unbatchedTxs,
+		BridgeTax:            tax,
+		BridgeTransferLimits: limits,
 	}
 }

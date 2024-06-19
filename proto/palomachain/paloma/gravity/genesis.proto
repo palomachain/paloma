@@ -6,6 +6,7 @@ import "palomachain/paloma/gravity/types.proto";
 import "palomachain/paloma/gravity/msgs.proto";
 import "palomachain/paloma/gravity/batch.proto";
 import "palomachain/paloma/gravity/bridge_tax.proto";
+import "palomachain/paloma/gravity/bridge_transfer_limit.proto";
 import "palomachain/paloma/gravity/attestation.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "palomachain/paloma/gravity/params.proto";
@@ -22,7 +23,8 @@ message GenesisState {
   repeated ERC20ToDenom erc20_to_denoms = 9 [ (gogoproto.nullable) = false ];
   repeated OutgoingTransferTx unbatched_transfers = 10
       [ (gogoproto.nullable) = false ];
-  BridgeTax BridgeTax = 11;
+  BridgeTax bridge_tax = 11;
+  repeated BridgeTransferLimit bridge_transfer_limits = 12;
 }
 
 // GravityCounters contains the many noces and counters required to maintain the
