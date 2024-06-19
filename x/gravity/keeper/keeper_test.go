@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -120,4 +121,170 @@ func TestAttestationIterator(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, atts, 2)
+}
+
+func TestSetBridgeTax(t *testing.T) {
+	input := CreateTestEnv(t)
+	ctx := input.Context
+	k := input.GravityKeeper
+
+	accAddresses := []string{
+		"paloma1dg55rtevlfxh46w88yjpdd08sqhh5cc37jmmth",
+		"paloma164knshrzuuurf05qxf3q5ewpfnwzl4gjd7cwmp",
+	}
+
+	addresses := make([]sdk.AccAddress, len(accAddresses))
+	for i := range accAddresses {
+		addr, err := sdk.AccAddressFromBech32(accAddresses[i])
+		require.NoError(t, err)
+
+		addresses[i] = addr
+	}
+
+	t.Run("Return new bridge tax after setting it", func(t *testing.T) {
+		expected := types.BridgeTax{
+			Rate:            "0.02",
+			ExcludedTokens:  []string{"test"},
+			ExemptAddresses: addresses,
+		}
+
+		err := k.SetBridgeTax(ctx, &expected)
+		require.NoError(t, err)
+
+		actual, err := k.BridgeTax(ctx)
+		require.NoError(t, err)
+		require.Equal(t, *actual, expected)
+	})
+
+	t.Run("Return error when trying to set a negative tax", func(t *testing.T) {
+		err := k.SetBridgeTax(ctx, &types.BridgeTax{
+			Rate: "-0.2",
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("Return OK with a tax higher than 100%", func(t *testing.T) {
+		err := k.SetBridgeTax(ctx, &types.BridgeTax{
+			Rate: "1.1",
+		})
+		require.NoError(t, err)
+	})
+}
+
+func TestBridgeTaxAmount(t *testing.T) {
+	var ctx context.Context
+	var k Keeper
+	setup := func() {
+		input := CreateTestEnv(t)
+		ctx = input.Context
+		k = input.GravityKeeper
+	}
+
+	accAddresses := []string{
+		"paloma1dg55rtevlfxh46w88yjpdd08sqhh5cc37jmmth",
+		"paloma164knshrzuuurf05qxf3q5ewpfnwzl4gjd7cwmp",
+	}
+
+	addresses := make([]sdk.AccAddress, len(accAddresses))
+	for i := range accAddresses {
+		addr, err := sdk.AccAddressFromBech32(accAddresses[i])
+		require.NoError(t, err)
+
+		addresses[i] = addr
+	}
+
+	coin := sdk.Coin{
+		Denom:  "test",
+		Amount: math.NewInt(1_000_000),
+	}
+
+	t.Run("Return zero when bridge tax is not set yet", func(t *testing.T) {
+		setup()
+
+		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
+		require.NoError(t, err)
+		require.Equal(t, actual, math.ZeroInt())
+	})
+
+	t.Run("Return zero when bridge tax is set to zero", func(t *testing.T) {
+		setup()
+
+		err := k.SetBridgeTax(ctx, &types.BridgeTax{
+			Rate: "0",
+		})
+
+		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
+		require.NoError(t, err)
+		require.Equal(t, actual, math.ZeroInt())
+	})
+
+	t.Run("Return all when bridge tax is set to one", func(t *testing.T) {
+		setup()
+
+		err := k.SetBridgeTax(ctx, &types.BridgeTax{
+			Rate: "1",
+		})
+
+		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
+		require.NoError(t, err)
+		require.Equal(t, actual, coin.Amount)
+	})
+
+	t.Run("Return zero when token is in exclusion list", func(t *testing.T) {
+		setup()
+
+		err := k.SetBridgeTax(ctx, &types.BridgeTax{
+			Rate:           "0.01",
+			ExcludedTokens: []string{"fake", "test", "another"},
+		})
+
+		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
+		require.NoError(t, err)
+		require.Equal(t, actual, math.ZeroInt())
+	})
+
+	t.Run("Return zero when sender is exempt", func(t *testing.T) {
+		setup()
+
+		err := k.SetBridgeTax(ctx, &types.BridgeTax{
+			Rate:            "0.01",
+			ExcludedTokens:  []string{"fake", "another"},
+			ExemptAddresses: addresses,
+		})
+
+		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
+		require.NoError(t, err)
+		require.Equal(t, actual, math.ZeroInt())
+	})
+
+	t.Run("Return the correct tax amount", func(t *testing.T) {
+		setup()
+
+		err := k.SetBridgeTax(ctx, &types.BridgeTax{
+			Rate: "0.00123",
+		})
+
+		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
+		require.NoError(t, err)
+		require.Equal(t, actual, math.NewInt(1230))
+	})
+
+	t.Run("Return the correct tax amount on huge transfer", func(t *testing.T) {
+		setup()
+
+		amount, _ := math.NewIntFromString("1500000000000000000000")
+		hugeCoin := sdk.Coin{
+			Denom:  "test",
+			Amount: amount,
+		}
+
+		err := k.SetBridgeTax(ctx, &types.BridgeTax{
+			Rate: "2",
+		})
+
+		actual, err := k.bridgeTaxAmount(ctx, addresses[0], hugeCoin)
+		require.NoError(t, err)
+		expected, _ := math.NewIntFromString("3000000000000000000000")
+		require.Equal(t, actual, expected)
+	})
 }

@@ -86,16 +86,18 @@ func TestBatches(t *testing.T) {
 		BatchNonce: 1,
 		Transactions: []types.OutgoingTransferTx{
 			{
-				Id:          4,
-				Sender:      mySender.String(),
-				DestAddress: myReceiver.GetAddress().Hex(),
-				Erc20Token:  types.NewERC20Token(103, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
+				Id:              4,
+				Sender:          mySender.String(),
+				DestAddress:     myReceiver.GetAddress().Hex(),
+				Erc20Token:      types.NewERC20Token(103, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
+				BridgeTaxAmount: math.ZeroInt(),
 			},
 			{
-				Id:          3,
-				Sender:      mySender.String(),
-				DestAddress: myReceiver.GetAddress().Hex(),
-				Erc20Token:  types.NewERC20Token(102, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
+				Id:              3,
+				Sender:          mySender.String(),
+				DestAddress:     myReceiver.GetAddress().Hex(),
+				Erc20Token:      types.NewERC20Token(102, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
+				BridgeTaxAmount: math.ZeroInt(),
 			},
 		},
 		TokenContract:      myTokenContractAddr.GetAddress().Hex(),
@@ -149,16 +151,18 @@ func TestBatches(t *testing.T) {
 	// Should still have 1: and 2: above
 	expUnbatchedTx := []*types.InternalOutgoingTransferTx{
 		{
-			Id:          2,
-			Sender:      mySender,
-			DestAddress: myReceiver,
-			Erc20Token:  oneHundredOneTok,
+			Id:              2,
+			Sender:          mySender,
+			DestAddress:     myReceiver,
+			Erc20Token:      oneHundredOneTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 		{
-			Id:          1,
-			Sender:      mySender,
-			DestAddress: myReceiver,
-			Erc20Token:  oneHundredTok,
+			Id:              1,
+			Sender:          mySender,
+			DestAddress:     myReceiver,
+			Erc20Token:      oneHundredTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 	}
 	assert.Equal(t, expUnbatchedTx, gotUnbatchedTx)
@@ -179,16 +183,18 @@ func TestBatches(t *testing.T) {
 		BatchNonce: 2,
 		Transactions: []types.OutgoingTransferTx{
 			{
-				Id:          2,
-				Sender:      mySender.String(),
-				DestAddress: myReceiver.GetAddress().Hex(),
-				Erc20Token:  types.NewERC20Token(101, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
+				Id:              2,
+				Sender:          mySender.String(),
+				DestAddress:     myReceiver.GetAddress().Hex(),
+				Erc20Token:      types.NewERC20Token(101, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
+				BridgeTaxAmount: math.ZeroInt(),
 			},
 			{
-				Id:          1,
-				Sender:      mySender.String(),
-				DestAddress: myReceiver.GetAddress().Hex(),
-				Erc20Token:  types.NewERC20Token(100, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
+				Id:              1,
+				Sender:          mySender.String(),
+				DestAddress:     myReceiver.GetAddress().Hex(),
+				Erc20Token:      types.NewERC20Token(100, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
+				BridgeTaxAmount: math.ZeroInt(),
 			},
 		},
 		TokenContract:      myTokenContractAddr.GetAddress().Hex(),
@@ -326,16 +332,18 @@ func TestBatchesFullCoins(t *testing.T) {
 		BatchNonce: 1,
 		Transactions: []types.OutgoingTransferTx{
 			{
-				Id:          2,
-				Sender:      mySender.String(),
-				DestAddress: myReceiver,
-				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(300)), testERC20Address, "test-chain"),
+				Id:              2,
+				Sender:          mySender.String(),
+				DestAddress:     myReceiver,
+				Erc20Token:      types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(300)), testERC20Address, "test-chain"),
+				BridgeTaxAmount: math.ZeroInt(),
 			},
 			{
-				Id:          3,
-				Sender:      mySender.String(),
-				DestAddress: myReceiver,
-				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(25)), testERC20Address, "test-chain"),
+				Id:              3,
+				Sender:          mySender.String(),
+				DestAddress:     myReceiver,
+				Erc20Token:      types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(25)), testERC20Address, "test-chain"),
+				BridgeTaxAmount: math.ZeroInt(),
 			},
 		},
 		TokenContract:      testERC20Address,
@@ -359,16 +367,18 @@ func TestBatchesFullCoins(t *testing.T) {
 	require.NoError(t, err)
 	expUnbatchedTx := []*types.InternalOutgoingTransferTx{
 		{
-			Id:          1,
-			Sender:      mySender,
-			DestAddress: receiverAddr,
-			Erc20Token:  twentyTok,
+			Id:              1,
+			Sender:          mySender,
+			DestAddress:     receiverAddr,
+			Erc20Token:      twentyTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 		{
-			Id:          4,
-			Sender:      mySender,
-			DestAddress: receiverAddr,
-			Erc20Token:  tenTok,
+			Id:              4,
+			Sender:          mySender,
+			DestAddress:     receiverAddr,
+			Erc20Token:      tenTok,
+			BridgeTaxAmount: math.ZeroInt(),
 		},
 	}
 	assert.Equal(t, expUnbatchedTx, gotUnbatchedTx)
@@ -399,16 +409,18 @@ func TestBatchesFullCoins(t *testing.T) {
 		BatchNonce: 2,
 		Transactions: []types.OutgoingTransferTx{
 			{
-				Id:          5,
-				Sender:      mySender.String(),
-				DestAddress: myReceiver,
-				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(200)), testERC20Address, "test-chain"),
+				Id:              5,
+				Sender:          mySender.String(),
+				DestAddress:     myReceiver,
+				Erc20Token:      types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(200)), testERC20Address, "test-chain"),
+				BridgeTaxAmount: math.ZeroInt(),
 			},
 			{
-				Id:          6,
-				Sender:      mySender.String(),
-				DestAddress: myReceiver,
-				Erc20Token:  types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(150)), testERC20Address, "test-chain"),
+				Id:              6,
+				Sender:          mySender.String(),
+				DestAddress:     myReceiver,
+				Erc20Token:      types.NewSDKIntERC20Token(oneEth.Mul(math.NewIntFromUint64(150)), testERC20Address, "test-chain"),
+				BridgeTaxAmount: math.ZeroInt(),
 			},
 		},
 		TokenContract:      testERC20Address,
@@ -745,4 +757,62 @@ func TestLastSlashedBatchBlock(t *testing.T) {
 	lastSlashedBlock, err = input.GravityKeeper.GetLastSlashedBatchBlock(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, uint64(129), lastSlashedBlock)
+}
+
+func TestBridgeTax(t *testing.T) {
+	input, ctx := SetupFiveValChain(t)
+	// sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	var (
+		// now                     = time.Now().UTC()
+		mySender, e1            = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
+		myReceiver, e2          = types.NewEthAddress("0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7")
+		myTokenContractAddr, e3 = types.NewEthAddress(testERC20Address)
+		token, e4               = types.NewInternalERC20Token(math.NewInt(99999), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+		allVouchers             = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
+	)
+	require.NoError(t, e1)
+	require.NoError(t, e2)
+	require.NoError(t, e3)
+	require.NoError(t, e4)
+
+	// set bridge tax
+	input.GravityKeeper.SetBridgeTax(ctx, &types.BridgeTax{Rate: "0.02"})
+
+	// mint some voucher first
+	require.NoError(t, input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers))
+	// set senders balance
+	input.AccountKeeper.NewAccountWithAddress(ctx, mySender)
+	require.NoError(t, input.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, mySender, allVouchers))
+
+	// batch should not be created if there is no txs of the given token type in tx pool
+	noBatch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", *myTokenContractAddr, 1)
+	require.Nil(t, noBatch)
+	require.Nil(t, err)
+
+	// add some TX to the pool
+	amountToken, err := types.NewInternalERC20Token(math.NewInt(100), myTokenContractAddr.GetAddress().Hex(), "test-chain")
+	require.NoError(t, err)
+	amount := sdk.NewCoin(testDenom, amountToken.Amount)
+
+	_, err = input.GravityKeeper.AddToOutgoingPool(ctx, mySender, *myReceiver, amount, "test-chain")
+	require.NoError(t, err)
+
+	firstBatch, err := input.GravityKeeper.BuildOutgoingTXBatch(ctx, "test-chain", *myTokenContractAddr, 1)
+	require.NoError(t, err)
+
+	// then batch is persisted
+	gotBatch, err := input.GravityKeeper.GetOutgoingTXBatch(ctx, firstBatch.TokenContract, firstBatch.BatchNonce)
+	require.NoError(t, err)
+	require.NotNil(t, gotBatch)
+
+	expected := types.OutgoingTransferTx{
+		Id:              1,
+		Sender:          mySender.String(),
+		DestAddress:     myReceiver.GetAddress().Hex(),
+		Erc20Token:      types.NewERC20Token(100, myTokenContractAddr.GetAddress().Hex(), "test-chain"),
+		BridgeTaxAmount: math.NewInt(2),
+	}
+
+	assert.Equal(t, expected, gotBatch.Transactions[0].ToExternal())
 }

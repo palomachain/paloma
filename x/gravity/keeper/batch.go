@@ -114,7 +114,9 @@ func (k Keeper) OutgoingTxBatchExecuted(ctx context.Context, tokenContract types
 
 	totalToBurn := math.NewInt(0)
 	for _, tx := range b.Transactions {
-		totalToBurn = totalToBurn.Add(tx.Erc20Token.Amount)
+		// We need to burn the total amount transferred, as well as the total
+		// amount taxed
+		totalToBurn = totalToBurn.Add(tx.Erc20Token.Amount).Add(tx.BridgeTaxAmount)
 	}
 
 	denom, err := k.GetDenomOfERC20(ctx, claim.GetChainReferenceId(), tokenContract)

@@ -29,10 +29,20 @@ func (k Keeper) AddToOutgoingPool(
 		!amount.IsValid() {
 		return 0, sdkerrors.Wrap(types.ErrInvalid, "arguments")
 	}
-	amountInVouchers := sdk.Coins{amount}
 
-	// If the coin is a gravity voucher, burn the coins. If not, check if there is a deployed ERC20 contract representing it.
-	// If there is, lock the coins.
+	// Get the applicable bridge tax
+	taxedAmount, err := k.bridgeTaxAmount(ctx, sender, amount)
+	if err != nil {
+		return 0, err
+	}
+
+	// Total amount includes the bridge tax on top of the original amount
+	totalAmount := sdk.Coin{
+		Denom:  amount.Denom,
+		Amount: amount.Amount.Add(taxedAmount),
+	}
+
+	amountInVouchers := sdk.Coins{totalAmount}
 
 	tokenContract, err := k.GetERC20OfDenom(ctx, chainReferenceID, amount.Denom)
 	if err != nil {
@@ -58,10 +68,11 @@ func (k Keeper) AddToOutgoingPool(
 	// the token as an ERC20 token since it is preparing to go to ETH
 	// rather than the denom that is the input to this function.
 	outgoing, err := types.OutgoingTransferTx{
-		Id:          nextID,
-		Sender:      sender.String(),
-		DestAddress: counterpartReceiver.GetAddress().Hex(),
-		Erc20Token:  erc20Token.ToExternal(),
+		Id:              nextID,
+		Sender:          sender.String(),
+		DestAddress:     counterpartReceiver.GetAddress().Hex(),
+		Erc20Token:      erc20Token.ToExternal(),
+		BridgeTaxAmount: taxedAmount,
 	}.ToInternal()
 	if err != nil { // This should never happen since all the components are validated
 		return 0, sdkerrors.Wrap(err, "unable to create InternalOutgoingTransferTx")
@@ -123,7 +134,8 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64
 	if err != nil {
 		return err
 	}
-	totalToRefund := sdk.NewCoin(denom, tx.Erc20Token.Amount)
+	// Total refund must include the transferred amount as well as the tax
+	totalToRefund := sdk.NewCoin(denom, tx.Erc20Token.Amount.Add(tx.BridgeTaxAmount))
 	totalToRefundCoins := sdk.NewCoins(totalToRefund)
 
 	// Perform refund

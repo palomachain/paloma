@@ -1,0 +1,14 @@
+syntax = "proto3";
+package palomachain.paloma.gravity;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/palomachain/paloma/x/gravity/types";
+
+message BridgeTax {
+  string rate = 1 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  repeated string excluded_tokens = 2;
+  repeated bytes exempt_addresses = 3
+    [ (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress" ];
+}

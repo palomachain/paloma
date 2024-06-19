@@ -7,6 +7,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/testutil/nullify"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/require"
 )
@@ -107,7 +108,7 @@ func TestBatchAndTxImportExport(t *testing.T) {
 		require.NoError(t, err)
 
 		// Record the transaction for later testing
-		tx, err := types.NewInternalOutgoingTransferTx(id, sender.String(), receiver.GetAddress().Hex(), amountToken.ToExternal())
+		tx, err := types.NewInternalOutgoingTransferTx(id, sender.String(), receiver.GetAddress().Hex(), amountToken.ToExternal(), math.ZeroInt())
 		require.NoError(t, err)
 		txs[i] = tx
 	}
@@ -128,4 +129,56 @@ func TestBatchAndTxImportExport(t *testing.T) {
 		batches[i] = batch
 		sdkCtx.Logger().Info(fmt.Sprintf("Created batch %v for contract %v with %v transactions", i, v.GetAddress(), batchSize))
 	}
+}
+
+func TestGenesis(t *testing.T) {
+	accAddresses := []string{
+		"paloma1dg55rtevlfxh46w88yjpdd08sqhh5cc37jmmth",
+		"paloma164knshrzuuurf05qxf3q5ewpfnwzl4gjd7cwmp",
+	}
+
+	addresses := make([]sdk.AccAddress, len(accAddresses))
+	for i := range accAddresses {
+		addr, err := sdk.AccAddressFromBech32(accAddresses[i])
+		require.NoError(t, err)
+
+		addresses[i] = addr
+	}
+
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+		BridgeTax: &types.BridgeTax{
+			Rate:            "0.02",
+			ExcludedTokens:  []string{"test"},
+			ExemptAddresses: addresses,
+		},
+	}
+
+	input := CreateTestEnv(t)
+
+	InitGenesis(input.Context, input.GravityKeeper, genesisState)
+	got := ExportGenesis(input.Context, input.GravityKeeper)
+	require.NotNil(t, got)
+
+	nullify.Fill(&genesisState)
+	nullify.Fill(got)
+
+	require.Equal(t, genesisState.BridgeTax, got.BridgeTax)
+}
+
+func TestGenesisEmptyBridgeTax(t *testing.T) {
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+	}
+
+	input := CreateTestEnv(t)
+
+	InitGenesis(input.Context, input.GravityKeeper, genesisState)
+	got := ExportGenesis(input.Context, input.GravityKeeper)
+	require.NotNil(t, got)
+
+	nullify.Fill(&genesisState)
+	nullify.Fill(got)
+
+	require.Nil(t, got.BridgeTax)
 }

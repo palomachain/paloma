@@ -37,6 +37,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*govtypes.Content)(nil),
 		&SetERC20ToDenomProposal{},
+		&SetBridgeTaxProposal{},
 	)
 
 	registry.RegisterInterface("palomachain.paloma.gravity.EthereumSigned", (*EthereumSigned)(nil),
@@ -62,4 +63,5 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&Attestation{}, "gravity/Attestation", nil)
 	cdc.RegisterConcrete(&MsgSubmitBadSignatureEvidence{}, "gravity/MsgSubmitBadSignatureEvidence", nil)
 	cdc.RegisterConcrete(&SetERC20ToDenomProposal{}, "gravity/SetERC20ToDenomProposal", nil)
+	cdc.RegisterConcrete(&SetBridgeTaxProposal{}, "gravity/SetBridgeTaxProposal", nil)
 }

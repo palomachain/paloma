@@ -2,11 +2,16 @@ package keeper
 
 import (
 	"context"
+	"encoding/hex"
+	"errors"
 	"fmt"
+	"math/big"
+	"slices"
 
 	"cosmossdk.io/core/address"
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -238,4 +243,79 @@ func (gsg GravityStoreGetter) Store(ctx context.Context) storetypes.KVStore {
 
 func (k Keeper) GetAuthority() string {
 	return k.authority
+}
+
+func (k Keeper) BridgeTax(ctx context.Context) (*types.BridgeTax, error) {
+	var tax types.BridgeTax
+	val := k.GetStore(ctx, types.StoreModulePrefix).Get(types.BridgeTaxKey)
+
+	if len(val) == 0 {
+		// We have no bridge tax settings
+		return nil, keeperutil.ErrNotFound.Format(&tax, hex.EncodeToString(types.BridgeTaxKey))
+	}
+
+	if err := k.cdc.Unmarshal(val, &tax); err != nil {
+		return nil, err
+	}
+
+	return &tax, nil
+}
+
+func (k Keeper) SetBridgeTax(ctx context.Context, tax *types.BridgeTax) error {
+	taxRate, ok := new(big.Rat).SetString(tax.Rate)
+	// Sanity check the tax value. Must be between >= 0
+	if !ok || taxRate.Sign() < 0 {
+		return fmt.Errorf("invalid tax rate value: %s", tax.Rate)
+	}
+
+	val, err := k.cdc.Marshal(tax)
+	if err != nil {
+		return err
+	}
+
+	k.GetStore(ctx, types.StoreModulePrefix).Set(types.BridgeTaxKey, val)
+
+	return nil
+}
+
+// Calculate the applicable bridge tax amount by checking the current bridge tax
+// settings, as well as the transfer sender address and denomination.
+// Returns the total amount of tax on the transfer, truncated to integer.
+func (k Keeper) bridgeTaxAmount(
+	ctx context.Context,
+	sender sdk.AccAddress,
+	amount sdk.Coin,
+) (math.Int, error) {
+	bridgeTax, err := k.BridgeTax(ctx)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			// The bridge tax hasn't been set by governance vote
+			return math.ZeroInt(), nil
+		}
+
+		return math.ZeroInt(), err
+	}
+
+	bRate, _ := new(big.Rat).SetString(bridgeTax.Rate)
+	if bRate.Sign() == 0 {
+		// The bridge tax is set to zero
+		return math.ZeroInt(), nil
+	}
+
+	if slices.Contains(bridgeTax.ExcludedTokens, amount.Denom) {
+		// This token is excluded, so no tax applies
+		return math.ZeroInt(), nil
+	}
+
+	for _, addr := range bridgeTax.ExemptAddresses {
+		if sender.Equals(addr) {
+			// The sender is exempt from bridge tax
+			return math.ZeroInt(), nil
+		}
+	}
+
+	num := math.NewIntFromBigInt(bRate.Num())
+	denom := math.NewIntFromBigInt(bRate.Denom())
+
+	return amount.Amount.Mul(num).Quo(denom), nil
 }

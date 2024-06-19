@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	sdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -13,15 +14,17 @@ import (
 )
 
 func (o OutgoingTransferTx) ToInternal() (*InternalOutgoingTransferTx, error) {
-	return NewInternalOutgoingTransferTx(o.Id, o.Sender, o.DestAddress, o.Erc20Token)
+	return NewInternalOutgoingTransferTx(o.Id, o.Sender, o.DestAddress,
+		o.Erc20Token, o.BridgeTaxAmount)
 }
 
 // InternalOutgoingTransferTx is an internal duplicate of OutgoingTransferTx with validation
 type InternalOutgoingTransferTx struct {
-	Id          uint64
-	Sender      sdk.AccAddress
-	DestAddress *EthAddress
-	Erc20Token  *InternalERC20Token
+	Id              uint64
+	Sender          sdk.AccAddress
+	DestAddress     *EthAddress
+	Erc20Token      *InternalERC20Token
+	BridgeTaxAmount math.Int
 }
 
 func NewInternalOutgoingTransferTx(
@@ -29,6 +32,7 @@ func NewInternalOutgoingTransferTx(
 	sender string,
 	destAddress string,
 	erc20Token ERC20Token,
+	bridgeTaxAmount math.Int,
 ) (*InternalOutgoingTransferTx, error) {
 	send, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
@@ -44,19 +48,21 @@ func NewInternalOutgoingTransferTx(
 	}
 
 	return &InternalOutgoingTransferTx{
-		Id:          id,
-		Sender:      send,
-		DestAddress: dest,
-		Erc20Token:  token,
+		Id:              id,
+		Sender:          send,
+		DestAddress:     dest,
+		Erc20Token:      token,
+		BridgeTaxAmount: bridgeTaxAmount,
 	}, nil
 }
 
 func (i InternalOutgoingTransferTx) ToExternal() OutgoingTransferTx {
 	return OutgoingTransferTx{
-		Id:          i.Id,
-		Sender:      i.Sender.String(),
-		DestAddress: i.DestAddress.GetAddress().Hex(),
-		Erc20Token:  i.Erc20Token.ToExternal(),
+		Id:              i.Id,
+		Sender:          i.Sender.String(),
+		DestAddress:     i.DestAddress.GetAddress().Hex(),
+		Erc20Token:      i.Erc20Token.ToExternal(),
+		BridgeTaxAmount: i.BridgeTaxAmount,
 	}
 }
 

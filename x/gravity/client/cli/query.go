@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const (
@@ -35,6 +36,7 @@ func GetQueryCmd() *cobra.Command {
 		CmdGetLastObservedEthBlock(),
 		CmdGetLastObservedEthNonce(),
 		GetCmdQueryParams(),
+		GetCmdQueryBridgeTax(),
 	}...)
 
 	return gravityQueryCmd
@@ -332,5 +334,35 @@ func GetCmdQueryParams() *cobra.Command {
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// GetCmdQueryBridgeTax fetches the current Gravity module bridge tax settings
+func GetCmdQueryBridgeTax() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "bridge-tax",
+		Short: "Query BridgeTax Settings",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			params := &emptypb.Empty{}
+
+			res, err := queryClient.GetBridgeTax(cmd.Context(), params)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
 	return cmd
 }
