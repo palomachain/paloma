@@ -120,6 +120,8 @@ var (
 
 	// [0x31b7f5a2a07c5e90e41bd8ec801438d9]
 	BridgeTaxKey = HashString("BridgeTaxKey")
+
+	BridgeTransferLimitPrefix = "bridge-transfer-limit"
 )
 
 // GetOrchestratorAddressKey returns the following key format

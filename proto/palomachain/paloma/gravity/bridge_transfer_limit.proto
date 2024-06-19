@@ -1,0 +1,26 @@
+syntax = "proto3";
+package palomachain.paloma.gravity;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/gravity/types";
+
+enum LimitPeriod {
+  LIMIT_PERIOD_UNSPECIFIED = 0;
+  LIMIT_PERIOD_DAILY = 1;
+  LIMIT_PERIOD_WEEKLY = 2;
+  LIMIT_PERIOD_MONTHLY = 3;
+  LIMIT_PERIOD_YEARLY = 4;
+}
+
+message BridgeTransferLimit {
+  string token = 1;
+  string limit = 2 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  LimitPeriod limit_period = 3;
+  repeated bytes exempt_addresses = 4 [
+    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"
+  ];
+}

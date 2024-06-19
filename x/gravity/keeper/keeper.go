@@ -319,3 +319,27 @@ func (k Keeper) bridgeTaxAmount(
 
 	return amount.Amount.Mul(num).Quo(denom), nil
 }
+
+func (k Keeper) AllBridgeTransferLimits(
+	ctx context.Context,
+) ([]*types.BridgeTransferLimit, error) {
+	st := k.GetStore(ctx, types.BridgeTransferLimitPrefix)
+	_, all, err := keeperutil.IterAll[*types.BridgeTransferLimit](st, k.cdc)
+	return all, err
+}
+
+func (k Keeper) BridgeTransferLimit(
+	ctx context.Context,
+	denom string,
+) (*types.BridgeTransferLimit, error) {
+	st := k.GetStore(ctx, types.BridgeTransferLimitPrefix)
+	return keeperutil.Load[*types.BridgeTransferLimit](st, k.cdc, []byte(denom))
+}
+
+func (k Keeper) SetBridgeTransferLimit(
+	ctx context.Context,
+	limit *types.BridgeTransferLimit,
+) error {
+	st := k.GetStore(ctx, types.BridgeTransferLimitPrefix)
+	return keeperutil.Save(st, k.cdc, []byte(limit.Token), limit)
+}
