@@ -30,6 +30,10 @@ func (k Keeper) AddToOutgoingPool(
 		return 0, sdkerrors.Wrap(types.ErrInvalid, "arguments")
 	}
 
+	if err := k.UpdateBridgeTransferUsageWithLimit(ctx, amount); err != nil {
+		return 0, err
+	}
+
 	// Get the applicable bridge tax
 	taxedAmount, err := k.bridgeTaxAmount(ctx, sender, amount)
 	if err != nil {
