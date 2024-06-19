@@ -24,3 +24,11 @@ message BridgeTransferLimit {
     (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"
   ];
 }
+
+message BridgeTransferUsage {
+  string usage = 1 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  int64 since_block_height = 2;
+}

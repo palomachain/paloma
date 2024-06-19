@@ -330,10 +330,10 @@ func (k Keeper) AllBridgeTransferLimits(
 
 func (k Keeper) BridgeTransferLimit(
 	ctx context.Context,
-	denom string,
+	token string,
 ) (*types.BridgeTransferLimit, error) {
 	st := k.GetStore(ctx, types.BridgeTransferLimitPrefix)
-	return keeperutil.Load[*types.BridgeTransferLimit](st, k.cdc, []byte(denom))
+	return keeperutil.Load[*types.BridgeTransferLimit](st, k.cdc, []byte(token))
 }
 
 func (k Keeper) SetBridgeTransferLimit(
@@ -342,4 +342,65 @@ func (k Keeper) SetBridgeTransferLimit(
 ) error {
 	st := k.GetStore(ctx, types.BridgeTransferLimitPrefix)
 	return keeperutil.Save(st, k.cdc, []byte(limit.Token), limit)
+}
+
+func (k Keeper) BridgeTransferUsage(
+	ctx context.Context,
+	token string,
+) (*types.BridgeTransferUsage, error) {
+	st := k.GetStore(ctx, types.BridgeTransferUsagePrefix)
+	return keeperutil.Load[*types.BridgeTransferUsage](st, k.cdc, []byte(token))
+}
+
+func (k Keeper) UpdateBridgeTransferUsageWithLimit(
+	ctx context.Context,
+	coin sdk.Coin,
+) error {
+	limits, err := k.BridgeTransferLimit(ctx, coin.Denom)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			// If we have no limits set, there's nothing else to do
+			return nil
+		}
+
+		return err
+	}
+
+	if limits.LimitPeriod == types.LimitPeriod_LIMIT_PERIOD_UNSPECIFIED {
+		// We have data in storage, but it doesn't impose limits
+		return nil
+	}
+
+	usage, err := k.BridgeTransferUsage(ctx, coin.Denom)
+	if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
+		// If we have no usage information, we will set it after this
+		return err
+	}
+
+	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
+
+	var newUsage types.BridgeTransferUsage
+	if usage == nil || usage.Usage.IsNil() || usage.SinceBlockHeight+blockHeight > limits.BlockLimit() {
+		// Either there's no usage information, or we're past the limit block
+		// range, so we want to overwrite it with recent data
+		newUsage = types.BridgeTransferUsage{
+			Usage:            coin.Amount,
+			SinceBlockHeight: blockHeight,
+		}
+	} else {
+		// Otherwise, we have an ongoing tally, so we add to it but keep the
+		// reference block height
+		newUsage = types.BridgeTransferUsage{
+			Usage:            usage.Usage.Add(coin.Amount),
+			SinceBlockHeight: usage.SinceBlockHeight,
+		}
+	}
+
+	if newUsage.Usage.GT(limits.Limit) {
+		// Before persisting it, we check the limit
+		return fmt.Errorf("limit for bridge transfer reached %v", limits.Limit)
+	}
+
+	st := k.GetStore(ctx, types.BridgeTransferUsagePrefix)
+	return keeperutil.Save(st, k.cdc, []byte(coin.Denom), &newUsage)
 }
