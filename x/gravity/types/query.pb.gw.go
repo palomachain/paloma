@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Suppress "imported and not used" errors
@@ -34,7 +35,7 @@ var _ = descriptor.ForMessage
 var _ = metadata.Join
 
 func request_Query_GetBridgeTax_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryBridgeTaxRequest
+	var protoReq emptypb.Empty
 	var metadata runtime.ServerMetadata
 
 	msg, err := client.GetBridgeTax(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -43,7 +44,7 @@ func request_Query_GetBridgeTax_0(ctx context.Context, marshaler runtime.Marshal
 }
 
 func local_request_Query_GetBridgeTax_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryBridgeTaxRequest
+	var protoReq emptypb.Empty
 	var metadata runtime.ServerMetadata
 
 	msg, err := server.GetBridgeTax(ctx, &protoReq)
@@ -145,7 +146,7 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_GetBridgeTax_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"palomachain", "paloma", "gravity", "get_bridge_tax"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetBridgeTax_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"palomachain", "paloma", "gravity", "bridge_tax"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (

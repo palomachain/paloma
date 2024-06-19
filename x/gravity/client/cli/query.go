@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const (
@@ -350,7 +351,7 @@ func GetCmdQueryBridgeTax() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryBridgeTaxRequest{}
+			params := &emptypb.Empty{}
 
 			res, err := queryClient.GetBridgeTax(cmd.Context(), params)
 			if err != nil {

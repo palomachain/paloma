@@ -5,11 +5,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/gravity/types"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (k Keeper) GetBridgeTax(
 	goCtx context.Context,
-	req *types.QueryBridgeTaxRequest,
+	_ *emptypb.Empty,
 ) (*types.QueryBridgeTaxResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
