@@ -89,8 +89,9 @@ func CmdSetErc20ToDenom() *cobra.Command {
 
 func CmdSetBridgeTax() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-bridge-tax [tax-value]",
-		Short: "Sets the bridge tax value, and optionally token exceptions and exempt addresses",
+		Use:   "set-bridge-tax [tax-rate]",
+		Short: "Sets the bridge tax rate, and optionally token exceptions and exempt addresses",
+		Long:  "Each outgoing transfer from Paloma will pay a tax. The amount transferred will be the original amount minus the tax. Tax amount is calculated using [tax-rate]. [tax-rate] must be a value in the interval [0, 1]",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
@@ -154,9 +155,9 @@ func CmdSetBridgeTax() *cobra.Command {
 	}
 
 	cmd.Flags().StringSlice(flagExcludedTokens, []string{},
-		"list of tokens excluded from the bridge tax")
+		"Comma separated list of tokens excluded from the bridge tax. Can be passed multiple times.")
 	cmd.Flags().StringSlice(flagExemptAddresses, []string{},
-		"list of addresses exempt from the bridge tax")
+		"Comma separated list of addresses exempt from the bridge tax. Can be passed multiple times.")
 
 	applyFlags(cmd)
 	return cmd
