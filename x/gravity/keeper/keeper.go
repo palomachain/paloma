@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"context"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"slices"
@@ -244,14 +246,14 @@ func (k Keeper) GetAuthority() string {
 }
 
 func (k Keeper) BridgeTax(ctx context.Context) (*types.BridgeTax, error) {
+	var tax types.BridgeTax
 	val := k.GetStore(ctx, types.StoreModulePrefix).Get(types.BridgeTaxKey)
 
 	if len(val) == 0 {
 		// We have no bridge tax settings
-		return nil, nil
+		return nil, keeperutil.ErrNotFound.Format(&tax, hex.EncodeToString(types.BridgeTaxKey))
 	}
 
-	var tax types.BridgeTax
 	if err := k.cdc.Unmarshal(val, &tax); err != nil {
 		return nil, err
 	}
@@ -290,12 +292,12 @@ func (k Keeper) bridgeTaxAmount(
 ) (math.Int, error) {
 	bridgeTax, err := k.BridgeTax(ctx)
 	if err != nil {
-		return math.ZeroInt(), err
-	}
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			// The bridge tax hasn't been set by governance vote
+			return math.ZeroInt(), nil
+		}
 
-	if bridgeTax == nil {
-		// The bridge tax hasn't been set by governance vote
-		return math.ZeroInt(), nil
+		return math.ZeroInt(), err
 	}
 
 	bRate, _ := new(big.Rat).SetString(bridgeTax.Rate)

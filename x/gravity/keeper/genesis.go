@@ -2,10 +2,12 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 )
 
@@ -230,7 +232,7 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 	}
 
 	tax, err := k.BridgeTax(ctx)
-	if err != nil {
+	if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
 		panic(err)
 	}
 
