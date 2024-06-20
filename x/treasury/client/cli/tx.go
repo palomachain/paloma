@@ -58,9 +58,6 @@ func CmdUpsertRelayerFee() *cobra.Command {
 			id := args[0]
 			fee := math.LegacyMustNewDecFromStr(args[1])
 
-			if fee.LT(math.LegacyZeroDec()) {
-				return fmt.Errorf("negative fee not allowed")
-			}
 			if fee.LT(math.LegacyMustNewDecFromStr("1")) {
 				return fmt.Errorf("loss incurring fees not allowed")
 			}
