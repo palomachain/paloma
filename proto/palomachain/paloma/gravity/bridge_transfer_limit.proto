@@ -6,11 +6,11 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
 enum LimitPeriod {
-  LIMIT_PERIOD_UNSPECIFIED = 0;
-  LIMIT_PERIOD_DAILY = 1;
-  LIMIT_PERIOD_WEEKLY = 2;
-  LIMIT_PERIOD_MONTHLY = 3;
-  LIMIT_PERIOD_YEARLY = 4;
+  NONE = 0;
+  DAILY = 1;
+  WEEKLY = 2;
+  MONTHLY = 3;
+  YEARLY = 4;
 }
 
 message BridgeTransferLimit {

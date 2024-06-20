@@ -366,7 +366,7 @@ func (k Keeper) UpdateBridgeTransferUsageWithLimit(
 		return err
 	}
 
-	if limits.LimitPeriod == types.LimitPeriod_LIMIT_PERIOD_UNSPECIFIED {
+	if limits.LimitPeriod == types.LimitPeriod_NONE {
 		// We have data in storage, but it doesn't impose limits
 		return nil
 	}

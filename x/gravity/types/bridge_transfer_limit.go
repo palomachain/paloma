@@ -11,13 +11,13 @@ const (
 
 func (m *BridgeTransferLimit) BlockLimit() int64 {
 	switch m.LimitPeriod {
-	case LimitPeriod_LIMIT_PERIOD_DAILY:
+	case LimitPeriod_DAILY:
 		return BridgeTransferLimitDailyBlocks
-	case LimitPeriod_LIMIT_PERIOD_WEEKLY:
+	case LimitPeriod_WEEKLY:
 		return BridgeTransferLimitWeeklyBlocks
-	case LimitPeriod_LIMIT_PERIOD_MONTHLY:
+	case LimitPeriod_MONTHLY:
 		return BridgeTransferLimitMonthlyBlocks
-	case LimitPeriod_LIMIT_PERIOD_YEARLY:
+	case LimitPeriod_YEARLY:
 		return BridgeTransferLimitYearlyBlocks
 	default:
 		return 0
