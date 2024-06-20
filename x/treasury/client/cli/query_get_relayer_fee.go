@@ -4,11 +4,10 @@ import (
 	"errors"
 	"strconv"
 
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/treasury/types"
 	"github.com/spf13/cobra"
 )
