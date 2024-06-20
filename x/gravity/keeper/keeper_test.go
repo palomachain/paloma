@@ -212,6 +212,7 @@ func TestBridgeTaxAmount(t *testing.T) {
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
 			Rate: "0",
 		})
+		require.NoError(t, err)
 
 		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
 		require.NoError(t, err)
@@ -224,6 +225,7 @@ func TestBridgeTaxAmount(t *testing.T) {
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
 			Rate: "1",
 		})
+		require.NoError(t, err)
 
 		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
 		require.NoError(t, err)
@@ -237,6 +239,7 @@ func TestBridgeTaxAmount(t *testing.T) {
 			Rate:           "0.01",
 			ExcludedTokens: []string{"fake", "test", "another"},
 		})
+		require.NoError(t, err)
 
 		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
 		require.NoError(t, err)
@@ -251,6 +254,7 @@ func TestBridgeTaxAmount(t *testing.T) {
 			ExcludedTokens:  []string{"fake", "another"},
 			ExemptAddresses: addresses,
 		})
+		require.NoError(t, err)
 
 		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
 		require.NoError(t, err)
@@ -263,6 +267,7 @@ func TestBridgeTaxAmount(t *testing.T) {
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
 			Rate: "0.00123",
 		})
+		require.NoError(t, err)
 
 		actual, err := k.bridgeTaxAmount(ctx, addresses[0], coin)
 		require.NoError(t, err)
@@ -281,10 +286,217 @@ func TestBridgeTaxAmount(t *testing.T) {
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
 			Rate: "2",
 		})
+		require.NoError(t, err)
 
 		actual, err := k.bridgeTaxAmount(ctx, addresses[0], hugeCoin)
 		require.NoError(t, err)
 		expected, _ := math.NewIntFromString("3000000000000000000000")
 		require.Equal(t, actual, expected)
+	})
+}
+
+func TestBridgeTransferLimits(t *testing.T) {
+	var ctx context.Context
+	var k Keeper
+
+	sender, err := sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
+	require.NoError(t, err)
+
+	accAddresses := []string{
+		"paloma1dg55rtevlfxh46w88yjpdd08sqhh5cc37jmmth",
+		"paloma164knshrzuuurf05qxf3q5ewpfnwzl4gjd7cwmp",
+	}
+
+	addresses := make([]sdk.AccAddress, len(accAddresses))
+	for i := range accAddresses {
+		addr, err := sdk.AccAddressFromBech32(accAddresses[i])
+		require.NoError(t, err)
+
+		addresses[i] = addr
+	}
+
+	coin := sdk.Coin{
+		Denom:  "test",
+		Amount: math.NewInt(1_000_000),
+	}
+
+	transferLimit := &types.BridgeTransferLimit{
+		Token:           "test",
+		Limit:           math.NewInt(1000),
+		LimitPeriod:     types.LimitPeriod_DAILY,
+		ExemptAddresses: addresses,
+	}
+
+	setup := func(setLimit bool) {
+		input := CreateTestEnv(t)
+		ctx = input.Context
+		k = input.GravityKeeper
+
+		if setLimit {
+			err := k.SetBridgeTransferLimit(ctx, transferLimit)
+			require.NoError(t, err)
+		}
+	}
+
+	t.Run("Not return error when no limit is set", func(t *testing.T) {
+		setup(false)
+
+		err = k.UpdateBridgeTransferUsageWithLimit(ctx, sender, coin)
+		require.NoError(t, err)
+	})
+
+	t.Run("Not return error when limit is set to NONE", func(t *testing.T) {
+		setup(false)
+
+		err := k.SetBridgeTransferLimit(ctx, &types.BridgeTransferLimit{
+			Token:       "test",
+			Limit:       math.NewInt(1000),
+			LimitPeriod: types.LimitPeriod_NONE,
+		})
+		require.NoError(t, err)
+
+		err = k.UpdateBridgeTransferUsageWithLimit(ctx, sender, coin)
+		require.NoError(t, err)
+	})
+
+	t.Run("Not return error when sender is exempt", func(t *testing.T) {
+		setup(true)
+
+		err = k.UpdateBridgeTransferUsageWithLimit(ctx, addresses[0], coin)
+		require.NoError(t, err)
+	})
+
+	t.Run("Return error when transfer is above limit", func(t *testing.T) {
+		setup(true)
+
+		err = k.UpdateBridgeTransferUsageWithLimit(ctx, sender, coin)
+		require.Error(t, err)
+	})
+
+	t.Run("Update usage on successful transfer", func(t *testing.T) {
+		setup(true)
+
+		coin := sdk.Coin{
+			Denom:  "test",
+			Amount: math.NewInt(600),
+		}
+
+		err = k.UpdateBridgeTransferUsageWithLimit(ctx, sender, coin)
+		require.NoError(t, err)
+
+		actual, err := k.BridgeTransferUsage(ctx, coin.Denom)
+		require.NoError(t, err)
+
+		expected := &types.BridgeTransferUsage{
+			Total:            coin.Amount,
+			StartBlockHeight: sdk.UnwrapSDKContext(ctx).BlockHeight(),
+		}
+
+		require.Equal(t, expected, actual)
+	})
+
+	t.Run("Update usage but keep block height on multiple transfers", func(t *testing.T) {
+		setup(true)
+
+		coin := sdk.Coin{
+			Denom:  "test",
+			Amount: math.NewInt(300),
+		}
+
+		// Send the first transfer
+		err = k.UpdateBridgeTransferUsageWithLimit(ctx, sender, coin)
+		require.NoError(t, err)
+
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		newCtx := sdkCtx.WithBlockHeight(sdkCtx.BlockHeight() + 1000)
+
+		// Send a second transfer with a new block height
+		err = k.UpdateBridgeTransferUsageWithLimit(newCtx, sender, coin)
+		require.NoError(t, err)
+
+		actual, err := k.BridgeTransferUsage(newCtx, coin.Denom)
+		require.NoError(t, err)
+
+		// Should get usage of sum of both transfers, but keep the first block
+		// height
+		expected := &types.BridgeTransferUsage{
+			Total:            math.NewInt(600),
+			StartBlockHeight: sdkCtx.BlockHeight(),
+		}
+
+		require.Equal(t, expected, actual)
+	})
+
+	t.Run("Update usage after block limit", func(t *testing.T) {
+		setup(true)
+
+		coin := sdk.Coin{
+			Denom:  "test",
+			Amount: math.NewInt(300),
+		}
+
+		// Send the first transfer
+		err = k.UpdateBridgeTransferUsageWithLimit(ctx, sender, coin)
+		require.NoError(t, err)
+
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		newCtx := sdkCtx.WithBlockHeight(sdkCtx.BlockHeight() + transferLimit.BlockLimit())
+
+		newCoin := sdk.Coin{
+			Denom:  "test",
+			Amount: math.NewInt(450),
+		}
+
+		// Send a second transfer with a new block height
+		err = k.UpdateBridgeTransferUsageWithLimit(newCtx, sender, newCoin)
+		require.NoError(t, err)
+
+		actual, err := k.BridgeTransferUsage(newCtx, coin.Denom)
+		require.NoError(t, err)
+
+		// Should get usage and block height of last transfer
+		expected := &types.BridgeTransferUsage{
+			Total:            newCoin.Amount,
+			StartBlockHeight: newCtx.BlockHeight(),
+		}
+
+		require.Equal(t, expected, actual)
+	})
+
+	t.Run("Keep usage after passing limit", func(t *testing.T) {
+		setup(true)
+
+		coin := sdk.Coin{
+			Denom:  "test",
+			Amount: math.NewInt(300),
+		}
+
+		// Send the first transfer
+		err = k.UpdateBridgeTransferUsageWithLimit(ctx, sender, coin)
+		require.NoError(t, err)
+
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		newCtx := sdkCtx.WithBlockHeight(sdkCtx.BlockHeight() + 1000)
+
+		newCoin := sdk.Coin{
+			Denom:  "test",
+			Amount: math.NewInt(1000),
+		}
+
+		// Send a second transfer with a new block height
+		// Will not go through as we're over the limit
+		err = k.UpdateBridgeTransferUsageWithLimit(newCtx, sender, newCoin)
+		require.Error(t, err)
+
+		actual, err := k.BridgeTransferUsage(newCtx, coin.Denom)
+		require.NoError(t, err)
+
+		// Should get usage and block height of first transfer
+		expected := &types.BridgeTransferUsage{
+			Total:            coin.Amount,
+			StartBlockHeight: sdkCtx.BlockHeight(),
+		}
+
+		require.Equal(t, expected, actual)
 	})
 }
