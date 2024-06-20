@@ -684,3 +684,73 @@ func TestAddToOutgoingPoolExportGenesis(t *testing.T) {
 		require.True(t, v)
 	}
 }
+
+// Tests that the transfers limits are checked when adding transfers to the pool
+func TestTransferLimits(t *testing.T) {
+	input := CreateTestEnv(t)
+	defer func() {
+		sdk.UnwrapSDKContext(input.Context).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
+
+	ctx := input.Context
+	var (
+		mySender, e1 = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
+		myReceiver   = "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7"
+	)
+	require.NoError(t, e1)
+	receiver, err := types.NewEthAddress(myReceiver)
+	require.NoError(t, err)
+	tokenContract, err := types.NewEthAddress(testERC20Address)
+	require.NoError(t, err)
+	// mint some voucher first
+	allVouchersToken, err := types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
+	require.NoError(t, err)
+	allVouchers := sdk.Coins{sdk.NewCoin(testDenom, allVouchersToken.Amount)}
+	err = input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers)
+	require.NoError(t, err)
+
+	// Set the transfer limits
+	err = input.GravityKeeper.SetBridgeTransferLimit(ctx, &types.BridgeTransferLimit{
+		Token:       testDenom,
+		Limit:       math.NewInt(150),
+		LimitPeriod: types.LimitPeriod_DAILY,
+	})
+	require.NoError(t, err)
+
+	// set senders balance
+	input.AccountKeeper.NewAccountWithAddress(ctx, mySender)
+	err = input.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, mySender, allVouchers)
+	require.NoError(t, err)
+
+	// The first transfer should be fine
+	amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(100)), testERC20Address, "test-chain")
+	require.NoError(t, err)
+	amount := sdk.NewCoin(testDenom, amountToken.Amount)
+
+	_, err = input.GravityKeeper.AddToOutgoingPool(ctx, mySender, *receiver, amount, "test-chain")
+	require.NoError(t, err)
+
+	// The second should fail
+	_, err = input.GravityKeeper.AddToOutgoingPool(ctx, mySender, *receiver, amount, "test-chain")
+	require.Error(t, err)
+
+	// Should contain only the first transfer
+	got, err := input.GravityKeeper.GetUnbatchedTransactionsByContract(ctx, *tokenContract)
+	require.NoError(t, err)
+
+	receiverAddr, err := types.NewEthAddress(myReceiver)
+	require.NoError(t, err)
+	oneHundredTok, err := types.NewInternalERC20Token(math.NewInt(100), testERC20Address, "test-chain")
+	require.NoError(t, err)
+	exp := []*types.InternalOutgoingTransferTx{
+		{
+			Id:              1,
+			Sender:          mySender,
+			DestAddress:     receiverAddr,
+			Erc20Token:      oneHundredTok,
+			BridgeTaxAmount: math.ZeroInt(),
+		},
+	}
+	assert.Equal(t, exp, got)
+}
