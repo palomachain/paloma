@@ -73,5 +73,5 @@ func (k msgServer) UpsertRelayerFee(ctx context.Context, req *types.MsgUpsertRel
 		merged.Fees = append(merged.Fees, v)
 	}
 
-	return &types.Empty{}, k.relayerFees.Set(sdkCtx, addr, merged)
+	return &types.Empty{}, k.SetRelayerFee(ctx, addr, merged)
 }

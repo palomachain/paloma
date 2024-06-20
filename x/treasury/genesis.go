@@ -2,6 +2,7 @@ package treasury
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/treasury/keeper"
@@ -14,14 +15,24 @@ func InitGenesis(ctx context.Context, k keeper.Keeper, genState types.GenesisSta
 	sdkctx := sdk.UnwrapSDKContext(ctx)
 	k.SetParams(sdkctx, genState.Params)
 
-	err := k.SetCommunityFundFee(sdkctx, "0.01")
+	err := k.SetCommunityFundFee(sdkctx, genState.TreasuryFees.CommunityFundFee)
 	if err != nil {
 		panic(err)
 	}
 
-	err = k.SetSecurityFee(sdkctx, "0.01")
+	err = k.SetSecurityFee(sdkctx, genState.TreasuryFees.SecurityFee)
 	if err != nil {
 		panic(err)
+	}
+
+	for _, v := range genState.RelayerFeeSettings {
+		addr, err := sdk.ValAddressFromBech32(v.ValAddress)
+		if err != nil {
+			panic(fmt.Errorf("set relayer fee: parse val addr: %w", err))
+		}
+		if err := k.SetRelayerFee(ctx, addr, &v); err != nil {
+			panic(fmt.Errorf("set relayer fee: %w", err))
+		}
 	}
 }
 
@@ -37,6 +48,13 @@ func ExportGenesis(ctx context.Context, k keeper.Keeper) *types.GenesisState {
 		panic(err)
 	}
 
-	genesis.TreasuryFees = fees
+	genesis.TreasuryFees = *fees
+
+	relayerFees, err := k.GetRelayerFees(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	genesis.RelayerFeeSettings = relayerFees
 	return genesis
 }

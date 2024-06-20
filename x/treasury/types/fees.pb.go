@@ -4,26 +4,23 @@
 package types
 
 import (
-	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	cosmossdk_io_math "cosmossdk.io/math"
+	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -32,7 +29,8 @@ var (
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Empty represents an empty message
-type Empty struct{}
+type Empty struct {
+}
 
 func (m *Empty) Reset()         { *m = Empty{} }
 func (m *Empty) String() string { return proto.CompactTextString(m) }
@@ -40,11 +38,9 @@ func (*Empty) ProtoMessage()    {}
 func (*Empty) Descriptor() ([]byte, []int) {
 	return fileDescriptor_025e81aa1db4e06a, []int{0}
 }
-
 func (m *Empty) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Empty) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Empty.Marshal(b, m, deterministic)
@@ -57,15 +53,12 @@ func (m *Empty) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Empty) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Empty.Merge(m, src)
 }
-
 func (m *Empty) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Empty) XXX_DiscardUnknown() {
 	xxx_messageInfo_Empty.DiscardUnknown(m)
 }
@@ -83,11 +76,9 @@ func (*Fees) ProtoMessage()    {}
 func (*Fees) Descriptor() ([]byte, []int) {
 	return fileDescriptor_025e81aa1db4e06a, []int{1}
 }
-
 func (m *Fees) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Fees) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Fees.Marshal(b, m, deterministic)
@@ -100,15 +91,12 @@ func (m *Fees) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Fees) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Fees.Merge(m, src)
 }
-
 func (m *Fees) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Fees) XXX_DiscardUnknown() {
 	xxx_messageInfo_Fees.DiscardUnknown(m)
 }
@@ -142,11 +130,9 @@ func (*RelayerFeeSetting) ProtoMessage()    {}
 func (*RelayerFeeSetting) Descriptor() ([]byte, []int) {
 	return fileDescriptor_025e81aa1db4e06a, []int{2}
 }
-
 func (m *RelayerFeeSetting) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *RelayerFeeSetting) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_RelayerFeeSetting.Marshal(b, m, deterministic)
@@ -159,15 +145,12 @@ func (m *RelayerFeeSetting) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-
 func (m *RelayerFeeSetting) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_RelayerFeeSetting.Merge(m, src)
 }
-
 func (m *RelayerFeeSetting) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *RelayerFeeSetting) XXX_DiscardUnknown() {
 	xxx_messageInfo_RelayerFeeSetting.DiscardUnknown(m)
 }
@@ -208,11 +191,9 @@ func (*RelayerFeeSetting_FeeSetting) ProtoMessage()    {}
 func (*RelayerFeeSetting_FeeSetting) Descriptor() ([]byte, []int) {
 	return fileDescriptor_025e81aa1db4e06a, []int{2, 0}
 }
-
 func (m *RelayerFeeSetting_FeeSetting) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *RelayerFeeSetting_FeeSetting) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_RelayerFeeSetting_FeeSetting.Marshal(b, m, deterministic)
@@ -225,15 +206,12 @@ func (m *RelayerFeeSetting_FeeSetting) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-
 func (m *RelayerFeeSetting_FeeSetting) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_RelayerFeeSetting_FeeSetting.Merge(m, src)
 }
-
 func (m *RelayerFeeSetting_FeeSetting) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *RelayerFeeSetting_FeeSetting) XXX_DiscardUnknown() {
 	xxx_messageInfo_RelayerFeeSetting_FeeSetting.DiscardUnknown(m)
 }
@@ -325,7 +303,6 @@ func (this *RelayerFeeSetting) Equal(that interface{}) bool {
 	}
 	return true
 }
-
 func (this *RelayerFeeSetting_FeeSetting) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -353,7 +330,6 @@ func (this *RelayerFeeSetting_FeeSetting) Equal(that interface{}) bool {
 	}
 	return true
 }
-
 func (m *Empty) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -509,7 +485,6 @@ func encodeVarintFees(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *Empty) Size() (n int) {
 	if m == nil {
 		return 0
@@ -573,11 +548,9 @@ func (m *RelayerFeeSetting_FeeSetting) Size() (n int) {
 func sovFees(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozFees(x uint64) (n int) {
 	return sovFees(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *Empty) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -628,7 +601,6 @@ func (m *Empty) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Fees) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -743,7 +715,6 @@ func (m *Fees) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *RelayerFeeSetting) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -860,7 +831,6 @@ func (m *RelayerFeeSetting) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *RelayerFeeSetting_FeeSetting) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -977,7 +947,6 @@ func (m *RelayerFeeSetting_FeeSetting) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipFees(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

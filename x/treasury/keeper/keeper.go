@@ -105,6 +105,20 @@ func (k Keeper) GetFees(ctx context.Context) (*types.Fees, error) {
 	return res, nil
 }
 
+func (k Keeper) SetRelayerFee(ctx context.Context, valAddr sdk.ValAddress, rfs *types.RelayerFeeSetting) error {
+	return k.relayerFees.Set(sdk.UnwrapSDKContext(ctx), valAddr, rfs)
+}
+
+func (k Keeper) GetRelayerFees(ctx context.Context) ([]types.RelayerFeeSetting, error) {
+	r := make([]types.RelayerFeeSetting, 0, 256)
+	err := k.relayerFees.Iterate(sdk.UnwrapSDKContext(ctx), func(b []byte, rfs *types.RelayerFeeSetting) bool {
+		r = append(r, *rfs)
+		return true
+	})
+
+	return r, err
+}
+
 func (k Keeper) GetRelayerFeesByChainReferenceID(ctx context.Context, chainReferenceID string) (map[string]types.RelayerFeeSetting_FeeSetting, error) {
 	r := make(map[string]types.RelayerFeeSetting_FeeSetting)
 	err := k.relayerFees.Iterate(sdk.UnwrapSDKContext(ctx), func(b []byte, rfs *types.RelayerFeeSetting) bool {
