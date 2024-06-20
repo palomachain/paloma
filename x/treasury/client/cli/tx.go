@@ -34,7 +34,7 @@ func CmdUpsertRelayerFee() *cobra.Command {
 		Use:   "upsert-relayer-fee [chain-reference-id] [fee-multiplicator]",
 		Short: "Sets the relayer fee for the sender to the given multiplicator.",
 		Long: `
-    Sets the relayer fee for the sender to th given multiplicator value.
+    Sets the relayer fee for the sender to the given multiplicator value.
     The multiplicator determines the total fee a relayer may claim based 
     on the total cost of a relayed transaction.
 
