@@ -1,13 +1,11 @@
 package cli
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/treasury/types"
 	"github.com/spf13/cobra"
 )
@@ -38,13 +36,7 @@ func CmdGetRelayerFee() *cobra.Command {
 				ValAddress: validator.String(),
 			})
 			if err != nil {
-				if !errors.Is(err, keeperutil.ErrNotFound) {
-					return err
-				}
-				res = &types.RelayerFeeSetting{
-					ValAddress: validator.String(),
-					Fees:       []types.RelayerFeeSetting_FeeSetting{},
-				}
+				return err
 			}
 
 			return clientCtx.PrintProto(res)

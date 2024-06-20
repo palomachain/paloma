@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,7 +44,7 @@ func (k msgServer) UpsertRelayerFee(ctx context.Context, req *types.MsgUpsertRel
 
 	r, err := k.relayerFees.Get(sdkCtx, addr)
 	if err != nil {
-		if err != keeperutil.ErrNotFound {
+		if !errors.Is(err, keeperutil.ErrNotFound) {
 			return nil, err
 		}
 		r = &types.RelayerFeeSetting{

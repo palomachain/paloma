@@ -2,9 +2,11 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/treasury/types"
 )
 
@@ -16,5 +18,13 @@ func (k Keeper) RelayerFee(ctx context.Context, req *types.QueryRelayerFeeReques
 		return nil, fmt.Errorf("failed to parse validator address: %w", err)
 	}
 
-	return k.relayerFees.Get(sdk.UnwrapSDKContext(ctx), addr)
+	f, err := k.relayerFees.Get(sdk.UnwrapSDKContext(ctx), addr)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return &types.RelayerFeeSetting{}, nil
+		}
+		return nil, err
+	}
+
+	return f, nil
 }
