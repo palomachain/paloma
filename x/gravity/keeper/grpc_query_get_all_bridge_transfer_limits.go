@@ -2,8 +2,10 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -19,7 +21,21 @@ func (k Keeper) GetAllBridgeTransferLimits(
 		return nil, err
 	}
 
-	return &types.QueryAllBridgeTransferLimitsResponse{
-		BridgeTransferLimits: limits,
-	}, nil
+	res := &types.QueryAllBridgeTransferLimitsResponse{
+		Limits: make([]*types.BridgeTransferLimitUsage, len(limits)),
+	}
+
+	for i := range limits {
+		usage, err := k.BridgeTransferUsage(ctx, limits[i].Token)
+		if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
+			return nil, err
+		}
+
+		res.Limits[i] = &types.BridgeTransferLimitUsage{
+			Limit: limits[i],
+			Usage: usage,
+		}
+	}
+
+	return res, nil
 }
