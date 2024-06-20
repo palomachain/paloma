@@ -11,14 +11,12 @@ import (
 	corestore "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
-	"cosmossdk.io/store/prefix"
-	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/cosmos/gogoproto/proto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/palomath"
@@ -56,9 +54,9 @@ type (
 		slashing   types.SlashingKeeper
 		staking    types.StakingKeeper
 
-		metrics           *keeperutil.KVStoreWrapper[*types.ValidatorMetrics]
-		history           *keeperutil.KVStoreWrapper[*types.ValidatorHistory]
-		messageNonceCache *keeperutil.KVStoreWrapper[*types.HistoricRelayData]
+		metrics           keeperutil.KVStoreWrapper[*types.ValidatorMetrics]
+		history           keeperutil.KVStoreWrapper[*types.ValidatorHistory]
+		messageNonceCache keeperutil.KVStoreWrapper[*types.HistoricRelayData]
 		AddressCodec      address.Codec
 	}
 )
@@ -81,9 +79,9 @@ func NewKeeper(
 		paramstore:        ps,
 		slashing:          slashing,
 		staking:           staking,
-		metrics:           keeperutil.NewKvStoreWrapper[*types.ValidatorMetrics](storeFactory(storeKey, types.MetricsStorePrefix), cdc),
-		history:           keeperutil.NewKvStoreWrapper[*types.ValidatorHistory](storeFactory(storeKey, types.HistoryStorePrefix), cdc),
-		messageNonceCache: keeperutil.NewKvStoreWrapper[*types.HistoricRelayData](storeFactory(storeKey, types.MessageNonceCacheStorePrefix), cdc),
+		metrics:           keeperutil.NewKvStoreWrapper[*types.ValidatorMetrics](keeperutil.StoreFactory(storeKey, types.MetricsStorePrefix), cdc),
+		history:           keeperutil.NewKvStoreWrapper[*types.ValidatorHistory](keeperutil.StoreFactory(storeKey, types.HistoryStorePrefix), cdc),
+		messageNonceCache: keeperutil.NewKvStoreWrapper[*types.HistoricRelayData](keeperutil.StoreFactory(storeKey, types.MessageNonceCacheStorePrefix), cdc),
 		AddressCodec:      addressCodec,
 	}
 }
@@ -478,13 +476,6 @@ func (k Keeper) tryUpdateRecord(ctx context.Context, valAddr sdk.ValAddress, pat
 	return nil
 }
 
-func storeFactory(storeKey corestore.KVStoreService, p string) func(ctx context.Context) storetypes.KVStore {
-	return func(ctx context.Context) storetypes.KVStore {
-		s := runtime.KVStoreAdapter(storeKey.OpenKVStore(ctx))
-		return prefix.NewStore(s, types.KeyPrefix(p))
-	}
-}
-
 func calculateUptime(window, missed int64) math.LegacyDec {
 	if window < 1 || missed < 0 || missed > window {
 		return math.LegacyNewDec(0)
@@ -498,7 +489,7 @@ func calculateUptime(window, missed int64) math.LegacyDec {
 	return palomath.BigIntDiv(diff, w)
 }
 
-func getFromStore[T codec.ProtoMarshaler](ctx context.Context, store *keeperutil.KVStoreWrapper[T], key keeperutil.Byter) (T, error) {
+func getFromStore[T proto.Message](ctx context.Context, store keeperutil.KVStoreWrapper[T], key keeperutil.Byter) (T, error) {
 	var empty T
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	data, err := store.Get(sdkCtx, key)

@@ -18,40 +18,47 @@ import (
 const storeKey = "treasury"
 
 type Keeper struct {
-	cdc        codec.BinaryCodec
-	paramstore paramtypes.Subspace
-	bank       types.BankKeeper
-	account    types.AccountKeeper
-	Scheduler  types.Scheduler
-	Chains     []xchain.FundCollecter
-	KeeperUtil keeperutil.KeeperUtilI[*types.Fees]
-	Store      types.TreasuryStore
+	cdc         codec.BinaryCodec
+	paramstore  paramtypes.Subspace
+	bank        types.BankKeeper
+	account     types.AccountKeeper
+	Scheduler   types.Scheduler
+	evm         types.EvmKeeper
+	Chains      []xchain.FundCollecter
+	KeeperUtil  keeperutil.KeeperUtilI[*types.Fees]
+	Store       types.TreasuryStore
+	relayerFees keeperutil.KVStoreWrapper[*types.RelayerFeeSetting]
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeKey cosmosstore.KVStoreService,
-	ps paramtypes.Subspace,
+	storeKey cosmosstore.KVStoreService, ps paramtypes.Subspace,
 	bank types.BankKeeper,
 	account types.AccountKeeper,
 	scheduler types.Scheduler,
+	evm types.EvmKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
-	return &Keeper{
+	k := &Keeper{
 		cdc:        cdc,
 		paramstore: ps,
 		bank:       bank,
 		account:    account,
 		Scheduler:  scheduler,
+		evm:        evm,
 		KeeperUtil: keeperutil.KeeperUtil[*types.Fees]{},
 		Store: types.Store{
 			StoreKey: storeKey,
 		},
 	}
+
+	k.relayerFees = keeperutil.NewKvStoreWrapper[*types.RelayerFeeSetting](keeperutil.StoreFactory(storeKey, types.RelayerFeeStorePrefix), cdc)
+
+	return k
 }
 
 func (k Keeper) ModuleName() string { return types.ModuleName }
@@ -96,6 +103,21 @@ func (k Keeper) GetFees(ctx context.Context) (*types.Fees, error) {
 		return &types.Fees{}, err
 	}
 	return res, nil
+}
+
+func (k Keeper) GetRelayerFeesByChainReferenceID(ctx context.Context, chainReferenceID string) (map[string]types.RelayerFeeSetting_FeeSetting, error) {
+	r := make(map[string]types.RelayerFeeSetting_FeeSetting)
+	err := k.relayerFees.Iterate(sdk.UnwrapSDKContext(ctx), func(b []byte, rfs *types.RelayerFeeSetting) bool {
+		for _, v := range rfs.Fees {
+			if v.ChainReferenceId == chainReferenceID {
+				r[rfs.ValAddress] = v
+				break
+			}
+		}
+		return true
+	})
+
+	return r, err
 }
 
 func (k Keeper) setFees(ctx context.Context, fees *types.Fees) error {

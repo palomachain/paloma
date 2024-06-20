@@ -5,10 +5,48 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "palomachain/paloma/treasury/params.proto";
+import "cosmos_proto/cosmos.proto";
+import "amino/amino.proto";
 
 option go_package = "github.com/palomachain/paloma/x/treasury/types";
+
+// Empty represents an empty message
+message Empty {}
 
 message Fees {
   string communityFundFee = 1;
   string securityFee = 2;
+}
+
+// Represents the fee setting of an individual relayer for a target chain.
+message RelayerFeeSetting {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_stringer) = true;
+
+  message FeeSetting {
+    option (gogoproto.equal) = true;
+    option (gogoproto.goproto_stringer) = true;
+    // Describes the factor by which the gas spent on a 
+    // relayed transaction will be reimbursed.
+    // e.g. `1.2` -> relayer asks to be reimbursed with `total_gas_cost * 1.2`
+    // lower fee settings prioritize the relayer higher in the
+    // pool.
+    // A value below 1 indicates likely partial loss of funds.
+    // `0` means no fees, with a total loss of funds.
+    // Negative values are rejected.
+    string multiplicator = 1 [
+      (cosmos_proto.scalar) = "cosmos.Dec",
+      (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+      (amino.dont_omitempty) = true,
+      (gogoproto.nullable) = false
+    ];
+
+    // Indicates the reference ID of the target chain.
+    string chain_reference_id = 2;
+  }
+
+  // Validator address of a validator participating in consensus.
+  string val_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  repeated FeeSetting fees = 2 [(gogoproto.nullable) = false];
 }
