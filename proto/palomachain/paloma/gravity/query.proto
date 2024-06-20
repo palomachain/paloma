@@ -165,11 +165,11 @@ message QueryBridgeTaxResponse {
   BridgeTax bridge_tax = 1;
 }
 
-message BridgeTransferLimitUsage {
-  BridgeTransferLimit limit = 1;
-  BridgeTransferUsage usage = 2;
-}
-
 message QueryAllBridgeTransferLimitsResponse {
-  repeated BridgeTransferLimitUsage limits = 1;
+  message LimitUsage {
+    BridgeTransferLimit limit = 1;
+    BridgeTransferUsage usage = 2;
+  }
+
+  repeated LimitUsage limits = 1;
 }

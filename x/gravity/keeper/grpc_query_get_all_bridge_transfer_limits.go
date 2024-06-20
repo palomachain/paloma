@@ -22,7 +22,7 @@ func (k Keeper) GetAllBridgeTransferLimits(
 	}
 
 	res := &types.QueryAllBridgeTransferLimitsResponse{
-		Limits: make([]*types.BridgeTransferLimitUsage, len(limits)),
+		Limits: make([]*types.QueryAllBridgeTransferLimitsResponse_LimitUsage, len(limits)),
 	}
 
 	for i := range limits {
@@ -31,7 +31,7 @@ func (k Keeper) GetAllBridgeTransferLimits(
 			return nil, err
 		}
 
-		res.Limits[i] = &types.BridgeTransferLimitUsage{
+		res.Limits[i] = &types.QueryAllBridgeTransferLimitsResponse_LimitUsage{
 			Limit: limits[i],
 			Usage: usage,
 		}
