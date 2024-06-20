@@ -30,7 +30,8 @@ func (k Keeper) AddToOutgoingPool(
 		return 0, sdkerrors.Wrap(types.ErrInvalid, "arguments")
 	}
 
-	if err := k.UpdateBridgeTransferUsageWithLimit(ctx, amount); err != nil {
+	err := k.UpdateBridgeTransferUsageWithLimit(ctx, sender, amount)
+	if err != nil {
 		return 0, err
 	}
 
