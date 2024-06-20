@@ -25,6 +25,12 @@ func TestAddToOutgoingPool(t *testing.T) {
 		mySender, e1 = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
 		myReceiver   = "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7"
 	)
+
+	// Set bridge tax
+	input.GravityKeeper.SetBridgeTax(ctx, &types.BridgeTax{
+		Rate: "0.02",
+	})
+
 	require.NoError(t, e1)
 	receiver, err := types.NewEthAddress(myReceiver)
 	require.NoError(t, err)
@@ -78,28 +84,28 @@ func TestAddToOutgoingPool(t *testing.T) {
 			Sender:          mySender,
 			DestAddress:     receiverAddr,
 			Erc20Token:      oneHundredThreeTok,
-			BridgeTaxAmount: math.ZeroInt(),
+			BridgeTaxAmount: math.NewInt(2),
 		},
 		{
 			Id:              3,
 			Sender:          mySender,
 			DestAddress:     receiverAddr,
 			Erc20Token:      oneHundredTwoTok,
-			BridgeTaxAmount: math.ZeroInt(),
+			BridgeTaxAmount: math.NewInt(2),
 		},
 		{
 			Id:              2,
 			Sender:          mySender,
 			DestAddress:     receiverAddr,
 			Erc20Token:      oneHundredOneTok,
-			BridgeTaxAmount: math.ZeroInt(),
+			BridgeTaxAmount: math.NewInt(2),
 		},
 		{
 			Id:              1,
 			Sender:          mySender,
 			DestAddress:     receiverAddr,
 			Erc20Token:      oneHundredTok,
-			BridgeTaxAmount: math.ZeroInt(),
+			BridgeTaxAmount: math.NewInt(2),
 		},
 	}
 	assert.Equal(t, exp, got)
