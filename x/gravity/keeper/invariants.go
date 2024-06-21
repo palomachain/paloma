@@ -89,7 +89,7 @@ func sumUnconfirmedBatchModuleBalances(ctx sdk.Context, k Keeper, expectedBals m
 		batchTotal := math.NewInt(0)
 		// Collect the send amount for each tx
 		for _, tx := range batch.Transactions {
-			newTotal := batchTotal.Add(tx.Erc20Token.Amount)
+			newTotal := batchTotal.Add(tx.Erc20Token.Amount).Add(tx.BridgeTaxAmount)
 			batchTotal = newTotal
 		}
 		contract := batch.TokenContract
@@ -121,7 +121,7 @@ func sumUnbatchedTxModuleBalances(ctx sdk.Context, k Keeper, expectedBals map[st
 			zero := math.ZeroInt()
 			expectedBals[denom] = &zero
 		}
-		*expectedBals[denom] = expectedBals[denom].Add(tx.Erc20Token.Amount)
+		*expectedBals[denom] = expectedBals[denom].Add(tx.Erc20Token.Amount).Add(tx.BridgeTaxAmount)
 
 		return false // continue iterating
 	})

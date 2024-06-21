@@ -7,7 +7,6 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/testutil/nullify"
 	"github.com/palomachain/paloma/x/gravity/types"
 	"github.com/stretchr/testify/require"
 )
@@ -152,6 +151,14 @@ func TestGenesis(t *testing.T) {
 			ExcludedTokens:  []string{"test"},
 			ExemptAddresses: addresses,
 		},
+		BridgeTransferLimits: []*types.BridgeTransferLimit{
+			{
+				Token:           "test",
+				Limit:           math.NewInt(1000),
+				LimitPeriod:     types.LimitPeriod_DAILY,
+				ExemptAddresses: addresses,
+			},
+		},
 	}
 
 	input := CreateTestEnv(t)
@@ -160,13 +167,11 @@ func TestGenesis(t *testing.T) {
 	got := ExportGenesis(input.Context, input.GravityKeeper)
 	require.NotNil(t, got)
 
-	nullify.Fill(&genesisState)
-	nullify.Fill(got)
-
 	require.Equal(t, genesisState.BridgeTax, got.BridgeTax)
+	require.Equal(t, genesisState.BridgeTransferLimits, got.BridgeTransferLimits)
 }
 
-func TestGenesisEmptyBridgeTax(t *testing.T) {
+func TestGenesisEmptyOptionalValues(t *testing.T) {
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
 	}
@@ -177,8 +182,6 @@ func TestGenesisEmptyBridgeTax(t *testing.T) {
 	got := ExportGenesis(input.Context, input.GravityKeeper)
 	require.NotNil(t, got)
 
-	nullify.Fill(&genesisState)
-	nullify.Fill(got)
-
 	require.Nil(t, got.BridgeTax)
+	require.Empty(t, got.BridgeTransferLimits)
 }

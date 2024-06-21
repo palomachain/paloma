@@ -34,6 +34,25 @@ func NewGravityProposalHandler(k Keeper) govv1beta1types.Handler {
 			}
 
 			return k.SetBridgeTax(ctx, bridgeTax)
+		case *types.SetBridgeTransferLimitProposal:
+			addresses := make([]sdk.AccAddress, 0, len(c.ExemptAddresses))
+			for _, addr := range c.ExemptAddresses {
+				address, err := sdk.AccAddressFromBech32(addr)
+				if err != nil {
+					return err
+				}
+
+				addresses = append(addresses, address)
+			}
+
+			limit := &types.BridgeTransferLimit{
+				Token:           c.Token,
+				Limit:           c.Limit,
+				LimitPeriod:     c.LimitPeriod,
+				ExemptAddresses: addresses,
+			}
+
+			return k.SetBridgeTransferLimit(ctx, limit)
 		}
 
 		return sdkerrors.ErrUnknownRequest
