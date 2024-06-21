@@ -4,8 +4,11 @@
 package types
 
 import (
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/query"
+	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
@@ -25,6 +28,43 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Empty represents an empty message
+type Empty struct {
+}
+
+func (m *Empty) Reset()         { *m = Empty{} }
+func (m *Empty) String() string { return proto.CompactTextString(m) }
+func (*Empty) ProtoMessage()    {}
+func (*Empty) Descriptor() ([]byte, []int) {
+	return fileDescriptor_025e81aa1db4e06a, []int{0}
+}
+func (m *Empty) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Empty) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Empty.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Empty) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Empty.Merge(m, src)
+}
+func (m *Empty) XXX_Size() int {
+	return m.Size()
+}
+func (m *Empty) XXX_DiscardUnknown() {
+	xxx_messageInfo_Empty.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Empty proto.InternalMessageInfo
+
 type Fees struct {
 	CommunityFundFee string `protobuf:"bytes,1,opt,name=communityFundFee,proto3" json:"communityFundFee,omitempty"`
 	SecurityFee      string `protobuf:"bytes,2,opt,name=securityFee,proto3" json:"securityFee,omitempty"`
@@ -34,7 +74,7 @@ func (m *Fees) Reset()         { *m = Fees{} }
 func (m *Fees) String() string { return proto.CompactTextString(m) }
 func (*Fees) ProtoMessage()    {}
 func (*Fees) Descriptor() ([]byte, []int) {
-	return fileDescriptor_025e81aa1db4e06a, []int{0}
+	return fileDescriptor_025e81aa1db4e06a, []int{1}
 }
 func (m *Fees) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -77,8 +117,119 @@ func (m *Fees) GetSecurityFee() string {
 	return ""
 }
 
+// Represents the fee setting of an individual relayer for a target chain.
+type RelayerFeeSetting struct {
+	// Validator address of a validator participating in consensus.
+	ValAddress string                         `protobuf:"bytes,1,opt,name=val_address,json=valAddress,proto3" json:"val_address,omitempty"`
+	Fees       []RelayerFeeSetting_FeeSetting `protobuf:"bytes,2,rep,name=fees,proto3" json:"fees"`
+}
+
+func (m *RelayerFeeSetting) Reset()         { *m = RelayerFeeSetting{} }
+func (m *RelayerFeeSetting) String() string { return proto.CompactTextString(m) }
+func (*RelayerFeeSetting) ProtoMessage()    {}
+func (*RelayerFeeSetting) Descriptor() ([]byte, []int) {
+	return fileDescriptor_025e81aa1db4e06a, []int{2}
+}
+func (m *RelayerFeeSetting) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RelayerFeeSetting) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RelayerFeeSetting.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RelayerFeeSetting) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RelayerFeeSetting.Merge(m, src)
+}
+func (m *RelayerFeeSetting) XXX_Size() int {
+	return m.Size()
+}
+func (m *RelayerFeeSetting) XXX_DiscardUnknown() {
+	xxx_messageInfo_RelayerFeeSetting.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RelayerFeeSetting proto.InternalMessageInfo
+
+func (m *RelayerFeeSetting) GetValAddress() string {
+	if m != nil {
+		return m.ValAddress
+	}
+	return ""
+}
+
+func (m *RelayerFeeSetting) GetFees() []RelayerFeeSetting_FeeSetting {
+	if m != nil {
+		return m.Fees
+	}
+	return nil
+}
+
+type RelayerFeeSetting_FeeSetting struct {
+	// Describes the factor by which the gas spent on a
+	// relayed transaction will be reimbursed.
+	// e.g. `1.2` -> relayer asks to be reimbursed with `total_gas_cost * 1.2`
+	// lower fee settings prioritize the relayer higher in the
+	// pool.
+	// A value below 1 indicates likely partial loss of funds.
+	// `0` means no fees, with a total loss of funds.
+	// Negative values are rejected.
+	Multiplicator cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=multiplicator,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"multiplicator"`
+	// Indicates the reference ID of the target chain.
+	ChainReferenceId string `protobuf:"bytes,2,opt,name=chain_reference_id,json=chainReferenceId,proto3" json:"chain_reference_id,omitempty"`
+}
+
+func (m *RelayerFeeSetting_FeeSetting) Reset()         { *m = RelayerFeeSetting_FeeSetting{} }
+func (m *RelayerFeeSetting_FeeSetting) String() string { return proto.CompactTextString(m) }
+func (*RelayerFeeSetting_FeeSetting) ProtoMessage()    {}
+func (*RelayerFeeSetting_FeeSetting) Descriptor() ([]byte, []int) {
+	return fileDescriptor_025e81aa1db4e06a, []int{2, 0}
+}
+func (m *RelayerFeeSetting_FeeSetting) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RelayerFeeSetting_FeeSetting) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RelayerFeeSetting_FeeSetting.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RelayerFeeSetting_FeeSetting) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RelayerFeeSetting_FeeSetting.Merge(m, src)
+}
+func (m *RelayerFeeSetting_FeeSetting) XXX_Size() int {
+	return m.Size()
+}
+func (m *RelayerFeeSetting_FeeSetting) XXX_DiscardUnknown() {
+	xxx_messageInfo_RelayerFeeSetting_FeeSetting.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RelayerFeeSetting_FeeSetting proto.InternalMessageInfo
+
+func (m *RelayerFeeSetting_FeeSetting) GetChainReferenceId() string {
+	if m != nil {
+		return m.ChainReferenceId
+	}
+	return ""
+}
+
 func init() {
+	proto.RegisterType((*Empty)(nil), "palomachain.paloma.treasury.Empty")
 	proto.RegisterType((*Fees)(nil), "palomachain.paloma.treasury.Fees")
+	proto.RegisterType((*RelayerFeeSetting)(nil), "palomachain.paloma.treasury.RelayerFeeSetting")
+	proto.RegisterType((*RelayerFeeSetting_FeeSetting)(nil), "palomachain.paloma.treasury.RelayerFeeSetting.FeeSetting")
 }
 
 func init() {
@@ -86,23 +237,120 @@ func init() {
 }
 
 var fileDescriptor_025e81aa1db4e06a = []byte{
-	// 256 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x8e, 0xbf, 0x4a, 0xc4, 0x40,
-	0x10, 0x87, 0x13, 0x11, 0xc1, 0xd8, 0x48, 0xb0, 0x38, 0xa2, 0x2c, 0x87, 0x85, 0x1c, 0x57, 0x64,
-	0x38, 0x7c, 0x03, 0x8b, 0x60, 0x2d, 0x56, 0x76, 0x93, 0x38, 0xee, 0x2d, 0xdc, 0xee, 0xac, 0xfb,
-	0x47, 0xcc, 0x5b, 0xf8, 0x58, 0x96, 0x57, 0x5a, 0x4a, 0xf2, 0x22, 0x72, 0x49, 0xc4, 0x03, 0xc5,
-	0xee, 0xc7, 0xc7, 0x37, 0xc3, 0x97, 0x5d, 0x59, 0xdc, 0xb0, 0xc6, 0x66, 0x8d, 0xca, 0xc0, 0xb8,
-	0x21, 0x38, 0x42, 0x1f, 0x5d, 0x0b, 0x4f, 0x44, 0xbe, 0xb4, 0x8e, 0x03, 0xe7, 0xe7, 0x7b, 0x5e,
-	0x39, 0xee, 0xf2, 0xdb, 0x2b, 0xce, 0x24, 0x4b, 0x1e, 0x3c, 0xd8, 0xad, 0xf1, 0xa4, 0xb8, 0x90,
-	0xcc, 0x72, 0x43, 0x80, 0x56, 0x01, 0x1a, 0xc3, 0x01, 0x83, 0x62, 0x33, 0x3d, 0x2c, 0x96, 0x0d,
-	0x7b, 0xcd, 0x1e, 0x6a, 0xf4, 0x04, 0xcf, 0x91, 0x5c, 0x0b, 0x2f, 0xab, 0x9a, 0x02, 0xae, 0xc0,
-	0xa2, 0x54, 0x66, 0x90, 0x27, 0x77, 0xf1, 0x5f, 0xa4, 0x45, 0x87, 0x7a, 0xfa, 0x7a, 0x79, 0x9f,
-	0x1d, 0x56, 0x44, 0x3e, 0x5f, 0x66, 0xa7, 0x0d, 0x6b, 0x1d, 0x8d, 0x0a, 0x6d, 0x15, 0xcd, 0x63,
-	0x45, 0x34, 0x4b, 0xe7, 0xe9, 0xe2, 0xf8, 0xee, 0x17, 0xcf, 0xe7, 0xd9, 0x89, 0xa7, 0x26, 0xba,
-	0x1d, 0x22, 0x9a, 0x1d, 0x0c, 0xda, 0x3e, 0xba, 0xb9, 0x7d, 0xef, 0x44, 0xba, 0xed, 0x44, 0xfa,
-	0xd9, 0x89, 0xf4, 0xad, 0x17, 0xc9, 0xb6, 0x17, 0xc9, 0x47, 0x2f, 0x92, 0x87, 0x52, 0xaa, 0xb0,
-	0x8e, 0x75, 0xd9, 0xb0, 0x86, 0x3f, 0x22, 0x5f, 0x7f, 0x32, 0x43, 0x6b, 0xc9, 0xd7, 0x47, 0x43,
-	0xe6, 0xf5, 0x57, 0x00, 0x00, 0x00, 0xff, 0xff, 0x6d, 0x7e, 0x4a, 0x80, 0x77, 0x01, 0x00, 0x00,
+	// 483 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x52, 0x4f, 0x6b, 0x13, 0x4f,
+	0x18, 0xce, 0xf6, 0x97, 0x9f, 0x7f, 0x26, 0x08, 0xed, 0xd2, 0x43, 0x4c, 0x65, 0x13, 0x72, 0x90,
+	0x10, 0xec, 0x0e, 0x55, 0x10, 0xea, 0xcd, 0x50, 0x83, 0x82, 0xa7, 0x8d, 0x27, 0x11, 0xc2, 0x9b,
+	0xd9, 0xb7, 0x9b, 0xc1, 0x9d, 0x99, 0x75, 0x66, 0x36, 0xb8, 0xdf, 0xc2, 0xa3, 0xc7, 0xe2, 0xc9,
+	0xa3, 0x87, 0x7e, 0x88, 0x1e, 0x4b, 0x4e, 0xe2, 0xa1, 0x48, 0x72, 0xd0, 0x8f, 0x21, 0xd9, 0xd9,
+	0x90, 0x48, 0xa5, 0x97, 0xe5, 0xd9, 0xe7, 0x79, 0xe6, 0xd9, 0x67, 0xe7, 0x7d, 0xc9, 0xc3, 0x0c,
+	0x52, 0x25, 0x80, 0x4d, 0x81, 0x4b, 0xea, 0x30, 0xb5, 0x1a, 0xc1, 0xe4, 0xba, 0xa0, 0xa7, 0x88,
+	0x26, 0xcc, 0xb4, 0xb2, 0xca, 0x3f, 0xd8, 0xf2, 0x85, 0x0e, 0x87, 0x6b, 0x5f, 0x6b, 0x3f, 0x51,
+	0x89, 0x2a, 0x7d, 0x74, 0x85, 0xdc, 0x91, 0xd6, 0x83, 0x44, 0xa9, 0x24, 0x45, 0x0a, 0x19, 0xa7,
+	0x20, 0xa5, 0xb2, 0x60, 0xb9, 0x92, 0x55, 0x60, 0xab, 0xcf, 0x94, 0x11, 0xca, 0xd0, 0x09, 0x18,
+	0xa4, 0x1f, 0x72, 0xd4, 0x05, 0x9d, 0x1d, 0x4d, 0xd0, 0xc2, 0x11, 0xcd, 0x20, 0xe1, 0xb2, 0x34,
+	0x57, 0xde, 0xde, 0x4d, 0x25, 0x33, 0xd0, 0x20, 0xd6, 0xa9, 0xf7, 0x5d, 0xea, 0xd8, 0x95, 0x71,
+	0x2f, 0x95, 0xb4, 0x07, 0x82, 0x4b, 0x45, 0xcb, 0xa7, 0xa3, 0xba, 0xb7, 0xc9, 0xff, 0x2f, 0x44,
+	0x66, 0x8b, 0xee, 0x1b, 0x52, 0x1f, 0x22, 0x1a, 0xbf, 0x4f, 0x76, 0x99, 0x12, 0x22, 0x97, 0xdc,
+	0x16, 0xc3, 0x5c, 0xc6, 0x43, 0xc4, 0xa6, 0xd7, 0xf1, 0x7a, 0x77, 0xa3, 0x6b, 0xbc, 0xdf, 0x21,
+	0x0d, 0x83, 0x2c, 0xd7, 0x2b, 0x0a, 0xb1, 0xb9, 0x53, 0xda, 0xb6, 0xa9, 0xee, 0x7c, 0x87, 0xec,
+	0x45, 0x98, 0x42, 0x81, 0x7a, 0x88, 0x38, 0x42, 0x6b, 0xb9, 0x4c, 0xfc, 0x63, 0xd2, 0x98, 0x41,
+	0x3a, 0x86, 0x38, 0xd6, 0x68, 0x8c, 0x8b, 0x1f, 0x34, 0xe7, 0xe7, 0x87, 0xfb, 0x55, 0xdd, 0xe7,
+	0x4e, 0x19, 0x59, 0xcd, 0x65, 0x12, 0x91, 0x19, 0xa4, 0x15, 0xe3, 0x8f, 0x48, 0x7d, 0x35, 0x92,
+	0xe6, 0x4e, 0xe7, 0xbf, 0x5e, 0xe3, 0xf1, 0x71, 0x78, 0xc3, 0x4c, 0xc2, 0x6b, 0x1f, 0x0e, 0x37,
+	0x70, 0x50, 0xbf, 0xb8, 0x6a, 0xd7, 0xa2, 0x32, 0xac, 0xf5, 0xc5, 0x23, 0x64, 0xab, 0xde, 0x3b,
+	0x72, 0x4f, 0xe4, 0xa9, 0xe5, 0x59, 0xca, 0x19, 0x58, 0xa5, 0xab, 0x82, 0x4f, 0x57, 0x27, 0x7e,
+	0x5c, 0xb5, 0x0f, 0x5c, 0x49, 0x13, 0xbf, 0x0f, 0xb9, 0xa2, 0x02, 0xec, 0x34, 0x7c, 0x8d, 0x09,
+	0xb0, 0xe2, 0x04, 0xd9, 0xfc, 0xfc, 0x90, 0x54, 0xff, 0x70, 0x82, 0xec, 0xeb, 0xaf, 0x6f, 0x7d,
+	0x2f, 0xfa, 0x3b, 0xcc, 0x7f, 0x44, 0xfc, 0xb2, 0xee, 0x58, 0xe3, 0x29, 0x6a, 0x94, 0x0c, 0xc7,
+	0x3c, 0xae, 0xee, 0x6e, 0xb7, 0x54, 0xa2, 0xb5, 0xf0, 0x2a, 0x7e, 0x76, 0xe7, 0xf3, 0x59, 0xdb,
+	0xfb, 0x7d, 0xd6, 0xf6, 0x36, 0x68, 0xf0, 0xf2, 0x62, 0x11, 0x78, 0x97, 0x8b, 0xc0, 0xfb, 0xb9,
+	0x08, 0xbc, 0x4f, 0xcb, 0xa0, 0x76, 0xb9, 0x0c, 0x6a, 0xdf, 0x97, 0x41, 0xed, 0x6d, 0x98, 0x70,
+	0x3b, 0xcd, 0x27, 0x21, 0x53, 0x82, 0xfe, 0x63, 0x61, 0x3e, 0x6e, 0x56, 0xc6, 0x16, 0x19, 0x9a,
+	0xc9, 0xad, 0x72, 0x09, 0x9e, 0xfc, 0x09, 0x00, 0x00, 0xff, 0xff, 0xd8, 0x77, 0x27, 0xf8, 0x03,
+	0x03, 0x00, 0x00,
+}
+
+func (this *RelayerFeeSetting) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RelayerFeeSetting)
+	if !ok {
+		that2, ok := that.(RelayerFeeSetting)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.ValAddress != that1.ValAddress {
+		return false
+	}
+	if len(this.Fees) != len(that1.Fees) {
+		return false
+	}
+	for i := range this.Fees {
+		if !this.Fees[i].Equal(&that1.Fees[i]) {
+			return false
+		}
+	}
+	return true
+}
+func (this *RelayerFeeSetting_FeeSetting) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*RelayerFeeSetting_FeeSetting)
+	if !ok {
+		that2, ok := that.(RelayerFeeSetting_FeeSetting)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Multiplicator.Equal(that1.Multiplicator) {
+		return false
+	}
+	if this.ChainReferenceId != that1.ChainReferenceId {
+		return false
+	}
+	return true
+}
+func (m *Empty) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Empty) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Empty) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
 }
 
 func (m *Fees) Marshal() (dAtA []byte, err error) {
@@ -142,6 +390,90 @@ func (m *Fees) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *RelayerFeeSetting) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RelayerFeeSetting) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RelayerFeeSetting) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Fees) > 0 {
+		for iNdEx := len(m.Fees) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Fees[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFees(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.ValAddress) > 0 {
+		i -= len(m.ValAddress)
+		copy(dAtA[i:], m.ValAddress)
+		i = encodeVarintFees(dAtA, i, uint64(len(m.ValAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RelayerFeeSetting_FeeSetting) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RelayerFeeSetting_FeeSetting) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RelayerFeeSetting_FeeSetting) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ChainReferenceId) > 0 {
+		i -= len(m.ChainReferenceId)
+		copy(dAtA[i:], m.ChainReferenceId)
+		i = encodeVarintFees(dAtA, i, uint64(len(m.ChainReferenceId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	{
+		size := m.Multiplicator.Size()
+		i -= size
+		if _, err := m.Multiplicator.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintFees(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintFees(dAtA []byte, offset int, v uint64) int {
 	offset -= sovFees(v)
 	base := offset
@@ -153,6 +485,15 @@ func encodeVarintFees(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+func (m *Empty) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func (m *Fees) Size() (n int) {
 	if m == nil {
 		return 0
@@ -170,11 +511,95 @@ func (m *Fees) Size() (n int) {
 	return n
 }
 
+func (m *RelayerFeeSetting) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ValAddress)
+	if l > 0 {
+		n += 1 + l + sovFees(uint64(l))
+	}
+	if len(m.Fees) > 0 {
+		for _, e := range m.Fees {
+			l = e.Size()
+			n += 1 + l + sovFees(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *RelayerFeeSetting_FeeSetting) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Multiplicator.Size()
+	n += 1 + l + sovFees(uint64(l))
+	l = len(m.ChainReferenceId)
+	if l > 0 {
+		n += 1 + l + sovFees(uint64(l))
+	}
+	return n
+}
+
 func sovFees(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozFees(x uint64) (n int) {
 	return sovFees(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *Empty) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowFees
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Empty: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Empty: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipFees(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthFees
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 func (m *Fees) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -268,6 +693,238 @@ func (m *Fees) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.SecurityFee = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipFees(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthFees
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RelayerFeeSetting) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowFees
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RelayerFeeSetting: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RelayerFeeSetting: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFees
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthFees
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthFees
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Fees", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFees
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthFees
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthFees
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Fees = append(m.Fees, RelayerFeeSetting_FeeSetting{})
+			if err := m.Fees[len(m.Fees)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipFees(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthFees
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RelayerFeeSetting_FeeSetting) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowFees
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: FeeSetting: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: FeeSetting: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Multiplicator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFees
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthFees
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthFees
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Multiplicator.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainReferenceId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFees
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthFees
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthFees
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChainReferenceId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

@@ -58,7 +58,7 @@ type Keeper struct {
 	AddressCodec   address.Codec
 	slashing       types.SlashingKeeper
 
-	jailLog *keeperutil.KVStoreWrapper[*types.JailRecord]
+	jailLog keeperutil.KVStoreWrapper[*types.JailRecord]
 }
 
 func NewKeeper(

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
@@ -472,6 +473,155 @@ func TestSetFees(t *testing.T) {
 
 			actualErr := k.setFees(ctx, tt.input)
 			asserter.Equal(tt.expectedErr, actualErr)
+		})
+	}
+}
+
+func TestGetRelayerFeesByChainReferenceID(t *testing.T) {
+	testcases := []struct {
+		name     string
+		setup    func() Keeper
+		expected map[string]types.RelayerFeeSetting_FeeSetting
+	}{
+		{
+			name: "with basic chain support",
+			expected: map[string]types.RelayerFeeSetting_FeeSetting{
+				"validator-1": {
+					Multiplicator:    math.LegacyMustNewDecFromStr("1.2"),
+					ChainReferenceId: "test-chain",
+				},
+				"validator-2": {
+					Multiplicator:    math.LegacyMustNewDecFromStr("1.5"),
+					ChainReferenceId: "test-chain",
+				},
+				"validator-3": {
+					Multiplicator:    math.LegacyMustNewDecFromStr("1.7"),
+					ChainReferenceId: "test-chain",
+				},
+			},
+			setup: func() Keeper {
+				m := keeperutilmocks.NewKVStoreWrapper[*types.RelayerFeeSetting](t)
+				data := []types.RelayerFeeSetting{
+					{
+						ValAddress: "validator-1",
+						Fees: []types.RelayerFeeSetting_FeeSetting{
+							{
+								Multiplicator:    math.LegacyMustNewDecFromStr("1.2"),
+								ChainReferenceId: "test-chain",
+							},
+						},
+					},
+					{
+						ValAddress: "validator-2",
+						Fees: []types.RelayerFeeSetting_FeeSetting{
+							{
+								Multiplicator:    math.LegacyMustNewDecFromStr("1.5"),
+								ChainReferenceId: "test-chain",
+							},
+						},
+					},
+					{
+						ValAddress: "validator-3",
+						Fees: []types.RelayerFeeSetting_FeeSetting{
+							{
+								Multiplicator:    math.LegacyMustNewDecFromStr("1.7"),
+								ChainReferenceId: "test-chain",
+							},
+						},
+					},
+				}
+				m.On("Iterate", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+					type fnc = func([]byte, *types.RelayerFeeSetting) bool
+					f := args.Get(1).(fnc)
+					for _, v := range data {
+						f(sdk.ValAddress(v.ValAddress), &v)
+					}
+				}).Return(nil)
+
+				k := Keeper{
+					relayerFees: m,
+				}
+
+				return k
+			},
+		},
+		{
+			name: "with multiple chain support",
+			expected: map[string]types.RelayerFeeSetting_FeeSetting{
+				"validator-1": {
+					Multiplicator:    math.LegacyMustNewDecFromStr("1.2"),
+					ChainReferenceId: "test-chain",
+				},
+				"validator-3": {
+					Multiplicator:    math.LegacyMustNewDecFromStr("1.7"),
+					ChainReferenceId: "test-chain",
+				},
+			},
+			setup: func() Keeper {
+				m := keeperutilmocks.NewKVStoreWrapper[*types.RelayerFeeSetting](t)
+				data := []types.RelayerFeeSetting{
+					{
+						ValAddress: "validator-1",
+						Fees: []types.RelayerFeeSetting_FeeSetting{
+							{
+								Multiplicator:    math.LegacyMustNewDecFromStr("1.2"),
+								ChainReferenceId: "test-chain",
+							},
+							{
+								Multiplicator:    math.LegacyMustNewDecFromStr("2.2"),
+								ChainReferenceId: "test-chain-2",
+							},
+						},
+					},
+					{
+						ValAddress: "validator-2",
+						Fees: []types.RelayerFeeSetting_FeeSetting{
+							{
+								Multiplicator:    math.LegacyMustNewDecFromStr("1.5"),
+								ChainReferenceId: "test-chain-2",
+							},
+						},
+					},
+					{
+						ValAddress: "validator-3",
+						Fees: []types.RelayerFeeSetting_FeeSetting{
+							{
+								Multiplicator:    math.LegacyMustNewDecFromStr("3.2"),
+								ChainReferenceId: "test-chain-2",
+							},
+							{
+								Multiplicator:    math.LegacyMustNewDecFromStr("1.7"),
+								ChainReferenceId: "test-chain",
+							},
+						},
+					},
+				}
+				m.On("Iterate", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+					type fnc = func([]byte, *types.RelayerFeeSetting) bool
+					f := args.Get(1).(fnc)
+					for _, v := range data {
+						f(sdk.ValAddress(v.ValAddress), &v)
+					}
+				}).Return(nil)
+
+				k := Keeper{
+					relayerFees: m,
+				}
+
+				return k
+			},
+		},
+	}
+
+	asserter := assert.New(t)
+	for _, tt := range testcases {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+			k := tt.setup()
+
+			actual, err := k.GetRelayerFeesByChainReferenceID(ctx, "test-chain")
+			asserter.NoError(err)
+			asserter.Equal(tt.expected, actual)
 		})
 	}
 }

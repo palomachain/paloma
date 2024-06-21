@@ -650,6 +650,7 @@ func New(
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.SchedulerKeeper,
+		app.EvmKeeper,
 	)
 
 	app.ScopedConsensusKeeper = scopedConsensusKeeper

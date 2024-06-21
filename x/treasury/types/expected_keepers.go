@@ -4,6 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 )
 
@@ -31,4 +32,9 @@ type BankKeeper interface {
 
 type Scheduler interface {
 	GetJob(ctx context.Context, jobID string) (*schedulertypes.Job, error)
+}
+
+//go:generate mockery --name=EvmKeeper
+type EvmKeeper interface {
+	GetChainInfo(ctx context.Context, targetChainReferenceID string) (*evmtypes.ChainInfo, error)
 }
