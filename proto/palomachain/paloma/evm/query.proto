@@ -1,12 +1,14 @@
 syntax = "proto3";
 package palomachain.paloma.evm;
 
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "palomachain/paloma/evm/params.proto";
 import "palomachain/paloma/evm/turnstone.proto";
 import "palomachain/paloma/evm/chain_info.proto";
+import "palomachain/paloma/evm/user_smart_contract.proto";
 
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
@@ -40,6 +42,13 @@ service Query {
       returns (QueryGetSmartContractDeploymentsResponse) {
     option (google.api.http).get =
         "/palomachain/paloma/evm/query_get_smart_contract_deployments";
+  }
+
+  // Get a list of user smart contracts
+  rpc GetUserSmartContracts(QueryUserSmartContractsRequest)
+      returns (QueryUserSmartContractsResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/evm/query_user_smart_contracts/{val_address}";
   }
 }
 
@@ -75,4 +84,12 @@ message QueryGetSmartContractDeploymentsRequest {}
 
 message QueryGetSmartContractDeploymentsResponse {
   repeated SmartContractDeployment deployments = 1;
+}
+
+message QueryUserSmartContractsRequest {
+  string val_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+message QueryUserSmartContractsResponse {
+  repeated UserSmartContract contracts = 1;
 }
