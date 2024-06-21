@@ -183,6 +183,11 @@ func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string
 		return msg.GetId() <= valsetUpdatesOnChain[0].GetId()
 	})
 
+	// Filter down to just messages that have neither publicAccessData nor errorData
+	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
+		return msg.GetPublicAccessData() == nil && msg.GetErrorData() == nil
+	})
+
 	// Filter down to just messages assigned to this validator
 	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
 		var unpackedMsg evmtypes.TurnstoneMsg
@@ -192,11 +197,6 @@ func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string
 		}
 
 		return unpackedMsg.GetAssignee() == valAddress.String()
-	})
-
-	// Filter down to just messages that have neither publicAccessData nor errorData
-	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
-		return msg.GetPublicAccessData() == nil && msg.GetErrorData() == nil
 	})
 
 	if len(msgs) > defaultResponseMessageCount {
