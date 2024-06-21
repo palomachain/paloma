@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -47,15 +45,10 @@ func NewGravityProposalHandler(k Keeper) govv1beta1types.Handler {
 				addresses = append(addresses, address)
 			}
 
-			limitPeriod, ok := types.LimitPeriod_value[c.LimitPeriod]
-			if !ok {
-				return fmt.Errorf("invalid limit period: %v", c.LimitPeriod)
-			}
-
 			limit := &types.BridgeTransferLimit{
 				Token:           c.Token,
 				Limit:           c.Limit,
-				LimitPeriod:     types.LimitPeriod(limitPeriod),
+				LimitPeriod:     c.LimitPeriod,
 				ExemptAddresses: addresses,
 			}
 

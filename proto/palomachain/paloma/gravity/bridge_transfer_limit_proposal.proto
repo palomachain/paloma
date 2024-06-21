@@ -2,6 +2,7 @@ syntax = "proto3";
 package palomachain.paloma.gravity;
 
 import "gogoproto/gogo.proto";
+import "palomachain/paloma/gravity/bridge_transfer_limit.proto";
 
 option go_package = "github.com/palomachain/paloma/x/gravity/types";
 
@@ -13,6 +14,6 @@ message SetBridgeTransferLimitProposal {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
-  string limit_period = 5;
+  LimitPeriod limit_period = 5;
   repeated string exempt_addresses = 6;
 }

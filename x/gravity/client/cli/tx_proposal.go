@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"math/big"
+	"strings"
 
 	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
@@ -165,18 +166,28 @@ func CmdSetBridgeTransferLimit() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set-bridge-transfer-limit [token] [limit] [limit-period]",
 		Short: "Sets the bridge transfer limit, and optionally exempt addresses",
-		Args:  cobra.ExactArgs(3),
+		Long: `Set the bridge transfer limit for the specified token.
+[limit-period] must be one of: NONE, DAILY, WEEKLY, MONTHLY, YEARLY. Setting it to NONE effectively disables the limit.
+[limit-period] will be converted to a block window. At most, [limit] tokens can be transferred within each block window. After that transfers will fail.`,
+		Example: "set-bridge-transfer-limit ugrain 1000000 DAILY",
+		Args:    cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 
-			token, limitRaw, limitPeriod := args[0], args[1], args[2]
+			token, limitRaw, limitPeriodRaw := args[0], args[1], args[2]
 
 			limit, ok := math.NewIntFromString(limitRaw)
 			if !ok {
 				return fmt.Errorf("invalid limit: %v", limitRaw)
+			}
+
+			// Accept both lower case and upper case limit period strings
+			limitPeriod, ok := types.LimitPeriod_value[strings.ToUpper(limitPeriodRaw)]
+			if !ok {
+				return fmt.Errorf("invalid limit period: %v", limitPeriodRaw)
 			}
 
 			title, err := cmd.Flags().GetString(cli.FlagTitle)
@@ -199,7 +210,7 @@ func CmdSetBridgeTransferLimit() *cobra.Command {
 				Description:     description,
 				Token:           token,
 				Limit:           limit,
-				LimitPeriod:     limitPeriod,
+				LimitPeriod:     types.LimitPeriod(limitPeriod),
 				ExemptAddresses: exemptAddresses,
 			}
 
