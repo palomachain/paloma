@@ -10,10 +10,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (k Keeper) GetAllBridgeTransferLimits(
+func (k Keeper) GetBridgeTransferLimits(
 	goCtx context.Context,
 	_ *emptypb.Empty,
-) (*types.QueryAllBridgeTransferLimitsResponse, error) {
+) (*types.QueryBridgeTransferLimitsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	limits, err := k.AllBridgeTransferLimits(ctx)
@@ -21,8 +21,8 @@ func (k Keeper) GetAllBridgeTransferLimits(
 		return nil, err
 	}
 
-	res := &types.QueryAllBridgeTransferLimitsResponse{
-		Limits: make([]*types.QueryAllBridgeTransferLimitsResponse_LimitUsage, len(limits)),
+	res := &types.QueryBridgeTransferLimitsResponse{
+		Limits: make([]*types.QueryBridgeTransferLimitsResponse_LimitUsage, len(limits)),
 	}
 
 	for i := range limits {
@@ -31,7 +31,7 @@ func (k Keeper) GetAllBridgeTransferLimits(
 			return nil, err
 		}
 
-		res.Limits[i] = &types.QueryAllBridgeTransferLimitsResponse_LimitUsage{
+		res.Limits[i] = &types.QueryBridgeTransferLimitsResponse_LimitUsage{
 			Limit: limits[i],
 			Usage: usage,
 		}

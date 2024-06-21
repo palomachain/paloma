@@ -50,8 +50,8 @@ service Query {
     option (google.api.http).get = "/palomachain/paloma/gravity/bridge_tax";
   }
 
-  rpc GetAllBridgeTransferLimits(google.protobuf.Empty)
-      returns (QueryAllBridgeTransferLimitsResponse) {
+  rpc GetBridgeTransferLimits(google.protobuf.Empty)
+      returns (QueryBridgeTransferLimitsResponse) {
     option (google.api.http).get =
       "/palomachain/paloma/gravity/all_bridge_transfer_limits";
   }
@@ -165,7 +165,7 @@ message QueryBridgeTaxResponse {
   BridgeTax bridge_tax = 1;
 }
 
-message QueryAllBridgeTransferLimitsResponse {
+message QueryBridgeTransferLimitsResponse {
   message LimitUsage {
     BridgeTransferLimit limit = 1;
     BridgeTransferUsage usage = 2;
