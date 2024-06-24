@@ -24,6 +24,7 @@ func GetTxCmd() *cobra.Command {
 	cmd.AddCommand(CmdRemoveSmartContractDeployment())
 	cmd.AddCommand(CmdUploadUserSmartContract())
 	cmd.AddCommand(CmdRemoveUserSmartContract())
+	cmd.AddCommand(CmdDeployUserSmartContract())
 
 	return cmd
 }

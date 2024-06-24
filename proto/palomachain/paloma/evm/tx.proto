@@ -19,6 +19,9 @@ service Msg {
 
   rpc RemoveUserSmartContract(MsgRemoveUserSmartContractRequest)
       returns (google.protobuf.Empty);
+
+  rpc DeployUserSmartContract(MsgDeployUserSmartContractRequest)
+      returns (MsgDeployUserSmartContractResponse);
 }
 
 message MsgRemoveSmartContractDeploymentRequest {
@@ -58,4 +61,19 @@ message MsgRemoveUserSmartContractRequest {
 
   string val_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   uint64 id = 3;
+}
+
+message MsgDeployUserSmartContractRequest {
+  option (cosmos.msg.v1.signer) = "metadata";
+
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+
+  string val_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  uint64 id = 3;
+  string target_chain = 4;
+}
+
+message MsgDeployUserSmartContractResponse {
+  uint64 msg_id = 1;
 }
