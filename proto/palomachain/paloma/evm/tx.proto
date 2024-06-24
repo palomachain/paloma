@@ -10,8 +10,6 @@ import "palomachain/paloma/valset/common.proto";
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 service Msg {
-  rpc DeployNewSmartContract(MsgDeployNewSmartContractRequest)
-      returns (DeployNewSmartContractResponse);
   rpc RemoveSmartContractDeployment(MsgRemoveSmartContractDeploymentRequest)
       returns (RemoveSmartContractDeploymentResponse);
 
@@ -22,21 +20,6 @@ service Msg {
   rpc RemoveUserSmartContract(MsgRemoveUserSmartContractRequest)
       returns (google.protobuf.Empty);
 }
-
-message MsgDeployNewSmartContractRequest {
-  option (cosmos.msg.v1.signer) = "metadata";
-  reserved 1;  
-  reserved "creator";
-  string title = 2;
-  string description = 3;
-
-  string abiJSON = 4;
-  string bytecodeHex = 5;
-
-  palomachain.paloma.valset.MsgMetadata metadata = 6
-      [ (gogoproto.nullable) = false ];
-}
-message DeployNewSmartContractResponse {}
 
 message MsgRemoveSmartContractDeploymentRequest {
   option (cosmos.msg.v1.signer) = "metadata";
