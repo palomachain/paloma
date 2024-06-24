@@ -40,3 +40,18 @@ func (k Keeper) RemoveUserSmartContract(
 
 	return &emptypb.Empty{}, nil
 }
+
+func (k Keeper) DeployUserSmartContract(
+	ctx context.Context,
+	req *types.MsgDeployUserSmartContractRequest,
+) (*types.MsgDeployUserSmartContractResponse, error) {
+	id, err := k.CreateUserSmartContractDeployment(ctx, req.ValAddress, req.Id,
+		req.TargetChain)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgDeployUserSmartContractResponse{
+		MsgId: id,
+	}, nil
+}

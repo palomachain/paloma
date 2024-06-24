@@ -11,8 +11,9 @@ import (
 
 func CmdQueryUserSmartContracts() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "user-smart-contracts [owner-address]",
+		Use:   "user-smart-contracts [validator-address]",
 		Short: "Query user-uploaded smart contracts",
+		Long:  `List all user-upload smart contracts associated with "validator-address". Together with the smart contract fields, each contract has a list of deployments containing status and address, if applicable.`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)

@@ -17,7 +17,9 @@ func CmdUploadUserSmartContract() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "upload-user-smart-contract [title] [abi-json] [bytecode] [constructor-input]",
 		Short: "Upload a user-defined smart contract to paloma",
-		Args:  cobra.ExactArgs(4),
+		Long: `Upload a new user-defined smart contract. The smart contract will stay in paloma and can afterwads be deployed to any external chain.
+The contract will be associated with the validator address used to sign the message.`,
+		Args: cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -53,6 +55,7 @@ func CmdRemoveUserSmartContract() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove-user-smart-contract [id]",
 		Short: "Remove a user-defined smart contract from paloma",
+		Long:  `Remove a user-defined smart contract. The contract will no longer be available to be deploy in external chains.`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -71,6 +74,46 @@ func CmdRemoveUserSmartContract() *cobra.Command {
 			msg := &types.MsgRemoveUserSmartContractRequest{
 				ValAddress: validator.String(),
 				Id:         id,
+				Metadata: vtypes.MsgMetadata{
+					Creator: creator,
+					Signers: []string{creator},
+				},
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdDeployUserSmartContract() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "deploy-user-smart-contract [id] [target-chain]",
+		Short: "Deploy a user-defined smart contract to a target chain",
+		Long:  `Deploy a previously uploaded smart contract to a target chain. After issuing the request, the deployment will be listed as "ONGOING" for the specified chain. When deployed successfully, the status changes to "ACTIVE" and the "address" field will contain the contract address on the target chain.`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return fmt.Errorf("failed to retrieve ctx: %w", err)
+			}
+
+			id, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return err
+			}
+
+			targetChain := args[1]
+
+			validator := sdk.ValAddress(clientCtx.GetFromAddress().Bytes())
+			creator := clientCtx.GetFromAddress().String()
+
+			msg := &types.MsgDeployUserSmartContractRequest{
+				ValAddress:  validator.String(),
+				Id:          id,
+				TargetChain: targetChain,
 				Metadata: vtypes.MsgMetadata{
 					Creator: creator,
 					Signers: []string{creator},

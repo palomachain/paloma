@@ -47,6 +47,16 @@ message UploadSmartContract {
   uint32 retries = 5;
 }
 
+message UploadUserSmartContract {
+  bytes bytecode = 1;
+  string abi = 2;
+  bytes constructorInput = 3;
+
+  string val_address = 4 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  uint64 id = 5;
+  uint32 retries = 6;
+}
+
 message Message {
   // Previous definitions no longer in use.
   reserved 8;
@@ -59,6 +69,7 @@ message Message {
     SubmitLogicCall submitLogicCall = 3;
     UpdateValset updateValset = 4;
     UploadSmartContract uploadSmartContract = 5;
+    UploadUserSmartContract uploadUserSmartContract = 11;
   }
 
   string compassAddr = 6;
