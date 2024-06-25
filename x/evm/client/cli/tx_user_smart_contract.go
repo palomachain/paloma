@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -13,12 +14,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func getParamOrFile(param string) (string, error) {
+	if _, err := os.Stat(param); err == nil {
+		// File exists, read it
+		data, err := os.ReadFile(param)
+		if err != nil {
+			return "", err
+		}
+
+		return string(data), nil
+	}
+
+	// If file does not exist, return the parameter directly
+	return param, nil
+}
+
 func CmdUploadUserSmartContract() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "upload-user-smart-contract [title] [abi-json] [bytecode] [constructor-input]",
 		Short: "Upload a user-defined smart contract to paloma",
 		Long: `Upload a new user-defined smart contract. The smart contract will stay in paloma and can afterwads be deployed to any external chain.
-The contract will be associated with the validator address used to sign the message.`,
+The contract will be associated with the validator address used to sign the message.
+The [abi-json], [bytecode] and [constructor-input] parameters can either be passed as strings directly or as filenames.`,
 		Args: cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -26,7 +43,22 @@ The contract will be associated with the validator address used to sign the mess
 				return fmt.Errorf("failed to retrieve ctx: %w", err)
 			}
 
-			title, abi, bytecode, input := args[0], args[1], args[2], args[3]
+			title := args[0]
+
+			abi, err := getParamOrFile(args[1])
+			if err != nil {
+				return err
+			}
+
+			bytecode, err := getParamOrFile(args[2])
+			if err != nil {
+				return err
+			}
+
+			input, err := getParamOrFile(args[3])
+			if err != nil {
+				return err
+			}
 
 			validator := sdk.ValAddress(clientCtx.GetFromAddress().Bytes())
 			creator := clientCtx.GetFromAddress().String()
