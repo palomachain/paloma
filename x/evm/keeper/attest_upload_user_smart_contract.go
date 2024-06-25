@@ -82,28 +82,29 @@ func (a *uploadUserSmartContractAttester) attest(
 }
 
 func (a *uploadUserSmartContractAttester) attemptRetry(ctx sdk.Context) {
-	contract := a.action
-
-	if contract.Retries >= cMaxSubmitLogicCallRetries {
+	if a.action.Retries >= cMaxSubmitLogicCallRetries {
 		a.logger.Error("Max retries for UploadUserSmartContract message reached",
 			"message-id", a.msgID,
-			"retries", contract.Retries,
+			"retries", a.action.Retries,
 			"chain-reference-id", a.chainReferenceID)
 
 		err := a.k.SetUserSmartContractDeploymentError(ctx, a.action.ValAddress,
 			a.action.Id, a.chainReferenceID)
-		a.logger.WithError(err).Error("Failed to set UserSmartContract error")
+		if err != nil {
+			a.logger.WithError(err).Error("Failed to set UserSmartContract error")
+		}
+
 		return
 	}
 
-	contract.Retries++
+	a.action.Retries++
 
 	a.logger.Info("Retrying failed UploadSmartContract message",
 		"message-id", a.msgID,
-		"retries", contract.Retries,
+		"retries", a.action.Retries,
 		"chain-reference-id", a.chainReferenceID)
 
-	newMsgID, err := a.k.AddUploadUserSmartContractToConsensus(ctx, a.chainReferenceID, contract)
+	newMsgID, err := a.k.AddUploadUserSmartContractToConsensus(ctx, a.chainReferenceID, a.action)
 	if err != nil {
 		a.logger.WithError(err).Error("Failed to retry UploadUserSmartContract")
 		return
@@ -112,6 +113,6 @@ func (a *uploadUserSmartContractAttester) attemptRetry(ctx sdk.Context) {
 	a.logger.Info("Retried failed UploadUserSmartContract message",
 		"message-id", a.msgID,
 		"new-message-id", newMsgID,
-		"retries", contract.Retries,
+		"retries", a.action.Retries,
 		"chain-reference-id", a.chainReferenceID)
 }
