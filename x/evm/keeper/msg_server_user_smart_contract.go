@@ -20,7 +20,7 @@ func (k msgServer) UploadUserSmartContract(
 	valAddress := sdk.ValAddress(creatorAddr.Bytes()).String()
 
 	contract := &types.UserSmartContract{
-		ValAddress:       valAddress,
+		Author:           valAddress,
 		Title:            req.Title,
 		AbiJson:          req.AbiJson,
 		Bytecode:         req.Bytecode,

@@ -23,7 +23,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 	t.Run("Save a contract with invalid ABI", func(t *testing.T) {
 		contract := &types.UserSmartContract{
-			ValAddress:       valAddr1,
+			Author:           valAddr1,
 			Title:            "Test Contract",
 			Bytecode:         "0x01",
 			ConstructorInput: "0x00",
@@ -36,7 +36,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 	t.Run("Save a contract with invalid bytecode", func(t *testing.T) {
 		contract := &types.UserSmartContract{
-			ValAddress:       valAddr1,
+			Author:           valAddr1,
 			Title:            "Test Contract",
 			Bytecode:         "invalid",
 			ConstructorInput: "0x00",
@@ -49,7 +49,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 	t.Run("Save a contract with empty title", func(t *testing.T) {
 		contract := &types.UserSmartContract{
-			ValAddress:       valAddr1,
+			Author:           valAddr1,
 			Title:            "",
 			Bytecode:         "0x01",
 			ConstructorInput: "0x00",
@@ -62,7 +62,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 	t.Run("Save the contract for a user", func(t *testing.T) {
 		contract := &types.UserSmartContract{
-			ValAddress:       valAddr1,
+			Author:           valAddr1,
 			Title:            "Test Contract",
 			Bytecode:         "0x01",
 			ConstructorInput: "0x00",
@@ -76,7 +76,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 		expected := &types.UserSmartContract{
 			Id:               id,
-			ValAddress:       contract.ValAddress,
+			Author:           contract.Author,
 			Title:            contract.Title,
 			Bytecode:         contract.Bytecode,
 			ConstructorInput: contract.ConstructorInput,
@@ -234,7 +234,7 @@ func TestPurgeUserSmartContracts(t *testing.T) {
 	ctx = ctx.WithBlockHeight(10000)
 
 	contract := &types.UserSmartContract{
-		ValAddress:       valAddr1,
+		Author:           valAddr1,
 		Title:            "Test Contract",
 		Bytecode:         "0x01",
 		ConstructorInput: "0x00",

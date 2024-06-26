@@ -63,7 +63,7 @@ func (k Keeper) SaveUserSmartContract(
 
 	// Create a new contract to make sure fields are properly initialized
 	contract := &types.UserSmartContract{
-		ValAddress:           addr,
+		Author:               addr,
 		Id:                   k.ider.IncrementNextID(ctx, types.UserSmartContractStoreKeyPrefix),
 		Title:                c.Title,
 		AbiJson:              c.AbiJson,
@@ -146,7 +146,7 @@ func (k Keeper) CreateUserSmartContractDeployment(
 		Abi:              contract.AbiJson,
 		ConstructorInput: common.FromHex(contract.ConstructorInput),
 		Id:               id,
-		ValAddress:       addr,
+		Author:           addr,
 		BlockHeight:      blockHeight,
 	}
 
@@ -273,7 +273,7 @@ func (k Keeper) PurgeStaleUserSmartContracts(ctx context.Context) error {
 			// If this contract was last updated before the cutoff height,
 			// remove it
 			logger.WithFields(
-				"val_address", contract.ValAddress,
+				"author", contract.Author,
 				"id", contract.Id,
 			).Debug("removing stale user smart contract")
 			st.Delete(key)
