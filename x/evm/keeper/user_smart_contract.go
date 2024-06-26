@@ -98,6 +98,13 @@ func (k Keeper) CreateUserSmartContractDeployment(
 	logger.WithFields("val_address", addr, "id", id, "xchain", targetChain).
 		Debug("create user smart contract deployment")
 
+	// Check if target chain is supported
+	_, err := k.GetChainInfo(ctx, targetChain)
+	if err != nil {
+		logger.WithError(err).Warn("user smart contract deployment on invalid chain")
+		return 0, err
+	}
+
 	key := types.UserSmartContractKey(id)
 	st := k.userSmartContractStore(ctx, addr)
 
