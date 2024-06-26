@@ -103,7 +103,7 @@ func (k Keeper) CreateUserSmartContractDeployment(
 
 	deployment := &types.UserSmartContract_Deployment{
 		ChainReferenceId: targetChain,
-		Status:           types.DeploymentStatus_DEPLOYMENT_STATUS_ONGOING,
+		Status:           types.DeploymentStatus_IN_FLIGHT,
 	}
 
 	found := false
@@ -181,7 +181,7 @@ func (k Keeper) SetUserSmartContractDeploymentActive(
 	).Debug("user smart contract deployment success")
 
 	return k.finishUserSmartContractDeployment(ctx, addr, id, targetChain,
-		contractAddr, types.DeploymentStatus_DEPLOYMENT_STATUS_ACTIVE)
+		contractAddr, types.DeploymentStatus_ACTIVE)
 }
 
 func (k Keeper) SetUserSmartContractDeploymentError(
@@ -198,7 +198,7 @@ func (k Keeper) SetUserSmartContractDeploymentError(
 	).Debug("user smart contract deployment failed")
 
 	return k.finishUserSmartContractDeployment(ctx, addr, id, targetChain,
-		"", types.DeploymentStatus_DEPLOYMENT_STATUS_ERROR)
+		"", types.DeploymentStatus_ERROR)
 }
 
 func (k Keeper) finishUserSmartContractDeployment(

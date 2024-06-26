@@ -6,10 +6,10 @@ import "cosmos_proto/cosmos.proto";
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 enum DeploymentStatus {
-  DEPLOYMENT_STATUS_UNSPECIFIED = 0;
-  DEPLOYMENT_STATUS_ONGOING = 1;
-  DEPLOYMENT_STATUS_ACTIVE = 2;
-  DEPLOYMENT_STATUS_ERROR = 3;
+  PENDING = 0;
+  IN_FLIGHT = 1;
+  ACTIVE = 2;
+  ERROR = 3;
 }
 
 // UserSmartContract defines user-uploaded smart contracts
