@@ -27,7 +27,7 @@ func CmdQueryUserSmartContracts() *cobra.Command {
 				ValAddress: args[0],
 			}
 
-			res, err := queryClient.GetUserSmartContracts(cmd.Context(), params)
+			res, err := queryClient.QueryUserSmartContracts(cmd.Context(), params)
 			if err != nil {
 				return err
 			}
