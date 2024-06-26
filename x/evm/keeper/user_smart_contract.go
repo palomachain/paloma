@@ -16,12 +16,20 @@ import (
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
+// A store, with the smart contract prefix, for all user smart contracts
 func (k Keeper) userSmartContractStore(
+	ctx context.Context,
+) storetypes.KVStore {
+	kvstore := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(kvstore, []byte(types.UserSmartContractStoreKeyPrefix))
+}
+
+// A store for validator smart contracts, prefixed with the validator address
+func (k Keeper) userSmartContractStoreByAddress(
 	ctx context.Context,
 	addr string,
 ) storetypes.KVStore {
-	kvstore := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
-	return prefix.NewStore(kvstore, types.UserSmartContractStoreKey(addr))
+	return prefix.NewStore(k.userSmartContractStore(ctx), []byte(addr))
 }
 
 func (k Keeper) UserSmartContracts(
@@ -31,7 +39,8 @@ func (k Keeper) UserSmartContracts(
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger())
 	logger.WithFields("val_address", addr).Debug("list user smart contracts")
 
-	st := k.userSmartContractStore(ctx, addr)
+	st := k.userSmartContractStoreByAddress(ctx, addr)
+
 	_, all, err := keeperutil.IterAll[*types.UserSmartContract](st, k.cdc)
 	return all, err
 }
@@ -49,21 +58,19 @@ func (k Keeper) SaveUserSmartContract(
 		return 0, err
 	}
 
-	stKey := types.UserSmartContractStoreKey(addr)
-
 	// Create a new contract to make sure fields are properly initialized
 	contract := &types.UserSmartContract{
 		ValAddress:       addr,
-		Id:               k.ider.IncrementNextID(ctx, string(stKey)),
+		Id:               k.ider.IncrementNextID(ctx, types.UserSmartContractStoreKeyPrefix),
 		Title:            c.Title,
 		AbiJson:          c.AbiJson,
 		Bytecode:         c.Bytecode,
 		ConstructorInput: c.ConstructorInput,
 	}
 
-	key := types.UserSmartContractKey(contract.Id)
+	key := keeperutil.Uint64ToByte(contract.Id)
 
-	st := k.userSmartContractStore(ctx, addr)
+	st := k.userSmartContractStoreByAddress(ctx, addr)
 	return contract.Id, keeperutil.Save(st, k.cdc, key, contract)
 }
 
@@ -76,9 +83,9 @@ func (k Keeper) DeleteUserSmartContract(
 	logger.WithFields("val_address", addr, "id", id).
 		Debug("delete user smart contract")
 
-	key := types.UserSmartContractKey(id)
+	key := keeperutil.Uint64ToByte(id)
 
-	st := k.userSmartContractStore(ctx, addr)
+	st := k.userSmartContractStoreByAddress(ctx, addr)
 
 	if !st.Has(key) {
 		return fmt.Errorf("contract not found %v", id)
@@ -105,8 +112,8 @@ func (k Keeper) CreateUserSmartContractDeployment(
 		return 0, err
 	}
 
-	key := types.UserSmartContractKey(id)
-	st := k.userSmartContractStore(ctx, addr)
+	key := keeperutil.Uint64ToByte(id)
+	st := k.userSmartContractStoreByAddress(ctx, addr)
 
 	contract, err := keeperutil.Load[*types.UserSmartContract](st, k.cdc, key)
 	if err != nil {
@@ -225,8 +232,8 @@ func (k Keeper) finishUserSmartContractDeployment(
 	logger.WithFields("val_address", addr, "id", id, "xchain", targetChain).
 		Debug("finish user smart contract deployment")
 
-	key := types.UserSmartContractKey(id)
-	st := k.userSmartContractStore(ctx, addr)
+	key := keeperutil.Uint64ToByte(id)
+	st := k.userSmartContractStoreByAddress(ctx, addr)
 
 	contract, err := keeperutil.Load[*types.UserSmartContract](st, k.cdc, key)
 	if err != nil {
