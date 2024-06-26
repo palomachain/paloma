@@ -42,11 +42,10 @@ message MsgUploadUserSmartContractRequest {
   palomachain.paloma.valset.MsgMetadata metadata = 1
       [ (gogoproto.nullable) = false ];
 
-  string val_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  string title = 3;
-  string abi_json = 4;
-  string bytecode = 5;
-  string constructor_input = 6;
+  string title = 2;
+  string abi_json = 3;
+  string bytecode = 4;
+  string constructor_input = 5;
 }
 
 message MsgUploadUserSmartContractResponse {
@@ -59,8 +58,7 @@ message MsgRemoveUserSmartContractRequest {
   palomachain.paloma.valset.MsgMetadata metadata = 1
       [ (gogoproto.nullable) = false ];
 
-  string val_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  uint64 id = 3;
+  uint64 id = 2;
 }
 
 message MsgDeployUserSmartContractRequest {
@@ -69,9 +67,8 @@ message MsgDeployUserSmartContractRequest {
   palomachain.paloma.valset.MsgMetadata metadata = 1
       [ (gogoproto.nullable) = false ];
 
-  string val_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  uint64 id = 3;
-  string target_chain = 4;
+  uint64 id = 2;
+  string target_chain = 3;
 }
 
 message MsgDeployUserSmartContractResponse {

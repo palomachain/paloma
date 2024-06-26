@@ -8,7 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cobra"
@@ -60,11 +59,9 @@ The [abi-json], [bytecode] and [constructor-input] parameters can either be pass
 				return err
 			}
 
-			validator := sdk.ValAddress(clientCtx.GetFromAddress().Bytes())
 			creator := clientCtx.GetFromAddress().String()
 
 			msg := &types.MsgUploadUserSmartContractRequest{
-				ValAddress:       validator.String(),
 				Title:            title,
 				AbiJson:          abi,
 				Bytecode:         bytecode,
@@ -100,12 +97,10 @@ func CmdRemoveUserSmartContract() *cobra.Command {
 				return err
 			}
 
-			validator := sdk.ValAddress(clientCtx.GetFromAddress().Bytes())
 			creator := clientCtx.GetFromAddress().String()
 
 			msg := &types.MsgRemoveUserSmartContractRequest{
-				ValAddress: validator.String(),
-				Id:         id,
+				Id: id,
 				Metadata: vtypes.MsgMetadata{
 					Creator: creator,
 					Signers: []string{creator},
@@ -139,11 +134,9 @@ func CmdDeployUserSmartContract() *cobra.Command {
 
 			targetChain := args[1]
 
-			validator := sdk.ValAddress(clientCtx.GetFromAddress().Bytes())
 			creator := clientCtx.GetFromAddress().String()
 
 			msg := &types.MsgDeployUserSmartContractRequest{
-				ValAddress:  validator.String(),
 				Id:          id,
 				TargetChain: targetChain,
 				Metadata: vtypes.MsgMetadata{
