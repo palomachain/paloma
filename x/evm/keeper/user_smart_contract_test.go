@@ -112,6 +112,12 @@ func TestUserSmartContracts(t *testing.T) {
 		require.Equal(t, expected, contracts[0].Deployments[0])
 	})
 
+	t.Run("Create a deployment for an unsupported chain", func(t *testing.T) {
+		_, err := k.CreateUserSmartContractDeployment(ctx, valAddr1,
+			id, "invalid-chain")
+		require.Error(t, err)
+	})
+
 	t.Run("Set deployment to active", func(t *testing.T) {
 		err := k.SetUserSmartContractDeploymentActive(ctx, valAddr1,
 			id, "test-chain", "contract_addr")
