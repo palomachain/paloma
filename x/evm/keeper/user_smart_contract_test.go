@@ -3,6 +3,7 @@ package keeper
 import (
 	"testing"
 
+	"github.com/palomachain/paloma/testutil/sample"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/stretchr/testify/require"
 )
@@ -19,13 +20,52 @@ func TestUserSmartContracts(t *testing.T) {
 		require.Empty(t, contracts)
 	})
 
+	t.Run("Save a contract with invalid ABI", func(t *testing.T) {
+		contract := &types.UserSmartContract{
+			ValAddress:       valAddr1,
+			Title:            "Test Contract",
+			Bytecode:         "0x01",
+			ConstructorInput: "0x00",
+			AbiJson:          `[{}]`,
+		}
+
+		_, err := k.SaveUserSmartContract(ctx, valAddr1, contract)
+		require.Error(t, err)
+	})
+
+	t.Run("Save a contract with invalid bytecode", func(t *testing.T) {
+		contract := &types.UserSmartContract{
+			ValAddress:       valAddr1,
+			Title:            "Test Contract",
+			Bytecode:         "invalid",
+			ConstructorInput: "0x00",
+			AbiJson:          sample.SimpleABI,
+		}
+
+		_, err := k.SaveUserSmartContract(ctx, valAddr1, contract)
+		require.Error(t, err)
+	})
+
+	t.Run("Save a contract with empty title", func(t *testing.T) {
+		contract := &types.UserSmartContract{
+			ValAddress:       valAddr1,
+			Title:            "",
+			Bytecode:         "0x01",
+			ConstructorInput: "0x00",
+			AbiJson:          sample.SimpleABI,
+		}
+
+		_, err := k.SaveUserSmartContract(ctx, valAddr1, contract)
+		require.Error(t, err)
+	})
+
 	t.Run("Save the contract for a user", func(t *testing.T) {
 		contract := &types.UserSmartContract{
 			ValAddress:       valAddr1,
 			Title:            "Test Contract",
 			Bytecode:         "0x01",
 			ConstructorInput: "0x00",
-			AbiJson:          `[{"inputs":[]}]`,
+			AbiJson:          sample.SimpleABI,
 		}
 
 		var err error

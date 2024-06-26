@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/palomachain/paloma/testutil/sample"
 	consensusmocks "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -37,7 +38,7 @@ var _ = Describe("attest upload user smart contract", func() {
 	testContract := &types.UserSmartContract{
 		ValAddress:       valAddr,
 		Title:            "Test Contract",
-		AbiJson:          "[{}]",
+		AbiJson:          sample.SimpleABI,
 		Bytecode:         "0x01",
 		ConstructorInput: "0x00",
 	}

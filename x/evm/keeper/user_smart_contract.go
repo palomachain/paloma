@@ -44,6 +44,11 @@ func (k Keeper) SaveUserSmartContract(
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger())
 	logger.WithFields("val_address", addr).Debug("save user smart contract")
 
+	if err := c.Validate(); err != nil {
+		logger.WithError(err).Warn("save with invalid smart contract")
+		return 0, err
+	}
+
 	stKey := types.UserSmartContractStoreKey(addr)
 
 	// Create a new contract to make sure fields are properly initialized
