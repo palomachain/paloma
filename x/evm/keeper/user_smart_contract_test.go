@@ -104,9 +104,11 @@ func TestUserSmartContracts(t *testing.T) {
 		require.Len(t, contracts[0].Deployments, 1)
 
 		expected := &types.UserSmartContract_Deployment{
-			ChainReferenceId: "test-chain",
-			Status:           types.DeploymentStatus_IN_FLIGHT,
-			Address:          "",
+			ChainReferenceId:     "test-chain",
+			Status:               types.DeploymentStatus_IN_FLIGHT,
+			Address:              "",
+			CreatedAtBlockHeight: ctx.BlockHeight(),
+			UpdatedAtBlockHeight: ctx.BlockHeight(),
 		}
 
 		require.Equal(t, expected, contracts[0].Deployments[0])
@@ -120,7 +122,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 	t.Run("Set deployment to active", func(t *testing.T) {
 		err := k.SetUserSmartContractDeploymentActive(ctx, valAddr1,
-			id, "test-chain", "contract_addr")
+			id, ctx.BlockHeight(), "test-chain", "contract_addr")
 		require.NoError(t, err)
 
 		contracts, err := k.UserSmartContracts(ctx, valAddr1)
@@ -128,9 +130,11 @@ func TestUserSmartContracts(t *testing.T) {
 		require.Len(t, contracts[0].Deployments, 1)
 
 		expected := &types.UserSmartContract_Deployment{
-			ChainReferenceId: "test-chain",
-			Status:           types.DeploymentStatus_ACTIVE,
-			Address:          "contract_addr",
+			ChainReferenceId:     "test-chain",
+			Status:               types.DeploymentStatus_ACTIVE,
+			Address:              "contract_addr",
+			CreatedAtBlockHeight: ctx.BlockHeight(),
+			UpdatedAtBlockHeight: ctx.BlockHeight(),
 		}
 
 		require.Equal(t, expected, contracts[0].Deployments[0])
@@ -138,7 +142,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 	t.Run("Set deployment to error", func(t *testing.T) {
 		err := k.SetUserSmartContractDeploymentError(ctx, valAddr1,
-			id, "test-chain")
+			id, ctx.BlockHeight(), "test-chain")
 		require.NoError(t, err)
 
 		contracts, err := k.UserSmartContracts(ctx, valAddr1)
@@ -146,30 +150,70 @@ func TestUserSmartContracts(t *testing.T) {
 		require.Len(t, contracts[0].Deployments, 1)
 
 		expected := &types.UserSmartContract_Deployment{
-			ChainReferenceId: "test-chain",
-			Status:           types.DeploymentStatus_ERROR,
-			Address:          "",
+			ChainReferenceId:     "test-chain",
+			Status:               types.DeploymentStatus_ERROR,
+			Address:              "",
+			CreatedAtBlockHeight: ctx.BlockHeight(),
+			UpdatedAtBlockHeight: ctx.BlockHeight(),
 		}
 
 		require.Equal(t, expected, contracts[0].Deployments[0])
 	})
 
-	t.Run("Overwrite a deployment", func(t *testing.T) {
-		_, err := k.CreateUserSmartContractDeployment(ctx, valAddr1,
+	t.Run("Create a new deployment for the same chain", func(t *testing.T) {
+		newCtx := ctx.WithBlockHeight(ctx.BlockHeight() + 1000)
+		_, err := k.CreateUserSmartContractDeployment(newCtx, valAddr1,
 			id, "test-chain")
 		require.NoError(t, err)
 
 		contracts, err := k.UserSmartContracts(ctx, valAddr1)
 		require.NoError(t, err)
-		require.Len(t, contracts[0].Deployments, 1)
+		require.Len(t, contracts[0].Deployments, 2)
 
-		expected := &types.UserSmartContract_Deployment{
-			ChainReferenceId: "test-chain",
-			Status:           types.DeploymentStatus_IN_FLIGHT,
-			Address:          "",
-		}
+		// Should now contain both
+		expected := []*types.UserSmartContract_Deployment{{
+			ChainReferenceId:     "test-chain",
+			Status:               types.DeploymentStatus_ERROR,
+			Address:              "",
+			CreatedAtBlockHeight: ctx.BlockHeight(),
+			UpdatedAtBlockHeight: ctx.BlockHeight(),
+		}, {
+			ChainReferenceId:     "test-chain",
+			Status:               types.DeploymentStatus_IN_FLIGHT,
+			Address:              "",
+			CreatedAtBlockHeight: newCtx.BlockHeight(),
+			UpdatedAtBlockHeight: newCtx.BlockHeight(),
+		}}
 
-		require.Equal(t, expected, contracts[0].Deployments[0])
+		require.Equal(t, expected, contracts[0].Deployments)
+	})
+
+	t.Run("Update the right deployment", func(t *testing.T) {
+		newCtx := ctx.WithBlockHeight(ctx.BlockHeight() + 1000)
+		err := k.SetUserSmartContractDeploymentActive(newCtx, valAddr1,
+			id, newCtx.BlockHeight(), "test-chain", "contract_addr")
+		require.NoError(t, err)
+
+		contracts, err := k.UserSmartContracts(ctx, valAddr1)
+		require.NoError(t, err)
+		require.Len(t, contracts[0].Deployments, 2)
+
+		// Should now contain both
+		expected := []*types.UserSmartContract_Deployment{{
+			ChainReferenceId:     "test-chain",
+			Status:               types.DeploymentStatus_ERROR,
+			Address:              "",
+			CreatedAtBlockHeight: ctx.BlockHeight(),
+			UpdatedAtBlockHeight: ctx.BlockHeight(),
+		}, {
+			ChainReferenceId:     "test-chain",
+			Status:               types.DeploymentStatus_ACTIVE,
+			Address:              "contract_addr",
+			CreatedAtBlockHeight: newCtx.BlockHeight(),
+			UpdatedAtBlockHeight: newCtx.BlockHeight(),
+		}}
+
+		require.Equal(t, expected, contracts[0].Deployments)
 	})
 
 	t.Run("Delete the contract", func(t *testing.T) {

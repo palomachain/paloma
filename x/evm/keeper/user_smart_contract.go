@@ -58,14 +58,18 @@ func (k Keeper) SaveUserSmartContract(
 		return 0, err
 	}
 
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	// Create a new contract to make sure fields are properly initialized
 	contract := &types.UserSmartContract{
-		ValAddress:       addr,
-		Id:               k.ider.IncrementNextID(ctx, types.UserSmartContractStoreKeyPrefix),
-		Title:            c.Title,
-		AbiJson:          c.AbiJson,
-		Bytecode:         c.Bytecode,
-		ConstructorInput: c.ConstructorInput,
+		ValAddress:           addr,
+		Id:                   k.ider.IncrementNextID(ctx, types.UserSmartContractStoreKeyPrefix),
+		Title:                c.Title,
+		AbiJson:              c.AbiJson,
+		Bytecode:             c.Bytecode,
+		ConstructorInput:     c.ConstructorInput,
+		CreatedAtBlockHeight: sdkCtx.BlockHeight(),
+		UpdatedAtBlockHeight: sdkCtx.BlockHeight(),
 	}
 
 	key := keeperutil.Uint64ToByte(contract.Id)
@@ -120,25 +124,16 @@ func (k Keeper) CreateUserSmartContractDeployment(
 		return 0, err
 	}
 
+	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
+
 	deployment := &types.UserSmartContract_Deployment{
-		ChainReferenceId: targetChain,
-		Status:           types.DeploymentStatus_IN_FLIGHT,
+		ChainReferenceId:     targetChain,
+		Status:               types.DeploymentStatus_IN_FLIGHT,
+		CreatedAtBlockHeight: blockHeight,
+		UpdatedAtBlockHeight: blockHeight,
 	}
 
-	found := false
-	for i, dep := range contract.Deployments {
-		if dep.ChainReferenceId == deployment.ChainReferenceId {
-			// If we already have a deployment for this chain, we overwrite it
-			contract.Deployments[i] = deployment
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		// If we don't have it yet, we append a new one
-		contract.Deployments = append(contract.Deployments, deployment)
-	}
+	contract.Deployments = append(contract.Deployments, deployment)
 
 	if err := keeperutil.Save(st, k.cdc, key, contract); err != nil {
 		return 0, err
@@ -150,6 +145,7 @@ func (k Keeper) CreateUserSmartContractDeployment(
 		ConstructorInput: common.FromHex(contract.ConstructorInput),
 		Id:               id,
 		ValAddress:       addr,
+		BlockHeight:      blockHeight,
 	}
 
 	return k.AddUploadUserSmartContractToConsensus(ctx, targetChain, userSmartContract)
@@ -188,6 +184,7 @@ func (k Keeper) SetUserSmartContractDeploymentActive(
 	ctx context.Context,
 	addr string,
 	id uint64,
+	blockHeight int64,
 	targetChain string,
 	contractAddr string,
 ) error {
@@ -199,14 +196,15 @@ func (k Keeper) SetUserSmartContractDeploymentActive(
 		"contract_addr", contractAddr,
 	).Debug("user smart contract deployment success")
 
-	return k.finishUserSmartContractDeployment(ctx, addr, id, targetChain,
-		contractAddr, types.DeploymentStatus_ACTIVE)
+	return k.finishUserSmartContractDeployment(ctx, addr, id, blockHeight,
+		targetChain, contractAddr, types.DeploymentStatus_ACTIVE)
 }
 
 func (k Keeper) SetUserSmartContractDeploymentError(
 	ctx context.Context,
 	addr string,
 	id uint64,
+	blockHeight int64,
 	targetChain string,
 ) error {
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger())
@@ -216,14 +214,15 @@ func (k Keeper) SetUserSmartContractDeploymentError(
 		"xchain", targetChain,
 	).Debug("user smart contract deployment failed")
 
-	return k.finishUserSmartContractDeployment(ctx, addr, id, targetChain,
-		"", types.DeploymentStatus_ERROR)
+	return k.finishUserSmartContractDeployment(ctx, addr, id, blockHeight,
+		targetChain, "", types.DeploymentStatus_ERROR)
 }
 
 func (k Keeper) finishUserSmartContractDeployment(
 	ctx context.Context,
 	addr string,
 	id uint64,
+	blockHeight int64,
 	targetChain string,
 	contractAddr string,
 	status types.DeploymentStatus,
@@ -240,10 +239,15 @@ func (k Keeper) finishUserSmartContractDeployment(
 		return err
 	}
 
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	for i := range contract.Deployments {
-		if contract.Deployments[i].ChainReferenceId == targetChain {
+		if contract.Deployments[i].ChainReferenceId == targetChain &&
+			contract.Deployments[i].CreatedAtBlockHeight == blockHeight {
+
 			contract.Deployments[i].Status = status
 			contract.Deployments[i].Address = contractAddr
+			contract.Deployments[i].UpdatedAtBlockHeight = sdkCtx.BlockHeight()
 
 			return keeperutil.Save(st, k.cdc, key, contract)
 		}

@@ -78,9 +78,10 @@ var _ = Describe("attest upload user smart contract", func() {
 		consensusMsg, err := codectypes.NewAnyWithValue(&types.Message{
 			Action: &types.Message_UploadUserSmartContract{
 				UploadUserSmartContract: &types.UploadUserSmartContract{
-					Id:         1,
-					ValAddress: valAddr,
-					Retries:    retries,
+					Id:          1,
+					ValAddress:  valAddr,
+					BlockHeight: ctx.BlockHeight(),
+					Retries:     retries,
 				},
 			},
 		})
