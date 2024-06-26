@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/palomachain/paloma/testutil/sample"
+	"github.com/palomachain/paloma/util/blocks"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/stretchr/testify/require"
 )
@@ -221,6 +222,55 @@ func TestUserSmartContracts(t *testing.T) {
 		require.NoError(t, err)
 
 		contracts, err := k.UserSmartContracts(ctx, valAddr1)
+		require.NoError(t, err)
+		require.Empty(t, contracts)
+	})
+}
+
+func TestPurgeUserSmartContracts(t *testing.T) {
+	k, ctx, _ := buildKeeper(t)
+	valAddr1 := "palomavaloper1tsu8nthuspe4zlkejtj3v27rtq8qz7q6983zt2"
+
+	ctx = ctx.WithBlockHeight(10000)
+
+	contract := &types.UserSmartContract{
+		ValAddress:       valAddr1,
+		Title:            "Test Contract",
+		Bytecode:         "0x01",
+		ConstructorInput: "0x00",
+		AbiJson:          sample.SimpleABI,
+	}
+
+	_, err := k.SaveUserSmartContract(ctx, valAddr1, contract)
+	require.NoError(t, err)
+
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + blocks.MonthlyHeight)
+
+	_, err = k.SaveUserSmartContract(ctx, valAddr1, contract)
+	require.NoError(t, err)
+
+	contracts, err := k.UserSmartContracts(ctx, valAddr1)
+	require.NoError(t, err)
+	require.Len(t, contracts, 2)
+
+	t.Run("Should remove only one contract", func(t *testing.T) {
+		ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 100)
+
+		err = k.PurgeStaleUserSmartContracts(ctx)
+		require.NoError(t, err)
+
+		contracts, err = k.UserSmartContracts(ctx, valAddr1)
+		require.NoError(t, err)
+		require.Len(t, contracts, 1)
+	})
+
+	t.Run("Should remove the remaining contract", func(t *testing.T) {
+		ctx = ctx.WithBlockHeight(ctx.BlockHeight() + blocks.MonthlyHeight)
+
+		err = k.PurgeStaleUserSmartContracts(ctx)
+		require.NoError(t, err)
+
+		contracts, err = k.UserSmartContracts(ctx, valAddr1)
 		require.NoError(t, err)
 		require.Empty(t, contracts)
 	})
