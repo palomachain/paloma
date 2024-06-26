@@ -1,7 +1,5 @@
 package types
 
-import fmt "fmt"
-
 const (
 	// ModuleName defines the module name
 	ModuleName = "evm"
@@ -18,17 +16,8 @@ const (
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_evm"
 
-	UserSmartContractStoreKeyPrefix = "user-smart-contract-"
-	UserSmartContractKeyPrefix      = "contract-"
+	UserSmartContractStoreKeyPrefix = "user-smart-contract"
 )
-
-func UserSmartContractStoreKey(addr string) []byte {
-	return []byte(UserSmartContractStoreKeyPrefix + addr)
-}
-
-func UserSmartContractKey(id uint64) []byte {
-	return []byte(fmt.Sprintf("%s-%d", UserSmartContractKeyPrefix, id))
-}
 
 func KeyPrefix(p string) []byte {
 	return []byte(p)
