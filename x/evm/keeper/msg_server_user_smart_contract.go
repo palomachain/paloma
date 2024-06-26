@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (k Keeper) UploadUserSmartContract(
+func (k msgServer) UploadUserSmartContract(
 	ctx context.Context,
 	req *types.MsgUploadUserSmartContractRequest,
 ) (*types.MsgUploadUserSmartContractResponse, error) {
@@ -29,7 +29,7 @@ func (k Keeper) UploadUserSmartContract(
 	}, nil
 }
 
-func (k Keeper) RemoveUserSmartContract(
+func (k msgServer) RemoveUserSmartContract(
 	ctx context.Context,
 	req *types.MsgRemoveUserSmartContractRequest,
 ) (*emptypb.Empty, error) {
@@ -41,7 +41,7 @@ func (k Keeper) RemoveUserSmartContract(
 	return &emptypb.Empty{}, nil
 }
 
-func (k Keeper) DeployUserSmartContract(
+func (k msgServer) DeployUserSmartContract(
 	ctx context.Context,
 	req *types.MsgDeployUserSmartContractRequest,
 ) (*types.MsgDeployUserSmartContractResponse, error) {

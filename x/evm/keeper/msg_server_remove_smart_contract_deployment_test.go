@@ -59,8 +59,10 @@ func addDeploymentToKeeper(t *testing.T, ctx sdk.Context, k *Keeper, mockService
 
 func TestKeeper_RemoveSmartContractDeployment(t *testing.T) {
 	t.Run("removes a smart contract deployment", func(t *testing.T) {
-		k, mockServices, ctx := NewEvmKeeper(t)
-		addDeploymentToKeeper(t, ctx, k, mockServices)
+		keep, mockServices, ctx := NewEvmKeeper(t)
+		addDeploymentToKeeper(t, ctx, keep, mockServices)
+
+		k := msgServer{Keeper: *keep}
 
 		deployments, err := k.AllSmartContractsDeployments(ctx)
 		require.Len(t, deployments, 1)
