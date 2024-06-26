@@ -124,7 +124,7 @@ func CmdDeployUserSmartContract() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "deploy-user-smart-contract [id] [target-chain]",
 		Short: "Deploy a user-defined smart contract to a target chain",
-		Long:  `Deploy a previously uploaded smart contract to a target chain. After issuing the request, the deployment will be listed as "ONGOING" for the specified chain. When deployed successfully, the status changes to "ACTIVE" and the "address" field will contain the contract address on the target chain.`,
+		Long:  `Deploy a previously uploaded smart contract to a target chain. After issuing the request, the deployment will be listed as "IN_FLIGHT" for the specified chain. When deployed successfully, the status changes to "ACTIVE" and the "address" field will contain the contract address on the target chain.`,
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)

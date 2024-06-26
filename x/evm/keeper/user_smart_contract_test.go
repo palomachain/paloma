@@ -65,7 +65,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 		expected := &types.UserSmartContract_Deployment{
 			ChainReferenceId: "test-chain",
-			Status:           types.DeploymentStatus_DEPLOYMENT_STATUS_ONGOING,
+			Status:           types.DeploymentStatus_IN_FLIGHT,
 			Address:          "",
 		}
 
@@ -83,7 +83,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 		expected := &types.UserSmartContract_Deployment{
 			ChainReferenceId: "test-chain",
-			Status:           types.DeploymentStatus_DEPLOYMENT_STATUS_ACTIVE,
+			Status:           types.DeploymentStatus_ACTIVE,
 			Address:          "contract_addr",
 		}
 
@@ -101,7 +101,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 		expected := &types.UserSmartContract_Deployment{
 			ChainReferenceId: "test-chain",
-			Status:           types.DeploymentStatus_DEPLOYMENT_STATUS_ERROR,
+			Status:           types.DeploymentStatus_ERROR,
 			Address:          "",
 		}
 
@@ -119,7 +119,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 		expected := &types.UserSmartContract_Deployment{
 			ChainReferenceId: "test-chain",
-			Status:           types.DeploymentStatus_DEPLOYMENT_STATUS_ONGOING,
+			Status:           types.DeploymentStatus_IN_FLIGHT,
 			Address:          "",
 		}
 
