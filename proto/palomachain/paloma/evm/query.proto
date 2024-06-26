@@ -44,8 +44,8 @@ service Query {
         "/palomachain/paloma/evm/query_get_smart_contract_deployments";
   }
 
-  // Get a list of user smart contracts
-  rpc GetUserSmartContracts(QueryUserSmartContractsRequest)
+  // Queries a list of user smart contracts
+  rpc QueryUserSmartContracts(QueryUserSmartContractsRequest)
       returns (QueryUserSmartContractsResponse) {
     option (google.api.http).get =
         "/palomachain/paloma/evm/query_user_smart_contracts/{val_address}";

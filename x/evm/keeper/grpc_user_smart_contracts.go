@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) GetUserSmartContracts(
+func (k Keeper) QueryUserSmartContracts(
 	ctx context.Context,
 	req *types.QueryUserSmartContractsRequest,
 ) (*types.QueryUserSmartContractsResponse, error) {
