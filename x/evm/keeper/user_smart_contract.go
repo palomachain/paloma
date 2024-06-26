@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/palomachain/paloma/util/blocks"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -134,6 +135,7 @@ func (k Keeper) CreateUserSmartContractDeployment(
 	}
 
 	contract.Deployments = append(contract.Deployments, deployment)
+	contract.UpdatedAtBlockHeight = blockHeight
 
 	if err := keeperutil.Save(st, k.cdc, key, contract); err != nil {
 		return 0, err
@@ -249,9 +251,36 @@ func (k Keeper) finishUserSmartContractDeployment(
 			contract.Deployments[i].Address = contractAddr
 			contract.Deployments[i].UpdatedAtBlockHeight = sdkCtx.BlockHeight()
 
+			contract.UpdatedAtBlockHeight = sdkCtx.BlockHeight()
+
 			return keeperutil.Save(st, k.cdc, key, contract)
 		}
 	}
 
 	return fmt.Errorf("contract %v not found for %v", id, targetChain)
+}
+
+// Remove contracts that are not updated nor deployed for over 30 days
+func (k Keeper) PurgeStaleUserSmartContracts(ctx context.Context) error {
+	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger())
+	logger.Debug("purging stale user smart contracts")
+
+	st := k.userSmartContractStore(ctx)
+	cutoff := sdk.UnwrapSDKContext(ctx).BlockHeight() - blocks.MonthlyHeight
+
+	fn := func(key []byte, contract *types.UserSmartContract) bool {
+		if contract.UpdatedAtBlockHeight < cutoff {
+			// If this contract was last updated before the cutoff height,
+			// remove it
+			logger.WithFields(
+				"val_address", contract.ValAddress,
+				"id", contract.Id,
+			).Debug("removing stale user smart contract")
+			st.Delete(key)
+		}
+
+		return true
+	}
+
+	return keeperutil.IterAllFnc(st, k.cdc, fn)
 }
