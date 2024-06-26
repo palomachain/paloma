@@ -36,7 +36,7 @@ var _ = Describe("attest upload user smart contract", func() {
 	}
 
 	testContract := &types.UserSmartContract{
-		ValAddress:       valAddr,
+		Author:           valAddr,
 		Title:            "Test Contract",
 		AbiJson:          sample.SimpleABI,
 		Bytecode:         "0x01",
@@ -79,7 +79,7 @@ var _ = Describe("attest upload user smart contract", func() {
 			Action: &types.Message_UploadUserSmartContract{
 				UploadUserSmartContract: &types.UploadUserSmartContract{
 					Id:          1,
-					ValAddress:  valAddr,
+					Author:      valAddr,
 					BlockHeight: ctx.BlockHeight(),
 					Retries:     retries,
 				},

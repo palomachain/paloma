@@ -52,7 +52,7 @@ message UploadUserSmartContract {
   string abi = 2;
   bytes constructorInput = 3;
 
-  string val_address = 4 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string author = 4 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   int64 block_height = 5;
   uint64 id = 6;
   uint32 retries = 7;

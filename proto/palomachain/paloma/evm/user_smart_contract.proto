@@ -23,7 +23,7 @@ message UserSmartContract {
     int64 updated_at_block_height = 5;
   }
 
-  string val_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string author = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   uint64 id = 2;
   string title = 3;
   string abi_json = 4;
