@@ -78,7 +78,7 @@ func (a *uploadUserSmartContractAttester) attest(
 
 	// Update user smart contract deployment
 	return a.k.SetUserSmartContractDeploymentActive(ctx, a.action.ValAddress,
-		a.action.Id, a.chainReferenceID, contractAddr.String())
+		a.action.Id, a.action.BlockHeight, a.chainReferenceID, contractAddr.String())
 }
 
 func (a *uploadUserSmartContractAttester) attemptRetry(ctx sdk.Context) {
@@ -89,7 +89,7 @@ func (a *uploadUserSmartContractAttester) attemptRetry(ctx sdk.Context) {
 			"chain-reference-id", a.chainReferenceID)
 
 		err := a.k.SetUserSmartContractDeploymentError(ctx, a.action.ValAddress,
-			a.action.Id, a.chainReferenceID)
+			a.action.Id, a.action.BlockHeight, a.chainReferenceID)
 		if err != nil {
 			a.logger.WithError(err).Error("Failed to set UserSmartContract error")
 		}
