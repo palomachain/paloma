@@ -4,21 +4,50 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"errors"
+	"math/big"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/util/slice"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 )
+
+type Signature struct {
+	V *big.Int
+	R *big.Int
+	S *big.Int
+}
+type CompassValset struct {
+	ValsetId   *big.Int
+	Validators []common.Address
+	Powers     []*big.Int
+}
+type CompassConsensus struct {
+	Valset     CompassValset
+	Signatures []Signature
+
+	originalSignatures [][]byte
+}
+
+type CompassLogicCallArgs struct {
+	Payload              []byte
+	LogicContractAddress common.Address
+}
 
 // TODO: Implement TX verifications
 
-func (m *TransferERC20Ownership) VerifyAgainstTX(ctx context.Context, tx *ethtypes.Transaction) error {
-	return nil
-}
-
-func (m *UploadSmartContract) VerifyAgainstTX(ctx context.Context, tx *ethtypes.Transaction) error {
+func (m *UploadSmartContract) VerifyAgainstTX(
+	ctx context.Context,
+	tx *ethtypes.Transaction,
+	_ consensustypes.QueuedSignedMessageI,
+	_ *Valset,
+	_ *SmartContract,
+) error {
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
 		WithFields("tx_hash", tx.Hash().Hex(), "msg_id", m.Id)
 
@@ -35,11 +64,13 @@ func (m *UploadSmartContract) VerifyAgainstTX(ctx context.Context, tx *ethtypes.
 	if len(m.GetConstructorInput()) > 0 {
 		params, err := contractABI.Constructor.Inputs.Unpack(m.GetConstructorInput())
 		if err != nil {
+			logger.WithError(err).Warn("UploadSmartContract VerifyAgainstTX failed to unpack constructor input")
 			return err
 		}
 
 		input, err := contractABI.Pack("", params...)
 		if err != nil {
+			logger.WithError(err).Warn("UploadSmartContract VerifyAgainstTX failed to pack constructor params")
 			return err
 		}
 
@@ -56,17 +87,76 @@ func (m *UploadSmartContract) VerifyAgainstTX(ctx context.Context, tx *ethtypes.
 	return nil
 }
 
-func (m *SubmitLogicCall) VerifyAgainstTX(ctx context.Context, tx *ethtypes.Transaction) error {
+func (m *SubmitLogicCall) VerifyAgainstTX(
+	ctx context.Context,
+	tx *ethtypes.Transaction,
+	msg consensustypes.QueuedSignedMessageI,
+	valset *Valset,
+	compass *SmartContract,
+) error {
+	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
+		WithFields("tx_hash", tx.Hash().Hex())
+
+	logger.Debug("VerifyAgainstTX SubmitLogicCall")
+
+	if valset == nil || compass == nil {
+		err := errors.New("missing valset or compass for tx verification")
+		logger.WithError(err).Error("failed to verify tx")
+		return err
+	}
+
+	args := []any{
+		BuildCompassConsensus(valset, msg.GetSignData()),
+		CompassLogicCallArgs{
+			LogicContractAddress: common.HexToAddress(m.GetHexContractAddress()),
+			Payload:              m.GetPayload(),
+		},
+		new(big.Int).SetInt64(int64(msg.GetId())),
+		new(big.Int).SetInt64(m.GetDeadline()),
+	}
+
+	contractABI, err := abi.JSON(strings.NewReader(compass.GetAbiJSON()))
+	if err != nil {
+		logger.WithError(err).Warn("SubmitLogicCall VerifyAgainstTX failed to parse compass ABI")
+		return err
+	}
+
+	input, err := contractABI.Pack("submit_logic_call", args...)
+	if err != nil {
+		logger.WithError(err).Warn("SubmitLogicCall VerifyAgainstTX failed to pack ABI")
+		return err
+	}
+
+	logger.WithFields(
+		"data", hex.EncodeToString(tx.Data()),
+		"input", hex.EncodeToString(input),
+		"hash", tx.Hash().Hex(),
+	).Debug("SubmitLogicCall VerifyAgainstTX")
+
+	if !bytes.Equal(tx.Data(), input) {
+		logger.Warn("SubmitLogicCall VerifyAgainstTX failed")
+		return ErrEthTxNotVerified
+	}
+
+	logger.Debug("SubmitLogicCall VerifyAgainstTX success")
+
+	return nil
+}
+
+func (m *UpdateValset) VerifyAgainstTX(
+	ctx context.Context,
+	tx *ethtypes.Transaction,
+	_ consensustypes.QueuedSignedMessageI,
+	_ *Valset,
+	_ *SmartContract,
+) error {
 	liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
 		WithFields(
 			"data", hex.EncodeToString(tx.Data()),
 			"hash", tx.Hash().Hex(),
 		).
-		Debug("VerifyAgainstTX SubmitLogicCall")
-	return nil
-}
+		Debug("UpdateValset VerifyAgainstTX")
 
-func (m *UpdateValset) VerifyAgainstTX(ctx context.Context, tx *ethtypes.Transaction, smartContract *SmartContract) error {
 	// // TODO
 	// arguments := abi.Arguments{
 	// 	// addresses
@@ -79,7 +169,55 @@ func (m *UpdateValset) VerifyAgainstTX(ctx context.Context, tx *ethtypes.Transac
 	// 	{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
 	// }
 
-	// contractABI, err := abi.JSON(strings.NewReader(smartContract.GetAbiJSON()))
-	// input, err := contractABI.Pack("", smartContract.Ge, types.TransformValsetToABIValset(valset))
 	return nil
+}
+
+func BuildCompassConsensus(
+	v *Valset,
+	signatures []*consensustypes.SignData,
+) CompassConsensus {
+	signatureMap := slice.MakeMapKeys(
+		signatures,
+		func(sig *consensustypes.SignData) string {
+			return sig.ExternalAccountAddress
+		},
+	)
+	con := CompassConsensus{
+		Valset: TransformValsetToCompassValset(v),
+	}
+
+	for i := range v.GetValidators() {
+		sig, ok := signatureMap[v.GetValidators()[i]]
+		if !ok {
+			con.Signatures = append(con.Signatures,
+				Signature{
+					V: big.NewInt(0),
+					R: big.NewInt(0),
+					S: big.NewInt(0),
+				})
+		} else {
+			con.Signatures = append(con.Signatures,
+				Signature{
+					V: new(big.Int).SetInt64(int64(sig.Signature[64]) + 27),
+					R: new(big.Int).SetBytes(sig.Signature[:32]),
+					S: new(big.Int).SetBytes(sig.Signature[32:64]),
+				},
+			)
+		}
+		con.originalSignatures = append(con.originalSignatures, sig.Signature)
+	}
+
+	return con
+}
+
+func TransformValsetToCompassValset(val *Valset) CompassValset {
+	return CompassValset{
+		Validators: slice.Map(val.GetValidators(), func(s string) common.Address {
+			return common.HexToAddress(s)
+		}),
+		Powers: slice.Map(val.GetPowers(), func(p uint64) *big.Int {
+			return big.NewInt(int64(p))
+		}),
+		ValsetId: big.NewInt(int64(val.GetValsetID())),
+	}
 }

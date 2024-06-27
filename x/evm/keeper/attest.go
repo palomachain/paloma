@@ -107,6 +107,7 @@ func (k Keeper) routerAttester(sdkCtx sdk.Context, q consensus.Queuer, msg conse
 	logger := k.Logger(sdkCtx).WithFields("chain-reference-id", chainReferenceID)
 
 	params := attestionParameters{
+		originalMessage:  msg,
 		msgID:            msg.GetId(),
 		chainReferenceID: chainReferenceID,
 		rawEvidence:      winner,
@@ -143,9 +144,11 @@ func publishMessageAttestedEvent(ctx context.Context, k *Keeper, msgID uint64, a
 
 func attestTransactionIntegrity(
 	ctx context.Context,
+	msg consensustypes.QueuedSignedMessageI,
 	k *Keeper,
 	proof *types.TxExecutedProof,
-	verifyTx func(ctx context.Context, tx *ethtypes.Transaction) error,
+	chainReferenceID string,
+	verifyTx func(context.Context, *ethtypes.Transaction, consensustypes.QueuedSignedMessageI, *types.Valset, *types.SmartContract) error,
 ) (*ethtypes.Transaction, error) {
 	// check if correct thing was called
 	tx, err := proof.GetTX()
@@ -157,7 +160,23 @@ func attestTransactionIntegrity(
 		// punish those validators!!
 		return nil, ErrUnexpectedError.JoinErrorf("transaction %s is already processed", tx.Hash())
 	}
-	err = verifyTx(ctx, tx)
+
+	compass, err := k.GetLastCompassContract(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var valset types.Valset
+	snapshot, err := k.Valset.GetLatestSnapshotOnChain(ctx, chainReferenceID)
+	// A snapshot may not yet exist if the chain is just being added, but we
+	// need to continue in case we're attesting to the initial compass
+	// deployment
+	if err == nil {
+		logger := liblog.FromSDKLogger(k.Logger(ctx))
+		valset = transformSnapshotToCompass(snapshot, chainReferenceID, logger)
+	}
+
+	err = verifyTx(ctx, tx, msg, &valset, compass)
 	if err != nil {
 		// passed in transaction doesn't seem to be created from this smart contract
 		return nil, fmt.Errorf("tx failed to verify: %w", err)

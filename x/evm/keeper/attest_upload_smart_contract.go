@@ -14,10 +14,12 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
 type attestionParameters struct {
+	originalMessage  consensustypes.QueuedSignedMessageI
 	rawEvidence      any
 	msg              *types.Message
 	chainReferenceID string
@@ -65,7 +67,8 @@ func (a *uploadSmartContractAttester) Execute(ctx sdk.Context) error {
 }
 
 func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.TxExecutedProof) error {
-	tx, err := attestTransactionIntegrity(ctx, a.k, evidence, a.action.VerifyAgainstTX)
+	tx, err := attestTransactionIntegrity(ctx, a.originalMessage, a.k, evidence,
+		a.chainReferenceID, a.action.VerifyAgainstTX)
 	if err != nil {
 		a.logger.WithError(err).Error("Failed to verify transaction integrity.")
 		return err
