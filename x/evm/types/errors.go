@@ -9,7 +9,8 @@ import (
 
 // x/evm module sentinel errors
 var (
-	ErrSample = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrSample  = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrInvalid = sdkerrors.Register(ModuleName, 1200, "invalid")
 )
 
 var (

@@ -1,24 +1,17 @@
 package types
 
-const (
-	// dailyBlocks estimated with a block time of 1.5s
-	dailyBlocks                      = 57_600
-	BridgeTransferLimitDailyBlocks   = dailyBlocks
-	BridgeTransferLimitWeeklyBlocks  = dailyBlocks * 7
-	BridgeTransferLimitMonthlyBlocks = dailyBlocks * 30
-	BridgeTransferLimitYearlyBlocks  = dailyBlocks * 365
-)
+import "github.com/palomachain/paloma/util/blocks"
 
 func (m *BridgeTransferLimit) BlockLimit() int64 {
 	switch m.LimitPeriod {
 	case LimitPeriod_DAILY:
-		return BridgeTransferLimitDailyBlocks
+		return blocks.DailyHeight
 	case LimitPeriod_WEEKLY:
-		return BridgeTransferLimitWeeklyBlocks
+		return blocks.WeeklyHeight
 	case LimitPeriod_MONTHLY:
-		return BridgeTransferLimitMonthlyBlocks
+		return blocks.MonthlyHeight
 	case LimitPeriod_YEARLY:
-		return BridgeTransferLimitYearlyBlocks
+		return blocks.YearlyHeight
 	default:
 		return 0
 	}

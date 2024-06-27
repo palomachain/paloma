@@ -34,7 +34,10 @@ var (
 	_ appmodule.AppModule       = AppModule{}
 )
 
-const updateXChainsReferencesPeriod = 10_000
+const (
+	updateXChainsReferencesPeriod      = 10_000
+	purgeStaleUserSmartContractsPeriod = 10_000
+)
 
 // ----------------------------------------------------------------------------
 // AppModuleBasic
@@ -182,13 +185,22 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 
 	if sdkCtx.BlockHeight()%300 == 0 {
 		if err := am.scheduleExternalBalances(sdkCtx); err != nil {
-			liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error scheduling external balances updates")
+			liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).
+				Error("Error scheduling external balances updates")
 		}
 	}
 
 	if sdkCtx.BlockHeight()%updateXChainsReferencesPeriod == 0 {
 		if err := am.scheduleReferenceBlocks(sdkCtx); err != nil {
-			liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).Error("Error scheduling reference block updates")
+			liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).
+				Error("Error scheduling reference block updates")
+		}
+	}
+
+	if sdkCtx.BlockHeight()%purgeStaleUserSmartContractsPeriod == 0 {
+		if err := am.keeper.PurgeStaleUserSmartContracts(ctx); err != nil {
+			liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).
+				Error("Error purging stale user smart contracts")
 		}
 	}
 

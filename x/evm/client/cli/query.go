@@ -28,5 +28,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 
 	cmd.AddCommand(CmdQueryGetSmartContractDeployments())
 
+	cmd.AddCommand(CmdQueryUserSmartContracts())
+
 	return cmd
 }

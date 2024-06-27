@@ -17,6 +17,10 @@ func (m *UploadSmartContract) VerifyAgainstTX(tx *ethtypes.Transaction) error {
 	return nil
 }
 
+func (m *UploadUserSmartContract) VerifyAgainstTX(tx *ethtypes.Transaction) error {
+	return nil
+}
+
 func (m *SubmitLogicCall) VerifyAgainstTX(tx *ethtypes.Transaction) error {
 	return nil
 }

@@ -64,6 +64,12 @@ func (_m *Message_UploadSmartContract) keccak256(orig *Message, nonce uint64) []
 	return crypto.Keccak256(append(m.GetBytecode()[:], uint64ToByte(nonce)...))
 }
 
+func (_m *Message_UploadUserSmartContract) keccak256(orig *Message, nonce uint64) []byte {
+	m := _m.UploadUserSmartContract
+
+	return crypto.Keccak256(append(m.GetBytecode()[:], uint64ToByte(nonce)...))
+}
+
 func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte {
 	m := _m.SubmitLogicCall
 	// logic_call((address,bytes),uint256,uint256)
