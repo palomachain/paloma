@@ -437,7 +437,9 @@ var _ = g.Describe("attest router", func() {
 					g.BeforeEach(func() {
 						consensusMsg.Action = &types.Message_UploadSmartContract{
 							UploadSmartContract: &types.UploadSmartContract{
-								Id: 1,
+								Id:       1,
+								Abi:      contractAbi,
+								Bytecode: common.FromHex(contractBytecodeStr),
 							},
 						}
 						address, err := sdk.ValAddressFromBech32("cosmosvaloper1pzf9apnk8yw7pjw3v9vtmxvn6guhkslanh8r07")

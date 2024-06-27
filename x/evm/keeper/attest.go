@@ -145,7 +145,7 @@ func attestTransactionIntegrity(
 	ctx context.Context,
 	k *Keeper,
 	proof *types.TxExecutedProof,
-	verifyTx func(tx *ethtypes.Transaction) error,
+	verifyTx func(ctx context.Context, tx *ethtypes.Transaction) error,
 ) (*ethtypes.Transaction, error) {
 	// check if correct thing was called
 	tx, err := proof.GetTX()
@@ -157,7 +157,7 @@ func attestTransactionIntegrity(
 		// punish those validators!!
 		return nil, ErrUnexpectedError.JoinErrorf("transaction %s is already processed", tx.Hash())
 	}
-	err = verifyTx(tx)
+	err = verifyTx(ctx, tx)
 	if err != nil {
 		// passed in transaction doesn't seem to be created from this smart contract
 		return nil, fmt.Errorf("tx failed to verify: %w", err)
