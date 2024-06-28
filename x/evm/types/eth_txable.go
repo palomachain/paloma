@@ -3,7 +3,6 @@ package types
 import (
 	"bytes"
 	"context"
-	"encoding/hex"
 	"errors"
 	"math/big"
 	"strings"
@@ -97,7 +96,7 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
 		WithFields("tx_hash", tx.Hash().Hex())
 
-	logger.Debug("VerifyAgainstTX SubmitLogicCall")
+	logger.Debug("SubmitLogicCall VerifyAgainstTX")
 
 	if valset == nil || compass == nil {
 		err := errors.New("missing valset or compass for tx verification")
@@ -127,12 +126,6 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 		return err
 	}
 
-	logger.WithFields(
-		"data", hex.EncodeToString(tx.Data()),
-		"input", hex.EncodeToString(input),
-		"hash", tx.Hash().Hex(),
-	).Debug("SubmitLogicCall VerifyAgainstTX")
-
 	if !bytes.Equal(tx.Data(), input) {
 		logger.Warn("SubmitLogicCall VerifyAgainstTX failed")
 		return ErrEthTxNotVerified
@@ -146,28 +139,44 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 func (m *UpdateValset) VerifyAgainstTX(
 	ctx context.Context,
 	tx *ethtypes.Transaction,
-	_ consensustypes.QueuedSignedMessageI,
-	_ *Valset,
-	_ *SmartContract,
+	msg consensustypes.QueuedSignedMessageI,
+	valset *Valset,
+	compass *SmartContract,
 ) error {
-	liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
-		WithFields(
-			"data", hex.EncodeToString(tx.Data()),
-			"hash", tx.Hash().Hex(),
-		).
-		Debug("UpdateValset VerifyAgainstTX")
+	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
+		WithFields("tx_hash", tx.Hash().Hex())
 
-	// // TODO
-	// arguments := abi.Arguments{
-	// 	// addresses
-	// 	{Type: whoops.Must(abi.NewType("address[]", "", nil))},
-	// 	// powers
-	// 	{Type: whoops.Must(abi.NewType("uint256[]", "", nil))},
-	// 	// valset id
-	// 	{Type: whoops.Must(abi.NewType("uint256", "", nil))},
-	// 	// turnstone id
-	// 	{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
-	// }
+	logger.Debug("UpdateValset VerifyAgainstTX")
+
+	if valset == nil || compass == nil {
+		err := errors.New("missing valset or compass for tx verification")
+		logger.WithError(err).Error("failed to verify tx")
+		return err
+	}
+
+	args := []any{
+		BuildCompassConsensus(valset, msg.GetSignData()),
+		TransformValsetToCompassValset(m.Valset),
+	}
+
+	contractABI, err := abi.JSON(strings.NewReader(compass.GetAbiJSON()))
+	if err != nil {
+		logger.WithError(err).Warn("UpdateValset VerifyAgainstTX failed to parse compass ABI")
+		return err
+	}
+
+	input, err := contractABI.Pack("update_valset", args...)
+	if err != nil {
+		logger.WithError(err).Warn("UpdateValset VerifyAgainstTX failed to pack ABI")
+		return err
+	}
+
+	if !bytes.Equal(tx.Data(), input) {
+		logger.Warn("SubmitLogicCall VerifyAgainstTX failed")
+		return ErrEthTxNotVerified
+	}
+
+	logger.Debug("UpdateValset VerifyAgainstTX success")
 
 	return nil
 }
@@ -203,8 +212,9 @@ func BuildCompassConsensus(
 					S: new(big.Int).SetBytes(sig.Signature[32:64]),
 				},
 			)
+
+			con.originalSignatures = append(con.originalSignatures, sig.Signature)
 		}
-		con.originalSignatures = append(con.originalSignatures, sig.Signature)
 	}
 
 	return con
