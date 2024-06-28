@@ -12,33 +12,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/slice"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 )
-
-type Signature struct {
-	V *big.Int
-	R *big.Int
-	S *big.Int
-}
-type CompassValset struct {
-	ValsetId   *big.Int
-	Validators []common.Address
-	Powers     []*big.Int
-}
-type CompassConsensus struct {
-	Valset     CompassValset
-	Signatures []Signature
-
-	originalSignatures [][]byte
-}
-
-type CompassLogicCallArgs struct {
-	Payload              []byte
-	LogicContractAddress common.Address
-}
-
-// TODO: Implement TX verifications
 
 func (m *UploadSmartContract) VerifyAgainstTX(
 	ctx context.Context,
@@ -179,55 +154,4 @@ func (m *UpdateValset) VerifyAgainstTX(
 	logger.Debug("UpdateValset VerifyAgainstTX success")
 
 	return nil
-}
-
-func BuildCompassConsensus(
-	v *Valset,
-	signatures []*consensustypes.SignData,
-) CompassConsensus {
-	signatureMap := slice.MakeMapKeys(
-		signatures,
-		func(sig *consensustypes.SignData) string {
-			return sig.ExternalAccountAddress
-		},
-	)
-	con := CompassConsensus{
-		Valset: TransformValsetToCompassValset(v),
-	}
-
-	for i := range v.GetValidators() {
-		sig, ok := signatureMap[v.GetValidators()[i]]
-		if !ok {
-			con.Signatures = append(con.Signatures,
-				Signature{
-					V: big.NewInt(0),
-					R: big.NewInt(0),
-					S: big.NewInt(0),
-				})
-		} else {
-			con.Signatures = append(con.Signatures,
-				Signature{
-					V: new(big.Int).SetInt64(int64(sig.Signature[64]) + 27),
-					R: new(big.Int).SetBytes(sig.Signature[:32]),
-					S: new(big.Int).SetBytes(sig.Signature[32:64]),
-				},
-			)
-
-			con.originalSignatures = append(con.originalSignatures, sig.Signature)
-		}
-	}
-
-	return con
-}
-
-func TransformValsetToCompassValset(val *Valset) CompassValset {
-	return CompassValset{
-		Validators: slice.Map(val.GetValidators(), func(s string) common.Address {
-			return common.HexToAddress(s)
-		}),
-		Powers: slice.Map(val.GetPowers(), func(p uint64) *big.Int {
-			return big.NewInt(int64(p))
-		}),
-		ValsetId: big.NewInt(int64(val.GetValsetID())),
-	}
 }

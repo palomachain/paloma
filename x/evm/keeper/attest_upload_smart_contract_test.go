@@ -3,71 +3,17 @@ package keeper
 import (
 	"math/big"
 
-	sdkmath "cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/palomachain/paloma/util/slice"
 	consensusmocks "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/mock"
 )
-
-func setupValsetKeeper(ms mockedServices, chain *types.AddChainProposal) {
-	type valpower struct {
-		valAddr       sdk.ValAddress
-		power         int64
-		externalChain []*valsettypes.ExternalChainInfo
-	}
-
-	v := ms.ValsetKeeper
-	totalPower := int64(20)
-	valpowers := []valpower{
-		{
-			valAddr: sdk.ValAddress("addr1"),
-			power:   15,
-			externalChain: []*valsettypes.ExternalChainInfo{
-				{
-					ChainType:        "evm",
-					ChainReferenceID: chain.GetChainReferenceID(),
-					Address:          "addr1",
-					Pubkey:           []byte("1"),
-				},
-			},
-		},
-		{
-			valAddr: sdk.ValAddress("addr2"),
-			power:   5,
-			externalChain: []*valsettypes.ExternalChainInfo{
-				{
-					ChainType:        "evm",
-					ChainReferenceID: chain.GetChainReferenceID(),
-					Address:          "addr2",
-					Pubkey:           []byte("1"),
-				},
-			},
-		},
-	}
-
-	v.On("GetCurrentSnapshot", mock.Anything).Return(
-		&valsettypes.Snapshot{
-			Validators: slice.Map(valpowers, func(p valpower) valsettypes.Validator {
-				return valsettypes.Validator{
-					ShareCount:         sdkmath.NewInt(p.power),
-					Address:            p.valAddr,
-					ExternalChainInfos: p.externalChain,
-				}
-			}),
-			TotalShares: sdkmath.NewInt(totalPower),
-		},
-		nil,
-	)
-}
 
 func setupTestChainSupport(
 	ctx sdk.Context,
@@ -125,7 +71,8 @@ var _ = Describe("attest upload smart contract", func() {
 		consensuskeeper = ms.ConsensusKeeper
 		q = consensusmocks.NewQueuer(GinkgoT())
 
-		setupValsetKeeper(ms, testChain)
+		snapshot := createSnapshot(testChain)
+		ms.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(snapshot, nil)
 
 		q.On("ChainInfo").Return("", "eth-main")
 		q.On("Remove", mock.Anything, uint64(123)).Return(nil)

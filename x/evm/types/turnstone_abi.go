@@ -12,7 +12,32 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/palomachain/paloma/util/slice"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 )
+
+type Signature struct {
+	V *big.Int
+	R *big.Int
+	S *big.Int
+}
+
+type CompassValset struct {
+	ValsetId   *big.Int
+	Validators []common.Address
+	Powers     []*big.Int
+}
+
+type CompassConsensus struct {
+	Valset     CompassValset
+	Signatures []Signature
+
+	originalSignatures [][]byte
+}
+
+type CompassLogicCallArgs struct {
+	Payload              []byte
+	LogicContractAddress common.Address
+}
 
 func (_m *Message_UpdateValset) keccak256(orig *Message, _ uint64) []byte {
 	m := _m.UpdateValset
@@ -141,12 +166,47 @@ func (m *ReferenceBlockAttestation) Keccak256(nonce uint64) []byte {
 	return crypto.Keccak256([]byte(m.FromBlockTime.String()))
 }
 
-func TransformValsetToABIValset(val Valset) any {
-	return struct {
-		Validators []common.Address
-		Powers     []*big.Int
-		ValsetId   *big.Int
-	}{
+func BuildCompassConsensus(
+	v *Valset,
+	signatures []*consensustypes.SignData,
+) CompassConsensus {
+	signatureMap := slice.MakeMapKeys(
+		signatures,
+		func(sig *consensustypes.SignData) string {
+			return sig.ExternalAccountAddress
+		},
+	)
+	con := CompassConsensus{
+		Valset: TransformValsetToCompassValset(v),
+	}
+
+	for i := range v.GetValidators() {
+		sig, ok := signatureMap[v.GetValidators()[i]]
+		if !ok {
+			con.Signatures = append(con.Signatures,
+				Signature{
+					V: big.NewInt(0),
+					R: big.NewInt(0),
+					S: big.NewInt(0),
+				})
+		} else {
+			con.Signatures = append(con.Signatures,
+				Signature{
+					V: new(big.Int).SetInt64(int64(sig.Signature[64]) + 27),
+					R: new(big.Int).SetBytes(sig.Signature[:32]),
+					S: new(big.Int).SetBytes(sig.Signature[32:64]),
+				},
+			)
+
+			con.originalSignatures = append(con.originalSignatures, sig.Signature)
+		}
+	}
+
+	return con
+}
+
+func TransformValsetToCompassValset(val *Valset) CompassValset {
+	return CompassValset{
 		Validators: slice.Map(val.GetValidators(), func(s string) common.Address {
 			return common.HexToAddress(s)
 		}),
