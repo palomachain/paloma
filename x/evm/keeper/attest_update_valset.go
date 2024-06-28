@@ -51,8 +51,15 @@ func (a *updateValsetAttester) Execute(ctx sdk.Context) error {
 }
 
 func (a *updateValsetAttester) attest(ctx sdk.Context, evidence *types.TxExecutedProof) error {
+	_, err := attestTransactionIntegrity(ctx, a.originalMessage, a.k, evidence,
+		a.chainReferenceID, a.action.VerifyAgainstTX)
+	if err != nil {
+		a.logger.WithError(err).Error("Failed to verify transaction integrity.")
+		return err
+	}
+
 	// Set the snapshot as active for this chain
-	err := a.k.Valset.SetSnapshotOnChain(ctx, a.action.Valset.ValsetID, a.chainReferenceID)
+	err = a.k.Valset.SetSnapshotOnChain(ctx, a.action.Valset.ValsetID, a.chainReferenceID)
 	if err != nil {
 		// We don't want to break here, so we'll just log the error and continue
 		a.logger.WithError(err).Error("Failed to set snapshot as active for chain", "valsetID", a.action.Valset.ValsetID)

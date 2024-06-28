@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -107,6 +108,7 @@ func (k Keeper) routerAttester(sdkCtx sdk.Context, q consensus.Queuer, msg conse
 	logger := k.Logger(sdkCtx).WithFields("chain-reference-id", chainReferenceID)
 
 	params := attestionParameters{
+		originalMessage:  msg,
 		msgID:            msg.GetId(),
 		chainReferenceID: chainReferenceID,
 		rawEvidence:      winner,
@@ -143,9 +145,11 @@ func publishMessageAttestedEvent(ctx context.Context, k *Keeper, msgID uint64, a
 
 func attestTransactionIntegrity(
 	ctx context.Context,
+	msg consensustypes.QueuedSignedMessageI,
 	k *Keeper,
 	proof *types.TxExecutedProof,
-	verifyTx func(tx *ethtypes.Transaction) error,
+	chainReferenceID string,
+	verifyTx func(context.Context, *ethtypes.Transaction, consensustypes.QueuedSignedMessageI, *types.Valset, *types.SmartContract) error,
 ) (*ethtypes.Transaction, error) {
 	// check if correct thing was called
 	tx, err := proof.GetTX()
@@ -157,7 +161,29 @@ func attestTransactionIntegrity(
 		// punish those validators!!
 		return nil, ErrUnexpectedError.JoinErrorf("transaction %s is already processed", tx.Hash())
 	}
-	err = verifyTx(tx)
+
+	compass, err := k.GetLastCompassContract(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var valset types.Valset
+	snapshot, err := k.Valset.GetLatestSnapshotOnChain(ctx, chainReferenceID)
+	// A snapshot may not yet exist if the chain is just being added, but we
+	// need to continue in case we're attesting to the initial compass
+	// deployment
+	if err != nil {
+		if !errors.Is(err, keeperutil.ErrNotFound) {
+			// There was some other error accessing the store, bail
+			return nil, err
+		}
+	} else {
+		// There was no error, so convert the snapshot to valset
+		logger := liblog.FromSDKLogger(k.Logger(ctx))
+		valset = transformSnapshotToCompass(snapshot, chainReferenceID, logger)
+	}
+
+	err = verifyTx(ctx, tx, msg, &valset, compass)
 	if err != nil {
 		// passed in transaction doesn't seem to be created from this smart contract
 		return nil, fmt.Errorf("tx failed to verify: %w", err)

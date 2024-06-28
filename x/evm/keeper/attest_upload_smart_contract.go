@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -14,10 +15,12 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
 type attestionParameters struct {
+	originalMessage  consensustypes.QueuedSignedMessageI
 	rawEvidence      any
 	msg              *types.Message
 	chainReferenceID string
@@ -65,7 +68,8 @@ func (a *uploadSmartContractAttester) Execute(ctx sdk.Context) error {
 }
 
 func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.TxExecutedProof) error {
-	tx, err := attestTransactionIntegrity(ctx, a.k, evidence, a.action.VerifyAgainstTX)
+	tx, err := attestTransactionIntegrity(ctx, a.originalMessage, a.k, evidence,
+		a.chainReferenceID, a.action.VerifyAgainstTX)
 	if err != nil {
 		a.logger.WithError(err).Error("Failed to verify transaction integrity.")
 		return err
@@ -105,6 +109,26 @@ func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.Tx
 
 	if len(records) > 0 {
 		return a.startTokenRelink(ctx, deployment, records, newCompassAddr, smartContractID)
+	}
+
+	// If this is the first deployment on chain, it won't have a snapshot
+	// assigned to it. We need to assign it a snapshot, or we won't be able to
+	// do SubmitLogicCall or UpdateValset
+	_, err = a.k.Valset.GetLatestSnapshotOnChain(ctx, a.chainReferenceID)
+	if err != nil {
+		if !errors.Is(err, keeperutil.ErrNotFound) {
+			return err
+		}
+
+		snapshot, err := a.k.Valset.GetCurrentSnapshot(ctx)
+		if err != nil {
+			return err
+		}
+
+		err = a.k.Valset.SetSnapshotOnChain(ctx, snapshot.Id, a.chainReferenceID)
+		if err != nil {
+			return err
+		}
 	}
 
 	// We don't have any tokens on the target chain. Set contract as active immediately.

@@ -35,6 +35,15 @@ var (
 		whoops.Assert(tx.UnmarshalBinary(sampleTx1RawBytes))
 		return tx
 	}()
+
+	slcPayload = string(whoops.Must(os.ReadFile("testdata/slc-payload.hex")))
+	slcTx1     = ethcoretypes.NewTx(&ethcoretypes.DynamicFeeTx{
+		Data: common.FromHex(string(whoops.Must(os.ReadFile("testdata/slc-tx-data.hex")))),
+	})
+
+	valsetTx1 = ethcoretypes.NewTx(&ethcoretypes.DynamicFeeTx{
+		Data: common.FromHex(string(whoops.Must(os.ReadFile("testdata/valset-tx-data.hex")))),
+	})
 )
 
 type record struct {
@@ -52,6 +61,53 @@ func TestKeeperGinkgo(t *testing.T) {
 	g.RunSpecs(t, "Metrix")
 }
 
+func createSnapshot(chain *types.AddChainProposal) *valsettypes.Snapshot {
+	type valpower struct {
+		valAddr       sdk.ValAddress
+		power         int64
+		externalChain []*valsettypes.ExternalChainInfo
+	}
+
+	totalPower := int64(20)
+	valpowers := []valpower{
+		{
+			valAddr: sdk.ValAddress("addr1"),
+			power:   15,
+			externalChain: []*valsettypes.ExternalChainInfo{
+				{
+					ChainType:        "evm",
+					ChainReferenceID: chain.GetChainReferenceID(),
+					Address:          "addr1",
+					Pubkey:           []byte("1"),
+				},
+			},
+		},
+		{
+			valAddr: sdk.ValAddress("addr2"),
+			power:   5,
+			externalChain: []*valsettypes.ExternalChainInfo{
+				{
+					ChainType:        "evm",
+					ChainReferenceID: chain.GetChainReferenceID(),
+					Address:          "addr2",
+					Pubkey:           []byte("1"),
+				},
+			},
+		},
+	}
+
+	return &valsettypes.Snapshot{
+		Validators: slice.Map(valpowers, func(p valpower) valsettypes.Validator {
+			return valsettypes.Validator{
+				ShareCount:         sdkmath.NewInt(p.power),
+				Address:            p.valAddr,
+				ExternalChainInfos: p.externalChain,
+			}
+		}),
+		TotalShares: sdkmath.NewInt(totalPower),
+	}
+}
+
 var _ = g.Describe("attest router", func() {
 	var k Keeper
 	var ctx sdk.Context
@@ -64,6 +120,7 @@ var _ = g.Describe("attest router", func() {
 	var evidence []*consensustypes.Evidence
 	var isGoodcase bool
 	var isTxProcessed bool
+	var execTx *ethcoretypes.Transaction
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "eth-main",
 		Title:             "bla",
@@ -92,7 +149,10 @@ var _ = g.Describe("attest router", func() {
 		q = consensusmocks.NewQueuer(t)
 		isGoodcase = true
 		isTxProcessed = true
-		ms.GravityKeeper.On("GetLastObservedGravityNonce", mock.Anything, mock.Anything).Return(uint64(100), nil).Maybe()
+		ms.GravityKeeper.On("GetLastObservedGravityNonce", mock.Anything, mock.Anything).
+			Return(uint64(100), nil).Maybe()
+		ms.ValsetKeeper.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).
+			Return(createSnapshot(newChain), nil).Maybe()
 	})
 
 	g.BeforeEach(func() {
@@ -100,10 +160,19 @@ var _ = g.Describe("attest router", func() {
 	})
 
 	g.JustBeforeEach(func() {
+		sig := make([]byte, 100)
+
 		msg = &consensustypes.QueuedSignedMessage{
 			Id:       123,
 			Msg:      whoops.Must(codectypes.NewAnyWithValue(consensusMsg)),
 			Evidence: evidence,
+			SignData: []*consensustypes.SignData{{
+				ExternalAccountAddress: "addr1",
+				Signature:              sig,
+			}, {
+				ExternalAccountAddress: "addr2",
+				Signature:              sig,
+			}},
 		}
 	})
 
@@ -249,22 +318,6 @@ var _ = g.Describe("attest router", func() {
 
 			g.Context("with a valid evidence", func() {
 				g.BeforeEach(func() {
-					evidence = []*consensustypes.Evidence{
-						{
-							ValAddress: sdk.ValAddress("123"),
-							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(sampleTx1.MarshalBinary())})),
-						},
-						{
-							ValAddress: sdk.ValAddress("456"),
-							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(sampleTx1.MarshalBinary())})),
-						},
-						{
-							ValAddress: sdk.ValAddress("789"),
-							Proof:      whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(sampleTx1.MarshalBinary())})),
-						},
-					}
-				})
-				g.BeforeEach(func() {
 					q.On("ChainInfo").Return("", "eth-main")
 					q.On("Remove", mock.Anything, uint64(123)).Return(nil)
 				})
@@ -277,13 +330,33 @@ var _ = g.Describe("attest router", func() {
 				}
 
 				g.JustBeforeEach(func() {
-					Expect(k.isTxProcessed(ctx, sampleTx1)).To(BeFalse())
+					Expect(k.isTxProcessed(ctx, execTx)).To(BeFalse())
 				})
 
 				g.When("message is SubmitLogicCall", func() {
 					g.BeforeEach(func() {
+						execTx = slcTx1
+						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
+						evidence = []*consensustypes.Evidence{
+							{
+								ValAddress: sdk.ValAddress("123"),
+								Proof:      proof,
+							},
+							{
+								ValAddress: sdk.ValAddress("456"),
+								Proof:      proof,
+							},
+							{
+								ValAddress: sdk.ValAddress("789"),
+								Proof:      proof,
+							},
+						}
 						consensusMsg.Action = &types.Message_SubmitLogicCall{
-							SubmitLogicCall: &types.SubmitLogicCall{},
+							SubmitLogicCall: &types.SubmitLogicCall{
+								HexContractAddress: "0x51eca2efb15afacc612278c71f5edb35986f172f",
+								Abi:                []byte(contractAbi),
+								Payload:            common.FromHex(slcPayload),
+							},
 						}
 					})
 					successfulProcess()
@@ -404,10 +477,28 @@ var _ = g.Describe("attest router", func() {
 
 				g.When("message is UpdateValset", func() {
 					g.BeforeEach(func() {
+						execTx = valsetTx1
+						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
+						evidence = []*consensustypes.Evidence{
+							{
+								ValAddress: sdk.ValAddress("123"),
+								Proof:      proof,
+							},
+							{
+								ValAddress: sdk.ValAddress("456"),
+								Proof:      proof,
+							},
+							{
+								ValAddress: sdk.ValAddress("789"),
+								Proof:      proof,
+							},
+						}
 						consensusMsg.Action = &types.Message_UpdateValset{
 							UpdateValset: &types.UpdateValset{
 								Valset: &types.Valset{
-									ValsetID: 1,
+									ValsetID:   1,
+									Validators: []string{"addr1", "addr2"},
+									Powers:     []uint64{15, 5},
 								},
 							},
 						}
@@ -435,9 +526,27 @@ var _ = g.Describe("attest router", func() {
 
 				g.When("message is UploadSmartContract", func() {
 					g.BeforeEach(func() {
+						execTx = sampleTx1
+						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
+						evidence = []*consensustypes.Evidence{
+							{
+								ValAddress: sdk.ValAddress("123"),
+								Proof:      proof,
+							},
+							{
+								ValAddress: sdk.ValAddress("456"),
+								Proof:      proof,
+							},
+							{
+								ValAddress: sdk.ValAddress("789"),
+								Proof:      proof,
+							},
+						}
 						consensusMsg.Action = &types.Message_UploadSmartContract{
 							UploadSmartContract: &types.UploadSmartContract{
-								Id: 1,
+								Id:       1,
+								Abi:      contractAbi,
+								Bytecode: common.FromHex(contractBytecodeStr),
 							},
 						}
 						address, err := sdk.ValAddressFromBech32("cosmosvaloper1pzf9apnk8yw7pjw3v9vtmxvn6guhkslanh8r07")
@@ -516,7 +625,7 @@ var _ = g.Describe("attest router", func() {
 				})
 
 				g.JustAfterEach(func() {
-					Expect(k.isTxProcessed(ctx, sampleTx1)).To(Equal(isTxProcessed))
+					Expect(k.isTxProcessed(ctx, execTx)).To(Equal(isTxProcessed))
 				})
 			})
 		})

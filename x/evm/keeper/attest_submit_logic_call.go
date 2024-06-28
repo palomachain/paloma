@@ -41,7 +41,8 @@ func (a *submitLogicCallAttester) Execute(ctx sdk.Context) error {
 }
 
 func (a *submitLogicCallAttester) attest(ctx sdk.Context, evidence *types.TxExecutedProof) (err error) {
-	_, err = attestTransactionIntegrity(ctx, a.k, evidence, a.action.VerifyAgainstTX)
+	_, err = attestTransactionIntegrity(ctx, a.originalMessage, a.k, evidence,
+		a.chainReferenceID, a.action.VerifyAgainstTX)
 	if err != nil {
 		a.logger.WithError(err).Error("Failed to verify transaction integrity.")
 		return err
