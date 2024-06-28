@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -171,7 +172,13 @@ func attestTransactionIntegrity(
 	// A snapshot may not yet exist if the chain is just being added, but we
 	// need to continue in case we're attesting to the initial compass
 	// deployment
-	if err == nil {
+	if err != nil {
+		if !errors.Is(err, keeperutil.ErrNotFound) {
+			// There was some other error accessing the store, bail
+			return nil, err
+		}
+	} else {
+		// There was no error, so convert the snapshot to valset
 		logger := liblog.FromSDKLogger(k.Logger(ctx))
 		valset = transformSnapshotToCompass(snapshot, chainReferenceID, logger)
 	}
