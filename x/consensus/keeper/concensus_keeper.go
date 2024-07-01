@@ -12,6 +12,7 @@ import (
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
+	"github.com/palomachain/paloma/x/consensus/keeper/filters"
 	"github.com/palomachain/paloma/x/consensus/types"
 	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -158,7 +159,8 @@ func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string
 		return nil, err
 	}
 
-	// Filter down to just messages for target chains without pending valset updates on them
+	// Filter messages down
+	msgLut := make(map[string]struct{})
 	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
 		cm, err := msg.ConsensusMsg(k.cdc)
 		if err != nil {
@@ -167,36 +169,16 @@ func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string
 			return true
 		}
 
-		_, ok := cm.(*evmtypes.Message)
+		unpackedMsg, ok := cm.(*evmtypes.Message)
 		if !ok {
 			// NO cross chain message, just return true
 			return true
 		}
 
-		// Cross chain message for relaying, return only if no pending valset update on target chain
-		if len(valsetUpdatesOnChain) < 1 {
-			return true
-		}
-
-		// Looks like there is a valset update for the target chain,
-		// only return true if this message is younger than the valset update
-		return msg.GetId() <= valsetUpdatesOnChain[0].GetId()
-	})
-
-	// Filter down to just messages that have neither publicAccessData nor errorData
-	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
-		return msg.GetPublicAccessData() == nil && msg.GetErrorData() == nil
-	})
-
-	// Filter down to just messages assigned to this validator
-	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
-		var unpackedMsg evmtypes.TurnstoneMsg
-		if err := k.cdc.UnpackAny(msg.GetMsg(), &unpackedMsg); err != nil {
-			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("Failed to unpack message.")
-			return false
-		}
-
-		return unpackedMsg.GetAssignee() == valAddress.String()
+		return filters.IsNotBlockedByValset(valsetUpdatesOnChain, msg) &&
+			filters.IsUnprocessed(msg) &&
+			filters.IsOldestMsgPerSender(msgLut, unpackedMsg) &&
+			filters.IsAssignedTo(unpackedMsg, valAddress.String())
 	})
 
 	if len(msgs) > defaultResponseMessageCount {
