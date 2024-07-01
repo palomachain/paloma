@@ -443,6 +443,7 @@ func TestGetMessagesForRelaying(t *testing.T) {
 	)
 
 	val := sdk.ValAddress("validator-1")
+	sender := sdk.ValAddress("sender")
 
 	// message for other validator
 	_, err := k.PutMessageInQueue(ctx, queue, &evmtypes.Message{
@@ -453,10 +454,15 @@ func TestGetMessagesForRelaying(t *testing.T) {
 	require.NoError(t, err)
 
 	// message for test validator
-	_, err = k.PutMessageInQueue(ctx, queue, &evmtypes.Message{
+	oldestMsg, err := k.PutMessageInQueue(ctx, queue, &evmtypes.Message{
 		TurnstoneID:      "abc",
 		ChainReferenceID: chainReferenceID,
 		Assignee:         val.String(),
+		Action: &evmtypes.Message_SubmitLogicCall{
+			SubmitLogicCall: &evmtypes.SubmitLogicCall{
+				SenderAddress: sender,
+			},
+		},
 	}, nil)
 	require.NoError(t, err)
 
@@ -465,6 +471,11 @@ func TestGetMessagesForRelaying(t *testing.T) {
 		TurnstoneID:      "abc",
 		ChainReferenceID: "pending-chain",
 		Assignee:         val.String(),
+		Action: &evmtypes.Message_SubmitLogicCall{
+			SubmitLogicCall: &evmtypes.SubmitLogicCall{
+				SenderAddress: sender,
+			},
+		},
 	}, nil)
 	require.NoError(t, err)
 
@@ -504,6 +515,76 @@ func TestGetMessagesForRelaying(t *testing.T) {
 	require.Len(t, msgs, 2, "validator should get exactly 2 messages, orig SLC & valset update, last message is blocked by valset update")
 	require.Equal(t, origID, msgs[0].GetId(), "should match ID of first message, not second")
 	require.Equal(t, vuID, msgs[1].GetId(), "should match ID of first message, not second")
+
+	// add message for test validator from same sender
+	_, err = k.PutMessageInQueue(ctx, queueWithValsetUpdatesPending, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: chainReferenceID,
+		Assignee:         val.String(),
+		Action: &evmtypes.Message_SubmitLogicCall{
+			SubmitLogicCall: &evmtypes.SubmitLogicCall{
+				SenderAddress: sender,
+			},
+		},
+	}, nil)
+	require.NoError(t, err)
+
+	// add message for other validator from same sender
+	_, err = k.PutMessageInQueue(ctx, queueWithValsetUpdatesPending, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: chainReferenceID,
+		Assignee:         sdk.ValAddress("other-validator").String(),
+		Action: &evmtypes.Message_SubmitLogicCall{
+			SubmitLogicCall: &evmtypes.SubmitLogicCall{
+				SenderAddress: sender,
+			},
+		},
+	}, nil)
+	require.NoError(t, err)
+
+	msgs, err = k.GetMessagesForRelaying(ctx, queueWithValsetUpdatesPending, val)
+	require.NoError(t, err)
+	require.Len(t, msgs, 2, "validator should get exactly 2 messages, orig SLC & valset update, last message is blocked by valset update")
+	require.Equal(t, origID, msgs[0].GetId(), "should match ID of first message, not second")
+	require.Equal(t, vuID, msgs[1].GetId(), "should match ID of first message, not second")
+
+	msgs, err = k.GetMessagesForRelaying(ctx, queueWithValsetUpdatesPending, sdk.ValAddress("other-validator"))
+	require.NoError(t, err)
+	require.Empty(t, msgs, "validator should get exactly 0 message, all blocked by valset update")
+
+	// add message for test validator from same sender on unblocked queue
+	_, err = k.PutMessageInQueue(ctx, queue, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: chainReferenceID,
+		Assignee:         val.String(),
+		Action: &evmtypes.Message_SubmitLogicCall{
+			SubmitLogicCall: &evmtypes.SubmitLogicCall{
+				SenderAddress: sender,
+			},
+		},
+	}, nil)
+	require.NoError(t, err)
+
+	// add message for other validator from same sender on unblocked queue
+	blockedMsg, err := k.PutMessageInQueue(ctx, queue, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: chainReferenceID,
+		Assignee:         sdk.ValAddress("other-validator").String(),
+		Action: &evmtypes.Message_SubmitLogicCall{
+			SubmitLogicCall: &evmtypes.SubmitLogicCall{
+				SenderAddress: sender,
+			},
+		},
+	}, nil)
+	require.NoError(t, err)
+	msgs, err = k.GetMessagesForRelaying(ctx, queue, val)
+	require.NoError(t, err)
+	require.Len(t, msgs, 1, "validator should get exactly 1 messages, last message is blocked by older message for same sender")
+	require.Equal(t, oldestMsg, msgs[0].GetId(), "should match ID of first message, not second")
+	msgs, err = k.GetMessagesForRelaying(ctx, queue, sdk.ValAddress("other-validator"))
+	require.NoError(t, err)
+	require.Len(t, msgs, 1, "validator should get exactly 1 messages, the second msg is blocked by older message for same sender")
+	require.NotEqual(t, blockedMsg, msgs[0].GetId(), "should match ID of first message, not second")
 }
 
 func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
