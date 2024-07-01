@@ -19,7 +19,7 @@ import (
 
 type (
 	Keeper struct {
-		cdc        codec.BinaryCodec
+		cdc        codec.Codec
 		storeKey   store.KVStoreService
 		paramstore paramtypes.Subspace
 
@@ -34,7 +34,7 @@ type (
 )
 
 func NewKeeper(
-	cdc codec.BinaryCodec,
+	cdc codec.Codec,
 	storeKey store.KVStoreService,
 	ps paramtypes.Subspace,
 	valsetKeeper types.ValsetKeeper,
