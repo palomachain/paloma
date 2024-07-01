@@ -1,7 +1,10 @@
 package filters
 
-import evmtypes "github.com/palomachain/paloma/x/evm/types"
-import "testing"
+import (
+	"testing"
+
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
+)
 
 func Test_IsOldestMsgPerSender(t *testing.T) {
 	tests := []struct {
@@ -61,5 +64,4 @@ func Test_IsOldestMsgPerSender(t *testing.T) {
 			}
 		})
 	}
-
 }

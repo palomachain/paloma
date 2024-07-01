@@ -1,7 +1,10 @@
 package filters
 
-import "testing"
-import "github.com/palomachain/paloma/x/consensus/types"
+import (
+	"testing"
+
+	"github.com/palomachain/paloma/x/consensus/types"
+)
 
 func Test_IsUnprocessed(t *testing.T) {
 	tests := []struct {
