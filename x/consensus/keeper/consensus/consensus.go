@@ -3,6 +3,7 @@ package consensus
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -32,7 +33,7 @@ type QueueOptions struct {
 	QueueTypeName         string
 	Sg                    keeperutil.StoreGetter
 	Ider                  keeperutil.IDGenerator
-	Cdc                   codec.BinaryCodec
+	Cdc                   codec.Codec
 	TypeCheck             types.TypeChecker
 	BytesToSignCalculator types.BytesToSignFunc
 	VerifySignature       types.VerifySignatureFunc
@@ -326,7 +327,7 @@ func (c Queue) AddSignature(ctx context.Context, msgID uint64, signData *types.S
 // remove removes the message from the queue.
 func (c Queue) Remove(ctx context.Context, msgID uint64) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	_, err := c.GetMsgByID(sdkCtx, msgID)
+	msg, err := c.GetMsgByID(sdkCtx, msgID)
 	if err != nil {
 		return err
 	}
@@ -342,6 +343,24 @@ func (c Queue) Remove(ctx context.Context, msgID uint64) error {
 		types.ItemRemovedEventID.With(fmt.Sprintf("%d", msgID)),
 		types.ItemRemovedChainReferenceID.With(c.qo.ChainReferenceID),
 	)
+
+	logger := liblog.FromSDKLogger(sdkCtx.Logger()).WithFields("msg-id", msgID)
+
+	msgWithSigs, err := ToMessageWithSignatures(msg, c.qo.Cdc)
+	if err != nil {
+		logger.WithError(err).Error("Failed to convert message with signatures")
+		return nil
+	}
+
+	jsonMsg, err := c.qo.Cdc.MarshalJSON(&msgWithSigs)
+	if err != nil {
+		logger.WithError(err).Error("Failed to marshal message as json")
+		return nil
+	}
+
+	logger.WithFields("msg", json.RawMessage(jsonMsg)).
+		Info("Removed message from queue")
+
 	return nil
 }
 
@@ -441,4 +460,47 @@ func RemoveQueueCompletely(ctx context.Context, cq Queuer) {
 	for _, key := range deleteKeys {
 		store.Delete(key)
 	}
+}
+
+func ToMessageWithSignatures(msg types.QueuedSignedMessageI, cdc codec.BinaryCodec) (types.MessageWithSignatures, error) {
+	origMsg, err := msg.ConsensusMsg(cdc)
+	if err != nil {
+		return types.MessageWithSignatures{}, err
+	}
+	anyMsg, err := codectypes.NewAnyWithValue(origMsg)
+	if err != nil {
+		return types.MessageWithSignatures{}, err
+	}
+
+	var publicAccessData []byte
+
+	if msg.GetPublicAccessData() != nil {
+		publicAccessData = msg.GetPublicAccessData().GetData()
+	}
+
+	var errorData []byte
+
+	if msg.GetErrorData() != nil {
+		errorData = msg.GetErrorData().GetData()
+	}
+
+	approvedMessage := types.MessageWithSignatures{
+		Nonce:            msg.Nonce(),
+		Id:               msg.GetId(),
+		Msg:              anyMsg,
+		BytesToSign:      msg.GetBytesToSign(),
+		SignData:         []*types.ValidatorSignature{},
+		PublicAccessData: publicAccessData,
+		ErrorData:        errorData,
+	}
+	for _, signData := range msg.GetSignData() {
+		approvedMessage.SignData = append(approvedMessage.SignData, &types.ValidatorSignature{
+			ValAddress:             signData.GetValAddress(),
+			Signature:              signData.GetSignature(),
+			ExternalAccountAddress: signData.GetExternalAccountAddress(),
+			PublicKey:              signData.GetPublicKey(),
+		})
+	}
+
+	return approvedMessage, nil
 }

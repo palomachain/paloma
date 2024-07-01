@@ -55,7 +55,7 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 			ChainReferenceID: "bla",
 		},
 	}
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
+	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 
 	msg := &types.SimpleMessage{
 		Sender: "bob",

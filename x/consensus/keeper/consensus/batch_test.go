@@ -56,7 +56,7 @@ func TestBatching(t *testing.T) {
 			ChainType:        types.ChainTypeCosmos,
 			ChainReferenceID: "test",
 		})
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, nil)
+	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
 
 	t.Run("putting messages in", func(t *testing.T) {
 		for i := 0; i < 666; i++ {
