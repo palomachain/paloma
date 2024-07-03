@@ -115,7 +115,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				"gravity",
 			},
 			Added: []string{
-				skywaymoduletypes.ModuleName,
+				"gravity2",
 			},
 		}
 
@@ -127,6 +127,20 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{
 				metrixmoduletypes.ModuleName,
+			},
+		}
+
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
+
+	if upgradeInfo.Name == "v1.15.2" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Deleted: []string{
+				"gravity2",
+			},
+			Added: []string{
+				skywaymoduletypes.ModuleName,
 			},
 		}
 
