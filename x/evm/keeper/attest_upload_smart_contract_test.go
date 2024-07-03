@@ -76,7 +76,7 @@ var _ = Describe("attest upload smart contract", func() {
 
 		q.On("ChainInfo").Return("", "eth-main")
 		q.On("Remove", mock.Anything, uint64(123)).Return(nil)
-		ms.GravityKeeper.On("GetLastObservedGravityNonce", mock.Anything, mock.Anything).
+		ms.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).
 			Return(uint64(100), nil).Maybe()
 
 		err := setupTestChainSupport(ctx, consensuskeeper, testChain, k)

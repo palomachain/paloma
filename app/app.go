@@ -127,10 +127,6 @@ import (
 	evmclient "github.com/palomachain/paloma/x/evm/client"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
-	gravitymodule "github.com/palomachain/paloma/x/gravity"
-	gravityclient "github.com/palomachain/paloma/x/gravity/client"
-	gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
-	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	"github.com/palomachain/paloma/x/metrix"
 	metrixmodulekeeper "github.com/palomachain/paloma/x/metrix/keeper"
 	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
@@ -140,6 +136,10 @@ import (
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
 	schedulermodulekeeper "github.com/palomachain/paloma/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/x/scheduler/types"
+	skywaymodule "github.com/palomachain/paloma/x/skyway"
+	skywayclient "github.com/palomachain/paloma/x/skyway/client"
+	skywaymodulekeeper "github.com/palomachain/paloma/x/skyway/keeper"
+	skywaymoduletypes "github.com/palomachain/paloma/x/skyway/types"
 	treasurymodule "github.com/palomachain/paloma/x/treasury"
 	treasuryclient "github.com/palomachain/paloma/x/treasury/client"
 	treasurymodulekeeper "github.com/palomachain/paloma/x/treasury/keeper"
@@ -160,7 +160,7 @@ const (
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	return []govclient.ProposalHandler{
 		paramsclient.ProposalHandler,
-		gravityclient.ProposalHandler,
+		skywayclient.ProposalHandler,
 		treasuryclient.ProposalHandler,
 		evmclient.ProposalHandler,
 		treasuryclient.ProposalHandler,
@@ -180,7 +180,7 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
-		gravitymoduletypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
+		skywaymoduletypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		ibcfeetypes.ModuleName:         nil,
 		icatypes.ModuleName:            nil,
@@ -250,7 +250,7 @@ type App struct {
 	PalomaKeeper    palomamodulekeeper.Keeper
 	TreasuryKeeper  treasurymodulekeeper.Keeper
 	EvmKeeper       evmmodulekeeper.Keeper
-	GravityKeeper   gravitymodulekeeper.Keeper
+	SkywayKeeper    skywaymodulekeeper.Keeper
 	wasmKeeper      wasmkeeper.Keeper
 	MetrixKeeper    metrixmodulekeeper.Keeper
 
@@ -329,7 +329,7 @@ func New(
 		valsetmoduletypes.StoreKey,
 		treasurymoduletypes.StoreKey,
 		evmmoduletypes.StoreKey,
-		gravitymoduletypes.StoreKey,
+		skywaymoduletypes.StoreKey,
 		consensusparamtypes.StoreKey,
 		crisistypes.StoreKey,
 		metrixmoduletypes.StoreKey,
@@ -586,7 +586,7 @@ func New(
 	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
 	app.EvmKeeper.AddMessageConsensusAttestedListener(&app.MetrixKeeper)
 
-	app.GravityKeeper = gravitymodulekeeper.NewKeeper(
+	app.SkywayKeeper = skywaymodulekeeper.NewKeeper(
 		appCodec,
 		app.AccountKeeper,
 		app.StakingKeeper,
@@ -596,7 +596,7 @@ func New(
 		app.TransferKeeper,
 		app.EvmKeeper,
 		app.ConsensusKeeper,
-		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
+		skywaymodulekeeper.NewSkywayStoreGetter(keys[skywaymoduletypes.StoreKey]),
 		authorityAddress,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
 	)
@@ -604,7 +604,7 @@ func New(
 	// this abomination.
 	// TODO: Refactor app to use pointer values only instead
 	// of keeping value copies and blowing up the stack.
-	app.EvmKeeper.Gravity = app.GravityKeeper
+	app.EvmKeeper.Skyway = app.SkywayKeeper
 	app.ConsensusKeeper.LateInject(app.EvmKeeper)
 
 	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
@@ -661,7 +661,7 @@ func New(
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(evmmoduletypes.RouterKey, evm.NewReferenceChainReferenceIDProposalHandler(app.EvmKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
-		AddRoute(gravitymoduletypes.RouterKey, gravitymodulekeeper.NewGravityProposalHandler(app.GravityKeeper)).
+		AddRoute(skywaymoduletypes.RouterKey, skywaymodulekeeper.NewSkywayProposalHandler(app.SkywayKeeper)).
 		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper)).
 		AddRoute(valsetmoduletypes.RouterKey, valsetmodule.NewValsetProposalHandler(app.ValsetKeeper))
 
@@ -775,7 +775,7 @@ func New(
 	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
-	gravityModule := gravitymodule.NewAppModule(appCodec, app.GravityKeeper, app.BankKeeper, app.GetSubspace(gravitymoduletypes.ModuleName))
+	skywayModule := skywaymodule.NewAppModule(appCodec, app.SkywayKeeper, app.BankKeeper, app.GetSubspace(skywaymoduletypes.ModuleName))
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	metrixModule := metrix.NewAppModule(appCodec, app.MetrixKeeper)
 
@@ -806,7 +806,7 @@ func New(
 		consensusModule,
 		evmModule,
 		valsetModule,
-		gravityModule,
+		skywayModule,
 		palomaModule,
 		treasuryModule,
 		metrixModule,
@@ -858,7 +858,7 @@ func New(
 		palomamoduletypes.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
-		gravitymoduletypes.ModuleName,
+		skywaymoduletypes.ModuleName,
 		treasurymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
@@ -891,7 +891,7 @@ func New(
 		palomamoduletypes.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
-		gravitymoduletypes.ModuleName,
+		skywaymoduletypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
@@ -933,7 +933,7 @@ func New(
 		ibcfeetypes.ModuleName,
 		evmmoduletypes.ModuleName,
 		wasmtypes.ModuleName,
-		gravitymoduletypes.ModuleName,
+		skywaymoduletypes.ModuleName,
 		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		metrixmoduletypes.ModuleName,
@@ -1207,7 +1207,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
-	paramsKeeper.Subspace(gravitymoduletypes.ModuleName).WithKeyTable(gravitymoduletypes.ParamKeyTable())
+	paramsKeeper.Subspace(skywaymoduletypes.ModuleName).WithKeyTable(skywaymoduletypes.ParamKeyTable())
 	paramsKeeper.Subspace(metrixmoduletypes.ModuleName)
 
 	paramsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)

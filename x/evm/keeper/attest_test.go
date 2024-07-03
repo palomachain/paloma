@@ -113,7 +113,7 @@ var _ = g.Describe("attest router", func() {
 	var ctx sdk.Context
 	var q *consensusmocks.Queuer
 	var v *evmmocks.ValsetKeeper
-	var gk *evmmocks.GravityKeeper
+	var gk *evmmocks.SkywayKeeper
 	var consensukeeper *evmmocks.ConsensusKeeper
 	var msg *consensustypes.QueuedSignedMessage
 	var consensusMsg *types.Message
@@ -144,12 +144,12 @@ var _ = g.Describe("attest router", func() {
 		ctx = _ctx
 		k = *kpr
 		v = ms.ValsetKeeper
-		gk = ms.GravityKeeper
+		gk = ms.SkywayKeeper
 		consensukeeper = ms.ConsensusKeeper
 		q = consensusmocks.NewQueuer(t)
 		isGoodcase = true
 		isTxProcessed = true
-		ms.GravityKeeper.On("GetLastObservedGravityNonce", mock.Anything, mock.Anything).
+		ms.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).
 			Return(uint64(100), nil).Maybe()
 		ms.ValsetKeeper.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).
 			Return(createSnapshot(newChain), nil).Maybe()

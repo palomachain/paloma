@@ -63,13 +63,13 @@ import (
 	"github.com/palomachain/paloma/x/evm"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
-	gravitymodulekeeper "github.com/palomachain/paloma/x/gravity/keeper"
-	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	"github.com/palomachain/paloma/x/paloma"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	"github.com/palomachain/paloma/x/scheduler"
 	"github.com/palomachain/paloma/x/scheduler/keeper"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
+	skywaymodulekeeper "github.com/palomachain/paloma/x/skyway/keeper"
+	skywaymoduletypes "github.com/palomachain/paloma/x/skyway/types"
 	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	"github.com/palomachain/paloma/x/valset"
 	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
@@ -117,7 +117,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		valsetmoduletypes.StoreKey,
 		treasurymoduletypes.StoreKey,
 		evmmoduletypes.StoreKey,
-		gravitymoduletypes.StoreKey,
+		skywaymoduletypes.StoreKey,
 	)
 	cdc := moduletestutil.MakeTestEncodingConfig(
 		auth.AppModuleBasic{},
@@ -302,7 +302,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	gravityKeeper := gravitymodulekeeper.NewKeeper(
+	skywayKeeper := skywaymodulekeeper.NewKeeper(
 		appCodec,
 		accountKeeper,
 		stakingKeeper,
@@ -312,11 +312,11 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		transferKeeper,
 		evmKeeper,
 		consensusKeeper,
-		gravitymodulekeeper.NewGravityStoreGetter(keys[gravitymoduletypes.StoreKey]),
+		skywaymodulekeeper.NewSkywayStoreGetter(keys[skywaymoduletypes.StoreKey]),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
 	)
-	evmKeeper.Gravity = gravityKeeper
+	evmKeeper.Skyway = skywayKeeper
 	consensusRegistry.Add(
 		evmKeeper,
 	)

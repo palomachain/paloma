@@ -1,0 +1,32 @@
+syntax = "proto3";
+package palomachain.paloma.skyway;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/bank/v1beta1/bank.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/skyway/types";
+
+// BridgeValidator represents a validator's ETH address and its power
+message BridgeValidator {
+  uint64 power = 1;
+  string ethereum_address = 2;
+}
+
+// LastObservedEthereumBlockHeight stores the last observed
+// Ethereum block height along with the Cosmos block height that
+// it was observed at. These two numbers can be used to project
+// outward and always produce batches with timeouts in the future
+// even if no Ethereum block height has been relayed for a long time
+message LastObservedEthereumBlockHeight {
+  uint64 paloma_block_height = 1;
+  uint64 ethereum_block_height = 2;
+}
+
+// This records the relationship between an ERC20 token and the denom
+// of the corresponding Cosmos originated asset
+message ERC20ToDenom {
+  string erc20 = 1;
+  string denom = 2;
+  string chain_reference_id = 3;
+}

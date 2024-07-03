@@ -1,7 +1,7 @@
-# Gravity Bridge Tax
+# Skyway Bridge Tax
 
 All outbound transactions from the bridge to the target EVM and other chains pay
-a tax on the gravity bridge. This tax is added to the cost of the transfer.
+a tax on the skyway bridge. This tax is added to the cost of the transfer.
 A governance vote is needed to define the tax rate, as well as a list of tokens
 and addresses that are exempt from the bridge tax.
 

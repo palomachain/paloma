@@ -55,8 +55,8 @@ type ERC20Record interface {
 	GetChainReferenceId() string
 }
 
-//go:generate mockery --name=GravityKeeper
-type GravityKeeper interface {
-	GetLastObservedGravityNonce(ctx context.Context, chainReferenceID string) (uint64, error)
+//go:generate mockery --name=SkywayKeeper
+type SkywayKeeper interface {
+	GetLastObservedSkywayNonce(ctx context.Context, chainReferenceID string) (uint64, error)
 	CastAllERC20ToDenoms(ctx context.Context) ([]ERC20Record, error)
 }

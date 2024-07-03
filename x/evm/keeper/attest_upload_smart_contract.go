@@ -101,7 +101,7 @@ func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.Tx
 		return err
 	}
 
-	records, err := a.k.Gravity.CastAllERC20ToDenoms(ctx)
+	records, err := a.k.Skyway.CastAllERC20ToDenoms(ctx)
 	if err != nil {
 		a.logger.WithError(err).Error("Failed to extract ERC20 records.")
 		return err

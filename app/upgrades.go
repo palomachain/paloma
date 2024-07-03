@@ -18,8 +18,8 @@ import (
 	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
-	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
+	skywaymoduletypes "github.com/palomachain/paloma/x/skyway/types"
 )
 
 var minCommissionRate = math.LegacyMustNewDecFromStr("0.05")
@@ -101,7 +101,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 	if (upgradeInfo.Name == "v1.5.0" || upgradeInfo.Name == "v1.6.1") && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{
-				gravitymoduletypes.ModuleName,
+				"gravity",
 			},
 		}
 
@@ -115,7 +115,7 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 				"gravity",
 			},
 			Added: []string{
-				gravitymoduletypes.ModuleName,
+				skywaymoduletypes.ModuleName,
 			},
 		}
 
