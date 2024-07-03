@@ -77,8 +77,8 @@ import (
 	"github.com/palomachain/paloma/x/evm"
 	evmkeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmtypes "github.com/palomachain/paloma/x/evm/types"
-	"github.com/palomachain/paloma/x/skyway/types"
 	"github.com/palomachain/paloma/x/scheduler"
+	"github.com/palomachain/paloma/x/skyway/types"
 	"github.com/palomachain/paloma/x/valset"
 	valsetkeeper "github.com/palomachain/paloma/x/valset/keeper"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -264,7 +264,7 @@ var (
 
 // TestInput stores the various keepers required to test skyway
 type TestInput struct {
-	SkywayKeeper     Keeper
+	SkywayKeeper      Keeper
 	AccountKeeper     authkeeper.AccountKeeper
 	StakingKeeper     stakingkeeper.Keeper
 	ValsetKeeper      valsetkeeper.Keeper
@@ -276,7 +276,7 @@ type TestInput struct {
 	Context           context.Context
 	Marshaler         codec.Codec
 	LegacyAmino       *codec.LegacyAmino
-	SkywayStoreKey   *storetypes.KVStoreKey
+	SkywayStoreKey    *storetypes.KVStoreKey
 	EvmKeeper         evmkeeper.Keeper
 }
 
@@ -803,7 +803,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 	//require.NoError(t, err)
 
 	testInput := TestInput{
-		SkywayKeeper:     k,
+		SkywayKeeper:      k,
 		AccountKeeper:     accountKeeper,
 		StakingKeeper:     *stakingKeeper,
 		SlashingKeeper:    slashingKeeper,

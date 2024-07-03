@@ -33,7 +33,7 @@ func setOrchestratorOnClaims(orch sdk.AccAddress, claims ...EthereumClaim) (ret 
 // The only field which MUST NOT affect ClaimHash is Orchestrator
 func TestMsgSendToPalomaClaimHash(t *testing.T) {
 	base := MsgSendToPalomaClaim{
-		SkywayNonce:   0,
+		SkywayNonce:    0,
 		EthBlockHeight: 0,
 		TokenContract:  "",
 		Amount:         math.Int{},
@@ -73,7 +73,7 @@ func TestMsgSendToPalomaClaimHash(t *testing.T) {
 // The only field which MUST NOT affect ClaimHash is Orchestrator
 func TestMsgBatchSendToEthClaimHash(t *testing.T) {
 	base := MsgBatchSendToEthClaim{
-		SkywayNonce:   0,
+		SkywayNonce:    0,
 		EthBlockHeight: 0,
 		BatchNonce:     0,
 		TokenContract:  "",

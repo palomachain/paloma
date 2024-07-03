@@ -312,7 +312,7 @@ type MsgSendToPalomaClaim struct {
 	Orchestrator     string                `protobuf:"bytes,7,opt,name=orchestrator,proto3" json:"orchestrator,omitempty"`
 	ChainReferenceId string                `protobuf:"bytes,8,opt,name=chain_reference_id,json=chainReferenceId,proto3" json:"chain_reference_id,omitempty"`
 	Metadata         types1.MsgMetadata    `protobuf:"bytes,9,opt,name=metadata,proto3" json:"metadata"`
-	SkywayNonce     uint64                `protobuf:"varint,10,opt,name=skyway_nonce,json=skywayNonce,proto3" json:"skyway_nonce,omitempty"`
+	SkywayNonce      uint64                `protobuf:"varint,10,opt,name=skyway_nonce,json=skywayNonce,proto3" json:"skyway_nonce,omitempty"`
 }
 
 func (m *MsgSendToPalomaClaim) Reset()         { *m = MsgSendToPalomaClaim{} }
@@ -466,7 +466,7 @@ type MsgBatchSendToEthClaim struct {
 	ChainReferenceId string             `protobuf:"bytes,5,opt,name=chain_reference_id,json=chainReferenceId,proto3" json:"chain_reference_id,omitempty"`
 	Orchestrator     string             `protobuf:"bytes,6,opt,name=orchestrator,proto3" json:"orchestrator,omitempty"`
 	Metadata         types1.MsgMetadata `protobuf:"bytes,7,opt,name=metadata,proto3" json:"metadata"`
-	SkywayNonce     uint64             `protobuf:"varint,8,opt,name=skyway_nonce,json=skywayNonce,proto3" json:"skyway_nonce,omitempty"`
+	SkywayNonce      uint64             `protobuf:"varint,8,opt,name=skyway_nonce,json=skywayNonce,proto3" json:"skyway_nonce,omitempty"`
 }
 
 func (m *MsgBatchSendToEthClaim) Reset()         { *m = MsgBatchSendToEthClaim{} }
