@@ -25,13 +25,15 @@ import (
 )
 
 // Suppress "imported and not used" errors
-var _ codes.Code
-var _ io.Reader
-var _ status.Status
-var _ = runtime.String
-var _ = utilities.NewDoubleArray
-var _ = descriptor.ForMessage
-var _ = metadata.Join
+var (
+	_ codes.Code
+	_ io.Reader
+	_ status.Status
+	_ = runtime.String
+	_ = utilities.NewDoubleArray
+	_ = descriptor.ForMessage
+	_ = metadata.Join
+)
 
 func request_Query_Params_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryParamsRequest
@@ -39,7 +41,6 @@ func request_Query_Params_0(ctx context.Context, marshaler runtime.Marshaler, cl
 
 	msg, err := client.Params(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_Query_Params_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -48,12 +49,9 @@ func local_request_Query_Params_0(ctx context.Context, marshaler runtime.Marshal
 
 	msg, err := server.Params(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_Query_QueuedMessagesForSigning_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
+var filter_Query_QueuedMessagesForSigning_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 
 func request_Query_QueuedMessagesForSigning_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryQueuedMessagesForSigningRequest
@@ -68,7 +66,6 @@ func request_Query_QueuedMessagesForSigning_0(ctx context.Context, marshaler run
 
 	msg, err := client.QueuedMessagesForSigning(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_Query_QueuedMessagesForSigning_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -84,12 +81,9 @@ func local_request_Query_QueuedMessagesForSigning_0(ctx context.Context, marshal
 
 	msg, err := server.QueuedMessagesForSigning(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_Query_QueuedMessagesForRelaying_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
+var filter_Query_QueuedMessagesForRelaying_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 
 func request_Query_QueuedMessagesForRelaying_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryQueuedMessagesForRelayingRequest
@@ -104,7 +98,6 @@ func request_Query_QueuedMessagesForRelaying_0(ctx context.Context, marshaler ru
 
 	msg, err := client.QueuedMessagesForRelaying(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_Query_QueuedMessagesForRelaying_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -120,12 +113,9 @@ func local_request_Query_QueuedMessagesForRelaying_0(ctx context.Context, marsha
 
 	msg, err := server.QueuedMessagesForRelaying(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_Query_QueuedMessagesForAttesting_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
+var filter_Query_QueuedMessagesForAttesting_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 
 func request_Query_QueuedMessagesForAttesting_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryQueuedMessagesForAttestingRequest
@@ -140,7 +130,6 @@ func request_Query_QueuedMessagesForAttesting_0(ctx context.Context, marshaler r
 
 	msg, err := client.QueuedMessagesForAttesting(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_Query_QueuedMessagesForAttesting_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -156,12 +145,9 @@ func local_request_Query_QueuedMessagesForAttesting_0(ctx context.Context, marsh
 
 	msg, err := server.QueuedMessagesForAttesting(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_Query_MessagesInQueue_0 = &utilities.DoubleArray{Encoding: map[string]int{"queueTypeName": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
-)
+var filter_Query_MessagesInQueue_0 = &utilities.DoubleArray{Encoding: map[string]int{"queueTypeName": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 
 func request_Query_MessagesInQueue_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryMessagesInQueueRequest
@@ -180,7 +166,6 @@ func request_Query_MessagesInQueue_0(ctx context.Context, marshaler runtime.Mars
 	}
 
 	protoReq.QueueTypeName, err = runtime.String(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "queueTypeName", err)
 	}
@@ -194,7 +179,6 @@ func request_Query_MessagesInQueue_0(ctx context.Context, marshaler runtime.Mars
 
 	msg, err := client.MessagesInQueue(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_Query_MessagesInQueue_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -214,7 +198,6 @@ func local_request_Query_MessagesInQueue_0(ctx context.Context, marshaler runtim
 	}
 
 	protoReq.QueueTypeName, err = runtime.String(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "queueTypeName", err)
 	}
@@ -228,7 +211,6 @@ func local_request_Query_MessagesInQueue_0(ctx context.Context, marshaler runtim
 
 	msg, err := server.MessagesInQueue(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 func request_Query_MessageByID_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -248,7 +230,6 @@ func request_Query_MessageByID_0(ctx context.Context, marshaler runtime.Marshale
 	}
 
 	protoReq.QueueTypeName, err = runtime.String(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "queueTypeName", err)
 	}
@@ -259,14 +240,12 @@ func request_Query_MessageByID_0(ctx context.Context, marshaler runtime.Marshale
 	}
 
 	protoReq.Id, err = runtime.Uint64(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 
 	msg, err := client.MessageByID(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_Query_MessageByID_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -286,7 +265,6 @@ func local_request_Query_MessageByID_0(ctx context.Context, marshaler runtime.Ma
 	}
 
 	protoReq.QueueTypeName, err = runtime.String(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "queueTypeName", err)
 	}
@@ -297,14 +275,12 @@ func local_request_Query_MessageByID_0(ctx context.Context, marshaler runtime.Ma
 	}
 
 	protoReq.Id, err = runtime.Uint64(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 
 	msg, err := server.MessageByID(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 func request_Query_GetAllQueueNames_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -313,7 +289,6 @@ func request_Query_GetAllQueueNames_0(ctx context.Context, marshaler runtime.Mar
 
 	msg, err := client.GetAllQueueNames(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_Query_GetAllQueueNames_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -322,7 +297,6 @@ func local_request_Query_GetAllQueueNames_0(ctx context.Context, marshaler runti
 
 	msg, err := server.GetAllQueueNames(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 // RegisterQueryHandlerServer registers the http handlers for service Query to "mux".
@@ -330,7 +304,6 @@ func local_request_Query_GetAllQueueNames_0(ctx context.Context, marshaler runti
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterQueryHandlerFromEndpoint instead.
 func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, server QueryServer) error {
-
 	mux.Handle("GET", pattern_Query_Params_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -351,7 +324,6 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		}
 
 		forward_Query_Params_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_QueuedMessagesForSigning_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -374,7 +346,6 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		}
 
 		forward_Query_QueuedMessagesForSigning_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_QueuedMessagesForRelaying_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -397,7 +368,6 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		}
 
 		forward_Query_QueuedMessagesForRelaying_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_QueuedMessagesForAttesting_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -420,7 +390,6 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		}
 
 		forward_Query_QueuedMessagesForAttesting_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_MessagesInQueue_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -443,7 +412,6 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		}
 
 		forward_Query_MessagesInQueue_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_MessageByID_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -466,7 +434,6 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		}
 
 		forward_Query_MessageByID_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_GetAllQueueNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -489,7 +456,6 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		}
 
 		forward_Query_GetAllQueueNames_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	return nil
@@ -532,7 +498,6 @@ func RegisterQueryHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "QueryClient" to call the correct interceptors.
 func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, client QueryClient) error {
-
 	mux.Handle("GET", pattern_Query_Params_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -550,7 +515,6 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		}
 
 		forward_Query_Params_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_QueuedMessagesForSigning_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -570,7 +534,6 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		}
 
 		forward_Query_QueuedMessagesForSigning_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_QueuedMessagesForRelaying_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -590,7 +553,6 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		}
 
 		forward_Query_QueuedMessagesForRelaying_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_QueuedMessagesForAttesting_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -610,7 +572,6 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		}
 
 		forward_Query_QueuedMessagesForAttesting_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_MessagesInQueue_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -630,7 +591,6 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		}
 
 		forward_Query_MessagesInQueue_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_MessageByID_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -650,7 +610,6 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		}
 
 		forward_Query_MessageByID_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	mux.Handle("GET", pattern_Query_GetAllQueueNames_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -670,7 +629,6 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		}
 
 		forward_Query_GetAllQueueNames_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	return nil
