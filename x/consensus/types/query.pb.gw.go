@@ -166,7 +166,6 @@ func request_Query_MessagesInQueue_0(ctx context.Context, marshaler runtime.Mars
 	}
 
 	protoReq.QueueTypeName, err = runtime.String(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "queueTypeName", err)
 	}
@@ -199,7 +198,6 @@ func local_request_Query_MessagesInQueue_0(ctx context.Context, marshaler runtim
 	}
 
 	protoReq.QueueTypeName, err = runtime.String(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "queueTypeName", err)
 	}
@@ -232,7 +230,6 @@ func request_Query_MessageByID_0(ctx context.Context, marshaler runtime.Marshale
 	}
 
 	protoReq.QueueTypeName, err = runtime.String(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "queueTypeName", err)
 	}
@@ -243,7 +240,6 @@ func request_Query_MessageByID_0(ctx context.Context, marshaler runtime.Marshale
 	}
 
 	protoReq.Id, err = runtime.Uint64(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
@@ -269,7 +265,6 @@ func local_request_Query_MessageByID_0(ctx context.Context, marshaler runtime.Ma
 	}
 
 	protoReq.QueueTypeName, err = runtime.String(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "queueTypeName", err)
 	}
@@ -280,7 +275,6 @@ func local_request_Query_MessageByID_0(ctx context.Context, marshaler runtime.Ma
 	}
 
 	protoReq.Id, err = runtime.Uint64(val)
-
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}

@@ -1,0 +1,47 @@
+syntax = "proto3";
+package palomachain.paloma.skyway;
+
+import "gogoproto/gogo.proto";
+import "palomachain/paloma/skyway/types.proto";
+import "palomachain/paloma/skyway/msgs.proto";
+import "palomachain/paloma/skyway/batch.proto";
+import "palomachain/paloma/skyway/bridge_tax.proto";
+import "palomachain/paloma/skyway/bridge_transfer_limit.proto";
+import "palomachain/paloma/skyway/attestation.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "palomachain/paloma/skyway/params.proto";
+option go_package = "github.com/palomachain/paloma/x/skyway/types";
+
+// GenesisState struct, containing all persistant data required by the Skyway
+// module
+message GenesisState {
+  Params params = 1;
+  repeated SkywayNonces skyway_nonces = 2 [ (gogoproto.nullable) = false ];
+  repeated OutgoingTxBatch batches = 3 [ (gogoproto.nullable) = false ];
+  repeated MsgConfirmBatch batch_confirms = 4 [ (gogoproto.nullable) = false ];
+  repeated Attestation attestations = 7 [ (gogoproto.nullable) = false ];
+  repeated ERC20ToDenom erc20_to_denoms = 9 [ (gogoproto.nullable) = false ];
+  repeated OutgoingTransferTx unbatched_transfers = 10
+      [ (gogoproto.nullable) = false ];
+  BridgeTax bridge_tax = 11;
+  repeated BridgeTransferLimit bridge_transfer_limits = 12;
+}
+
+// SkywayCounters contains the many noces and counters required to maintain the
+// bridge state in the genesis
+message SkywayNonces {
+  // the last observed Skyway.sol contract event nonce
+  uint64 last_observed_nonce = 1;
+  // the last batch Cosmos chain block that batch slashing has completed for
+  // there is an individual batch nonce for each token type so this removes
+  // the need to store them all
+  uint64 last_slashed_batch_block = 2;
+  // the last transaction id from the Skyway TX pool, this prevents ID
+  // duplication during chain upgrades
+  uint64 last_tx_pool_id = 3;
+  // the last batch id from the Skyway batch pool, this prevents ID duplication
+  // during chain upgrades
+  uint64 last_batch_id = 4;
+  // the reference id of the remote chain this data applies to.
+  string chain_reference_id = 5;
+}

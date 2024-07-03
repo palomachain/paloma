@@ -31,10 +31,10 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/keeper/deployment"
 	"github.com/palomachain/paloma/x/evm/types"
-	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
+	skywaymoduletypes "github.com/palomachain/paloma/x/skyway/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -113,7 +113,7 @@ type Keeper struct {
 	ConsensusKeeper types.ConsensusKeeper
 	SchedulerKeeper types.SchedulerKeeper
 	Valset          types.ValsetKeeper
-	Gravity         types.GravityKeeper
+	Skyway          types.SkywayKeeper
 	ider            keeperutil.IDGenerator
 	msgSender       types.MsgSender
 	msgAssigner     types.MsgAssigner
@@ -150,9 +150,9 @@ func NewKeeper(
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.provideSmartContractStore), []byte("id-key"))
 	k.consensusChecker = libcons.New(k.Valset.GetCurrentSnapshot, k.cdc)
 
-	eventbus.GravityBatchBuilt().Subscribe(
-		"gravity-keeper",
-		func(ctx context.Context, e eventbus.GravityBatchBuiltEvent) error {
+	eventbus.SkywayBatchBuilt().Subscribe(
+		"skyway-keeper",
+		func(ctx context.Context, e eventbus.SkywayBatchBuiltEvent) error {
 			ci, err := k.GetChainInfo(ctx, e.ChainReferenceID)
 			if err != nil {
 				return err
@@ -823,14 +823,14 @@ func (k Keeper) GetRelayWeights(ctx context.Context, chainReferenceID string) (*
 	return chainInfo.RelayWeights, nil
 }
 
-func (k Keeper) GetEthAddressByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *gravitymoduletypes.EthAddress, found bool, err error) {
+func (k Keeper) GetEthAddressByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *skywaymoduletypes.EthAddress, found bool, err error) {
 	chainInfos, err := k.Valset.GetValidatorChainInfos(ctx, validator)
 	if err != nil {
 		return ethAddress, false, err
 	}
 	for _, chainInfo := range chainInfos {
 		if chainInfo.GetChainReferenceID() == chainReferenceId {
-			ethAddress = &gravitymoduletypes.EthAddress{}
+			ethAddress = &skywaymoduletypes.EthAddress{}
 			err = ethAddress.SetAddress(chainInfo.GetAddress())
 			if err != nil {
 				return ethAddress, false, err
@@ -841,7 +841,7 @@ func (k Keeper) GetEthAddressByValidator(ctx context.Context, validator sdk.ValA
 	return ethAddress, false, nil
 }
 
-func (k Keeper) GetValidatorAddressByEthAddress(ctx context.Context, ethAddr gravitymoduletypes.EthAddress, chainReferenceId string) (valAddr sdk.ValAddress, found bool, err error) {
+func (k Keeper) GetValidatorAddressByEthAddress(ctx context.Context, ethAddr skywaymoduletypes.EthAddress, chainReferenceId string) (valAddr sdk.ValAddress, found bool, err error) {
 	validatorsExternalAccounts, err := k.Valset.GetAllChainInfos(ctx)
 	if err != nil {
 		return valAddr, false, err

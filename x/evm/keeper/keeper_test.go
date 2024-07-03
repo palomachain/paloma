@@ -60,12 +60,12 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 	// test-chain mocks
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), nil)
-	mockServices.GravityKeeper.On("GetLastObservedGravityNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
+	mockServices.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
 
 	// invalid-test-chain mocks
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), nil)
-	mockServices.GravityKeeper.On("GetLastObservedGravityNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
+	mockServices.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
 
 	// Add 2 new chains for our tests to use
 	err := k.AddSupportForNewChain(
@@ -138,7 +138,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 			setupMocks: func(ctx sdk.Context, k *Keeper) {
 				valsetKeeperMock := mocks.NewValsetKeeper(t)
 				msgSenderMock := mocks.NewMsgSender(t)
-				gravityKeeperMock := mocks.NewGravityKeeper(t)
+				skywayKeeperMock := mocks.NewSkywayKeeper(t)
 
 				unpublishedSnapshot := &valsettypes.Snapshot{
 					Id:          1,
@@ -194,7 +194,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 
 				k.Valset = valsetKeeperMock
 				k.msgSender = msgSenderMock
-				k.Gravity = gravityKeeperMock
+				k.Skyway = skywayKeeperMock
 			},
 			expectedError: nil,
 		},
@@ -213,7 +213,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 			chainReferenceID: "test-chain",
 			setupMocks: func(ctx sdk.Context, k *Keeper) {
 				valsetKeeperMock := mocks.NewValsetKeeper(t)
-				gravityKeeperMock := mocks.NewGravityKeeper(t)
+				skywayKeeperMock := mocks.NewSkywayKeeper(t)
 
 				publishedSnapshot := &valsettypes.Snapshot{
 					Id:          1,
@@ -257,7 +257,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 				valsetKeeperMock.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).Return(publishedSnapshot, nil)
 
 				k.Valset = valsetKeeperMock
-				k.Gravity = gravityKeeperMock
+				k.Skyway = skywayKeeperMock
 				// Success is indicated by returning nil before calling msgSender.SendValsetMsgForChain
 			},
 			expectedError: nil,
@@ -267,7 +267,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 			chainReferenceID: "inactive-test-chain",
 			setupMocks: func(ctx sdk.Context, k *Keeper) {
 				valsetKeeperMock := mocks.NewValsetKeeper(t)
-				gravityKeeperMock := mocks.NewGravityKeeper(t)
+				skywayKeeperMock := mocks.NewSkywayKeeper(t)
 
 				unpublishedSnapshot := &valsettypes.Snapshot{
 					Id:          1,
@@ -314,7 +314,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 				valsetKeeperMock.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).Return(publishedSnapshot, nil)
 
 				k.Valset = valsetKeeperMock
-				k.Gravity = gravityKeeperMock
+				k.Skyway = skywayKeeperMock
 				// Success is indicated by returning nil before calling msgSender.SendValsetMsgForChain
 			},
 			expectedError: nil,

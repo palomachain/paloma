@@ -21,8 +21,8 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
-	gravitymoduletypes "github.com/palomachain/paloma/x/gravity/types"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
+	skywaymoduletypes "github.com/palomachain/paloma/x/skyway/types"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -76,7 +76,7 @@ func InitParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
 	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
-	paramsKeeper.Subspace(gravitymoduletypes.ModuleName)
+	paramsKeeper.Subspace(skywaymoduletypes.ModuleName)
 
 	paramsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())

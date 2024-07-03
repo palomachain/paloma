@@ -8,7 +8,7 @@ import (
 	"github.com/palomachain/paloma/util/liblog"
 )
 
-var gravityBatchBuilt = newEvent[GravityBatchBuiltEvent]()
+var skywayBatchBuilt = newEvent[SkywayBatchBuiltEvent]()
 
 type (
 	EventHandler[E any] func(context.Context, E) error
@@ -51,10 +51,10 @@ func (e Event[E]) Unsubscribe(id string) {
 	e.subscribers[id] = nil
 }
 
-type GravityBatchBuiltEvent struct {
+type SkywayBatchBuiltEvent struct {
 	ChainReferenceID string
 }
 
-func GravityBatchBuilt() *Event[GravityBatchBuiltEvent] {
-	return &gravityBatchBuilt
+func SkywayBatchBuilt() *Event[SkywayBatchBuiltEvent] {
+	return &skywayBatchBuilt
 }
