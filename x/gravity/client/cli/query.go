@@ -17,17 +17,17 @@ const (
 	FlagEthHeight = "eth-height"
 )
 
-// GetQueryCmd bundles all the query subcmds together so they appear under `gravity query` or `gravity q`
+// GetQueryCmd bundles all the query subcmds together so they appear under `skyway query` or `skyway q`
 func GetQueryCmd() *cobra.Command {
 	// nolint: exhaustruct
-	gravityQueryCmd := &cobra.Command{
-		Use:                        types.ModuleName,
-		Short:                      "Querying commands for the gravity module",
+	skywayQueryCmd := &cobra.Command{
+		Use:                        "skyway",
+		Short:                      "Querying commands for the skyway module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	gravityQueryCmd.AddCommand([]*cobra.Command{
+	skywayQueryCmd.AddCommand([]*cobra.Command{
 		CmdGetErc20ToDenoms(),
 		CmdGetPendingOutgoingTXBatchRequest(),
 		CmdGetOutgoingTXBatchRequest(),
@@ -40,7 +40,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQueryBridgeTransferLimits(),
 	}...)
 
-	return gravityQueryCmd
+	return skywayQueryCmd
 }
 
 func CmdGetErc20ToDenoms() *cobra.Command {
@@ -135,8 +135,8 @@ func CmdGetOutgoingTXBatchRequest() *cobra.Command {
 func CmdGetPendingSendToEth() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "pending-send-to-eth [address]",
-		Short: "Query transactions waiting to go to Ethereum",
+		Use:   "pending-txs [from-address]",
+		Short: "Query pending outgoing transactions from address.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -164,9 +164,8 @@ func CmdGetPendingSendToEth() *cobra.Command {
 // CmdGetAttestations fetches the most recently created Attestations in the store (only the most recent 1000 are available)
 // up to an optional limit
 func CmdGetAttestations() *cobra.Command {
-	short := "Query gravity current and historical attestations (only the most recent 1000 are stored)"
-	long := short + "\n\n" + "Optionally provide a limit to reduce the number of attestations returned" + "\n" +
-		"Note that when querying with --height less than 1282013 '--use-v1-key' must be provided to locate the attestations"
+	short := "Query current and historical skyway attestations (only the most recent 1000 are stored)"
+	long := short + "\n\nOptionally provide a limit to reduce the number of attestations returned"
 
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
@@ -241,14 +240,12 @@ func CmdGetAttestations() *cobra.Command {
 // the state of Cosmos consensus on the submitted Ethereum events
 // nolint: dupl
 func CmdGetLastObservedEthBlock() *cobra.Command {
-	short := "Query the last observed Ethereum block height"
-	long := short + "\n\n" +
-		"This value is expected to lag the actual Ethereum block height significantly due to 1. Ethereum Finality and 2. Consensus mirroring the state on Ethereum" + "\n" +
-		"Note that when querying with --height less than 1282013 '--use-v1-key' must be provided to locate the value"
+	short := "Query the last observed block height on the remote chain"
+	long := short + "\n\nThis value is expected to lag behind actual remote block height significantly due to 1. Remote Chain Finality and 2. Consensus mirroring the state."
 
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "last-observed-eth-block [chain-reference-id]",
+		Use:   "last-observed-block [chain-reference-id]",
 		Short: short,
 		Long:  long,
 		Args:  cobra.ExactArgs(1),
@@ -278,14 +275,12 @@ func CmdGetLastObservedEthBlock() *cobra.Command {
 // // the state of Cosmos consensus on the submitted Ethereum events
 // nolint: dupl
 func CmdGetLastObservedEthNonce() *cobra.Command {
-	short := "Query the last observed Ethereum event nonce"
-	long := short + "\n\n" +
-		"This this is likely to lag the last executed event a little due to 1. Ethereum Finality and 2. Consensus mirroring the Ethereum state" + "\n" +
-		"Note that when querying with --height less than 1282013 '--use-v1-key' must be provided to locate the value"
+	short := "Query the last observed event nonce on the remote chain."
+	long := short + "\n\nThis value is expected to lag behind actual remote block height significantly due to 1. Remote Chain Finality and 2. Consensus mirroring the state."
 
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "last-observed-eth-nonce [chain-reference-id]",
+		Use:   "last-observed-nonce [chain-reference-id]",
 		Short: short,
 		Long:  long,
 		Args:  cobra.ExactArgs(1),

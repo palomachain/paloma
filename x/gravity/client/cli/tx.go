@@ -13,31 +13,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// GetTxCmd bundles all the subcmds together so they appear under `gravity tx`
+// GetTxCmd bundles all the subcmds together so they appear under `skyway tx`
 func GetTxCmd(storeKey string) *cobra.Command {
 	// nolint: exhaustruct
-	gravityTxCmd := &cobra.Command{
-		Use:                        types.ModuleName,
-		Short:                      "Gravity transaction subcommands",
+	skywayTxCmd := &cobra.Command{
+		Use:                        "skyway",
+		Short:                      "Skyway transaction subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
 
-	gravityTxCmd.AddCommand([]*cobra.Command{
+	skywayTxCmd.AddCommand([]*cobra.Command{
 		CmdSendToEth(),
 		CmdCancelSendToEth(),
 	}...)
 
-	return gravityTxCmd
+	return skywayTxCmd
 }
 
 // CmdSendToEth sends tokens to Ethereum. Locks Cosmos-side tokens into the Transaction pool for batching.
 func CmdSendToEth() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "send-to-eth [eth-dest] [amount] [chain-reference-id]",
-		Short: "Adds a new entry to the transaction pool to withdraw an amount from the Ethereum bridge contract. This will not execute until a batch is requested and then actually relayed. Your funds can be reclaimed using cancel-send-to-eth so long as they remain in the pool",
+		Use:   "send-tx [remote-chain-dest-address] [amount] [chain-reference-id]",
+		Short: "Adds a new entry to the transaction pool to withdraw an amount from the remote chain bridge contract. This will not execute until a batch is requested and then actually relayed. Your funds can be reclaimed using cancel-tx so long as they remain in the pool",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
@@ -81,8 +81,8 @@ func CmdSendToEth() *cobra.Command {
 func CmdCancelSendToEth() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "cancel-send-to-eth [transaction id]",
-		Short: "Removes an entry from the transaction pool, preventing your tokens from going to Ethereum and refunding the send.",
+		Use:   "cancel-tx [transaction id]",
+		Short: "Removes an entry from the transaction pool, preventing your tokens from going to the remote chain and refunding the send.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
