@@ -77,6 +77,12 @@ func (k Keeper) OutgoingTxBatches(
 ) (*types.QueryOutgoingTxBatchesResponse, error) {
 	var batches []types.OutgoingTxBatch
 
+	if k.evmKeeper.HasAnySmartContractDeployment(c, req.ChainReferenceId) {
+		// Ongoing smart contract deployment, don't give out batches to relay
+		// in order to avoid nonce increase on old compass
+		return &types.QueryOutgoingTxBatchesResponse{Batches: batches}, nil
+	}
+
 	// Check for pending valset messages on the queue
 	queue := consensustypes.Queue(evmtypes.ConsensusTurnstoneMessage, consensustypes.ChainTypeEVM, req.ChainReferenceId)
 	valsetMessagesOnQueue, err := k.consensusKeeper.GetPendingValsetUpdates(c, queue)

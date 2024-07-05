@@ -75,4 +75,5 @@ type EVMKeeper interface {
 	PickValidatorForMessage(ctx context.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error)
 	GetEthAddressByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *EthAddress, found bool, err error)
 	GetValidatorAddressByEthAddress(ctx context.Context, ethAddr EthAddress, chainReferenceId string) (valAddr sdk.ValAddress, found bool, err error)
+	HasAnySmartContractDeployment(ctx context.Context, chainReferenceID string) (found bool)
 }
