@@ -66,8 +66,8 @@ func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx context.Context, s
 		}
 		lkup[v.GetErc20()] = v.GetStatus() == types.SmartContractDeployment_ERC20Transfer_OK
 	}
-	for key, v := range lkup {
-		if !v {
+	for _, v := range c.Erc20Transfers {
+		if !lkup[v.GetErc20()] {
 			liblog.FromSDKLogger(k.Logger(ctx)).WithFields("erc20", k).Error("cannot delete smart contract deployment due to pending erc20 transfer", "erc20", key)
 			return
 		}
