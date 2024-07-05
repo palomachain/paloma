@@ -1,0 +1,14 @@
+syntax = "proto3";
+package palomachain.paloma.gravity;
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/palomachain/paloma/x/skyway/types/gravity";
+
+message SetBridgeTaxProposal {
+  string title = 1;
+  string description = 2;
+  string rate = 3 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
+  repeated string excluded_tokens = 4;
+  repeated string exempt_addresses = 5;
+}
