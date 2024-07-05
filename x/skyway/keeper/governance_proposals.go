@@ -29,7 +29,7 @@ func NewSkywayProposalHandler(k Keeper) govv1beta1types.Handler {
 
 			bridgeTax := &types.BridgeTax{
 				Rate:            c.Rate,
-				ExcludedTokens:  c.ExcludedTokens,
+				Token:           c.Token,
 				ExemptAddresses: addresses,
 			}
 

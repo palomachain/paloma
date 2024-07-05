@@ -777,7 +777,7 @@ func TestBridgeTax(t *testing.T) {
 	require.NoError(t, e4)
 
 	// set bridge tax
-	input.SkywayKeeper.SetBridgeTax(ctx, &types.BridgeTax{Rate: "0.02"})
+	input.SkywayKeeper.SetBridgeTax(ctx, &types.BridgeTax{Token: testDenom, Rate: "0.02"})
 
 	// mint some voucher first
 	require.NoError(t, input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers))

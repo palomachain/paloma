@@ -336,8 +336,8 @@ func GetCmdQueryParams() *cobra.Command {
 // GetCmdQueryBridgeTax fetches the current Skyway module bridge tax settings
 func GetCmdQueryBridgeTax() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "bridge-tax",
-		Short: "Query BridgeTax Settings",
+		Use:   "bridge-taxes",
+		Short: "Query bridge tax settings for all tokens",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -349,7 +349,7 @@ func GetCmdQueryBridgeTax() *cobra.Command {
 
 			params := &emptypb.Empty{}
 
-			res, err := queryClient.GetBridgeTax(cmd.Context(), params)
+			res, err := queryClient.GetBridgeTaxes(cmd.Context(), params)
 			if err != nil {
 				return err
 			}

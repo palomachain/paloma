@@ -28,7 +28,8 @@ func TestAddToOutgoingPool(t *testing.T) {
 
 	// Set bridge tax
 	input.SkywayKeeper.SetBridgeTax(ctx, &types.BridgeTax{
-		Rate: "0.02",
+		Token: testDenom,
+		Rate:  "0.02",
 	})
 
 	require.NoError(t, e1)

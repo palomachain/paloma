@@ -2,11 +2,9 @@ package keeper
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
-	"slices"
 
 	"cosmossdk.io/core/address"
 	sdkerrors "cosmossdk.io/errors"
@@ -245,37 +243,35 @@ func (k Keeper) GetAuthority() string {
 	return k.authority
 }
 
-func (k Keeper) BridgeTax(ctx context.Context) (*types.BridgeTax, error) {
-	var tax types.BridgeTax
-	val := k.GetStore(ctx, types.StoreModulePrefix).Get(types.BridgeTaxKey)
+func (k Keeper) AllBridgeTaxes(
+	ctx context.Context,
+) ([]*types.BridgeTax, error) {
+	st := k.GetStore(ctx, types.BridgeTaxPrefix)
+	_, all, err := keeperutil.IterAll[*types.BridgeTax](st, k.cdc)
+	return all, err
+}
 
-	if len(val) == 0 {
-		// We have no bridge tax settings
-		return nil, keeperutil.ErrNotFound.Format(&tax, hex.EncodeToString(types.BridgeTaxKey))
-	}
-
-	if err := k.cdc.Unmarshal(val, &tax); err != nil {
-		return nil, err
-	}
-
-	return &tax, nil
+func (k Keeper) BridgeTax(
+	ctx context.Context,
+	token string,
+) (*types.BridgeTax, error) {
+	st := k.GetStore(ctx, types.BridgeTaxPrefix)
+	return keeperutil.Load[*types.BridgeTax](st, k.cdc, []byte(token))
 }
 
 func (k Keeper) SetBridgeTax(ctx context.Context, tax *types.BridgeTax) error {
+	if tax.Token == "" {
+		return errors.New("empty tax token")
+	}
+
 	taxRate, ok := new(big.Rat).SetString(tax.Rate)
-	// Sanity check the tax value. Must be between >= 0
+	// Sanity check the tax value. Must be >= 0
 	if !ok || taxRate.Sign() < 0 {
 		return fmt.Errorf("invalid tax rate value: %s", tax.Rate)
 	}
 
-	val, err := k.cdc.Marshal(tax)
-	if err != nil {
-		return err
-	}
-
-	k.GetStore(ctx, types.StoreModulePrefix).Set(types.BridgeTaxKey, val)
-
-	return nil
+	st := k.GetStore(ctx, types.BridgeTaxPrefix)
+	return keeperutil.Save(st, k.cdc, []byte(tax.Token), tax)
 }
 
 // Calculate the applicable bridge tax amount by checking the current bridge tax
@@ -284,9 +280,9 @@ func (k Keeper) SetBridgeTax(ctx context.Context, tax *types.BridgeTax) error {
 func (k Keeper) bridgeTaxAmount(
 	ctx context.Context,
 	sender sdk.AccAddress,
-	amount sdk.Coin,
+	coin sdk.Coin,
 ) (math.Int, error) {
-	bridgeTax, err := k.BridgeTax(ctx)
+	bridgeTax, err := k.BridgeTax(ctx, coin.Denom)
 	if err != nil {
 		if errors.Is(err, keeperutil.ErrNotFound) {
 			// The bridge tax hasn't been set by governance vote
@@ -302,11 +298,6 @@ func (k Keeper) bridgeTaxAmount(
 		return math.ZeroInt(), nil
 	}
 
-	if slices.Contains(bridgeTax.ExcludedTokens, amount.Denom) {
-		// This token is excluded, so no tax applies
-		return math.ZeroInt(), nil
-	}
-
 	for _, addr := range bridgeTax.ExemptAddresses {
 		if sender.Equals(addr) {
 			// The sender is exempt from bridge tax
@@ -317,7 +308,7 @@ func (k Keeper) bridgeTaxAmount(
 	num := math.NewIntFromBigInt(bRate.Num())
 	denom := math.NewIntFromBigInt(bRate.Denom())
 
-	return amount.Amount.Mul(num).Quo(denom), nil
+	return coin.Amount.Mul(num).Quo(denom), nil
 }
 
 func (k Keeper) AllBridgeTransferLimits(
@@ -340,6 +331,10 @@ func (k Keeper) SetBridgeTransferLimit(
 	ctx context.Context,
 	limit *types.BridgeTransferLimit,
 ) error {
+	if limit.Token == "" {
+		return errors.New("empty transfer limit token")
+	}
+
 	st := k.GetStore(ctx, types.BridgeTransferLimitPrefix)
 	return keeperutil.Save(st, k.cdc, []byte(limit.Token), limit)
 }

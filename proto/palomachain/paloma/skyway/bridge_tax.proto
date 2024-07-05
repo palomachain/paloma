@@ -1,14 +1,17 @@
 syntax = "proto3";
 package palomachain.paloma.skyway;
 
-import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/palomachain/paloma/x/skyway/types";
 
 message BridgeTax {
+  reserved 2;
+  reserved "excluded_tokens";
+
   string rate = 1 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
-  repeated string excluded_tokens = 2;
   repeated bytes exempt_addresses = 3
     [ (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress" ];
+  string token = 4;
 }

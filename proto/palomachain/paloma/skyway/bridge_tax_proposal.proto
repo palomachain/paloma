@@ -6,9 +6,12 @@ import "cosmos_proto/cosmos.proto";
 option go_package = "github.com/palomachain/paloma/x/skyway/types";
 
 message SetBridgeTaxProposal {
+  reserved 4;
+  reserved "excluded_tokens";
+
   string title = 1;
   string description = 2;
   string rate = 3 [ (cosmos_proto.scalar) = "cosmos.Dec" ];
-  repeated string excluded_tokens = 4;
   repeated string exempt_addresses = 5;
+  string token = 6;
 }
