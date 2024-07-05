@@ -146,10 +146,12 @@ func TestGenesis(t *testing.T) {
 
 	genesisState := types.GenesisState{
 		Params: types.DefaultParams(),
-		BridgeTax: &types.BridgeTax{
-			Rate:            "0.02",
-			ExcludedTokens:  []string{"test"},
-			ExemptAddresses: addresses,
+		BridgeTaxes: []*types.BridgeTax{
+			{
+				Rate:            "0.02",
+				Token:           "test",
+				ExemptAddresses: addresses,
+			},
 		},
 		BridgeTransferLimits: []*types.BridgeTransferLimit{
 			{
@@ -167,7 +169,7 @@ func TestGenesis(t *testing.T) {
 	got := ExportGenesis(input.Context, input.SkywayKeeper)
 	require.NotNil(t, got)
 
-	require.Equal(t, genesisState.BridgeTax, got.BridgeTax)
+	require.Equal(t, genesisState.BridgeTaxes, got.BridgeTaxes)
 	require.Equal(t, genesisState.BridgeTransferLimits, got.BridgeTransferLimits)
 }
 
@@ -182,6 +184,6 @@ func TestGenesisEmptyOptionalValues(t *testing.T) {
 	got := ExportGenesis(input.Context, input.SkywayKeeper)
 	require.NotNil(t, got)
 
-	require.Nil(t, got.BridgeTax)
+	require.Empty(t, got.BridgeTaxes)
 	require.Empty(t, got.BridgeTransferLimits)
 }

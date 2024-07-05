@@ -8,18 +8,18 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (k Keeper) GetBridgeTax(
+func (k Keeper) GetBridgeTaxes(
 	goCtx context.Context,
 	_ *emptypb.Empty,
-) (*types.QueryBridgeTaxResponse, error) {
+) (*types.QueryBridgeTaxesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	tax, err := k.BridgeTax(ctx)
+	taxes, err := k.AllBridgeTaxes(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryBridgeTaxResponse{
-		BridgeTax: tax,
+	return &types.QueryBridgeTaxesResponse{
+		BridgeTaxes: taxes,
 	}, nil
 }

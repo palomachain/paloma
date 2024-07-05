@@ -46,8 +46,8 @@ service Query {
   rpc GetPendingSendToEth(QueryPendingSendToEth)
       returns (QueryPendingSendToEthResponse) {}
 
-  rpc GetBridgeTax(google.protobuf.Empty) returns (QueryBridgeTaxResponse) {
-    option (google.api.http).get = "/palomachain/paloma/skyway/bridge_tax";
+  rpc GetBridgeTaxes(google.protobuf.Empty) returns (QueryBridgeTaxesResponse) {
+    option (google.api.http).get = "/palomachain/paloma/skyway/bridge_taxes";
   }
 
   rpc GetBridgeTransferLimits(google.protobuf.Empty)
@@ -161,8 +161,8 @@ message QueryPendingSendToEthResponse {
       [ (gogoproto.nullable) = false ];
 }
 
-message QueryBridgeTaxResponse {
-  BridgeTax bridge_tax = 1;
+message QueryBridgeTaxesResponse {
+  repeated BridgeTax bridge_taxes = 1;
 }
 
 message QueryBridgeTransferLimitsResponse {

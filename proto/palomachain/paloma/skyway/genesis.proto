@@ -15,6 +15,9 @@ option go_package = "github.com/palomachain/paloma/x/skyway/types";
 // GenesisState struct, containing all persistant data required by the Skyway
 // module
 message GenesisState {
+  reserved 11;
+  reserved "bridge_tax";
+
   Params params = 1;
   repeated SkywayNonces skyway_nonces = 2 [ (gogoproto.nullable) = false ];
   repeated OutgoingTxBatch batches = 3 [ (gogoproto.nullable) = false ];
@@ -23,8 +26,8 @@ message GenesisState {
   repeated ERC20ToDenom erc20_to_denoms = 9 [ (gogoproto.nullable) = false ];
   repeated OutgoingTransferTx unbatched_transfers = 10
       [ (gogoproto.nullable) = false ];
-  BridgeTax bridge_tax = 11;
   repeated BridgeTransferLimit bridge_transfer_limits = 12;
+  repeated BridgeTax bridge_taxes = 13;
 }
 
 // SkywayCounters contains the many noces and counters required to maintain the

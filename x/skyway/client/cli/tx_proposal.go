@@ -92,17 +92,18 @@ func CmdSetErc20ToDenom() *cobra.Command {
 
 func CmdSetBridgeTax() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-bridge-tax [tax-rate]",
-		Short: "Sets the bridge tax rate, and optionally token exceptions and exempt addresses",
-		Long:  "Each outgoing transfer from Paloma will pay a tax. Tax amount is calculated using [tax-rate], which must be non-negative.",
-		Args:  cobra.ExactArgs(1),
+		Use:     "set-bridge-tax [token] [tax-rate]",
+		Short:   "Sets the bridge tax rate for a token, and optional exempt addresses",
+		Long:    "Each outgoing transfer from Paloma will pay a tax. Tax amount is calculated using [tax-rate], which must be non-negative. [tax-rate] is the ratio of tax collected, so for a 20%% tax it must be set to 0.2.",
+		Example: "set-bridge-tax ugrain 0.2",
+		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 
-			rateRaw := args[0]
+			token, rateRaw := args[0], args[1]
 
 			rate, ok := new(big.Rat).SetString(rateRaw)
 			if !ok || rate.Sign() < 0 {
@@ -119,11 +120,6 @@ func CmdSetBridgeTax() *cobra.Command {
 				return err
 			}
 
-			excludedTokens, err := cmd.Flags().GetStringSlice(flagExcludedTokens)
-			if err != nil {
-				return err
-			}
-
 			exemptAddresses, err := cmd.Flags().GetStringSlice(flagExemptAddresses)
 			if err != nil {
 				return err
@@ -132,8 +128,8 @@ func CmdSetBridgeTax() *cobra.Command {
 			prop := &types.SetBridgeTaxProposal{
 				Title:           title,
 				Description:     description,
+				Token:           token,
 				Rate:            rateRaw,
-				ExcludedTokens:  excludedTokens,
 				ExemptAddresses: exemptAddresses,
 			}
 

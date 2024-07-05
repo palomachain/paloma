@@ -143,29 +143,35 @@ func TestSetBridgeTax(t *testing.T) {
 
 	t.Run("Return new bridge tax after setting it", func(t *testing.T) {
 		expected := types.BridgeTax{
+			Token:           "test",
 			Rate:            "0.02",
-			ExcludedTokens:  []string{"test"},
 			ExemptAddresses: addresses,
 		}
 
 		err := k.SetBridgeTax(ctx, &expected)
 		require.NoError(t, err)
 
-		actual, err := k.BridgeTax(ctx)
+		actual, err := k.BridgeTax(ctx, "test")
 		require.NoError(t, err)
 		require.Equal(t, *actual, expected)
+
+		all, err := k.AllBridgeTaxes(ctx)
+		require.NoError(t, err)
+		require.Equal(t, all, []*types.BridgeTax{&expected})
 	})
 
 	t.Run("Return error when trying to set a negative tax", func(t *testing.T) {
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
-			Rate: "-0.2",
+			Token: "test",
+			Rate:  "-0.2",
 		})
 		require.Error(t, err)
 	})
 
 	t.Run("Return OK with a tax higher than 100%", func(t *testing.T) {
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
-			Rate: "1.1",
+			Token: "test",
+			Rate:  "1.1",
 		})
 		require.NoError(t, err)
 	})
@@ -210,7 +216,8 @@ func TestBridgeTaxAmount(t *testing.T) {
 		setup()
 
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
-			Rate: "0",
+			Token: coin.Denom,
+			Rate:  "0",
 		})
 		require.NoError(t, err)
 
@@ -223,7 +230,8 @@ func TestBridgeTaxAmount(t *testing.T) {
 		setup()
 
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
-			Rate: "1",
+			Token: coin.Denom,
+			Rate:  "1",
 		})
 		require.NoError(t, err)
 
@@ -232,12 +240,12 @@ func TestBridgeTaxAmount(t *testing.T) {
 		require.Equal(t, actual, coin.Amount)
 	})
 
-	t.Run("Return zero when token is in exclusion list", func(t *testing.T) {
+	t.Run("Return zero when token does not have a tax set", func(t *testing.T) {
 		setup()
 
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
-			Rate:           "0.01",
-			ExcludedTokens: []string{"fake", "test", "another"},
+			Token: "anothertoken",
+			Rate:  "0.01",
 		})
 		require.NoError(t, err)
 
@@ -251,7 +259,7 @@ func TestBridgeTaxAmount(t *testing.T) {
 
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
 			Rate:            "0.01",
-			ExcludedTokens:  []string{"fake", "another"},
+			Token:           coin.Denom,
 			ExemptAddresses: addresses,
 		})
 		require.NoError(t, err)
@@ -265,7 +273,8 @@ func TestBridgeTaxAmount(t *testing.T) {
 		setup()
 
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
-			Rate: "0.00123",
+			Token: coin.Denom,
+			Rate:  "0.00123",
 		})
 		require.NoError(t, err)
 
@@ -284,7 +293,8 @@ func TestBridgeTaxAmount(t *testing.T) {
 		}
 
 		err := k.SetBridgeTax(ctx, &types.BridgeTax{
-			Rate: "2",
+			Token: coin.Denom,
+			Rate:  "2",
 		})
 		require.NoError(t, err)
 

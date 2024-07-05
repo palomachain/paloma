@@ -137,17 +137,15 @@ func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 		}
 	}
 
-	if data.BridgeTax != nil {
-		if err := k.SetBridgeTax(ctx, data.BridgeTax); err != nil {
+	for _, tax := range data.BridgeTaxes {
+		if err := k.SetBridgeTax(ctx, tax); err != nil {
 			panic(err)
 		}
 	}
 
-	if data.BridgeTransferLimits != nil {
-		for _, limit := range data.BridgeTransferLimits {
-			if err := k.SetBridgeTransferLimit(ctx, limit); err != nil {
-				panic(err)
-			}
+	for _, limit := range data.BridgeTransferLimits {
+		if err := k.SetBridgeTransferLimit(ctx, limit); err != nil {
+			panic(err)
 		}
 	}
 }
@@ -239,7 +237,7 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		unbatchedTxs[i] = v.ToExternal()
 	}
 
-	tax, err := k.BridgeTax(ctx)
+	taxes, err := k.AllBridgeTaxes(ctx)
 	if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
 		panic(err)
 	}
@@ -257,7 +255,7 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		Attestations:         attestations,
 		Erc20ToDenoms:        erc20ToDenoms,
 		UnbatchedTransfers:   unbatchedTxs,
-		BridgeTax:            tax,
+		BridgeTaxes:          taxes,
 		BridgeTransferLimits: limits,
 	}
 }
