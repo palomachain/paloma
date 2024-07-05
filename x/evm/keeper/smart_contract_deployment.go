@@ -55,9 +55,22 @@ func (k Keeper) HasAnySmartContractDeployment(ctx context.Context, chainReferenc
 
 func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx context.Context, smartContractID uint64, chainReferenceID string) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	_, key := k.getSmartContractDeploymentByContractID(sdkCtx, smartContractID, chainReferenceID)
+	c, key := k.getSmartContractDeploymentByContractID(sdkCtx, smartContractID, chainReferenceID)
 	if key == nil {
 		return
+	}
+	lkup := make(map[string]bool)
+	for _, v := range c.Erc20Transfers {
+		if ok, fnd := lkup[v.GetErc20()]; fnd && ok {
+			continue
+		}
+		lkup[v.GetErc20()] = v.GetStatus() == types.SmartContractDeployment_ERC20Transfer_OK
+	}
+	for key, v := range lkup {
+		if !v {
+			liblog.FromSDKLogger(k.Logger(ctx)).WithFields("erc20", k).Error("cannot delete smart contract deployment due to pending erc20 transfer", "erc20", key)
+			return
+		}
 	}
 	k.Logger(ctx).Info("removing a smart contract deployment", "smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID)
 	k.provideSmartContractDeploymentStore(sdkCtx).Delete(key)
@@ -348,9 +361,6 @@ func (k Keeper) tryDeployingSmartContractToAllChains(ctx context.Context, smartC
 	for _, chainInfo := range chainInfos {
 		k.Logger(ctx).Info("trying to deploy smart contract to EVM chain", "smart-contract-id", smartContract.GetId(), "chain-reference-id", chainInfo.GetChainReferenceID())
 		if k.HasAnySmartContractDeployment(ctx, chainInfo.GetChainReferenceID()) {
-			// TODO: Only wait if the status is IN_FLIGHT
-			// TODO: We probably want to still delete the deployment in case of error AS LONG as we haven't sent a move ownership message
-			// we are already deploying to this chain. Lets wait it out.
 			continue
 		}
 		if chainInfo.GetActiveSmartContractID() >= smartContract.GetId() {
