@@ -88,14 +88,14 @@ func (k Keeper) AddToOutgoingPool(
 		return 0, err
 	}
 
-	bridgeContractAddress, err := k.GetBridgeContractAddress(ctx)
+	ci, err := k.evmKeeper.GetChainInfo(ctx, chainReferenceID)
 	if err != nil {
 		return 0, err
 	}
 	return nextID, sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventWithdrawalReceived{
-			BridgeContract: bridgeContractAddress.GetAddress().Hex(),
-			BridgeChainId:  strconv.Itoa(int(k.GetBridgeChainID(ctx))),
+			BridgeContract: ci.SmartContractAddr,
+			BridgeChainId:  strconv.Itoa(int(ci.ChainID)),
 			OutgoingTxId:   strconv.Itoa(int(nextID)),
 			Nonce:          fmt.Sprint(nextID),
 		},
@@ -148,7 +148,7 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64
 		return sdkerrors.Wrap(err, "transfer vouchers")
 	}
 
-	bridgeContractAddress, err := k.GetBridgeContractAddress(ctx)
+	ci, err := k.evmKeeper.GetChainInfo(ctx, tx.Erc20Token.ChainReferenceID)
 	if err != nil {
 		return err
 	}
@@ -157,8 +157,8 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64
 		&types.EventWithdrawCanceled{
 			Sender:         sender.String(),
 			TxId:           fmt.Sprint(txId),
-			BridgeContract: bridgeContractAddress.GetAddress().Hex(),
-			BridgeChainId:  strconv.Itoa(int(k.GetBridgeChainID(ctx))),
+			BridgeContract: ci.SmartContractAddr,
+			BridgeChainId:  strconv.Itoa(int(ci.ChainID)),
 		},
 	)
 }

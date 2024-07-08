@@ -25,7 +25,6 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	pk := input.SkywayKeeper
-	params := pk.GetParams(ctx)
 
 	// Create not nice guy with very little stake
 	consPrivKey := ed25519.GenPrivKey()
@@ -77,7 +76,7 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 		BatchTimeout:       0,
 		Transactions:       []types.OutgoingTransferTx{},
 		TokenContract:      keeper.TokenContractAddrs[0],
-		PalomaBlockCreated: uint64(sdkCtx.BlockHeight() - int64(params.SignedBatchesWindow+1)),
+		PalomaBlockCreated: uint64(sdkCtx.BlockHeight() - 1),
 	})
 	require.NoError(t, err)
 	pk.StoreBatch(ctx, *batch)
@@ -119,7 +118,6 @@ func TestBatchTimeout(t *testing.T) {
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
 
 	pk := input.SkywayKeeper
-	params := pk.GetParams(ctx)
 	var (
 		testTime         = time.Unix(1693424690, 0)
 		mySender, e1     = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
@@ -135,9 +133,6 @@ func TestBatchTimeout(t *testing.T) {
 	require.NoError(t, err)
 	tokenContract, err := types.NewEthAddress(testERC20Address)
 	require.NoError(t, err)
-
-	require.Greater(t, params.AverageBlockTime, uint64(0))
-	require.Greater(t, params.AverageEthereumBlockTime, uint64(0))
 
 	// mint some vouchers first
 	require.NoError(t, input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers))

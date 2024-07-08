@@ -208,7 +208,7 @@ func (k Keeper) emitObservedEvent(ctx context.Context, att *types.Attestation, c
 		return sdkerrors.Wrap(err, "unable to compute claim hash")
 	}
 
-	bridgeContract, err := k.GetBridgeContractAddress(ctx)
+	ci, err := k.evmKeeper.GetChainInfo(ctx, claim.GetChainReferenceId())
 	if err != nil {
 		return err
 	}
@@ -216,8 +216,8 @@ func (k Keeper) emitObservedEvent(ctx context.Context, att *types.Attestation, c
 	return sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventObservation{
 			AttestationType: string(claim.GetType()),
-			BridgeContract:  bridgeContract.GetAddress().Hex(),
-			BridgeChainId:   strconv.Itoa(int(k.GetBridgeChainID(ctx))),
+			BridgeContract:  ci.SmartContractAddr,
+			BridgeChainId:   strconv.Itoa(int(ci.ChainID)),
 			AttestationId:   string(types.GetAttestationKey(claim.GetSkywayNonce(), hash)),
 			Nonce:           fmt.Sprint(claim.GetSkywayNonce()),
 		},

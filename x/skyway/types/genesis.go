@@ -50,17 +50,7 @@ var (
 	ParamStoreResetBridgeNonce = []byte("ResetBridgeNonce")
 
 	// Ensure that params implements the proper interface
-	_ paramtypes.ParamSet = &Params{
-		ContractSourceHash:           "",
-		BridgeEthereumAddress:        "",
-		BridgeChainId:                0,
-		SignedBatchesWindow:          0,
-		TargetBatchTimeout:           0,
-		AverageBlockTime:             0,
-		AverageEthereumBlockTime:     0,
-		SlashFractionBatch:           math.LegacyDec{},
-		SlashFractionBadEthSignature: math.LegacyDec{},
-	}
+	_ paramtypes.ParamSet = &Params{}
 )
 
 // ValidateBasic validates genesis state by looping through the params and

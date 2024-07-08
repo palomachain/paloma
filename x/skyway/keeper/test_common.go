@@ -249,17 +249,7 @@ var (
 	}
 
 	// TestingSkywayParams is a set of skyway params for testing
-	TestingSkywayParams = types.Params{
-		ContractSourceHash:           "62328f7bc12efb28f86111d08c29b39285680a906ea0e524e0209d6f6657b713",
-		BridgeEthereumAddress:        "0x8858eeb3dfffa017d4bce9801d340d36cf895ccf",
-		BridgeChainId:                11,
-		SignedBatchesWindow:          10,
-		TargetBatchTimeout:           60001,
-		AverageBlockTime:             5000,
-		AverageEthereumBlockTime:     15000,
-		SlashFractionBatch:           math.LegacyNewDecWithPrec(1, 2),
-		SlashFractionBadEthSignature: math.LegacyNewDecWithPrec(1, 2),
-	}
+	TestingSkywayParams = types.Params{}
 )
 
 // TestInput stores the various keepers required to test skyway

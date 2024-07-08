@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/skyway/types"
@@ -84,13 +85,15 @@ func (k Keeper) checkBadSignatureEvidenceInternal(ctx context.Context, subject t
 		return sdkerrors.Wrap(err, "Could not get consensus key address for validator")
 	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	params := k.GetParams(ctx)
 	if !val.IsJailed() {
 		err := k.StakingKeeper.Jail(ctx, cons)
 		if err != nil {
 			return fmt.Errorf("checkBadSignatureEvidenceInternal jail: %w", err)
 		}
-		_, err = k.StakingKeeper.Slash(ctx, cons, sdkCtx.BlockHeight(), val.ConsensusPower(sdk.DefaultPowerReduction), params.SlashFractionBadEthSignature)
+		// TODO: Establish slashing fraction parameter
+		// slashingFrac := params.SlashFractionBadEthSignature
+		slashingFrac := math.LegacyZeroDec()
+		_, err = k.StakingKeeper.Slash(ctx, cons, sdkCtx.BlockHeight(), val.ConsensusPower(sdk.DefaultPowerReduction), slashingFrac)
 		if err != nil {
 			return err
 		}

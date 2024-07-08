@@ -127,22 +127,6 @@ func (k Keeper) SetParams(ctx context.Context, params types.Params) {
 	k.GetStore(ctx, types.StoreModulePrefix).Set([]byte(types.ParamsKey), bz)
 }
 
-// GetBridgeContractAddress returns the bridge contract address on ETH
-func (k Keeper) GetBridgeContractAddress(ctx context.Context) (*types.EthAddress, error) {
-	a := k.GetParams(ctx).BridgeEthereumAddress
-	addr, err := types.NewEthAddress(a)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "found invalid bridge contract address in store: %v", a)
-	}
-	return addr, nil
-}
-
-// GetBridgeChainID returns the chain id of the ETH chain we are running against
-func (k Keeper) GetBridgeChainID(ctx context.Context) uint64 {
-	a := k.GetParams(ctx).BridgeChainId
-	return a
-}
-
 // Logger returns a module-specific Logger.
 func (k Keeper) Logger(ctx context.Context) log.Logger {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)

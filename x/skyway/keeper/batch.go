@@ -73,19 +73,14 @@ func (k Keeper) BuildOutgoingTXBatch(
 	}
 	k.SetPastEthSignatureCheckpoint(ctx, checkpoint)
 
-	bridgeContract, err := k.GetBridgeContractAddress(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	eventbus.SkywayBatchBuilt().Publish(ctx, eventbus.SkywayBatchBuiltEvent{
 		ChainReferenceID: chainReferenceID,
 	})
 
 	return batch, sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventOutgoingBatch{
-			BridgeContract: bridgeContract.GetAddress().Hex(),
-			BridgeChainId:  strconv.Itoa(int(k.GetBridgeChainID(ctx))),
+			BridgeContract: ci.SmartContractAddr,
+			BridgeChainId:  strconv.Itoa(int(ci.ChainID)),
 			BatchId:        string(types.GetOutgoingTxBatchKey(contract, nextID)),
 			Nonce:          fmt.Sprint(nextID),
 			Assignee:       assignee,
@@ -252,15 +247,16 @@ func (k Keeper) CancelOutgoingTXBatch(ctx context.Context, tokenContract types.E
 		return err
 	}
 
-	bridgeContract, err := k.GetBridgeContractAddress(ctx)
+	ci, err := k.evmKeeper.GetChainInfo(ctx, batch.ChainReferenceID)
 	if err != nil {
 		return err
 	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.EventManager().EmitTypedEvent(
 		&types.EventOutgoingBatchCanceled{
-			BridgeContract: bridgeContract.GetAddress().Hex(),
-			BridgeChainId:  strconv.Itoa(int(k.GetBridgeChainID(ctx))),
+			BridgeContract: ci.SmartContractAddr,
+			BridgeChainId:  strconv.Itoa(int(ci.ChainID)),
 			BatchId:        string(types.GetOutgoingTxBatchKey(tokenContract, nonce)),
 			Nonce:          fmt.Sprint(nonce),
 		},
