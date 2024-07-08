@@ -60,22 +60,8 @@ option go_package = "github.com/palomachain/paloma/x/skyway/types";
 // submitting a different claim for the same ethereum event
 message Params {
   option (gogoproto.stringer) = false;
-  reserved 1;
-  reserved 2;
-  reserved 3;
-  reserved 4;
-  reserved 5;
-  reserved 6;
-  reserved 7;
-  reserved 8;
-  reserved 9;
-  reserved "contract_source_hash";
-  reserved "bridge_ethereum_address";
-  reserved "bridge_chain_id";
-  reserved "signed_batches_window";
-  reserved "tarbatch_timeout";
-  reserved "average_block_time";
-  reserved "average_ethereum_block_time";
-  reserved "slash_fraction_batch";
-  reserved "slash_fraction_bad_eth_signature";
+  reserved 1 to 9;
+  reserved "contract_source_hash", "bridge_ethereum_address", "bridge_chain_id",  "signed_batches_window",
+    "tarbatch_timeout",  "average_block_time",  "average_ethereum_block_time", "slash_fraction_batch",
+    "slash_fraction_bad_eth_signature";
 }
