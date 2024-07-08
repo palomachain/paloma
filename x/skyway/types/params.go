@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
