@@ -4,23 +4,20 @@
 package types
 
 import (
-	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	cosmossdk_io_math "cosmossdk.io/math"
+	fmt "fmt"
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -89,11 +86,9 @@ func (*Attestation) ProtoMessage()    {}
 func (*Attestation) Descriptor() ([]byte, []int) {
 	return fileDescriptor_92888c16a425b01b, []int{0}
 }
-
 func (m *Attestation) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Attestation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Attestation.Marshal(b, m, deterministic)
@@ -106,15 +101,12 @@ func (m *Attestation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return b[:n], nil
 	}
 }
-
 func (m *Attestation) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Attestation.Merge(m, src)
 }
-
 func (m *Attestation) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Attestation) XXX_DiscardUnknown() {
 	xxx_messageInfo_Attestation.DiscardUnknown(m)
 }
@@ -167,11 +159,9 @@ func (*ERC20Token) ProtoMessage()    {}
 func (*ERC20Token) Descriptor() ([]byte, []int) {
 	return fileDescriptor_92888c16a425b01b, []int{1}
 }
-
 func (m *ERC20Token) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *ERC20Token) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ERC20Token.Marshal(b, m, deterministic)
@@ -184,15 +174,12 @@ func (m *ERC20Token) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *ERC20Token) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ERC20Token.Merge(m, src)
 }
-
 func (m *ERC20Token) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *ERC20Token) XXX_DiscardUnknown() {
 	xxx_messageInfo_ERC20Token.DiscardUnknown(m)
 }
@@ -227,11 +214,9 @@ func (*EventObservation) ProtoMessage()    {}
 func (*EventObservation) Descriptor() ([]byte, []int) {
 	return fileDescriptor_92888c16a425b01b, []int{2}
 }
-
 func (m *EventObservation) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *EventObservation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_EventObservation.Marshal(b, m, deterministic)
@@ -244,15 +229,12 @@ func (m *EventObservation) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-
 func (m *EventObservation) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_EventObservation.Merge(m, src)
 }
-
 func (m *EventObservation) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *EventObservation) XXX_DiscardUnknown() {
 	xxx_messageInfo_EventObservation.DiscardUnknown(m)
 }
@@ -307,11 +289,9 @@ func (*EventInvalidSendToPalomaReceiver) ProtoMessage()    {}
 func (*EventInvalidSendToPalomaReceiver) Descriptor() ([]byte, []int) {
 	return fileDescriptor_92888c16a425b01b, []int{3}
 }
-
 func (m *EventInvalidSendToPalomaReceiver) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *EventInvalidSendToPalomaReceiver) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_EventInvalidSendToPalomaReceiver.Marshal(b, m, deterministic)
@@ -324,15 +304,12 @@ func (m *EventInvalidSendToPalomaReceiver) XXX_Marshal(b []byte, deterministic b
 		return b[:n], nil
 	}
 }
-
 func (m *EventInvalidSendToPalomaReceiver) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_EventInvalidSendToPalomaReceiver.Merge(m, src)
 }
-
 func (m *EventInvalidSendToPalomaReceiver) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *EventInvalidSendToPalomaReceiver) XXX_DiscardUnknown() {
 	xxx_messageInfo_EventInvalidSendToPalomaReceiver.DiscardUnknown(m)
 }
@@ -379,11 +356,9 @@ func (*EventSendToPaloma) ProtoMessage()    {}
 func (*EventSendToPaloma) Descriptor() ([]byte, []int) {
 	return fileDescriptor_92888c16a425b01b, []int{4}
 }
-
 func (m *EventSendToPaloma) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *EventSendToPaloma) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_EventSendToPaloma.Marshal(b, m, deterministic)
@@ -396,15 +371,12 @@ func (m *EventSendToPaloma) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-
 func (m *EventSendToPaloma) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_EventSendToPaloma.Merge(m, src)
 }
-
 func (m *EventSendToPaloma) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *EventSendToPaloma) XXX_DiscardUnknown() {
 	xxx_messageInfo_EventSendToPaloma.DiscardUnknown(m)
 }
@@ -445,11 +417,9 @@ func (*EventSendToPalomaLocal) ProtoMessage()    {}
 func (*EventSendToPalomaLocal) Descriptor() ([]byte, []int) {
 	return fileDescriptor_92888c16a425b01b, []int{5}
 }
-
 func (m *EventSendToPalomaLocal) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *EventSendToPalomaLocal) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_EventSendToPalomaLocal.Marshal(b, m, deterministic)
@@ -462,15 +432,12 @@ func (m *EventSendToPalomaLocal) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-
 func (m *EventSendToPalomaLocal) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_EventSendToPalomaLocal.Merge(m, src)
 }
-
 func (m *EventSendToPalomaLocal) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *EventSendToPalomaLocal) XXX_DiscardUnknown() {
 	xxx_messageInfo_EventSendToPalomaLocal.DiscardUnknown(m)
 }
@@ -884,7 +851,6 @@ func encodeVarintAttestation(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *Attestation) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1032,11 +998,9 @@ func (m *EventSendToPalomaLocal) Size() (n int) {
 func sovAttestation(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozAttestation(x uint64) (n int) {
 	return sovAttestation(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *Attestation) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1194,7 +1158,6 @@ func (m *Attestation) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *ERC20Token) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1343,7 +1306,6 @@ func (m *ERC20Token) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *EventObservation) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1554,7 +1516,6 @@ func (m *EventObservation) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *EventInvalidSendToPalomaReceiver) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1733,7 +1694,6 @@ func (m *EventInvalidSendToPalomaReceiver) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *EventSendToPaloma) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1880,7 +1840,6 @@ func (m *EventSendToPaloma) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *EventSendToPalomaLocal) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2059,7 +2018,6 @@ func (m *EventSendToPalomaLocal) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipAttestation(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

@@ -4,22 +4,19 @@
 package types
 
 import (
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	cosmossdk_io_math "cosmossdk.io/math"
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -45,11 +42,9 @@ func (*OutgoingTxBatch) ProtoMessage()    {}
 func (*OutgoingTxBatch) Descriptor() ([]byte, []int) {
 	return fileDescriptor_16a379404a8854af, []int{0}
 }
-
 func (m *OutgoingTxBatch) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *OutgoingTxBatch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_OutgoingTxBatch.Marshal(b, m, deterministic)
@@ -62,15 +57,12 @@ func (m *OutgoingTxBatch) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
-
 func (m *OutgoingTxBatch) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_OutgoingTxBatch.Merge(m, src)
 }
-
 func (m *OutgoingTxBatch) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *OutgoingTxBatch) XXX_DiscardUnknown() {
 	xxx_messageInfo_OutgoingTxBatch.DiscardUnknown(m)
 }
@@ -148,11 +140,9 @@ func (*OutgoingTransferTx) ProtoMessage()    {}
 func (*OutgoingTransferTx) Descriptor() ([]byte, []int) {
 	return fileDescriptor_16a379404a8854af, []int{1}
 }
-
 func (m *OutgoingTransferTx) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *OutgoingTransferTx) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_OutgoingTransferTx.Marshal(b, m, deterministic)
@@ -165,15 +155,12 @@ func (m *OutgoingTransferTx) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-
 func (m *OutgoingTransferTx) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_OutgoingTransferTx.Merge(m, src)
 }
-
 func (m *OutgoingTransferTx) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *OutgoingTransferTx) XXX_DiscardUnknown() {
 	xxx_messageInfo_OutgoingTransferTx.DiscardUnknown(m)
 }
@@ -221,11 +208,9 @@ func (*EventOutgoingBatchCanceled) ProtoMessage()    {}
 func (*EventOutgoingBatchCanceled) Descriptor() ([]byte, []int) {
 	return fileDescriptor_16a379404a8854af, []int{2}
 }
-
 func (m *EventOutgoingBatchCanceled) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *EventOutgoingBatchCanceled) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_EventOutgoingBatchCanceled.Marshal(b, m, deterministic)
@@ -238,15 +223,12 @@ func (m *EventOutgoingBatchCanceled) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-
 func (m *EventOutgoingBatchCanceled) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_EventOutgoingBatchCanceled.Merge(m, src)
 }
-
 func (m *EventOutgoingBatchCanceled) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *EventOutgoingBatchCanceled) XXX_DiscardUnknown() {
 	xxx_messageInfo_EventOutgoingBatchCanceled.DiscardUnknown(m)
 }
@@ -295,11 +277,9 @@ func (*EventOutgoingBatch) ProtoMessage()    {}
 func (*EventOutgoingBatch) Descriptor() ([]byte, []int) {
 	return fileDescriptor_16a379404a8854af, []int{3}
 }
-
 func (m *EventOutgoingBatch) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *EventOutgoingBatch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_EventOutgoingBatch.Marshal(b, m, deterministic)
@@ -312,15 +292,12 @@ func (m *EventOutgoingBatch) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-
 func (m *EventOutgoingBatch) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_EventOutgoingBatch.Merge(m, src)
 }
-
 func (m *EventOutgoingBatch) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *EventOutgoingBatch) XXX_DiscardUnknown() {
 	xxx_messageInfo_EventOutgoingBatch.DiscardUnknown(m)
 }
@@ -678,7 +655,6 @@ func encodeVarintBatch(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *OutgoingTxBatch) Size() (n int) {
 	if m == nil {
 		return 0
@@ -800,11 +776,9 @@ func (m *EventOutgoingBatch) Size() (n int) {
 func sovBatch(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozBatch(x uint64) (n int) {
 	return sovBatch(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *OutgoingTxBatch) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1076,7 +1050,6 @@ func (m *OutgoingTxBatch) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *OutgoingTransferTx) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1277,7 +1250,6 @@ func (m *OutgoingTransferTx) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *EventOutgoingBatchCanceled) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1456,7 +1428,6 @@ func (m *EventOutgoingBatchCanceled) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *EventOutgoingBatch) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1667,7 +1638,6 @@ func (m *EventOutgoingBatch) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipBatch(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

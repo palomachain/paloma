@@ -5,22 +5,18 @@ package types
 
 import (
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
-	cosmossdk_io_math "cosmossdk.io/math"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -30,17 +26,8 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // The slashing fractions for the various skyway related slashing conditions.
 // The first three refer to not submitting a particular message, the third for
-// submitting a different claim for the same Ethereum event
+// submitting a different claim for the same ethereum event
 type Params struct {
-	ContractSourceHash           string                      `protobuf:"bytes,1,opt,name=contract_source_hash,json=contractSourceHash,proto3" json:"contract_source_hash,omitempty"`
-	BridgeEthereumAddress        string                      `protobuf:"bytes,2,opt,name=bridge_ethereum_address,json=bridgeEthereumAddress,proto3" json:"bridge_ethereum_address,omitempty"`
-	BridgeChainId                uint64                      `protobuf:"varint,3,opt,name=bridge_chain_id,json=bridgeChainId,proto3" json:"bridge_chain_id,omitempty"`
-	SignedBatchesWindow          uint64                      `protobuf:"varint,4,opt,name=signed_batches_window,json=signedBatchesWindow,proto3" json:"signed_batches_window,omitempty"`
-	TargetBatchTimeout           uint64                      `protobuf:"varint,5,opt,name=target_batch_timeout,json=targetBatchTimeout,proto3" json:"target_batch_timeout,omitempty"`
-	AverageBlockTime             uint64                      `protobuf:"varint,6,opt,name=average_block_time,json=averageBlockTime,proto3" json:"average_block_time,omitempty"`
-	AverageEthereumBlockTime     uint64                      `protobuf:"varint,7,opt,name=average_ethereum_block_time,json=averageEthereumBlockTime,proto3" json:"average_ethereum_block_time,omitempty"`
-	SlashFractionBatch           cosmossdk_io_math.LegacyDec `protobuf:"bytes,8,opt,name=slash_fraction_batch,json=slashFractionBatch,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"slash_fraction_batch"`
-	SlashFractionBadEthSignature cosmossdk_io_math.LegacyDec `protobuf:"bytes,9,opt,name=slash_fraction_bad_eth_signature,json=slashFractionBadEthSignature,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"slash_fraction_bad_eth_signature"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
@@ -49,11 +36,9 @@ func (*Params) ProtoMessage()    {}
 func (*Params) Descriptor() ([]byte, []int) {
 	return fileDescriptor_9ec5e4b3ac5cfb2a, []int{0}
 }
-
 func (m *Params) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Params.Marshal(b, m, deterministic)
@@ -66,69 +51,17 @@ func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Params) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Params.Merge(m, src)
 }
-
 func (m *Params) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Params) XXX_DiscardUnknown() {
 	xxx_messageInfo_Params.DiscardUnknown(m)
 }
 
 var xxx_messageInfo_Params proto.InternalMessageInfo
-
-func (m *Params) GetContractSourceHash() string {
-	if m != nil {
-		return m.ContractSourceHash
-	}
-	return ""
-}
-
-func (m *Params) GetBridgeEthereumAddress() string {
-	if m != nil {
-		return m.BridgeEthereumAddress
-	}
-	return ""
-}
-
-func (m *Params) GetBridgeChainId() uint64 {
-	if m != nil {
-		return m.BridgeChainId
-	}
-	return 0
-}
-
-func (m *Params) GetSignedBatchesWindow() uint64 {
-	if m != nil {
-		return m.SignedBatchesWindow
-	}
-	return 0
-}
-
-func (m *Params) GetTargetBatchTimeout() uint64 {
-	if m != nil {
-		return m.TargetBatchTimeout
-	}
-	return 0
-}
-
-func (m *Params) GetAverageBlockTime() uint64 {
-	if m != nil {
-		return m.AverageBlockTime
-	}
-	return 0
-}
-
-func (m *Params) GetAverageEthereumBlockTime() uint64 {
-	if m != nil {
-		return m.AverageEthereumBlockTime
-	}
-	return 0
-}
 
 func init() {
 	proto.RegisterType((*Params)(nil), "palomachain.paloma.skyway.Params")
@@ -139,36 +72,29 @@ func init() {
 }
 
 var fileDescriptor_9ec5e4b3ac5cfb2a = []byte{
-	// 464 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xc1, 0x6a, 0x14, 0x31,
-	0x18, 0xc7, 0x67, 0x74, 0xad, 0x36, 0x28, 0x4a, 0xdc, 0x62, 0xda, 0xca, 0x74, 0x50, 0x28, 0x7b,
-	0x28, 0x33, 0xa2, 0xe0, 0x41, 0xf0, 0xe0, 0x6a, 0x8b, 0x82, 0x07, 0xd9, 0x2a, 0x82, 0x97, 0xf0,
-	0x4d, 0x12, 0x27, 0x61, 0x77, 0x26, 0x4b, 0x92, 0x71, 0xdd, 0x9b, 0x8f, 0xe0, 0xdb, 0xf8, 0x0a,
-	0x3d, 0xf6, 0x28, 0x22, 0x45, 0x76, 0x5f, 0x44, 0x26, 0x99, 0xd1, 0xa2, 0x1e, 0xbc, 0x65, 0xf2,
-	0xfb, 0xff, 0xbe, 0xe4, 0xcb, 0x7c, 0x68, 0x7f, 0x0e, 0x33, 0x5d, 0x01, 0x93, 0xa0, 0xea, 0x3c,
-	0xac, 0x73, 0x3b, 0x5d, 0x2e, 0x60, 0x99, 0xcf, 0xc1, 0x40, 0x65, 0xb3, 0xb9, 0xd1, 0x4e, 0xe3,
-	0xed, 0x73, 0xb9, 0x2c, 0xac, 0xb3, 0x90, 0xdb, 0x19, 0x96, 0xba, 0xd4, 0x3e, 0x95, 0xb7, 0xab,
-	0x20, 0xec, 0x6c, 0x33, 0x6d, 0x2b, 0x6d, 0x69, 0x00, 0xe1, 0x23, 0xa0, 0x3b, 0x5f, 0x06, 0x68,
-	0xe3, 0x95, 0x2f, 0x8e, 0xef, 0xa1, 0x21, 0xd3, 0xb5, 0x33, 0xc0, 0x1c, 0xb5, 0xba, 0x31, 0x4c,
-	0x50, 0x09, 0x56, 0x92, 0x38, 0x8d, 0x47, 0x9b, 0x13, 0xdc, 0xb3, 0x63, 0x8f, 0x9e, 0x83, 0x95,
-	0xf8, 0x21, 0xba, 0x55, 0x18, 0xc5, 0x4b, 0x41, 0x85, 0x93, 0xc2, 0x88, 0xa6, 0xa2, 0xc0, 0xb9,
-	0x11, 0xd6, 0x92, 0x0b, 0x5e, 0xda, 0x0a, 0xf8, 0xb0, 0xa3, 0x4f, 0x02, 0xc4, 0xfb, 0xe8, 0x7a,
-	0xe7, 0xf9, 0x1e, 0xa8, 0xe2, 0xe4, 0x62, 0x1a, 0x8f, 0x06, 0x93, 0x6b, 0x61, 0xfb, 0x69, 0xbb,
-	0xfb, 0x82, 0xe3, 0xfb, 0x68, 0xcb, 0xaa, 0xb2, 0x16, 0x9c, 0x16, 0xe0, 0x98, 0x14, 0x96, 0x2e,
-	0x54, 0xcd, 0xf5, 0x82, 0x0c, 0x7c, 0xfa, 0x66, 0x80, 0xe3, 0xc0, 0xde, 0x7a, 0xd4, 0x76, 0xe1,
-	0xc0, 0x94, 0xc2, 0x05, 0x87, 0x3a, 0x55, 0x09, 0xdd, 0x38, 0x72, 0xc9, 0x2b, 0x38, 0x30, 0xaf,
-	0xbc, 0x0e, 0x04, 0x1f, 0x20, 0x0c, 0x1f, 0x84, 0x81, 0x52, 0xd0, 0x62, 0xa6, 0xd9, 0xd4, 0x2b,
-	0x64, 0xc3, 0xe7, 0x6f, 0x74, 0x64, 0xdc, 0x82, 0x56, 0xc0, 0x8f, 0xd1, 0x6e, 0x9f, 0xfe, 0xd5,
-	0xf4, 0x39, 0xed, 0xb2, 0xd7, 0x48, 0x17, 0xe9, 0x1b, 0xff, 0xad, 0xbf, 0x41, 0x43, 0x3b, 0x03,
-	0x2b, 0xe9, 0xfb, 0xf6, 0x2d, 0x95, 0xae, 0xc3, 0x35, 0xc9, 0x95, 0x34, 0x1e, 0x5d, 0x1d, 0xdf,
-	0x3d, 0x39, 0xdb, 0x8b, 0xbe, 0x9d, 0xed, 0xed, 0x86, 0x7f, 0x64, 0xf9, 0x34, 0x53, 0x3a, 0xaf,
-	0xc0, 0xc9, 0xec, 0xa5, 0x28, 0x81, 0x2d, 0x9f, 0x09, 0x36, 0xc1, 0xbe, 0xc0, 0x51, 0xe7, 0xfb,
-	0x56, 0xf0, 0x14, 0xa5, 0x7f, 0x95, 0xe5, 0xed, 0x05, 0x69, 0xfb, 0x46, 0xe0, 0x1a, 0x23, 0xc8,
-	0xe6, 0xff, 0x1f, 0x71, 0xfb, 0x8f, 0x23, 0xf8, 0xa1, 0x93, 0xc7, 0x7d, 0xa1, 0x47, 0x83, 0x4f,
-	0xdf, 0xd3, 0x68, 0x7c, 0x74, 0xb2, 0x4a, 0xe2, 0xd3, 0x55, 0x12, 0xff, 0x58, 0x25, 0xf1, 0xe7,
-	0x75, 0x12, 0x9d, 0xae, 0x93, 0xe8, 0xeb, 0x3a, 0x89, 0xde, 0x1d, 0x94, 0xca, 0xc9, 0xa6, 0xc8,
-	0x98, 0xae, 0xf2, 0x7f, 0x8c, 0xf4, 0xc7, 0x7e, 0xa8, 0xdd, 0x72, 0x2e, 0x6c, 0xb1, 0xe1, 0x07,
-	0xf1, 0xc1, 0xcf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x4c, 0xcf, 0x75, 0xd0, 0xfe, 0x02, 0x00, 0x00,
+	// 349 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x91, 0x31, 0x4f, 0xe3, 0x30,
+	0x14, 0xc7, 0x93, 0xd6, 0x4d, 0xdd, 0x2e, 0x67, 0x55, 0x3d, 0x9d, 0xda, 0x93, 0xa2, 0xea, 0x86,
+	0x9b, 0x4e, 0xc9, 0x70, 0x1b, 0x23, 0x03, 0x83, 0x27, 0xe4, 0x91, 0xc5, 0x7a, 0x71, 0x4c, 0x62,
+	0xb5, 0x89, 0x23, 0xdb, 0xa1, 0x74, 0xe3, 0x23, 0x30, 0xf1, 0x99, 0x18, 0x3b, 0x32, 0x30, 0xa0,
+	0xf6, 0x8b, 0xa0, 0xc4, 0x14, 0x55, 0x82, 0xed, 0xef, 0xff, 0xef, 0xff, 0xfc, 0x9e, 0xfd, 0xa6,
+	0x7f, 0x1b, 0xd8, 0xe8, 0x0a, 0x44, 0x09, 0xaa, 0x4e, 0xbd, 0x4e, 0xed, 0x7a, 0xb7, 0x85, 0x5d,
+	0xda, 0x80, 0x81, 0xca, 0x26, 0x8d, 0xd1, 0x4e, 0xcf, 0x16, 0x67, 0xb9, 0xc4, 0xeb, 0xc4, 0xe7,
+	0x96, 0xf3, 0x42, 0x17, 0xba, 0x4f, 0xa5, 0x9d, 0xf2, 0x05, 0xcb, 0x85, 0xd0, 0xb6, 0xd2, 0x96,
+	0x7b, 0xe0, 0x0f, 0x1e, 0xfd, 0x79, 0x1a, 0x4c, 0xa3, 0xeb, 0xfe, 0xf2, 0x0b, 0xf4, 0xf0, 0xba,
+	0x0a, 0x28, 0xc2, 0x21, 0x19, 0x50, 0x84, 0x07, 0x64, 0x48, 0x11, 0x1e, 0x12, 0x44, 0x11, 0x46,
+	0x64, 0x44, 0x11, 0x1e, 0x91, 0x88, 0x22, 0x1c, 0x91, 0x31, 0x45, 0x78, 0x4c, 0x30, 0x45, 0x18,
+	0x93, 0x09, 0x45, 0x78, 0x42, 0xa6, 0x6c, 0x2e, 0x74, 0xed, 0x0c, 0x08, 0xc7, 0xad, 0x6e, 0x8d,
+	0x90, 0xbc, 0x04, 0x5b, 0xb2, 0x5f, 0x99, 0x51, 0x79, 0x21, 0xb9, 0x74, 0xa5, 0x34, 0xb2, 0xad,
+	0x38, 0xe4, 0xb9, 0x91, 0xd6, 0xb2, 0x1f, 0x1f, 0xa0, 0x7f, 0x02, 0x57, 0x39, 0xfb, 0x69, 0x55,
+	0x51, 0xcb, 0x9c, 0x67, 0xe0, 0x44, 0x29, 0x2d, 0xdf, 0xaa, 0x3a, 0xd7, 0x5b, 0x46, 0x1c, 0x98,
+	0xde, 0xe2, 0x4e, 0x55, 0x52, 0xb7, 0x8e, 0xcd, 0xe0, 0x4e, 0x1a, 0x28, 0x24, 0xcf, 0x36, 0x5a,
+	0xac, 0x7b, 0x9b, 0xfd, 0x3e, 0x79, 0x9f, 0x7d, 0xce, 0xe0, 0xdc, 0x6e, 0xc0, 0x96, 0xfc, 0xb6,
+	0x1b, 0x4e, 0xe9, 0xda, 0x77, 0x60, 0xab, 0x2f, 0x6e, 0xde, 0x55, 0xf3, 0x6e, 0x0c, 0x70, 0xad,
+	0x91, 0x97, 0x57, 0xcf, 0x87, 0x38, 0xdc, 0x1f, 0xe2, 0xf0, 0xed, 0x10, 0x87, 0x8f, 0xc7, 0x38,
+	0xd8, 0x1f, 0xe3, 0xe0, 0xe5, 0x18, 0x07, 0x37, 0xff, 0x0a, 0xe5, 0xca, 0x36, 0x4b, 0x84, 0xae,
+	0xd2, 0x6f, 0x36, 0x76, 0x7f, 0xda, 0x99, 0xdb, 0x35, 0xd2, 0x66, 0x51, 0xff, 0xcf, 0xff, 0xdf,
+	0x03, 0x00, 0x00, 0xff, 0xff, 0x1a, 0x05, 0x8f, 0xd6, 0xdd, 0x01, 0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -191,65 +117,6 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	{
-		size := m.SlashFractionBadEthSignature.Size()
-		i -= size
-		if _, err := m.SlashFractionBadEthSignature.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintParams(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x4a
-	{
-		size := m.SlashFractionBatch.Size()
-		i -= size
-		if _, err := m.SlashFractionBatch.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintParams(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x42
-	if m.AverageEthereumBlockTime != 0 {
-		i = encodeVarintParams(dAtA, i, uint64(m.AverageEthereumBlockTime))
-		i--
-		dAtA[i] = 0x38
-	}
-	if m.AverageBlockTime != 0 {
-		i = encodeVarintParams(dAtA, i, uint64(m.AverageBlockTime))
-		i--
-		dAtA[i] = 0x30
-	}
-	if m.TargetBatchTimeout != 0 {
-		i = encodeVarintParams(dAtA, i, uint64(m.TargetBatchTimeout))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.SignedBatchesWindow != 0 {
-		i = encodeVarintParams(dAtA, i, uint64(m.SignedBatchesWindow))
-		i--
-		dAtA[i] = 0x20
-	}
-	if m.BridgeChainId != 0 {
-		i = encodeVarintParams(dAtA, i, uint64(m.BridgeChainId))
-		i--
-		dAtA[i] = 0x18
-	}
-	if len(m.BridgeEthereumAddress) > 0 {
-		i -= len(m.BridgeEthereumAddress)
-		copy(dAtA[i:], m.BridgeEthereumAddress)
-		i = encodeVarintParams(dAtA, i, uint64(len(m.BridgeEthereumAddress)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.ContractSourceHash) > 0 {
-		i -= len(m.ContractSourceHash)
-		copy(dAtA[i:], m.ContractSourceHash)
-		i = encodeVarintParams(dAtA, i, uint64(len(m.ContractSourceHash)))
-		i--
-		dAtA[i] = 0xa
-	}
 	return len(dAtA) - i, nil
 }
 
@@ -264,51 +131,21 @@ func encodeVarintParams(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *Params) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.ContractSourceHash)
-	if l > 0 {
-		n += 1 + l + sovParams(uint64(l))
-	}
-	l = len(m.BridgeEthereumAddress)
-	if l > 0 {
-		n += 1 + l + sovParams(uint64(l))
-	}
-	if m.BridgeChainId != 0 {
-		n += 1 + sovParams(uint64(m.BridgeChainId))
-	}
-	if m.SignedBatchesWindow != 0 {
-		n += 1 + sovParams(uint64(m.SignedBatchesWindow))
-	}
-	if m.TargetBatchTimeout != 0 {
-		n += 1 + sovParams(uint64(m.TargetBatchTimeout))
-	}
-	if m.AverageBlockTime != 0 {
-		n += 1 + sovParams(uint64(m.AverageBlockTime))
-	}
-	if m.AverageEthereumBlockTime != 0 {
-		n += 1 + sovParams(uint64(m.AverageEthereumBlockTime))
-	}
-	l = m.SlashFractionBatch.Size()
-	n += 1 + l + sovParams(uint64(l))
-	l = m.SlashFractionBadEthSignature.Size()
-	n += 1 + l + sovParams(uint64(l))
 	return n
 }
 
 func sovParams(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozParams(x uint64) (n int) {
 	return sovParams(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *Params) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -338,231 +175,6 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: Params: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ContractSourceHash", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowParams
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthParams
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthParams
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ContractSourceHash = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BridgeEthereumAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowParams
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthParams
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthParams
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.BridgeEthereumAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BridgeChainId", wireType)
-			}
-			m.BridgeChainId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowParams
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BridgeChainId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SignedBatchesWindow", wireType)
-			}
-			m.SignedBatchesWindow = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowParams
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SignedBatchesWindow |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TargetBatchTimeout", wireType)
-			}
-			m.TargetBatchTimeout = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowParams
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TargetBatchTimeout |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AverageBlockTime", wireType)
-			}
-			m.AverageBlockTime = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowParams
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.AverageBlockTime |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AverageEthereumBlockTime", wireType)
-			}
-			m.AverageEthereumBlockTime = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowParams
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.AverageEthereumBlockTime |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 8:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionBatch", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowParams
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthParams
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthParams
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.SlashFractionBatch.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 9:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SlashFractionBadEthSignature", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowParams
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthParams
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthParams
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.SlashFractionBadEthSignature.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])
@@ -584,7 +196,6 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipParams(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
