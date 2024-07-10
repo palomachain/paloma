@@ -58,6 +58,7 @@ message MsgSetPublicAccessData {
   bytes data = 4;
   palomachain.paloma.valset.MsgMetadata metadata = 5
       [ (gogoproto.nullable) = false ];
+  uint64 valsetID = 6;
 }
 
 message MsgSetPublicAccessDataResponse {}

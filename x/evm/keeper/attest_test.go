@@ -153,6 +153,8 @@ var _ = g.Describe("attest router", func() {
 			Return(uint64(100), nil).Maybe()
 		ms.ValsetKeeper.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).
 			Return(createSnapshot(newChain), nil).Maybe()
+		ms.ValsetKeeper.On("FindSnapshotByID", mock.Anything, mock.Anything).
+			Return(createSnapshot(newChain), nil).Maybe()
 	})
 
 	g.BeforeEach(func() {
@@ -173,6 +175,9 @@ var _ = g.Describe("attest router", func() {
 				ExternalAccountAddress: "addr2",
 				Signature:              sig,
 			}},
+			PublicAccessData: &consensustypes.PublicAccessData{
+				ValsetID: 1,
+			},
 		}
 	})
 
