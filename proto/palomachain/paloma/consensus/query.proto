@@ -103,6 +103,7 @@ message MessageWithSignatures {
   bytes publicAccessData = 6;
   bytes errorData = 7;
   repeated Evidence evidence = 8;
+  uint64 valsetID = 9;
 }
 
 message QueryMessageByIDRequest {

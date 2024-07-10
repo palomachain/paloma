@@ -168,19 +168,27 @@ func attestTransactionIntegrity(
 	}
 
 	var valset types.Valset
-	snapshot, err := k.Valset.GetLatestSnapshotOnChain(ctx, chainReferenceID)
-	// A snapshot may not yet exist if the chain is just being added, but we
-	// need to continue in case we're attesting to the initial compass
-	// deployment
-	if err != nil {
-		if !errors.Is(err, keeperutil.ErrNotFound) {
-			// There was some other error accessing the store, bail
-			return nil, err
+	var valsetID uint64
+
+	if publicAccessData := msg.GetPublicAccessData(); publicAccessData != nil {
+		valsetID = publicAccessData.GetValsetID()
+	}
+
+	if valsetID != 0 {
+		snapshot, err := k.Valset.FindSnapshotByID(ctx, valsetID)
+		// A snapshot may not yet exist if the chain is just being added, but we
+		// need to continue in case we're attesting to the initial compass
+		// deployment
+		if err != nil {
+			if !errors.Is(err, keeperutil.ErrNotFound) {
+				// There was some other error accessing the store, bail
+				return nil, err
+			}
+		} else {
+			// There was no error, so convert the snapshot to valset
+			logger := liblog.FromSDKLogger(k.Logger(ctx))
+			valset = transformSnapshotToCompass(snapshot, chainReferenceID, logger)
 		}
-	} else {
-		// There was no error, so convert the snapshot to valset
-		logger := liblog.FromSDKLogger(k.Logger(ctx))
-		valset = transformSnapshotToCompass(snapshot, chainReferenceID, logger)
 	}
 
 	err = verifyTx(ctx, tx, msg, &valset, compass)

@@ -509,6 +509,7 @@ func (k Keeper) SetMessagePublicAccessData(
 	payload := &types.PublicAccessData{
 		ValAddress: valAddr,
 		Data:       msg.GetData(),
+		ValsetID:   msg.GetValsetID(),
 	}
 	err = cq.SetPublicAccessData(sdkCtx, msg.GetMessageID(), payload)
 	if err != nil {

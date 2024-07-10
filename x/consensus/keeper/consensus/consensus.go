@@ -473,9 +473,11 @@ func ToMessageWithSignatures(msg types.QueuedSignedMessageI, cdc codec.BinaryCod
 	}
 
 	var publicAccessData []byte
+	var valsetID uint64
 
 	if msg.GetPublicAccessData() != nil {
 		publicAccessData = msg.GetPublicAccessData().GetData()
+		valsetID = msg.GetPublicAccessData().GetValsetID()
 	}
 
 	var errorData []byte
@@ -491,6 +493,7 @@ func ToMessageWithSignatures(msg types.QueuedSignedMessageI, cdc codec.BinaryCod
 		BytesToSign:      msg.GetBytesToSign(),
 		SignData:         []*types.ValidatorSignature{},
 		PublicAccessData: publicAccessData,
+		ValsetID:         valsetID,
 		ErrorData:        errorData,
 	}
 	for _, signData := range msg.GetSignData() {

@@ -64,6 +64,7 @@ message PublicAccessData {
   bytes valAddress = 1 [ (gogoproto.casttype) =
                              "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
   bytes data = 2;
+  uint64 valsetID = 3;
 }
 
 message ErrorData {

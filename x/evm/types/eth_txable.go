@@ -69,7 +69,7 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 	compass *SmartContract,
 ) error {
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
-		WithFields("tx_hash", tx.Hash().Hex())
+		WithFields("tx_hash", tx.Hash().Hex(), "valset_id", valset.ValsetID)
 
 	logger.Debug("SubmitLogicCall VerifyAgainstTX")
 
@@ -119,7 +119,9 @@ func (m *UpdateValset) VerifyAgainstTX(
 	compass *SmartContract,
 ) error {
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
-		WithFields("tx_hash", tx.Hash().Hex())
+		WithFields("tx_hash", tx.Hash().Hex(),
+			"valset_id", valset.ValsetID,
+			"updated_valset_id", m.Valset.ValsetID)
 
 	logger.Debug("UpdateValset VerifyAgainstTX")
 
@@ -147,7 +149,7 @@ func (m *UpdateValset) VerifyAgainstTX(
 	}
 
 	if !bytes.Equal(tx.Data(), input) {
-		logger.Warn("SubmitLogicCall VerifyAgainstTX failed")
+		logger.Warn("UpdateValset VerifyAgainstTX failed")
 		return ErrEthTxNotVerified
 	}
 
