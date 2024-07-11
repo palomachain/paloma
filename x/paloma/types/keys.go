@@ -17,6 +17,8 @@ const (
 	MemStoreKey = "mem_paloma"
 )
 
+var LightNodeClientKeyPrefix = []byte("light-node-client")
+
 func KeyPrefix(p string) []byte {
 	return []byte(p)
 }

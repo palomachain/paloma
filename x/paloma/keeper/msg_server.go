@@ -66,3 +66,11 @@ func (k msgServer) AddStatusUpdate(goCtx context.Context, msg *types.MsgAddStatu
 
 	return &types.EmptyResponse{}, nil
 }
+
+func (k msgServer) RegisterLightNodeClient(
+	ctx context.Context,
+	msg *types.MsgRegisterLightNodeClient,
+) (*types.EmptyResponse, error) {
+	err := k.CreateLightNodeClientAccount(ctx, msg.Metadata.Creator, msg.ClientAddress)
+	return nil, err
+}

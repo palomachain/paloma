@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -9,34 +10,45 @@ import (
 	"cosmossdk.io/core/address"
 	cosmosstore "cosmossdk.io/core/store"
 	cosmoslog "cosmossdk.io/log"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/x/feegrant"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/paloma/types"
 	"golang.org/x/mod/semver"
 )
 
-type (
-	Keeper struct {
-		cdc            codec.BinaryCodec
-		storeKey       cosmosstore.KVStoreService
-		paramstore     paramtypes.Subspace
-		Valset         types.ValsetKeeper
-		Upgrade        types.UpgradeKeeper
-		AppVersion     string
-		AddressCodec   address.Codec
-		ExternalChains []types.ExternalChainSupporterKeeper
-	}
-)
+type Keeper struct {
+	cdc            codec.BinaryCodec
+	storeKey       cosmosstore.KVStoreService
+	paramstore     paramtypes.Subspace
+	accountKeeper  types.AccountKeeper
+	bankKeeper     types.BankKeeper
+	feegrantKeeper types.FeegrantKeeper
+	Valset         types.ValsetKeeper
+	Upgrade        types.UpgradeKeeper
+	AppVersion     string
+	AddressCodec   address.Codec
+	ExternalChains []types.ExternalChainSupporterKeeper
+}
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey cosmosstore.KVStoreService,
 	ps paramtypes.Subspace,
 	appVersion string,
+	accountKeeper types.AccountKeeper,
+	bankKeeper types.BankKeeper,
+	feegrantKeeper types.FeegrantKeeper,
 	valset types.ValsetKeeper,
 	upgrade types.UpgradeKeeper,
 	addressCodec address.Codec,
@@ -54,13 +66,16 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:          cdc,
-		storeKey:     storeKey,
-		paramstore:   ps,
-		Valset:       valset,
-		Upgrade:      upgrade,
-		AddressCodec: addressCodec,
-		AppVersion:   appVersion,
+		cdc:            cdc,
+		storeKey:       storeKey,
+		paramstore:     ps,
+		accountKeeper:  accountKeeper,
+		bankKeeper:     bankKeeper,
+		feegrantKeeper: feegrantKeeper,
+		Valset:         valset,
+		Upgrade:        upgrade,
+		AddressCodec:   addressCodec,
+		AppVersion:     appVersion,
 	}
 }
 
@@ -160,4 +175,74 @@ func (k Keeper) CheckChainVersion(ctx context.Context) {
 		abandon()
 		return
 	}
+}
+
+func (k Keeper) lightNodeClientStore(ctx context.Context) storetypes.KVStore {
+	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(s, types.LightNodeClientKeyPrefix)
+}
+
+func (k Keeper) getLightNodeClientFunds(
+	ctx context.Context,
+	addr string,
+) (*types.LightNodeClientFunds, error) {
+	st := k.lightNodeClientStore(ctx)
+	return keeperutil.Load[*types.LightNodeClientFunds](st, k.cdc, []byte(addr))
+}
+
+func (k Keeper) CreateLightNodeClientAccount(
+	ctx context.Context,
+	authAddr, acctAddr string,
+) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	beginTime := sdkCtx.BlockTime()
+	endTime := beginTime.AddDate(2, 0, 0) // Vesting for two years
+
+	acct, err := k.accountKeeper.AddressCodec().StringToBytes(acctAddr)
+	if err != nil {
+		return err
+	}
+
+	// First, check if the vesting account already exists
+	if acc := k.accountKeeper.GetAccount(ctx, acct); acc != nil {
+		return errors.New("account already exists")
+	}
+
+	// Get the funds allocated to the authorization account
+	funds, err := k.getLightNodeClientFunds(ctx, authAddr)
+	if err != nil {
+		return err
+	}
+	amount := sdk.Coins{funds.Amount}
+
+	// Create a basic vesting account
+	// It will vest until `endTime`, which is set two years from now
+	baseAccount := authtypes.NewBaseAccountWithAddress(acct)
+	baseAccount = k.accountKeeper.NewAccount(ctx, baseAccount).(*authtypes.BaseAccount)
+	baseVestingAccount, err := vestingtypes.NewBaseVestingAccount(baseAccount, amount, endTime.Unix())
+	if err != nil {
+		return err
+	}
+
+	// Create a continuous vesting account, starting from now
+	vestingAccount := vestingtypes.NewContinuousVestingAccountRaw(baseVestingAccount, beginTime.Unix())
+
+	k.accountKeeper.SetAccount(ctx, vestingAccount)
+
+	// Seed the account from the module fund
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, acct, amount)
+	if err != nil {
+		return err
+	}
+
+	// Finally, set the module as fee granter for the new account
+	moduleAccount := k.accountKeeper.GetModuleAddress(types.ModuleName)
+
+	// TODO - we might want to set the spend limit to a safe value
+	allowance := &feegrant.BasicAllowance{
+		SpendLimit: nil,      // Unlimited spend
+		Expiration: &endTime, // Expires when it finishes vesting
+	}
+
+	return k.feegrantKeeper.GrantAllowance(ctx, moduleAccount, acct, allowance)
 }
