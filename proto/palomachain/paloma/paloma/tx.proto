@@ -10,6 +10,7 @@ option go_package = "github.com/palomachain/paloma/x/paloma/types";
 
 service Msg {
   rpc AddStatusUpdate(MsgAddStatusUpdate) returns (EmptyResponse);
+
   rpc RegisterLightNodeClient(MsgRegisterLightNodeClient)
     returns (EmptyResponse);
 }

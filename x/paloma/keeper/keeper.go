@@ -182,6 +182,14 @@ func (k Keeper) lightNodeClientStore(ctx context.Context) storetypes.KVStore {
 	return prefix.NewStore(s, types.LightNodeClientKeyPrefix)
 }
 
+func (k Keeper) AllLightNodeClientFunds(
+	ctx context.Context,
+) ([]*types.LightNodeClientFunds, error) {
+	st := k.lightNodeClientStore(ctx)
+	_, all, err := keeperutil.IterAll[*types.LightNodeClientFunds](st, k.cdc)
+	return all, err
+}
+
 func (k Keeper) getLightNodeClientFunds(
 	ctx context.Context,
 	addr string,
