@@ -74,3 +74,11 @@ func (k msgServer) RegisterLightNodeClient(
 	err := k.CreateLightNodeClientAccount(ctx, msg.Metadata.Creator, msg.ClientAddress)
 	return nil, err
 }
+
+func (k msgServer) AddLightNodeClientFunds(
+	ctx context.Context,
+	msg *types.MsgAddLightNodeClientFunds,
+) (*types.EmptyResponse, error) {
+	err := k.UpdateLightNodeClientFunds(ctx, msg.AuthAddress, msg.Amount)
+	return nil, err
+}

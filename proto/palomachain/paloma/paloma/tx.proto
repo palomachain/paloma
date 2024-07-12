@@ -1,6 +1,7 @@
 syntax = "proto3";
 package palomachain.paloma.paloma;
 
+import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
@@ -12,6 +13,9 @@ service Msg {
   rpc AddStatusUpdate(MsgAddStatusUpdate) returns (EmptyResponse);
 
   rpc RegisterLightNodeClient(MsgRegisterLightNodeClient)
+    returns (EmptyResponse);
+
+  rpc AddLightNodeClientFunds(MsgAddLightNodeClientFunds)
     returns (EmptyResponse);
 }
 
@@ -44,4 +48,13 @@ message MsgRegisterLightNodeClient {
       [ (gogoproto.nullable) = false ];
 
   string client_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+message MsgAddLightNodeClientFunds {
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+
+  string auth_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  cosmos.base.v1beta1.Coin amount = 3 [ (gogoproto.nullable) = false ];
 }

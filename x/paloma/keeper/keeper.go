@@ -10,6 +10,7 @@ import (
 	"cosmossdk.io/core/address"
 	cosmosstore "cosmossdk.io/core/store"
 	cosmoslog "cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/feegrant"
@@ -190,6 +191,67 @@ func (k Keeper) AllLightNodeClientFunds(
 	return all, err
 }
 
+func (k Keeper) SetLightNodeClientFunds(
+	ctx context.Context,
+	addr string,
+	funds *types.LightNodeClientFunds,
+) error {
+	st := k.lightNodeClientStore(ctx)
+	return keeperutil.Save(st, k.cdc, []byte(addr), funds)
+}
+
+func (k Keeper) UpdateLightNodeClientFunds(
+	ctx context.Context,
+	addr string,
+	amount sdk.Coin,
+) error {
+	acct, err := sdk.AccAddressFromBech32(addr)
+	if err != nil {
+		return err
+	}
+
+	if sdk.VerifyAddressFormat(acct) != nil || !amount.IsValid() {
+		return errors.New("invalid parameters")
+	}
+
+	funds, err := k.getLightNodeClientFunds(ctx, addr)
+	if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
+		// Any errors other than not found and we bail
+		return err
+	}
+
+	if err != nil && errors.Is(err, keeperutil.ErrNotFound) {
+		// If there is no funds for this address yet, we create a new one
+		funds = &types.LightNodeClientFunds{
+			ClientAddress: addr,
+			Amount:        amount,
+		}
+	} else {
+		if funds.Amount.Denom != amount.Denom {
+			return errors.New("new amount denom does not match existing amount")
+		}
+
+		// Otherwise, we update the amount on the client funds
+		funds.Amount.Amount = funds.Amount.Amount.Add(amount.Amount)
+	}
+
+	// Transfer extra 5% to module to cover fee grants
+	moduleCoins := sdk.Coins{
+		sdk.Coin{
+			Amount: amount.Amount.Quo(math.NewInt(20)).Add(amount.Amount),
+			Denom:  amount.Denom,
+		},
+	}
+
+	// Lock new coins in module
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, acct, types.ModuleName, moduleCoins)
+	if err != nil {
+		return err
+	}
+
+	return k.SetLightNodeClientFunds(ctx, addr, funds)
+}
+
 func (k Keeper) getLightNodeClientFunds(
 	ctx context.Context,
 	addr string,
@@ -242,6 +304,9 @@ func (k Keeper) CreateLightNodeClientAccount(
 	if err != nil {
 		return err
 	}
+
+	// Delete the light node client funds
+	k.lightNodeClientStore(ctx).Delete([]byte(authAddr))
 
 	// Finally, set the module as fee granter for the new account
 	moduleAccount := k.accountKeeper.GetModuleAddress(types.ModuleName)

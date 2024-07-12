@@ -186,6 +186,7 @@ var (
 		icatypes.ModuleName:            nil,
 		wasmtypes.ModuleName:           {authtypes.Burner},
 		treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
+		palomamoduletypes.ModuleName:   nil,
 	}
 )
 
@@ -334,6 +335,7 @@ func New(
 		crisistypes.StoreKey,
 		metrixmoduletypes.StoreKey,
 		wasmtypes.StoreKey,
+		palomamoduletypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(

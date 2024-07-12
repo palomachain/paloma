@@ -5,7 +5,7 @@ const (
 	ModuleName = "paloma"
 
 	// StoreKey defines the primary module store key
-	StoreKey = ModuleName
+	StoreKey = "paloma-store"
 
 	// RouterKey is the message route for slashing
 	RouterKey = ModuleName
@@ -14,7 +14,7 @@ const (
 	QuerierRoute = ModuleName
 
 	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_paloma"
+	MemStoreKey = "mem_paloma_store"
 )
 
 var LightNodeClientKeyPrefix = []byte("light-node-client")
