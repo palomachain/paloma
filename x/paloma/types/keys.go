@@ -19,6 +19,8 @@ const (
 
 var LightNodeClientKeyPrefix = []byte("light-node-client")
 
+var LightNodeClientFeegranterKey = []byte("light-node-client-feegranter")
+
 func KeyPrefix(p string) []byte {
 	return []byte(p)
 }

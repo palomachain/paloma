@@ -57,4 +57,6 @@ message MsgAddLightNodeClientFunds {
 
   string auth_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   cosmos.base.v1beta1.Coin amount = 3 [ (gogoproto.nullable) = false ];
+  uint32 vesting_years = 4;
+  bool feegrant = 5;
 }

@@ -5,6 +5,7 @@ import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "palomachain/paloma/paloma/light_node_client_feegranter.proto";
 import "palomachain/paloma/paloma/light_node_client_funds.proto";
 import "palomachain/paloma/paloma/params.proto";
 
@@ -22,6 +23,12 @@ service Query {
     option (google.api.http).get =
       "/palomachain/paloma/paloma/light_node_client_funds";
   }
+
+  rpc GetLightNodeClientFeegranter(google.protobuf.Empty)
+      returns (QueryLightNodeClientFeegranterResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/paloma/light_node_client_feegranter";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -36,4 +43,8 @@ message QueryParamsResponse {
 
 message QueryLightNodeClientFundsResponse {
   repeated LightNodeClientFunds light_node_client_funds = 1;
+}
+
+message QueryLightNodeClientFeegranterResponse {
+  LightNodeClientFeegranter light_node_client_feegranter = 1;
 }

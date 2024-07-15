@@ -10,4 +10,6 @@ option go_package = "github.com/palomachain/paloma/x/paloma/types";
 message LightNodeClientFunds {
   string client_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   cosmos.base.v1beta1.Coin amount = 2 [ (gogoproto.nullable) = false ];
+  uint32 vesting_years = 3;
+  bool feegrant = 4;
 }

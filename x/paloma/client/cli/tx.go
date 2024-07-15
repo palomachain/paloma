@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -13,6 +14,8 @@ import (
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cobra"
 )
+
+const flagFeegrant = "feegrant"
 
 var DefaultRelativePacketTimeoutTimestamp = uint64((time.Duration(10) * time.Minute).Nanoseconds())
 
@@ -69,22 +72,19 @@ The creator key is used to determine the available funds, which are transferred 
 
 func CmdAddLightNodeClientFunds() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add-light-node-client-funds [auth-address] [amount]",
+		Use:   "add-light-node-client-funds [auth-address] [amount] [vesting-years]",
 		Short: "Manually add funds to a new light node client",
 		Long: `Manually register a light node sale by adding funds to the authorization account. Funds will be added to any existing funds on the same account.
-The [auth-address] field should contain the address of the client that's going to register the new light node client.`,
-		Args: cobra.ExactArgs(2),
+The [auth-address] field should contain the address of the client that's going to register the new light node client.
+The [vesting-years] parameter determines how long the funds will take to fully vest.
+The --feegrant flag makes the module cover all transaction fees from the vesting account.`,
+		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			authAddress := args[0]
 
 			amount, err := sdk.ParseCoinsNormalized(args[1])
 			if err != nil {
 				return errors.New("invalid amount")
-			}
-
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
 			}
 
 			acct, err := sdk.AccAddressFromBech32(authAddress)
@@ -96,10 +96,27 @@ The [auth-address] field should contain the address of the client that's going t
 				return errors.New("invalid client_address")
 			}
 
+			vestingYears, err := strconv.ParseUint(args[2], 10, 32)
+			if err != nil {
+				return err
+			}
+
+			feegrant, err := cmd.Flags().GetBool(flagFeegrant)
+			if err != nil {
+				return err
+			}
+
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
 			creator := clientCtx.GetFromAddress().String()
 			msg := &types.MsgAddLightNodeClientFunds{
-				AuthAddress: authAddress,
-				Amount:      amount[0],
+				AuthAddress:  authAddress,
+				Amount:       amount[0],
+				VestingYears: uint32(vestingYears),
+				Feegrant:     feegrant,
 				Metadata: valsettypes.MsgMetadata{
 					Creator: creator,
 					Signers: []string{creator},
@@ -114,6 +131,7 @@ The [auth-address] field should contain the address of the client that's going t
 		},
 	}
 
+	cmd.Flags().Bool(flagFeegrant, false, "Grant fee usage to new account")
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

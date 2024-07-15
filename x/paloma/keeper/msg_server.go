@@ -79,6 +79,8 @@ func (k msgServer) AddLightNodeClientFunds(
 	ctx context.Context,
 	msg *types.MsgAddLightNodeClientFunds,
 ) (*types.EmptyResponse, error) {
-	err := k.UpdateLightNodeClientFunds(ctx, msg.AuthAddress, msg.Amount)
+	err := k.UpdateLightNodeClientFunds(ctx, msg.AuthAddress, msg.Amount,
+		msg.VestingYears, msg.Feegrant)
+
 	return nil, err
 }

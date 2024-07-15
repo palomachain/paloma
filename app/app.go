@@ -131,6 +131,7 @@ import (
 	metrixmodulekeeper "github.com/palomachain/paloma/x/metrix/keeper"
 	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 	palomamodule "github.com/palomachain/paloma/x/paloma"
+	palomaclient "github.com/palomachain/paloma/x/paloma/client"
 	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
@@ -165,6 +166,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		evmclient.ProposalHandler,
 		treasuryclient.ProposalHandler,
 		valsetclient.ProposalHandler,
+		palomaclient.ProposalHandler,
 	}
 }
 
@@ -668,7 +670,8 @@ func New(
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(skywaymoduletypes.RouterKey, skywaymodulekeeper.NewSkywayProposalHandler(app.SkywayKeeper)).
 		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper)).
-		AddRoute(valsetmoduletypes.RouterKey, valsetmodule.NewValsetProposalHandler(app.ValsetKeeper))
+		AddRoute(valsetmoduletypes.RouterKey, valsetmodule.NewValsetProposalHandler(app.ValsetKeeper)).
+		AddRoute(palomamoduletypes.RouterKey, palomamodule.NewPalomaProposalHandler(app.PalomaKeeper))
 
 	// Example of setting gov params:
 	govKeeper := govkeeper.NewKeeper(
