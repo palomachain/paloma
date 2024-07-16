@@ -189,6 +189,9 @@ func BuildCompassConsensus(
 					R: big.NewInt(0),
 					S: big.NewInt(0),
 				})
+			// This shouldn't matter, but in case it does, we guarantee we do it
+			// like Pigeon, so we add a zero signature
+			con.originalSignatures = append(con.originalSignatures, nil)
 		} else {
 			con.Signatures = append(con.Signatures,
 				Signature{
