@@ -13,8 +13,8 @@ import (
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
 type AccountKeeper interface {
-	GetModuleAddress(moduleName string) sdk.AccAddress
 	AddressCodec() address.Codec
+	HasAccount(ctx context.Context, addr sdk.AccAddress) bool
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
 	NewAccount(ctx context.Context, acc sdk.AccountI) sdk.AccountI
 	SetAccount(ctx context.Context, acc sdk.AccountI)
@@ -43,4 +43,5 @@ type UpgradeKeeper interface {
 type FeegrantKeeper interface {
 	AllowancesByGranter(ctx context.Context, req *feegrant.QueryAllowancesByGranterRequest) (*feegrant.QueryAllowancesByGranterResponse, error)
 	GrantAllowance(ctx context.Context, granter, grantee sdk.AccAddress, feeAllowance feegrant.FeeAllowanceI) error
+	GetAllowance(ctx context.Context, granter, grantee sdk.AccAddress) (feegrant.FeeAllowanceI, error)
 }

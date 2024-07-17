@@ -71,16 +71,16 @@ func (k msgServer) RegisterLightNodeClient(
 	ctx context.Context,
 	msg *types.MsgRegisterLightNodeClient,
 ) (*types.EmptyResponse, error) {
-	err := k.CreateLightNodeClientAccount(ctx, msg.Metadata.Creator, msg.ClientAddress)
+	err := k.CreateLightNodeClientAccount(ctx, msg.Metadata.Creator)
 	return nil, err
 }
 
-func (k msgServer) AddLightNodeClientFunds(
+func (k msgServer) AddLightNodeClientLicense(
 	ctx context.Context,
-	msg *types.MsgAddLightNodeClientFunds,
+	msg *types.MsgAddLightNodeClientLicense,
 ) (*types.EmptyResponse, error) {
-	err := k.UpdateLightNodeClientFunds(ctx, msg.AuthAddress, msg.Amount,
-		msg.VestingYears, msg.Feegrant)
+	err := k.UpdateLightNodeClientLicense(ctx, msg.Metadata.Creator,
+		msg.ClientAddress, msg.Amount, msg.VestingMonths, msg.Feegrant)
 
 	return nil, err
 }

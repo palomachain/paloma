@@ -2,7 +2,9 @@ package paloma
 
 import (
 	"context"
+	"errors"
 
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/paloma/keeper"
 	"github.com/palomachain/paloma/x/paloma/types"
 )
@@ -12,8 +14,16 @@ import (
 func InitGenesis(ctx context.Context, k keeper.Keeper, genState types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 
-	for _, funds := range genState.LightNodeClientFunds {
-		err := k.SetLightNodeClientFunds(ctx, funds.ClientAddress, funds)
+	for _, license := range genState.LightNodeClientLicenses {
+		err := k.SetLightNodeClientLicense(ctx, license.ClientAddress, license)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if genState.LightNodeClientFeegranter != nil {
+		err := k.SetLightNodeClientFeegranter(ctx,
+			genState.LightNodeClientFeegranter.Account)
 		if err != nil {
 			panic(err)
 		}
@@ -27,8 +37,13 @@ func ExportGenesis(ctx context.Context, k keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetParams(ctx)
 
-	genesis.LightNodeClientFunds, err = k.AllLightNodeClientFunds(ctx)
+	genesis.LightNodeClientLicenses, err = k.AllLightNodeClientLicenses(ctx)
 	if err != nil {
+		panic(err)
+	}
+
+	genesis.LightNodeClientFeegranter, err = k.LightNodeClientFeegranter(ctx)
+	if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
 		panic(err)
 	}
 

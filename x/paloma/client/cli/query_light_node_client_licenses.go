@@ -10,10 +10,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func CmdQueryLightNodeClientFunds() *cobra.Command {
+func CmdQueryLightNodeClientLicenses() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "light-node-client-funds",
-		Short: "Shows the current light node client funds waiting to be claimed",
+		Use:   "light-node-client-licenses",
+		Short: "Shows the current light node clients licenses waiting to be claimed",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -21,7 +21,7 @@ func CmdQueryLightNodeClientFunds() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			params := &emptypb.Empty{}
-			res, err := queryClient.GetLightNodeClientFunds(context.Background(), params)
+			res, err := queryClient.GetLightNodeClientLicenses(context.Background(), params)
 			if err != nil {
 				return err
 			}

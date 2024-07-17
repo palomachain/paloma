@@ -15,7 +15,7 @@ service Msg {
   rpc RegisterLightNodeClient(MsgRegisterLightNodeClient)
     returns (EmptyResponse);
 
-  rpc AddLightNodeClientFunds(MsgAddLightNodeClientFunds)
+  rpc AddLightNodeClientLicense(MsgAddLightNodeClientLicense)
     returns (EmptyResponse);
 }
 
@@ -46,17 +46,15 @@ message MsgRegisterLightNodeClient {
   option (cosmos.msg.v1.signer) = "metadata";
   palomachain.paloma.valset.MsgMetadata metadata = 1
       [ (gogoproto.nullable) = false ];
-
-  string client_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 }
 
-message MsgAddLightNodeClientFunds {
+message MsgAddLightNodeClientLicense {
   option (cosmos.msg.v1.signer) = "metadata";
   palomachain.paloma.valset.MsgMetadata metadata = 1
       [ (gogoproto.nullable) = false ];
 
-  string auth_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  string client_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   cosmos.base.v1beta1.Coin amount = 3 [ (gogoproto.nullable) = false ];
-  uint32 vesting_years = 4;
+  uint32 vesting_months = 4;
   bool feegrant = 5;
 }

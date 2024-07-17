@@ -6,7 +6,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "palomachain/paloma/paloma/light_node_client_feegranter.proto";
-import "palomachain/paloma/paloma/light_node_client_funds.proto";
+import "palomachain/paloma/paloma/light_node_client_license.proto";
 import "palomachain/paloma/paloma/params.proto";
 
 option go_package = "github.com/palomachain/paloma/x/paloma/types";
@@ -18,10 +18,10 @@ service Query {
     option (google.api.http).get = "/palomachain/paloma/paloma/params";
   }
 
-  rpc GetLightNodeClientFunds(google.protobuf.Empty)
-      returns (QueryLightNodeClientFundsResponse) {
+  rpc GetLightNodeClientLicenses(google.protobuf.Empty)
+      returns (QueryLightNodeClientLicensesResponse) {
     option (google.api.http).get =
-      "/palomachain/paloma/paloma/light_node_client_funds";
+      "/palomachain/paloma/paloma/light_node_client_licenses";
   }
 
   rpc GetLightNodeClientFeegranter(google.protobuf.Empty)
@@ -41,8 +41,8 @@ message QueryParamsResponse {
   Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
-message QueryLightNodeClientFundsResponse {
-  repeated LightNodeClientFunds light_node_client_funds = 1;
+message QueryLightNodeClientLicensesResponse {
+  repeated LightNodeClientLicense light_node_client_licenses = 1;
 }
 
 message QueryLightNodeClientFeegranterResponse {

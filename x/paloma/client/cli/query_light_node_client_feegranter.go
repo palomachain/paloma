@@ -20,8 +20,8 @@ func CmdQueryLightNodeClientFeegranter() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &emptypb.Empty{}
-			res, err := queryClient.GetLightNodeClientFeegranter(context.Background(), params)
+			res, err := queryClient.GetLightNodeClientFeegranter(
+				context.Background(), &emptypb.Empty{})
 			if err != nil {
 				return err
 			}

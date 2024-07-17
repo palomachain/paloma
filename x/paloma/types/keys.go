@@ -17,7 +17,7 @@ const (
 	MemStoreKey = "mem_paloma_store"
 )
 
-var LightNodeClientKeyPrefix = []byte("light-node-client")
+var LightNodeClientLicenseKeyPrefix = []byte("light-node-client-license")
 
 var LightNodeClientFeegranterKey = []byte("light-node-client-feegranter")
 
