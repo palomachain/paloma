@@ -235,7 +235,7 @@ func (k Keeper) getLightNodeClientLicense(
 	return keeperutil.Load[*types.LightNodeClientLicense](st, k.cdc, []byte(addr))
 }
 
-func (k Keeper) UpdateLightNodeClientLicense(
+func (k Keeper) CreateLightNodeClientLicense(
 	ctx context.Context,
 	creatorAddr, clientAddr string,
 	amount sdk.Coin,
@@ -251,6 +251,15 @@ func (k Keeper) UpdateLightNodeClientLicense(
 		return errors.New("invalid parameters")
 	}
 
+	// Check if license exists already
+	license, err := k.getLightNodeClientLicense(ctx, clientAddr)
+	if err == nil {
+		return errors.New("license already exists")
+	} else if !errors.Is(err, keeperutil.ErrNotFound) {
+		// Any errors other than not found and we bail
+		return err
+	}
+
 	// The client account name, to create a new base account and/or to set up
 	// the feegrant
 	acct, err := k.accountKeeper.AddressCodec().StringToBytes(clientAddr)
@@ -258,58 +267,40 @@ func (k Keeper) UpdateLightNodeClientLicense(
 		return err
 	}
 
-	license, err := k.getLightNodeClientLicense(ctx, clientAddr)
-	if err != nil {
-		if !errors.Is(err, keeperutil.ErrNotFound) {
-			// Any errors other than not found and we bail
-			return err
-		}
-
-		// If there is no license for this address yet, we create a new one
-		license = &types.LightNodeClientLicense{
-			ClientAddress: clientAddr,
-			Amount:        amount,
-			VestingMonths: vestingMonths,
-			Feegrant:      feegrant,
-		}
-
-		// We're here for the first time, so we create the base account now, as
-		// it will be used to register the light node client and start vesting
-		baseAccount := authtypes.NewBaseAccountWithAddress(acct)
-		baseAccount = k.accountKeeper.NewAccount(ctx, baseAccount).(*authtypes.BaseAccount)
-		k.accountKeeper.SetAccount(ctx, baseAccount)
-	} else {
-		if license.Amount.Denom != amount.Denom {
-			return errors.New("new amount denom does not match existing amount")
-		}
-
-		// Otherwise, we update the amount on the client license
-		license.Amount.Amount = license.Amount.Amount.Add(amount.Amount)
-		// Keep parameters from last call
-		license.VestingMonths = vestingMonths
-		license.Feegrant = feegrant
+	// If the account already exists, we can't move on
+	if k.accountKeeper.HasAccount(ctx, acct) {
+		return errors.New("account already exists")
 	}
 
-	// If license has the feegrant flag, check for feegranter
+	license = &types.LightNodeClientLicense{
+		ClientAddress: clientAddr,
+		Amount:        amount,
+		VestingMonths: vestingMonths,
+		Feegrant:      feegrant,
+	}
+
+	// We're here for the first time, so we create the base account now, as
+	// it will be used to register the light node client and start vesting
+	baseAccount := authtypes.NewBaseAccountWithAddress(acct)
+	baseAccount = k.accountKeeper.NewAccount(ctx, baseAccount).(*authtypes.BaseAccount)
+	k.accountKeeper.SetAccount(ctx, baseAccount)
+
+	// If license has the feegrant flag, set the allowance
 	if license.Feegrant {
 		feegranter, err := k.LightNodeClientFeegranter(ctx)
 		if err != nil {
 			return err
 		}
 
-		// Check if there is already an existing grant
-		grant, _ := k.feegrantKeeper.GetAllowance(ctx, feegranter.Account, acct)
-		if grant == nil {
-			// TODO - we might want to set spend and expiration limits
-			allowance := &feegrantmodule.BasicAllowance{
-				SpendLimit: nil, // Unlimited spend
-				Expiration: nil, // Unlimited time
-			}
+		// TODO - we might want to set spend and expiration limits
+		allowance := &feegrantmodule.BasicAllowance{
+			SpendLimit: nil, // Unlimited spend
+			Expiration: nil, // Unlimited time
+		}
 
-			err = k.feegrantKeeper.GrantAllowance(ctx, feegranter.Account, acct, allowance)
-			if err != nil {
-				return err
-			}
+		err = k.feegrantKeeper.GrantAllowance(ctx, feegranter.Account, acct, allowance)
+		if err != nil {
+			return err
 		}
 	}
 
