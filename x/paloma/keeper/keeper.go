@@ -252,7 +252,7 @@ func (k Keeper) CreateLightNodeClientLicense(
 	}
 
 	// Check if license exists already
-	license, err := k.GetLightNodeClientLicense(ctx, clientAddr)
+	_, err = k.GetLightNodeClientLicense(ctx, clientAddr)
 	if err == nil {
 		return types.ErrLicenseExists
 	} else if !errors.Is(err, keeperutil.ErrNotFound) {
@@ -272,7 +272,7 @@ func (k Keeper) CreateLightNodeClientLicense(
 		return types.ErrAccountExists
 	}
 
-	license = &types.LightNodeClientLicense{
+	license := &types.LightNodeClientLicense{
 		ClientAddress: clientAddr,
 		Amount:        amount,
 		VestingMonths: vestingMonths,
