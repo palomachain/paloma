@@ -13,7 +13,7 @@ import (
 func CmdQueryLightNodeClientLicenses() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "light-node-client-licenses",
-		Short: "Shows the current light node clients licenses waiting to be claimed",
+		Short: "Shows the current light node client licenses waiting to be claimed",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)

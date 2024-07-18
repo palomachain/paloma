@@ -13,7 +13,7 @@ import (
 func CmdQueryLightNodeClientFeegranter() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "light-node-client-feegranter",
-		Short: "Shows the current light node client fee granter account, set by governance vote",
+		Short: "Shows the current light node client fee granter settings, set by governance vote",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)

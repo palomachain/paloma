@@ -43,8 +43,8 @@ func CmdRegisterLightNodeClient() *cobra.Command {
 		Short: "Registers a new light node client",
 		Long: `Registers a new light node client, if the client has pre-paid for it, and it has not been activated yet.
 The creator key is used to determine the available funds, which are transferred to the new client, in a vesting account.
-The client must have enough tokens to pay for fees, or have a feegrant set.`,
-		Args: cobra.ExactArgs(0),
+The creator should already have a feegrant allowance from the paloma feegranter.`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -74,9 +74,9 @@ The client must have enough tokens to pay for fees, or have a feegrant set.`,
 func CmdAddLightNodeClientLicense() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add-light-node-client-license [client-address] [amount] [vesting-months]",
-		Short: "Manually add a license to a new light node client",
-		Long: `Manually register a light node license by locking funds to the registered account. Funds will be added to any existing funds on the same account.
-The [client-address] field should contain the address of the new light node client.
+		Short: "Manually adds a license for a new light node client",
+		Long: `Manually adds a light node license by locking funds to the registered account.
+The [client-address] field should contain the address of the light node client to be registered later.
 The [vesting-months] parameter determines how long the funds will take to fully vest.
 The --feegrant flag adds a feegrant to the license, so that transaction fees are covered for this account. The account that pays for the fees is determined by governance vote.`,
 		Args: cobra.ExactArgs(3),
