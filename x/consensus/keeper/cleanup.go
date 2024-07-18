@@ -93,7 +93,7 @@ func (k Keeper) ReassignOrphanedMessages(ctx sdk.Context, blockAge int64) (err e
 				}
 
 				logger = logger.WithFields("current-validator", currentVal, "new-validator", newVal)
-				logger.Debug("Attepting to reassign message...")
+				logger.Debug("Attempting to reassign message...")
 				if err := k.reassignMessageValidator(ctx, newVal, msg.GetId(), opt.QueueTypeName); err != nil {
 					logger.WithError(err).Error("failed to reassign new validator to message.")
 					return err
