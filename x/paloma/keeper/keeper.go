@@ -227,7 +227,7 @@ func (k Keeper) SetLightNodeClientLicense(
 	return keeperutil.Save(st, k.cdc, []byte(addr), license)
 }
 
-func (k Keeper) getLightNodeClientLicense(
+func (k Keeper) GetLightNodeClientLicense(
 	ctx context.Context,
 	addr string,
 ) (*types.LightNodeClientLicense, error) {
@@ -248,13 +248,13 @@ func (k Keeper) CreateLightNodeClientLicense(
 	}
 
 	if sdk.VerifyAddressFormat(creatorAcct) != nil || !amount.IsValid() {
-		return errors.New("invalid parameters")
+		return types.ErrInvalidParameters
 	}
 
 	// Check if license exists already
-	license, err := k.getLightNodeClientLicense(ctx, clientAddr)
+	license, err := k.GetLightNodeClientLicense(ctx, clientAddr)
 	if err == nil {
-		return errors.New("license already exists")
+		return types.ErrLicenseExists
 	} else if !errors.Is(err, keeperutil.ErrNotFound) {
 		// Any errors other than not found and we bail
 		return err
@@ -269,7 +269,7 @@ func (k Keeper) CreateLightNodeClientLicense(
 
 	// If the account already exists, we can't move on
 	if k.accountKeeper.HasAccount(ctx, acct) {
-		return errors.New("account already exists")
+		return types.ErrAccountExists
 	}
 
 	license = &types.LightNodeClientLicense{
@@ -289,6 +289,10 @@ func (k Keeper) CreateLightNodeClientLicense(
 	if license.Feegrant {
 		feegranter, err := k.LightNodeClientFeegranter(ctx)
 		if err != nil {
+			if errors.Is(err, keeperutil.ErrNotFound) {
+				return types.ErrNoFeegranter
+			}
+
 			return err
 		}
 
@@ -319,8 +323,12 @@ func (k Keeper) CreateLightNodeClientAccount(
 	addr string,
 ) error {
 	// Get the license allocated to the account
-	license, err := k.getLightNodeClientLicense(ctx, addr)
+	license, err := k.GetLightNodeClientLicense(ctx, addr)
 	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return types.ErrNoLicense
+		}
+
 		return err
 	}
 
@@ -339,7 +347,7 @@ func (k Keeper) CreateLightNodeClientAccount(
 	// It will vest until `endTime`, which is set to `vestingMonths` from now
 	baseAccount, ok := k.accountKeeper.GetAccount(ctx, acct).(*authtypes.BaseAccount)
 	if !ok {
-		return errors.New("wrong account type")
+		return types.ErrNoAccount
 	}
 
 	baseVestingAccount, err := vestingtypes.NewBaseVestingAccount(baseAccount,
