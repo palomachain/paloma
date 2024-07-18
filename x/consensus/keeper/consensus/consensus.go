@@ -358,7 +358,8 @@ func (c Queue) Remove(ctx context.Context, msgID uint64) error {
 		return nil
 	}
 
-	logger.WithFields("msg", json.RawMessage(jsonMsg)).
+	logger.WithFields("msg", json.RawMessage(jsonMsg),
+		"block_height", sdkCtx.BlockHeight()).
 		Info("Removed message from queue")
 
 	return nil

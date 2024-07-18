@@ -524,7 +524,8 @@ func (k Keeper) SetMessagePublicAccessData(
 		"chain-type", chainType,
 		"chain-reference-id", chainReferenceID,
 		"validator", valAddr.String(),
-		"public-access-data", hexutil.Encode(payload.Data)).
+		"public-access-data", hexutil.Encode(payload.Data),
+		"valset-id", payload.ValsetID).
 		Info("added message public access data.")
 
 	return nil
