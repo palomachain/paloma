@@ -46,6 +46,9 @@ func PalomaKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		runtime.NewKVStoreService(storeKey),
 		paramsSubspace,
 		"v0.0.1", // do not use this PalomaKeeper function!
+		nil,
+		nil,
+		nil,
 		valsetkeeper.Keeper{},
 		nil,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),

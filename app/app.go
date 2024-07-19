@@ -131,6 +131,7 @@ import (
 	metrixmodulekeeper "github.com/palomachain/paloma/x/metrix/keeper"
 	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 	palomamodule "github.com/palomachain/paloma/x/paloma"
+	palomaclient "github.com/palomachain/paloma/x/paloma/client"
 	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
@@ -165,6 +166,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		evmclient.ProposalHandler,
 		treasuryclient.ProposalHandler,
 		valsetclient.ProposalHandler,
+		palomaclient.ProposalHandler,
 	}
 }
 
@@ -186,6 +188,7 @@ var (
 		icatypes.ModuleName:            nil,
 		wasmtypes.ModuleName:           {authtypes.Burner},
 		treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
+		palomamoduletypes.ModuleName:   nil,
 	}
 )
 
@@ -334,6 +337,7 @@ func New(
 		crisistypes.StoreKey,
 		metrixmoduletypes.StoreKey,
 		wasmtypes.StoreKey,
+		palomamoduletypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(
@@ -612,6 +616,9 @@ func New(
 		runtime.NewKVStoreService(keys[palomamoduletypes.StoreKey]),
 		app.GetSubspace(palomamoduletypes.ModuleName),
 		semverVersion,
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.FeeGrantKeeper,
 		app.ValsetKeeper,
 		app.UpgradeKeeper,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
@@ -663,7 +670,8 @@ func New(
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(skywaymoduletypes.RouterKey, skywaymodulekeeper.NewSkywayProposalHandler(app.SkywayKeeper)).
 		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper)).
-		AddRoute(valsetmoduletypes.RouterKey, valsetmodule.NewValsetProposalHandler(app.ValsetKeeper))
+		AddRoute(valsetmoduletypes.RouterKey, valsetmodule.NewValsetProposalHandler(app.ValsetKeeper)).
+		AddRoute(palomamoduletypes.RouterKey, palomamodule.NewPalomaProposalHandler(app.PalomaKeeper))
 
 	// Example of setting gov params:
 	govKeeper := govkeeper.NewKeeper(

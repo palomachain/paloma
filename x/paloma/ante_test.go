@@ -72,6 +72,14 @@ func (m *mockFeegrantKeeper) AllowancesByGranter(ctx context.Context, req *feegr
 	return call.response, call.err
 }
 
+func (m *mockFeegrantKeeper) GrantAllowance(
+	_ context.Context,
+	_, _ sdk.AccAddress,
+	_ feegrant.FeeAllowanceI,
+) error {
+	return nil
+}
+
 type mockMsg struct{}
 
 func (m *mockMsg) GetSigners() []sdk.AccAddress { return []sdk.AccAddress{} }
