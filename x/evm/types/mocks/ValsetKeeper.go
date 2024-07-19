@@ -273,7 +273,8 @@ func (_m *ValsetKeeper) SetValidatorBalance(ctx context.Context, valAddr cosmos_
 func NewValsetKeeper(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *ValsetKeeper {
+},
+) *ValsetKeeper {
 	mock := &ValsetKeeper{}
 	mock.Mock.Test(t)
 

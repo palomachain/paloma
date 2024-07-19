@@ -50,7 +50,8 @@ func (_m *MetrixKeeper) Validators(goCtx context.Context, _a1 *types.Empty) (*ty
 func NewMetrixKeeper(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *MetrixKeeper {
+},
+) *MetrixKeeper {
 	mock := &MetrixKeeper{}
 	mock.Mock.Test(t)
 

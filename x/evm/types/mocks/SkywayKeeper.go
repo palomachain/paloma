@@ -77,7 +77,8 @@ func (_m *SkywayKeeper) GetLastObservedSkywayNonce(ctx context.Context, chainRef
 func NewSkywayKeeper(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *SkywayKeeper {
+},
+) *SkywayKeeper {
 	mock := &SkywayKeeper{}
 	mock.Mock.Test(t)
 

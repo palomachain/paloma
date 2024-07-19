@@ -115,7 +115,8 @@ func (_m *ConsensusKeeper) RemoveConsensusQueue(ctx context.Context, queueTypeNa
 func NewConsensusKeeper(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *ConsensusKeeper {
+},
+) *ConsensusKeeper {
 	mock := &ConsensusKeeper{}
 	mock.Mock.Test(t)
 

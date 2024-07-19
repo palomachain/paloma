@@ -50,7 +50,8 @@ func (_m *TreasuryKeeper) GetRelayerFeesByChainReferenceID(ctx context.Context, 
 func NewTreasuryKeeper(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *TreasuryKeeper {
+},
+) *TreasuryKeeper {
 	mock := &TreasuryKeeper{}
 	mock.Mock.Test(t)
 
