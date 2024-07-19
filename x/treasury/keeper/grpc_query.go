@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
@@ -36,12 +37,17 @@ func (k Keeper) RelayerFees(ctx context.Context, req *types.QueryRelayerFeesRequ
 	}
 
 	response := make([]types.RelayerFeeSetting, 0, len(i))
-	for k, v := range i {
+	keys := make([]string, 0, len(i))
+	for k := range i {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
+	for _, key := range keys {
 		response = append(response, types.RelayerFeeSetting{
-			ValAddress: k,
+			ValAddress: key,
 			Fees: []types.RelayerFeeSetting_FeeSetting{
 				{
-					Multiplicator:    v,
+					Multiplicator:    i[key],
 					ChainReferenceId: req.ChainReferenceId,
 				},
 			},
