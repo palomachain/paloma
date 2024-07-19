@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"slices"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/treasury/types"
+	"golang.org/x/exp/maps"
 )
 
 var _ types.QueryServer = Keeper{}
@@ -37,12 +37,7 @@ func (k Keeper) RelayerFees(ctx context.Context, req *types.QueryRelayerFeesRequ
 	}
 
 	response := make([]types.RelayerFeeSetting, 0, len(i))
-	keys := make([]string, 0, len(i))
-	for k := range i {
-		keys = append(keys, k)
-	}
-	slices.Sort(keys)
-	for _, key := range keys {
+	for _, key := range maps.Keys(i) {
 		response = append(response, types.RelayerFeeSetting{
 			ValAddress: key,
 			Fees: []types.RelayerFeeSetting_FeeSetting{
