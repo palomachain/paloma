@@ -30,12 +30,8 @@ func (k msgServer) UpsertRelayerFee(ctx context.Context, req *types.MsgUpsertRel
 		return nil, fmt.Errorf("failed to parse validator address: %w", err)
 	}
 
-	for _, v := range req.FeeSetting.Fees {
-		_, err := k.evm.GetChainInfo(ctx, v.ChainReferenceId)
-		if err != nil {
-			return nil, err
-		}
-	}
+	// Setting of relayer fees for unknown chains is allowed
+	// to support validators setting up before a new chain is onboarded
 
 	r, err := k.relayerFees.Get(sdkCtx, addr)
 	if err != nil {
