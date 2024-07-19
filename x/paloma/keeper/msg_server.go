@@ -80,7 +80,7 @@ func (k msgServer) AddLightNodeClientLicense(
 	msg *types.MsgAddLightNodeClientLicense,
 ) (*types.EmptyResponse, error) {
 	err := k.CreateLightNodeClientLicense(ctx, msg.Metadata.Creator,
-		msg.ClientAddress, msg.Amount, msg.VestingMonths, msg.Feegrant)
+		msg.ClientAddress, msg.Amount, msg.VestingMonths)
 
 	return nil, err
 }

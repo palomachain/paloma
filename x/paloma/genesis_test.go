@@ -41,7 +41,6 @@ func TestGenesis(t *testing.T) {
 						Denom:  "testgrain",
 					},
 					VestingMonths: 12,
-					Feegrant:      true,
 				},
 			},
 		}

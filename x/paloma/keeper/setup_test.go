@@ -70,7 +70,6 @@ func newMockedKeeper(t testutil.TB) (*keeper.Keeper, mockedServices, sdk.Context
 		storeService,
 		paramsSubspace,
 		"0.0.0",
-		testBondDenom,
 		ms.AccountKeeper,
 		ms.BankKeeper,
 		ms.FeegrantKeeper,

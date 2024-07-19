@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -14,10 +13,7 @@ import (
 	"github.com/palomachain/paloma/x/paloma/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/spf13/cobra"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-const flagFeegrant = "feegrant"
 
 var DefaultRelativePacketTimeoutTimestamp = uint64((time.Duration(10) * time.Minute).Nanoseconds())
 
@@ -77,8 +73,7 @@ func CmdAddLightNodeClientLicense() *cobra.Command {
 		Short: "Manually adds a license for a new light node client",
 		Long: `Manually adds a light node license by locking funds to the registered account.
 The [client-address] field should contain the address of the light node client to be registered later.
-The [vesting-months] parameter determines how long the funds will take to fully vest.
-The --feegrant flag adds a feegrant to the license, so that transaction fees are covered for this account. The account that pays for the fees is determined by governance vote.`,
+The [vesting-months] parameter determines how long the funds will take to fully vest.`,
 		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientAddress := args[0]
@@ -102,27 +97,9 @@ The --feegrant flag adds a feegrant to the license, so that transaction fees are
 				return err
 			}
 
-			feegrant, err := cmd.Flags().GetBool(flagFeegrant)
-			if err != nil {
-				return err
-			}
-
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
-			}
-
-			if feegrant {
-				// If we have the feegrant flag, we first check if the
-				// feegranter is defined
-				qryCtx := client.GetClientContextFromCmd(cmd)
-
-				queryClient := types.NewQueryClient(qryCtx)
-				_, err := queryClient.GetLightNodeClientFeegranter(
-					context.Background(), &emptypb.Empty{})
-				if err != nil {
-					return err
-				}
 			}
 
 			creator := clientCtx.GetFromAddress().String()
@@ -130,7 +107,6 @@ The --feegrant flag adds a feegrant to the license, so that transaction fees are
 				ClientAddress: clientAddress,
 				Amount:        amount[0],
 				VestingMonths: uint32(vestingMonths),
-				Feegrant:      feegrant,
 				Metadata: valsettypes.MsgMetadata{
 					Creator: creator,
 					Signers: []string{creator},
@@ -145,7 +121,6 @@ The --feegrant flag adds a feegrant to the license, so that transaction fees are
 		},
 	}
 
-	cmd.Flags().Bool(flagFeegrant, false, "Grant fee usage to new account")
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

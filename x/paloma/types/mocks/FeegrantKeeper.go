@@ -6,8 +6,6 @@ import (
 	context "context"
 
 	feegrant "cosmossdk.io/x/feegrant"
-	cosmos_sdktypes "github.com/cosmos/cosmos-sdk/types"
-
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -44,24 +42,6 @@ func (_m *FeegrantKeeper) AllowancesByGranter(ctx context.Context, req *feegrant
 	}
 
 	return r0, r1
-}
-
-// GrantAllowance provides a mock function with given fields: ctx, granter, grantee, feeAllowance
-func (_m *FeegrantKeeper) GrantAllowance(ctx context.Context, granter cosmos_sdktypes.AccAddress, grantee cosmos_sdktypes.AccAddress, feeAllowance feegrant.FeeAllowanceI) error {
-	ret := _m.Called(ctx, granter, grantee, feeAllowance)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GrantAllowance")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, cosmos_sdktypes.AccAddress, cosmos_sdktypes.AccAddress, feegrant.FeeAllowanceI) error); ok {
-		r0 = rf(ctx, granter, grantee, feeAllowance)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }
 
 // NewFeegrantKeeper creates a new instance of FeegrantKeeper. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

@@ -65,7 +65,6 @@ func TestLightNodeClientLicensesCRUD(t *testing.T) {
 			ClientAddress: clientAddr,
 			Amount:        sdk.Coin{Amount: math.NewInt(100), Denom: testBondDenom},
 			VestingMonths: 12,
-			Feegrant:      true,
 		}
 
 		err := k.SetLightNodeClientLicense(ctx, clientAddr, license)
@@ -115,13 +114,6 @@ func TestCreateLightNodeClientLicense(t *testing.T) {
 				Once()
 		}
 
-		if level > 3 {
-			ms.FeegrantKeeper.On("GrantAllowance", mock.Anything, mock.Anything,
-				mock.Anything, mock.Anything).
-				Return(nil).
-				Once()
-		}
-
 		return k, ctx
 	}
 
@@ -129,14 +121,13 @@ func TestCreateLightNodeClientLicense(t *testing.T) {
 		ClientAddress: clientAddr,
 		Amount:        sdk.Coin{Amount: math.NewInt(100), Denom: testBondDenom},
 		VestingMonths: 12,
-		Feegrant:      true,
 	}
 
 	t.Run("Should fail with invalid coin", func(t *testing.T) {
 		k, ctx := setup(0, false)
 
 		err := k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			sdk.Coin{}, license.VestingMonths, license.Feegrant)
+			sdk.Coin{}, license.VestingMonths)
 		require.ErrorIs(t, err, types.ErrInvalidParameters)
 	})
 
@@ -144,16 +135,8 @@ func TestCreateLightNodeClientLicense(t *testing.T) {
 		k, ctx := setup(1, true)
 
 		err := k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			license.Amount, license.VestingMonths, false)
+			license.Amount, license.VestingMonths)
 		require.ErrorIs(t, err, types.ErrAccountExists)
-	})
-
-	t.Run("Should fail on feegrant license without feegranter", func(t *testing.T) {
-		k, ctx := setup(2, false)
-
-		err := k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			license.Amount, license.VestingMonths, license.Feegrant)
-		require.ErrorIs(t, err, types.ErrNoFeegranter)
 	})
 
 	t.Run("Should fail if license already exists", func(t *testing.T) {
@@ -161,50 +144,30 @@ func TestCreateLightNodeClientLicense(t *testing.T) {
 
 		// Add a license
 		err := k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			license.Amount, license.VestingMonths, false)
+			license.Amount, license.VestingMonths)
 		require.NoError(t, err)
 
 		err = k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			license.Amount, license.VestingMonths, license.Feegrant)
+			license.Amount, license.VestingMonths)
 		require.ErrorIs(t, err, types.ErrLicenseExists)
 	})
 
-	t.Run("Should create a new license without feegrant", func(t *testing.T) {
+	t.Run("Should create a new license", func(t *testing.T) {
 		k, ctx := setup(3, false)
 
 		noGrantLicense := &types.LightNodeClientLicense{
 			ClientAddress: license.ClientAddress,
 			Amount:        license.Amount,
 			VestingMonths: license.VestingMonths,
-			Feegrant:      false,
 		}
 
 		err := k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			noGrantLicense.Amount, noGrantLicense.VestingMonths, false)
+			noGrantLicense.Amount, noGrantLicense.VestingMonths)
 		require.NoError(t, err)
 
 		res, err := k.GetLightNodeClientLicense(ctx, clientAddr)
 		require.NoError(t, err)
 		require.Equal(t, res, noGrantLicense)
-	})
-
-	t.Run("Should create a new license with feegrant", func(t *testing.T) {
-		k, ctx := setup(4, false)
-
-		// Set a feegranter
-		accAddr, err := sdk.AccAddressFromBech32(creatorAddr)
-		require.NoError(t, err)
-
-		err = k.SetLightNodeClientFeegranter(ctx, accAddr)
-		require.NoError(t, err)
-
-		err = k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			license.Amount, license.VestingMonths, license.Feegrant)
-		require.NoError(t, err)
-
-		res, err := k.GetLightNodeClientLicense(ctx, clientAddr)
-		require.NoError(t, err)
-		require.Equal(t, res, license)
 	})
 }
 
@@ -264,7 +227,7 @@ func TestCreateLightNodeClientAccount(t *testing.T) {
 
 		// Create a license
 		err := k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			sdk.Coin{Amount: math.NewInt(1), Denom: testBondDenom}, 1, false)
+			sdk.Coin{Amount: math.NewInt(1), Denom: testBondDenom}, 1)
 		require.NoError(t, err)
 
 		err = k.CreateLightNodeClientAccount(ctx, clientAddr)
@@ -276,7 +239,7 @@ func TestCreateLightNodeClientAccount(t *testing.T) {
 
 		// Create a license
 		err := k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			sdk.Coin{Amount: math.NewInt(1), Denom: testBondDenom}, 1, false)
+			sdk.Coin{Amount: math.NewInt(1), Denom: testBondDenom}, 1)
 		require.NoError(t, err)
 
 		err = k.CreateLightNodeClientAccount(ctx, clientAddr)

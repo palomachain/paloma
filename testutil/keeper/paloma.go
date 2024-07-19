@@ -15,7 +15,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/palomachain/paloma/app"
 	params2 "github.com/palomachain/paloma/app/params"
 	"github.com/palomachain/paloma/x/paloma/keeper"
 	"github.com/palomachain/paloma/x/paloma/types"
@@ -47,7 +46,6 @@ func PalomaKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		runtime.NewKVStoreService(storeKey),
 		paramsSubspace,
 		"v0.0.1", // do not use this PalomaKeeper function!
-		app.BondDenom,
 		nil,
 		nil,
 		nil,
