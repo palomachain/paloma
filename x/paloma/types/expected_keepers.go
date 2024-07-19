@@ -49,4 +49,5 @@ type UpgradeKeeper interface {
 //go:generate mockery --name=FeegrantKeeper
 type FeegrantKeeper interface {
 	AllowancesByGranter(ctx context.Context, req *feegrant.QueryAllowancesByGranterRequest) (*feegrant.QueryAllowancesByGranterResponse, error)
+	GrantAllowance(ctx context.Context, granter, grantee sdk.AccAddress, feeAllowance feegrant.FeeAllowanceI) error
 }

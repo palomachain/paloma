@@ -171,6 +171,68 @@ func TestCreateLightNodeClientLicense(t *testing.T) {
 	})
 }
 
+func TestCreateLightNodeClientLicenseWithFeegrant(t *testing.T) {
+	setup := func() (*keeper.Keeper, context.Context) {
+		k, ms, ctx := newMockedKeeper(t)
+
+		ms.AccountKeeper.On("AddressCodec").
+			Return(authcodec.NewBech32Codec(params.AccountAddressPrefix)).
+			Twice()
+		ms.AccountKeeper.On("HasAccount", mock.Anything, mock.Anything).
+			Return(false).
+			Once()
+		ms.AccountKeeper.On("NewAccount", mock.Anything, mock.Anything).
+			Return(&authtypes.BaseAccount{}).
+			Once()
+		ms.AccountKeeper.On("SetAccount", mock.Anything, mock.Anything).
+			Return().
+			Once()
+		ms.BankKeeper.On("SendCoinsFromAccountToModule", mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything).
+			Return(nil).
+			Once()
+		ms.FeegrantKeeper.On("GrantAllowance", mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything).
+			Return(nil).
+			Once()
+
+		return k, ctx
+	}
+
+	license := &types.LightNodeClientLicense{
+		ClientAddress: clientAddr,
+		Amount:        sdk.Coin{Amount: math.NewInt(100), Denom: testBondDenom},
+		VestingMonths: 12,
+	}
+
+	t.Run("Should fail on feegrant license without feegranter", func(t *testing.T) {
+		k, _, ctx := newMockedKeeper(t)
+
+		err := k.CreateLightNodeClientLicenseWithFeegrant(ctx, creatorAddr,
+			clientAddr, license.Amount, license.VestingMonths)
+		require.ErrorIs(t, err, types.ErrNoFeegranter)
+	})
+
+	t.Run("Should create a new license with feegrant", func(t *testing.T) {
+		k, ctx := setup()
+
+		// Set a feegranter
+		accAddr, err := sdk.AccAddressFromBech32(creatorAddr)
+		require.NoError(t, err)
+
+		err = k.SetLightNodeClientFeegranter(ctx, accAddr)
+		require.NoError(t, err)
+
+		err = k.CreateLightNodeClientLicenseWithFeegrant(ctx, creatorAddr,
+			clientAddr, license.Amount, license.VestingMonths)
+		require.NoError(t, err)
+
+		res, err := k.GetLightNodeClientLicense(ctx, clientAddr)
+		require.NoError(t, err)
+		require.Equal(t, res, license)
+	})
+}
+
 func TestCreateLightNodeClientAccount(t *testing.T) {
 	setup := func(level int, getAccount bool) (*keeper.Keeper, context.Context) {
 		k, ms, ctx := newMockedKeeper(t)

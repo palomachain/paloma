@@ -43,6 +43,7 @@ type Keeper struct {
 	ibcTransferKeeper ibctransferkeeper.Keeper
 	evmKeeper         types.EVMKeeper
 	consensusKeeper   types.ConsensusKeeper
+	palomaKeeper      types.PalomaKeeper
 	AddressCodec      address.Codec
 	storeGetter       keeperutil.StoreGetter
 
@@ -63,6 +64,7 @@ func NewKeeper(
 	ibcTransferKeeper ibctransferkeeper.Keeper,
 	evmKeeper types.EVMKeeper,
 	consensusKeeper types.ConsensusKeeper,
+	palomaKeeper types.PalomaKeeper,
 	storeGetter keeperutil.StoreGetter,
 	authority string,
 	valAddressCodec address.Codec,
@@ -77,6 +79,7 @@ func NewKeeper(
 		ibcTransferKeeper:  ibcTransferKeeper,
 		evmKeeper:          evmKeeper,
 		consensusKeeper:    consensusKeeper,
+		palomaKeeper:       palomaKeeper,
 		storeGetter:        storeGetter,
 		AttestationHandler: nil,
 		AddressCodec:       valAddressCodec,

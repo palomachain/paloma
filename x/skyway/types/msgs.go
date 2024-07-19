@@ -21,6 +21,7 @@ var (
 	_ sdk.Msg = &MsgBatchSendToRemoteClaim{}
 	_ sdk.Msg = &MsgSubmitBadSignatureEvidence{}
 	_ sdk.Msg = &MsgUpdateParams{}
+	_ sdk.Msg = &MsgLightNodeSaleClaim{}
 )
 
 // NewMsgSendToRemote returns a new msgSendToRemote
@@ -138,6 +139,7 @@ type EthereumClaim interface {
 var (
 	_ EthereumClaim = &MsgSendToPalomaClaim{}
 	_ EthereumClaim = &MsgBatchSendToRemoteClaim{}
+	_ EthereumClaim = &MsgLightNodeSaleClaim{}
 )
 
 func (msg *MsgSendToPalomaClaim) SetOrchestrator(orchestrator sdk.AccAddress) {
@@ -349,3 +351,52 @@ func (msg MsgUpdateParams) Type() string { return "update_params" }
 
 // Route should return the name of the module
 func (msg MsgUpdateParams) Route() string { return RouterKey }
+
+// MsgLightNodeSaleClaim
+// ======================================================
+
+// ValidateBasic performs stateless checks
+func (msg *MsgLightNodeSaleClaim) ValidateBasic() error {
+	if err := libmeta.ValidateBasic(msg); err != nil {
+		return err
+	}
+
+	if msg.EventNonce == 0 {
+		return fmt.Errorf("event_nonce must be positive")
+	}
+
+	if msg.SkywayNonce == 0 {
+		return fmt.Errorf("skyway_nonce must be positive")
+	}
+
+	return nil
+}
+
+func (msg *MsgLightNodeSaleClaim) ClaimHash() ([]byte, error) {
+	path := fmt.Sprintf("%d/%d/%s/%s", msg.SkywayNonce, msg.EthBlockHeight,
+		msg.ClientAddress, msg.Amount.String())
+	return tmhash.Sum([]byte(path)), nil
+}
+
+func (msg MsgLightNodeSaleClaim) GetClaimer() sdk.AccAddress {
+	err := msg.ValidateBasic()
+	if err != nil {
+		panic("MsgSendToPalomaClaim failed ValidateBasic! Should have been handled earlier")
+	}
+
+	val, err := sdk.AccAddressFromBech32(msg.Orchestrator)
+	if err != nil {
+		panic(err)
+	}
+
+	return val
+}
+
+// GetType returns the type of the claim
+func (msg *MsgLightNodeSaleClaim) GetType() ClaimType {
+	return CLAIM_TYPE_LIGHT_NODE_SALE
+}
+
+func (msg *MsgLightNodeSaleClaim) SetOrchestrator(orchestrator sdk.AccAddress) {
+	msg.Orchestrator = orchestrator.String()
+}

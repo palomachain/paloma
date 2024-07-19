@@ -76,4 +76,9 @@ type EVMKeeper interface {
 	GetEthAddressByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *EthAddress, found bool, err error)
 	GetValidatorAddressByEthAddress(ctx context.Context, ethAddr EthAddress, chainReferenceId string) (valAddr sdk.ValAddress, found bool, err error)
 	HasAnySmartContractDeployment(ctx context.Context, chainReferenceID string) (found bool)
+	GetAllChainInfos(ctx context.Context) ([]*evmtypes.ChainInfo, error)
+}
+
+type PalomaKeeper interface {
+	CreateLightNodeClientLicenseWithFeegrant(ctx context.Context, creatorAddr, clientAddr string, amount math.Int, vestingMonths uint32) error
 }

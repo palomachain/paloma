@@ -10,8 +10,10 @@ import (
 	"cosmossdk.io/core/address"
 	cosmosstore "cosmossdk.io/core/store"
 	cosmoslog "cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
+	feegrantmodule "cosmossdk.io/x/feegrant"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -37,6 +39,7 @@ type Keeper struct {
 	AppVersion     string
 	AddressCodec   address.Codec
 	ExternalChains []types.ExternalChainSupporterKeeper
+	bondDenom      string
 }
 
 func NewKeeper(
@@ -44,6 +47,7 @@ func NewKeeper(
 	storeKey cosmosstore.KVStoreService,
 	ps paramtypes.Subspace,
 	appVersion string,
+	bondDenom string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	feegrantKeeper types.FeegrantKeeper,
@@ -74,6 +78,7 @@ func NewKeeper(
 		Upgrade:        upgrade,
 		AddressCodec:   addressCodec,
 		AppVersion:     appVersion,
+		bondDenom:      bondDenom,
 	}
 }
 
@@ -290,6 +295,44 @@ func (k Keeper) CreateLightNodeClientLicense(
 	}
 
 	return k.SetLightNodeClientLicense(ctx, clientAddr, license)
+}
+
+// CreateLightNodeClientLicenseWithFeegrant is used by the skyway module when
+// processing a light node sale event to create a new license with feegrant
+func (k Keeper) CreateLightNodeClientLicenseWithFeegrant(
+	ctx context.Context,
+	creatorAddr, clientAddr string,
+	amount math.Int,
+	vestingMonths uint32,
+) error {
+	feegranter, err := k.LightNodeClientFeegranter(ctx)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return types.ErrNoFeegranter
+		}
+
+		return err
+	}
+
+	allowance := &feegrantmodule.BasicAllowance{
+		SpendLimit: sdk.NewCoins(sdk.NewCoin(k.bondDenom, math.NewInt(1_000_000))),
+		Expiration: nil, // Unlimited time
+	}
+
+	acct, err := k.accountKeeper.AddressCodec().StringToBytes(clientAddr)
+	if err != nil {
+		return err
+	}
+
+	err = k.feegrantKeeper.GrantAllowance(ctx, feegranter.Account, acct, allowance)
+	if err != nil {
+		return err
+	}
+
+	coin := sdk.NewCoin(k.bondDenom, amount)
+
+	return k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr, coin,
+		vestingMonths)
 }
 
 func (k Keeper) CreateLightNodeClientAccount(

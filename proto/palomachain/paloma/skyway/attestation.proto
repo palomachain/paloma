@@ -17,6 +17,8 @@ enum ClaimType {
   CLAIM_TYPE_SEND_TO_PALOMA = 1;
   // A claim for when batches are relayed
   CLAIM_TYPE_BATCH_SEND_TO_ETH = 2;
+  // A claim for when light node sales are processed
+  CLAIM_TYPE_LIGHT_NODE_SALE = 3;
 }
 
 // Attestation is an aggregate of `claims` that eventually becomes `observed` by

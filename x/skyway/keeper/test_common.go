@@ -780,6 +780,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		ibcTransferKeeper,
 		evmKeeper,
 		consensusKeeper,
+		nil,
 		NewSkywayStoreGetter(skywayKey),
 		"",
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
