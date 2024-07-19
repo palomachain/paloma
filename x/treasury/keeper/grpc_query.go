@@ -28,3 +28,25 @@ func (k Keeper) RelayerFee(ctx context.Context, req *types.QueryRelayerFeeReques
 
 	return f, nil
 }
+
+func (k Keeper) RelayerFees(ctx context.Context, req *types.QueryRelayerFeesRequest) (*types.QueryRelayerFeesResponse, error) {
+	i, err := k.GetRelayerFeesByChainReferenceID(ctx, req.ChainReferenceId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get relayer fees: %w", err)
+	}
+
+	response := make([]types.RelayerFeeSetting, 0, len(i))
+	for k, v := range i {
+		response = append(response, types.RelayerFeeSetting{
+			ValAddress: k,
+			Fees: []types.RelayerFeeSetting_FeeSetting{
+				{
+					Multiplicator:    v,
+					ChainReferenceId: req.ChainReferenceId,
+				},
+			},
+		})
+	}
+
+	return &types.QueryRelayerFeesResponse{RelayerFees: response}, nil
+}

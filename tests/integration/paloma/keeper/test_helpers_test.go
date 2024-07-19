@@ -55,12 +55,16 @@ import (
 	"github.com/palomachain/paloma/x/evm"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	metrixmodulekeeper "github.com/palomachain/paloma/x/metrix/keeper"
+	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 	"github.com/palomachain/paloma/x/paloma"
 	palomakeeper "github.com/palomachain/paloma/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	"github.com/palomachain/paloma/x/scheduler"
 	"github.com/palomachain/paloma/x/scheduler/keeper"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
+	treasurykeeper "github.com/palomachain/paloma/x/treasury/keeper"
+	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	"github.com/palomachain/paloma/x/valset"
 	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
@@ -182,12 +186,31 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		valsetKeeper,
 		consensusRegistry,
 	)
-	evmKeeper := *evmmodulekeeper.NewKeeper(
+	var evmKeeper *evmmodulekeeper.Keeper = &evmmodulekeeper.Keeper{}
+	treasurykeeper := *treasurykeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[treasurymoduletypes.StoreKey]),
+		helper.GetSubspace(treasurymoduletypes.ModuleName, paramsKeeper),
+		bankKeeper,
+		accountKeeper,
+		evmKeeper,
+	)
+	metrixKeeper := metrixmodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[metrixmoduletypes.StoreKey]),
+		helper.GetSubspace(metrixmoduletypes.ModuleName, paramsKeeper),
+		slashingKeeper,
+		stakingKeeper,
+		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+	)
+	*evmKeeper = *evmmodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[evmmoduletypes.StoreKey]),
 		consensusKeeper,
 		valsetKeeper,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+		metrixKeeper,
+		treasurykeeper,
 	)
 	consensusRegistry.Add(
 		evmKeeper,
@@ -257,7 +280,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 	authModule := auth.NewAppModule(cdc, accountKeeper, authsims.RandomGenesisAccounts, nil)
 	bankModule := bank.NewAppModule(cdc, bankKeeper, accountKeeper, nil)
 	schedulerModule := scheduler.NewAppModule(cdc, schedulerKeeper, accountKeeper, bankKeeper)
-	evmModule := evm.NewAppModule(cdc, evmKeeper, accountKeeper, bankKeeper)
+	evmModule := evm.NewAppModule(cdc, *evmKeeper, accountKeeper, bankKeeper)
 	upgradeModule := upgrade.NewAppModule(&upgradeKeeper, address.NewBech32Codec("cosmos"))
 	palomaModule := paloma.NewAppModule(cdc, *palomaKeeper, accountKeeper, bankKeeper)
 
@@ -287,7 +310,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		valsetKeeper:      valsetKeeper,
 		schedulerKeeper:   schedulerKeeper,
 		paramsKeeper:      paramsKeeper,
-		evmKeeper:         evmKeeper,
+		evmKeeper:         *evmKeeper,
 		stakingKeeper:     *stakingKeeper,
 		palomaKeeper:      *palomaKeeper,
 		upgradeKeeper:     upgradeKeeper,

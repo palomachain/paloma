@@ -578,6 +578,8 @@ func New(
 		app.ConsensusKeeper,
 		app.ValsetKeeper,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
+		app.MetrixKeeper,
+		&app.TreasuryKeeper, // only iniditalised later in code, so we pass the pointer
 	)
 	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 		&app.EvmKeeper,
@@ -649,7 +651,6 @@ func New(
 		app.GetSubspace(schedulermoduletypes.ModuleName),
 		app.BankKeeper,
 		app.AccountKeeper,
-		app.SchedulerKeeper,
 		app.EvmKeeper,
 	)
 

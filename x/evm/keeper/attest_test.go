@@ -20,6 +20,7 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/mock"
 )
@@ -71,7 +72,7 @@ func createSnapshot(chain *types.AddChainProposal) *valsettypes.Snapshot {
 	totalPower := int64(20)
 	valpowers := []valpower{
 		{
-			valAddr: sdk.ValAddress("addr1"),
+			valAddr: sdk.ValAddress("validator-1"),
 			power:   15,
 			externalChain: []*valsettypes.ExternalChainInfo{
 				{
@@ -83,7 +84,7 @@ func createSnapshot(chain *types.AddChainProposal) *valsettypes.Snapshot {
 			},
 		},
 		{
-			valAddr: sdk.ValAddress("addr2"),
+			valAddr: sdk.ValAddress("validator-2"),
 			power:   5,
 			externalChain: []*valsettypes.ExternalChainInfo{
 				{
@@ -115,6 +116,8 @@ var _ = g.Describe("attest router", func() {
 	var v *evmmocks.ValsetKeeper
 	var gk *evmmocks.SkywayKeeper
 	var consensukeeper *evmmocks.ConsensusKeeper
+	var mk *evmmocks.MetrixKeeper
+	var tk *evmmocks.TreasuryKeeper
 	var msg *consensustypes.QueuedSignedMessage
 	var consensusMsg *types.Message
 	var evidence []*consensustypes.Evidence
@@ -145,6 +148,8 @@ var _ = g.Describe("attest router", func() {
 		k = *kpr
 		v = ms.ValsetKeeper
 		gk = ms.SkywayKeeper
+		tk = ms.TreasuryKeeper
+		mk = ms.MetrixKeeper
 		consensukeeper = ms.ConsensusKeeper
 		q = consensusmocks.NewQueuer(t)
 		isGoodcase = true
@@ -240,11 +245,11 @@ var _ = g.Describe("attest router", func() {
 				totalPower = 20
 				valpowers = []valpower{
 					{
-						valAddr: sdk.ValAddress("123"),
+						valAddr: sdk.ValAddress("validator-1"),
 						power:   5,
 					},
 					{
-						valAddr: sdk.ValAddress("456"),
+						valAddr: sdk.ValAddress("validator-2"),
 						power:   5,
 					},
 				}
@@ -258,6 +263,10 @@ var _ = g.Describe("attest router", func() {
 		g.When("there is enough power to reach a consensus", func() {
 			setupChainSupport := func() {
 				consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil)
+				mk.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
+					ValMetrics: getMetrics(3),
+				}, nil)
+				tk.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil)
 
 				err := k.AddSupportForNewChain(
 					ctx,
@@ -283,7 +292,7 @@ var _ = g.Describe("attest router", func() {
 				totalPower = 20
 				valpowers = []valpower{
 					{
-						valAddr: sdk.ValAddress("123"),
+						valAddr: sdk.ValAddress("validator-1"),
 						power:   10,
 						externalChain: []*valsettypes.ExternalChainInfo{
 							{
@@ -295,7 +304,7 @@ var _ = g.Describe("attest router", func() {
 						},
 					},
 					{
-						valAddr: sdk.ValAddress("456"),
+						valAddr: sdk.ValAddress("validator-2"),
 						power:   5,
 						externalChain: []*valsettypes.ExternalChainInfo{
 							{
@@ -307,7 +316,7 @@ var _ = g.Describe("attest router", func() {
 						},
 					},
 					{
-						valAddr: sdk.ValAddress("789"),
+						valAddr: sdk.ValAddress("validator-3"),
 						power:   5,
 						externalChain: []*valsettypes.ExternalChainInfo{
 							{
@@ -344,15 +353,15 @@ var _ = g.Describe("attest router", func() {
 						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
 						evidence = []*consensustypes.Evidence{
 							{
-								ValAddress: sdk.ValAddress("123"),
+								ValAddress: sdk.ValAddress("validator-1"),
 								Proof:      proof,
 							},
 							{
-								ValAddress: sdk.ValAddress("456"),
+								ValAddress: sdk.ValAddress("validator-2"),
 								Proof:      proof,
 							},
 							{
-								ValAddress: sdk.ValAddress("789"),
+								ValAddress: sdk.ValAddress("validator-3"),
 								Proof:      proof,
 							},
 						}
@@ -435,11 +444,11 @@ var _ = g.Describe("attest router", func() {
 							proof, _ := codectypes.NewAnyWithValue(&types.SmartContractExecutionErrorProof{ErrorMessage: "doesn't matter"})
 							evidence = []*consensustypes.Evidence{
 								{
-									ValAddress: sdk.ValAddress("123"),
+									ValAddress: sdk.ValAddress("validator-1"),
 									Proof:      proof,
 								},
 								{
-									ValAddress: sdk.ValAddress("456"),
+									ValAddress: sdk.ValAddress("validator-2"),
 									Proof:      proof,
 								},
 							}
@@ -486,15 +495,15 @@ var _ = g.Describe("attest router", func() {
 						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
 						evidence = []*consensustypes.Evidence{
 							{
-								ValAddress: sdk.ValAddress("123"),
+								ValAddress: sdk.ValAddress("validator-1"),
 								Proof:      proof,
 							},
 							{
-								ValAddress: sdk.ValAddress("456"),
+								ValAddress: sdk.ValAddress("validator-2"),
 								Proof:      proof,
 							},
 							{
-								ValAddress: sdk.ValAddress("789"),
+								ValAddress: sdk.ValAddress("validator-3"),
 								Proof:      proof,
 							},
 						}
@@ -535,15 +544,15 @@ var _ = g.Describe("attest router", func() {
 						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
 						evidence = []*consensustypes.Evidence{
 							{
-								ValAddress: sdk.ValAddress("123"),
+								ValAddress: sdk.ValAddress("validator-1"),
 								Proof:      proof,
 							},
 							{
-								ValAddress: sdk.ValAddress("456"),
+								ValAddress: sdk.ValAddress("validator-2"),
 								Proof:      proof,
 							},
 							{
-								ValAddress: sdk.ValAddress("789"),
+								ValAddress: sdk.ValAddress("validator-3"),
 								Proof:      proof,
 							},
 						}

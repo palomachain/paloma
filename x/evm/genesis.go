@@ -46,6 +46,7 @@ func InitGenesis(ctx context.Context, k keeper.Keeper, genState types.GenesisSta
 				Uptime:        "1.0",
 				SuccessRate:   "1.0",
 				ExecutionTime: "1.0",
+				FeatureSet:    "1.0",
 			},
 		)
 		if err != nil {

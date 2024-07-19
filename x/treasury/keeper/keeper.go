@@ -7,6 +7,7 @@ import (
 
 	cosmosstore "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -22,7 +23,6 @@ type Keeper struct {
 	paramstore  paramtypes.Subspace
 	bank        types.BankKeeper
 	account     types.AccountKeeper
-	Scheduler   types.Scheduler
 	evm         types.EvmKeeper
 	Chains      []xchain.FundCollecter
 	KeeperUtil  keeperutil.KeeperUtilI[*types.Fees]
@@ -35,7 +35,6 @@ func NewKeeper(
 	storeKey cosmosstore.KVStoreService, ps paramtypes.Subspace,
 	bank types.BankKeeper,
 	account types.AccountKeeper,
-	scheduler types.Scheduler,
 	evm types.EvmKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -48,7 +47,6 @@ func NewKeeper(
 		paramstore: ps,
 		bank:       bank,
 		account:    account,
-		Scheduler:  scheduler,
 		evm:        evm,
 		KeeperUtil: keeperutil.KeeperUtil[*types.Fees]{},
 		Store: types.Store{
@@ -119,12 +117,17 @@ func (k Keeper) GetRelayerFees(ctx context.Context) ([]types.RelayerFeeSetting, 
 	return r, err
 }
 
-func (k Keeper) GetRelayerFeesByChainReferenceID(ctx context.Context, chainReferenceID string) (map[string]types.RelayerFeeSetting_FeeSetting, error) {
-	r := make(map[string]types.RelayerFeeSetting_FeeSetting)
-	err := k.relayerFees.Iterate(sdk.UnwrapSDKContext(ctx), func(b []byte, rfs *types.RelayerFeeSetting) bool {
+func (k Keeper) GetRelayerFeesByChainReferenceID(ctx context.Context, chainReferenceID string) (map[string]math.LegacyDec, error) {
+	_, err := k.evm.GetChainInfo(ctx, chainReferenceID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get chain info: %w", err)
+	}
+
+	r := make(map[string]math.LegacyDec, 256)
+	err = k.relayerFees.Iterate(sdk.UnwrapSDKContext(ctx), func(b []byte, rfs *types.RelayerFeeSetting) bool {
 		for _, v := range rfs.Fees {
 			if v.ChainReferenceId == chainReferenceID {
-				r[rfs.ValAddress] = v
+				r[rfs.ValAddress] = v.Multiplicator
 				break
 			}
 		}

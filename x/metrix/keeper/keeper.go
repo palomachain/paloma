@@ -49,11 +49,10 @@ var _ valsettypes.OnSnapshotBuiltListener = &Keeper{}
 
 type (
 	Keeper struct {
-		cdc        codec.BinaryCodec
-		paramstore paramtypes.Subspace
-		slashing   types.SlashingKeeper
-		staking    types.StakingKeeper
-
+		cdc               codec.BinaryCodec
+		paramstore        paramtypes.Subspace
+		slashing          types.SlashingKeeper
+		staking           types.StakingKeeper
 		metrics           keeperutil.KVStoreWrapper[*types.ValidatorMetrics]
 		history           keeperutil.KVStoreWrapper[*types.ValidatorHistory]
 		messageNonceCache keeperutil.KVStoreWrapper[*types.HistoricRelayData]
@@ -450,21 +449,10 @@ func (k Keeper) tryUpdateRecord(ctx context.Context, valAddr sdk.ValAddress, pat
 		return fmt.Errorf("update record: %w", err)
 	}
 
-	if record == nil {
-		record = &types.ValidatorMetrics{
-			ValAddress:    valAddr.String(),
-			Uptime:        palomath.LegacyDecFromFloat64(1.0),
-			SuccessRate:   palomath.LegacyDecFromFloat64(0.5),
-			ExecutionTime: math.ZeroInt(),
-			Fee:           math.ZeroInt(),
-			FeatureSet:    math.LegacyZeroDec(),
-		}
-	}
-
-	patched := patch.apply(*record)
+	patched := patch.apply(*record.ValueOrDefault(valAddr))
 
 	// Do not override if no changes
-	if record.Equal(patched) {
+	if record != nil && record.Equal(patched) {
 		return nil
 	}
 

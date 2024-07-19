@@ -40,6 +40,8 @@ func EvmKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		nil,
 		mocks.NewValsetKeeper(t),
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+		nil,
+		nil,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

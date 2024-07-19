@@ -42,9 +42,13 @@ import (
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	metrixmodulekeeper "github.com/palomachain/paloma/x/metrix/keeper"
+	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 	"github.com/palomachain/paloma/x/scheduler"
 	"github.com/palomachain/paloma/x/scheduler/keeper"
 	"github.com/palomachain/paloma/x/scheduler/types"
+	treasurykeeper "github.com/palomachain/paloma/x/treasury/keeper"
+	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
 	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -159,12 +163,31 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		valsetKeeper,
 		consensusRegistry,
 	)
-	evmKeeper := *evmmodulekeeper.NewKeeper(
+	var evmKeeper *evmmodulekeeper.Keeper = &evmmodulekeeper.Keeper{}
+	treasurykeeper := *treasurykeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[treasurymoduletypes.StoreKey]),
+		helper.GetSubspace(treasurymoduletypes.ModuleName, paramsKeeper),
+		bankKeeper,
+		accountKeeper,
+		evmKeeper,
+	)
+	metrixKeeper := metrixmodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[metrixmoduletypes.StoreKey]),
+		helper.GetSubspace(metrixmoduletypes.ModuleName, paramsKeeper),
+		slashingKeeper,
+		stakingKeeper,
+		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+	)
+	*evmKeeper = *evmmodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[evmmoduletypes.StoreKey]),
 		consensusKeeper,
 		valsetKeeper,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+		metrixKeeper,
+		treasurykeeper,
 	)
 
 	schedulerKeeper := *keeper.NewKeeper(
@@ -197,7 +220,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		legacyQueryClient: legacyQueryClient,
 		accountKeeper:     accountKeeper,
 		paramsKeeper:      paramsKeeper,
-		evmKeeper:         evmKeeper,
+		evmKeeper:         *evmKeeper,
 		schedulerKeeper:   schedulerKeeper,
 	}
 }

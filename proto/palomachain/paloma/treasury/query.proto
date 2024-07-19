@@ -26,6 +26,11 @@ service Query {
   rpc RelayerFee(QueryRelayerFeeRequest) returns (RelayerFeeSetting) {
     option (google.api.http).get = "/palomachain/paloma/treasury/relayer_fee";
   }
+
+  // RelayerFee queries the fee settings of a validator participating in consensus.
+  rpc RelayerFees(QueryRelayerFeesRequest) returns (QueryRelayerFeesResponse) {
+    option (google.api.http).get = "/palomachain/paloma/treasury/relayer_fees";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -46,3 +51,10 @@ message QueryRelayerFeeRequest {
   string val_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 }
 
+message QueryRelayerFeesRequest {
+    string chain_reference_id = 1;
+}
+
+message QueryRelayerFeesResponse {
+    repeated RelayerFeeSetting relayer_fees = 1 [(gogoproto.nullable) = false];
+}

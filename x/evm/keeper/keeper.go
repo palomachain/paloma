@@ -129,6 +129,8 @@ func NewKeeper(
 	storeService corestore.KVStoreService,
 	consensusKeeper types.ConsensusKeeper,
 	valsetKeeper types.ValsetKeeper, a address.Codec,
+	metrixKeeper types.MetrixKeeper,
+	treasuryKeeper types.TreasuryKeeper,
 ) *Keeper {
 	k := &Keeper{
 		cdc:             cdc,
@@ -139,13 +141,11 @@ func NewKeeper(
 			ConsensusKeeper: consensusKeeper,
 			cdc:             cdc,
 		},
-		msgAssigner: MsgAssigner{
-			ValsetKeeper: valsetKeeper,
-		},
 		onMessageAttestedListeners: make([]metrixtypes.OnConsensusMessageAttestedListener, 0),
 		AddressCodec:               a,
 	}
 
+	k.msgAssigner = newMsgAssigner(valsetKeeper, metrixKeeper, treasuryKeeper, k.Logger)
 	k.deploymentCache = deployment.NewCache(provideDeploymentCacheBootstrapper(k))
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.provideSmartContractStore), []byte("id-key"))
 	k.consensusChecker = libcons.New(k.Valset.GetCurrentSnapshot, k.cdc)
@@ -348,6 +348,7 @@ func (k Keeper) AddSupportForNewChain(
 			Uptime:        "1.0",
 			SuccessRate:   "1.0",
 			ExecutionTime: "1.0",
+			FeatureSet:    "1.0",
 		},
 	}
 	err = k.updateChainInfo(ctx, chainInfo)

@@ -12,12 +12,15 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	"github.com/stretchr/testify/mock"
 )
 
 func setupTestChainSupport(
 	ctx sdk.Context,
 	consensuskeeper *evmmocks.ConsensusKeeper,
+	mk *evmmocks.MetrixKeeper,
+	tk *evmmocks.TreasuryKeeper,
 	chain *types.AddChainProposal,
 	k *Keeper,
 ) error {
@@ -27,6 +30,10 @@ func setupTestChainSupport(
 		mock.Anything,
 		mock.Anything,
 	).Return(uint64(10), nil).Once()
+	mk.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
+		ValMetrics: getMetrics(3),
+	}, nil).Once()
+	tk.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil).Once()
 
 	err := k.AddSupportForNewChain(
 		ctx,
@@ -53,6 +60,8 @@ var _ = Describe("attest upload smart contract", func() {
 	var ctx sdk.Context
 	var q *consensusmocks.Queuer
 	var msg *consensustypes.QueuedSignedMessage
+	var mk *evmmocks.MetrixKeeper
+	var tk *evmmocks.TreasuryKeeper
 	var consensuskeeper *evmmocks.ConsensusKeeper
 	var evidence []*consensustypes.Evidence
 	var retries uint32
@@ -69,6 +78,8 @@ var _ = Describe("attest upload smart contract", func() {
 		var ms mockedServices
 		k, ms, ctx = NewEvmKeeper(GinkgoT())
 		consensuskeeper = ms.ConsensusKeeper
+		mk = ms.MetrixKeeper
+		tk = ms.TreasuryKeeper
 		q = consensusmocks.NewQueuer(GinkgoT())
 
 		snapshot := createSnapshot(testChain)
@@ -79,7 +90,7 @@ var _ = Describe("attest upload smart contract", func() {
 		ms.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).
 			Return(uint64(100), nil).Maybe()
 
-		err := setupTestChainSupport(ctx, consensuskeeper, testChain, k)
+		err := setupTestChainSupport(ctx, consensuskeeper, ms.MetrixKeeper, ms.TreasuryKeeper, testChain, k)
 		Expect(err).To(BeNil())
 	})
 
@@ -108,10 +119,10 @@ var _ = Describe("attest upload smart contract", func() {
 					ErrorMessage: "an error",
 				})
 			evidence = []*consensustypes.Evidence{{
-				ValAddress: sdk.ValAddress("addr1"),
+				ValAddress: sdk.ValAddress("validator-1"),
 				Proof:      proof,
 			}, {
-				ValAddress: sdk.ValAddress("addr2"),
+				ValAddress: sdk.ValAddress("validator-2"),
 				Proof:      proof,
 			}}
 		})
@@ -129,6 +140,10 @@ var _ = Describe("attest upload smart contract", func() {
 					mock.Anything,
 					mock.Anything,
 				).Return(uint64(10), nil).Once()
+				mk.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
+					ValMetrics: getMetrics(3),
+				}, nil)
+				tk.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil)
 			})
 
 			It("should retry the deployment", func() {
