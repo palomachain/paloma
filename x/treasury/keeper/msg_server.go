@@ -7,7 +7,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/treasury/types"
 )
 
@@ -32,13 +31,9 @@ func (k msgServer) UpsertRelayerFee(ctx context.Context, req *types.MsgUpsertRel
 	}
 
 	for _, v := range req.FeeSetting.Fees {
-		ci, err := k.evm.GetChainInfo(ctx, v.ChainReferenceId)
+		_, err := k.evm.GetChainInfo(ctx, v.ChainReferenceId)
 		if err != nil {
 			return nil, err
-		}
-
-		if ci.Status != evmtypes.ChainInfo_ACTIVE {
-			return nil, fmt.Errorf("chain %s not set to ACTIVE", ci.ChainReferenceID)
 		}
 	}
 

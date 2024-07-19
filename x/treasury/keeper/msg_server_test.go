@@ -93,34 +93,6 @@ func TestUpsertRelayerFee(t *testing.T) {
 			expectedErr: fmt.Errorf("FAIL"),
 		},
 		{
-			name: "with chain not set to active",
-			input: &types.RelayerFeeSetting{
-				ValAddress: valAddr.String(),
-				Fees: []types.RelayerFeeSetting_FeeSetting{
-					{
-						ChainReferenceId: "test-chain",
-						Multiplicator:    math.LegacyMustNewDecFromStr("1.2"),
-					},
-				},
-			},
-			setup: func() msgServer {
-				evm := mocks.NewEvmKeeper(t)
-				m := keeperutilmocks.NewKVStoreWrapper[*types.RelayerFeeSetting](t)
-				evm.On("GetChainInfo", mock.Anything, "test-chain").Return(&evmtypes.ChainInfo{
-					Status: evmtypes.ChainInfo_IN_PROPOSAL,
-				}, nil)
-				k := msgServer{
-					Keeper: Keeper{
-						relayerFees: m,
-						evm:         evm,
-					},
-				}
-
-				return k
-			},
-			expectedErr: fmt.Errorf("chain  not set to ACTIVE"),
-		},
-		{
 			name: "with no existing record",
 			input: &types.RelayerFeeSetting{
 				ValAddress: valAddr.String(),
