@@ -48,6 +48,7 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/onsi/ginkgo/v2"
+	"github.com/palomachain/paloma/app"
 	params2 "github.com/palomachain/paloma/app/params"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	helper "github.com/palomachain/paloma/tests/integration/helper"
@@ -249,6 +250,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		runtime.NewKVStoreService(keys[palomamoduletypes.StoreKey]),
 		helper.GetSubspace(palomamoduletypes.ModuleName, paramsKeeper),
 		semverVersion,
+		app.BondDenom,
 		accountKeeper,
 		bankKeeper,
 		feegrantKeeper,

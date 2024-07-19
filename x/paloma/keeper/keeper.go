@@ -10,6 +10,7 @@ import (
 	"cosmossdk.io/core/address"
 	cosmosstore "cosmossdk.io/core/store"
 	cosmoslog "cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	feegrantmodule "cosmossdk.io/x/feegrant"
@@ -38,6 +39,7 @@ type Keeper struct {
 	AppVersion     string
 	AddressCodec   address.Codec
 	ExternalChains []types.ExternalChainSupporterKeeper
+	bondDenom      string
 }
 
 func NewKeeper(
@@ -45,6 +47,7 @@ func NewKeeper(
 	storeKey cosmosstore.KVStoreService,
 	ps paramtypes.Subspace,
 	appVersion string,
+	bondDenom string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	feegrantKeeper types.FeegrantKeeper,
@@ -75,6 +78,7 @@ func NewKeeper(
 		Upgrade:        upgrade,
 		AddressCodec:   addressCodec,
 		AppVersion:     appVersion,
+		bondDenom:      bondDenom,
 	}
 }
 
@@ -296,9 +300,8 @@ func (k Keeper) CreateLightNodeClientLicense(
 			return err
 		}
 
-		// TODO - we might want to set spend and expiration limits
 		allowance := &feegrantmodule.BasicAllowance{
-			SpendLimit: nil, // Unlimited spend
+			SpendLimit: sdk.NewCoins(sdk.NewCoin(k.bondDenom, math.NewInt(1_000_000))),
 			Expiration: nil, // Unlimited time
 		}
 

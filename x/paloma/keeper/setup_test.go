@@ -23,6 +23,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const testBondDenom = "testgrain"
+
 type mockedServices struct {
 	AccountKeeper  *mocks.AccountKeeper
 	BankKeeper     *mocks.BankKeeper
@@ -68,6 +70,7 @@ func newMockedKeeper(t testutil.TB) (*keeper.Keeper, mockedServices, sdk.Context
 		storeService,
 		paramsSubspace,
 		"0.0.0",
+		testBondDenom,
 		ms.AccountKeeper,
 		ms.BankKeeper,
 		ms.FeegrantKeeper,

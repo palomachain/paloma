@@ -616,6 +616,7 @@ func New(
 		runtime.NewKVStoreService(keys[palomamoduletypes.StoreKey]),
 		app.GetSubspace(palomamoduletypes.ModuleName),
 		semverVersion,
+		BondDenom,
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.FeeGrantKeeper,

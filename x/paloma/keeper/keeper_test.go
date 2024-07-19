@@ -63,7 +63,7 @@ func TestLightNodeClientLicensesCRUD(t *testing.T) {
 	t.Run("Should save a new license", func(t *testing.T) {
 		license := &types.LightNodeClientLicense{
 			ClientAddress: clientAddr,
-			Amount:        sdk.Coin{Amount: math.NewInt(100), Denom: "testgrain"},
+			Amount:        sdk.Coin{Amount: math.NewInt(100), Denom: testBondDenom},
 			VestingMonths: 12,
 			Feegrant:      true,
 		}
@@ -127,7 +127,7 @@ func TestCreateLightNodeClientLicense(t *testing.T) {
 
 	license := &types.LightNodeClientLicense{
 		ClientAddress: clientAddr,
-		Amount:        sdk.Coin{Amount: math.NewInt(100), Denom: "testgrain"},
+		Amount:        sdk.Coin{Amount: math.NewInt(100), Denom: testBondDenom},
 		VestingMonths: 12,
 		Feegrant:      true,
 	}
@@ -264,7 +264,7 @@ func TestCreateLightNodeClientAccount(t *testing.T) {
 
 		// Create a license
 		err := k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			sdk.Coin{Amount: math.NewInt(1), Denom: "test"}, 1, false)
+			sdk.Coin{Amount: math.NewInt(1), Denom: testBondDenom}, 1, false)
 		require.NoError(t, err)
 
 		err = k.CreateLightNodeClientAccount(ctx, clientAddr)
@@ -276,7 +276,7 @@ func TestCreateLightNodeClientAccount(t *testing.T) {
 
 		// Create a license
 		err := k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr,
-			sdk.Coin{Amount: math.NewInt(1), Denom: "test"}, 1, false)
+			sdk.Coin{Amount: math.NewInt(1), Denom: testBondDenom}, 1, false)
 		require.NoError(t, err)
 
 		err = k.CreateLightNodeClientAccount(ctx, clientAddr)
