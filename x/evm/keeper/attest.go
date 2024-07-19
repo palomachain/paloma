@@ -41,7 +41,9 @@ func (k Keeper) attestMessageWrapper(ctx context.Context, q consensus.Queuer, ms
 
 	cacheCtx, writeCache := sdkCtx.CacheContext()
 	defer func() {
-		if retErr == nil {
+		// If there is no error, or we can't verify this transaction, we flush
+		// the context, so we never see it again
+		if retErr == nil || errors.Is(retErr, types.ErrEthTxNotVerified) {
 			writeCache()
 		}
 	}()

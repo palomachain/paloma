@@ -79,36 +79,40 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 		return err
 	}
 
-	args := []any{
-		BuildCompassConsensus(valset, msg.GetSignData()),
-		CompassLogicCallArgs{
-			LogicContractAddress: common.HexToAddress(m.GetHexContractAddress()),
-			Payload:              m.GetPayload(),
-		},
-		new(big.Int).SetInt64(int64(msg.GetId())),
-		new(big.Int).SetInt64(m.GetDeadline()),
-	}
-
 	contractABI, err := abi.JSON(strings.NewReader(compass.GetAbiJSON()))
 	if err != nil {
 		logger.WithError(err).Warn("SubmitLogicCall VerifyAgainstTX failed to parse compass ABI")
 		return err
 	}
 
-	input, err := contractABI.Pack("submit_logic_call", args...)
-	if err != nil {
-		logger.WithError(err).Warn("SubmitLogicCall VerifyAgainstTX failed to pack ABI")
-		return err
+	// Since some validators might have added their signature to the message
+	// after a pigeon start relaying it, we iteratively remove the end signature
+	// until we get a match, or there are no more signatures.
+	for i := len(msg.GetSignData()); i > 0; i-- {
+		args := []any{
+			BuildCompassConsensus(valset, msg.GetSignData()[0:i]),
+			CompassLogicCallArgs{
+				LogicContractAddress: common.HexToAddress(m.GetHexContractAddress()),
+				Payload:              m.GetPayload(),
+			},
+			new(big.Int).SetInt64(int64(msg.GetId())),
+			new(big.Int).SetInt64(m.GetDeadline()),
+		}
+
+		input, err := contractABI.Pack("submit_logic_call", args...)
+		if err != nil {
+			logger.WithError(err).Warn("SubmitLogicCall VerifyAgainstTX failed to pack ABI")
+			return err
+		}
+
+		if bytes.Equal(tx.Data(), input) {
+			logger.Debug("SubmitLogicCall VerifyAgainstTX success")
+			return nil
+		}
 	}
 
-	if !bytes.Equal(tx.Data(), input) {
-		logger.Warn("SubmitLogicCall VerifyAgainstTX failed")
-		return ErrEthTxNotVerified
-	}
-
-	logger.Debug("SubmitLogicCall VerifyAgainstTX success")
-
-	return nil
+	logger.Warn("SubmitLogicCall VerifyAgainstTX failed")
+	return ErrEthTxNotVerified
 }
 
 func (m *UpdateValset) VerifyAgainstTX(
@@ -131,29 +135,33 @@ func (m *UpdateValset) VerifyAgainstTX(
 		return err
 	}
 
-	args := []any{
-		BuildCompassConsensus(valset, msg.GetSignData()),
-		TransformValsetToCompassValset(m.Valset),
-	}
-
 	contractABI, err := abi.JSON(strings.NewReader(compass.GetAbiJSON()))
 	if err != nil {
 		logger.WithError(err).Warn("UpdateValset VerifyAgainstTX failed to parse compass ABI")
 		return err
 	}
 
-	input, err := contractABI.Pack("update_valset", args...)
-	if err != nil {
-		logger.WithError(err).Warn("UpdateValset VerifyAgainstTX failed to pack ABI")
-		return err
+	// Since some validators might have added their signature to the message
+	// after a pigeon start relaying it, we iteratively remove the end signature
+	// until we get a match, or there are no more signatures.
+	for i := len(msg.GetSignData()); i > 0; i-- {
+		args := []any{
+			BuildCompassConsensus(valset, msg.GetSignData()[0:i]),
+			TransformValsetToCompassValset(m.Valset),
+		}
+
+		input, err := contractABI.Pack("update_valset", args...)
+		if err != nil {
+			logger.WithError(err).Warn("UpdateValset VerifyAgainstTX failed to pack ABI")
+			return err
+		}
+
+		if bytes.Equal(tx.Data(), input) {
+			logger.Debug("UpdateValset VerifyAgainstTX success")
+			return nil
+		}
 	}
 
-	if !bytes.Equal(tx.Data(), input) {
-		logger.Warn("UpdateValset VerifyAgainstTX failed")
-		return ErrEthTxNotVerified
-	}
-
-	logger.Debug("UpdateValset VerifyAgainstTX success")
-
-	return nil
+	logger.Warn("UpdateValset VerifyAgainstTX failed")
+	return ErrEthTxNotVerified
 }

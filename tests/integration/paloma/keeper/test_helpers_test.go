@@ -8,6 +8,8 @@ import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/x/feegrant"
+	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	"cosmossdk.io/x/upgrade"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -258,6 +260,8 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
+	feegrantKeeper := feegrantkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[feegrant.StoreKey]), accountKeeper)
+
 	semverVersion := bApp.Version()
 
 	if !strings.HasPrefix(semverVersion, "v") {
@@ -268,6 +272,9 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		runtime.NewKVStoreService(keys[palomamoduletypes.StoreKey]),
 		helper.GetSubspace(palomamoduletypes.ModuleName, paramsKeeper),
 		semverVersion,
+		accountKeeper,
+		bankKeeper,
+		feegrantKeeper,
 		valsetKeeper,
 		upgradeKeeper,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),

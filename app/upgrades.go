@@ -19,6 +19,7 @@ import (
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
 	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
+	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	skywaymoduletypes "github.com/palomachain/paloma/x/skyway/types"
 )
 
@@ -141,6 +142,17 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 			},
 			Added: []string{
 				skywaymoduletypes.ModuleName,
+			},
+		}
+
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
+
+	if upgradeInfo.Name == "v1.15.4" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{
+				palomamoduletypes.StoreKey,
 			},
 		}
 
