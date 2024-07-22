@@ -268,14 +268,12 @@ func rankValidators(ctx context.Context, validatorsInfos map[string]ValidatorInf
 	// Sort by score
 	slices.SortStableFunc(ranked, func(a, b validatorScore) int {
 		if a.score.GT(b.score) {
-			return 1
-		} else if a.score.LT(b.score) {
 			return -1
+		} else if a.score.LT(b.score) {
+			return 1
 		}
 		return 0
 	})
-	// Slice is sorted ascending, but we're interested in high scorers.
-	slices.Reverse(ranked)
 	return scoreSnapshot{
 		scores:      ranked,
 		blockHeight: sdkCtx.BlockHeight(),
