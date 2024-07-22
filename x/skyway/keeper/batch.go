@@ -95,7 +95,7 @@ func (k Keeper) getBatchTimeoutHeight(ctx context.Context) uint64 {
 
 // OutgoingTxBatchExecuted is run when the Cosmos chain detects that a batch has been executed on Ethereum
 // It frees all the transactions in the batch
-func (k Keeper) OutgoingTxBatchExecuted(ctx context.Context, tokenContract types.EthAddress, claim types.MsgBatchSendToEthClaim) error {
+func (k Keeper) OutgoingTxBatchExecuted(ctx context.Context, tokenContract types.EthAddress, claim types.MsgBatchSendToRemoteClaim) error {
 	b, err := k.GetOutgoingTXBatch(ctx, tokenContract, claim.BatchNonce)
 	if err != nil {
 		return err

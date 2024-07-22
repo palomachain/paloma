@@ -359,7 +359,7 @@ func CheckBatches(ctx sdk.Context, k Keeper) error {
 	for _, chain := range k.GetChainsWithTokens(ctx) {
 		g.Add(
 			k.IterateClaims(ctx, chain, true, types.CLAIM_TYPE_BATCH_SEND_TO_ETH, func(_ []byte, att types.Attestation, claim types.EthereumClaim) (stop bool) {
-				batchClaim := claim.(*types.MsgBatchSendToEthClaim)
+				batchClaim := claim.(*types.MsgBatchSendToRemoteClaim)
 				// Executed (aka observed) batches should have strictly lesser batch nonces than the in progress batches for the same token contract
 				// note that batches for different tokens have the same nonce stream but don't invalidate each other (nonces should probably be separate per token type)
 				if att.Observed {

@@ -235,7 +235,7 @@ func TestInvalidHeight(t *testing.T) {
 
 	// Submit a bad claim with EthBlockHeight >= timeout
 
-	bad := types.MsgBatchSendToEthClaim{
+	bad := types.MsgBatchSendToRemoteClaim{
 		SkywayNonce:      lastNonce + 1,
 		EventNonce:       lastNonce + 15,
 		EthBlockHeight:   badHeight,
@@ -251,7 +251,7 @@ func TestInvalidHeight(t *testing.T) {
 	context := sdktypes.UnwrapSDKContext(ctx)
 	log.Info("Submitting bad eth claim from orchestrator 0", "sender", sender.String(), "val", val0.String())
 
-	_, err = msgServer.BatchSendToEthClaim(context, &bad)
+	_, err = msgServer.BatchSendToRemoteClaim(context, &bad)
 	require.Error(t, err)
 
 	// Assert that there is no attestation since the above failed
@@ -263,7 +263,7 @@ func TestInvalidHeight(t *testing.T) {
 	// Attest the actual batch, and assert the votes are correct
 	for i, orch := range AccAddrs[1:] {
 		log.Info("Submitting good eth claim from orchestrators", "orch", orch.String())
-		good := types.MsgBatchSendToEthClaim{
+		good := types.MsgBatchSendToRemoteClaim{
 			SkywayNonce:      lastNonce + 1,
 			EventNonce:       lastNonce + 15,
 			EthBlockHeight:   goodHeight,
@@ -276,7 +276,7 @@ func TestInvalidHeight(t *testing.T) {
 				Signers: []string{orch.String()},
 			},
 		}
-		_, err := msgServer.BatchSendToEthClaim(context, &good)
+		_, err := msgServer.BatchSendToRemoteClaim(context, &good)
 		require.NoError(t, err)
 
 		goodHash, err := good.ClaimHash()

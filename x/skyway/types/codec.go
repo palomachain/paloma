@@ -20,11 +20,11 @@ func init() {
 // nolint: exhaustruct
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgSendToEth{},
+		&MsgSendToRemote{},
 		&MsgConfirmBatch{},
 		&MsgSendToPalomaClaim{},
-		&MsgBatchSendToEthClaim{},
-		&MsgCancelSendToEth{},
+		&MsgBatchSendToRemoteClaim{},
+		&MsgCancelSendToRemote{},
 		&MsgSubmitBadSignatureEvidence{},
 	)
 
@@ -32,7 +32,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		"palomachain.paloma.skyway.EthereumClaim",
 		(*EthereumClaim)(nil),
 		&MsgSendToPalomaClaim{},
-		&MsgBatchSendToEthClaim{},
+		&MsgBatchSendToRemoteClaim{},
 	)
 
 	registry.RegisterImplementations(
@@ -57,12 +57,12 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 // nolint: exhaustruct
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterInterface((*EthereumClaim)(nil), nil)
-	cdc.RegisterConcrete(&MsgSendToEth{}, "skyway/MsgSendToEth", nil)
+	cdc.RegisterConcrete(&MsgSendToRemote{}, "skyway/MsgSendToRemote", nil)
 	cdc.RegisterConcrete(&MsgConfirmBatch{}, "skyway/MsgConfirmBatch", nil)
 	cdc.RegisterConcrete(&MsgSendToPalomaClaim{}, "skyway/MsgSendToPalomaClaim", nil)
-	cdc.RegisterConcrete(&MsgBatchSendToEthClaim{}, "skyway/MsgBatchSendToEthClaim", nil)
+	cdc.RegisterConcrete(&MsgBatchSendToRemoteClaim{}, "skyway/MsgBatchSendToRemoteClaim", nil)
 	cdc.RegisterConcrete(&OutgoingTxBatch{}, "skyway/OutgoingTxBatch", nil)
-	cdc.RegisterConcrete(&MsgCancelSendToEth{}, "skyway/MsgCancelSendToEth", nil)
+	cdc.RegisterConcrete(&MsgCancelSendToRemote{}, "skyway/MsgCancelSendToRemote", nil)
 	cdc.RegisterConcrete(&OutgoingTransferTx{}, "skyway/OutgoingTransferTx", nil)
 	cdc.RegisterConcrete(&ERC20Token{}, "skyway/ERC20Token", nil)
 	cdc.RegisterConcrete(&IDSet{}, "skyway/IDSet", nil)

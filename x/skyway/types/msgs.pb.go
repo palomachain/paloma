@@ -38,7 +38,7 @@ var (
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// MsgSendToEth
+// MsgSendToRemote
 // This is the message that a user calls when they want to bridge an asset
 // it will later be removed when it is included in a batch and successfully
 // submitted tokens are removed from the users balance immediately
@@ -46,27 +46,27 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // AMOUNT:
 // the coin to send across the bridge, note the restriction that this is a
 // single coin not a set of coins that is normal in other Cosmos messages
-type MsgSendToEth struct {
+type MsgSendToRemote struct {
 	EthDest          string             `protobuf:"bytes,2,opt,name=eth_dest,json=ethDest,proto3" json:"eth_dest,omitempty"`
 	Amount           types.Coin         `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount"`
 	ChainReferenceId string             `protobuf:"bytes,4,opt,name=chain_reference_id,json=chainReferenceId,proto3" json:"chain_reference_id,omitempty"`
 	Metadata         types1.MsgMetadata `protobuf:"bytes,5,opt,name=metadata,proto3" json:"metadata"`
 }
 
-func (m *MsgSendToEth) Reset()         { *m = MsgSendToEth{} }
-func (m *MsgSendToEth) String() string { return proto.CompactTextString(m) }
-func (*MsgSendToEth) ProtoMessage()    {}
-func (*MsgSendToEth) Descriptor() ([]byte, []int) {
+func (m *MsgSendToRemote) Reset()         { *m = MsgSendToRemote{} }
+func (m *MsgSendToRemote) String() string { return proto.CompactTextString(m) }
+func (*MsgSendToRemote) ProtoMessage()    {}
+func (*MsgSendToRemote) Descriptor() ([]byte, []int) {
 	return fileDescriptor_857e0e6098045c7c, []int{0}
 }
 
-func (m *MsgSendToEth) XXX_Unmarshal(b []byte) error {
+func (m *MsgSendToRemote) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
 
-func (m *MsgSendToEth) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgSendToRemote) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgSendToEth.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgSendToRemote.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -77,64 +77,64 @@ func (m *MsgSendToEth) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 	}
 }
 
-func (m *MsgSendToEth) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSendToEth.Merge(m, src)
+func (m *MsgSendToRemote) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSendToRemote.Merge(m, src)
 }
 
-func (m *MsgSendToEth) XXX_Size() int {
+func (m *MsgSendToRemote) XXX_Size() int {
 	return m.Size()
 }
 
-func (m *MsgSendToEth) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSendToEth.DiscardUnknown(m)
+func (m *MsgSendToRemote) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSendToRemote.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgSendToEth proto.InternalMessageInfo
+var xxx_messageInfo_MsgSendToRemote proto.InternalMessageInfo
 
-func (m *MsgSendToEth) GetEthDest() string {
+func (m *MsgSendToRemote) GetEthDest() string {
 	if m != nil {
 		return m.EthDest
 	}
 	return ""
 }
 
-func (m *MsgSendToEth) GetAmount() types.Coin {
+func (m *MsgSendToRemote) GetAmount() types.Coin {
 	if m != nil {
 		return m.Amount
 	}
 	return types.Coin{}
 }
 
-func (m *MsgSendToEth) GetChainReferenceId() string {
+func (m *MsgSendToRemote) GetChainReferenceId() string {
 	if m != nil {
 		return m.ChainReferenceId
 	}
 	return ""
 }
 
-func (m *MsgSendToEth) GetMetadata() types1.MsgMetadata {
+func (m *MsgSendToRemote) GetMetadata() types1.MsgMetadata {
 	if m != nil {
 		return m.Metadata
 	}
 	return types1.MsgMetadata{}
 }
 
-type MsgSendToEthResponse struct{}
+type MsgSendToRemoteResponse struct{}
 
-func (m *MsgSendToEthResponse) Reset()         { *m = MsgSendToEthResponse{} }
-func (m *MsgSendToEthResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgSendToEthResponse) ProtoMessage()    {}
-func (*MsgSendToEthResponse) Descriptor() ([]byte, []int) {
+func (m *MsgSendToRemoteResponse) Reset()         { *m = MsgSendToRemoteResponse{} }
+func (m *MsgSendToRemoteResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgSendToRemoteResponse) ProtoMessage()    {}
+func (*MsgSendToRemoteResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_857e0e6098045c7c, []int{1}
 }
 
-func (m *MsgSendToEthResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgSendToRemoteResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
 
-func (m *MsgSendToEthResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgSendToRemoteResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgSendToEthResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgSendToRemoteResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -145,19 +145,19 @@ func (m *MsgSendToEthResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte
 	}
 }
 
-func (m *MsgSendToEthResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSendToEthResponse.Merge(m, src)
+func (m *MsgSendToRemoteResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSendToRemoteResponse.Merge(m, src)
 }
 
-func (m *MsgSendToEthResponse) XXX_Size() int {
+func (m *MsgSendToRemoteResponse) XXX_Size() int {
 	return m.Size()
 }
 
-func (m *MsgSendToEthResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSendToEthResponse.DiscardUnknown(m)
+func (m *MsgSendToRemoteResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSendToRemoteResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgSendToEthResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgSendToRemoteResponse proto.InternalMessageInfo
 
 // MsgConfirmBatch
 // When validators observe a MsgRequestBatch they form a batch by ordering
@@ -165,7 +165,7 @@ var xxx_messageInfo_MsgSendToEthResponse proto.InternalMessageInfo
 // cutting off when the batch either reaches a hardcoded maximum size (to be
 // decided, probably around 100) or when transactions stop being profitable
 // (TODO determine this without nondeterminism) This message includes the batch
-// as well as an Ethereum signature over this batch by the validator
+// as well as an Remoteereum signature over this batch by the validator
 // -------------
 type MsgConfirmBatch struct {
 	Nonce         uint64             `protobuf:"varint,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
@@ -455,9 +455,9 @@ func (m *MsgSendToPalomaClaimResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSendToPalomaClaimResponse proto.InternalMessageInfo
 
-// BatchSendToEthClaim claims that a batch of send to eth
+// BatchSendToRemoteClaim claims that a batch of send to eth
 // operations on the bridge contract was executed.
-type MsgBatchSendToEthClaim struct {
+type MsgBatchSendToRemoteClaim struct {
 	EventNonce       uint64             `protobuf:"varint,1,opt,name=event_nonce,json=eventNonce,proto3" json:"event_nonce,omitempty"`
 	EthBlockHeight   uint64             `protobuf:"varint,2,opt,name=eth_block_height,json=ethBlockHeight,proto3" json:"eth_block_height,omitempty"`
 	BatchNonce       uint64             `protobuf:"varint,3,opt,name=batch_nonce,json=batchNonce,proto3" json:"batch_nonce,omitempty"`
@@ -468,20 +468,20 @@ type MsgBatchSendToEthClaim struct {
 	SkywayNonce      uint64             `protobuf:"varint,8,opt,name=skyway_nonce,json=skywayNonce,proto3" json:"skyway_nonce,omitempty"`
 }
 
-func (m *MsgBatchSendToEthClaim) Reset()         { *m = MsgBatchSendToEthClaim{} }
-func (m *MsgBatchSendToEthClaim) String() string { return proto.CompactTextString(m) }
-func (*MsgBatchSendToEthClaim) ProtoMessage()    {}
-func (*MsgBatchSendToEthClaim) Descriptor() ([]byte, []int) {
+func (m *MsgBatchSendToRemoteClaim) Reset()         { *m = MsgBatchSendToRemoteClaim{} }
+func (m *MsgBatchSendToRemoteClaim) String() string { return proto.CompactTextString(m) }
+func (*MsgBatchSendToRemoteClaim) ProtoMessage()    {}
+func (*MsgBatchSendToRemoteClaim) Descriptor() ([]byte, []int) {
 	return fileDescriptor_857e0e6098045c7c, []int{6}
 }
 
-func (m *MsgBatchSendToEthClaim) XXX_Unmarshal(b []byte) error {
+func (m *MsgBatchSendToRemoteClaim) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
 
-func (m *MsgBatchSendToEthClaim) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgBatchSendToRemoteClaim) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgBatchSendToEthClaim.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgBatchSendToRemoteClaim.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -492,92 +492,92 @@ func (m *MsgBatchSendToEthClaim) XXX_Marshal(b []byte, deterministic bool) ([]by
 	}
 }
 
-func (m *MsgBatchSendToEthClaim) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgBatchSendToEthClaim.Merge(m, src)
+func (m *MsgBatchSendToRemoteClaim) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBatchSendToRemoteClaim.Merge(m, src)
 }
 
-func (m *MsgBatchSendToEthClaim) XXX_Size() int {
+func (m *MsgBatchSendToRemoteClaim) XXX_Size() int {
 	return m.Size()
 }
 
-func (m *MsgBatchSendToEthClaim) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgBatchSendToEthClaim.DiscardUnknown(m)
+func (m *MsgBatchSendToRemoteClaim) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBatchSendToRemoteClaim.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgBatchSendToEthClaim proto.InternalMessageInfo
+var xxx_messageInfo_MsgBatchSendToRemoteClaim proto.InternalMessageInfo
 
-func (m *MsgBatchSendToEthClaim) GetEventNonce() uint64 {
+func (m *MsgBatchSendToRemoteClaim) GetEventNonce() uint64 {
 	if m != nil {
 		return m.EventNonce
 	}
 	return 0
 }
 
-func (m *MsgBatchSendToEthClaim) GetEthBlockHeight() uint64 {
+func (m *MsgBatchSendToRemoteClaim) GetEthBlockHeight() uint64 {
 	if m != nil {
 		return m.EthBlockHeight
 	}
 	return 0
 }
 
-func (m *MsgBatchSendToEthClaim) GetBatchNonce() uint64 {
+func (m *MsgBatchSendToRemoteClaim) GetBatchNonce() uint64 {
 	if m != nil {
 		return m.BatchNonce
 	}
 	return 0
 }
 
-func (m *MsgBatchSendToEthClaim) GetTokenContract() string {
+func (m *MsgBatchSendToRemoteClaim) GetTokenContract() string {
 	if m != nil {
 		return m.TokenContract
 	}
 	return ""
 }
 
-func (m *MsgBatchSendToEthClaim) GetChainReferenceId() string {
+func (m *MsgBatchSendToRemoteClaim) GetChainReferenceId() string {
 	if m != nil {
 		return m.ChainReferenceId
 	}
 	return ""
 }
 
-func (m *MsgBatchSendToEthClaim) GetOrchestrator() string {
+func (m *MsgBatchSendToRemoteClaim) GetOrchestrator() string {
 	if m != nil {
 		return m.Orchestrator
 	}
 	return ""
 }
 
-func (m *MsgBatchSendToEthClaim) GetMetadata() types1.MsgMetadata {
+func (m *MsgBatchSendToRemoteClaim) GetMetadata() types1.MsgMetadata {
 	if m != nil {
 		return m.Metadata
 	}
 	return types1.MsgMetadata{}
 }
 
-func (m *MsgBatchSendToEthClaim) GetSkywayNonce() uint64 {
+func (m *MsgBatchSendToRemoteClaim) GetSkywayNonce() uint64 {
 	if m != nil {
 		return m.SkywayNonce
 	}
 	return 0
 }
 
-type MsgBatchSendToEthClaimResponse struct{}
+type MsgBatchSendToRemoteClaimResponse struct{}
 
-func (m *MsgBatchSendToEthClaimResponse) Reset()         { *m = MsgBatchSendToEthClaimResponse{} }
-func (m *MsgBatchSendToEthClaimResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgBatchSendToEthClaimResponse) ProtoMessage()    {}
-func (*MsgBatchSendToEthClaimResponse) Descriptor() ([]byte, []int) {
+func (m *MsgBatchSendToRemoteClaimResponse) Reset()         { *m = MsgBatchSendToRemoteClaimResponse{} }
+func (m *MsgBatchSendToRemoteClaimResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgBatchSendToRemoteClaimResponse) ProtoMessage()    {}
+func (*MsgBatchSendToRemoteClaimResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_857e0e6098045c7c, []int{7}
 }
 
-func (m *MsgBatchSendToEthClaimResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgBatchSendToRemoteClaimResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
 
-func (m *MsgBatchSendToEthClaimResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgBatchSendToRemoteClaimResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgBatchSendToEthClaimResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgBatchSendToRemoteClaimResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -588,42 +588,42 @@ func (m *MsgBatchSendToEthClaimResponse) XXX_Marshal(b []byte, deterministic boo
 	}
 }
 
-func (m *MsgBatchSendToEthClaimResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgBatchSendToEthClaimResponse.Merge(m, src)
+func (m *MsgBatchSendToRemoteClaimResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBatchSendToRemoteClaimResponse.Merge(m, src)
 }
 
-func (m *MsgBatchSendToEthClaimResponse) XXX_Size() int {
+func (m *MsgBatchSendToRemoteClaimResponse) XXX_Size() int {
 	return m.Size()
 }
 
-func (m *MsgBatchSendToEthClaimResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgBatchSendToEthClaimResponse.DiscardUnknown(m)
+func (m *MsgBatchSendToRemoteClaimResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBatchSendToRemoteClaimResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgBatchSendToEthClaimResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgBatchSendToRemoteClaimResponse proto.InternalMessageInfo
 
 // This call allows the sender (and only the sender)
-// to cancel a given MsgSendToEth and recieve a refund
+// to cancel a given MsgSendToRemote and recieve a refund
 // of the tokens
-type MsgCancelSendToEth struct {
+type MsgCancelSendToRemote struct {
 	TransactionId uint64             `protobuf:"varint,1,opt,name=transaction_id,json=transactionId,proto3" json:"transaction_id,omitempty"`
 	Metadata      types1.MsgMetadata `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata"`
 }
 
-func (m *MsgCancelSendToEth) Reset()         { *m = MsgCancelSendToEth{} }
-func (m *MsgCancelSendToEth) String() string { return proto.CompactTextString(m) }
-func (*MsgCancelSendToEth) ProtoMessage()    {}
-func (*MsgCancelSendToEth) Descriptor() ([]byte, []int) {
+func (m *MsgCancelSendToRemote) Reset()         { *m = MsgCancelSendToRemote{} }
+func (m *MsgCancelSendToRemote) String() string { return proto.CompactTextString(m) }
+func (*MsgCancelSendToRemote) ProtoMessage()    {}
+func (*MsgCancelSendToRemote) Descriptor() ([]byte, []int) {
 	return fileDescriptor_857e0e6098045c7c, []int{8}
 }
 
-func (m *MsgCancelSendToEth) XXX_Unmarshal(b []byte) error {
+func (m *MsgCancelSendToRemote) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
 
-func (m *MsgCancelSendToEth) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgCancelSendToRemote) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgCancelSendToEth.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgCancelSendToRemote.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -634,50 +634,50 @@ func (m *MsgCancelSendToEth) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 	}
 }
 
-func (m *MsgCancelSendToEth) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgCancelSendToEth.Merge(m, src)
+func (m *MsgCancelSendToRemote) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCancelSendToRemote.Merge(m, src)
 }
 
-func (m *MsgCancelSendToEth) XXX_Size() int {
+func (m *MsgCancelSendToRemote) XXX_Size() int {
 	return m.Size()
 }
 
-func (m *MsgCancelSendToEth) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgCancelSendToEth.DiscardUnknown(m)
+func (m *MsgCancelSendToRemote) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCancelSendToRemote.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgCancelSendToEth proto.InternalMessageInfo
+var xxx_messageInfo_MsgCancelSendToRemote proto.InternalMessageInfo
 
-func (m *MsgCancelSendToEth) GetTransactionId() uint64 {
+func (m *MsgCancelSendToRemote) GetTransactionId() uint64 {
 	if m != nil {
 		return m.TransactionId
 	}
 	return 0
 }
 
-func (m *MsgCancelSendToEth) GetMetadata() types1.MsgMetadata {
+func (m *MsgCancelSendToRemote) GetMetadata() types1.MsgMetadata {
 	if m != nil {
 		return m.Metadata
 	}
 	return types1.MsgMetadata{}
 }
 
-type MsgCancelSendToEthResponse struct{}
+type MsgCancelSendToRemoteResponse struct{}
 
-func (m *MsgCancelSendToEthResponse) Reset()         { *m = MsgCancelSendToEthResponse{} }
-func (m *MsgCancelSendToEthResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgCancelSendToEthResponse) ProtoMessage()    {}
-func (*MsgCancelSendToEthResponse) Descriptor() ([]byte, []int) {
+func (m *MsgCancelSendToRemoteResponse) Reset()         { *m = MsgCancelSendToRemoteResponse{} }
+func (m *MsgCancelSendToRemoteResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgCancelSendToRemoteResponse) ProtoMessage()    {}
+func (*MsgCancelSendToRemoteResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_857e0e6098045c7c, []int{9}
 }
 
-func (m *MsgCancelSendToEthResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgCancelSendToRemoteResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
 
-func (m *MsgCancelSendToEthResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgCancelSendToRemoteResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgCancelSendToEthResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgCancelSendToRemoteResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -688,19 +688,19 @@ func (m *MsgCancelSendToEthResponse) XXX_Marshal(b []byte, deterministic bool) (
 	}
 }
 
-func (m *MsgCancelSendToEthResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgCancelSendToEthResponse.Merge(m, src)
+func (m *MsgCancelSendToRemoteResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCancelSendToRemoteResponse.Merge(m, src)
 }
 
-func (m *MsgCancelSendToEthResponse) XXX_Size() int {
+func (m *MsgCancelSendToRemoteResponse) XXX_Size() int {
 	return m.Size()
 }
 
-func (m *MsgCancelSendToEthResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgCancelSendToEthResponse.DiscardUnknown(m)
+func (m *MsgCancelSendToRemoteResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCancelSendToRemoteResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgCancelSendToEthResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgCancelSendToRemoteResponse proto.InternalMessageInfo
 
 // This call allows anyone to submit evidence that a
 // validator has signed a batch that never
@@ -999,24 +999,24 @@ func (m *EventBatchConfirmKey) GetBatchConfirmKey() string {
 	return ""
 }
 
-type EventBatchSendToEthClaim struct {
+type EventBatchSendToRemoteClaim struct {
 	Nonce string `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
 
-func (m *EventBatchSendToEthClaim) Reset()         { *m = EventBatchSendToEthClaim{} }
-func (m *EventBatchSendToEthClaim) String() string { return proto.CompactTextString(m) }
-func (*EventBatchSendToEthClaim) ProtoMessage()    {}
-func (*EventBatchSendToEthClaim) Descriptor() ([]byte, []int) {
+func (m *EventBatchSendToRemoteClaim) Reset()         { *m = EventBatchSendToRemoteClaim{} }
+func (m *EventBatchSendToRemoteClaim) String() string { return proto.CompactTextString(m) }
+func (*EventBatchSendToRemoteClaim) ProtoMessage()    {}
+func (*EventBatchSendToRemoteClaim) Descriptor() ([]byte, []int) {
 	return fileDescriptor_857e0e6098045c7c, []int{15}
 }
 
-func (m *EventBatchSendToEthClaim) XXX_Unmarshal(b []byte) error {
+func (m *EventBatchSendToRemoteClaim) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
 
-func (m *EventBatchSendToEthClaim) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventBatchSendToRemoteClaim) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventBatchSendToEthClaim.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventBatchSendToRemoteClaim.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -1027,21 +1027,21 @@ func (m *EventBatchSendToEthClaim) XXX_Marshal(b []byte, deterministic bool) ([]
 	}
 }
 
-func (m *EventBatchSendToEthClaim) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventBatchSendToEthClaim.Merge(m, src)
+func (m *EventBatchSendToRemoteClaim) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventBatchSendToRemoteClaim.Merge(m, src)
 }
 
-func (m *EventBatchSendToEthClaim) XXX_Size() int {
+func (m *EventBatchSendToRemoteClaim) XXX_Size() int {
 	return m.Size()
 }
 
-func (m *EventBatchSendToEthClaim) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventBatchSendToEthClaim.DiscardUnknown(m)
+func (m *EventBatchSendToRemoteClaim) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventBatchSendToRemoteClaim.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventBatchSendToEthClaim proto.InternalMessageInfo
+var xxx_messageInfo_EventBatchSendToRemoteClaim proto.InternalMessageInfo
 
-func (m *EventBatchSendToEthClaim) GetNonce() string {
+func (m *EventBatchSendToRemoteClaim) GetNonce() string {
 	if m != nil {
 		return m.Nonce
 	}
@@ -1478,22 +1478,22 @@ func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgSendToEth)(nil), "palomachain.paloma.skyway.MsgSendToEth")
-	proto.RegisterType((*MsgSendToEthResponse)(nil), "palomachain.paloma.skyway.MsgSendToEthResponse")
+	proto.RegisterType((*MsgSendToRemote)(nil), "palomachain.paloma.skyway.MsgSendToRemote")
+	proto.RegisterType((*MsgSendToRemoteResponse)(nil), "palomachain.paloma.skyway.MsgSendToRemoteResponse")
 	proto.RegisterType((*MsgConfirmBatch)(nil), "palomachain.paloma.skyway.MsgConfirmBatch")
 	proto.RegisterType((*MsgConfirmBatchResponse)(nil), "palomachain.paloma.skyway.MsgConfirmBatchResponse")
 	proto.RegisterType((*MsgSendToPalomaClaim)(nil), "palomachain.paloma.skyway.MsgSendToPalomaClaim")
 	proto.RegisterType((*MsgSendToPalomaClaimResponse)(nil), "palomachain.paloma.skyway.MsgSendToPalomaClaimResponse")
-	proto.RegisterType((*MsgBatchSendToEthClaim)(nil), "palomachain.paloma.skyway.MsgBatchSendToEthClaim")
-	proto.RegisterType((*MsgBatchSendToEthClaimResponse)(nil), "palomachain.paloma.skyway.MsgBatchSendToEthClaimResponse")
-	proto.RegisterType((*MsgCancelSendToEth)(nil), "palomachain.paloma.skyway.MsgCancelSendToEth")
-	proto.RegisterType((*MsgCancelSendToEthResponse)(nil), "palomachain.paloma.skyway.MsgCancelSendToEthResponse")
+	proto.RegisterType((*MsgBatchSendToRemoteClaim)(nil), "palomachain.paloma.skyway.MsgBatchSendToRemoteClaim")
+	proto.RegisterType((*MsgBatchSendToRemoteClaimResponse)(nil), "palomachain.paloma.skyway.MsgBatchSendToRemoteClaimResponse")
+	proto.RegisterType((*MsgCancelSendToRemote)(nil), "palomachain.paloma.skyway.MsgCancelSendToRemote")
+	proto.RegisterType((*MsgCancelSendToRemoteResponse)(nil), "palomachain.paloma.skyway.MsgCancelSendToRemoteResponse")
 	proto.RegisterType((*MsgSubmitBadSignatureEvidence)(nil), "palomachain.paloma.skyway.MsgSubmitBadSignatureEvidence")
 	proto.RegisterType((*MsgSubmitBadSignatureEvidenceResponse)(nil), "palomachain.paloma.skyway.MsgSubmitBadSignatureEvidenceResponse")
 	proto.RegisterType((*EventSetOperatorAddress)(nil), "palomachain.paloma.skyway.EventSetOperatorAddress")
 	proto.RegisterType((*EventBatchCreated)(nil), "palomachain.paloma.skyway.EventBatchCreated")
 	proto.RegisterType((*EventBatchConfirmKey)(nil), "palomachain.paloma.skyway.EventBatchConfirmKey")
-	proto.RegisterType((*EventBatchSendToEthClaim)(nil), "palomachain.paloma.skyway.EventBatchSendToEthClaim")
+	proto.RegisterType((*EventBatchSendToRemoteClaim)(nil), "palomachain.paloma.skyway.EventBatchSendToRemoteClaim")
 	proto.RegisterType((*EventClaim)(nil), "palomachain.paloma.skyway.EventClaim")
 	proto.RegisterType((*EventBadSignatureEvidence)(nil), "palomachain.paloma.skyway.EventBadSignatureEvidence")
 	proto.RegisterType((*EventMultisigUpdateRequest)(nil), "palomachain.paloma.skyway.EventMultisigUpdateRequest")
@@ -1508,97 +1508,98 @@ func init() {
 }
 
 var fileDescriptor_857e0e6098045c7c = []byte{
-	// 1440 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x58, 0x4f, 0x6f, 0x1b, 0x45,
-	0x14, 0xcf, 0x3a, 0xce, 0x1f, 0xbf, 0xa4, 0x49, 0xba, 0x0d, 0xa9, 0x6d, 0x25, 0x4e, 0x6a, 0xd1,
-	0x26, 0xaa, 0xda, 0x5d, 0x12, 0x54, 0x4a, 0xb9, 0x40, 0x1d, 0x52, 0xd5, 0x20, 0xb7, 0xd5, 0xba,
-	0x5c, 0x10, 0x92, 0x35, 0xde, 0x9d, 0xee, 0x2e, 0xf1, 0xee, 0x98, 0x9d, 0x71, 0x88, 0x4f, 0x48,
-	0x48, 0x48, 0x1c, 0x39, 0x23, 0x4e, 0xa8, 0x1f, 0x80, 0x43, 0x3f, 0x44, 0xc5, 0xa9, 0xe2, 0x84,
-	0x38, 0x14, 0xd4, 0x22, 0x71, 0xe6, 0x84, 0xb8, 0xa1, 0xf9, 0xb3, 0xeb, 0xb5, 0xb3, 0x71, 0x52,
-	0xc8, 0x81, 0x53, 0x76, 0xde, 0xbc, 0xf7, 0xe6, 0xcd, 0xef, 0xfd, 0xde, 0x9b, 0x17, 0xc3, 0xeb,
-	0x5d, 0xd4, 0x21, 0x01, 0xb2, 0x3d, 0xe4, 0x87, 0xa6, 0xfc, 0x36, 0xe9, 0x7e, 0xff, 0x73, 0xd4,
-	0x37, 0x03, 0xea, 0x52, 0xa3, 0x1b, 0x11, 0x46, 0xf4, 0x52, 0x4a, 0xcb, 0x90, 0xdf, 0x86, 0xd4,
-	0x2a, 0x57, 0x6c, 0x42, 0x03, 0x42, 0xcd, 0x36, 0xa2, 0xd8, 0x3c, 0xd8, 0x6e, 0x63, 0x86, 0xb6,
-	0x4d, 0x9b, 0x70, 0x3d, 0x6e, 0x5a, 0x2e, 0xc9, 0xfd, 0x96, 0x58, 0x99, 0x72, 0xa1, 0xb6, 0x2e,
-	0x1f, 0x7f, 0x36, 0xeb, 0x77, 0x71, 0xac, 0x76, 0x25, 0x43, 0xed, 0x00, 0x75, 0x28, 0x66, 0xa6,
-	0x4d, 0x82, 0x80, 0xc4, 0x27, 0x2d, 0xbb, 0xc4, 0x25, 0xf2, 0x18, 0xfe, 0xa5, 0xa4, 0xab, 0x2e,
-	0x21, 0x6e, 0x07, 0x9b, 0xa8, 0xeb, 0x9b, 0x28, 0x0c, 0x09, 0x43, 0xcc, 0x27, 0x61, 0xec, 0xbb,
-	0xa4, 0x76, 0xc5, 0xaa, 0xdd, 0x7b, 0x64, 0xa2, 0xb0, 0xaf, 0xb6, 0x2e, 0xaa, 0x8b, 0x05, 0xd4,
-	0x35, 0x0f, 0xb6, 0xf9, 0x9f, 0x31, 0xf1, 0xa8, 0xb0, 0xbb, 0x28, 0x42, 0x81, 0xf2, 0x5d, 0xfd,
-	0x4b, 0x83, 0xf9, 0x06, 0x75, 0x9b, 0x38, 0x74, 0x1e, 0x92, 0x3d, 0xe6, 0xe9, 0x25, 0x98, 0xc5,
-	0xcc, 0x6b, 0x39, 0x98, 0xb2, 0x62, 0x6e, 0x43, 0xdb, 0x2a, 0x58, 0x33, 0x98, 0x79, 0xef, 0x63,
-	0xca, 0xf4, 0x9b, 0x30, 0x8d, 0x02, 0xd2, 0x0b, 0x59, 0x71, 0x72, 0x43, 0xdb, 0x9a, 0xdb, 0x29,
-	0x19, 0x0a, 0x29, 0x0e, 0xab, 0xa1, 0x60, 0x35, 0x76, 0x89, 0x1f, 0xd6, 0xf2, 0x4f, 0x9f, 0xaf,
-	0x4f, 0x58, 0x4a, 0x5d, 0xbf, 0x06, 0xba, 0x08, 0xa4, 0x15, 0xe1, 0x47, 0x38, 0xc2, 0xa1, 0x8d,
-	0x5b, 0xbe, 0x53, 0xcc, 0x0b, 0xef, 0x4b, 0x62, 0xc7, 0x8a, 0x37, 0xea, 0x8e, 0x7e, 0x17, 0x66,
-	0x03, 0xcc, 0x90, 0x83, 0x18, 0x2a, 0x4e, 0x89, 0x83, 0xae, 0x18, 0x19, 0xa9, 0x95, 0xe8, 0x1a,
-	0x0d, 0xea, 0x36, 0x94, 0xb6, 0x3a, 0x35, 0xb1, 0x7e, 0xe7, 0xdc, 0x97, 0x7f, 0xfc, 0x70, 0x35,
-	0x59, 0x7e, 0x90, 0x9f, 0xd5, 0x96, 0x72, 0xd6, 0x34, 0xc5, 0xa1, 0x83, 0xa3, 0xea, 0x0a, 0x2c,
-	0xa7, 0x2f, 0x6e, 0x61, 0xda, 0x25, 0x21, 0xc5, 0xd5, 0xaf, 0x73, 0xb0, 0xd8, 0xa0, 0xee, 0x2e,
-	0x09, 0x1f, 0xf9, 0x51, 0x50, 0x43, 0xcc, 0xf6, 0xf4, 0x65, 0x98, 0x0a, 0x49, 0x68, 0xe3, 0xa2,
-	0xb6, 0xa1, 0x6d, 0xe5, 0x2d, 0xb9, 0xd0, 0x2f, 0xc3, 0x02, 0x23, 0xfb, 0x38, 0x6c, 0xd9, 0x24,
-	0x64, 0x11, 0xb2, 0x63, 0xc0, 0xce, 0x09, 0xe9, 0xae, 0x12, 0xea, 0x6b, 0x00, 0x1c, 0x51, 0xea,
-	0xbb, 0x21, 0x8e, 0x04, 0x74, 0x05, 0xab, 0x80, 0x99, 0xd7, 0x14, 0x02, 0xbd, 0x0a, 0xf3, 0x24,
-	0xb2, 0x3d, 0x4c, 0x59, 0x84, 0x18, 0x89, 0x14, 0x2c, 0x43, 0x32, 0x7d, 0x15, 0x0a, 0xdc, 0x1c,
-	0xb1, 0x5e, 0x84, 0x05, 0x26, 0x05, 0x6b, 0x20, 0x18, 0x02, 0x6c, 0xfa, 0x0c, 0x01, 0xab, 0x96,
-	0xe0, 0xe2, 0x08, 0x12, 0x09, 0x4a, 0xbf, 0x4e, 0xa6, 0xe0, 0x7b, 0x20, 0x0e, 0xd8, 0xed, 0x20,
-	0x3f, 0xd0, 0xd7, 0x61, 0x0e, 0x1f, 0xe0, 0x90, 0xb5, 0xd2, 0x80, 0x81, 0x10, 0xdd, 0x13, 0xa8,
-	0x6d, 0xc1, 0x12, 0x87, 0xa3, 0xdd, 0x21, 0xf6, 0x7e, 0xcb, 0xc3, 0xbe, 0xeb, 0x49, 0xdc, 0xf2,
-	0xd6, 0x02, 0x66, 0x5e, 0x8d, 0x8b, 0xef, 0x0a, 0x69, 0x06, 0xbe, 0x93, 0x59, 0xf8, 0xde, 0x48,
-	0x68, 0x29, 0xa0, 0xab, 0xad, 0xf1, 0x4b, 0xfd, 0xf2, 0x7c, 0xfd, 0x35, 0xc9, 0x4e, 0xea, 0xec,
-	0x1b, 0x3e, 0x31, 0x03, 0xc4, 0x3c, 0xa3, 0x1e, 0xb2, 0x84, 0x94, 0x9b, 0xb0, 0x88, 0x99, 0x87,
-	0x23, 0xdc, 0x0b, 0x5a, 0x92, 0x12, 0x0a, 0xd9, 0x85, 0x58, 0xdc, 0x14, 0x52, 0xae, 0x28, 0x11,
-	0x6c, 0x45, 0xd8, 0xc6, 0xfe, 0x01, 0x8e, 0x04, 0xca, 0x05, 0x6b, 0x41, 0x8a, 0x2d, 0x25, 0x3d,
-	0x92, 0xc9, 0x99, 0x8c, 0x4c, 0x66, 0x97, 0xc2, 0xec, 0x29, 0x4a, 0xa1, 0xf0, 0x5f, 0x32, 0xab,
-	0x5f, 0x82, 0x79, 0x59, 0xfe, 0x2a, 0x2f, 0x20, 0x10, 0x9f, 0x93, 0x32, 0x91, 0x98, 0xd1, 0xe4,
-	0x57, 0x60, 0x35, 0x2b, 0xc1, 0x09, 0x03, 0xfe, 0xce, 0xc1, 0x4a, 0x83, 0xba, 0x82, 0x16, 0x49,
-	0x15, 0x9d, 0x39, 0x07, 0xd6, 0x61, 0xae, 0xcd, 0x4f, 0x50, 0xae, 0x26, 0xa5, 0x2b, 0x21, 0xba,
-	0x77, 0x4c, 0x11, 0xe6, 0xb3, 0x48, 0x92, 0x8d, 0xfb, 0xd4, 0x31, 0xb8, 0x8f, 0x66, 0x72, 0x3a,
-	0x23, 0x93, 0xe9, 0xdc, 0xcc, 0x9c, 0x69, 0x6e, 0x66, 0x4f, 0xcc, 0xcd, 0x06, 0x54, 0xb2, 0xa1,
-	0x4f, 0xb2, 0xf3, 0xbd, 0x06, 0x3a, 0xaf, 0x5d, 0x14, 0xda, 0xb8, 0x33, 0xe8, 0xee, 0x1c, 0xad,
-	0x08, 0x85, 0x14, 0xd9, 0xfc, 0x81, 0xe1, 0x10, 0xc8, 0xe4, 0x9c, 0x4b, 0x49, 0x47, 0x78, 0x37,
-	0x79, 0xb6, 0x2d, 0x38, 0xb7, 0x34, 0x99, 0xb4, 0xe0, 0x55, 0x28, 0x1f, 0x8d, 0x31, 0xb9, 0xc2,
-	0xe3, 0x1c, 0xac, 0x71, 0x06, 0xf6, 0xda, 0x81, 0xcf, 0x6a, 0xc8, 0x69, 0xc6, 0x0d, 0x6f, 0xef,
-	0xc0, 0x77, 0x78, 0xa2, 0xf4, 0x1a, 0xcc, 0xd0, 0x5e, 0xfb, 0x53, 0x6c, 0x33, 0x71, 0x8d, 0xb9,
-	0x9d, 0x65, 0x43, 0x3e, 0x95, 0x46, 0xfc, 0x54, 0x1a, 0xb7, 0xc3, 0x7e, 0x4d, 0xff, 0xf1, 0xc9,
-	0xf5, 0x85, 0xbd, 0xb8, 0xa8, 0x79, 0xd7, 0x75, 0xac, 0xd8, 0x70, 0xb8, 0xb5, 0xe6, 0x46, 0x5b,
-	0x6b, 0x19, 0x54, 0xac, 0xb2, 0xf5, 0xd4, 0x72, 0x45, 0x2d, 0x8e, 0xfe, 0x7f, 0xf2, 0xaa, 0x55,
-	0x37, 0xe1, 0xf2, 0x58, 0x94, 0x12, 0x3c, 0x1b, 0x70, 0x71, 0x8f, 0x97, 0x60, 0x13, 0xb3, 0xfb,
-	0x5d, 0x2c, 0x48, 0x7c, 0xdb, 0x71, 0x22, 0x4c, 0xa9, 0x5e, 0x84, 0x99, 0x00, 0x53, 0x8a, 0x5c,
-	0x59, 0xac, 0x05, 0x2b, 0x5e, 0xf2, 0x1d, 0x24, 0x95, 0xe2, 0x69, 0x40, 0x2d, 0xab, 0xf7, 0xe0,
-	0xbc, 0x70, 0x27, 0x58, 0xb8, 0x1b, 0x61, 0xc4, 0xb0, 0x33, 0xc6, 0xd1, 0x48, 0x21, 0x4b, 0x67,
-	0xa9, 0x42, 0xae, 0x7e, 0x02, 0xcb, 0x29, 0x7f, 0xf2, 0xcd, 0xf9, 0x10, 0xf7, 0xc7, 0xb8, 0xbc,
-	0x0a, 0xe7, 0xa5, 0x4b, 0x5b, 0x6a, 0xb7, 0xf6, 0x71, 0x5f, 0x39, 0x5e, 0x6c, 0x0f, 0x7b, 0xa9,
-	0xbe, 0x01, 0xc5, 0x81, 0xf7, 0x91, 0x76, 0x35, 0xf4, 0xba, 0x17, 0xd4, 0xeb, 0x5e, 0xed, 0x00,
-	0x08, 0x0b, 0xa9, 0x73, 0x7c, 0x14, 0x6b, 0x00, 0x36, 0x57, 0x69, 0x79, 0x88, 0x7a, 0x31, 0x83,
-	0x84, 0xe4, 0x2e, 0xa2, 0xa2, 0xe2, 0x10, 0x63, 0x98, 0xca, 0x91, 0x8e, 0x33, 0x44, 0x3d, 0x62,
-	0x29, 0x69, 0xdd, 0xa9, 0x7e, 0xa7, 0x41, 0x49, 0x05, 0x98, 0x41, 0xf4, 0x13, 0x30, 0x70, 0x5a,
-	0xf1, 0x80, 0x91, 0xa6, 0xf1, 0x62, 0x1b, 0x39, 0x7b, 0x72, 0xcc, 0x90, 0x64, 0xbe, 0x05, 0xa5,
-	0x23, 0xba, 0xad, 0xb8, 0x80, 0x64, 0x54, 0x2b, 0x23, 0x36, 0x4d, 0xb9, 0x5b, 0x7d, 0xac, 0x41,
-	0x59, 0x84, 0xd7, 0xe8, 0x75, 0x98, 0x4f, 0x7d, 0xf7, 0xa3, 0xae, 0x83, 0x18, 0xb6, 0xf0, 0x67,
-	0x3d, 0x3e, 0x19, 0x6e, 0xc2, 0x62, 0x3b, 0xf2, 0x1d, 0x17, 0x0f, 0xba, 0xb0, 0x8c, 0x73, 0x41,
-	0x8a, 0x93, 0x36, 0x7c, 0x65, 0xa0, 0x28, 0x4a, 0xc7, 0x77, 0xe2, 0x99, 0x49, 0x29, 0x72, 0x69,
-	0xdd, 0xe1, 0x6c, 0x09, 0xd4, 0x49, 0x03, 0xc8, 0x20, 0x16, 0xd5, 0x9d, 0x41, 0xce, 0xf2, 0xe9,
-	0x9c, 0xdd, 0x81, 0x15, 0x49, 0xf1, 0x24, 0xfe, 0x0e, 0xa2, 0x9e, 0x1f, 0xba, 0xba, 0x0e, 0x79,
-	0x3e, 0xae, 0xab, 0xb0, 0xc4, 0xf7, 0x18, 0x6e, 0xd7, 0x14, 0xb7, 0xef, 0xf7, 0x98, 0x4b, 0xfc,
-	0xd0, 0x7d, 0x78, 0x58, 0x1f, 0xc7, 0xed, 0x0b, 0x30, 0xc5, 0x0e, 0x07, 0x77, 0xc9, 0xb3, 0xc3,
-	0xba, 0x53, 0xfd, 0x5d, 0x13, 0x73, 0xa4, 0x04, 0xea, 0x81, 0x98, 0xb9, 0xf5, 0xb7, 0xa0, 0x80,
-	0x7a, 0xcc, 0x23, 0x91, 0xcf, 0xfa, 0xd2, 0x49, 0xad, 0xf8, 0xd3, 0x93, 0xeb, 0xcb, 0x6a, 0x8e,
-	0x56, 0xe5, 0xd8, 0x64, 0x91, 0x1f, 0xba, 0xd6, 0x40, 0x55, 0x7f, 0x17, 0xa6, 0xe5, 0xd4, 0x2e,
-	0x4e, 0x98, 0xdb, 0xb9, 0x64, 0x1c, 0xfb, 0xbf, 0x8e, 0x21, 0x8f, 0x8a, 0x27, 0x70, 0x69, 0x76,
-	0x86, 0x0d, 0x7d, 0x81, 0x77, 0x9f, 0x41, 0x68, 0x6a, 0x46, 0x4c, 0xdf, 0x32, 0x6e, 0x38, 0x3b,
-	0x7f, 0x4e, 0xc3, 0x64, 0x83, 0xba, 0xba, 0x0b, 0x85, 0xc1, 0x0b, 0xb4, 0x39, 0x26, 0xf4, 0xf4,
-	0x3c, 0x5e, 0x36, 0x4f, 0xa9, 0x98, 0xf4, 0xb7, 0x09, 0xbd, 0x0b, 0xf3, 0x43, 0x63, 0xfb, 0xd5,
-	0xf1, 0x2e, 0xd2, 0xba, 0xe5, 0x9d, 0xd3, 0xeb, 0xa6, 0x4e, 0xfc, 0x02, 0xce, 0x1f, 0x1d, 0x81,
-	0x4f, 0x15, 0x79, 0xca, 0xa0, 0x7c, 0xf3, 0x15, 0x0d, 0x52, 0x01, 0x7c, 0xa5, 0xc1, 0x85, 0xac,
-	0x9e, 0xb6, 0x3d, 0xde, 0x65, 0x86, 0x49, 0xf9, 0xd6, 0x2b, 0x9b, 0xa4, 0xe2, 0xe8, 0xc3, 0xe2,
-	0xe8, 0xac, 0x71, 0xfd, 0x04, 0x44, 0x87, 0xd5, 0xcb, 0x37, 0x5e, 0x49, 0x3d, 0x75, 0xf4, 0xb7,
-	0x1a, 0x94, 0xc7, 0x0c, 0x09, 0x6f, 0x9f, 0x00, 0xee, 0xb1, 0x96, 0xe5, 0xf7, 0xfe, 0xad, 0x65,
-	0x2a, 0xb8, 0x10, 0xe6, 0x87, 0x3a, 0xc0, 0x09, 0x94, 0x4c, 0xeb, 0x9e, 0x44, 0xc9, 0xac, 0x9a,
-	0xab, 0xdd, 0x79, 0xfa, 0xa2, 0xa2, 0x3d, 0x7b, 0x51, 0xd1, 0x7e, 0x7b, 0x51, 0xd1, 0xbe, 0x79,
-	0x59, 0x99, 0x78, 0xf6, 0xb2, 0x32, 0xf1, 0xf3, 0xcb, 0xca, 0xc4, 0xc7, 0xd7, 0x5c, 0x9f, 0x79,
-	0xbd, 0xb6, 0x61, 0x93, 0xc0, 0xcc, 0xf8, 0x71, 0xe0, 0x70, 0xe8, 0x57, 0x8d, 0xf6, 0xb4, 0x98,
-	0xa0, 0xde, 0xfc, 0x27, 0x00, 0x00, 0xff, 0xff, 0x15, 0xd4, 0x29, 0x52, 0x7b, 0x11, 0x00, 0x00,
+	// 1445 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x58, 0xcd, 0x8f, 0x1b, 0xc5,
+	0x12, 0xdf, 0xf1, 0x7a, 0x3f, 0x5c, 0xbb, 0xd9, 0x8f, 0x79, 0x9b, 0xc4, 0xf6, 0xcb, 0x7a, 0x13,
+	0xbf, 0x97, 0x64, 0x15, 0x25, 0x33, 0x2f, 0x9b, 0x07, 0x01, 0x84, 0x04, 0xf1, 0xb2, 0x51, 0x0c,
+	0x72, 0x12, 0x8d, 0xc3, 0x05, 0x21, 0x59, 0xed, 0x99, 0xce, 0xcc, 0xb0, 0x9e, 0x69, 0x33, 0xdd,
+	0x5e, 0xd6, 0x27, 0xa4, 0x9c, 0xb8, 0x80, 0x38, 0x23, 0x8e, 0x20, 0xae, 0x1c, 0xf2, 0x47, 0x44,
+	0x9c, 0x22, 0x4e, 0x88, 0x43, 0x40, 0x09, 0x12, 0xff, 0x03, 0xe2, 0x80, 0xfa, 0x63, 0xc6, 0x63,
+	0xef, 0xd8, 0x4e, 0xc2, 0x1e, 0x38, 0xed, 0x74, 0x75, 0x55, 0x75, 0xf5, 0xaf, 0x7e, 0x55, 0x5d,
+	0x6b, 0xf8, 0x6f, 0x17, 0x75, 0x48, 0x80, 0x6c, 0x0f, 0xf9, 0xa1, 0x29, 0xbf, 0x4d, 0xba, 0xdf,
+	0xff, 0x04, 0xf5, 0xcd, 0x80, 0xba, 0xd4, 0xe8, 0x46, 0x84, 0x11, 0xbd, 0x94, 0xd2, 0x32, 0xe4,
+	0xb7, 0x21, 0xb5, 0xca, 0x15, 0x9b, 0xd0, 0x80, 0x50, 0xb3, 0x8d, 0x28, 0x36, 0x0f, 0xae, 0xb6,
+	0x31, 0x43, 0x57, 0x4d, 0x9b, 0x70, 0x3d, 0x6e, 0x5a, 0x2e, 0xc9, 0xfd, 0x96, 0x58, 0x99, 0x72,
+	0xa1, 0xb6, 0xce, 0x8f, 0x3f, 0x9b, 0xf5, 0xbb, 0x38, 0x56, 0xbb, 0x90, 0xa1, 0x76, 0x80, 0x3a,
+	0x14, 0x33, 0xd3, 0x26, 0x41, 0x40, 0xe2, 0x93, 0x36, 0x5c, 0xe2, 0x12, 0x79, 0x0c, 0xff, 0x52,
+	0xd2, 0x33, 0x2e, 0x21, 0x6e, 0x07, 0x9b, 0xa8, 0xeb, 0x9b, 0x28, 0x0c, 0x09, 0x43, 0xcc, 0x27,
+	0x61, 0xec, 0xbb, 0xa4, 0x76, 0xc5, 0xaa, 0xdd, 0xbb, 0x6f, 0xa2, 0xb0, 0xaf, 0xb6, 0x4e, 0xab,
+	0x8b, 0x05, 0xd4, 0x35, 0x0f, 0xae, 0xf2, 0x3f, 0x13, 0xe2, 0x51, 0x61, 0x77, 0x51, 0x84, 0x02,
+	0xe5, 0xbb, 0xfa, 0x87, 0x06, 0xab, 0x0d, 0xea, 0x36, 0x71, 0xe8, 0xdc, 0x23, 0x16, 0x0e, 0x08,
+	0xc3, 0x7a, 0x09, 0x16, 0x31, 0xf3, 0x5a, 0x0e, 0xa6, 0xac, 0x98, 0x3b, 0xab, 0x6d, 0x17, 0xac,
+	0x05, 0xcc, 0xbc, 0x77, 0x30, 0x65, 0xfa, 0x75, 0x98, 0x47, 0x01, 0xe9, 0x85, 0xac, 0x38, 0x7b,
+	0x56, 0xdb, 0x5e, 0xda, 0x29, 0x19, 0x0a, 0x2c, 0x8e, 0xac, 0xa1, 0x90, 0x35, 0x76, 0x89, 0x1f,
+	0xd6, 0xf2, 0x8f, 0x9e, 0x6c, 0xcd, 0x58, 0x4a, 0x5d, 0xbf, 0x0c, 0xba, 0x88, 0xa5, 0x15, 0xe1,
+	0xfb, 0x38, 0xc2, 0xa1, 0x8d, 0x5b, 0xbe, 0x53, 0xcc, 0x0b, 0xef, 0x6b, 0x62, 0xc7, 0x8a, 0x37,
+	0xea, 0x8e, 0x7e, 0x0b, 0x16, 0x03, 0xcc, 0x90, 0x83, 0x18, 0x2a, 0xce, 0x89, 0x83, 0x2e, 0x18,
+	0x19, 0xd9, 0x95, 0x00, 0x1b, 0x0d, 0xea, 0x36, 0x94, 0xb6, 0x3a, 0x35, 0xb1, 0x7e, 0xe3, 0xc4,
+	0x83, 0xdf, 0xbf, 0xbf, 0x94, 0x2c, 0xdf, 0xcd, 0x2f, 0x6a, 0x6b, 0x39, 0x6b, 0x9e, 0xe2, 0xd0,
+	0xc1, 0x51, 0xb5, 0x04, 0xa7, 0x47, 0xee, 0x6e, 0x61, 0xda, 0x25, 0x21, 0xc5, 0xd5, 0xcf, 0x72,
+	0x02, 0x97, 0x5d, 0x12, 0xde, 0xf7, 0xa3, 0xa0, 0x86, 0x98, 0xed, 0xe9, 0x1b, 0x30, 0x17, 0x92,
+	0xd0, 0xc6, 0x45, 0xed, 0xac, 0xb6, 0x9d, 0xb7, 0xe4, 0x42, 0x3f, 0x0f, 0x2b, 0x8c, 0xec, 0xe3,
+	0xb0, 0x65, 0x93, 0x90, 0x45, 0xc8, 0x8e, 0x31, 0x3b, 0x21, 0xa4, 0xbb, 0x4a, 0xa8, 0x6f, 0x02,
+	0x70, 0x50, 0xa9, 0xef, 0x86, 0x38, 0x12, 0xe8, 0x15, 0xac, 0x02, 0x66, 0x5e, 0x53, 0x08, 0xf4,
+	0x2a, 0x2c, 0x93, 0xc8, 0xf6, 0x30, 0x65, 0x11, 0x62, 0x24, 0x52, 0xc8, 0x0c, 0xc9, 0xf4, 0x33,
+	0x50, 0xe0, 0xe6, 0x88, 0xf5, 0x22, 0x2c, 0x60, 0x29, 0x58, 0x03, 0xc1, 0x10, 0x66, 0xf3, 0xc7,
+	0x88, 0x99, 0x42, 0x29, 0x8d, 0x44, 0x82, 0xd2, 0x2f, 0xb3, 0xb0, 0x91, 0x20, 0x78, 0x57, 0x1c,
+	0xb0, 0xdb, 0x41, 0x7e, 0xa0, 0x6f, 0xc1, 0x12, 0x3e, 0xc0, 0x21, 0x6b, 0xa5, 0x01, 0x03, 0x21,
+	0xba, 0x2d, 0x50, 0xdb, 0x86, 0x35, 0x0e, 0x47, 0xbb, 0x43, 0xec, 0xfd, 0x96, 0x87, 0x7d, 0xd7,
+	0x93, 0xb8, 0xe5, 0xad, 0x15, 0xcc, 0xbc, 0x1a, 0x17, 0xdf, 0x12, 0xd2, 0x0c, 0x7c, 0x67, 0xb3,
+	0xf0, 0x7d, 0x25, 0x61, 0xa6, 0x80, 0xae, 0xb6, 0xc9, 0x2f, 0xf5, 0xf3, 0x93, 0xad, 0x93, 0x92,
+	0xa0, 0xd4, 0xd9, 0x37, 0x7c, 0x62, 0x06, 0x88, 0x79, 0x46, 0x3d, 0x64, 0x09, 0x2f, 0x2f, 0xc2,
+	0x2a, 0x66, 0x1e, 0x8e, 0x70, 0x2f, 0x68, 0x49, 0x56, 0x28, 0x64, 0x57, 0x62, 0x71, 0x53, 0x48,
+	0xb9, 0xa2, 0x44, 0xb0, 0x15, 0x61, 0x1b, 0xfb, 0x07, 0x38, 0x12, 0x28, 0x17, 0xac, 0x15, 0x29,
+	0xb6, 0x94, 0xf4, 0x48, 0x26, 0x17, 0x32, 0x32, 0x99, 0x5d, 0x0d, 0x8b, 0xcf, 0x51, 0x0d, 0x85,
+	0xbf, 0x93, 0x59, 0xfd, 0x1c, 0x2c, 0xcb, 0x26, 0xa0, 0xf2, 0x02, 0x02, 0xf1, 0x25, 0x29, 0x13,
+	0x89, 0x19, 0x4d, 0x7e, 0x05, 0xce, 0x64, 0x25, 0x38, 0x61, 0xc0, 0x9f, 0x39, 0x28, 0x35, 0xa8,
+	0x2b, 0x68, 0x91, 0x2e, 0xa4, 0x63, 0xa7, 0xc1, 0x16, 0x2c, 0xb5, 0xf9, 0x21, 0xca, 0xd5, 0xac,
+	0x74, 0x25, 0x44, 0xb7, 0xc7, 0xd4, 0x61, 0x3e, 0x8b, 0x27, 0xd9, 0xd0, 0xcf, 0x8d, 0x81, 0x7e,
+	0x34, 0x99, 0xf3, 0x19, 0xc9, 0x4c, 0xa7, 0x67, 0xe1, 0x58, 0xd3, 0xb3, 0x38, 0x35, 0x3d, 0xff,
+	0x81, 0x73, 0x63, 0xd1, 0x4f, 0x72, 0xf4, 0xad, 0x06, 0x27, 0x79, 0x05, 0xa3, 0xd0, 0xc6, 0x9d,
+	0xa1, 0x4e, 0xcf, 0x31, 0x8b, 0x50, 0x48, 0x91, 0xcd, 0xdf, 0x1b, 0x0e, 0x84, 0x4c, 0xd1, 0x89,
+	0x94, 0x74, 0x84, 0x80, 0xb3, 0xc7, 0xdb, 0x8e, 0x73, 0x6b, 0xb3, 0x49, 0x3b, 0xde, 0x82, 0xcd,
+	0xcc, 0x30, 0x93, 0x8b, 0x7c, 0x97, 0x13, 0x1a, 0xcd, 0x5e, 0x3b, 0xf0, 0x59, 0x0d, 0x39, 0xcd,
+	0xb8, 0xf9, 0xed, 0x1d, 0xf8, 0x0e, 0xcf, 0x98, 0xbe, 0x07, 0x0b, 0xb4, 0xd7, 0xfe, 0x08, 0xdb,
+	0x4c, 0xdc, 0x64, 0x69, 0x67, 0xc3, 0x90, 0x8f, 0xa7, 0x11, 0x3f, 0x9e, 0xc6, 0x8d, 0xb0, 0x5f,
+	0x3b, 0xf9, 0xc3, 0xc3, 0x2b, 0xeb, 0xd2, 0xb9, 0xac, 0x71, 0xde, 0x84, 0x1d, 0x2b, 0xb6, 0x1d,
+	0xee, 0xb4, 0xb9, 0xd1, 0x4e, 0x5b, 0x06, 0x15, 0xb1, 0xec, 0x44, 0xb5, 0x5c, 0x51, 0x8b, 0xef,
+	0xf0, 0x0f, 0x79, 0xe7, 0xaa, 0x17, 0xe1, 0xfc, 0x44, 0xa0, 0x12, 0x48, 0x1b, 0x70, 0x7a, 0x8f,
+	0x97, 0x63, 0x13, 0xb3, 0x3b, 0x5d, 0x2c, 0x08, 0x7d, 0xc3, 0x71, 0x22, 0x4c, 0xa9, 0x5e, 0x84,
+	0x85, 0x00, 0x53, 0x8a, 0x5c, 0x59, 0xb8, 0x05, 0x2b, 0x5e, 0xf2, 0x1d, 0x24, 0x95, 0xe2, 0xf9,
+	0x40, 0x2d, 0xab, 0xb7, 0x61, 0x5d, 0xb8, 0x13, 0x8c, 0xdc, 0x8d, 0x30, 0x62, 0xd8, 0x99, 0xe0,
+	0x68, 0xa4, 0xa8, 0xa5, 0xb3, 0x54, 0x51, 0x57, 0x3f, 0x84, 0x8d, 0x94, 0x3f, 0xf9, 0x04, 0xbd,
+	0x87, 0xfb, 0x13, 0x5c, 0x5e, 0x82, 0x75, 0xe9, 0xd2, 0x96, 0xda, 0xad, 0x7d, 0xdc, 0x57, 0x8e,
+	0x57, 0xdb, 0xc3, 0x5e, 0xaa, 0xd7, 0xe0, 0xdf, 0x03, 0xef, 0x47, 0xbb, 0xd7, 0xd0, 0x7b, 0x5f,
+	0x50, 0xef, 0x7d, 0xb5, 0x03, 0x20, 0x8c, 0xa4, 0xce, 0xf8, 0x40, 0x36, 0x01, 0x6c, 0xae, 0xd2,
+	0xf2, 0x10, 0xf5, 0x62, 0x12, 0x09, 0xc9, 0x2d, 0x44, 0x3d, 0x5e, 0x7a, 0x88, 0x31, 0x4c, 0xe5,
+	0xa8, 0xc7, 0x49, 0xa2, 0x9e, 0xb5, 0x94, 0xb4, 0xee, 0x54, 0xbf, 0xd6, 0xa0, 0xa4, 0x62, 0xcc,
+	0xa0, 0xfb, 0x14, 0x18, 0x9c, 0x56, 0x3c, 0x72, 0xa4, 0x99, 0xbc, 0xda, 0x46, 0xce, 0x9e, 0x1c,
+	0x3c, 0x24, 0x9f, 0x5f, 0x87, 0xd2, 0x11, 0xdd, 0x56, 0x5c, 0x46, 0x32, 0xaa, 0x53, 0x23, 0x36,
+	0x4d, 0xb9, 0x5b, 0xfd, 0x46, 0x83, 0xb2, 0x08, 0xaf, 0xd1, 0xeb, 0x30, 0x9f, 0xfa, 0xee, 0xfb,
+	0x5d, 0x07, 0xf1, 0x8a, 0xfd, 0xb8, 0xc7, 0xc7, 0xc5, 0x8b, 0xb0, 0xda, 0x8e, 0x7c, 0xc7, 0xc5,
+	0x83, 0xa6, 0x2c, 0xe3, 0x5c, 0x91, 0xe2, 0xa4, 0x2b, 0x5f, 0x18, 0x28, 0x8a, 0xea, 0xf1, 0x9d,
+	0x78, 0x8a, 0x52, 0x8a, 0x5c, 0x5a, 0x77, 0x38, 0x61, 0x02, 0x75, 0xd2, 0x00, 0x32, 0x88, 0x45,
+	0x75, 0x67, 0x90, 0xb3, 0x7c, 0x3a, 0x67, 0x37, 0xe1, 0x94, 0x64, 0x79, 0x12, 0x7f, 0x07, 0x51,
+	0xcf, 0x0f, 0x5d, 0x5d, 0x87, 0x3c, 0x1f, 0xe3, 0x55, 0x58, 0xe2, 0x7b, 0x02, 0xbd, 0x6b, 0x8a,
+	0xde, 0x77, 0x7a, 0xcc, 0x25, 0x7e, 0xe8, 0xde, 0x3b, 0xac, 0x4f, 0xa2, 0xf7, 0xbf, 0x60, 0x8e,
+	0x1d, 0x0e, 0xee, 0x92, 0x67, 0x87, 0x75, 0xa7, 0xfa, 0x9b, 0x9c, 0xb8, 0x25, 0x50, 0x77, 0xc5,
+	0x2c, 0xae, 0xbf, 0x0a, 0x05, 0xd4, 0x63, 0x1e, 0x89, 0x7c, 0xd6, 0x97, 0x4e, 0x6a, 0xc5, 0x1f,
+	0x1f, 0x5e, 0xd9, 0x50, 0xc3, 0xb5, 0xaa, 0xc8, 0x26, 0x8b, 0xfc, 0xd0, 0xb5, 0x06, 0xaa, 0xfa,
+	0x5b, 0x30, 0x2f, 0xa7, 0x79, 0x71, 0xc2, 0xd2, 0xce, 0x39, 0x63, 0xec, 0xff, 0x40, 0x86, 0x3c,
+	0x2a, 0x1e, 0xcb, 0xa5, 0xd9, 0x31, 0x76, 0xf6, 0x15, 0xde, 0x80, 0x06, 0xa1, 0xa9, 0xa9, 0x31,
+	0x7d, 0xcb, 0xb8, 0xe7, 0xec, 0x7c, 0xbe, 0x00, 0xb3, 0x0d, 0xea, 0xea, 0x5d, 0x58, 0x1e, 0x7a,
+	0x8d, 0x2e, 0x4d, 0x88, 0x7e, 0x64, 0x4e, 0x2f, 0xef, 0x3c, 0xbf, 0x6e, 0xd2, 0xeb, 0x66, 0xf8,
+	0x89, 0x43, 0x13, 0xfd, 0x94, 0x13, 0xd3, 0xba, 0xd3, 0x4e, 0xcc, 0x9c, 0x8f, 0x67, 0xf4, 0x4f,
+	0x61, 0xfd, 0xe8, 0x74, 0x6c, 0x3e, 0x4f, 0xf0, 0x29, 0x83, 0xf2, 0xf5, 0x17, 0x34, 0x48, 0x05,
+	0xf0, 0x85, 0x06, 0xa7, 0xc6, 0xf4, 0xb7, 0xff, 0x4f, 0xf6, 0x9a, 0x6d, 0x55, 0x7e, 0xf3, 0x65,
+	0xac, 0x52, 0x01, 0x3d, 0xd0, 0x40, 0xcf, 0x18, 0x45, 0xfe, 0x37, 0x05, 0xde, 0x23, 0x16, 0xe5,
+	0xd7, 0x5e, 0xd4, 0x22, 0x15, 0xc4, 0x57, 0x1a, 0x94, 0x27, 0x8c, 0x11, 0x53, 0x5c, 0x8f, 0xb7,
+	0x2c, 0xbf, 0xfd, 0xb2, 0x96, 0xa9, 0xe0, 0x42, 0x58, 0x1e, 0xea, 0x0e, 0x53, 0x58, 0x9a, 0xd6,
+	0x9d, 0xc6, 0xd2, 0xac, 0x7a, 0xac, 0xdd, 0x7c, 0xf4, 0xb4, 0xa2, 0x3d, 0x7e, 0x5a, 0xd1, 0x7e,
+	0x7d, 0x5a, 0xd1, 0xbe, 0x7c, 0x56, 0x99, 0x79, 0xfc, 0xac, 0x32, 0xf3, 0xd3, 0xb3, 0xca, 0xcc,
+	0x07, 0x97, 0x5d, 0x9f, 0x79, 0xbd, 0xb6, 0x61, 0x93, 0xc0, 0xcc, 0xf8, 0x41, 0xe1, 0x70, 0xe8,
+	0x97, 0x90, 0xf6, 0xbc, 0x98, 0xb1, 0xae, 0xfd, 0x15, 0x00, 0x00, 0xff, 0xff, 0x81, 0xde, 0xb7,
+	0x32, 0xaf, 0x11, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1615,11 +1616,11 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	SendToEth(ctx context.Context, in *MsgSendToEth, opts ...grpc.CallOption) (*MsgSendToEthResponse, error)
+	SendToRemote(ctx context.Context, in *MsgSendToRemote, opts ...grpc.CallOption) (*MsgSendToRemoteResponse, error)
 	ConfirmBatch(ctx context.Context, in *MsgConfirmBatch, opts ...grpc.CallOption) (*MsgConfirmBatchResponse, error)
 	SendToPalomaClaim(ctx context.Context, in *MsgSendToPalomaClaim, opts ...grpc.CallOption) (*MsgSendToPalomaClaimResponse, error)
-	BatchSendToEthClaim(ctx context.Context, in *MsgBatchSendToEthClaim, opts ...grpc.CallOption) (*MsgBatchSendToEthClaimResponse, error)
-	CancelSendToEth(ctx context.Context, in *MsgCancelSendToEth, opts ...grpc.CallOption) (*MsgCancelSendToEthResponse, error)
+	BatchSendToRemoteClaim(ctx context.Context, in *MsgBatchSendToRemoteClaim, opts ...grpc.CallOption) (*MsgBatchSendToRemoteClaimResponse, error)
+	CancelSendToRemote(ctx context.Context, in *MsgCancelSendToRemote, opts ...grpc.CallOption) (*MsgCancelSendToRemoteResponse, error)
 	SubmitBadSignatureEvidence(ctx context.Context, in *MsgSubmitBadSignatureEvidence, opts ...grpc.CallOption) (*MsgSubmitBadSignatureEvidenceResponse, error)
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
@@ -1632,9 +1633,9 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) SendToEth(ctx context.Context, in *MsgSendToEth, opts ...grpc.CallOption) (*MsgSendToEthResponse, error) {
-	out := new(MsgSendToEthResponse)
-	err := c.cc.Invoke(ctx, "/palomachain.paloma.skyway.Msg/SendToEth", in, out, opts...)
+func (c *msgClient) SendToRemote(ctx context.Context, in *MsgSendToRemote, opts ...grpc.CallOption) (*MsgSendToRemoteResponse, error) {
+	out := new(MsgSendToRemoteResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.skyway.Msg/SendToRemote", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1659,18 +1660,18 @@ func (c *msgClient) SendToPalomaClaim(ctx context.Context, in *MsgSendToPalomaCl
 	return out, nil
 }
 
-func (c *msgClient) BatchSendToEthClaim(ctx context.Context, in *MsgBatchSendToEthClaim, opts ...grpc.CallOption) (*MsgBatchSendToEthClaimResponse, error) {
-	out := new(MsgBatchSendToEthClaimResponse)
-	err := c.cc.Invoke(ctx, "/palomachain.paloma.skyway.Msg/BatchSendToEthClaim", in, out, opts...)
+func (c *msgClient) BatchSendToRemoteClaim(ctx context.Context, in *MsgBatchSendToRemoteClaim, opts ...grpc.CallOption) (*MsgBatchSendToRemoteClaimResponse, error) {
+	out := new(MsgBatchSendToRemoteClaimResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.skyway.Msg/BatchSendToRemoteClaim", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) CancelSendToEth(ctx context.Context, in *MsgCancelSendToEth, opts ...grpc.CallOption) (*MsgCancelSendToEthResponse, error) {
-	out := new(MsgCancelSendToEthResponse)
-	err := c.cc.Invoke(ctx, "/palomachain.paloma.skyway.Msg/CancelSendToEth", in, out, opts...)
+func (c *msgClient) CancelSendToRemote(ctx context.Context, in *MsgCancelSendToRemote, opts ...grpc.CallOption) (*MsgCancelSendToRemoteResponse, error) {
+	out := new(MsgCancelSendToRemoteResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.skyway.Msg/CancelSendToRemote", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1697,11 +1698,11 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	SendToEth(context.Context, *MsgSendToEth) (*MsgSendToEthResponse, error)
+	SendToRemote(context.Context, *MsgSendToRemote) (*MsgSendToRemoteResponse, error)
 	ConfirmBatch(context.Context, *MsgConfirmBatch) (*MsgConfirmBatchResponse, error)
 	SendToPalomaClaim(context.Context, *MsgSendToPalomaClaim) (*MsgSendToPalomaClaimResponse, error)
-	BatchSendToEthClaim(context.Context, *MsgBatchSendToEthClaim) (*MsgBatchSendToEthClaimResponse, error)
-	CancelSendToEth(context.Context, *MsgCancelSendToEth) (*MsgCancelSendToEthResponse, error)
+	BatchSendToRemoteClaim(context.Context, *MsgBatchSendToRemoteClaim) (*MsgBatchSendToRemoteClaimResponse, error)
+	CancelSendToRemote(context.Context, *MsgCancelSendToRemote) (*MsgCancelSendToRemoteResponse, error)
 	SubmitBadSignatureEvidence(context.Context, *MsgSubmitBadSignatureEvidence) (*MsgSubmitBadSignatureEvidenceResponse, error)
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 }
@@ -1709,8 +1710,8 @@ type MsgServer interface {
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct{}
 
-func (*UnimplementedMsgServer) SendToEth(ctx context.Context, req *MsgSendToEth) (*MsgSendToEthResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendToEth not implemented")
+func (*UnimplementedMsgServer) SendToRemote(ctx context.Context, req *MsgSendToRemote) (*MsgSendToRemoteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendToRemote not implemented")
 }
 
 func (*UnimplementedMsgServer) ConfirmBatch(ctx context.Context, req *MsgConfirmBatch) (*MsgConfirmBatchResponse, error) {
@@ -1721,12 +1722,12 @@ func (*UnimplementedMsgServer) SendToPalomaClaim(ctx context.Context, req *MsgSe
 	return nil, status.Errorf(codes.Unimplemented, "method SendToPalomaClaim not implemented")
 }
 
-func (*UnimplementedMsgServer) BatchSendToEthClaim(ctx context.Context, req *MsgBatchSendToEthClaim) (*MsgBatchSendToEthClaimResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BatchSendToEthClaim not implemented")
+func (*UnimplementedMsgServer) BatchSendToRemoteClaim(ctx context.Context, req *MsgBatchSendToRemoteClaim) (*MsgBatchSendToRemoteClaimResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchSendToRemoteClaim not implemented")
 }
 
-func (*UnimplementedMsgServer) CancelSendToEth(ctx context.Context, req *MsgCancelSendToEth) (*MsgCancelSendToEthResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelSendToEth not implemented")
+func (*UnimplementedMsgServer) CancelSendToRemote(ctx context.Context, req *MsgCancelSendToRemote) (*MsgCancelSendToRemoteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelSendToRemote not implemented")
 }
 
 func (*UnimplementedMsgServer) SubmitBadSignatureEvidence(ctx context.Context, req *MsgSubmitBadSignatureEvidence) (*MsgSubmitBadSignatureEvidenceResponse, error) {
@@ -1741,20 +1742,20 @@ func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 	s.RegisterService(&_Msg_serviceDesc, srv)
 }
 
-func _Msg_SendToEth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSendToEth)
+func _Msg_SendToRemote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgSendToRemote)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).SendToEth(ctx, in)
+		return srv.(MsgServer).SendToRemote(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/palomachain.paloma.skyway.Msg/SendToEth",
+		FullMethod: "/palomachain.paloma.skyway.Msg/SendToRemote",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SendToEth(ctx, req.(*MsgSendToEth))
+		return srv.(MsgServer).SendToRemote(ctx, req.(*MsgSendToRemote))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1795,38 +1796,38 @@ func _Msg_SendToPalomaClaim_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_BatchSendToEthClaim_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgBatchSendToEthClaim)
+func _Msg_BatchSendToRemoteClaim_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgBatchSendToRemoteClaim)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).BatchSendToEthClaim(ctx, in)
+		return srv.(MsgServer).BatchSendToRemoteClaim(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/palomachain.paloma.skyway.Msg/BatchSendToEthClaim",
+		FullMethod: "/palomachain.paloma.skyway.Msg/BatchSendToRemoteClaim",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).BatchSendToEthClaim(ctx, req.(*MsgBatchSendToEthClaim))
+		return srv.(MsgServer).BatchSendToRemoteClaim(ctx, req.(*MsgBatchSendToRemoteClaim))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_CancelSendToEth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgCancelSendToEth)
+func _Msg_CancelSendToRemote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCancelSendToRemote)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).CancelSendToEth(ctx, in)
+		return srv.(MsgServer).CancelSendToRemote(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/palomachain.paloma.skyway.Msg/CancelSendToEth",
+		FullMethod: "/palomachain.paloma.skyway.Msg/CancelSendToRemote",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).CancelSendToEth(ctx, req.(*MsgCancelSendToEth))
+		return srv.(MsgServer).CancelSendToRemote(ctx, req.(*MsgCancelSendToRemote))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1872,8 +1873,8 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SendToEth",
-			Handler:    _Msg_SendToEth_Handler,
+			MethodName: "SendToRemote",
+			Handler:    _Msg_SendToRemote_Handler,
 		},
 		{
 			MethodName: "ConfirmBatch",
@@ -1884,12 +1885,12 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_SendToPalomaClaim_Handler,
 		},
 		{
-			MethodName: "BatchSendToEthClaim",
-			Handler:    _Msg_BatchSendToEthClaim_Handler,
+			MethodName: "BatchSendToRemoteClaim",
+			Handler:    _Msg_BatchSendToRemoteClaim_Handler,
 		},
 		{
-			MethodName: "CancelSendToEth",
-			Handler:    _Msg_CancelSendToEth_Handler,
+			MethodName: "CancelSendToRemote",
+			Handler:    _Msg_CancelSendToRemote_Handler,
 		},
 		{
 			MethodName: "SubmitBadSignatureEvidence",
@@ -1904,7 +1905,7 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	Metadata: "palomachain/paloma/skyway/msgs.proto",
 }
 
-func (m *MsgSendToEth) Marshal() (dAtA []byte, err error) {
+func (m *MsgSendToRemote) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1914,12 +1915,12 @@ func (m *MsgSendToEth) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgSendToEth) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgSendToRemote) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgSendToEth) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgSendToRemote) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1961,7 +1962,7 @@ func (m *MsgSendToEth) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgSendToEthResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgSendToRemoteResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1971,12 +1972,12 @@ func (m *MsgSendToEthResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgSendToEthResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgSendToRemoteResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgSendToEthResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgSendToRemoteResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -2189,7 +2190,7 @@ func (m *MsgSendToPalomaClaimResponse) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgBatchSendToEthClaim) Marshal() (dAtA []byte, err error) {
+func (m *MsgBatchSendToRemoteClaim) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -2199,12 +2200,12 @@ func (m *MsgBatchSendToEthClaim) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgBatchSendToEthClaim) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgBatchSendToRemoteClaim) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgBatchSendToEthClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgBatchSendToRemoteClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -2263,7 +2264,7 @@ func (m *MsgBatchSendToEthClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgBatchSendToEthClaimResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgBatchSendToRemoteClaimResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -2273,12 +2274,12 @@ func (m *MsgBatchSendToEthClaimResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgBatchSendToEthClaimResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgBatchSendToRemoteClaimResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgBatchSendToEthClaimResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgBatchSendToRemoteClaimResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -2286,7 +2287,7 @@ func (m *MsgBatchSendToEthClaimResponse) MarshalToSizedBuffer(dAtA []byte) (int,
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgCancelSendToEth) Marshal() (dAtA []byte, err error) {
+func (m *MsgCancelSendToRemote) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -2296,12 +2297,12 @@ func (m *MsgCancelSendToEth) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgCancelSendToEth) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgCancelSendToRemote) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgCancelSendToEth) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgCancelSendToRemote) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -2324,7 +2325,7 @@ func (m *MsgCancelSendToEth) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgCancelSendToEthResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgCancelSendToRemoteResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -2334,12 +2335,12 @@ func (m *MsgCancelSendToEthResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgCancelSendToEthResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgCancelSendToRemoteResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgCancelSendToEthResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgCancelSendToRemoteResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -2547,7 +2548,7 @@ func (m *EventBatchConfirmKey) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *EventBatchSendToEthClaim) Marshal() (dAtA []byte, err error) {
+func (m *EventBatchSendToRemoteClaim) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -2557,12 +2558,12 @@ func (m *EventBatchSendToEthClaim) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventBatchSendToEthClaim) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventBatchSendToRemoteClaim) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventBatchSendToEthClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventBatchSendToRemoteClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -2875,7 +2876,7 @@ func encodeVarintMsgs(dAtA []byte, offset int, v uint64) int {
 	return base
 }
 
-func (m *MsgSendToEth) Size() (n int) {
+func (m *MsgSendToRemote) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2896,7 +2897,7 @@ func (m *MsgSendToEth) Size() (n int) {
 	return n
 }
 
-func (m *MsgSendToEthResponse) Size() (n int) {
+func (m *MsgSendToRemoteResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2995,7 +2996,7 @@ func (m *MsgSendToPalomaClaimResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgBatchSendToEthClaim) Size() (n int) {
+func (m *MsgBatchSendToRemoteClaim) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -3030,7 +3031,7 @@ func (m *MsgBatchSendToEthClaim) Size() (n int) {
 	return n
 }
 
-func (m *MsgBatchSendToEthClaimResponse) Size() (n int) {
+func (m *MsgBatchSendToRemoteClaimResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -3039,7 +3040,7 @@ func (m *MsgBatchSendToEthClaimResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgCancelSendToEth) Size() (n int) {
+func (m *MsgCancelSendToRemote) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -3053,7 +3054,7 @@ func (m *MsgCancelSendToEth) Size() (n int) {
 	return n
 }
 
-func (m *MsgCancelSendToEthResponse) Size() (n int) {
+func (m *MsgCancelSendToRemoteResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -3149,7 +3150,7 @@ func (m *EventBatchConfirmKey) Size() (n int) {
 	return n
 }
 
-func (m *EventBatchSendToEthClaim) Size() (n int) {
+func (m *EventBatchSendToRemoteClaim) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -3297,7 +3298,7 @@ func sozMsgs(x uint64) (n int) {
 	return sovMsgs(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
 
-func (m *MsgSendToEth) Unmarshal(dAtA []byte) error {
+func (m *MsgSendToRemote) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3320,10 +3321,10 @@ func (m *MsgSendToEth) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSendToEth: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgSendToRemote: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSendToEth: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgSendToRemote: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 2:
@@ -3478,7 +3479,7 @@ func (m *MsgSendToEth) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
-func (m *MsgSendToEthResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgSendToRemoteResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3501,10 +3502,10 @@ func (m *MsgSendToEthResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSendToEthResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgSendToRemoteResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSendToEthResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgSendToRemoteResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -4197,7 +4198,7 @@ func (m *MsgSendToPalomaClaimResponse) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
-func (m *MsgBatchSendToEthClaim) Unmarshal(dAtA []byte) error {
+func (m *MsgBatchSendToRemoteClaim) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -4220,10 +4221,10 @@ func (m *MsgBatchSendToEthClaim) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgBatchSendToEthClaim: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgBatchSendToRemoteClaim: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgBatchSendToEthClaim: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgBatchSendToRemoteClaim: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -4453,7 +4454,7 @@ func (m *MsgBatchSendToEthClaim) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
-func (m *MsgBatchSendToEthClaimResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgBatchSendToRemoteClaimResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -4476,10 +4477,10 @@ func (m *MsgBatchSendToEthClaimResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgBatchSendToEthClaimResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgBatchSendToRemoteClaimResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgBatchSendToEthClaimResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgBatchSendToRemoteClaimResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -4504,7 +4505,7 @@ func (m *MsgBatchSendToEthClaimResponse) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
-func (m *MsgCancelSendToEth) Unmarshal(dAtA []byte) error {
+func (m *MsgCancelSendToRemote) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -4527,10 +4528,10 @@ func (m *MsgCancelSendToEth) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgCancelSendToEth: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgCancelSendToRemote: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgCancelSendToEth: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgCancelSendToRemote: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -4607,7 +4608,7 @@ func (m *MsgCancelSendToEth) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
-func (m *MsgCancelSendToEthResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgCancelSendToRemoteResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -4630,10 +4631,10 @@ func (m *MsgCancelSendToEthResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgCancelSendToEthResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgCancelSendToRemoteResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgCancelSendToEthResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgCancelSendToRemoteResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -5270,7 +5271,7 @@ func (m *EventBatchConfirmKey) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
-func (m *EventBatchSendToEthClaim) Unmarshal(dAtA []byte) error {
+func (m *EventBatchSendToRemoteClaim) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5293,10 +5294,10 @@ func (m *EventBatchSendToEthClaim) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventBatchSendToEthClaim: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventBatchSendToRemoteClaim: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventBatchSendToEthClaim: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventBatchSendToRemoteClaim: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:

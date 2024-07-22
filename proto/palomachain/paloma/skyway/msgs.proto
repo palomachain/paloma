@@ -14,20 +14,20 @@ option go_package = "github.com/palomachain/paloma/x/skyway/types";
 
 // Msg defines the state transitions possible within skyway
 service Msg {
-  rpc SendToEth(MsgSendToEth) returns (MsgSendToEthResponse) {}
+  rpc SendToRemote(MsgSendToRemote) returns (MsgSendToRemoteResponse) {}
   rpc ConfirmBatch(MsgConfirmBatch) returns (MsgConfirmBatchResponse) {}
   rpc SendToPalomaClaim(MsgSendToPalomaClaim)
       returns (MsgSendToPalomaClaimResponse) {}
-  rpc BatchSendToEthClaim(MsgBatchSendToEthClaim)
-      returns (MsgBatchSendToEthClaimResponse) {}
-  rpc CancelSendToEth(MsgCancelSendToEth) returns (MsgCancelSendToEthResponse) {
+  rpc BatchSendToRemoteClaim(MsgBatchSendToRemoteClaim)
+      returns (MsgBatchSendToRemoteClaimResponse) {}
+  rpc CancelSendToRemote(MsgCancelSendToRemote) returns (MsgCancelSendToRemoteResponse) {
   }
   rpc SubmitBadSignatureEvidence(MsgSubmitBadSignatureEvidence)
       returns (MsgSubmitBadSignatureEvidenceResponse) {}
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 
-// MsgSendToEth
+// MsgSendToRemote
 // This is the message that a user calls when they want to bridge an asset
 // it will later be removed when it is included in a batch and successfully
 // submitted tokens are removed from the users balance immediately
@@ -35,7 +35,7 @@ service Msg {
 // AMOUNT:
 // the coin to send across the bridge, note the restriction that this is a
 // single coin not a set of coins that is normal in other Cosmos messages
-message MsgSendToEth {
+message MsgSendToRemote {
   option (cosmos.msg.v1.signer) = "metadata";
   reserved 1;  
   reserved "sender";  
@@ -46,7 +46,7 @@ message MsgSendToEth {
       [ (gogoproto.nullable) = false ];
 }
 
-message MsgSendToEthResponse {}
+message MsgSendToRemoteResponse {}
 
 // MsgConfirmBatch
 // When validators observe a MsgRequestBatch they form a batch by ordering
@@ -54,7 +54,7 @@ message MsgSendToEthResponse {}
 // cutting off when the batch either reaches a hardcoded maximum size (to be
 // decided, probably around 100) or when transactions stop being profitable
 // (TODO determine this without nondeterminism) This message includes the batch
-// as well as an Ethereum signature over this batch by the validator
+// as well as an Remoteereum signature over this batch by the validator
 // -------------
 message MsgConfirmBatch {
   option (cosmos.msg.v1.signer) = "metadata";
@@ -94,9 +94,9 @@ message MsgSendToPalomaClaim {
 
 message MsgSendToPalomaClaimResponse {}
 
-// BatchSendToEthClaim claims that a batch of send to eth
+// BatchSendToRemoteClaim claims that a batch of send to eth
 // operations on the bridge contract was executed.
-message MsgBatchSendToEthClaim {
+message MsgBatchSendToRemoteClaim {
   option (cosmos.msg.v1.signer) = "metadata";
   uint64 event_nonce = 1;
   uint64 eth_block_height = 2;
@@ -109,12 +109,12 @@ message MsgBatchSendToEthClaim {
   uint64 skyway_nonce = 8;
 }
 
-message MsgBatchSendToEthClaimResponse {}
+message MsgBatchSendToRemoteClaimResponse {}
 
 // This call allows the sender (and only the sender)
-// to cancel a given MsgSendToEth and recieve a refund
+// to cancel a given MsgSendToRemote and recieve a refund
 // of the tokens
-message MsgCancelSendToEth {
+message MsgCancelSendToRemote {
   option (cosmos.msg.v1.signer) = "metadata";
   uint64 transaction_id = 1;
   reserved 2;  
@@ -123,7 +123,7 @@ message MsgCancelSendToEth {
       [ (gogoproto.nullable) = false ];
 }
 
-message MsgCancelSendToEthResponse {}
+message MsgCancelSendToRemoteResponse {}
 
 // This call allows anyone to submit evidence that a
 // validator has signed a batch that never
@@ -132,7 +132,7 @@ message MsgCancelSendToEthResponse {}
 message MsgSubmitBadSignatureEvidence {
   option (cosmos.msg.v1.signer) = "metadata";
   google.protobuf.Any subject = 1
-      [ (cosmos_proto.accepts_interface) = "EthereumSigned" ];
+      [ (cosmos_proto.accepts_interface) = "RemoteereumSigned" ];
   string signature = 2;
   string sender = 3 [ deprecated = true ];
   string chain_reference_id = 4;
@@ -157,7 +157,7 @@ message EventBatchConfirmKey {
   string batch_confirm_key = 2;
 }
 
-message EventBatchSendToEthClaim { string nonce = 1; }
+message EventBatchSendToRemoteClaim { string nonce = 1; }
 
 message EventClaim {
   string message = 1;
