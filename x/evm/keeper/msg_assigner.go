@@ -305,6 +305,8 @@ func filterValidatorsForJob(scoreSnapshot scoreSnapshot, valLUT map[string]valse
 					return true
 				}
 			}
+
+			return false
 		}
 
 		return false
