@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/evm/types"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -31,6 +32,10 @@ func addDeploymentToKeeper(t *testing.T, ctx sdk.Context, k *Keeper, mockService
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil)
 	mockServices.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
+	mockServices.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
+		ValMetrics: getMetrics(3),
+	}, nil)
+	mockServices.TreasuryKeeper.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil)
 
 	// Add a new chains for our test to use
 	err := k.AddSupportForNewChain(

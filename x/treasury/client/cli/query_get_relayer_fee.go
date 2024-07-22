@@ -47,3 +47,34 @@ func CmdGetRelayerFee() *cobra.Command {
 
 	return cmd
 }
+
+func CmdGetRelayerFees() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "relayer-fees [chain-reference-id]",
+		Short:   "Retrieve all set relayer fees values for a given chain",
+		Long:    "Query all currently set relayer fee settings for a given chain",
+		Example: "relayer-fees eth-main",
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			res, err := queryClient.RelayerFees(cmd.Context(), &types.QueryRelayerFeesRequest{
+				ChainReferenceId: args[0],
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}

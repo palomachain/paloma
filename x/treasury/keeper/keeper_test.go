@@ -10,6 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	keeperutilmocks "github.com/palomachain/paloma/util/keeper/mocks"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/treasury/types"
 	"github.com/palomachain/paloma/x/treasury/types/mocks"
 	"github.com/stretchr/testify/assert"
@@ -481,23 +482,14 @@ func TestGetRelayerFeesByChainReferenceID(t *testing.T) {
 	testcases := []struct {
 		name     string
 		setup    func() Keeper
-		expected map[string]types.RelayerFeeSetting_FeeSetting
+		expected map[string]math.LegacyDec
 	}{
 		{
 			name: "with basic chain support",
-			expected: map[string]types.RelayerFeeSetting_FeeSetting{
-				"validator-1": {
-					Multiplicator:    math.LegacyMustNewDecFromStr("1.2"),
-					ChainReferenceId: "test-chain",
-				},
-				"validator-2": {
-					Multiplicator:    math.LegacyMustNewDecFromStr("1.5"),
-					ChainReferenceId: "test-chain",
-				},
-				"validator-3": {
-					Multiplicator:    math.LegacyMustNewDecFromStr("1.7"),
-					ChainReferenceId: "test-chain",
-				},
+			expected: map[string]math.LegacyDec{
+				"validator-1": math.LegacyMustNewDecFromStr("1.2"),
+				"validator-2": math.LegacyMustNewDecFromStr("1.5"),
+				"validator-3": math.LegacyMustNewDecFromStr("1.7"),
 			},
 			setup: func() Keeper {
 				m := keeperutilmocks.NewKVStoreWrapper[*types.RelayerFeeSetting](t)
@@ -537,9 +529,11 @@ func TestGetRelayerFeesByChainReferenceID(t *testing.T) {
 						f(sdk.ValAddress(v.ValAddress), &v)
 					}
 				}).Return(nil)
-
+				evm := mocks.NewEvmKeeper(t)
+				evm.On("GetChainInfo", mock.Anything, "test-chain").Return(&evmtypes.ChainInfo{}, nil)
 				k := Keeper{
 					relayerFees: m,
+					evm:         evm,
 				}
 
 				return k
@@ -547,15 +541,9 @@ func TestGetRelayerFeesByChainReferenceID(t *testing.T) {
 		},
 		{
 			name: "with multiple chain support",
-			expected: map[string]types.RelayerFeeSetting_FeeSetting{
-				"validator-1": {
-					Multiplicator:    math.LegacyMustNewDecFromStr("1.2"),
-					ChainReferenceId: "test-chain",
-				},
-				"validator-3": {
-					Multiplicator:    math.LegacyMustNewDecFromStr("1.7"),
-					ChainReferenceId: "test-chain",
-				},
+			expected: map[string]math.LegacyDec{
+				"validator-1": math.LegacyMustNewDecFromStr("1.2"),
+				"validator-3": math.LegacyMustNewDecFromStr("1.7"),
 			},
 			setup: func() Keeper {
 				m := keeperutilmocks.NewKVStoreWrapper[*types.RelayerFeeSetting](t)
@@ -604,8 +592,11 @@ func TestGetRelayerFeesByChainReferenceID(t *testing.T) {
 					}
 				}).Return(nil)
 
+				evm := mocks.NewEvmKeeper(t)
+				evm.On("GetChainInfo", mock.Anything, "test-chain").Return(&evmtypes.ChainInfo{}, nil)
 				k := Keeper{
 					relayerFees: m,
+					evm:         evm,
 				}
 
 				return k

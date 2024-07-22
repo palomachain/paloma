@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
@@ -27,4 +28,40 @@ func (k Keeper) RelayerFee(ctx context.Context, req *types.QueryRelayerFeeReques
 	}
 
 	return f, nil
+}
+
+func (k Keeper) RelayerFees(ctx context.Context, req *types.QueryRelayerFeesRequest) (*types.QueryRelayerFeesResponse, error) {
+	fees, err := k.GetRelayerFeesByChainReferenceID(ctx, req.ChainReferenceId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get relayer fees: %w", err)
+	}
+
+	keys := make([]string, 0, len(fees))
+	for key := range fees {
+		keys = append(keys, key)
+	}
+	slices.SortStableFunc(keys, func(a, b string) int {
+		if a > b {
+			return 1
+		}
+		if a < b {
+			return -1
+		}
+		return 0
+	})
+
+	response := make([]types.RelayerFeeSetting, 0, len(fees))
+	for _, key := range keys {
+		response = append(response, types.RelayerFeeSetting{
+			ValAddress: key,
+			Fees: []types.RelayerFeeSetting_FeeSetting{
+				{
+					Multiplicator:    fees[key],
+					ChainReferenceId: req.ChainReferenceId,
+				},
+			},
+		})
+	}
+
+	return &types.QueryRelayerFeesResponse{RelayerFees: response}, nil
 }

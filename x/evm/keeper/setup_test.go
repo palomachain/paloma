@@ -24,6 +24,8 @@ type mockedServices struct {
 	ValsetKeeper    *mocks.ValsetKeeper
 	MsgSender       *mocks.MsgSender
 	SkywayKeeper    *mocks.SkywayKeeper
+	TreasuryKeeper  *mocks.TreasuryKeeper
+	MetrixKeeper    *mocks.MetrixKeeper
 }
 
 func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
@@ -48,6 +50,8 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 		ValsetKeeper:    mocks.NewValsetKeeper(t),
 		MsgSender:       mocks.NewMsgSender(t),
 		SkywayKeeper:    mocks.NewSkywayKeeper(t),
+		TreasuryKeeper:  mocks.NewTreasuryKeeper(t),
+		MetrixKeeper:    mocks.NewMetrixKeeper(t),
 	}
 	k := NewKeeper(
 		appCodec,
@@ -55,6 +59,8 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 		ms.ConsensusKeeper,
 		ms.ValsetKeeper,
 		authcodec.NewBech32Codec(params.ValidatorAddressPrefix),
+		ms.MetrixKeeper,
+		ms.TreasuryKeeper,
 	)
 
 	k.msgSender = ms.MsgSender

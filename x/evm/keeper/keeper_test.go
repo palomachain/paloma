@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/evm/types/mocks"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
@@ -20,6 +22,28 @@ import (
 type validatorChainInfo struct {
 	chainType        string
 	chainReferenceID string
+}
+
+func getFees(num int) map[string]sdkmath.LegacyDec {
+	fees := make(map[string]sdkmath.LegacyDec)
+	for i := 0; i < num; i++ {
+		fees[sdk.ValAddress(fmt.Sprintf("validator-%d", i)).String()] = sdkmath.LegacyMustNewDecFromStr("0.1")
+	}
+	return fees
+}
+
+func getMetrics(num int) []metrixtypes.ValidatorMetrics {
+	metrics := make([]metrixtypes.ValidatorMetrics, num)
+	for i := 0; i < num; i++ {
+		metrics[i] = metrixtypes.ValidatorMetrics{
+			ValAddress:    sdk.ValAddress(fmt.Sprintf("validator-%d", i)).String(),
+			Uptime:        sdkmath.LegacyMustNewDecFromStr("1.0"),
+			SuccessRate:   sdkmath.LegacyMustNewDecFromStr("0.9"),
+			ExecutionTime: sdkmath.NewInt(3),
+			FeatureSet:    sdkmath.LegacyMustNewDecFromStr("1.0"),
+		}
+	}
+	return metrics
 }
 
 func getValidators(num int, chains []validatorChainInfo) []valsettypes.Validator {
@@ -33,6 +57,7 @@ func getValidators(num int, chains []validatorChainInfo) []valsettypes.Validator
 			}
 		}
 		validators[i] = valsettypes.Validator{
+			Address:            sdk.ValAddress(fmt.Sprintf("validator-%d", i)),
 			State:              valsettypes.ValidatorState_ACTIVE,
 			ShareCount:         sdkmath.NewInt(25000),
 			ExternalChainInfos: chainInfos,
@@ -61,11 +86,19 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), nil)
 	mockServices.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
+	mockServices.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
+		ValMetrics: getMetrics(3),
+	}, nil)
+	mockServices.TreasuryKeeper.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil)
 
 	// invalid-test-chain mocks
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), nil)
 	mockServices.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
+	mockServices.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
+		ValMetrics: getMetrics(3),
+	}, nil)
+	mockServices.TreasuryKeeper.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil)
 
 	// Add 2 new chains for our tests to use
 	err := k.AddSupportForNewChain(

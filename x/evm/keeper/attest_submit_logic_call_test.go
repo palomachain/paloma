@@ -9,6 +9,7 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -18,6 +19,8 @@ var _ = Describe("attest submit logic call", func() {
 	var q *consensusmocks.Queuer
 	var msg *consensustypes.QueuedSignedMessage
 	var consensuskeeper *evmmocks.ConsensusKeeper
+	var tk *evmmocks.TreasuryKeeper
+	var mk *evmmocks.MetrixKeeper
 	var evidence []*consensustypes.Evidence
 	var retries uint32
 
@@ -33,6 +36,8 @@ var _ = Describe("attest submit logic call", func() {
 		var ms mockedServices
 		k, ms, ctx = NewEvmKeeper(GinkgoT())
 		consensuskeeper = ms.ConsensusKeeper
+		mk = ms.MetrixKeeper
+		tk = ms.TreasuryKeeper
 		q = consensusmocks.NewQueuer(GinkgoT())
 
 		snapshot := createSnapshot(testChain)
@@ -43,7 +48,7 @@ var _ = Describe("attest submit logic call", func() {
 		ms.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).
 			Return(uint64(100), nil).Maybe()
 
-		err := setupTestChainSupport(ctx, consensuskeeper, testChain, k)
+		err := setupTestChainSupport(ctx, consensuskeeper, mk, tk, testChain, k)
 		Expect(err).To(BeNil())
 	})
 
@@ -71,10 +76,10 @@ var _ = Describe("attest submit logic call", func() {
 					ErrorMessage: "an error",
 				})
 			evidence = []*consensustypes.Evidence{{
-				ValAddress: sdk.ValAddress("addr1"),
+				ValAddress: sdk.ValAddress("validator-1"),
 				Proof:      proof,
 			}, {
-				ValAddress: sdk.ValAddress("addr2"),
+				ValAddress: sdk.ValAddress("validator-2"),
 				Proof:      proof,
 			}}
 		})
@@ -92,6 +97,10 @@ var _ = Describe("attest submit logic call", func() {
 					mock.Anything,
 					mock.Anything,
 				).Return(uint64(10), nil).Once()
+				mk.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
+					ValMetrics: getMetrics(3),
+				}, nil)
+				tk.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil)
 			})
 
 			It("should retry the deployment", func() {
@@ -141,6 +150,10 @@ var _ = Describe("attest submit logic call", func() {
 						mock.Anything,
 						mock.Anything,
 					).Return(uint64(10), nil).Once()
+					mk.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
+						ValMetrics: getMetrics(3),
+					}, nil)
+					tk.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil)
 				})
 
 				It("should put message back into the queue", func() {

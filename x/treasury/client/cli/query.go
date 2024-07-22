@@ -22,6 +22,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	cmd.AddCommand(CmdQueryParams())
 	cmd.AddCommand(CmdGetFees())
 	cmd.AddCommand(CmdGetRelayerFee())
+	cmd.AddCommand(CmdGetRelayerFees())
 
 	return cmd
 }
