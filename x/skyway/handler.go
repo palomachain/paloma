@@ -18,8 +18,8 @@ func NewHandler(k keeper.Keeper) baseapp.MsgServiceHandler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
-		case *types.MsgSendToEth:
-			res, err := msgServer.SendToEth(sdk.UnwrapSDKContext(ctx), msg)
+		case *types.MsgSendToRemote:
+			res, err := msgServer.SendToRemote(sdk.UnwrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgConfirmBatch:
 			res, err := msgServer.ConfirmBatch(sdk.UnwrapSDKContext(ctx), msg)
@@ -27,11 +27,11 @@ func NewHandler(k keeper.Keeper) baseapp.MsgServiceHandler {
 		case *types.MsgSendToPalomaClaim:
 			res, err := msgServer.SendToPalomaClaim(sdk.UnwrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgBatchSendToEthClaim:
-			res, err := msgServer.BatchSendToEthClaim(sdk.UnwrapSDKContext(ctx), msg)
+		case *types.MsgBatchSendToRemoteClaim:
+			res, err := msgServer.BatchSendToRemoteClaim(sdk.UnwrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgCancelSendToEth:
-			res, err := msgServer.CancelSendToEth(sdk.UnwrapSDKContext(ctx), msg)
+		case *types.MsgCancelSendToRemote:
+			res, err := msgServer.CancelSendToRemote(sdk.UnwrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgSubmitBadSignatureEvidence:
 			res, err := msgServer.SubmitBadSignatureEvidence(sdk.UnwrapSDKContext(ctx), msg)

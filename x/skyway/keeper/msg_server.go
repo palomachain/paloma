@@ -25,8 +25,8 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
-// SendToEth handles MsgSendToEth
-func (k msgServer) SendToEth(c context.Context, msg *types.MsgSendToEth) (*types.MsgSendToEthResponse, error) {
+// SendToRemote handles MsgSendToRemote
+func (k msgServer) SendToRemote(c context.Context, msg *types.MsgSendToRemote) (*types.MsgSendToRemoteResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	sender, err := sdk.AccAddressFromBech32(msg.Metadata.Creator)
 	if err != nil {
@@ -40,14 +40,14 @@ func (k msgServer) SendToEth(c context.Context, msg *types.MsgSendToEth) (*types
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid denom")
 	}
-	if k.InvalidSendToEthAddress(ctx, *dest, *erc20) {
+	if k.InvalidSendToRemoteAddress(ctx, *dest, *erc20) {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "destination address is invalid")
 	}
 	txID, err := k.AddToOutgoingPool(ctx, sender, *dest, msg.Amount, msg.GetChainReferenceId())
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "Could not add to outgoing pool")
 	}
-	return &types.MsgSendToEthResponse{}, ctx.EventManager().EmitTypedEvent(
+	return &types.MsgSendToRemoteResponse{}, ctx.EventManager().EmitTypedEvent(
 		&types.EventOutgoingTxId{
 			Message: msg.Type(),
 			TxId:    fmt.Sprint(txID),
@@ -237,7 +237,7 @@ func (k msgServer) SendToPalomaClaim(c context.Context, msg *types.MsgSendToPalo
 	return &types.MsgSendToPalomaClaimResponse{}, nil
 }
 
-func (k msgServer) BatchSendToEthClaim(c context.Context, msg *types.MsgBatchSendToEthClaim) (*types.MsgBatchSendToEthClaimResponse, error) {
+func (k msgServer) BatchSendToRemoteClaim(c context.Context, msg *types.MsgBatchSendToRemoteClaim) (*types.MsgBatchSendToRemoteClaimResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
 	err := k.checkOrchestratorValidatorInSet(ctx, msg.Orchestrator)
@@ -263,14 +263,14 @@ func (k msgServer) BatchSendToEthClaim(c context.Context, msg *types.MsgBatchSen
 		return nil, err
 	}
 
-	return &types.MsgBatchSendToEthClaimResponse{}, nil
+	return &types.MsgBatchSendToRemoteClaimResponse{}, nil
 }
 
 // Performs additional checks on msg to determine if it is valid
-func additionalPatchChecks(ctx context.Context, k msgServer, msg *types.MsgBatchSendToEthClaim) error {
+func additionalPatchChecks(ctx context.Context, k msgServer, msg *types.MsgBatchSendToRemoteClaim) error {
 	contractAddress, err := types.NewEthAddress(msg.TokenContract)
 	if err != nil {
-		return sdkerrors.Wrap(err, "Invalid TokenContract on MsgBatchSendToEthClaim")
+		return sdkerrors.Wrap(err, "Invalid TokenContract on MsgBatchSendToRemoteClaim")
 	}
 
 	// Replicate the following but without using a gas meter
@@ -290,7 +290,7 @@ func additionalPatchChecks(ctx context.Context, k msgServer, msg *types.MsgBatch
 	return nil
 }
 
-func (k msgServer) CancelSendToEth(c context.Context, msg *types.MsgCancelSendToEth) (*types.MsgCancelSendToEthResponse, error) {
+func (k msgServer) CancelSendToRemote(c context.Context, msg *types.MsgCancelSendToRemote) (*types.MsgCancelSendToRemoteResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	sender, err := sdk.AccAddressFromBech32(msg.Metadata.Creator)
 	if err != nil {
@@ -301,7 +301,7 @@ func (k msgServer) CancelSendToEth(c context.Context, msg *types.MsgCancelSendTo
 		return nil, err
 	}
 
-	return &types.MsgCancelSendToEthResponse{}, nil
+	return &types.MsgCancelSendToRemoteResponse{}, nil
 }
 
 func (k msgServer) SubmitBadSignatureEvidence(c context.Context, msg *types.MsgSubmitBadSignatureEvidence) (*types.MsgSubmitBadSignatureEvidenceResponse, error) {

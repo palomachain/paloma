@@ -31,7 +31,7 @@ func GetQueryCmd() *cobra.Command {
 		CmdGetErc20ToDenoms(),
 		CmdGetPendingOutgoingTXBatchRequest(),
 		CmdGetOutgoingTXBatchRequest(),
-		CmdGetPendingSendToEth(),
+		CmdGetPendingSendToRemote(),
 		CmdGetAttestations(),
 		CmdGetLastObservedEthBlock(),
 		CmdGetLastObservedEthNonce(),
@@ -131,8 +131,8 @@ func CmdGetOutgoingTXBatchRequest() *cobra.Command {
 	return cmd
 }
 
-// CmdGetPendingSendToEth fetches all pending Sends to Ethereum made by the given address
-func CmdGetPendingSendToEth() *cobra.Command {
+// CmdGetPendingSendToRemote fetches all pending Sends to Ethereum made by the given address
+func CmdGetPendingSendToRemote() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
 		Use:   "pending-txs [from-address]",
@@ -145,11 +145,11 @@ func CmdGetPendingSendToEth() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := &types.QueryPendingSendToEth{
+			req := &types.QueryPendingSendToRemote{
 				SenderAddress: args[0],
 			}
 
-			res, err := queryClient.GetPendingSendToEth(cmd.Context(), req)
+			res, err := queryClient.GetPendingSendToRemote(cmd.Context(), req)
 			if err != nil {
 				return err
 			}

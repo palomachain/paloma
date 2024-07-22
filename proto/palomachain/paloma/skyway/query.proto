@@ -43,8 +43,8 @@ service Query {
   rpc GetErc20ToDenoms(QueryErc20ToDenoms)
       returns (QueryErc20ToDenomsResponse) {}
 
-  rpc GetPendingSendToEth(QueryPendingSendToEth)
-      returns (QueryPendingSendToEthResponse) {}
+  rpc GetPendingSendToRemote(QueryPendingSendToRemote)
+      returns (QueryPendingSendToRemoteResponse) {}
 
   rpc GetBridgeTaxes(google.protobuf.Empty) returns (QueryBridgeTaxesResponse) {
     option (google.api.http).get = "/palomachain/paloma/skyway/bridge_taxes";
@@ -153,8 +153,8 @@ message QueryErc20ToDenomsResponse {
   repeated ERC20ToDenom erc20_to_denom = 1 [ (gogoproto.nullable) = false ];
 }
 
-message QueryPendingSendToEth { string sender_address = 1; }
-message QueryPendingSendToEthResponse {
+message QueryPendingSendToRemote { string sender_address = 1; }
+message QueryPendingSendToRemoteResponse {
   repeated OutgoingTransferTx transfers_in_batches = 1
       [ (gogoproto.nullable) = false ];
   repeated OutgoingTransferTx unbatched_transfers = 2

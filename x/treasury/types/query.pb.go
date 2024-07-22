@@ -387,7 +387,7 @@ type QueryClient interface {
 	QueryFees(ctx context.Context, in *QueryFeesRequest, opts ...grpc.CallOption) (*Fees, error)
 	// RelayerFee queries the fee settings of a validator participating in consensus.
 	RelayerFee(ctx context.Context, in *QueryRelayerFeeRequest, opts ...grpc.CallOption) (*RelayerFeeSetting, error)
-	// RelayerFee queries the fee settings of a validator participating in consensus.
+	// RelayerFee queries the fee settings of all validators for a given external chain.
 	RelayerFees(ctx context.Context, in *QueryRelayerFeesRequest, opts ...grpc.CallOption) (*QueryRelayerFeesResponse, error)
 }
 
@@ -442,7 +442,7 @@ type QueryServer interface {
 	QueryFees(context.Context, *QueryFeesRequest) (*Fees, error)
 	// RelayerFee queries the fee settings of a validator participating in consensus.
 	RelayerFee(context.Context, *QueryRelayerFeeRequest) (*RelayerFeeSetting, error)
-	// RelayerFee queries the fee settings of a validator participating in consensus.
+	// RelayerFee queries the fee settings of all validators for a given external chain.
 	RelayerFees(context.Context, *QueryRelayerFeesRequest) (*QueryRelayerFeesResponse, error)
 }
 
