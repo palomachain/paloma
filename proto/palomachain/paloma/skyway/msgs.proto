@@ -51,8 +51,7 @@ message MsgSendToRemote {
       [ (gogoproto.nullable) = false ];
 }
 
-message MsgSendToRemoteResponse {
-}
+message MsgSendToRemoteResponse {}
 
 // MsgConfirmBatch
 // When validators observe a MsgRequestBatch they form a batch by ordering
@@ -117,8 +116,7 @@ message MsgBatchSendToRemoteClaim {
   uint64 skyway_nonce = 8;
 }
 
-message MsgBatchSendToRemoteClaimResponse {
-}
+message MsgBatchSendToRemoteClaimResponse {}
 
 // This call allows the sender (and only the sender)
 // to cancel a given MsgSendToRemote and recieve a refund
@@ -132,8 +130,7 @@ message MsgCancelSendToRemote {
       [ (gogoproto.nullable) = false ];
 }
 
-message MsgCancelSendToRemoteResponse {
-}
+message MsgCancelSendToRemoteResponse {}
 
 // This call allows anyone to submit evidence that a
 // validator has signed a batch that never
