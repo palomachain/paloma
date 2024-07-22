@@ -40,7 +40,15 @@ func (k Keeper) RelayerFees(ctx context.Context, req *types.QueryRelayerFeesRequ
 	for key := range fees {
 		keys = append(keys, key)
 	}
-	slices.Sort(keys)
+	slices.SortStableFunc(keys, func(a, b string) int {
+		if a > b {
+			return 1
+		}
+		if a < b {
+			return -1
+		}
+		return 0
+	})
 
 	response := make([]types.RelayerFeeSetting, 0, len(fees))
 	for _, key := range keys {
