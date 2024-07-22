@@ -27,7 +27,7 @@ service Query {
     option (google.api.http).get = "/palomachain/paloma/treasury/relayer_fee";
   }
 
-  // RelayerFee queries the fee settings of a validator participating in consensus.
+  // RelayerFee queries the fee settings of all validators for a given external chain.
   rpc RelayerFees(QueryRelayerFeesRequest) returns (QueryRelayerFeesResponse) {
     option (google.api.http).get = "/palomachain/paloma/treasury/relayer_fees";
   }
