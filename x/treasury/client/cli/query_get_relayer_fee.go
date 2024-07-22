@@ -51,7 +51,7 @@ func CmdGetRelayerFee() *cobra.Command {
 func CmdGetRelayerFees() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "relayer-fees [chain-reference-id]",
-		Short:   "Retrieve all set realyer fees values for a given chain",
+		Short:   "Retrieve all set relayer fees values for a given chain",
 		Long:    "Query all currently set relayer fee settings for a given chain",
 		Example: "relayer-fees eth-main",
 		Args:    cobra.ExactArgs(1),
