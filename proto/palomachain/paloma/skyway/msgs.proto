@@ -54,7 +54,7 @@ message MsgSendToRemoteResponse {}
 // cutting off when the batch either reaches a hardcoded maximum size (to be
 // decided, probably around 100) or when transactions stop being profitable
 // (TODO determine this without nondeterminism) This message includes the batch
-// as well as an Remoteereum signature over this batch by the validator
+// as well as an Remote signature over this batch by the validator
 // -------------
 message MsgConfirmBatch {
   option (cosmos.msg.v1.signer) = "metadata";
