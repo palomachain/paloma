@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/treasury/types"
-	"golang.org/x/exp/maps"
 )
 
 var _ types.QueryServer = Keeper{}
@@ -31,18 +31,24 @@ func (k Keeper) RelayerFee(ctx context.Context, req *types.QueryRelayerFeeReques
 }
 
 func (k Keeper) RelayerFees(ctx context.Context, req *types.QueryRelayerFeesRequest) (*types.QueryRelayerFeesResponse, error) {
-	i, err := k.GetRelayerFeesByChainReferenceID(ctx, req.ChainReferenceId)
+	fees, err := k.GetRelayerFeesByChainReferenceID(ctx, req.ChainReferenceId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get relayer fees: %w", err)
 	}
 
-	response := make([]types.RelayerFeeSetting, 0, len(i))
-	for _, key := range maps.Keys(i) {
+	keys := make([]string, 0, len(fees))
+	for key := range fees {
+		keys = append(keys, key)
+	}
+	slices.Sort(keys)
+
+	response := make([]types.RelayerFeeSetting, 0, len(fees))
+	for _, key := range keys {
 		response = append(response, types.RelayerFeeSetting{
 			ValAddress: key,
 			Fees: []types.RelayerFeeSetting_FeeSetting{
 				{
-					Multiplicator:    i[key],
+					Multiplicator:    fees[key],
 					ChainReferenceId: req.ChainReferenceId,
 				},
 			},
