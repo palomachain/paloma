@@ -14,7 +14,7 @@ type RelayWeightDec struct {
 	FeatureSet    math.LegacyDec
 }
 
-// Float64Values returns the float64Values of our RelayWeight strings.  On error, we use 0
+// DecValues returns the math.LegacyDec of our RelayWeight strings.  On error, we use 0
 func (m *RelayWeights) DecValues() (w RelayWeightDec, err error) {
 	w.Fee, err = math.LegacyNewDecFromStr(m.Fee)
 	if err != nil {
