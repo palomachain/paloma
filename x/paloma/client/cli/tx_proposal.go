@@ -18,6 +18,7 @@ func CmdPalomaChainProposalHandler() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdPalomaProposeLightNodeClientFeegranter())
+	cmd.AddCommand(CmdPalomaProposeLightNodeClientFunder())
 
 	return cmd
 }
@@ -51,7 +52,7 @@ func CmdPalomaProposeLightNodeClientFeegranter() *cobra.Command {
 				return err
 			}
 
-			description, err := cmd.Flags().GetString(cli.FlagTitle)
+			description, err := cmd.Flags().GetString(cli.FlagSummary)
 			if err != nil {
 				return err
 			}
@@ -65,6 +66,69 @@ func CmdPalomaProposeLightNodeClientFeegranter() *cobra.Command {
 				FeegranterAccount: args[0],
 				Title:             title,
 				Description:       description,
+			}
+
+			from := clientCtx.GetFromAddress()
+
+			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+			if err != nil {
+				return err
+			}
+
+			deposit, err := sdk.ParseCoinsNormalized(depositStr)
+			if err != nil {
+				return err
+			}
+
+			msg, err := govv1beta1types.NewMsgSubmitProposal(prop, deposit, from)
+			if err != nil {
+				return err
+			}
+
+			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	applyFlags(cmd)
+
+	return cmd
+}
+
+func CmdPalomaProposeLightNodeClientFunder() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "propose-light-node-client-funder [account]",
+		Short: "Proposal to set new funder account for light node clients",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			title, err := cmd.Flags().GetString(cli.FlagTitle)
+			if err != nil {
+				return err
+			}
+
+			description, err := cmd.Flags().GetString(cli.FlagSummary)
+			if err != nil {
+				return err
+			}
+
+			// Sanity-check account string
+			if _, err := sdk.AccAddressFromBech32(args[0]); err != nil {
+				return err
+			}
+
+			prop := &types.SetLightNodeClientFunderProposal{
+				FunderAccount: args[0],
+				Title:         title,
+				Description:   description,
 			}
 
 			from := clientCtx.GetFromAddress()

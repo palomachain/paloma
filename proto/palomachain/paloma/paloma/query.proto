@@ -6,6 +6,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "palomachain/paloma/paloma/light_node_client_feegranter.proto";
+import "palomachain/paloma/paloma/light_node_client_funder.proto";
 import "palomachain/paloma/paloma/light_node_client_license.proto";
 import "palomachain/paloma/paloma/params.proto";
 
@@ -29,6 +30,12 @@ service Query {
     option (google.api.http).get =
       "/palomachain/paloma/paloma/light_node_client_feegranter";
   }
+
+  rpc GetLightNodeClientFunder(google.protobuf.Empty)
+      returns (QueryLightNodeClientFunderResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/paloma/light_node_client_funder";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -47,4 +54,8 @@ message QueryLightNodeClientLicensesResponse {
 
 message QueryLightNodeClientFeegranterResponse {
   LightNodeClientFeegranter light_node_client_feegranter = 1;
+}
+
+message QueryLightNodeClientFunderResponse {
+  LightNodeClientFunder light_node_client_funder = 1;
 }

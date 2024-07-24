@@ -214,6 +214,29 @@ func (k Keeper) SetLightNodeClientFeegranter(
 	return keeperutil.Save(st, k.cdc, key, feegranter)
 }
 
+func (k Keeper) LightNodeClientFunder(
+	ctx context.Context,
+) (*types.LightNodeClientFunder, error) {
+	st := k.Store(ctx)
+	key := types.LightNodeClientFunderKey
+
+	return keeperutil.Load[*types.LightNodeClientFunder](st, k.cdc, key)
+}
+
+func (k Keeper) SetLightNodeClientFunder(
+	ctx context.Context,
+	acct sdk.AccAddress,
+) error {
+	st := k.Store(ctx)
+	key := types.LightNodeClientFunderKey
+
+	funder := &types.LightNodeClientFunder{
+		Account: acct,
+	}
+
+	return keeperutil.Save(st, k.cdc, key, funder)
+}
+
 func (k Keeper) AllLightNodeClientLicenses(
 	ctx context.Context,
 ) ([]*types.LightNodeClientLicense, error) {

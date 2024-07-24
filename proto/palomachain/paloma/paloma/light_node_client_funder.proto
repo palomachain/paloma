@@ -1,0 +1,12 @@
+syntax = "proto3";
+package palomachain.paloma.paloma;
+
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/paloma/types";
+
+message LightNodeClientFunder {
+  bytes account = 1
+    [ (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress" ];
+}
