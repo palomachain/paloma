@@ -16,5 +16,6 @@ var (
 	ErrLicenseExists     = errors.New("license already exists")
 	ErrNoAccount         = errors.New("account not found")
 	ErrNoFeegranter      = errors.New("no feegranter set")
+	ErrNoFunder          = errors.New("no funder set")
 	ErrNoLicense         = errors.New("no license found for this client")
 )

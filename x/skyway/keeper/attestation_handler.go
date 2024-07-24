@@ -13,8 +13,6 @@ import (
 	"github.com/palomachain/paloma/x/skyway/types"
 )
 
-const lightNodeSaleVestingMonths = 24
-
 // Check that distKeeper implements the expected type
 var _ types.DistributionKeeper = (*distrkeeper.Keeper)(nil)
 
@@ -272,10 +270,6 @@ func (a AttestationHandler) handleLightNodeSale(
 		)
 	logger.Debug("Handling light-node-sale event.")
 
-	creatorAddr := "" // TODO where are the light node tokens coming from?
-	clientAddr := claim.ClientAddress
-	amount := claim.Amount
-
-	return a.keeper.palomaKeeper.CreateLightNodeClientLicenseWithFeegrant(ctx,
-		creatorAddr, clientAddr, amount, lightNodeSaleVestingMonths)
+	return a.keeper.palomaKeeper.CreateSaleLightNodeClientLicense(ctx,
+		claim.ClientAddress, claim.Amount)
 }

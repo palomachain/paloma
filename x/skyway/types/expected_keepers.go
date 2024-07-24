@@ -80,5 +80,5 @@ type EVMKeeper interface {
 }
 
 type PalomaKeeper interface {
-	CreateLightNodeClientLicenseWithFeegrant(ctx context.Context, creatorAddr, clientAddr string, amount math.Int, vestingMonths uint32) error
+	CreateSaleLightNodeClientLicense(ctx context.Context, clientAddr string, amount math.Int) error
 }

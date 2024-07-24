@@ -171,7 +171,7 @@ func TestCreateLightNodeClientLicense(t *testing.T) {
 	})
 }
 
-func TestCreateLightNodeClientLicenseWithFeegrant(t *testing.T) {
+func TestCreateSaleLightNodeClientLicense(t *testing.T) {
 	setup := func() (*keeper.Keeper, context.Context) {
 		k, ms, ctx := newMockedKeeper(t)
 
@@ -199,18 +199,32 @@ func TestCreateLightNodeClientLicenseWithFeegrant(t *testing.T) {
 		return k, ctx
 	}
 
+	amount := math.NewInt(100)
 	license := &types.LightNodeClientLicense{
 		ClientAddress: clientAddr,
-		Amount:        sdk.Coin{Amount: math.NewInt(100), Denom: testBondDenom},
-		VestingMonths: 12,
+		Amount:        sdk.Coin{Amount: amount, Denom: testBondDenom},
+		VestingMonths: 24,
 	}
 
 	t.Run("Should fail on feegrant license without feegranter", func(t *testing.T) {
 		k, _, ctx := newMockedKeeper(t)
 
-		err := k.CreateLightNodeClientLicenseWithFeegrant(ctx, creatorAddr,
-			clientAddr, license.Amount, license.VestingMonths)
+		err := k.CreateSaleLightNodeClientLicense(ctx, clientAddr, amount)
 		require.ErrorIs(t, err, types.ErrNoFeegranter)
+	})
+
+	t.Run("Should fail on feegrant license without funder", func(t *testing.T) {
+		k, _, ctx := newMockedKeeper(t)
+
+		// Set a feegranter
+		accAddr, err := sdk.AccAddressFromBech32(creatorAddr)
+		require.NoError(t, err)
+
+		err = k.SetLightNodeClientFeegranter(ctx, accAddr)
+		require.NoError(t, err)
+
+		err = k.CreateSaleLightNodeClientLicense(ctx, clientAddr, amount)
+		require.ErrorIs(t, err, types.ErrNoFunder)
 	})
 
 	t.Run("Should create a new license with feegrant", func(t *testing.T) {
@@ -223,8 +237,11 @@ func TestCreateLightNodeClientLicenseWithFeegrant(t *testing.T) {
 		err = k.SetLightNodeClientFeegranter(ctx, accAddr)
 		require.NoError(t, err)
 
-		err = k.CreateLightNodeClientLicenseWithFeegrant(ctx, creatorAddr,
-			clientAddr, license.Amount, license.VestingMonths)
+		// Set a funder
+		err = k.SetLightNodeClientFunder(ctx, accAddr)
+		require.NoError(t, err)
+
+		err = k.CreateSaleLightNodeClientLicense(ctx, clientAddr, amount)
 		require.NoError(t, err)
 
 		res, err := k.GetLightNodeClientLicense(ctx, clientAddr)

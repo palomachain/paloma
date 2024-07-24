@@ -27,6 +27,8 @@ import (
 	"golang.org/x/mod/semver"
 )
 
+const lightNodeSaleVestingMonths = 24
+
 type Keeper struct {
 	cdc            codec.BinaryCodec
 	storeKey       cosmosstore.KVStoreService
@@ -320,18 +322,26 @@ func (k Keeper) CreateLightNodeClientLicense(
 	return k.SetLightNodeClientLicense(ctx, clientAddr, license)
 }
 
-// CreateLightNodeClientLicenseWithFeegrant is used by the skyway module when
+// CreateSaleLightNodeClientLicense is used by the skyway module when
 // processing a light node sale event to create a new license with feegrant
-func (k Keeper) CreateLightNodeClientLicenseWithFeegrant(
+func (k Keeper) CreateSaleLightNodeClientLicense(
 	ctx context.Context,
-	creatorAddr, clientAddr string,
+	clientAddr string,
 	amount math.Int,
-	vestingMonths uint32,
 ) error {
 	feegranter, err := k.LightNodeClientFeegranter(ctx)
 	if err != nil {
 		if errors.Is(err, keeperutil.ErrNotFound) {
 			return types.ErrNoFeegranter
+		}
+
+		return err
+	}
+
+	funder, err := k.LightNodeClientFunder(ctx)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return types.ErrNoFunder
 		}
 
 		return err
@@ -354,8 +364,8 @@ func (k Keeper) CreateLightNodeClientLicenseWithFeegrant(
 
 	coin := sdk.NewCoin(k.bondDenom, amount)
 
-	return k.CreateLightNodeClientLicense(ctx, creatorAddr, clientAddr, coin,
-		vestingMonths)
+	return k.CreateLightNodeClientLicense(ctx, funder.Account.String(),
+		clientAddr, coin, lightNodeSaleVestingMonths)
 }
 
 func (k Keeper) CreateLightNodeClientAccount(
