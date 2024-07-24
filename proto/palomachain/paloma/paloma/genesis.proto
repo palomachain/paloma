@@ -3,6 +3,7 @@ package palomachain.paloma.paloma;
 
 import "gogoproto/gogo.proto";
 import "palomachain/paloma/paloma/light_node_client_feegranter.proto";
+import "palomachain/paloma/paloma/light_node_client_funder.proto";
 import "palomachain/paloma/paloma/light_node_client_license.proto";
 import "palomachain/paloma/paloma/params.proto";
 
@@ -13,4 +14,5 @@ message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];
   repeated LightNodeClientLicense light_node_client_licenses = 2;
   LightNodeClientFeegranter light_node_client_feegranter = 3;
+  LightNodeClientFunder light_node_client_funder = 4;
 }
