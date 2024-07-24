@@ -62,19 +62,7 @@ func (k Keeper) GetChainsWithTokens(ctx context.Context) []string {
 }
 
 func (k Keeper) GetActiveChains(ctx context.Context) []string {
-	chainInfos, err := k.evmKeeper.GetAllChainInfos(ctx)
-	if err != nil {
-		return nil
-	}
-
-	chains := make([]string, 0, len(chainInfos))
-	for _, chain := range chainInfos {
-		if chain.IsActive() {
-			chains = append(chains, chain.ChainReferenceID)
-		}
-	}
-
-	return chains
+	return k.evmKeeper.GetActiveChainNames(ctx)
 }
 
 func (k Keeper) GetAllERC20ToDenoms(ctx context.Context) ([]*types.ERC20ToDenom, error) {
