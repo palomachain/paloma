@@ -172,29 +172,46 @@ func TestCreateLightNodeClientLicense(t *testing.T) {
 }
 
 func TestCreateSaleLightNodeClientLicense(t *testing.T) {
-	setup := func() (*keeper.Keeper, context.Context) {
+	var clientAcct sdk.AccAddress
+	var creatorAcct sdk.AccAddress
+
+	setup := func(hasBalance bool) (*keeper.Keeper, context.Context) {
 		k, ms, ctx := newMockedKeeper(t)
 
-		ms.AccountKeeper.On("AddressCodec").
-			Return(authcodec.NewBech32Codec(params.AccountAddressPrefix)).
-			Twice()
-		ms.AccountKeeper.On("HasAccount", mock.Anything, mock.Anything).
+		clientAcct, _ = sdk.AccAddressFromBech32(clientAddr)
+		creatorAcct, _ = sdk.AccAddressFromBech32(creatorAddr)
+
+		ms.BankKeeper.On("HasBalance", mock.Anything, clientAcct,
+			mock.Anything).
 			Return(false).
 			Once()
-		ms.AccountKeeper.On("NewAccount", mock.Anything, mock.Anything).
-			Return(&authtypes.BaseAccount{}).
-			Once()
-		ms.AccountKeeper.On("SetAccount", mock.Anything, mock.Anything).
-			Return().
-			Once()
-		ms.BankKeeper.On("SendCoinsFromAccountToModule", mock.Anything,
-			mock.Anything, mock.Anything, mock.Anything).
-			Return(nil).
-			Once()
-		ms.FeegrantKeeper.On("GrantAllowance", mock.Anything, mock.Anything,
-			mock.Anything, mock.Anything).
-			Return(nil).
-			Once()
+
+		if hasBalance {
+			ms.BankKeeper.On("HasBalance", mock.Anything, creatorAcct,
+				mock.Anything).
+				Return(true).
+				Once()
+			ms.AccountKeeper.On("AddressCodec").
+				Return(authcodec.NewBech32Codec(params.AccountAddressPrefix)).
+				Twice()
+			ms.AccountKeeper.On("HasAccount", mock.Anything, mock.Anything).
+				Return(false).
+				Once()
+			ms.AccountKeeper.On("NewAccount", mock.Anything, mock.Anything).
+				Return(&authtypes.BaseAccount{}).
+				Once()
+			ms.AccountKeeper.On("SetAccount", mock.Anything, mock.Anything).
+				Return().
+				Once()
+			ms.BankKeeper.On("SendCoinsFromAccountToModule", mock.Anything,
+				mock.Anything, mock.Anything, mock.Anything).
+				Return(nil).
+				Once()
+			ms.FeegrantKeeper.On("GrantAllowance", mock.Anything, mock.Anything,
+				mock.Anything, mock.Anything).
+				Return(nil).
+				Once()
+		}
 
 		return k, ctx
 	}
@@ -227,18 +244,30 @@ func TestCreateSaleLightNodeClientLicense(t *testing.T) {
 		require.ErrorIs(t, err, types.ErrNoFunder)
 	})
 
-	t.Run("Should create a new license with feegrant", func(t *testing.T) {
-		k, ctx := setup()
+	t.Run("Should fail on funder without sufficient balance", func(t *testing.T) {
+		k, ctx := setup(false)
 
 		// Set a feegranter
-		accAddr, err := sdk.AccAddressFromBech32(creatorAddr)
+		err := k.SetLightNodeClientFeegranter(ctx, clientAcct)
 		require.NoError(t, err)
 
-		err = k.SetLightNodeClientFeegranter(ctx, accAddr)
+		// Set a funder without funds
+		err = k.SetLightNodeClientFunders(ctx, []sdk.AccAddress{clientAcct})
 		require.NoError(t, err)
 
-		// Set a funder
-		err = k.SetLightNodeClientFunder(ctx, accAddr)
+		err = k.CreateSaleLightNodeClientLicense(ctx, clientAddr, amount)
+		require.ErrorIs(t, err, types.ErrInsufficientBalance)
+	})
+
+	t.Run("Should create a new license with feegrant", func(t *testing.T) {
+		k, ctx := setup(true)
+
+		// Set a feegranter
+		err := k.SetLightNodeClientFeegranter(ctx, creatorAcct)
+		require.NoError(t, err)
+
+		// Set funders - first one without funds
+		err = k.SetLightNodeClientFunders(ctx, []sdk.AccAddress{clientAcct, creatorAcct})
 		require.NoError(t, err)
 
 		err = k.CreateSaleLightNodeClientLicense(ctx, clientAddr, amount)

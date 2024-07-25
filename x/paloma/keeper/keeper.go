@@ -216,24 +216,24 @@ func (k Keeper) SetLightNodeClientFeegranter(
 	return keeperutil.Save(st, k.cdc, key, feegranter)
 }
 
-func (k Keeper) LightNodeClientFunder(
+func (k Keeper) LightNodeClientFunders(
 	ctx context.Context,
-) (*types.LightNodeClientFunder, error) {
+) (*types.LightNodeClientFunders, error) {
 	st := k.Store(ctx)
-	key := types.LightNodeClientFunderKey
+	key := types.LightNodeClientFundersKey
 
-	return keeperutil.Load[*types.LightNodeClientFunder](st, k.cdc, key)
+	return keeperutil.Load[*types.LightNodeClientFunders](st, k.cdc, key)
 }
 
-func (k Keeper) SetLightNodeClientFunder(
+func (k Keeper) SetLightNodeClientFunders(
 	ctx context.Context,
-	acct sdk.AccAddress,
+	accts []sdk.AccAddress,
 ) error {
 	st := k.Store(ctx)
-	key := types.LightNodeClientFunderKey
+	key := types.LightNodeClientFundersKey
 
-	funder := &types.LightNodeClientFunder{
-		Account: acct,
+	funder := &types.LightNodeClientFunders{
+		Accounts: accts,
 	}
 
 	return keeperutil.Save(st, k.cdc, key, funder)
@@ -329,6 +329,8 @@ func (k Keeper) CreateSaleLightNodeClientLicense(
 	clientAddr string,
 	amount math.Int,
 ) error {
+	coin := sdk.NewCoin(k.bondDenom, amount)
+
 	feegranter, err := k.LightNodeClientFeegranter(ctx)
 	if err != nil {
 		if errors.Is(err, keeperutil.ErrNotFound) {
@@ -338,13 +340,30 @@ func (k Keeper) CreateSaleLightNodeClientLicense(
 		return err
 	}
 
-	funder, err := k.LightNodeClientFunder(ctx)
+	funders, err := k.LightNodeClientFunders(ctx)
 	if err != nil {
 		if errors.Is(err, keeperutil.ErrNotFound) {
 			return types.ErrNoFunder
 		}
 
 		return err
+	}
+
+	if len(funders.Accounts) == 0 {
+		return types.ErrNoFunder
+	}
+
+	// We may have more than one funder account, so iterate through all of them
+	// and use the first one with enough funds
+	var funder sdk.AccAddress
+	for i := range funders.Accounts {
+		if k.bankKeeper.HasBalance(ctx, funders.Accounts[i], coin) {
+			funder = funders.Accounts[i]
+		}
+	}
+
+	if funder == nil {
+		return types.ErrInsufficientBalance
 	}
 
 	allowance := &feegrantmodule.BasicAllowance{
@@ -362,9 +381,7 @@ func (k Keeper) CreateSaleLightNodeClientLicense(
 		return err
 	}
 
-	coin := sdk.NewCoin(k.bondDenom, amount)
-
-	return k.CreateLightNodeClientLicense(ctx, funder.Account.String(),
+	return k.CreateLightNodeClientLicense(ctx, funder.String(),
 		clientAddr, coin, lightNodeSaleVestingMonths)
 }
 

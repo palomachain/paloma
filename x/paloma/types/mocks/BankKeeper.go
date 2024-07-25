@@ -15,6 +15,24 @@ type BankKeeper struct {
 	mock.Mock
 }
 
+// HasBalance provides a mock function with given fields: ctx, addr, amt
+func (_m *BankKeeper) HasBalance(ctx context.Context, addr types.AccAddress, amt types.Coin) bool {
+	ret := _m.Called(ctx, addr, amt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for HasBalance")
+	}
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, types.AccAddress, types.Coin) bool); ok {
+		r0 = rf(ctx, addr, amt)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // SendCoinsFromAccountToModule provides a mock function with given fields: ctx, senderAddr, recipientModule, amt
 func (_m *BankKeeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr types.AccAddress, recipientModule string, amt types.Coins) error {
 	ret := _m.Called(ctx, senderAddr, recipientModule, amt)

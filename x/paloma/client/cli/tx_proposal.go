@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const flagFunderAccounts = "funder-accounts"
+
 func CmdPalomaChainProposalHandler() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "paloma",
@@ -18,7 +20,7 @@ func CmdPalomaChainProposalHandler() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdPalomaProposeLightNodeClientFeegranter())
-	cmd.AddCommand(CmdPalomaProposeLightNodeClientFunder())
+	cmd.AddCommand(CmdPalomaProposeLightNodeClientFunders())
 
 	return cmd
 }
@@ -99,11 +101,11 @@ func CmdPalomaProposeLightNodeClientFeegranter() *cobra.Command {
 	return cmd
 }
 
-func CmdPalomaProposeLightNodeClientFunder() *cobra.Command {
+func CmdPalomaProposeLightNodeClientFunders() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "propose-light-node-client-funder [account]",
-		Short: "Proposal to set new funder account for light node clients",
-		Args:  cobra.ExactArgs(1),
+		Use:   "propose-light-node-client-funders --funder-accounts [account]",
+		Short: "Proposal to set new funder accounts for light node clients",
+		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -120,15 +122,15 @@ func CmdPalomaProposeLightNodeClientFunder() *cobra.Command {
 				return err
 			}
 
-			// Sanity-check account string
-			if _, err := sdk.AccAddressFromBech32(args[0]); err != nil {
+			accounts, err := cmd.Flags().GetStringSlice(flagFunderAccounts)
+			if err != nil {
 				return err
 			}
 
-			prop := &types.SetLightNodeClientFunderProposal{
-				FunderAccount: args[0],
-				Title:         title,
-				Description:   description,
+			prop := &types.SetLightNodeClientFundersProposal{
+				FunderAccounts: accounts,
+				Title:          title,
+				Description:    description,
 			}
 
 			from := clientCtx.GetFromAddress()
@@ -156,6 +158,9 @@ func CmdPalomaProposeLightNodeClientFunder() *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().StringSlice(flagFunderAccounts, []string{},
+		"Comma separated list of accounts to fund the light nodes. Can be passed multiple times.")
 
 	applyFlags(cmd)
 

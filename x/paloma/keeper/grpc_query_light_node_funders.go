@@ -8,18 +8,18 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (k Keeper) GetLightNodeClientFunder(
+func (k Keeper) GetLightNodeClientFunders(
 	c context.Context,
 	_ *emptypb.Empty,
-) (*types.QueryLightNodeClientFunderResponse, error) {
+) (*types.QueryLightNodeClientFundersResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
-	funder, err := k.LightNodeClientFunder(ctx)
+	funders, err := k.LightNodeClientFunders(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryLightNodeClientFunderResponse{
-		LightNodeClientFunder: funder,
+	return &types.QueryLightNodeClientFundersResponse{
+		LightNodeClientFunders: funders,
 	}, nil
 }

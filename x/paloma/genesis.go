@@ -29,9 +29,9 @@ func InitGenesis(ctx context.Context, k keeper.Keeper, genState types.GenesisSta
 		}
 	}
 
-	if genState.LightNodeClientFunder != nil {
-		err := k.SetLightNodeClientFunder(ctx,
-			genState.LightNodeClientFunder.Account)
+	if genState.LightNodeClientFunders != nil {
+		err := k.SetLightNodeClientFunders(ctx,
+			genState.LightNodeClientFunders.Accounts)
 		if err != nil {
 			panic(err)
 		}
@@ -55,7 +55,7 @@ func ExportGenesis(ctx context.Context, k keeper.Keeper) *types.GenesisState {
 		panic(err)
 	}
 
-	genesis.LightNodeClientFunder, err = k.LightNodeClientFunder(ctx)
+	genesis.LightNodeClientFunders, err = k.LightNodeClientFunders(ctx)
 	if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
 		panic(err)
 	}

@@ -6,7 +6,7 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/palomachain/paloma/x/paloma/types";
 
-message LightNodeClientFunder {
-  bytes account = 1
+message LightNodeClientFunders {
+  repeated bytes accounts = 1
     [ (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress" ];
 }

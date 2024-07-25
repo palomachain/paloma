@@ -3,8 +3,8 @@ package palomachain.paloma.paloma;
 
 option go_package = "github.com/palomachain/paloma/x/paloma/types";
 
-message SetLightNodeClientFunderProposal {
+message SetLightNodeClientFundersProposal {
   string title = 1;
   string description = 2;
-  string funder_account = 3;
+  repeated string funder_accounts = 3;
 }

@@ -6,17 +6,17 @@ import (
 
 const (
 	ProposalTypeSetLightNodeClientFeegranterProposal = "PalomaSetLightNodeClientFeegranterProposal"
-	ProposalTypeSetLightNodeClientFunderProposal     = "PalomaSetLightNodeClientFunderProposal"
+	ProposalTypeSetLightNodeClientFundersProposal    = "PalomaSetLightNodeClientFundersProposal"
 )
 
 var (
 	_ govv1beta1types.Content = &SetLightNodeClientFeegranterProposal{}
-	_ govv1beta1types.Content = &SetLightNodeClientFunderProposal{}
+	_ govv1beta1types.Content = &SetLightNodeClientFundersProposal{}
 )
 
 func init() {
 	govv1beta1types.RegisterProposalType(ProposalTypeSetLightNodeClientFeegranterProposal)
-	govv1beta1types.RegisterProposalType(ProposalTypeSetLightNodeClientFunderProposal)
+	govv1beta1types.RegisterProposalType(ProposalTypeSetLightNodeClientFundersProposal)
 }
 
 func (a *SetLightNodeClientFeegranterProposal) ProposalRoute() string { return RouterKey }
@@ -33,13 +33,13 @@ func (a *SetLightNodeClientFeegranterProposal) ValidateBasic() error {
 	return nil
 }
 
-func (a *SetLightNodeClientFunderProposal) ProposalRoute() string { return RouterKey }
+func (a *SetLightNodeClientFundersProposal) ProposalRoute() string { return RouterKey }
 
-func (a *SetLightNodeClientFunderProposal) ProposalType() string {
-	return ProposalTypeSetLightNodeClientFunderProposal
+func (a *SetLightNodeClientFundersProposal) ProposalType() string {
+	return ProposalTypeSetLightNodeClientFundersProposal
 }
 
-func (a *SetLightNodeClientFunderProposal) ValidateBasic() error {
+func (a *SetLightNodeClientFundersProposal) ValidateBasic() error {
 	if err := govv1beta1types.ValidateAbstract(a); err != nil {
 		return err
 	}

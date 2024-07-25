@@ -78,8 +78,8 @@ func TestGenesis(t *testing.T) {
 		require.NoError(t, err)
 
 		genesisState := types.GenesisState{
-			LightNodeClientFunder: &types.LightNodeClientFunder{
-				Account: accAddr,
+			LightNodeClientFunders: &types.LightNodeClientFunders{
+				Accounts: []sdk.AccAddress{accAddr},
 			},
 		}
 
@@ -88,7 +88,7 @@ func TestGenesis(t *testing.T) {
 		got := paloma.ExportGenesis(ctx, *k)
 		require.NotNil(t, got)
 
-		require.Equal(t, genesisState.LightNodeClientFunder.Account,
-			got.LightNodeClientFunder.Account)
+		require.Equal(t, genesisState.LightNodeClientFunders.Accounts,
+			got.LightNodeClientFunders.Accounts)
 	})
 }

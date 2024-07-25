@@ -13,7 +13,7 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgRegisterLightNodeClient{}, "paloma/RegisterLightNodeClient", nil)
 	cdc.RegisterConcrete(&MsgAddLightNodeClientLicense{}, "paloma/AddLightNodeClientLicense", nil)
 	cdc.RegisterConcrete(&SetLightNodeClientFeegranterProposal{}, "paloma/SetLightNodeClientFeegranterProposal", nil)
-	cdc.RegisterConcrete(&SetLightNodeClientFunderProposal{}, "paloma/SetLightNodeClientFunderProposal", nil)
+	cdc.RegisterConcrete(&SetLightNodeClientFundersProposal{}, "paloma/SetLightNodeClientFundersProposal", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -26,7 +26,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*govtypes.Content)(nil),
 		&SetLightNodeClientFeegranterProposal{},
-		&SetLightNodeClientFunderProposal{},
+		&SetLightNodeClientFundersProposal{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
