@@ -77,7 +77,7 @@ func (k Keeper) OutgoingTxBatches(
 ) (*types.QueryOutgoingTxBatchesResponse, error) {
 	var batches []types.OutgoingTxBatch
 
-	if k.evmKeeper.HasAnySmartContractDeployment(c, req.ChainReferenceId) {
+	if k.EVMKeeper.HasAnySmartContractDeployment(c, req.ChainReferenceId) {
 		// Ongoing smart contract deployment, don't give out batches to relay
 		// in order to avoid nonce increase on old compass
 		return &types.QueryOutgoingTxBatchesResponse{Batches: batches}, nil

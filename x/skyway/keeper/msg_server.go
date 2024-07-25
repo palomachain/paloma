@@ -77,7 +77,7 @@ func (k msgServer) ConfirmBatch(c context.Context, msg *types.MsgConfirmBatch) (
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "couldn't find batch")
 	}
 
-	ci, err := k.evmKeeper.GetChainInfo(ctx, batch.ChainReferenceID)
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, batch.ChainReferenceID)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "couldn't find chain info")
 	}

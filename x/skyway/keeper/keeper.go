@@ -41,7 +41,7 @@ type Keeper struct {
 	DistKeeper        distrkeeper.Keeper
 	accountKeeper     types.AccountKeeper
 	ibcTransferKeeper ibctransferkeeper.Keeper
-	evmKeeper         types.EVMKeeper
+	EVMKeeper         types.EVMKeeper
 	consensusKeeper   types.ConsensusKeeper
 	palomaKeeper      types.PalomaKeeper
 	AddressCodec      address.Codec
@@ -77,7 +77,7 @@ func NewKeeper(
 		DistKeeper:         distributionKeeper,
 		accountKeeper:      accKeeper,
 		ibcTransferKeeper:  ibcTransferKeeper,
-		evmKeeper:          evmKeeper,
+		EVMKeeper:          evmKeeper,
 		consensusKeeper:    consensusKeeper,
 		palomaKeeper:       palomaKeeper,
 		storeGetter:        storeGetter,

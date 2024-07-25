@@ -61,10 +61,6 @@ func (k Keeper) GetChainsWithTokens(ctx context.Context) []string {
 	return r
 }
 
-func (k Keeper) GetActiveChains(ctx context.Context) []string {
-	return k.evmKeeper.GetActiveChainNames(ctx)
-}
-
 func (k Keeper) GetAllERC20ToDenoms(ctx context.Context) ([]*types.ERC20ToDenom, error) {
 	store := k.GetStore(ctx, types.StoreModulePrefix)
 	prefixStore := prefix.NewStore(store, types.DenomToERC20Key)

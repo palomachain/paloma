@@ -40,7 +40,7 @@ func (k Keeper) BuildOutgoingTXBatch(
 		return nil, nil // Nothing to batch, so do nothing
 	}
 
-	ci, err := k.evmKeeper.GetChainInfo(ctx, chainReferenceID)
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, chainReferenceID)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "unable to create batch")
 	}
@@ -51,7 +51,7 @@ func (k Keeper) BuildOutgoingTXBatch(
 		return nil, err
 	}
 
-	assignee, err := k.evmKeeper.PickValidatorForMessage(ctx, chainReferenceID, nil)
+	assignee, err := k.EVMKeeper.PickValidatorForMessage(ctx, chainReferenceID, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +247,7 @@ func (k Keeper) CancelOutgoingTXBatch(ctx context.Context, tokenContract types.E
 		return err
 	}
 
-	ci, err := k.evmKeeper.GetChainInfo(ctx, batch.ChainReferenceID)
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, batch.ChainReferenceID)
 	if err != nil {
 		return err
 	}
