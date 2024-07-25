@@ -13,7 +13,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/libcons"
 	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -48,7 +50,11 @@ func (k Keeper) attestMessageWrapper(ctx context.Context, q consensus.Queuer, ms
 		}
 	}()
 
-	result, err := k.consensusChecker.VerifyEvidence(cacheCtx, msg.GetEvidence())
+	result, err := k.consensusChecker.VerifyEvidence(ctx,
+		slice.Map(msg.GetEvidence(), func(evidence *consensustypes.Evidence) libcons.Evidence {
+			return evidence
+		}),
+	)
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			logger.WithFields(

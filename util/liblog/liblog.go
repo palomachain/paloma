@@ -12,6 +12,7 @@ type Logr interface {
 	WithError(err error) Logr
 	WithComponent(string) Logr
 	WithValidator(string) Logr
+	WithChain(string) Logr
 }
 
 type LogProvider interface {
@@ -58,6 +59,11 @@ func (l *lgwr) WithFields(keyvals ...interface{}) Logr {
 
 func (l *lgwr) WithComponent(c string) Logr {
 	l.l = l.l.With("component", c)
+	return l
+}
+
+func (l *lgwr) WithChain(c string) Logr {
+	l.l = l.l.With("chain-reference-id", c)
 	return l
 }
 

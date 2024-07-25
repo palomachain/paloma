@@ -139,7 +139,7 @@ message MsgCancelSendToRemoteResponse {}
 message MsgSubmitBadSignatureEvidence {
   option (cosmos.msg.v1.signer) = "metadata";
   google.protobuf.Any subject = 1
-      [ (cosmos_proto.accepts_interface) = "RemoteereumSigned" ];
+      [ (cosmos_proto.accepts_interface) = "RemoteSigned" ];
   string signature = 2;
   string sender = 3 [ deprecated = true ];
   string chain_reference_id = 4;

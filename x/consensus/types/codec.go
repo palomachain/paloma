@@ -11,6 +11,7 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&QueuedSignedMessage{}, "consensus/QueuedSignedMessage", nil)
 	cdc.RegisterConcrete(&SignData{}, "consensus/SignData", nil)
 	cdc.RegisterConcrete(&MsgAddMessagesSignatures{}, "consensus/AddMessagesSignatures", nil)
+	cdc.RegisterConcrete(&MsgAddMessageGasEstimates{}, "consensus/AddMessageGasEstimates", nil)
 	cdc.RegisterConcrete(&MsgAddEvidence{}, "consensus/AddEvidence", nil)
 	cdc.RegisterConcrete(&MsgSetPublicAccessData{}, "consensus/SetPublicAccessData", nil)
 	cdc.RegisterConcrete(&MsgSetErrorData{}, "consensus/SetErrorData", nil)
@@ -25,6 +26,9 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgAddMessagesSignatures{},
+	)
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgAddMessageGasEstimates{},
 	)
 	registry.RegisterImplementations((*ConsensusMsg)(nil),
 		&Batch{},

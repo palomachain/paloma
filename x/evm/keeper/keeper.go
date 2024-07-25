@@ -679,7 +679,10 @@ func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.C
 			},
 			Assignee:              assignee,
 			AssignedAtBlockHeight: math.NewInt(sdkCtx.BlockHeight()),
-		}, nil,
+		}, &consensus.PutOptions{
+			RequireGasEstimation: true,
+			RequireSignatures:    true,
+		},
 	)
 	if err != nil {
 		m.Logger(sdkCtx).Error("unable to put message in the queue", "err", err)

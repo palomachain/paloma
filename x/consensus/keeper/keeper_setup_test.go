@@ -61,6 +61,7 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		paramsSubspace,
 		ms.ValsetKeeper,
 		NewRegistry(),
+		nil,
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)

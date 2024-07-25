@@ -4,6 +4,8 @@ import "gogoproto/gogo.proto";
 import "cosmos/msg/v1/msg.proto";
 import "google/protobuf/any.proto";
 import "palomachain/paloma/valset/common.proto";
+import "google/protobuf/empty.proto";
+
 package palomachain.paloma.consensus;
 
 option go_package = "github.com/palomachain/paloma/x/consensus/types";
@@ -12,6 +14,8 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 service Msg {
   rpc AddMessagesSignatures(MsgAddMessagesSignatures)
       returns (MsgAddMessagesSignaturesResponse);
+  rpc AddMessageEstimates(MsgAddMessageGasEstimates)
+      returns (google.protobuf.Empty);
   rpc AddEvidence(MsgAddEvidence) returns (MsgAddEvidenceResponse);
   rpc SetPublicAccessData(MsgSetPublicAccessData)
       returns (MsgSetPublicAccessDataResponse);
@@ -75,3 +79,18 @@ message MsgSetErrorData {
 }
 
 message MsgSetErrorDataResponse {}
+
+message MsgAddMessageGasEstimates {
+  message GasEstimate {
+    uint64 msg_id = 1;
+    string queueTypeName = 2;
+    uint64 value = 3;
+    string estimatedByAddress = 5;
+  }
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+
+  repeated GasEstimate estimates = 2;
+}
+
