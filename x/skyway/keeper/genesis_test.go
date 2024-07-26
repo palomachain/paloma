@@ -187,3 +187,26 @@ func TestGenesisEmptyOptionalValues(t *testing.T) {
 	require.Empty(t, got.BridgeTaxes)
 	require.Empty(t, got.BridgeTransferLimits)
 }
+
+func TestGenesisSkywayNonces(t *testing.T) {
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+		SkywayNonces: []types.SkywayNonces{
+			{
+				LastObservedNonce:     100,
+				LastSlashedBatchBlock: 101,
+				LastTxPoolId:          102,
+				LastBatchId:           103,
+				ChainReferenceId:      "test-chain",
+			},
+		},
+	}
+
+	input := CreateTestEnv(t)
+
+	InitGenesis(input.Context, input.SkywayKeeper, genesisState)
+	got := ExportGenesis(input.Context, input.SkywayKeeper)
+	require.NotNil(t, got)
+
+	require.Equal(t, genesisState.SkywayNonces, got.SkywayNonces)
+}
