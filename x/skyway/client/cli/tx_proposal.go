@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strings"
@@ -31,6 +32,7 @@ func CmdSkywayProposalHandler() *cobra.Command {
 		CmdSetErc20ToDenom(),
 		CmdSetBridgeTax(),
 		CmdSetBridgeTransferLimit(),
+		CmdSetLightNodeSaleContracts(),
 	}...)
 
 	return cmd
@@ -228,6 +230,74 @@ func CmdSetBridgeTransferLimit() *cobra.Command {
 
 	cmd.Flags().StringSlice(flagExemptAddresses, []string{},
 		"Comma separated list of addresses exempt from the bridge tax. Can be passed multiple times.")
+
+	applyFlags(cmd)
+	return cmd
+}
+
+func CmdSetLightNodeSaleContracts() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-light-node-sale-contracts [contracts]",
+		Short: "Sets the light node sale contract details for all external chains",
+		Long: `Contract details should be entered as a JSON map, with the keys being the external chain reference ID.
+The existing set of contract details will be entirely replaced with the new set, so if a chain's contract does not exist in the new value set, it will be removed.`,
+		Example: `set-light-node-sale-contracts '{"gnosis-main":{"contract_address":"0x950AA3028F1A3A09D4969C3504BEc30D7ac7d6b2"}}'`,
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			// Use a map to get data from the CLI as it's easier to type and
+			// format
+			var contractsMap map[string]types.LightNodeSaleContract
+			err = json.Unmarshal([]byte(args[0]), &contractsMap)
+			if err != nil {
+				return err
+			}
+
+			// Make it a slice for the proposal, as that's what we're using
+			// everywhere else
+			contracts := make([]*types.LightNodeSaleContract, 0, len(contractsMap))
+			for chain, contract := range contractsMap {
+				contracts = append(contracts, &types.LightNodeSaleContract{
+					ChainReferenceId: chain,
+					ContractAddress:  contract.ContractAddress,
+				})
+			}
+
+			title, err := cmd.Flags().GetString(cli.FlagTitle)
+			if err != nil {
+				return err
+			}
+
+			description, err := cmd.Flags().GetString(cli.FlagSummary)
+			if err != nil {
+				return err
+			}
+
+			prop := &types.SetLightNodeSaleContractsProposal{
+				Title:                  title,
+				Description:            description,
+				LightNodeSaleContracts: contracts,
+			}
+
+			from := cliCtx.GetFromAddress()
+
+			deposit, err := getDeposit(cmd)
+			if err != nil {
+				return err
+			}
+
+			msg, err := govv1beta1types.NewMsgSubmitProposal(prop, deposit, from)
+			if err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msg)
+		},
+	}
 
 	applyFlags(cmd)
 	return cmd

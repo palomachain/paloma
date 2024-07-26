@@ -35,9 +35,10 @@ func GetQueryCmd() *cobra.Command {
 		CmdGetAttestations(),
 		CmdGetLastObservedEthBlock(),
 		CmdGetLastObservedEthNonce(),
-		GetCmdQueryParams(),
-		GetCmdQueryBridgeTax(),
-		GetCmdQueryBridgeTransferLimits(),
+		CmdGetQueryParams(),
+		CmdGetQueryBridgeTax(),
+		CmdGetQueryBridgeTransferLimits(),
+		CmdGetLightNodeSaleContracts(),
 	}...)
 
 	return skywayQueryCmd
@@ -306,8 +307,8 @@ func CmdGetLastObservedEthNonce() *cobra.Command {
 	return cmd
 }
 
-// GetCmdQueryParams fetches the current Skyway module params
-func GetCmdQueryParams() *cobra.Command {
+// CmdGetQueryParams fetches the current Skyway module params
+func CmdGetQueryParams() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
 		Use:   "params",
@@ -333,8 +334,8 @@ func GetCmdQueryParams() *cobra.Command {
 	return cmd
 }
 
-// GetCmdQueryBridgeTax fetches the current Skyway module bridge tax settings
-func GetCmdQueryBridgeTax() *cobra.Command {
+// CmdGetQueryBridgeTax fetches the current Skyway module bridge tax settings
+func CmdGetQueryBridgeTax() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "bridge-taxes",
 		Short: "Query bridge tax settings for all tokens",
@@ -363,8 +364,8 @@ func GetCmdQueryBridgeTax() *cobra.Command {
 	return cmd
 }
 
-// GetCmdQueryBridgeTransferLimits fetches transfer limits for all tokens
-func GetCmdQueryBridgeTransferLimits() *cobra.Command {
+// CmdGetQueryBridgeTransferLimits fetches transfer limits for all tokens
+func CmdGetQueryBridgeTransferLimits() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "bridge-transfer-limits",
 		Short: "Query bridge transfer limits for all tokens",
@@ -380,6 +381,35 @@ func GetCmdQueryBridgeTransferLimits() *cobra.Command {
 			params := &emptypb.Empty{}
 
 			res, err := queryClient.GetBridgeTransferLimits(cmd.Context(), params)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdGetLightNodeSaleContracts() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "light-node-sale-contracts",
+		Short: "Query all light node sale contracts details",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			params := &emptypb.Empty{}
+
+			res, err := queryClient.GetLightNodeSaleContracts(cmd.Context(), params)
 			if err != nil {
 				return err
 			}

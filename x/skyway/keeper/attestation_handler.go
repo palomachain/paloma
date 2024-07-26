@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -268,6 +269,26 @@ func (a AttestationHandler) handleLightNodeSale(
 			"nonce", claim.GetSkywayNonce(),
 			"id", types.GetAttestationKey(claim.GetSkywayNonce(), hash),
 		)
+
+	// Check if we can trust the origin of this event
+	// We have to do it here to keep the whole flow of updating and keeping
+	// track of the skyway nonce
+	contract, err := a.keeper.LightNodeSaleContract(ctx, claim.ChainReferenceId)
+	if err != nil || contract == nil {
+		logger.WithFields("error", err).Warn("Failed to check node sale contract")
+		return sdkerrors.Wrap(err, "Could not check get contract allowed addresses")
+	}
+
+	if contract.ContractAddress != claim.SmartContractAddress {
+		logger.
+			With("contract_address", claim.SmartContractAddress,
+				"chain_reference_id", claim.ChainReferenceId,
+				"expected_contract_address", contract.ContractAddress).
+			Warn("Light node sale claim from wrong smart contract address")
+
+		return errors.New("unauthorized msg smart contract address")
+	}
+
 	logger.Debug("Handling light-node-sale event.")
 
 	return a.keeper.palomaKeeper.CreateSaleLightNodeClientLicense(ctx,

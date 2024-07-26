@@ -398,3 +398,45 @@ func (k Keeper) UpdateBridgeTransferUsageWithLimit(
 	st := k.GetStore(ctx, types.BridgeTransferUsagePrefix)
 	return keeperutil.Save(st, k.cdc, []byte(coin.Denom), &newUsage)
 }
+
+func (k Keeper) AllLightNodeSaleContracts(
+	ctx context.Context,
+) ([]*types.LightNodeSaleContract, error) {
+	st := k.GetStore(ctx, types.LightNodeSaleContractsPrefix)
+	_, all, err := keeperutil.IterAll[*types.LightNodeSaleContract](st, k.cdc)
+	return all, err
+}
+
+func (k Keeper) LightNodeSaleContract(
+	ctx context.Context,
+	chain string,
+) (*types.LightNodeSaleContract, error) {
+	st := k.GetStore(ctx, types.LightNodeSaleContractsPrefix)
+	return keeperutil.Load[*types.LightNodeSaleContract](st, k.cdc, []byte(chain))
+}
+
+func (k Keeper) SetAllLighNodeSaleContracts(
+	ctx context.Context,
+	contracts []*types.LightNodeSaleContract,
+) error {
+	st := k.GetStore(ctx, types.LightNodeSaleContractsPrefix)
+
+	// Delete all existing contracts
+	err := keeperutil.IterAllFnc(st, k.cdc, func(key []byte, _ *types.LightNodeSaleContract) bool {
+		st.Delete(key)
+		return true
+	})
+	if err != nil {
+		return err
+	}
+
+	// Store the new ones
+	for _, contract := range contracts {
+		err := keeperutil.Save(st, k.cdc, []byte(contract.ChainReferenceId), contract)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

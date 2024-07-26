@@ -50,6 +50,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		&SetERC20ToDenomProposal{},
 		&SetBridgeTaxProposal{},
 		&SetBridgeTransferLimitProposal{},
+		&SetLightNodeSaleContractsProposal{},
 	)
 
 	registry.RegisterInterface("palomachain.paloma.skyway.EthereumSigned", (*EthereumSigned)(nil),
@@ -78,4 +79,5 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&SetBridgeTaxProposal{}, "skyway/SetBridgeTaxProposal", nil)
 	cdc.RegisterConcrete(&SetBridgeTransferLimitProposal{}, "skyway/SetBridgeTransferLimitProposal", nil)
 	cdc.RegisterConcrete(&MsgLightNodeSaleClaim{}, "skyway/MsgLightNodeSaleClaim", nil)
+	cdc.RegisterConcrete(&SetLightNodeSaleContractsProposal{}, "skyway/SetLightNodeSaleContractsProposal", nil)
 }

@@ -53,6 +53,8 @@ func NewSkywayProposalHandler(k Keeper) govv1beta1types.Handler {
 			}
 
 			return k.SetBridgeTransferLimit(ctx, limit)
+		case *types.SetLightNodeSaleContractsProposal:
+			return k.SetAllLighNodeSaleContracts(ctx, c.LightNodeSaleContracts)
 		}
 
 		return sdkerrors.ErrUnknownRequest

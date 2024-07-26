@@ -210,3 +210,23 @@ func TestGenesisSkywayNonces(t *testing.T) {
 
 	require.Equal(t, genesisState.SkywayNonces, got.SkywayNonces)
 }
+
+func TestGenesisLightNodeSaleContracts(t *testing.T) {
+	genesisState := types.GenesisState{
+		Params: types.DefaultParams(),
+		LightNodeSaleContracts: []*types.LightNodeSaleContract{
+			{
+				ChainReferenceId: "test-chain",
+				ContractAddress:  "0x01",
+			},
+		},
+	}
+
+	input := CreateTestEnv(t)
+
+	InitGenesis(input.Context, input.SkywayKeeper, genesisState)
+	got := ExportGenesis(input.Context, input.SkywayKeeper)
+	require.NotNil(t, got)
+
+	require.Equal(t, genesisState.LightNodeSaleContracts, got.LightNodeSaleContracts)
+}

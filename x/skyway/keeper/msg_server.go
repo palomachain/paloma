@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"cosmossdk.io/errors"
 	sdkerrors "cosmossdk.io/errors"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -324,7 +323,7 @@ func (k msgServer) SubmitBadSignatureEvidence(c context.Context, msg *types.MsgS
 
 func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
 	if k.authority != msg.Authority {
-		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, msg.Authority)
+		return nil, sdkerrors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, msg.Authority)
 	}
 
 	if err := msg.Params.ValidateBasic(); err != nil {
@@ -345,13 +344,15 @@ func (k msgServer) LightNodeSaleClaim(
 
 	err := k.checkOrchestratorValidatorInSet(ctx, msg.Orchestrator)
 	if err != nil {
-		return nil, sdkerrors.Wrap(err, "Could not check orchstrator validator inset")
+		return nil, sdkerrors.Wrap(err, "Could not check orchestrator validator inset")
 	}
-	any, err := codectypes.NewAnyWithValue(msg)
+
+	msgAny, err := codectypes.NewAnyWithValue(msg)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "Could not check Any value")
 	}
-	err = k.claimHandlerCommon(ctx, any, msg)
+
+	err = k.claimHandlerCommon(ctx, msgAny, msg)
 	if err != nil {
 		return nil, err
 	}

@@ -1,15 +1,17 @@
 syntax = "proto3";
 package palomachain.paloma.skyway;
 
+import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
-import "palomachain/paloma/skyway/types.proto";
-import "palomachain/paloma/skyway/msgs.proto";
+import "palomachain/paloma/skyway/attestation.proto";
 import "palomachain/paloma/skyway/batch.proto";
 import "palomachain/paloma/skyway/bridge_tax.proto";
 import "palomachain/paloma/skyway/bridge_transfer_limit.proto";
-import "palomachain/paloma/skyway/attestation.proto";
-import "cosmos/base/v1beta1/coin.proto";
+import "palomachain/paloma/skyway/light_node_sale_contract.proto";
+import "palomachain/paloma/skyway/msgs.proto";
 import "palomachain/paloma/skyway/params.proto";
+import "palomachain/paloma/skyway/types.proto";
+
 option go_package = "github.com/palomachain/paloma/x/skyway/types";
 
 // GenesisState struct, containing all persistant data required by the Skyway
@@ -28,6 +30,7 @@ message GenesisState {
       [ (gogoproto.nullable) = false ];
   repeated BridgeTransferLimit bridge_transfer_limits = 12;
   repeated BridgeTax bridge_taxes = 13;
+  repeated LightNodeSaleContract light_node_sale_contracts = 14;
 }
 
 // SkywayCounters contains the many noces and counters required to maintain the

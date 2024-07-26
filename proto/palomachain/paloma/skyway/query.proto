@@ -12,6 +12,7 @@ import "palomachain/paloma/skyway/msgs.proto";
 import "palomachain/paloma/skyway/params.proto";
 import "palomachain/paloma/skyway/bridge_tax.proto";
 import "palomachain/paloma/skyway/bridge_transfer_limit.proto";
+import "palomachain/paloma/skyway/light_node_sale_contract.proto";
 import "google/protobuf/empty.proto";
 
 option go_package = "github.com/palomachain/paloma/x/skyway/types";
@@ -54,6 +55,12 @@ service Query {
       returns (QueryBridgeTransferLimitsResponse) {
     option (google.api.http).get =
       "/palomachain/paloma/skyway/all_bridge_transfer_limits";
+  }
+
+  rpc GetLightNodeSaleContracts(google.protobuf.Empty)
+      returns (QueryLightNodeSaleContractsResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/light_node_sale_contracts";
   }
 }
 
@@ -172,4 +179,8 @@ message QueryBridgeTransferLimitsResponse {
   }
 
   repeated LimitUsage limits = 1;
+}
+
+message QueryLightNodeSaleContractsResponse {
+  repeated LightNodeSaleContract light_node_sale_contracts = 1;
 }

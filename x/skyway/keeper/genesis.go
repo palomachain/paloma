@@ -148,6 +148,13 @@ func InitGenesis(ctx context.Context, k Keeper, data types.GenesisState) {
 			panic(err)
 		}
 	}
+
+	if len(data.LightNodeSaleContracts) > 0 {
+		err := k.SetAllLighNodeSaleContracts(ctx, data.LightNodeSaleContracts)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 // ExportGenesis exports all the state needed to restart the chain
@@ -248,15 +255,21 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		panic(err)
 	}
 
+	contracts, err := k.AllLightNodeSaleContracts(ctx)
+	if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
+		panic(err)
+	}
+
 	return types.GenesisState{
-		Params:               &p,
-		SkywayNonces:         nonces,
-		Batches:              extBatches,
-		BatchConfirms:        batchconfs,
-		Attestations:         attestations,
-		Erc20ToDenoms:        erc20ToDenoms,
-		UnbatchedTransfers:   unbatchedTxs,
-		BridgeTaxes:          taxes,
-		BridgeTransferLimits: limits,
+		Params:                 &p,
+		SkywayNonces:           nonces,
+		Batches:                extBatches,
+		BatchConfirms:          batchconfs,
+		Attestations:           attestations,
+		Erc20ToDenoms:          erc20ToDenoms,
+		UnbatchedTransfers:     unbatchedTxs,
+		BridgeTaxes:            taxes,
+		BridgeTransferLimits:   limits,
+		LightNodeSaleContracts: contracts,
 	}
 }

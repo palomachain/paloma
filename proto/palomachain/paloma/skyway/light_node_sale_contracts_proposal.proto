@@ -1,0 +1,12 @@
+syntax = "proto3";
+package palomachain.paloma.skyway;
+
+import "palomachain/paloma/skyway/light_node_sale_contract.proto";
+
+option go_package = "github.com/palomachain/paloma/x/skyway/types";
+
+message SetLightNodeSaleContractsProposal {
+  string title = 1;
+  string description = 2;
+  repeated LightNodeSaleContract light_node_sale_contracts = 3;
+}
