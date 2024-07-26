@@ -201,6 +201,7 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 			LastSlashedBatchBlock: lastSlashedBlock,
 			LastTxPoolId:          lastTxPoolId,
 			LastBatchId:           lastBatchId,
+			ChainReferenceId:      chain,
 		})
 
 		attmap, attKeys, err := k.GetAttestationMapping(ctx, chain)
