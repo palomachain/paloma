@@ -4,9 +4,11 @@ import (
 	"context"
 	"math/big"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -59,4 +61,14 @@ type ERC20Record interface {
 type SkywayKeeper interface {
 	GetLastObservedSkywayNonce(ctx context.Context, chainReferenceID string) (uint64, error)
 	CastAllERC20ToDenoms(ctx context.Context) ([]ERC20Record, error)
+}
+
+//go:generate mockery --name=MetrixKeeper
+type MetrixKeeper interface {
+	Validators(goCtx context.Context, _ *metrixtypes.Empty) (*metrixtypes.QueryValidatorsResponse, error)
+}
+
+//go:generate mockery --name=TreasuryKeeper
+type TreasuryKeeper interface {
+	GetRelayerFeesByChainReferenceID(ctx context.Context, chainReferenceID string) (map[string]math.LegacyDec, error)
 }

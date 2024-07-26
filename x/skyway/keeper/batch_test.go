@@ -249,7 +249,7 @@ func TestBatches(t *testing.T) {
 
 	// Execute the batch
 	fakeBlock := secondBatch.PalomaBlockCreated // A fake ethereum block used for testing only
-	msg := types.MsgBatchSendToEthClaim{
+	msg := types.MsgBatchSendToRemoteClaim{
 		EthBlockHeight:   fakeBlock,
 		BatchNonce:       secondBatch.BatchNonce,
 		TokenContract:    secondBatch.TokenContract.GetAddress().String(),
@@ -440,7 +440,7 @@ func TestBatchesFullCoins(t *testing.T) {
 
 	// Execute the batch
 	fakeBlock := secondBatch.PalomaBlockCreated // A fake ethereum block used for testing only
-	msg := types.MsgBatchSendToEthClaim{
+	msg := types.MsgBatchSendToRemoteClaim{
 		EthBlockHeight:   fakeBlock,
 		BatchNonce:       secondBatch.BatchNonce,
 		TokenContract:    testERC20Address,
@@ -546,7 +546,7 @@ func TestBatchesFullCoins(t *testing.T) {
 //		// we may have already deleted some of the batches in this list by executing later ones
 //		if gotBatch != nil {
 //			fakeBlock := batch.PalomaBlockCreated // A fake ethereum block used for testing only
-//			msg := types.MsgBatchSendToEthClaim{EthBlockHeight: fakeBlock, BatchNonce: batch.BatchNonce}
+//			msg := types.MsgBatchSendToRemoteClaim{EthBlockHeight: fakeBlock, BatchNonce: batch.BatchNonce}
 //			input.SkywayKeeper.OutgoingTxBatchExecuted(ctx, *contractAddr, msg)
 //		}
 //	}

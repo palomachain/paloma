@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -9,34 +10,49 @@ import (
 	"cosmossdk.io/core/address"
 	cosmosstore "cosmossdk.io/core/store"
 	cosmoslog "cosmossdk.io/log"
+	"cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
+	feegrantmodule "cosmossdk.io/x/feegrant"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	utilkeeper "github.com/palomachain/paloma/util/keeper"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/paloma/types"
 	"golang.org/x/mod/semver"
 )
 
-type (
-	Keeper struct {
-		cdc            codec.BinaryCodec
-		storeKey       cosmosstore.KVStoreService
-		paramstore     paramtypes.Subspace
-		Valset         types.ValsetKeeper
-		Upgrade        types.UpgradeKeeper
-		AppVersion     string
-		AddressCodec   address.Codec
-		ExternalChains []types.ExternalChainSupporterKeeper
-	}
-)
+const lightNodeSaleVestingMonths = 24
+
+type Keeper struct {
+	cdc            codec.BinaryCodec
+	storeKey       cosmosstore.KVStoreService
+	paramstore     paramtypes.Subspace
+	accountKeeper  types.AccountKeeper
+	bankKeeper     types.BankKeeper
+	feegrantKeeper types.FeegrantKeeper
+	Valset         types.ValsetKeeper
+	Upgrade        types.UpgradeKeeper
+	AppVersion     string
+	AddressCodec   address.Codec
+	ExternalChains []types.ExternalChainSupporterKeeper
+	bondDenom      string
+}
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey cosmosstore.KVStoreService,
 	ps paramtypes.Subspace,
 	appVersion string,
+	bondDenom string,
+	accountKeeper types.AccountKeeper,
+	bankKeeper types.BankKeeper,
+	feegrantKeeper types.FeegrantKeeper,
 	valset types.ValsetKeeper,
 	upgrade types.UpgradeKeeper,
 	addressCodec address.Codec,
@@ -54,13 +70,17 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:          cdc,
-		storeKey:     storeKey,
-		paramstore:   ps,
-		Valset:       valset,
-		Upgrade:      upgrade,
-		AddressCodec: addressCodec,
-		AppVersion:   appVersion,
+		cdc:            cdc,
+		storeKey:       storeKey,
+		paramstore:     ps,
+		accountKeeper:  accountKeeper,
+		bankKeeper:     bankKeeper,
+		feegrantKeeper: feegrantKeeper,
+		Valset:         valset,
+		Upgrade:        upgrade,
+		AddressCodec:   addressCodec,
+		AppVersion:     appVersion,
+		bondDenom:      bondDenom,
 	}
 }
 
@@ -85,7 +105,7 @@ func (k Keeper) JailValidatorsWithMissingExternalChainInfos(ctx context.Context)
 
 	var g whoops.Group
 	for _, val := range vals {
-		valAddr, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
+		valAddr, err := keeperutil.ValAddressFromBech32(k.AddressCodec, val.GetOperator())
 		if err != nil {
 			g.Add(err)
 			continue
@@ -160,4 +180,267 @@ func (k Keeper) CheckChainVersion(ctx context.Context) {
 		abandon()
 		return
 	}
+}
+
+func (k Keeper) Store(ctx context.Context) storetypes.KVStore {
+	return runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+}
+
+func (k Keeper) lightNodeClientLicenseStore(
+	ctx context.Context,
+) storetypes.KVStore {
+	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(s, types.LightNodeClientLicenseKeyPrefix)
+}
+
+func (k Keeper) LightNodeClientFeegranter(
+	ctx context.Context,
+) (*types.LightNodeClientFeegranter, error) {
+	st := k.Store(ctx)
+	key := types.LightNodeClientFeegranterKey
+
+	return keeperutil.Load[*types.LightNodeClientFeegranter](st, k.cdc, key)
+}
+
+func (k Keeper) SetLightNodeClientFeegranter(
+	ctx context.Context,
+	acct sdk.AccAddress,
+) error {
+	st := k.Store(ctx)
+	key := types.LightNodeClientFeegranterKey
+
+	feegranter := &types.LightNodeClientFeegranter{
+		Account: acct,
+	}
+
+	return keeperutil.Save(st, k.cdc, key, feegranter)
+}
+
+func (k Keeper) LightNodeClientFunders(
+	ctx context.Context,
+) (*types.LightNodeClientFunders, error) {
+	st := k.Store(ctx)
+	key := types.LightNodeClientFundersKey
+
+	return keeperutil.Load[*types.LightNodeClientFunders](st, k.cdc, key)
+}
+
+func (k Keeper) SetLightNodeClientFunders(
+	ctx context.Context,
+	accts []sdk.AccAddress,
+) error {
+	st := k.Store(ctx)
+	key := types.LightNodeClientFundersKey
+
+	funder := &types.LightNodeClientFunders{
+		Accounts: accts,
+	}
+
+	return keeperutil.Save(st, k.cdc, key, funder)
+}
+
+func (k Keeper) AllLightNodeClientLicenses(
+	ctx context.Context,
+) ([]*types.LightNodeClientLicense, error) {
+	st := k.lightNodeClientLicenseStore(ctx)
+	_, all, err := keeperutil.IterAll[*types.LightNodeClientLicense](st, k.cdc)
+	return all, err
+}
+
+func (k Keeper) SetLightNodeClientLicense(
+	ctx context.Context,
+	addr string,
+	license *types.LightNodeClientLicense,
+) error {
+	st := k.lightNodeClientLicenseStore(ctx)
+	return keeperutil.Save(st, k.cdc, []byte(addr), license)
+}
+
+func (k Keeper) GetLightNodeClientLicense(
+	ctx context.Context,
+	addr string,
+) (*types.LightNodeClientLicense, error) {
+	st := k.lightNodeClientLicenseStore(ctx)
+	return keeperutil.Load[*types.LightNodeClientLicense](st, k.cdc, []byte(addr))
+}
+
+func (k Keeper) CreateLightNodeClientLicense(
+	ctx context.Context,
+	creatorAddr, clientAddr string,
+	amount sdk.Coin,
+	vestingMonths uint32,
+) error {
+	creatorAcct, err := sdk.AccAddressFromBech32(creatorAddr)
+	if err != nil {
+		return err
+	}
+
+	if sdk.VerifyAddressFormat(creatorAcct) != nil || !amount.IsValid() {
+		return types.ErrInvalidParameters
+	}
+
+	// Check if license exists already
+	_, err = k.GetLightNodeClientLicense(ctx, clientAddr)
+	if err == nil {
+		return types.ErrLicenseExists
+	} else if !errors.Is(err, keeperutil.ErrNotFound) {
+		// Any errors other than not found and we bail
+		return err
+	}
+
+	// The client account name, to create a new base account and/or to set up
+	// the feegrant
+	acct, err := k.accountKeeper.AddressCodec().StringToBytes(clientAddr)
+	if err != nil {
+		return err
+	}
+
+	// If the account already exists, we can't move on
+	if k.accountKeeper.HasAccount(ctx, acct) {
+		return types.ErrAccountExists
+	}
+
+	license := &types.LightNodeClientLicense{
+		ClientAddress: clientAddr,
+		Amount:        amount,
+		VestingMonths: vestingMonths,
+	}
+
+	// We're here for the first time, so we create the base account now, as
+	// it will be used to register the light node client and start vesting
+	baseAccount := authtypes.NewBaseAccountWithAddress(acct)
+	baseAccount = k.accountKeeper.NewAccount(ctx, baseAccount).(*authtypes.BaseAccount)
+	k.accountKeeper.SetAccount(ctx, baseAccount)
+
+	// Lock new coins in module
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, creatorAcct,
+		types.ModuleName, sdk.Coins{amount})
+	if err != nil {
+		return err
+	}
+
+	return k.SetLightNodeClientLicense(ctx, clientAddr, license)
+}
+
+// CreateSaleLightNodeClientLicense is used by the skyway module when
+// processing a light node sale event to create a new license with feegrant
+func (k Keeper) CreateSaleLightNodeClientLicense(
+	ctx context.Context,
+	clientAddr string,
+	amount math.Int,
+) error {
+	coin := sdk.NewCoin(k.bondDenom, amount)
+
+	feegranter, err := k.LightNodeClientFeegranter(ctx)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return types.ErrNoFeegranter
+		}
+
+		return err
+	}
+
+	funders, err := k.LightNodeClientFunders(ctx)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return types.ErrNoFunder
+		}
+
+		return err
+	}
+
+	if len(funders.Accounts) == 0 {
+		return types.ErrNoFunder
+	}
+
+	// We may have more than one funder account, so iterate through all of them
+	// and use the first one with enough funds
+	var funder sdk.AccAddress
+	for i := range funders.Accounts {
+		if k.bankKeeper.HasBalance(ctx, funders.Accounts[i], coin) {
+			funder = funders.Accounts[i]
+		}
+	}
+
+	if funder == nil {
+		return types.ErrInsufficientBalance
+	}
+
+	// First, we need to create the license
+	err = k.CreateLightNodeClientLicense(ctx, funder.String(),
+		clientAddr, coin, lightNodeSaleVestingMonths)
+	if err != nil {
+		return err
+	}
+
+	// Only then can we setup the feegrant, otherwise the account will already
+	// exist
+
+	allowance := &feegrantmodule.BasicAllowance{
+		SpendLimit: sdk.NewCoins(sdk.NewCoin(k.bondDenom, math.NewInt(1_000_000))),
+		Expiration: nil, // Unlimited time
+	}
+
+	acct, err := k.accountKeeper.AddressCodec().StringToBytes(clientAddr)
+	if err != nil {
+		return err
+	}
+
+	return k.feegrantKeeper.GrantAllowance(ctx, feegranter.Account, acct, allowance)
+}
+
+func (k Keeper) CreateLightNodeClientAccount(
+	ctx context.Context,
+	addr string,
+) error {
+	// Get the license allocated to the account
+	license, err := k.GetLightNodeClientLicense(ctx, addr)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return types.ErrNoLicense
+		}
+
+		return err
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	beginTime := sdkCtx.BlockTime()
+	endTime := beginTime.AddDate(0, int(license.VestingMonths), 0)
+
+	acct, err := k.accountKeeper.AddressCodec().StringToBytes(addr)
+	if err != nil {
+		return err
+	}
+
+	amount := sdk.Coins{license.Amount}
+
+	// Get the existing base account and turn it into a vesting account
+	// It will vest until `endTime`, which is set to `vestingMonths` from now
+	baseAccount, ok := k.accountKeeper.GetAccount(ctx, acct).(*authtypes.BaseAccount)
+	if !ok {
+		return types.ErrNoAccount
+	}
+
+	baseVestingAccount, err := vestingtypes.NewBaseVestingAccount(baseAccount,
+		amount, endTime.Unix())
+	if err != nil {
+		return err
+	}
+
+	// Create a continuous vesting account, starting from now
+	vestingAccount := vestingtypes.NewContinuousVestingAccountRaw(
+		baseVestingAccount, beginTime.Unix())
+
+	k.accountKeeper.SetAccount(ctx, vestingAccount)
+
+	// Seed the account from the module account
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, acct, amount)
+	if err != nil {
+		return err
+	}
+
+	// Delete the light node client funds
+	k.lightNodeClientLicenseStore(ctx).Delete([]byte(addr))
+
+	return nil
 }

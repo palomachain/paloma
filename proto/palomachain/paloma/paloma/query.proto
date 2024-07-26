@@ -1,9 +1,13 @@
 syntax = "proto3";
 package palomachain.paloma.paloma;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
+import "google/protobuf/empty.proto";
+import "palomachain/paloma/paloma/light_node_client_feegranter.proto";
+import "palomachain/paloma/paloma/light_node_client_funders.proto";
+import "palomachain/paloma/paloma/light_node_client_license.proto";
 import "palomachain/paloma/paloma/params.proto";
 
 option go_package = "github.com/palomachain/paloma/x/paloma/types";
@@ -14,13 +18,44 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/palomachain/paloma/paloma/params";
   }
+
+  rpc GetLightNodeClientLicenses(google.protobuf.Empty)
+      returns (QueryLightNodeClientLicensesResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/paloma/light_node_client_licenses";
+  }
+
+  rpc GetLightNodeClientFeegranter(google.protobuf.Empty)
+      returns (QueryLightNodeClientFeegranterResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/paloma/light_node_client_feegranter";
+  }
+
+  rpc GetLightNodeClientFunders(google.protobuf.Empty)
+      returns (QueryLightNodeClientFundersResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/paloma/light_node_client_funder";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
-message QueryParamsRequest {}
+message QueryParamsRequest {
+}
 
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [ (gogoproto.nullable) = false ];
+}
+
+message QueryLightNodeClientLicensesResponse {
+  repeated LightNodeClientLicense light_node_client_licenses = 1;
+}
+
+message QueryLightNodeClientFeegranterResponse {
+  LightNodeClientFeegranter light_node_client_feegranter = 1;
+}
+
+message QueryLightNodeClientFundersResponse {
+  LightNodeClientFunders light_node_client_funders = 1;
 }

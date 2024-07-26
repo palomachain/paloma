@@ -1,13 +1,23 @@
 syntax = "proto3";
 package palomachain.paloma.paloma;
 
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "palomachain/paloma/valset/common.proto";
-import "cosmos/msg/v1/msg.proto";
 
 option go_package = "github.com/palomachain/paloma/x/paloma/types";
 
-service Msg { rpc AddStatusUpdate(MsgAddStatusUpdate) returns (EmptyResponse); }
+service Msg {
+  rpc AddStatusUpdate(MsgAddStatusUpdate) returns (EmptyResponse);
+
+  rpc RegisterLightNodeClient(MsgRegisterLightNodeClient)
+    returns (EmptyResponse);
+
+  rpc AddLightNodeClientLicense(MsgAddLightNodeClientLicense)
+    returns (EmptyResponse);
+}
 
 message MsgAddStatusUpdate {
   option (cosmos.msg.v1.signer) = "metadata";
@@ -29,4 +39,21 @@ message MsgAddStatusUpdate {
   repeated KeyValuePair args = 5 [ (gogoproto.nullable) = false ];
 }
 
-message EmptyResponse {}
+message EmptyResponse {
+}
+
+message MsgRegisterLightNodeClient {
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+}
+
+message MsgAddLightNodeClientLicense {
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+
+  string client_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  cosmos.base.v1beta1.Coin amount = 3 [ (gogoproto.nullable) = false ];
+  uint32 vesting_months = 4;
+}

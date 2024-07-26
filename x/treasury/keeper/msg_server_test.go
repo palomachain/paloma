@@ -10,7 +10,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	keeperutilmocks "github.com/palomachain/paloma/util/keeper/mocks"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/treasury/types"
 	"github.com/palomachain/paloma/x/treasury/types/mocks"
 	"github.com/stretchr/testify/assert"
@@ -80,7 +79,20 @@ func TestUpsertRelayerFee(t *testing.T) {
 			setup: func() msgServer {
 				evm := mocks.NewEvmKeeper(t)
 				m := keeperutilmocks.NewKVStoreWrapper[*types.RelayerFeeSetting](t)
-				evm.On("GetChainInfo", mock.Anything, "test-chain").Return(nil, fmt.Errorf("FAIL"))
+				m.On("Get", mock.Anything, mock.Anything).Return(&types.RelayerFeeSetting{}, keeperutil.ErrNotFound)
+				m.On("Set",
+					mock.Anything,
+					valAddr,
+					&types.RelayerFeeSetting{
+						ValAddress: valAddr.String(),
+						Fees: []types.RelayerFeeSetting_FeeSetting{
+							{
+								ChainReferenceId: "test-chain",
+								Multiplicator:    math.LegacyMustNewDecFromStr("1.2"),
+							},
+						},
+					},
+				).Return(nil)
 				k := msgServer{
 					Keeper: Keeper{
 						relayerFees: m,
@@ -90,35 +102,7 @@ func TestUpsertRelayerFee(t *testing.T) {
 
 				return k
 			},
-			expectedErr: fmt.Errorf("FAIL"),
-		},
-		{
-			name: "with chain not set to active",
-			input: &types.RelayerFeeSetting{
-				ValAddress: valAddr.String(),
-				Fees: []types.RelayerFeeSetting_FeeSetting{
-					{
-						ChainReferenceId: "test-chain",
-						Multiplicator:    math.LegacyMustNewDecFromStr("1.2"),
-					},
-				},
-			},
-			setup: func() msgServer {
-				evm := mocks.NewEvmKeeper(t)
-				m := keeperutilmocks.NewKVStoreWrapper[*types.RelayerFeeSetting](t)
-				evm.On("GetChainInfo", mock.Anything, "test-chain").Return(&evmtypes.ChainInfo{
-					Status: evmtypes.ChainInfo_IN_PROPOSAL,
-				}, nil)
-				k := msgServer{
-					Keeper: Keeper{
-						relayerFees: m,
-						evm:         evm,
-					},
-				}
-
-				return k
-			},
-			expectedErr: fmt.Errorf("chain  not set to ACTIVE"),
+			expectedErr: nil,
 		},
 		{
 			name: "with no existing record",
@@ -134,9 +118,6 @@ func TestUpsertRelayerFee(t *testing.T) {
 			setup: func() msgServer {
 				evm := mocks.NewEvmKeeper(t)
 				m := keeperutilmocks.NewKVStoreWrapper[*types.RelayerFeeSetting](t)
-				evm.On("GetChainInfo", mock.Anything, "test-chain").Return(&evmtypes.ChainInfo{
-					Status: evmtypes.ChainInfo_ACTIVE,
-				}, nil)
 				m.On("Get", mock.Anything, mock.Anything).Return(&types.RelayerFeeSetting{}, keeperutil.ErrNotFound)
 				m.On("Set",
 					mock.Anything,
@@ -180,12 +161,6 @@ func TestUpsertRelayerFee(t *testing.T) {
 			setup: func() msgServer {
 				evm := mocks.NewEvmKeeper(t)
 				m := keeperutilmocks.NewKVStoreWrapper[*types.RelayerFeeSetting](t)
-				evm.On("GetChainInfo", mock.Anything, "test-chain").Return(&evmtypes.ChainInfo{
-					Status: evmtypes.ChainInfo_ACTIVE,
-				}, nil)
-				evm.On("GetChainInfo", mock.Anything, "test-chain-3").Return(&evmtypes.ChainInfo{
-					Status: evmtypes.ChainInfo_ACTIVE,
-				}, nil)
 				m.On("Get", mock.Anything, mock.Anything).Return(&types.RelayerFeeSetting{
 					ValAddress: valAddr.String(),
 					Fees: []types.RelayerFeeSetting_FeeSetting{

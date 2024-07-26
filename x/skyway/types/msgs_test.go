@@ -69,10 +69,10 @@ func TestMsgSendToPalomaClaimHash(t *testing.T) {
 	require.Equal(t, hashes, newHashes)
 }
 
-// Ensures that ClaimHash changes when members of MsgBatchSendToEth change
+// Ensures that ClaimHash changes when members of MsgBatchSendToRemote change
 // The only field which MUST NOT affect ClaimHash is Orchestrator
-func TestMsgBatchSendToEthClaimHash(t *testing.T) {
-	base := MsgBatchSendToEthClaim{
+func TestMsgBatchSendToRemoteClaimHash(t *testing.T) {
+	base := MsgBatchSendToRemoteClaim{
 		SkywayNonce:    0,
 		EthBlockHeight: 0,
 		BatchNonce:     0,

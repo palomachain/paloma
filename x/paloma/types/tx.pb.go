@@ -6,6 +6,8 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
+	types1 "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
@@ -214,11 +216,125 @@ func (m *EmptyResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_EmptyResponse proto.InternalMessageInfo
 
+type MsgRegisterLightNodeClient struct {
+	Metadata types.MsgMetadata `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata"`
+}
+
+func (m *MsgRegisterLightNodeClient) Reset()         { *m = MsgRegisterLightNodeClient{} }
+func (m *MsgRegisterLightNodeClient) String() string { return proto.CompactTextString(m) }
+func (*MsgRegisterLightNodeClient) ProtoMessage()    {}
+func (*MsgRegisterLightNodeClient) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8dc46060aeb172a8, []int{2}
+}
+func (m *MsgRegisterLightNodeClient) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgRegisterLightNodeClient) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgRegisterLightNodeClient.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgRegisterLightNodeClient) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRegisterLightNodeClient.Merge(m, src)
+}
+func (m *MsgRegisterLightNodeClient) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgRegisterLightNodeClient) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRegisterLightNodeClient.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgRegisterLightNodeClient proto.InternalMessageInfo
+
+func (m *MsgRegisterLightNodeClient) GetMetadata() types.MsgMetadata {
+	if m != nil {
+		return m.Metadata
+	}
+	return types.MsgMetadata{}
+}
+
+type MsgAddLightNodeClientLicense struct {
+	Metadata      types.MsgMetadata `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata"`
+	ClientAddress string            `protobuf:"bytes,2,opt,name=client_address,json=clientAddress,proto3" json:"client_address,omitempty"`
+	Amount        types1.Coin       `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount"`
+	VestingMonths uint32            `protobuf:"varint,4,opt,name=vesting_months,json=vestingMonths,proto3" json:"vesting_months,omitempty"`
+}
+
+func (m *MsgAddLightNodeClientLicense) Reset()         { *m = MsgAddLightNodeClientLicense{} }
+func (m *MsgAddLightNodeClientLicense) String() string { return proto.CompactTextString(m) }
+func (*MsgAddLightNodeClientLicense) ProtoMessage()    {}
+func (*MsgAddLightNodeClientLicense) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8dc46060aeb172a8, []int{3}
+}
+func (m *MsgAddLightNodeClientLicense) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgAddLightNodeClientLicense) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgAddLightNodeClientLicense.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgAddLightNodeClientLicense) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgAddLightNodeClientLicense.Merge(m, src)
+}
+func (m *MsgAddLightNodeClientLicense) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgAddLightNodeClientLicense) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgAddLightNodeClientLicense.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgAddLightNodeClientLicense proto.InternalMessageInfo
+
+func (m *MsgAddLightNodeClientLicense) GetMetadata() types.MsgMetadata {
+	if m != nil {
+		return m.Metadata
+	}
+	return types.MsgMetadata{}
+}
+
+func (m *MsgAddLightNodeClientLicense) GetClientAddress() string {
+	if m != nil {
+		return m.ClientAddress
+	}
+	return ""
+}
+
+func (m *MsgAddLightNodeClientLicense) GetAmount() types1.Coin {
+	if m != nil {
+		return m.Amount
+	}
+	return types1.Coin{}
+}
+
+func (m *MsgAddLightNodeClientLicense) GetVestingMonths() uint32 {
+	if m != nil {
+		return m.VestingMonths
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterEnum("palomachain.paloma.paloma.MsgAddStatusUpdate_Level", MsgAddStatusUpdate_Level_name, MsgAddStatusUpdate_Level_value)
 	proto.RegisterType((*MsgAddStatusUpdate)(nil), "palomachain.paloma.paloma.MsgAddStatusUpdate")
 	proto.RegisterType((*MsgAddStatusUpdate_KeyValuePair)(nil), "palomachain.paloma.paloma.MsgAddStatusUpdate.KeyValuePair")
 	proto.RegisterType((*EmptyResponse)(nil), "palomachain.paloma.paloma.EmptyResponse")
+	proto.RegisterType((*MsgRegisterLightNodeClient)(nil), "palomachain.paloma.paloma.MsgRegisterLightNodeClient")
+	proto.RegisterType((*MsgAddLightNodeClientLicense)(nil), "palomachain.paloma.paloma.MsgAddLightNodeClientLicense")
 }
 
 func init() {
@@ -226,35 +342,48 @@ func init() {
 }
 
 var fileDescriptor_8dc46060aeb172a8 = []byte{
-	// 444 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x92, 0xc1, 0x6e, 0xd3, 0x40,
-	0x10, 0x86, 0xbd, 0x71, 0x52, 0xca, 0x84, 0x36, 0xd6, 0xaa, 0x02, 0x93, 0x83, 0x89, 0x72, 0xa8,
-	0x2c, 0x04, 0xb6, 0x48, 0x25, 0x24, 0x7a, 0x23, 0xc2, 0x85, 0x42, 0x42, 0xd1, 0x42, 0x7b, 0xe0,
-	0x82, 0xb6, 0xf6, 0xca, 0x0d, 0x78, 0xb3, 0xc6, 0xbb, 0xb1, 0xea, 0x2b, 0x4f, 0xc0, 0x63, 0x70,
-	0xe4, 0x31, 0x7a, 0xec, 0x91, 0x13, 0x42, 0xc9, 0x81, 0xd7, 0x40, 0xf6, 0x9a, 0x50, 0x20, 0x20,
-	0xf5, 0x34, 0x33, 0x9e, 0x7f, 0x3e, 0xcf, 0xcc, 0x0e, 0xf4, 0x53, 0x9a, 0x08, 0x4e, 0xc3, 0x13,
-	0x3a, 0x99, 0xfa, 0xda, 0xff, 0x69, 0xd4, 0xa9, 0x97, 0x66, 0x42, 0x09, 0x7c, 0xf3, 0x82, 0xc6,
-	0xd3, 0x7e, 0x6d, 0xba, 0x5b, 0xb1, 0x88, 0x45, 0xa5, 0xf2, 0x4b, 0x4f, 0x17, 0x74, 0xb7, 0x57,
-	0x40, 0x73, 0x9a, 0x48, 0xa6, 0xfc, 0x50, 0x70, 0x2e, 0xa6, 0xb5, 0xee, 0x46, 0x28, 0x24, 0x17,
-	0xd2, 0xe7, 0x32, 0xf6, 0xf3, 0x7b, 0xa5, 0xd1, 0x89, 0xfe, 0x27, 0x13, 0xf0, 0x58, 0xc6, 0x0f,
-	0xa3, 0xe8, 0xa5, 0xa2, 0x6a, 0x26, 0x0f, 0xd3, 0x88, 0x2a, 0x86, 0xaf, 0xc3, 0x9a, 0xac, 0x62,
-	0xbb, 0xd1, 0x43, 0xee, 0x55, 0x52, 0x47, 0x78, 0x1f, 0x5a, 0x09, 0xcb, 0x59, 0x62, 0x9b, 0x3d,
-	0xe4, 0x6e, 0x0e, 0x76, 0xbc, 0x7f, 0x36, 0xec, 0xfd, 0x4d, 0xf5, 0x46, 0x65, 0x29, 0xd1, 0x04,
-	0xfc, 0x04, 0xd6, 0x39, 0x53, 0x34, 0xa2, 0x8a, 0xda, 0xcd, 0x1e, 0x72, 0xdb, 0x83, 0xed, 0x55,
-	0x34, 0x3d, 0x4d, 0x49, 0x1b, 0xd7, 0xea, 0x61, 0xf3, 0xec, 0xeb, 0x2d, 0x83, 0x2c, 0xab, 0xf1,
-	0x2b, 0x68, 0xd2, 0x2c, 0x96, 0x76, 0xab, 0x67, 0xba, 0xed, 0xc1, 0xee, 0xe5, 0x7a, 0x7a, 0xc6,
-	0x8a, 0x23, 0x9a, 0xcc, 0xd8, 0x0b, 0x3a, 0xc9, 0x6a, 0x72, 0x45, 0xeb, 0xde, 0x87, 0x6b, 0x17,
-	0x73, 0xd8, 0x02, 0xf3, 0x1d, 0x2b, 0x6c, 0x54, 0xed, 0xa3, 0x74, 0xf1, 0x16, 0xb4, 0xf2, 0x32,
-	0x5d, 0xef, 0x48, 0x07, 0xfd, 0x07, 0xd0, 0xaa, 0xe6, 0xc4, 0x1d, 0x68, 0x8f, 0x82, 0xa3, 0x60,
-	0xf4, 0xe6, 0x51, 0x30, 0x3c, 0x7c, 0x6c, 0x19, 0x78, 0x13, 0x40, 0x7f, 0xd8, 0x7f, 0xbe, 0x77,
-	0x60, 0xa1, 0x5f, 0x82, 0x80, 0x90, 0x03, 0x62, 0x35, 0x76, 0x37, 0x3e, 0x7c, 0xff, 0x7c, 0x7b,
-	0x39, 0xd7, 0xd3, 0xe6, 0x3a, 0xb2, 0x1a, 0xe4, 0x4a, 0x98, 0x31, 0xaa, 0x44, 0xd6, 0xef, 0xc0,
-	0x46, 0xc0, 0x53, 0x55, 0x10, 0x26, 0x53, 0x31, 0x95, 0x6c, 0xf0, 0x1e, 0xcc, 0xb1, 0x8c, 0xf1,
-	0x5b, 0xe8, 0xfc, 0xf9, 0x7c, 0x77, 0x2f, 0xb5, 0x83, 0xae, 0xfb, 0x1f, 0xf9, 0x6f, 0xbf, 0x1c,
-	0xee, 0x9d, 0xcd, 0x1d, 0x74, 0x3e, 0x77, 0xd0, 0xb7, 0xb9, 0x83, 0x3e, 0x2e, 0x1c, 0xe3, 0x7c,
-	0xe1, 0x18, 0x5f, 0x16, 0x8e, 0xf1, 0xfa, 0x4e, 0x3c, 0x51, 0x27, 0xb3, 0x63, 0x2f, 0x14, 0xdc,
-	0x5f, 0x71, 0x94, 0xa7, 0xcb, 0x5b, 0x2f, 0x52, 0x26, 0x8f, 0xd7, 0xaa, 0xeb, 0xdb, 0xf9, 0x11,
-	0x00, 0x00, 0xff, 0xff, 0x54, 0x80, 0x9b, 0x38, 0x15, 0x03, 0x00, 0x00,
+	// 642 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0xcb, 0x6e, 0xd3, 0x4c,
+	0x14, 0x8e, 0x73, 0xe9, 0xdf, 0x7f, 0x42, 0xd2, 0x68, 0x54, 0x51, 0x27, 0x42, 0x26, 0xb2, 0x44,
+	0x15, 0x21, 0x6a, 0xab, 0xa9, 0xa0, 0xa2, 0x1b, 0xd4, 0x94, 0x14, 0x0a, 0x49, 0x8b, 0x5c, 0xda,
+	0x05, 0x9b, 0x68, 0x62, 0x8f, 0x26, 0x06, 0xdb, 0x63, 0x79, 0x26, 0x56, 0xc3, 0x82, 0x05, 0x4f,
+	0xc0, 0x92, 0x47, 0x60, 0xc9, 0x82, 0x87, 0xe8, 0xb2, 0x62, 0xc5, 0x0a, 0xa1, 0x76, 0xc1, 0x8a,
+	0x77, 0x40, 0xf6, 0x0c, 0xa5, 0x0d, 0x49, 0xa1, 0x82, 0xd5, 0x9c, 0xfb, 0x77, 0xce, 0xd1, 0x77,
+	0x06, 0xe8, 0x21, 0xf2, 0xa8, 0x8f, 0xec, 0x01, 0x72, 0x03, 0x53, 0xc8, 0x3f, 0x1e, 0x7e, 0x60,
+	0x84, 0x11, 0xe5, 0x14, 0x56, 0xcf, 0xc4, 0x18, 0x42, 0x96, 0x4f, 0x4d, 0xb3, 0x29, 0xf3, 0x29,
+	0x33, 0xfb, 0x88, 0x61, 0x33, 0x5e, 0xee, 0x63, 0x8e, 0x96, 0x4d, 0x9b, 0x26, 0x71, 0x49, 0x6a,
+	0x6d, 0x41, 0xfa, 0x7d, 0x46, 0xcc, 0x78, 0x39, 0x79, 0xa4, 0xa3, 0x2a, 0x1c, 0xbd, 0x54, 0x33,
+	0x85, 0x22, 0x5d, 0xf3, 0x84, 0x12, 0x2a, 0xec, 0x89, 0x24, 0xad, 0x8b, 0x13, 0x1a, 0x8d, 0x91,
+	0xc7, 0x30, 0x37, 0x6d, 0xea, 0xfb, 0x54, 0x22, 0xea, 0xef, 0x72, 0x00, 0x76, 0x19, 0x59, 0x77,
+	0x9c, 0x5d, 0x8e, 0xf8, 0x90, 0xed, 0x85, 0x0e, 0xe2, 0x18, 0x5e, 0x05, 0x33, 0x2c, 0xd5, 0xd5,
+	0x6c, 0x5d, 0x69, 0xfc, 0x6f, 0x49, 0x0d, 0x6e, 0x81, 0x82, 0x87, 0x63, 0xec, 0xa9, 0xb9, 0xba,
+	0xd2, 0x28, 0x37, 0x57, 0x8c, 0xa9, 0xb3, 0x1a, 0xbf, 0x56, 0x35, 0x3a, 0x49, 0xaa, 0x25, 0x2a,
+	0xc0, 0x87, 0x60, 0xd6, 0xc7, 0x1c, 0x39, 0x88, 0x23, 0x35, 0x5f, 0x57, 0x1a, 0xc5, 0xe6, 0xe2,
+	0xa4, 0x6a, 0xa2, 0xe9, 0xa4, 0x5a, 0x57, 0x46, 0xb7, 0xf2, 0x87, 0x9f, 0xaf, 0x67, 0xac, 0xd3,
+	0x6c, 0xf8, 0x14, 0xe4, 0x51, 0x44, 0x98, 0x5a, 0xa8, 0xe7, 0x1a, 0xc5, 0xe6, 0xda, 0xe5, 0x7a,
+	0x7a, 0x8c, 0x47, 0xfb, 0xc8, 0x1b, 0xe2, 0x27, 0xc8, 0x8d, 0x64, 0xe5, 0xb4, 0x5a, 0xed, 0x0e,
+	0xb8, 0x72, 0xd6, 0x07, 0x2b, 0x20, 0xf7, 0x02, 0x8f, 0x54, 0x25, 0xdd, 0x47, 0x22, 0xc2, 0x79,
+	0x50, 0x88, 0x13, 0xb7, 0xdc, 0x91, 0x50, 0xf4, 0xbb, 0xa0, 0x90, 0xce, 0x09, 0xe7, 0x40, 0xb1,
+	0xd3, 0xde, 0x6f, 0x77, 0x7a, 0xf7, 0xdb, 0xad, 0xbd, 0x07, 0x95, 0x0c, 0x2c, 0x03, 0x20, 0x0c,
+	0x5b, 0xdb, 0x9b, 0x3b, 0x15, 0xe5, 0x67, 0x40, 0xdb, 0xb2, 0x76, 0xac, 0x4a, 0x76, 0xad, 0xf4,
+	0xfa, 0xeb, 0xfb, 0x9b, 0xa7, 0x73, 0x3d, 0xca, 0xcf, 0x2a, 0x95, 0xac, 0xf5, 0x9f, 0x1d, 0x61,
+	0xc4, 0x69, 0xa4, 0xcf, 0x81, 0x52, 0xdb, 0x0f, 0xf9, 0xc8, 0xc2, 0x2c, 0xa4, 0x01, 0xc3, 0xfa,
+	0x10, 0xd4, 0xba, 0x8c, 0x58, 0x98, 0xb8, 0x8c, 0xe3, 0xa8, 0xe3, 0x92, 0x01, 0xdf, 0xa6, 0x0e,
+	0xde, 0xf0, 0x5c, 0x1c, 0xf0, 0x73, 0xfb, 0x55, 0xfe, 0x66, 0xbf, 0x63, 0x6d, 0xe9, 0x6f, 0xb3,
+	0xe0, 0x9a, 0x58, 0xe4, 0x18, 0x64, 0xc7, 0xb5, 0x71, 0xc0, 0xf0, 0xbf, 0x43, 0x86, 0xf7, 0x40,
+	0xd9, 0x4e, 0x4b, 0xf7, 0x90, 0xe3, 0x44, 0x98, 0x49, 0x3a, 0xb6, 0xd4, 0x8f, 0x1f, 0x96, 0xe6,
+	0xe5, 0x15, 0xac, 0x0b, 0xcf, 0x2e, 0x8f, 0xdc, 0x80, 0x58, 0x25, 0x11, 0x2f, 0x8d, 0x70, 0x15,
+	0xcc, 0x20, 0x9f, 0x0e, 0x03, 0x9e, 0x12, 0xb6, 0xd8, 0xac, 0x1a, 0x32, 0x2b, 0xb9, 0x40, 0x43,
+	0x5e, 0xa0, 0xb1, 0x41, 0xdd, 0x40, 0x62, 0xcb, 0x70, 0x78, 0x03, 0x94, 0x63, 0xcc, 0xb8, 0x1b,
+	0x90, 0x9e, 0x4f, 0x03, 0x3e, 0x60, 0x29, 0x47, 0x4b, 0x56, 0x49, 0x5a, 0xbb, 0xa9, 0x71, 0x6c,
+	0x35, 0xcd, 0x6f, 0x59, 0x90, 0xeb, 0x32, 0x02, 0x9f, 0x83, 0xb9, 0xf1, 0x8b, 0x5a, 0xba, 0x14,
+	0x2d, 0x6b, 0x8d, 0x0b, 0xc2, 0xcf, 0xb1, 0x00, 0xbe, 0x04, 0x0b, 0xd3, 0x28, 0x70, 0xfb, 0x62,
+	0xcc, 0x29, 0x69, 0x97, 0xc0, 0x7e, 0x05, 0xaa, 0xd3, 0x69, 0xb0, 0xfa, 0xdb, 0x89, 0x27, 0x27,
+	0xfe, 0x39, 0x7e, 0x6b, 0xf3, 0xf0, 0x58, 0x53, 0x8e, 0x8e, 0x35, 0xe5, 0xcb, 0xb1, 0xa6, 0xbc,
+	0x39, 0xd1, 0x32, 0x47, 0x27, 0x5a, 0xe6, 0xd3, 0x89, 0x96, 0x79, 0x76, 0x8b, 0xb8, 0x7c, 0x30,
+	0xec, 0x1b, 0x36, 0xf5, 0xcd, 0x09, 0x5f, 0xe1, 0xc1, 0xe9, 0xaf, 0x3d, 0x0a, 0x31, 0xeb, 0xcf,
+	0xa4, 0x9f, 0xe1, 0xca, 0xf7, 0x00, 0x00, 0x00, 0xff, 0xff, 0x98, 0xb4, 0x78, 0x19, 0xdf, 0x05,
+	0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -270,6 +399,8 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
 	AddStatusUpdate(ctx context.Context, in *MsgAddStatusUpdate, opts ...grpc.CallOption) (*EmptyResponse, error)
+	RegisterLightNodeClient(ctx context.Context, in *MsgRegisterLightNodeClient, opts ...grpc.CallOption) (*EmptyResponse, error)
+	AddLightNodeClientLicense(ctx context.Context, in *MsgAddLightNodeClientLicense, opts ...grpc.CallOption) (*EmptyResponse, error)
 }
 
 type msgClient struct {
@@ -289,9 +420,29 @@ func (c *msgClient) AddStatusUpdate(ctx context.Context, in *MsgAddStatusUpdate,
 	return out, nil
 }
 
+func (c *msgClient) RegisterLightNodeClient(ctx context.Context, in *MsgRegisterLightNodeClient, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.paloma.Msg/RegisterLightNodeClient", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) AddLightNodeClientLicense(ctx context.Context, in *MsgAddLightNodeClientLicense, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.paloma.Msg/AddLightNodeClientLicense", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	AddStatusUpdate(context.Context, *MsgAddStatusUpdate) (*EmptyResponse, error)
+	RegisterLightNodeClient(context.Context, *MsgRegisterLightNodeClient) (*EmptyResponse, error)
+	AddLightNodeClientLicense(context.Context, *MsgAddLightNodeClientLicense) (*EmptyResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -300,6 +451,12 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) AddStatusUpdate(ctx context.Context, req *MsgAddStatusUpdate) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddStatusUpdate not implemented")
+}
+func (*UnimplementedMsgServer) RegisterLightNodeClient(ctx context.Context, req *MsgRegisterLightNodeClient) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterLightNodeClient not implemented")
+}
+func (*UnimplementedMsgServer) AddLightNodeClientLicense(ctx context.Context, req *MsgAddLightNodeClientLicense) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddLightNodeClientLicense not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -324,6 +481,42 @@ func _Msg_AddStatusUpdate_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_RegisterLightNodeClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRegisterLightNodeClient)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RegisterLightNodeClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/palomachain.paloma.paloma.Msg/RegisterLightNodeClient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RegisterLightNodeClient(ctx, req.(*MsgRegisterLightNodeClient))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_AddLightNodeClientLicense_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAddLightNodeClientLicense)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).AddLightNodeClientLicense(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/palomachain.paloma.paloma.Msg/AddLightNodeClientLicense",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).AddLightNodeClientLicense(ctx, req.(*MsgAddLightNodeClientLicense))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "palomachain.paloma.paloma.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -331,6 +524,14 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddStatusUpdate",
 			Handler:    _Msg_AddStatusUpdate_Handler,
+		},
+		{
+			MethodName: "RegisterLightNodeClient",
+			Handler:    _Msg_RegisterLightNodeClient_Handler,
+		},
+		{
+			MethodName: "AddLightNodeClientLicense",
+			Handler:    _Msg_AddLightNodeClientLicense_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -456,6 +657,94 @@ func (m *EmptyResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgRegisterLightNodeClient) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRegisterLightNodeClient) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRegisterLightNodeClient) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Metadata.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgAddLightNodeClientLicense) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgAddLightNodeClientLicense) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgAddLightNodeClientLicense) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.VestingMonths != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.VestingMonths))
+		i--
+		dAtA[i] = 0x20
+	}
+	{
+		size, err := m.Amount.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	if len(m.ClientAddress) > 0 {
+		i -= len(m.ClientAddress)
+		copy(dAtA[i:], m.ClientAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ClientAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	{
+		size, err := m.Metadata.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -514,6 +803,37 @@ func (m *EmptyResponse) Size() (n int) {
 	}
 	var l int
 	_ = l
+	return n
+}
+
+func (m *MsgRegisterLightNodeClient) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Metadata.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgAddLightNodeClientLicense) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Metadata.Size()
+	n += 1 + l + sovTx(uint64(l))
+	l = len(m.ClientAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = m.Amount.Size()
+	n += 1 + l + sovTx(uint64(l))
+	if m.VestingMonths != 0 {
+		n += 1 + sovTx(uint64(m.VestingMonths))
+	}
 	return n
 }
 
@@ -834,6 +1154,256 @@ func (m *EmptyResponse) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: EmptyResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgRegisterLightNodeClient) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgRegisterLightNodeClient: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgRegisterLightNodeClient: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgAddLightNodeClientLicense) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgAddLightNodeClientLicense: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgAddLightNodeClientLicense: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ClientAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ClientAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field VestingMonths", wireType)
+			}
+			m.VestingMonths = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.VestingMonths |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])

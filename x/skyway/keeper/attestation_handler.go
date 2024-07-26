@@ -37,8 +37,11 @@ func (a AttestationHandler) Handle(ctx context.Context, att types.Attestation, c
 	case *types.MsgSendToPalomaClaim:
 		return a.handleSendToPaloma(ctx, *claim)
 
-	case *types.MsgBatchSendToEthClaim:
-		return a.handleBatchSendToEth(ctx, *claim)
+	case *types.MsgBatchSendToRemoteClaim:
+		return a.handleBatchSendToRemote(ctx, *claim)
+
+	case *types.MsgLightNodeSaleClaim:
+		return a.handleLightNodeSale(ctx, *claim)
 
 	default:
 		return fmt.Errorf("invalid event type for attestations %s", claim.GetType())
@@ -161,10 +164,10 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 	return nil
 }
 
-// Upon acceptance of sufficient validator BatchSendToEth claims: burn ethereum originated vouchers, invalidate pending
+// Upon acceptance of sufficient validator BatchSendToRemote claims: burn ethereum originated vouchers, invalidate pending
 // batches with lower claim.BatchNonce, and clean up state
-// Note: Previously SendToEth was referred to as a bridge "Withdrawal", as tokens are withdrawn from the skyway contract
-func (a AttestationHandler) handleBatchSendToEth(ctx context.Context, claim types.MsgBatchSendToEthClaim) error {
+// Note: Previously SendToRemote was referred to as a bridge "Withdrawal", as tokens are withdrawn from the skyway contract
+func (a AttestationHandler) handleBatchSendToRemote(ctx context.Context, claim types.MsgBatchSendToRemoteClaim) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	contract, err := types.NewEthAddress(claim.TokenContract)
 	if err != nil {
@@ -175,7 +178,7 @@ func (a AttestationHandler) handleBatchSendToEth(ctx context.Context, claim type
 		return err
 	}
 	err = sdkCtx.EventManager().EmitTypedEvent(
-		&types.EventBatchSendToEthClaim{
+		&types.EventBatchSendToRemoteClaim{
 			Nonce: strconv.Itoa(int(claim.BatchNonce)),
 		},
 	)
@@ -247,4 +250,26 @@ func (a AttestationHandler) sendCoinToLocalAddress(
 	}
 
 	return err // returns nil if no error
+}
+
+func (a AttestationHandler) handleLightNodeSale(
+	ctx context.Context,
+	claim types.MsgLightNodeSaleClaim,
+) error {
+	hash, err := claim.ClaimHash()
+	if err != nil {
+		return sdkerrors.Wrapf(err, "Failed to compute claim hash for %v: %v", claim, err)
+	}
+
+	logger := liblog.FromKeeper(ctx, a.keeper).
+		WithComponent("handle-light-node-sale").
+		WithFields(
+			"claim-type", claim.GetType(),
+			"nonce", claim.GetSkywayNonce(),
+			"id", types.GetAttestationKey(claim.GetSkywayNonce(), hash),
+		)
+	logger.Debug("Handling light-node-sale event.")
+
+	return a.keeper.palomaKeeper.CreateSaleLightNodeClientLicense(ctx,
+		claim.ClientAddress, claim.Amount)
 }

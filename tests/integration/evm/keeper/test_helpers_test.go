@@ -63,6 +63,8 @@ import (
 	"github.com/palomachain/paloma/x/evm"
 	evmmodulekeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
+	metrixmodulekeeper "github.com/palomachain/paloma/x/metrix/keeper"
+	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 	"github.com/palomachain/paloma/x/paloma"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	"github.com/palomachain/paloma/x/scheduler"
@@ -70,6 +72,7 @@ import (
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
 	skywaymodulekeeper "github.com/palomachain/paloma/x/skyway/keeper"
 	skywaymoduletypes "github.com/palomachain/paloma/x/skyway/types"
+	treasurykeeper "github.com/palomachain/paloma/x/treasury/keeper"
 	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	"github.com/palomachain/paloma/x/valset"
 	valsetmodulekeeper "github.com/palomachain/paloma/x/valset/keeper"
@@ -88,6 +91,8 @@ type fixture struct {
 	schedulerKeeper   schedulertypes.Keeper
 	stakingKeeper     stakingkeeper.Keeper
 	paramsKeeper      paramskeeper.Keeper
+	metrixKeeper      *metrixmodulekeeper.Keeper
+	treasuryKeeper    *treasurykeeper.Keeper
 }
 
 func init() {
@@ -118,6 +123,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		treasurymoduletypes.StoreKey,
 		evmmoduletypes.StoreKey,
 		skywaymoduletypes.StoreKey,
+		metrixmoduletypes.StoreKey,
 	)
 	cdc := moduletestutil.MakeTestEncodingConfig(
 		auth.AppModuleBasic{},
@@ -153,6 +159,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		evmmoduletypes.MemStoreKey,
 		treasurymoduletypes.MemStoreKey,
 		palomamoduletypes.MemStoreKey,
+		metrixmoduletypes.MemStoreKey,
 	)
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -215,12 +222,31 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		consensusRegistry,
 	)
 
-	evmKeeper := *evmmodulekeeper.NewKeeper(
+	var evmKeeper *evmmodulekeeper.Keeper = &evmmodulekeeper.Keeper{}
+	treasurykeeper := *treasurykeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[treasurymoduletypes.StoreKey]),
+		helper.GetSubspace(treasurymoduletypes.ModuleName, paramsKeeper),
+		bankKeeper,
+		accountKeeper,
+		evmKeeper,
+	)
+	metrixKeeper := metrixmodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[metrixmoduletypes.StoreKey]),
+		helper.GetSubspace(metrixmoduletypes.ModuleName, paramsKeeper),
+		slashingKeeper,
+		stakingKeeper,
+		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+	)
+	*evmKeeper = *evmmodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[evmmoduletypes.StoreKey]),
 		consensusKeeper,
 		valsetKeeper,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+		&metrixKeeper,
+		treasurykeeper,
 	)
 	capabilityKeeper := capabilitykeeper.NewKeeper(
 		appCodec,
@@ -312,6 +338,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		transferKeeper,
 		evmKeeper,
 		consensusKeeper,
+		nil,
 		skywaymodulekeeper.NewSkywayStoreGetter(keys[skywaymoduletypes.StoreKey]),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
@@ -321,6 +348,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		evmKeeper,
 	)
 	valsetKeeper.EvmKeeper = evmKeeper
+	valsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{evmKeeper, &metrixKeeper}
 	schedulerKeeper := *keeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[schedulertypes.StoreKey]),
@@ -334,7 +362,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 	authModule := auth.NewAppModule(cdc, accountKeeper, authsims.RandomGenesisAccounts, nil)
 	bankModule := bank.NewAppModule(cdc, bankKeeper, accountKeeper, nil)
 	schedulerModule := scheduler.NewAppModule(cdc, schedulerKeeper, accountKeeper, bankKeeper)
-	evmModule := evm.NewAppModule(cdc, evmKeeper, accountKeeper, bankKeeper)
+	evmModule := evm.NewAppModule(cdc, *evmKeeper, accountKeeper, bankKeeper)
 	stakingModule := staking.NewAppModule(cdc, stakingKeeper, accountKeeper, bankKeeper, helper.GetSubspace(stakingtypes.ModuleName, paramsKeeper))
 	integrationApp := integration.NewIntegrationApp(newCtx, logger, keys, cdc, map[string]appmodule.AppModule{
 		authtypes.ModuleName:      authModule,
@@ -348,6 +376,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 
 	queryClient := v1.NewQueryClient(integrationApp.QueryHelper())
 	legacyQueryClient := v1beta1.NewQueryClient(integrationApp.QueryHelper())
+	metrixKeeper.UpdateUptime(integrationApp.Context())
 	return &fixture{
 		ctx:               sdkCtx,
 		codec:             appCodec,
@@ -357,7 +386,9 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		valsetKeeper:      valsetKeeper,
 		schedulerKeeper:   schedulerKeeper,
 		paramsKeeper:      paramsKeeper,
-		evmKeeper:         evmKeeper,
+		evmKeeper:         *evmKeeper,
 		stakingKeeper:     *stakingKeeper,
+		metrixKeeper:      &metrixKeeper,
+		treasuryKeeper:    &treasurykeeper,
 	}
 }

@@ -97,6 +97,7 @@ var _ = g.Describe("genesis", func() {
 							Uptime:        "1.0",
 							SuccessRate:   "1.0",
 							ExecutionTime: "1.0",
+							FeatureSet:    "1.0",
 						},
 					},
 					{
@@ -110,6 +111,7 @@ var _ = g.Describe("genesis", func() {
 							Uptime:        "1.0",
 							SuccessRate:   "1.0",
 							ExecutionTime: "1.0",
+							FeatureSet:    "1.0",
 						},
 					},
 				},

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"cosmossdk.io/core/header"
+	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -24,6 +25,7 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/keeper"
 	"github.com/palomachain/paloma/x/evm/types"
+	treasurytypes "github.com/palomachain/paloma/x/treasury/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -88,10 +90,25 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
+		err = f.treasuryKeeper.SetRelayerFee(ctx, sdk.ValAddress(operator), &treasurytypes.RelayerFeeSetting{
+			ValAddress: sdk.ValAddress(operator).String(),
+			Fees: []treasurytypes.RelayerFeeSetting_FeeSetting{
+				{
+					Multiplicator:    math.LegacyMustNewDecFromStr("1.1"),
+					ChainReferenceId: chainReferenceID,
+				},
+				{
+					Multiplicator:    math.LegacyMustNewDecFromStr("1.1"),
+					ChainReferenceId: newChain.ChainReferenceID,
+				},
+			},
+		})
+		require.NoError(t, err)
 	}
 
 	_, err = f.valsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
+	f.metrixKeeper.UpdateUptime(ctx)
 
 	smartContractAddr := common.BytesToAddress(rand.Bytes(5))
 	_, err = f.evmKeeper.AddSmartContractExecutionToConsensus(
@@ -814,8 +831,23 @@ var _ = Describe("evm", func() {
 						},
 					})
 					Expect(err).To(BeNil())
+					err = a.treasuryKeeper.SetRelayerFee(ctx, valAddr, &treasurytypes.RelayerFeeSetting{
+						ValAddress: sdk.ValAddress(valAddr).String(),
+						Fees: []treasurytypes.RelayerFeeSetting_FeeSetting{
+							{
+								Multiplicator:    math.LegacyMustNewDecFromStr("1.1"),
+								ChainReferenceId: chain1.ChainReferenceID,
+							},
+							{
+								Multiplicator:    math.LegacyMustNewDecFromStr("1.1"),
+								ChainReferenceId: chain2.ChainReferenceID,
+							},
+						},
+					})
+					require.NoError(t, err)
 				}
 				_, err := a.valsetKeeper.TriggerSnapshotBuild(ctx)
+				a.metrixKeeper.UpdateUptime(ctx)
 				Expect(err).To(BeNil())
 			})
 
@@ -957,10 +989,25 @@ var _ = Describe("evm", func() {
 							},
 						})
 						Expect(err).To(BeNil())
+						err = a.treasuryKeeper.SetRelayerFee(ctx, valAddr, &treasurytypes.RelayerFeeSetting{
+							ValAddress: sdk.ValAddress(valAddr).String(),
+							Fees: []treasurytypes.RelayerFeeSetting_FeeSetting{
+								{
+									Multiplicator:    math.LegacyMustNewDecFromStr("1.1"),
+									ChainReferenceId: newChain.ChainReferenceID,
+								},
+								{
+									Multiplicator:    math.LegacyMustNewDecFromStr("1.1"),
+									ChainReferenceId: "new-chain",
+								},
+							},
+						})
+						require.NoError(t, err)
 					}
 					var err error
 					snapshot, err = a.valsetKeeper.TriggerSnapshotBuild(ctx)
 					Expect(err).To(BeNil())
+					a.metrixKeeper.UpdateUptime(ctx)
 				})
 
 				BeforeEach(func() {
@@ -1076,7 +1123,22 @@ var _ = Describe("evm", func() {
 								},
 							})
 							Expect(err).To(BeNil())
+							err = a.treasuryKeeper.SetRelayerFee(ctx, valAddr, &treasurytypes.RelayerFeeSetting{
+								ValAddress: sdk.ValAddress(valAddr).String(),
+								Fees: []treasurytypes.RelayerFeeSetting_FeeSetting{
+									{
+										Multiplicator:    math.LegacyMustNewDecFromStr("1.1"),
+										ChainReferenceId: newChain.ChainReferenceID,
+									},
+									{
+										Multiplicator:    math.LegacyMustNewDecFromStr("1.1"),
+										ChainReferenceId: "new-chain",
+									},
+								},
+							})
+							require.NoError(t, err)
 						}
+						a.metrixKeeper.UpdateUptime(ctx)
 					})
 					BeforeEach(func() {
 						msgs, err := a.consensusKeeper.GetMessagesFromQueue(ctx, "evm/new-chain/evm-turnstone-message", 5)
@@ -1238,6 +1300,7 @@ var _ = Describe("change relay weights", func() {
 				Uptime:        "1.0",
 				SuccessRate:   "1.0",
 				ExecutionTime: "1.0",
+				FeatureSet:    "1.0",
 			}))
 		})
 
@@ -1247,6 +1310,7 @@ var _ = Describe("change relay weights", func() {
 				Uptime:        "0.34",
 				SuccessRate:   "0.56",
 				ExecutionTime: "0.78",
+				FeatureSet:    "0.99",
 			}
 			err := a.evmKeeper.SetRelayWeights(ctx, newChain.GetChainReferenceID(), newWeights)
 			Expect(err).To(BeNil())
@@ -1265,6 +1329,7 @@ var _ = Describe("change relay weights", func() {
 				Uptime:        "0.34",
 				SuccessRate:   "0.56",
 				ExecutionTime: "0.78",
+				FeatureSet:    "0.99",
 			})
 			Expect(err).To(MatchError(keeper.ErrChainNotFound))
 		})

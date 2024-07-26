@@ -208,7 +208,7 @@ func (k Keeper) emitObservedEvent(ctx context.Context, att *types.Attestation, c
 		return sdkerrors.Wrap(err, "unable to compute claim hash")
 	}
 
-	ci, err := k.evmKeeper.GetChainInfo(ctx, claim.GetChainReferenceId())
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, claim.GetChainReferenceId())
 	if err != nil {
 		return err
 	}

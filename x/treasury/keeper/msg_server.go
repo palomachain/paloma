@@ -7,7 +7,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/treasury/types"
 )
 
@@ -31,16 +30,8 @@ func (k msgServer) UpsertRelayerFee(ctx context.Context, req *types.MsgUpsertRel
 		return nil, fmt.Errorf("failed to parse validator address: %w", err)
 	}
 
-	for _, v := range req.FeeSetting.Fees {
-		ci, err := k.evm.GetChainInfo(ctx, v.ChainReferenceId)
-		if err != nil {
-			return nil, err
-		}
-
-		if ci.Status != evmtypes.ChainInfo_ACTIVE {
-			return nil, fmt.Errorf("chain %s not set to ACTIVE", ci.ChainReferenceID)
-		}
-	}
+	// Setting of relayer fees for unknown chains is allowed
+	// to support validators setting up before a new chain is onboarded
 
 	r, err := k.relayerFees.Get(sdkCtx, addr)
 	if err != nil {

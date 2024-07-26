@@ -131,6 +131,7 @@ import (
 	metrixmodulekeeper "github.com/palomachain/paloma/x/metrix/keeper"
 	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 	palomamodule "github.com/palomachain/paloma/x/paloma"
+	palomaclient "github.com/palomachain/paloma/x/paloma/client"
 	palomamodulekeeper "github.com/palomachain/paloma/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/x/scheduler"
@@ -165,6 +166,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		evmclient.ProposalHandler,
 		treasuryclient.ProposalHandler,
 		valsetclient.ProposalHandler,
+		palomaclient.ProposalHandler,
 	}
 }
 
@@ -186,6 +188,7 @@ var (
 		icatypes.ModuleName:            nil,
 		wasmtypes.ModuleName:           {authtypes.Burner},
 		treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
+		palomamoduletypes.ModuleName:   nil,
 	}
 )
 
@@ -334,6 +337,7 @@ func New(
 		crisistypes.StoreKey,
 		metrixmoduletypes.StoreKey,
 		wasmtypes.StoreKey,
+		palomamoduletypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(
@@ -578,6 +582,8 @@ func New(
 		app.ConsensusKeeper,
 		app.ValsetKeeper,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
+		app.MetrixKeeper,
+		&app.TreasuryKeeper, // only iniditalised later in code, so we pass the pointer
 	)
 	app.ValsetKeeper.SnapshotListeners = []valsetmoduletypes.OnSnapshotBuiltListener{
 		&app.EvmKeeper,
@@ -585,6 +591,24 @@ func New(
 	}
 	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
 	app.EvmKeeper.AddMessageConsensusAttestedListener(&app.MetrixKeeper)
+
+	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[palomamoduletypes.StoreKey]),
+		app.GetSubspace(palomamoduletypes.ModuleName),
+		semverVersion,
+		BondDenom,
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.FeeGrantKeeper,
+		app.ValsetKeeper,
+		app.UpgradeKeeper,
+		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
+	)
+
+	app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
+		app.EvmKeeper,
+	}
 
 	app.SkywayKeeper = skywaymodulekeeper.NewKeeper(
 		appCodec,
@@ -596,6 +620,7 @@ func New(
 		app.TransferKeeper,
 		app.EvmKeeper,
 		app.ConsensusKeeper,
+		app.PalomaKeeper,
 		skywaymodulekeeper.NewSkywayStoreGetter(keys[skywaymoduletypes.StoreKey]),
 		authorityAddress,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
@@ -606,20 +631,6 @@ func New(
 	// of keeping value copies and blowing up the stack.
 	app.EvmKeeper.Skyway = app.SkywayKeeper
 	app.ConsensusKeeper.LateInject(app.EvmKeeper)
-
-	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[palomamoduletypes.StoreKey]),
-		app.GetSubspace(palomamoduletypes.ModuleName),
-		semverVersion,
-		app.ValsetKeeper,
-		app.UpgradeKeeper,
-		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
-	)
-
-	app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
-		app.EvmKeeper,
-	}
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -649,7 +660,6 @@ func New(
 		app.GetSubspace(schedulermoduletypes.ModuleName),
 		app.BankKeeper,
 		app.AccountKeeper,
-		app.SchedulerKeeper,
 		app.EvmKeeper,
 	)
 
@@ -663,7 +673,8 @@ func New(
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(skywaymoduletypes.RouterKey, skywaymodulekeeper.NewSkywayProposalHandler(app.SkywayKeeper)).
 		AddRoute(treasurymoduletypes.RouterKey, treasurymodule.NewFeeProposalHandler(app.TreasuryKeeper)).
-		AddRoute(valsetmoduletypes.RouterKey, valsetmodule.NewValsetProposalHandler(app.ValsetKeeper))
+		AddRoute(valsetmoduletypes.RouterKey, valsetmodule.NewValsetProposalHandler(app.ValsetKeeper)).
+		AddRoute(palomamoduletypes.RouterKey, palomamodule.NewPalomaProposalHandler(app.PalomaKeeper))
 
 	// Example of setting gov params:
 	govKeeper := govkeeper.NewKeeper(

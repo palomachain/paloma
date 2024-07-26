@@ -77,8 +77,14 @@ import (
 	"github.com/palomachain/paloma/x/evm"
 	evmkeeper "github.com/palomachain/paloma/x/evm/keeper"
 	evmtypes "github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/x/metrix"
+	metrixmodulekeeper "github.com/palomachain/paloma/x/metrix/keeper"
+	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
 	"github.com/palomachain/paloma/x/scheduler"
 	"github.com/palomachain/paloma/x/skyway/types"
+	"github.com/palomachain/paloma/x/treasury"
+	treasurykeeper "github.com/palomachain/paloma/x/treasury/keeper"
+	treasurymoduletypes "github.com/palomachain/paloma/x/treasury/types"
 	"github.com/palomachain/paloma/x/valset"
 	valsetkeeper "github.com/palomachain/paloma/x/valset/keeper"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
@@ -268,6 +274,8 @@ type TestInput struct {
 	LegacyAmino       *codec.LegacyAmino
 	SkywayStoreKey    *storetypes.KVStoreKey
 	EvmKeeper         evmkeeper.Keeper
+	TreasuryKeeper    *treasurykeeper.Keeper
+	MetrixKeeper      metrixmodulekeeper.Keeper
 }
 
 func addValidators(t *testing.T, input *TestInput, count int) {
@@ -324,12 +332,24 @@ func addValidators(t *testing.T, input *TestInput, count int) {
 			},
 		})
 		require.NoError(t, err)
+		// add some fee
+		err = input.TreasuryKeeper.SetRelayerFee(sdkCtx, valAddress, &treasurymoduletypes.RelayerFeeSetting{
+			ValAddress: sdk.ValAddress(valAddress).String(),
+			Fees: []treasurymoduletypes.RelayerFeeSetting_FeeSetting{
+				{
+					Multiplicator:    math.LegacyMustNewDecFromStr("1.10"),
+					ChainReferenceId: "test-chain",
+				},
+			},
+		})
+		require.NoError(t, err)
 	}
 
 	// Create a Snapshot
 	sdkCtx := sdk.UnwrapSDKContext(input.Context)
 	_, err = input.ValsetKeeper.TriggerSnapshotBuild(sdkCtx)
 	require.NoError(t, err)
+	input.MetrixKeeper.UpdateUptime(sdkCtx)
 }
 
 // SetupFiveValChain does all the initialization for a 5 Validator chain using the keys here
@@ -437,6 +457,10 @@ func CreateTestEnv(t *testing.T) TestInput {
 	memKeyConsensus := storetypes.NewKVStoreKey(consensustypes.MemStoreKey)
 	keyEvm := storetypes.NewKVStoreKey(evmtypes.StoreKey)
 	memKeyEvm := storetypes.NewKVStoreKey(evmtypes.MemStoreKey)
+	keyTreasury := storetypes.NewKVStoreKey(treasurymoduletypes.StoreKey)
+	memKeyTreasury := storetypes.NewKVStoreKey(treasurymoduletypes.MemStoreKey)
+	keyMetrix := storetypes.NewKVStoreKey(metrixmoduletypes.StoreKey)
+	memKeyMetrix := storetypes.NewKVStoreKey(metrixmoduletypes.MemStoreKey)
 	cdc := moduletestutil.MakeTestEncodingConfig(
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
@@ -446,6 +470,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 		scheduler.AppModuleBasic{},
 		valset.AppModuleBasic{},
 		consensus.AppModuleBasic{},
+		treasury.AppModuleBasic{},
+		metrix.AppModuleBasic{},
 	).Codec
 	// Initialize memory database and mount stores on it
 	db := dbm.NewMemDB()
@@ -469,6 +495,10 @@ func CreateTestEnv(t *testing.T) TestInput {
 	ms.MountStoreWithDB(memKeyConsensus, storetypes.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyEvm, storetypes.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(memKeyEvm, storetypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyTreasury, storetypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(memKeyTreasury, storetypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyMetrix, storetypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(memKeyMetrix, storetypes.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -517,6 +547,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 	paramsKeeper.Subspace(valsettypes.ModuleName)
 	paramsKeeper.Subspace(consensustypes.ModuleName)
 	paramsKeeper.Subspace(evmtypes.ModuleName)
+	paramsKeeper.Subspace(treasurymoduletypes.ModuleName)
+	paramsKeeper.Subspace(metrixmoduletypes.ModuleName)
 
 	// this is also used to initialize module accounts for all the map keys
 	maccPerms := map[string][]string{
@@ -696,15 +728,35 @@ func CreateTestEnv(t *testing.T) TestInput {
 		consensusRegistry,
 	)
 
-	evmKeeper := evmkeeper.NewKeeper(
-		marshaler,
+	var evmKeeper *evmkeeper.Keeper = &evmkeeper.Keeper{}
+	treasurykeeper := *treasurykeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keyTreasury),
+		getSubspace(paramsKeeper, consensustypes.ModuleName),
+		bankKeeper,
+		accountKeeper,
+		evmKeeper,
+	)
+	metrixKeeper := metrixmodulekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keyMetrix),
+		getSubspace(paramsKeeper, metrixmoduletypes.ModuleName),
+		slashingKeeper,
+		stakingKeeper,
+		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
+	)
+	*evmKeeper = *evmkeeper.NewKeeper(
+		appCodec,
 		runtime.NewKVStoreService(keyEvm),
 		consensusKeeper,
 		valsetKeeper,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
+		&metrixKeeper,
+		treasurykeeper,
 	)
 
 	valsetKeeper.EvmKeeper = evmKeeper
+	valsetKeeper.SnapshotListeners = []valsettypes.OnSnapshotBuiltListener{evmKeeper, &metrixKeeper}
 
 	err = evmKeeper.AddSupportForNewChain(
 		ctx,
@@ -728,6 +780,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		ibcTransferKeeper,
 		evmKeeper,
 		consensusKeeper,
+		nil,
 		NewSkywayStoreGetter(skywayKey),
 		"",
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
@@ -806,6 +859,8 @@ func CreateTestEnv(t *testing.T) TestInput {
 		Marshaler:         marshaler,
 		LegacyAmino:       legacyAmino,
 		EvmKeeper:         *evmKeeper,
+		MetrixKeeper:      metrixKeeper,
+		TreasuryKeeper:    &treasurykeeper,
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(testInput.Context)
