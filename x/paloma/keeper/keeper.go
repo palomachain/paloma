@@ -366,6 +366,16 @@ func (k Keeper) CreateSaleLightNodeClientLicense(
 		return types.ErrInsufficientBalance
 	}
 
+	// First, we need to create the license
+	err = k.CreateLightNodeClientLicense(ctx, funder.String(),
+		clientAddr, coin, lightNodeSaleVestingMonths)
+	if err != nil {
+		return err
+	}
+
+	// Only then can we setup the feegrant, otherwise the account will already
+	// exist
+
 	allowance := &feegrantmodule.BasicAllowance{
 		SpendLimit: sdk.NewCoins(sdk.NewCoin(k.bondDenom, math.NewInt(1_000_000))),
 		Expiration: nil, // Unlimited time
@@ -376,13 +386,7 @@ func (k Keeper) CreateSaleLightNodeClientLicense(
 		return err
 	}
 
-	err = k.feegrantKeeper.GrantAllowance(ctx, feegranter.Account, acct, allowance)
-	if err != nil {
-		return err
-	}
-
-	return k.CreateLightNodeClientLicense(ctx, funder.String(),
-		clientAddr, coin, lightNodeSaleVestingMonths)
+	return k.feegrantKeeper.GrantAllowance(ctx, feegranter.Account, acct, allowance)
 }
 
 func (k Keeper) CreateLightNodeClientAccount(
