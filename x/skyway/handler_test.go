@@ -15,7 +15,7 @@ import (
 )
 
 // nolint: exhaustruct
-func TestHandleMsgSendToEth(t *testing.T) {
+func TestHandleMsgSendToRemote(t *testing.T) {
 	input := keeper.CreateTestEnv(t)
 	var (
 		userCosmosAddr, e1               = sdk.AccAddressFromBech32("paloma1l2j8vaykh03zenzytntj3cza6zfxwlj68dd0l3")
@@ -43,7 +43,7 @@ func TestHandleMsgSendToEth(t *testing.T) {
 	assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, startingCoinAmount)}, balance1)
 
 	// send some coins
-	msg := &types.MsgSendToEth{
+	msg := &types.MsgSendToRemote{
 		EthDest:          ethDestination,
 		Amount:           sendingCoin,
 		ChainReferenceId: "test-chain",
@@ -58,7 +58,7 @@ func TestHandleMsgSendToEth(t *testing.T) {
 	assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, startingCoinAmount.Sub(sendAmount))}, balance2)
 
 	// do the same thing again and make sure it works twice
-	msg1 := &types.MsgSendToEth{
+	msg1 := &types.MsgSendToRemote{
 		EthDest:          ethDestination,
 		Amount:           sendingCoin,
 		ChainReferenceId: "test-chain",
@@ -74,7 +74,7 @@ func TestHandleMsgSendToEth(t *testing.T) {
 	assert.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, finalAmount3)}, balance3)
 
 	// now we should be out of coins and error
-	msg2 := &types.MsgSendToEth{
+	msg2 := &types.MsgSendToRemote{
 		EthDest:          ethDestination,
 		Amount:           sendingCoin,
 		ChainReferenceId: "test-chain",
@@ -90,7 +90,7 @@ func TestHandleMsgSendToEth(t *testing.T) {
 
 	// these should all produce an error
 	for _, val := range invalidEthDestinations {
-		msg := &types.MsgSendToEth{
+		msg := &types.MsgSendToRemote{
 			EthDest:          val,
 			Amount:           sendingCoin,
 			ChainReferenceId: "test-chain",

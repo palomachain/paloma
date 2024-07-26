@@ -21,6 +21,8 @@ var LightNodeClientLicenseKeyPrefix = []byte("light-node-client-license")
 
 var LightNodeClientFeegranterKey = []byte("light-node-client-feegranter")
 
+var LightNodeClientFundersKey = []byte("light-node-client-funders")
+
 func KeyPrefix(p string) []byte {
 	return []byte(p)
 }

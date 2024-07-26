@@ -14,18 +14,19 @@ import (
 
 // nolint: exhaustruct
 var (
-	_ sdk.Msg = &MsgSendToEth{}
-	_ sdk.Msg = &MsgCancelSendToEth{}
+	_ sdk.Msg = &MsgSendToRemote{}
+	_ sdk.Msg = &MsgCancelSendToRemote{}
 	_ sdk.Msg = &MsgConfirmBatch{}
 	_ sdk.Msg = &MsgSendToPalomaClaim{}
-	_ sdk.Msg = &MsgBatchSendToEthClaim{}
+	_ sdk.Msg = &MsgBatchSendToRemoteClaim{}
 	_ sdk.Msg = &MsgSubmitBadSignatureEvidence{}
 	_ sdk.Msg = &MsgUpdateParams{}
+	_ sdk.Msg = &MsgLightNodeSaleClaim{}
 )
 
-// NewMsgSendToEth returns a new msgSendToEth
-func NewMsgSendToEth(sender sdk.AccAddress, destAddress EthAddress, send sdk.Coin, chainReferenceID string) *MsgSendToEth {
-	return &MsgSendToEth{
+// NewMsgSendToRemote returns a new msgSendToRemote
+func NewMsgSendToRemote(sender sdk.AccAddress, destAddress EthAddress, send sdk.Coin, chainReferenceID string) *MsgSendToRemote {
+	return &MsgSendToRemote{
 		EthDest:          destAddress.GetAddress().Hex(),
 		Amount:           send,
 		ChainReferenceId: chainReferenceID,
@@ -36,14 +37,14 @@ func NewMsgSendToEth(sender sdk.AccAddress, destAddress EthAddress, send sdk.Coi
 }
 
 // Route should return the name of the module
-func (msg MsgSendToEth) Route() string { return RouterKey }
+func (msg MsgSendToRemote) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgSendToEth) Type() string { return "send_to_eth" }
+func (msg MsgSendToRemote) Type() string { return "send_to_eth" }
 
 // ValidateBasic runs stateless checks on the message
 // Checks if the Eth address is valid
-func (msg MsgSendToEth) ValidateBasic() error {
+func (msg MsgSendToRemote) ValidateBasic() error {
 	if err := libmeta.ValidateBasic(&msg); err != nil {
 		return err
 	}
@@ -59,12 +60,12 @@ func (msg MsgSendToEth) ValidateBasic() error {
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgSendToEth) GetSignBytes() []byte {
+func (msg MsgSendToRemote) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgSendToEth) GetSigners() []sdk.AccAddress {
+func (msg MsgSendToRemote) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(&msg)
 }
 
@@ -137,7 +138,8 @@ type EthereumClaim interface {
 // nolint: exhaustruct
 var (
 	_ EthereumClaim = &MsgSendToPalomaClaim{}
-	_ EthereumClaim = &MsgBatchSendToEthClaim{}
+	_ EthereumClaim = &MsgBatchSendToRemoteClaim{}
+	_ EthereumClaim = &MsgLightNodeSaleClaim{}
 )
 
 func (msg *MsgSendToPalomaClaim) SetOrchestrator(orchestrator sdk.AccAddress) {
@@ -161,7 +163,7 @@ func (msg *MsgSendToPalomaClaim) ValidateBasic() error {
 		return sdkerrors.Wrap(err, "erc20 token")
 	}
 	// note the destination address is intentionally not validated here, since
-	// MsgSendToEth has it's destination as a string many invalid inputs are possible
+	// MsgSendToRemote has it's destination as a string many invalid inputs are possible
 	// the orchestrator will convert these invalid deposits to simply the string invalid'
 	// this is done because the oracle requires an event be processed on Cosmos for each event
 	// nonce on the Ethereum side, otherwise (A) the oracle will never proceed and (B) the funds
@@ -221,17 +223,17 @@ func (msg *MsgSendToPalomaClaim) ClaimHash() ([]byte, error) {
 	return tmhash.Sum([]byte(path)), nil
 }
 
-func (msg *MsgBatchSendToEthClaim) SetOrchestrator(orchestrator sdk.AccAddress) {
+func (msg *MsgBatchSendToRemoteClaim) SetOrchestrator(orchestrator sdk.AccAddress) {
 	msg.Orchestrator = orchestrator.String()
 }
 
 // GetType returns the claim type
-func (msg *MsgBatchSendToEthClaim) GetType() ClaimType {
+func (msg *MsgBatchSendToRemoteClaim) GetType() ClaimType {
 	return CLAIM_TYPE_BATCH_SEND_TO_ETH
 }
 
 // ValidateBasic performs stateless checks
-func (e *MsgBatchSendToEthClaim) ValidateBasic() error {
+func (e *MsgBatchSendToRemoteClaim) ValidateBasic() error {
 	if err := libmeta.ValidateBasic(e); err != nil {
 		return err
 	}
@@ -251,15 +253,15 @@ func (e *MsgBatchSendToEthClaim) ValidateBasic() error {
 }
 
 // Hash implements WithdrawBatch.Hash
-func (msg *MsgBatchSendToEthClaim) ClaimHash() ([]byte, error) {
+func (msg *MsgBatchSendToRemoteClaim) ClaimHash() ([]byte, error) {
 	path := fmt.Sprintf("%d/%d/%d/%s", msg.SkywayNonce, msg.EthBlockHeight, msg.BatchNonce, msg.TokenContract)
 	return tmhash.Sum([]byte(path)), nil
 }
 
-func (msg MsgBatchSendToEthClaim) GetClaimer() sdk.AccAddress {
+func (msg MsgBatchSendToRemoteClaim) GetClaimer() sdk.AccAddress {
 	err := msg.ValidateBasic()
 	if err != nil {
-		panic(fmt.Errorf("MsgBatchSendToEthClaim failed ValidateBasic! Should have been handled earlier: %v", err))
+		panic(fmt.Errorf("MsgBatchSendToRemoteClaim failed ValidateBasic! Should have been handled earlier: %v", err))
 	}
 	val, err := sdk.AccAddressFromBech32(msg.Orchestrator)
 	if err != nil {
@@ -269,23 +271,23 @@ func (msg MsgBatchSendToEthClaim) GetClaimer() sdk.AccAddress {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgBatchSendToEthClaim) GetSigners() []sdk.AccAddress {
+func (msg MsgBatchSendToRemoteClaim) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(&msg)
 }
 
 // Route should return the name of the module
-func (msg MsgBatchSendToEthClaim) Route() string { return RouterKey }
+func (msg MsgBatchSendToRemoteClaim) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgBatchSendToEthClaim) Type() string { return "batch_send_to_eth_claim" }
+func (msg MsgBatchSendToRemoteClaim) Type() string { return "batch_send_to_eth_claim" }
 
 const (
-	TypeMsgBatchSendToEthClaim = "batch_send_to_eth_claim"
+	TypeMsgBatchSendToRemoteClaim = "batch_send_to_eth_claim"
 )
 
-// NewMsgCancelSendToEth returns a new msgSetOrchestratorAddress
-func NewMsgCancelSendToEth(user sdk.AccAddress, id uint64) *MsgCancelSendToEth {
-	return &MsgCancelSendToEth{
+// NewMsgCancelSendToRemote returns a new msgSetOrchestratorAddress
+func NewMsgCancelSendToRemote(user sdk.AccAddress, id uint64) *MsgCancelSendToRemote {
+	return &MsgCancelSendToRemote{
 		Metadata: types.MsgMetadata{
 			Creator: user.String(),
 		},
@@ -294,13 +296,13 @@ func NewMsgCancelSendToEth(user sdk.AccAddress, id uint64) *MsgCancelSendToEth {
 }
 
 // Route should return the name of the module
-func (msg *MsgCancelSendToEth) Route() string { return RouterKey }
+func (msg *MsgCancelSendToRemote) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg *MsgCancelSendToEth) Type() string { return "cancel_send_to_eth" }
+func (msg *MsgCancelSendToRemote) Type() string { return "cancel_send_to_eth" }
 
 // GetSigners defines whose signature is required
-func (msg *MsgCancelSendToEth) GetSigners() []sdk.AccAddress {
+func (msg *MsgCancelSendToRemote) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(msg)
 }
 
@@ -349,3 +351,52 @@ func (msg MsgUpdateParams) Type() string { return "update_params" }
 
 // Route should return the name of the module
 func (msg MsgUpdateParams) Route() string { return RouterKey }
+
+// MsgLightNodeSaleClaim
+// ======================================================
+
+// ValidateBasic performs stateless checks
+func (msg *MsgLightNodeSaleClaim) ValidateBasic() error {
+	if err := libmeta.ValidateBasic(msg); err != nil {
+		return err
+	}
+
+	if msg.EventNonce == 0 {
+		return fmt.Errorf("event_nonce must be positive")
+	}
+
+	if msg.SkywayNonce == 0 {
+		return fmt.Errorf("skyway_nonce must be positive")
+	}
+
+	return nil
+}
+
+func (msg *MsgLightNodeSaleClaim) ClaimHash() ([]byte, error) {
+	path := fmt.Sprintf("%d/%d/%s/%s", msg.SkywayNonce, msg.EthBlockHeight,
+		msg.ClientAddress, msg.Amount.String())
+	return tmhash.Sum([]byte(path)), nil
+}
+
+func (msg MsgLightNodeSaleClaim) GetClaimer() sdk.AccAddress {
+	err := msg.ValidateBasic()
+	if err != nil {
+		panic("MsgSendToPalomaClaim failed ValidateBasic! Should have been handled earlier")
+	}
+
+	val, err := sdk.AccAddressFromBech32(msg.Orchestrator)
+	if err != nil {
+		panic(err)
+	}
+
+	return val
+}
+
+// GetType returns the type of the claim
+func (msg *MsgLightNodeSaleClaim) GetType() ClaimType {
+	return CLAIM_TYPE_LIGHT_NODE_SALE
+}
+
+func (msg *MsgLightNodeSaleClaim) SetOrchestrator(orchestrator sdk.AccAddress) {
+	msg.Orchestrator = orchestrator.String()
+}

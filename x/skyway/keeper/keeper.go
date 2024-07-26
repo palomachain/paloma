@@ -41,8 +41,9 @@ type Keeper struct {
 	DistKeeper        distrkeeper.Keeper
 	accountKeeper     types.AccountKeeper
 	ibcTransferKeeper ibctransferkeeper.Keeper
-	evmKeeper         types.EVMKeeper
+	EVMKeeper         types.EVMKeeper
 	consensusKeeper   types.ConsensusKeeper
+	palomaKeeper      types.PalomaKeeper
 	AddressCodec      address.Codec
 	storeGetter       keeperutil.StoreGetter
 
@@ -63,6 +64,7 @@ func NewKeeper(
 	ibcTransferKeeper ibctransferkeeper.Keeper,
 	evmKeeper types.EVMKeeper,
 	consensusKeeper types.ConsensusKeeper,
+	palomaKeeper types.PalomaKeeper,
 	storeGetter keeperutil.StoreGetter,
 	authority string,
 	valAddressCodec address.Codec,
@@ -75,8 +77,9 @@ func NewKeeper(
 		DistKeeper:         distributionKeeper,
 		accountKeeper:      accKeeper,
 		ibcTransferKeeper:  ibcTransferKeeper,
-		evmKeeper:          evmKeeper,
+		EVMKeeper:          evmKeeper,
 		consensusKeeper:    consensusKeeper,
+		palomaKeeper:       palomaKeeper,
 		storeGetter:        storeGetter,
 		AttestationHandler: nil,
 		AddressCodec:       valAddressCodec,
@@ -193,12 +196,12 @@ func (k Keeper) DeserializeValidatorIterator(vals []byte) stakingtypes.ValAddres
 	return validators
 }
 
-// InvalidSendToEthAddress Returns true if the provided address is invalid to send to Ethereum this could be
+// InvalidSendToRemoteAddress Returns true if the provided address is invalid to send to Ethereum this could be
 // for one of several reasons. (1) it is invalid in general like the Zero address, (2)
 // it is invalid for a subset of ERC20 addresses. (2) is not yet implemented
 // Blocking some addresses is technically motivated, if any ERC20 transfers in a batch fail the entire batch
 // becomes impossible to execute.
-func (k Keeper) InvalidSendToEthAddress(ctx context.Context, addr types.EthAddress, _erc20Addr types.EthAddress) bool {
+func (k Keeper) InvalidSendToRemoteAddress(ctx context.Context, addr types.EthAddress, _erc20Addr types.EthAddress) bool {
 	return addr == types.ZeroAddress()
 }
 

@@ -55,7 +55,7 @@ func ClaimTypeToTypeUrl(claimType ClaimType) string {
 	case CLAIM_TYPE_SEND_TO_PALOMA:
 		msgName = proto.MessageName(&MsgSendToPalomaClaim{})
 	case CLAIM_TYPE_BATCH_SEND_TO_ETH:
-		msgName = proto.MessageName(&MsgBatchSendToEthClaim{})
+		msgName = proto.MessageName(&MsgBatchSendToRemoteClaim{})
 	}
 
 	return "/" + msgName

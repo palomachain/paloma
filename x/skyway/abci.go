@@ -20,7 +20,7 @@ func EndBlocker(ctx context.Context, k keeper.Keeper) {
 	logger.Debug("Running endblocker")
 
 	// slashing(ctx, k)
-	chains := k.GetChainsWithTokens(ctx)
+	chains := k.EVMKeeper.GetActiveChainNames(ctx)
 
 	err := createBatch(ctx, k)
 	if err != nil {

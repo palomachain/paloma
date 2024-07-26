@@ -77,7 +77,7 @@ func (k Keeper) OutgoingTxBatches(
 ) (*types.QueryOutgoingTxBatchesResponse, error) {
 	var batches []types.OutgoingTxBatch
 
-	if k.evmKeeper.HasAnySmartContractDeployment(c, req.ChainReferenceId) {
+	if k.EVMKeeper.HasAnySmartContractDeployment(c, req.ChainReferenceId) {
 		// Ongoing smart contract deployment, don't give out batches to relay
 		// in order to avoid nonce increase on old compass
 		return &types.QueryOutgoingTxBatchesResponse{Batches: batches}, nil
@@ -354,10 +354,10 @@ func (k Keeper) GetErc20ToDenoms(c context.Context, denoms *types.QueryErc20ToDe
 	}, nil
 }
 
-func (k Keeper) GetPendingSendToEth(
+func (k Keeper) GetPendingSendToRemote(
 	c context.Context,
-	req *types.QueryPendingSendToEth,
-) (*types.QueryPendingSendToEthResponse, error) {
+	req *types.QueryPendingSendToRemote,
+) (*types.QueryPendingSendToRemoteResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	batches, err := k.GetOutgoingTxBatches(ctx)
 	if err != nil {
@@ -368,7 +368,7 @@ func (k Keeper) GetPendingSendToEth(
 		return nil, err
 	}
 	senderAddress := req.GetSenderAddress()
-	res := types.QueryPendingSendToEthResponse{
+	res := types.QueryPendingSendToRemoteResponse{
 		TransfersInBatches: []types.OutgoingTransferTx{},
 		UnbatchedTransfers: []types.OutgoingTransferTx{},
 	}

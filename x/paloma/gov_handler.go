@@ -18,6 +18,19 @@ func NewPalomaProposalHandler(k keeper.Keeper) govv1beta1types.Handler {
 			}
 
 			return k.SetLightNodeClientFeegranter(ctx, acct)
+		case *types.SetLightNodeClientFundersProposal:
+			accts := make([]sdk.AccAddress, len(c.FunderAccounts))
+
+			for i, addr := range c.FunderAccounts {
+				acct, err := sdk.AccAddressFromBech32(addr)
+				if err != nil {
+					return err
+				}
+
+				accts[i] = acct
+			}
+
+			return k.SetLightNodeClientFunders(ctx, accts)
 		}
 
 		return sdkerrors.ErrUnknownRequest

@@ -10,8 +10,10 @@ import (
 	"cosmossdk.io/core/address"
 	cosmosstore "cosmossdk.io/core/store"
 	cosmoslog "cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
+	feegrantmodule "cosmossdk.io/x/feegrant"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -25,6 +27,8 @@ import (
 	"golang.org/x/mod/semver"
 )
 
+const lightNodeSaleVestingMonths = 24
+
 type Keeper struct {
 	cdc            codec.BinaryCodec
 	storeKey       cosmosstore.KVStoreService
@@ -37,6 +41,7 @@ type Keeper struct {
 	AppVersion     string
 	AddressCodec   address.Codec
 	ExternalChains []types.ExternalChainSupporterKeeper
+	bondDenom      string
 }
 
 func NewKeeper(
@@ -44,6 +49,7 @@ func NewKeeper(
 	storeKey cosmosstore.KVStoreService,
 	ps paramtypes.Subspace,
 	appVersion string,
+	bondDenom string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	feegrantKeeper types.FeegrantKeeper,
@@ -74,6 +80,7 @@ func NewKeeper(
 		Upgrade:        upgrade,
 		AddressCodec:   addressCodec,
 		AppVersion:     appVersion,
+		bondDenom:      bondDenom,
 	}
 }
 
@@ -209,6 +216,29 @@ func (k Keeper) SetLightNodeClientFeegranter(
 	return keeperutil.Save(st, k.cdc, key, feegranter)
 }
 
+func (k Keeper) LightNodeClientFunders(
+	ctx context.Context,
+) (*types.LightNodeClientFunders, error) {
+	st := k.Store(ctx)
+	key := types.LightNodeClientFundersKey
+
+	return keeperutil.Load[*types.LightNodeClientFunders](st, k.cdc, key)
+}
+
+func (k Keeper) SetLightNodeClientFunders(
+	ctx context.Context,
+	accts []sdk.AccAddress,
+) error {
+	st := k.Store(ctx)
+	key := types.LightNodeClientFundersKey
+
+	funder := &types.LightNodeClientFunders{
+		Accounts: accts,
+	}
+
+	return keeperutil.Save(st, k.cdc, key, funder)
+}
+
 func (k Keeper) AllLightNodeClientLicenses(
 	ctx context.Context,
 ) ([]*types.LightNodeClientLicense, error) {
@@ -290,6 +320,73 @@ func (k Keeper) CreateLightNodeClientLicense(
 	}
 
 	return k.SetLightNodeClientLicense(ctx, clientAddr, license)
+}
+
+// CreateSaleLightNodeClientLicense is used by the skyway module when
+// processing a light node sale event to create a new license with feegrant
+func (k Keeper) CreateSaleLightNodeClientLicense(
+	ctx context.Context,
+	clientAddr string,
+	amount math.Int,
+) error {
+	coin := sdk.NewCoin(k.bondDenom, amount)
+
+	feegranter, err := k.LightNodeClientFeegranter(ctx)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return types.ErrNoFeegranter
+		}
+
+		return err
+	}
+
+	funders, err := k.LightNodeClientFunders(ctx)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return types.ErrNoFunder
+		}
+
+		return err
+	}
+
+	if len(funders.Accounts) == 0 {
+		return types.ErrNoFunder
+	}
+
+	// We may have more than one funder account, so iterate through all of them
+	// and use the first one with enough funds
+	var funder sdk.AccAddress
+	for i := range funders.Accounts {
+		if k.bankKeeper.HasBalance(ctx, funders.Accounts[i], coin) {
+			funder = funders.Accounts[i]
+		}
+	}
+
+	if funder == nil {
+		return types.ErrInsufficientBalance
+	}
+
+	// First, we need to create the license
+	err = k.CreateLightNodeClientLicense(ctx, funder.String(),
+		clientAddr, coin, lightNodeSaleVestingMonths)
+	if err != nil {
+		return err
+	}
+
+	// Only then can we setup the feegrant, otherwise the account will already
+	// exist
+
+	allowance := &feegrantmodule.BasicAllowance{
+		SpendLimit: sdk.NewCoins(sdk.NewCoin(k.bondDenom, math.NewInt(1_000_000))),
+		Expiration: nil, // Unlimited time
+	}
+
+	acct, err := k.accountKeeper.AddressCodec().StringToBytes(clientAddr)
+	if err != nil {
+		return err
+	}
+
+	return k.feegrantKeeper.GrantAllowance(ctx, feegranter.Account, acct, allowance)
 }
 
 func (k Keeper) CreateLightNodeClientAccount(

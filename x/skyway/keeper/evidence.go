@@ -38,7 +38,7 @@ func (k Keeper) CheckBadSignatureEvidence(
 func (k Keeper) checkBadSignatureEvidenceInternal(ctx context.Context, subject types.EthereumSigned, signature string) error {
 	// Get checkpoint of the supposed bad signature (fake batch submitted to eth)
 
-	ci, err := k.evmKeeper.GetChainInfo(ctx, subject.GetChainReferenceID())
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, subject.GetChainReferenceID())
 	if err != nil {
 		return sdkerrors.Wrap(err, "unable to create batch")
 	}

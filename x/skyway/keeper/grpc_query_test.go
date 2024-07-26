@@ -404,7 +404,7 @@ func TestQueryDenomToERC20(t *testing.T) {
 }
 
 // nolint: exhaustruct
-func TestQueryPendingSendToEth(t *testing.T) {
+func TestQueryPendingSendToRemote(t *testing.T) {
 	input, ctx := SetupFiveValChain(t)
 	sdkCtx := sdk.UnwrapSDKContext(input.Context)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
@@ -455,9 +455,9 @@ func TestQueryPendingSendToEth(t *testing.T) {
 	require.NoError(t, err)
 
 	// Should receive 1 and 4 unbatched, 2 and 3 batched in response
-	response, err := k.GetPendingSendToEth(ctx, &types.QueryPendingSendToEth{SenderAddress: mySender.String()})
+	response, err := k.GetPendingSendToRemote(ctx, &types.QueryPendingSendToRemote{SenderAddress: mySender.String()})
 	require.NoError(t, err)
-	expectedRes := types.QueryPendingSendToEthResponse{
+	expectedRes := types.QueryPendingSendToRemoteResponse{
 		TransfersInBatches: []types.OutgoingTransferTx{
 			{
 				Id:          4,

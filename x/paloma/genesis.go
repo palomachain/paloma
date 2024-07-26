@@ -28,6 +28,14 @@ func InitGenesis(ctx context.Context, k keeper.Keeper, genState types.GenesisSta
 			panic(err)
 		}
 	}
+
+	if genState.LightNodeClientFunders != nil {
+		err := k.SetLightNodeClientFunders(ctx,
+			genState.LightNodeClientFunders.Accounts)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 // ExportGenesis returns the capability module's exported genesis.
@@ -43,6 +51,11 @@ func ExportGenesis(ctx context.Context, k keeper.Keeper) *types.GenesisState {
 	}
 
 	genesis.LightNodeClientFeegranter, err = k.LightNodeClientFeegranter(ctx)
+	if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
+		panic(err)
+	}
+
+	genesis.LightNodeClientFunders, err = k.LightNodeClientFunders(ctx)
 	if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
 		panic(err)
 	}

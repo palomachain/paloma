@@ -72,4 +72,23 @@ func TestGenesis(t *testing.T) {
 		require.Equal(t, genesisState.LightNodeClientFeegranter.Account,
 			got.LightNodeClientFeegranter.Account)
 	})
+
+	t.Run("With light node client funder", func(t *testing.T) {
+		accAddr, err := sdk.AccAddressFromBech32(clientAddr)
+		require.NoError(t, err)
+
+		genesisState := types.GenesisState{
+			LightNodeClientFunders: &types.LightNodeClientFunders{
+				Accounts: []sdk.AccAddress{accAddr},
+			},
+		}
+
+		k, ctx := keepertest.PalomaKeeper(t)
+		paloma.InitGenesis(ctx, *k, genesisState)
+		got := paloma.ExportGenesis(ctx, *k)
+		require.NotNil(t, got)
+
+		require.Equal(t, genesisState.LightNodeClientFunders.Accounts,
+			got.LightNodeClientFunders.Accounts)
+	})
 }

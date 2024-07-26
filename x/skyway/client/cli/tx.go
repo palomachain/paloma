@@ -25,15 +25,15 @@ func GetTxCmd(storeKey string) *cobra.Command {
 	}
 
 	skywayTxCmd.AddCommand([]*cobra.Command{
-		CmdSendToEth(),
-		CmdCancelSendToEth(),
+		CmdSendToRemote(),
+		CmdCancelSendToRemote(),
 	}...)
 
 	return skywayTxCmd
 }
 
-// CmdSendToEth sends tokens to Ethereum. Locks Cosmos-side tokens into the Transaction pool for batching.
-func CmdSendToEth() *cobra.Command {
+// CmdSendToRemote sends tokens to Ethereum. Locks Cosmos-side tokens into the Transaction pool for batching.
+func CmdSendToRemote() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
 		Use:   "send-tx [remote-chain-dest-address] [amount] [chain-reference-id]",
@@ -56,7 +56,7 @@ func CmdSendToEth() *cobra.Command {
 			chainReferenceID := args[2]
 
 			// Make the message
-			msg := types.MsgSendToEth{
+			msg := types.MsgSendToRemote{
 				EthDest:          ethDest,
 				Amount:           amount[0],
 				ChainReferenceId: chainReferenceID,
@@ -76,9 +76,9 @@ func CmdSendToEth() *cobra.Command {
 	return cmd
 }
 
-// CmdCancelSendToEth enables users to take their Transaction out of the pool. Note that this cannot be done if it is
+// CmdCancelSendToRemote enables users to take their Transaction out of the pool. Note that this cannot be done if it is
 // locked up in a pending batch or if it has already been executed on Ethereum
-func CmdCancelSendToEth() *cobra.Command {
+func CmdCancelSendToRemote() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
 		Use:   "cancel-tx [transaction id]",
@@ -97,7 +97,7 @@ func CmdCancelSendToEth() *cobra.Command {
 			}
 
 			// Make the message
-			msg := types.MsgCancelSendToEth{
+			msg := types.MsgCancelSendToRemote{
 				TransactionId: txId,
 				Metadata: vtypes.MsgMetadata{
 					Creator: cosmosAddr.String(),
