@@ -26,6 +26,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		&MsgBatchSendToRemoteClaim{},
 		&MsgCancelSendToRemote{},
 		&MsgSubmitBadSignatureEvidence{},
+		&MsgLightNodeSaleClaim{},
 	)
 
 	registry.RegisterInterface(
@@ -33,6 +34,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		(*EthereumClaim)(nil),
 		&MsgSendToPalomaClaim{},
 		&MsgBatchSendToRemoteClaim{},
+		&MsgLightNodeSaleClaim{},
 	)
 
 	registry.RegisterImplementations(
@@ -71,4 +73,5 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&SetERC20ToDenomProposal{}, "skyway/SetERC20ToDenomProposal", nil)
 	cdc.RegisterConcrete(&SetBridgeTaxProposal{}, "skyway/SetBridgeTaxProposal", nil)
 	cdc.RegisterConcrete(&SetBridgeTransferLimitProposal{}, "skyway/SetBridgeTransferLimitProposal", nil)
+	cdc.RegisterConcrete(&MsgLightNodeSaleClaim{}, "skyway/MsgLightNodeSaleClaim", nil)
 }

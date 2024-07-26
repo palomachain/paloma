@@ -592,32 +592,12 @@ func New(
 	app.ValsetKeeper.EvmKeeper = app.EvmKeeper
 	app.EvmKeeper.AddMessageConsensusAttestedListener(&app.MetrixKeeper)
 
-	app.SkywayKeeper = skywaymodulekeeper.NewKeeper(
-		appCodec,
-		app.AccountKeeper,
-		app.StakingKeeper,
-		app.BankKeeper,
-		app.SlashingKeeper,
-		app.DistrKeeper,
-		app.TransferKeeper,
-		app.EvmKeeper,
-		app.ConsensusKeeper,
-		skywaymodulekeeper.NewSkywayStoreGetter(keys[skywaymoduletypes.StoreKey]),
-		authorityAddress,
-		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
-	)
-	// TODO: Use proper dependency resolution instead of
-	// this abomination.
-	// TODO: Refactor app to use pointer values only instead
-	// of keeping value copies and blowing up the stack.
-	app.EvmKeeper.Skyway = app.SkywayKeeper
-	app.ConsensusKeeper.LateInject(app.EvmKeeper)
-
 	app.PalomaKeeper = *palomamodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[palomamoduletypes.StoreKey]),
 		app.GetSubspace(palomamoduletypes.ModuleName),
 		semverVersion,
+		BondDenom,
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.FeeGrantKeeper,
@@ -629,6 +609,28 @@ func New(
 	app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
 		app.EvmKeeper,
 	}
+
+	app.SkywayKeeper = skywaymodulekeeper.NewKeeper(
+		appCodec,
+		app.AccountKeeper,
+		app.StakingKeeper,
+		app.BankKeeper,
+		app.SlashingKeeper,
+		app.DistrKeeper,
+		app.TransferKeeper,
+		app.EvmKeeper,
+		app.ConsensusKeeper,
+		app.PalomaKeeper,
+		skywaymodulekeeper.NewSkywayStoreGetter(keys[skywaymoduletypes.StoreKey]),
+		authorityAddress,
+		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
+	)
+	// TODO: Use proper dependency resolution instead of
+	// this abomination.
+	// TODO: Refactor app to use pointer values only instead
+	// of keeping value copies and blowing up the stack.
+	app.EvmKeeper.Skyway = app.SkywayKeeper
+	app.ConsensusKeeper.LateInject(app.EvmKeeper)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(

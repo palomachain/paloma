@@ -268,6 +268,22 @@ func (k Keeper) GetAllChainInfos(ctx context.Context) ([]*types.ChainInfo, error
 	return all, err
 }
 
+func (k Keeper) GetActiveChainNames(ctx context.Context) []string {
+	chainInfos, err := k.GetAllChainInfos(ctx)
+	if err != nil {
+		return nil
+	}
+
+	chains := make([]string, 0, len(chainInfos))
+	for _, chain := range chainInfos {
+		if chain.IsActive() {
+			chains = append(chains, chain.ChainReferenceID)
+		}
+	}
+
+	return chains
+}
+
 func (k Keeper) GetChainInfo(ctx context.Context, targetChainReferenceID string) (*types.ChainInfo, error) {
 	res, err := keeperutil.Load[*types.ChainInfo](k.chainInfoStore(ctx), k.cdc, []byte(targetChainReferenceID))
 	if errors.Is(err, keeperutil.ErrNotFound) {

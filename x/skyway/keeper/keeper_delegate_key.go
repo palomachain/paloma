@@ -41,12 +41,12 @@ func (k Keeper) GetOrchestratorValidator(ctx context.Context, orch sdk.AccAddres
 
 // GetEthAddressByValidator returns the eth address for a given skyway validator
 func (k Keeper) GetEthAddressByValidator(ctx context.Context, validator sdk.ValAddress, chainReferenceId string) (ethAddress *types.EthAddress, found bool, err error) {
-	return k.evmKeeper.GetEthAddressByValidator(ctx, validator, chainReferenceId)
+	return k.EVMKeeper.GetEthAddressByValidator(ctx, validator, chainReferenceId)
 }
 
 // GetValidatorByEthAddress returns the validator for a given eth address
 func (k Keeper) GetValidatorByEthAddress(ctx context.Context, ethAddr types.EthAddress, chainReferenceId string) (validator stakingtypes.Validator, found bool, err error) {
-	valAddr, found, err := k.evmKeeper.GetValidatorAddressByEthAddress(ctx, ethAddr, chainReferenceId)
+	valAddr, found, err := k.EVMKeeper.GetValidatorAddressByEthAddress(ctx, ethAddr, chainReferenceId)
 	if err != nil {
 		return validator, false, err
 	}

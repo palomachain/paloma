@@ -40,6 +40,9 @@ func (a AttestationHandler) Handle(ctx context.Context, att types.Attestation, c
 	case *types.MsgBatchSendToRemoteClaim:
 		return a.handleBatchSendToRemote(ctx, *claim)
 
+	case *types.MsgLightNodeSaleClaim:
+		return a.handleLightNodeSale(ctx, *claim)
+
 	default:
 		return fmt.Errorf("invalid event type for attestations %s", claim.GetType())
 	}
@@ -247,4 +250,26 @@ func (a AttestationHandler) sendCoinToLocalAddress(
 	}
 
 	return err // returns nil if no error
+}
+
+func (a AttestationHandler) handleLightNodeSale(
+	ctx context.Context,
+	claim types.MsgLightNodeSaleClaim,
+) error {
+	hash, err := claim.ClaimHash()
+	if err != nil {
+		return sdkerrors.Wrapf(err, "Failed to compute claim hash for %v: %v", claim, err)
+	}
+
+	logger := liblog.FromKeeper(ctx, a.keeper).
+		WithComponent("handle-light-node-sale").
+		WithFields(
+			"claim-type", claim.GetType(),
+			"nonce", claim.GetSkywayNonce(),
+			"id", types.GetAttestationKey(claim.GetSkywayNonce(), hash),
+		)
+	logger.Debug("Handling light-node-sale event.")
+
+	return a.keeper.palomaKeeper.CreateSaleLightNodeClientLicense(ctx,
+		claim.ClientAddress, claim.Amount)
 }

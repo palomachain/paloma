@@ -13,6 +13,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	utilkeeper "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/x/skyway/types"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type msgServer struct {
@@ -76,7 +77,7 @@ func (k msgServer) ConfirmBatch(c context.Context, msg *types.MsgConfirmBatch) (
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "couldn't find batch")
 	}
 
-	ci, err := k.evmKeeper.GetChainInfo(ctx, batch.ChainReferenceID)
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, batch.ChainReferenceID)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "couldn't find chain info")
 	}
@@ -334,4 +335,26 @@ func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParam
 	k.SetParams(ctx, msg.Params)
 
 	return &types.MsgUpdateParamsResponse{}, nil
+}
+
+func (k msgServer) LightNodeSaleClaim(
+	c context.Context,
+	msg *types.MsgLightNodeSaleClaim,
+) (*emptypb.Empty, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+
+	err := k.checkOrchestratorValidatorInSet(ctx, msg.Orchestrator)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "Could not check orchstrator validator inset")
+	}
+	any, err := codectypes.NewAnyWithValue(msg)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "Could not check Any value")
+	}
+	err = k.claimHandlerCommon(ctx, any, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, nil
 }

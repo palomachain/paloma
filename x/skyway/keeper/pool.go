@@ -88,7 +88,7 @@ func (k Keeper) AddToOutgoingPool(
 		return 0, err
 	}
 
-	ci, err := k.evmKeeper.GetChainInfo(ctx, chainReferenceID)
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, chainReferenceID)
 	if err != nil {
 		return 0, err
 	}
@@ -148,7 +148,7 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64
 		return sdkerrors.Wrap(err, "transfer vouchers")
 	}
 
-	ci, err := k.evmKeeper.GetChainInfo(ctx, tx.Erc20Token.ChainReferenceID)
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, tx.Erc20Token.ChainReferenceID)
 	if err != nil {
 		return err
 	}

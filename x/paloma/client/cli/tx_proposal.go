@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const flagFunderAccounts = "funder-accounts"
+
 func CmdPalomaChainProposalHandler() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "paloma",
@@ -18,6 +20,7 @@ func CmdPalomaChainProposalHandler() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdPalomaProposeLightNodeClientFeegranter())
+	cmd.AddCommand(CmdPalomaProposeLightNodeClientFunders())
 
 	return cmd
 }
@@ -51,7 +54,7 @@ func CmdPalomaProposeLightNodeClientFeegranter() *cobra.Command {
 				return err
 			}
 
-			description, err := cmd.Flags().GetString(cli.FlagTitle)
+			description, err := cmd.Flags().GetString(cli.FlagSummary)
 			if err != nil {
 				return err
 			}
@@ -92,6 +95,72 @@ func CmdPalomaProposeLightNodeClientFeegranter() *cobra.Command {
 			return nil
 		},
 	}
+
+	applyFlags(cmd)
+
+	return cmd
+}
+
+func CmdPalomaProposeLightNodeClientFunders() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "propose-light-node-client-funders --funder-accounts [account]",
+		Short: "Proposal to set new funder accounts for light node clients",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			title, err := cmd.Flags().GetString(cli.FlagTitle)
+			if err != nil {
+				return err
+			}
+
+			description, err := cmd.Flags().GetString(cli.FlagSummary)
+			if err != nil {
+				return err
+			}
+
+			accounts, err := cmd.Flags().GetStringSlice(flagFunderAccounts)
+			if err != nil {
+				return err
+			}
+
+			prop := &types.SetLightNodeClientFundersProposal{
+				FunderAccounts: accounts,
+				Title:          title,
+				Description:    description,
+			}
+
+			from := clientCtx.GetFromAddress()
+
+			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+			if err != nil {
+				return err
+			}
+
+			deposit, err := sdk.ParseCoinsNormalized(depositStr)
+			if err != nil {
+				return err
+			}
+
+			msg, err := govv1beta1types.NewMsgSubmitProposal(prop, deposit, from)
+			if err != nil {
+				return err
+			}
+
+			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringSlice(flagFunderAccounts, []string{},
+		"Comma separated list of accounts to fund the light nodes. Can be passed multiple times.")
 
 	applyFlags(cmd)
 
