@@ -1,0 +1,26 @@
+syntax = "proto3";
+package palomachain.paloma.skyway;
+
+import "cosmos/msg/v1/msg.proto";
+import "gogoproto/gogo.proto";
+import "palomachain/paloma/valset/common.proto";
+
+option go_package = "github.com/palomachain/paloma/x/skyway/types";
+
+// This message was renamed to `MsgBatchSendToRemoteClaim`. However, since we
+// already had some messages in the skyway attestation queue, we now get errors
+// on genesis import and when trying to prune the queue.
+// The queue only keeps the latest 1000 events, so we can remove this file once
+// the messages are rotated out.
+message MsgBatchSendToEthClaim {
+  option (cosmos.msg.v1.signer) = "metadata";
+  uint64 event_nonce = 1;
+  uint64 eth_block_height = 2;
+  uint64 batch_nonce = 3;
+  string token_contract = 4;
+  string chain_reference_id = 5;
+  string orchestrator = 6;
+  palomachain.paloma.valset.MsgMetadata metadata = 7
+      [ (gogoproto.nullable) = false ];
+  uint64 skyway_nonce = 8;
+}

@@ -20,6 +20,8 @@ func init() {
 // nolint: exhaustruct
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
+		// Register legacy messages
+		&MsgBatchSendToEthClaim{},
 		&MsgSendToRemote{},
 		&MsgConfirmBatch{},
 		&MsgSendToPalomaClaim{},
@@ -32,6 +34,8 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterInterface(
 		"palomachain.paloma.skyway.EthereumClaim",
 		(*EthereumClaim)(nil),
+		// Register legacy messages
+		&MsgBatchSendToEthClaim{},
 		&MsgSendToPalomaClaim{},
 		&MsgBatchSendToRemoteClaim{},
 		&MsgLightNodeSaleClaim{},
