@@ -1,0 +1,12 @@
+syntax = "proto3";
+package palomachain.paloma.skyway;
+
+option go_package = "github.com/palomachain/paloma/x/skyway/types";
+
+// LightNodeSaleContract defines parameters for each of the node sale
+// smart contracts deployed in external chains.
+// For now, we use the address of each one to validate the message origin.
+message LightNodeSaleContract {
+  string chain_reference_id = 1;
+  string contract_address = 2;
+}

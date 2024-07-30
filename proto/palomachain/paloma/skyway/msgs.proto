@@ -240,4 +240,5 @@ message MsgLightNodeSaleClaim {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+  string smart_contract_address = 9;
 }

@@ -120,8 +120,9 @@ var (
 
 	BridgeTaxPrefix = "bridge-tax"
 
-	BridgeTransferLimitPrefix = "bridge-transfer-limit"
-	BridgeTransferUsagePrefix = "bridge-transfer-usage"
+	BridgeTransferLimitPrefix    = "bridge-transfer-limit"
+	BridgeTransferUsagePrefix    = "bridge-transfer-usage"
+	LightNodeSaleContractsPrefix = "light-node-sale-contracts"
 )
 
 // GetOrchestratorAddressKey returns the following key format
