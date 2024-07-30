@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	math "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -272,7 +273,9 @@ func rankValidators(ctx context.Context, validatorsInfos map[string]ValidatorInf
 		} else if a.score.LT(b.score) {
 			return 1
 		}
-		return 0
+
+		// If both validators have the same score, sort them by address
+		return strings.Compare(a.address, b.address)
 	})
 	return scoreSnapshot{
 		scores:      ranked,
