@@ -163,7 +163,7 @@ Head over to <https://faucet.palomaswap.com/> and get some funds!
 We can verify the new funds have been deposited.
 
 ```shell
-palomad query bank balances --node tcp://testnet.palomaswap.com:26656 "$ADDRESS"
+palomad query bank balances --node "https://testnet.palomaswap.com:443" "$ADDRESS"
 ```
 
 And start the node!
