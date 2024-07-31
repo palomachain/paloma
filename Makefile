@@ -67,6 +67,8 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=paloma \
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
+build_tags += $(BUILD_TAGS)
+
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
 
 build: go.sum
