@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"time"
 
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -30,22 +29,17 @@ const (
 	cUnjailedSnapshotStoreKey            = "unjailed-validators-snapshot"
 )
 
-type keepAliveData struct {
-	ContactedAt           time.Time
-	ValAddr               sdk.ValAddress
-	AliveUntilBlockHeight int64
-}
-
 func (k Keeper) KeepValidatorAlive(ctx context.Context, valAddr sdk.ValAddress, pigeonVersion string) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err := k.CanAcceptKeepAlive(ctx, valAddr, pigeonVersion); err != nil {
 		return err
 	}
 	store := k.keepAliveStore(ctx)
-	data := keepAliveData{
+	data := types.KeepAliveData{
 		ValAddr:               valAddr,
 		ContactedAt:           sdkCtx.BlockTime(),
 		AliveUntilBlockHeight: sdkCtx.BlockHeader().Height + cJailingDefaultKeepAliveBlockHeight,
+		PigeonVersion:         pigeonVersion,
 	}
 	bz, err := json.Marshal(data)
 	if err != nil {
@@ -57,30 +51,34 @@ func (k Keeper) KeepValidatorAlive(ctx context.Context, valAddr sdk.ValAddress, 
 
 func (k Keeper) IsValidatorAlive(ctx context.Context, valAddr sdk.ValAddress) (bool, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	aliveUntil, err := k.ValidatorAliveUntil(ctx, valAddr)
+	data, err := k.ValidatorKeepAliveData(ctx, valAddr)
 	if err != nil {
 		return false, err
 	}
-	return sdkCtx.BlockHeight() < aliveUntil, nil
+	return sdkCtx.BlockHeight() < data.AliveUntilBlockHeight, nil
 }
 
-func (k Keeper) ValidatorAliveUntil(ctx context.Context, valAddr sdk.ValAddress) (int64, error) {
+func (k Keeper) ValidatorKeepAliveData(
+	ctx context.Context,
+	valAddr sdk.ValAddress,
+) (types.KeepAliveData, error) {
+	var data types.KeepAliveData
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	store := k.keepAliveStore(ctx)
 	if !store.Has(valAddr) {
-		return 0, ErrValidatorNotInKeepAlive.Format(valAddr)
+		return data, ErrValidatorNotInKeepAlive.Format(valAddr)
 	}
 	dataBz := store.Get(valAddr)
-	var data keepAliveData
 	err := json.Unmarshal(dataBz, &data)
 	if err != nil {
-		return 0, err
+		return data, err
 	}
 	if data.AliveUntilBlockHeight-sdkCtx.BlockHeight() <= cJailingImminentThresholdBlockHeight {
 		liblog.FromSDKLogger(k.Logger(ctx)).WithFields("validator-address", data.ValAddr).Info("Validator TTL is about to run out. Jailing is imminent.")
 	}
 
-	return data.AliveUntilBlockHeight, nil
+	return data, nil
 }
 
 func (k Keeper) CanAcceptKeepAlive(ctx context.Context, valAddr sdk.ValAddress, pigeonVersion string) error {

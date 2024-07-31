@@ -116,6 +116,7 @@ message QueryGetAlivePigeonsResponse {
     reserved 3; // deprecated
     string error = 4;
     int64 aliveUntilBlockHeight = 5;
+    string pigeon_version = 6;
   }
 
   repeated ValidatorAlive aliveValidators = 1;

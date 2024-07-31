@@ -30,11 +30,12 @@ func (k Keeper) GetAlivePigeons(goCtx context.Context, req *types.QueryGetAliveP
 		s := &types.QueryGetAlivePigeonsResponse_ValidatorAlive{
 			ValAddress: bz,
 		}
-		until, err := k.ValidatorAliveUntil(ctx, bz)
+		data, err := k.ValidatorKeepAliveData(ctx, bz)
 		if err != nil {
 			s.Error = err.Error()
 		} else {
-			s.AliveUntilBlockHeight = until
+			s.AliveUntilBlockHeight = data.AliveUntilBlockHeight
+			s.PigeonVersion = data.PigeonVersion
 		}
 		return s
 	})
