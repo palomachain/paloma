@@ -16,12 +16,12 @@ func (k Keeper) GetValidatorAliveUntil(goCtx context.Context, req *types.QueryGe
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	aliveUntil, err := k.ValidatorAliveUntil(ctx, req.GetValAddress())
+	data, err := k.ValidatorKeepAliveData(ctx, req.GetValAddress())
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.QueryGetValidatorAliveUntilResponse{
-		AliveUntilBlockHeight: aliveUntil,
+		AliveUntilBlockHeight: data.AliveUntilBlockHeight,
 	}, nil
 }
