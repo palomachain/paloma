@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
@@ -235,10 +236,18 @@ func (c ConsensusChecker) VerifyGasEstimates(ctx context.Context, p liblog.LogPr
 		validEstimates = append(validEstimates, k)
 	}
 
+	if len(validEstimates) < 1 {
+		return 0, fmt.Errorf("no gas estimate has been agreed upon")
+	}
+
 	// Retrieve the median value of the gas estimates and
 	// multiply value by 1.2 to allow for some security margin
 	winner := palomath.Median(validEstimates)
 	logger.WithFields("gas-estimate", winner).Debug("Built median value of gas estimates.")
+
+	if winner == 0 {
+		return 0, fmt.Errorf("gas estimate is zero")
+	}
 
 	winner = (winner * 6) / 5
 
