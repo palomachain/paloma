@@ -14,7 +14,7 @@ import (
 /*	Skyway Module Invariants
 	For background: https://docs.cosmos.network/main/building-modules/invariants
 	Invariants on Skyway Bridge chain will be enforced by most validators every 200 blocks, see module/cmd/root.go for
-	the automatic configuration. These settings are overrideable and not consensus breaking so there are no firm
+	the automatic configuration. These settings are overridable and not consensus breaking so there are no firm
 	guarantees of invariant checking no matter what is put here.
 */
 

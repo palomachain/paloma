@@ -14,7 +14,7 @@ var _ = strconv.Itoa(0)
 func CmdGetJobByID() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "job",
-		Short: "Finds job by provoding job's ID",
+		Short: "Finds job by providing job's ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			jobID := args[0]

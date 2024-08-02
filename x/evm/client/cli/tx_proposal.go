@@ -86,7 +86,7 @@ func CmdEvmProposeNewChain() *cobra.Command {
 
 				_, ok := new(big.Int).SetString(minOnChainBalance, 10)
 				if !ok {
-					whoops.Assert(whoops.String("minimum on change balance is incorret"))
+					whoops.Assert(whoops.String("minimum on change balance is incorrect"))
 				}
 
 				addChainProposal := &types.AddChainProposal{
