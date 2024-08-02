@@ -6,7 +6,7 @@ import "palomachain/paloma/skyway/attestation.proto";
 
 option go_package = "github.com/palomachain/paloma/x/skyway/types";
 
-// OutgoingTxBatch represents a batch of transactions going from skyway to ETH
+// OutgoingTxBatch represents a batch of transactions going from Paloma to remote chain
 message OutgoingTxBatch {
   uint64 batch_nonce = 1;
   uint64 batch_timeout = 2;
@@ -16,9 +16,10 @@ message OutgoingTxBatch {
   string chain_reference_id = 6;
   bytes bytes_to_sign = 7;
   string assignee = 8;
+  uint64 gas_estimate = 9;
 }
 
-// OutgoingTransferTx represents an individual send from skyway to ETH
+// OutgoingTransferTx represents an individual send from Paloma to remote chain
 message OutgoingTransferTx {
   uint64 id = 1;
   string sender = 2;

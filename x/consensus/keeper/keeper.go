@@ -30,6 +30,7 @@ type (
 		registry         *registry
 		evmKeeper        types.EvmKeeper
 		consensusChecker *libcons.ConsensusChecker
+		feeProvider      types.FeeProvider
 	}
 )
 
@@ -39,13 +40,15 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	valsetKeeper types.ValsetKeeper,
 	reg *registry,
+	fp types.FeeProvider,
 ) *Keeper {
 	k := &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		paramstore: ps,
-		valset:     valsetKeeper,
-		registry:   reg,
+		cdc:         cdc,
+		storeKey:    storeKey,
+		paramstore:  ps,
+		valset:      valsetKeeper,
+		registry:    reg,
+		feeProvider: fp,
 	}
 	ider := keeperutil.NewIDGenerator(k, nil)
 	k.ider = ider

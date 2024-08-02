@@ -130,11 +130,15 @@ func NewQueue(qo QueueOptions) (Queue, error) {
 // Put puts raw message into a signing queue.
 func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	requireSignatures := true
 	var publicAccessData *types.PublicAccessData
+	var mid uint64
+	requireSignatures := true
+	requireGasEstimation := false
 
 	if opts != nil {
 		requireSignatures = opts.RequireSignatures
+		requireGasEstimation = opts.RequireGasEstimation
+		mid = opts.MsgIDToReplace
 		publicAccessData = &types.PublicAccessData{
 			ValAddress: nil,
 			Data:       opts.PublicAccessData,
@@ -144,29 +148,44 @@ func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uin
 	if !c.qo.TypeCheck(msg) {
 		return 0, ErrIncorrectMessageType.Format(msg)
 	}
-	newID := c.qo.Ider.IncrementNextID(sdkCtx, consensusQueueIDCounterKey)
-	// just so it's clear that nonce is an actual ID
-	nonce := newID
 	anyMsg, err := codectypes.NewAnyWithValue(msg)
 	if err != nil {
 		return 0, err
 	}
-	queuedMsg := &types.QueuedSignedMessage{
-		Id:                 newID,
-		Msg:                anyMsg,
-		SignData:           []*types.SignData{},
-		AddedAtBlockHeight: sdkCtx.BlockHeight(),
-		AddedAt:            sdkCtx.BlockTime(),
-		RequireSignatures:  requireSignatures,
-		PublicAccessData:   publicAccessData,
-		BytesToSign: c.qo.BytesToSignCalculator(msg, types.Salt{
-			Nonce: nonce,
-		}),
+
+	var m *types.QueuedSignedMessage
+	if mid != 0 {
+		// TODO: You need your own implementation since cons msg doesn thave iD
+		qsmi, err := c.GetMsgByID(sdkCtx, mid)
+		if err != nil {
+			return 0, fmt.Errorf("failed to get message by id: %w", err)
+		}
+		m, ok := qsmi.(*types.QueuedSignedMessage)
+		if !ok {
+			return 0, fmt.Errorf("failed to cast to queued signed message")
+		}
+		m.Msg = anyMsg
+	} else {
+		mid = c.qo.Ider.IncrementNextID(sdkCtx, consensusQueueIDCounterKey)
+		m = &types.QueuedSignedMessage{
+			Id:                 mid,
+			Msg:                anyMsg,
+			SignData:           []*types.SignData{},
+			GasEstimates:       []*types.GasEstimate{},
+			AddedAtBlockHeight: sdkCtx.BlockHeight(),
+			AddedAt:            sdkCtx.BlockTime(),
+			RequireSignatures:  requireSignatures,
+			FlagMask:           types.BuildFlagMask(requireGasEstimation),
+			PublicAccessData:   publicAccessData,
+			BytesToSign: c.qo.BytesToSignCalculator(msg, types.Salt{
+				Nonce: mid,
+			}),
+		}
 	}
-	if err := c.save(sdkCtx, queuedMsg); err != nil {
+	if err := c.save(sdkCtx, m); err != nil {
 		return 0, err
 	}
-	return newID, nil
+	return mid, nil
 }
 
 // getAll returns all messages from a signing queu
@@ -322,6 +341,46 @@ func (c Queue) AddSignature(ctx context.Context, msgID uint64, signData *types.S
 	msg.AddSignData(signData)
 
 	return c.save(sdkCtx, msg)
+}
+
+// AddGasEstimate adds a gas estimate to the message
+func (c Queue) AddGasEstimate(ctx context.Context, msgID uint64, estimate *types.GasEstimate) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msg, err := c.GetMsgByID(sdkCtx, msgID)
+	if err != nil {
+		return err
+	}
+
+	if !msg.GetRequireGasEstimation() {
+		return fmt.Errorf("message %d does not require gas estimation", msgID)
+	}
+
+	for _, v := range msg.GetGasEstimates() {
+		if estimate.ValAddress.Equals(v.ValAddress) {
+			return fmt.Errorf("gas estimate already exists for validator %s", v.ValAddress)
+		}
+	}
+
+	msg.AddGasEstimate(estimate)
+	return c.save(sdkCtx, msg)
+}
+
+func (c Queue) SetElectedGasEstimate(ctx context.Context, msgID uint64, estimate uint64) error {
+	msg, err := c.GetMsgByID(ctx, msgID)
+	if err != nil {
+		return err
+	}
+
+	if !msg.GetRequireGasEstimation() {
+		return fmt.Errorf("message %d does not require gas estimation", msgID)
+	}
+
+	if msg.GetGasEstimate() != 0 {
+		return fmt.Errorf("gas estimate already exists for message %d", msgID)
+	}
+
+	msg.SetElectedGasEstimate(estimate)
+	return c.save(ctx, msg)
 }
 
 // remove removes the message from the queue.

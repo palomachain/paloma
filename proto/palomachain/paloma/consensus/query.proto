@@ -29,6 +29,13 @@ service Query {
         "/palomachain/paloma/consensus/queued_messages_for_relaying";
   }
 
+  // Queries a list of QueuedMessagesForGasEstimation items.
+  rpc QueuedMessagesForGasEstimation(QueryQueuedMessagesForGasEstimationRequest)
+      returns (QueryQueuedMessagesForGasEstimationResponse) {
+    option (google.api.http).get =
+        "/palomachain/paloma/consensus/queued_messages_for_gas_estimation";
+  }
+
   // Queries a list of QueuedMessagesForAttesting items.
   rpc QueuedMessagesForAttesting(QueryQueuedMessagesForAttestingRequest)
       returns (QueryQueuedMessagesForAttestingResponse) {
@@ -145,3 +152,13 @@ message QueryQueuedMessagesForAttestingResponse {
 message QueryGetAllQueueNamesRequest {}
 
 message QueryGetAllQueueNamesResponse { repeated string queues = 1; }
+
+message QueryQueuedMessagesForGasEstimationRequest {
+  string queueTypeName = 1;
+  bytes valAddress = 2 [ (gogoproto.casttype) =
+                             "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+}
+
+message QueryQueuedMessagesForGasEstimationResponse {
+  repeated MessageToSign messagesToEstimate = 1 [ (gogoproto.nullable) = false ];
+}

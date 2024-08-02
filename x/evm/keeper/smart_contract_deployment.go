@@ -17,6 +17,7 @@ import (
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/keeper/deployment"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -189,7 +190,10 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 			},
 			Assignee:              assignee,
 			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
-		}, nil)
+		}, &consensus.PutOptions{
+			RequireGasEstimation: true,
+			RequireSignatures:    true,
+		})
 }
 
 func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) (retErr error) {

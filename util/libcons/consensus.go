@@ -4,14 +4,17 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/liberr"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/util/palomath"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -57,6 +60,20 @@ func hashSha256(data []byte) []byte {
 	return h.Sum(nil)
 }
 
+type Checkable interface {
+	GetValAddress() sdk.ValAddress
+}
+
+type Evidence interface {
+	Checkable
+	GetProof() *codectypes.Any
+}
+
+type GasEstimate interface {
+	Checkable
+	GetValue() uint64
+}
+
 type ConsensusChecker struct {
 	p   SnapshotProvider
 	cdc codec.BinaryCodec
@@ -93,7 +110,7 @@ func (r *Result) addToDistribution(key string, c consensusPower) {
 	r.Distribution[key] = c.runningSum
 }
 
-func (c ConsensusChecker) VerifyEvidence(ctx sdk.Context, evidences []*consensustypes.Evidence) (*Result, error) {
+func (c ConsensusChecker) VerifyEvidence(ctx context.Context, evidences []Evidence) (*Result, error) {
 	result := newResult()
 	snapshot, err := c.p(ctx)
 	if err != nil {
@@ -119,14 +136,14 @@ func (c ConsensusChecker) VerifyEvidence(ctx sdk.Context, evidences []*consensus
 	}
 
 	groups := make(map[string]struct {
-		evidence   types.Hashable
+		evidence   evmtypes.Hashable
 		validators []sdk.ValAddress
 	})
 
 	var g whoops.Group
 	for _, evidence := range evidences {
 		rawProof := evidence.GetProof()
-		var hashable types.Hashable
+		var hashable evmtypes.Hashable
 		err := c.cdc.UnpackAny(rawProof, &hashable)
 		if err != nil {
 			return nil, err
@@ -141,13 +158,10 @@ func (c ConsensusChecker) VerifyEvidence(ctx sdk.Context, evidences []*consensus
 		if val.evidence == nil {
 			val.evidence = hashable
 		}
-		val.validators = append(val.validators, evidence.ValAddress)
+		val.validators = append(val.validators, evidence.GetValAddress())
 		groups[hash] = val
 	}
 
-	// TODO: gas management
-	// TODO: punishing validators who misbehave
-	// TODO: check for every tx if it seems genuine
 	for hash, group := range groups {
 
 		var cp consensusPower
@@ -177,4 +191,66 @@ func (c ConsensusChecker) VerifyEvidence(ctx sdk.Context, evidences []*consensus
 	}
 
 	return result, ErrConsensusNotAchieved
+}
+
+func (c ConsensusChecker) VerifyGasEstimates(ctx context.Context, p liblog.LogProvider, estimates []GasEstimate) (uint64, error) {
+	logger := liblog.FromKeeper(ctx, p).WithComponent("verify-gas-estimates")
+	logger.Debug("Verifying gas estimates")
+
+	result := newResult()
+	snapshot, err := c.p(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	// check if there is enough power to reach the consensus
+	var cp consensusPower
+	cp.setTotal(snapshot.TotalShares)
+
+	values := make(map[uint64]int, len(estimates))
+	for _, v := range estimates {
+		val, found := snapshot.GetValidator(v.GetValAddress())
+		if !found {
+			continue
+		}
+		cp.add(val.ShareCount)
+		values[v.GetValue()]++
+	}
+
+	result.totalFromConsensus(cp)
+	if !cp.consensus() {
+		return 0, ErrConsensusNotAchieved
+	}
+
+	// Identify esimate with more than 1 validator agreeing on the vote
+	validEstimates := make([]uint64, 0, len(estimates))
+	for k, v := range values {
+		if v < 2 {
+			// We need at least 2 validators to agree on the same gas estimate
+			// in order to include it in the calculation.
+			logger.WithFields("value", k).Debug("Rejecting value with less than 2 votes.")
+			continue
+		}
+
+		logger.WithFields("value", k, "voters", v).Debug("Including value in the calculation.")
+		validEstimates = append(validEstimates, k)
+	}
+
+	if len(validEstimates) < 1 {
+		return 0, fmt.Errorf("no gas estimate has been agreed upon")
+	}
+
+	// Retrieve the median value of the gas estimates and
+	// multiply value by 1.2 to allow for some security margin
+	winner := palomath.Median(validEstimates)
+	logger.WithFields("gas-estimate", winner).Debug("Built median value of gas estimates.")
+
+	if winner == 0 {
+		return 0, fmt.Errorf("gas estimate is zero")
+	}
+
+	winner = (winner * 6) / 5
+
+	logger.WithFields("gas-estimate", winner).Debug("Adding security margin.")
+	return winner, nil
 }

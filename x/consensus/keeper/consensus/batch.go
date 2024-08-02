@@ -36,6 +36,8 @@ func NewBatchQueue(qo QueueOptions) (BatchQueue, error) {
 }
 
 func (c BatchQueue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
+	// TODO: Add support for updating opt.MsgIDtoReplace
+	// or remove BatchQueue, I don't think it's used at all.
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if !c.batchedTypeChecker(msg) {
 		return 0, ErrIncorrectMessageType.Format(msg)
@@ -136,6 +138,15 @@ func (c BatchQueue) batchQueue(ctx context.Context) (prefix.Store, error) {
 func (c BatchQueue) AddSignature(ctx context.Context, id uint64, signData *types.SignData) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return c.base.AddSignature(sdkCtx, id, signData)
+}
+
+func (c BatchQueue) AddGasEstimate(ctx context.Context, id uint64, estimate *types.GasEstimate) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return c.base.AddGasEstimate(sdkCtx, id, estimate)
+}
+
+func (c BatchQueue) SetElectedGasEstimate(ctx context.Context, msgID uint64, estimate uint64) error {
+	return c.base.SetElectedGasEstimate(ctx, msgID, estimate)
 }
 
 func (c BatchQueue) Remove(ctx context.Context, msgID uint64) error {

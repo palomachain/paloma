@@ -11,6 +11,10 @@ import (
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 )
 
+const (
+	cFlagGasEstimationRequired = 1 << 0 // Bit 0
+)
+
 type ConsensusQueueType string
 
 //go:generate mockery --name=QueuedSignedMessageI
@@ -22,7 +26,11 @@ type QueuedSignedMessageI interface {
 	GetAddedAt() time.Time
 	ConsensusMsg(AnyUnpacker) (ConsensusMsg, error)
 	GetSignData() []*SignData
+	GetGasEstimates() []*GasEstimate
+	GetGasEstimate() uint64
 	AddSignData(*SignData)
+	AddGasEstimate(*GasEstimate)
+	SetElectedGasEstimate(uint64)
 	AddEvidence(Evidence)
 	GetEvidence() []*Evidence
 	SetPublicAccessData(*PublicAccessData)
@@ -33,6 +41,7 @@ type QueuedSignedMessageI interface {
 	GetHandledAtBlockHeight() *math.Int
 	GetBytesToSign() []byte
 	GetRequireSignatures() bool
+	GetRequireGasEstimation() bool
 	GetMsg() *types.Any
 }
 
@@ -54,6 +63,15 @@ func TypedBytesToSign[T any](fnc func(msg T, salt Salt) []byte) BytesToSignFunc 
 		}
 		return fnc(msgT, salt)
 	})
+}
+
+func BuildFlagMask(requireGasEstimation bool) uint32 {
+	var value uint32 = 0
+	if requireGasEstimation {
+		value |= cFlagGasEstimationRequired
+	}
+
+	return value
 }
 
 var _ QueuedSignedMessageI = &QueuedSignedMessage{}
@@ -80,6 +98,21 @@ func (q *QueuedSignedMessage) AddSignData(data *SignData) {
 	q.SignData = append(q.SignData, data)
 }
 
+func (q *QueuedSignedMessage) AddGasEstimate(data *GasEstimate) {
+	if q.GasEstimates == nil {
+		q.GasEstimates = []*GasEstimate{}
+	}
+	q.GasEstimates = append(q.GasEstimates, data)
+}
+
+func (q *QueuedSignedMessage) SetElectedGasEstimate(estimate uint64) {
+	// Setting an estimated gas value for a message
+	// means we'll have to restart the signing process,
+	// this time with the complete information.
+	q.SignData = nil
+	q.GasEstimate = estimate
+}
+
 func (q *QueuedSignedMessage) AddEvidence(data Evidence) {
 	if q.Evidence == nil {
 		q.Evidence = []*Evidence{}
@@ -98,6 +131,10 @@ func (q *QueuedSignedMessage) AddEvidence(data Evidence) {
 
 func (q *QueuedSignedMessage) SetPublicAccessData(data *PublicAccessData) {
 	q.PublicAccessData = data
+}
+
+func (q *QueuedSignedMessage) GetRequireGasEstimation() bool {
+	return q.FlagMask&cFlagGasEstimationRequired != 0
 }
 
 func (q *QueuedSignedMessage) SetErrorData(data *ErrorData) {

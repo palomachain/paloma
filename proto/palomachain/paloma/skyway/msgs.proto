@@ -51,8 +51,7 @@ message MsgSendToRemote {
       [ (gogoproto.nullable) = false ];
 }
 
-message MsgSendToRemoteResponse {
-}
+message MsgSendToRemoteResponse {}
 
 // MsgConfirmBatch
 // When validators observe a MsgRequestBatch they form a batch by ordering
@@ -117,8 +116,7 @@ message MsgBatchSendToRemoteClaim {
   uint64 skyway_nonce = 8;
 }
 
-message MsgBatchSendToRemoteClaimResponse {
-}
+message MsgBatchSendToRemoteClaimResponse {}
 
 // This call allows the sender (and only the sender)
 // to cancel a given MsgSendToRemote and recieve a refund
@@ -132,8 +130,7 @@ message MsgCancelSendToRemote {
       [ (gogoproto.nullable) = false ];
 }
 
-message MsgCancelSendToRemoteResponse {
-}
+message MsgCancelSendToRemoteResponse {}
 
 // This call allows anyone to submit evidence that a
 // validator has signed a batch that never
@@ -142,7 +139,7 @@ message MsgCancelSendToRemoteResponse {
 message MsgSubmitBadSignatureEvidence {
   option (cosmos.msg.v1.signer) = "metadata";
   google.protobuf.Any subject = 1
-      [ (cosmos_proto.accepts_interface) = "RemoteereumSigned" ];
+      [ (cosmos_proto.accepts_interface) = "RemoteSigned" ];
   string signature = 2;
   string sender = 3 [ deprecated = true ];
   string chain_reference_id = 4;
