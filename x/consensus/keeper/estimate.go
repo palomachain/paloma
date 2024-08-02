@@ -35,16 +35,18 @@ func (k Keeper) CheckAndProcessEstimatedMessages(ctx context.Context) error {
 				continue
 			}
 
-			logger = logger.WithChain(opt.ChainReferenceID)
 			cq, err := k.getConsensusQueue(sdkCtx, opt.QueueTypeName)
 			if err != nil {
-				logger.WithError(err).Warn("Failed to get consensus queue")
+				logger.WithChain(opt.ChainReferenceID).
+					WithError(err).
+					Warn("Failed to get consensus queue")
 				continue
 			}
 			for _, msg := range msgs {
-				logger = logger.WithFields("msg_id", msg.GetId())
 				if err := k.checkAndProcessEstimatedMessage(ctx, msg, cq); err != nil {
-					logger.WithError(err).Warn("Failed to process estimated message")
+					logger.WithFields("msg_id", msg.GetId()).
+						WithError(err).
+						Warn("Failed to process estimated message")
 					continue
 				}
 			}
@@ -58,8 +60,6 @@ func (k Keeper) checkAndProcessEstimatedMessage(ctx context.Context,
 	q consensus.Queuer,
 ) error {
 	_, rcid := q.ChainInfo()
-	logger := liblog.FromKeeper(ctx, k).WithComponent("check-and-process-estimated-messages").WithChain(rcid)
-
 	// Skip messages that don't require gas estimation
 	if !msg.GetRequireGasEstimation() {
 		return nil
@@ -69,9 +69,12 @@ func (k Keeper) checkAndProcessEstimatedMessage(ctx context.Context,
 	if len(msg.GetGasEstimates()) < 1 {
 		return nil
 	}
-	logger = logger.WithFields(
-		"id", msg.GetId(),
-		"nonce", msg.Nonce())
+	logger := liblog.FromKeeper(ctx, k).
+		WithComponent("check-and-process-estimated-messages").
+		WithChain(rcid).
+		WithFields(
+			"id", msg.GetId(),
+			"nonce", msg.Nonce())
 	logger.Debug("Processing gas estimates for message.")
 
 	estimate, err := k.consensusChecker.VerifyGasEstimates(ctx, k,
