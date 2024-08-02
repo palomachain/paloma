@@ -58,7 +58,7 @@ func (k msgServer) AddMessageEstimates(goCtx context.Context, msg *types.MsgAddM
 
 	for _, estimate := range msg.Estimates {
 		if estimate.GetValue() < 1 {
-			return nil, fmt.Errorf("ivnalid gas estimate")
+			return nil, fmt.Errorf("invalid gas estimate")
 		}
 	}
 
