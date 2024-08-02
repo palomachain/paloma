@@ -33,6 +33,12 @@ message QueuedSignedMessage {
     (amino.dont_omitempty) = true,
     (gogoproto.nullable) = true
   ];
+
+  repeated GasEstimate gasEstimates = 12;
+  // flagMask is a bitmask of flags that the message has.
+  // 1 = require gas estimate
+  uint32 flagMask = 13;
+  uint64 gasEstimate = 14;
 }
 
 message BatchOfConsensusMessages { google.protobuf.Any msg = 1; }
@@ -58,6 +64,12 @@ message Evidence {
                              "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
 
   google.protobuf.Any proof = 2;
+}
+
+message GasEstimate {
+  bytes valAddress = 1 [ (gogoproto.casttype) =
+                             "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+  uint64 value = 2;
 }
 
 message PublicAccessData {

@@ -16,14 +16,18 @@ const (
 )
 
 type PutOptions struct {
-	RequireSignatures bool
-	PublicAccessData  []byte
+	RequireSignatures    bool
+	RequireGasEstimation bool
+	MsgIDToReplace       uint64
+	PublicAccessData     []byte
 }
 
 //go:generate mockery --name=Queuer
 type Queuer interface {
 	Put(context.Context, ConsensusMsg, *PutOptions) (uint64, error)
 	AddSignature(ctx context.Context, id uint64, signData *types.SignData) error
+	AddGasEstimate(ctx context.Context, id uint64, estimate *types.GasEstimate) error
+	SetElectedGasEstimate(ctx context.Context, id uint64, estimate uint64) error
 	AddEvidence(ctx context.Context, id uint64, evidence *types.Evidence) error
 	SetPublicAccessData(ctx context.Context, id uint64, data *types.PublicAccessData) error
 	GetPublicAccessData(ctx context.Context, id uint64) (*types.PublicAccessData, error)

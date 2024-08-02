@@ -145,15 +145,18 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
 	)
 	consensusRegistry := consensusmodulekeeper.NewRegistry()
+	tk := treasurykeeper.Keeper{}
 	consensusKeeper := *consensusmodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[consensusmoduletypes.StoreKey]),
 		helper.GetSubspace(consensusmoduletypes.ModuleName, paramsKeeper),
 		valsetKeeper,
 		consensusRegistry,
+		(&tk).GetCombinedFeesForRelay,
 	)
+
 	var evmKeeper *evmmodulekeeper.Keeper = &evmmodulekeeper.Keeper{}
-	treasurykeeper := *treasurykeeper.NewKeeper(
+	tk = *treasurykeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[treasurymoduletypes.StoreKey]),
 		helper.GetSubspace(treasurymoduletypes.ModuleName, paramsKeeper),
@@ -176,7 +179,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		valsetKeeper,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
 		metrixKeeper,
-		treasurykeeper,
+		tk,
 	)
 
 	SlashingKeeper := slashingkeeper.NewKeeper(
