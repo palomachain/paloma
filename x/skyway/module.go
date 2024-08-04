@@ -176,6 +176,11 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 
 // EndBlock implements app module
 func (am AppModule) EndBlock(ctx context.Context) error {
+	defer func() {
+		if r := recover(); r != nil {
+			am.keeper.Logger(ctx).Error(fmt.Sprintf("panic in EndBlock: %v", r))
+		}
+	}()
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	EndBlocker(sdkCtx, am.keeper, am.consensusChecker)
 	return nil
