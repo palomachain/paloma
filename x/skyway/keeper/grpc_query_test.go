@@ -256,9 +256,24 @@ func TestLastBatchesRequest(t *testing.T) {
 	})
 	require.NoError(t, err)
 
+	// Should have no batches, since no gas estimates are set
+	require.Len(t, lastBatches.Batches, 0)
+
+	// Make sure gas is set, otherwise we don't hand it out for relaying
+	k.IterateOutgoingTxBatches(ctx, func(key []byte, batch types.InternalOutgoingTxBatch) bool {
+		k.UpdateBatchGasEstimate(ctx, batch, 21_000)
+		return false
+	})
+
+	lastBatches, err = k.OutgoingTxBatches(ctx, &types.QueryOutgoingTxBatchesRequest{
+		ChainReferenceId: "test-chain",
+	})
+	require.NoError(t, err)
+
 	expectedRes := types.QueryOutgoingTxBatchesResponse{
 		Batches: []types.OutgoingTxBatch{
 			{
+				GasEstimate: 21_000,
 				Transactions: []types.OutgoingTransferTx{
 					{
 						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",
@@ -300,6 +315,7 @@ func TestLastBatchesRequest(t *testing.T) {
 				ChainReferenceId:   "test-chain",
 			},
 			{
+				GasEstimate: 21_000,
 				Transactions: []types.OutgoingTransferTx{
 					{
 						DestAddress: "0x320915BD0F1bad11cBf06e85D5199DBcAC4E9934",

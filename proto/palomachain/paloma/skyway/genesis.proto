@@ -24,6 +24,7 @@ message GenesisState {
   repeated SkywayNonces skyway_nonces = 2 [ (gogoproto.nullable) = false ];
   repeated OutgoingTxBatch batches = 3 [ (gogoproto.nullable) = false ];
   repeated MsgConfirmBatch batch_confirms = 4 [ (gogoproto.nullable) = false ];
+  repeated MsgEstimateBatchGas batch_gas_estimates = 5 [ (gogoproto.nullable) = false ];
   repeated Attestation attestations = 7 [ (gogoproto.nullable) = false ];
   repeated ERC20ToDenom erc20_to_denoms = 9 [ (gogoproto.nullable) = false ];
   repeated OutgoingTransferTx unbatched_transfers = 10

@@ -359,3 +359,55 @@ func (k msgServer) LightNodeSaleClaim(
 
 	return &emptypb.Empty{}, nil
 }
+
+func (k msgServer) EstimateBatchGas(
+	c context.Context,
+	msg *types.MsgEstimateBatchGas,
+) (*emptypb.Empty, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	sender, err := sdk.ValAddressFromBech32(msg.Metadata.Creator)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "invalid message creator")
+	}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "invalid MsgConfirmBatch")
+	}
+	contract, err := types.NewEthAddress(msg.TokenContract)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "eth address invalid")
+	}
+
+	if err := k.checkOrchestratorValidatorInSet(ctx, msg.Metadata.Creator); err != nil {
+		return nil, fmt.Errorf("cannot accept esimtate from inactive validator: %w", err)
+	}
+
+	// fetch the outgoing batch given the nonce
+	batch, err := k.GetOutgoingTXBatch(ctx, *contract, msg.Nonce)
+	if err != nil {
+		return nil, err
+	}
+	if batch == nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "couldn't find batch")
+	}
+
+	// check if we already have this estimate
+	estimate, err := k.GetBatchGasEstimate(ctx, msg.Nonce, *contract, sender)
+	if err != nil {
+		return nil, err
+	}
+	if estimate != nil {
+		return nil, sdkerrors.Wrap(types.ErrDuplicate, "gas estimate already received from sender")
+	}
+	key, err := k.SetBatchGasEstimate(ctx, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, ctx.EventManager().EmitTypedEvent(
+		&types.EventBatchConfirmKey{
+			Message:         msg.Type(),
+			BatchConfirmKey: string(key),
+		},
+	)
+}

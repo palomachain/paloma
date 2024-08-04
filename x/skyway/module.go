@@ -15,6 +15,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/palomachain/paloma/util/libcons"
 	"github.com/palomachain/paloma/x/skyway/client/cli"
 	"github.com/palomachain/paloma/x/skyway/exported"
 	"github.com/palomachain/paloma/x/skyway/keeper"
@@ -102,8 +103,9 @@ func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry
 // AppModule object for module implementation
 type AppModule struct {
 	AppModuleBasic
-	keeper     keeper.Keeper
-	bankKeeper bankkeeper.Keeper
+	keeper           keeper.Keeper
+	bankKeeper       bankkeeper.Keeper
+	consensusChecker *libcons.ConsensusChecker
 
 	// legacySubspace is used solely for migration of x/skyway managed parameters
 	legacySubspace exported.Subspace
@@ -121,12 +123,14 @@ func NewAppModule(
 	k keeper.Keeper,
 	bankKeeper bankkeeper.Keeper,
 	ss exported.Subspace,
+	consensusChecker *libcons.ConsensusChecker,
 ) AppModule {
 	return AppModule{
-		AppModuleBasic: NewAppModuleBasic(cdc),
-		keeper:         k,
-		bankKeeper:     bankKeeper,
-		legacySubspace: ss,
+		AppModuleBasic:   NewAppModuleBasic(cdc),
+		keeper:           k,
+		bankKeeper:       bankKeeper,
+		legacySubspace:   ss,
+		consensusChecker: consensusChecker,
 	}
 }
 
@@ -173,7 +177,7 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 // EndBlock implements app module
 func (am AppModule) EndBlock(ctx context.Context) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	EndBlocker(sdkCtx, am.keeper)
+	EndBlocker(sdkCtx, am.keeper, am.consensusChecker)
 	return nil
 }
 

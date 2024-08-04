@@ -101,9 +101,15 @@ func (k Keeper) OutgoingTxBatches(
 		reqChainReferenceID := req.ChainReferenceId
 		batchAssignee := batch.Assignee
 		reqAssignee := req.Assignee
+		// Skip batches with no gas estimate
+		if batch.GasEstimate < 1 {
+			return false
+		}
+		// Skip batches with mismatching chain reference ID
 		if reqChainReferenceID != "" && batchChainReferenceID != reqChainReferenceID {
 			return false
 		}
+		// Skip batches with mismatching assignee
 		if reqAssignee != "" && batchAssignee != reqAssignee {
 			return false
 		}
@@ -386,4 +392,34 @@ func (k Keeper) GetPendingSendToRemote(
 	}
 
 	return &res, nil
+}
+
+func (k Keeper) LastPendingBatchForGasEstimation(ctx context.Context, req *types.QueryLastPendingBatchForGasEstimationRequest) (*types.QueryLastPendingBatchForGasEstimationResponse, error) {
+	var pendingBatchReq types.InternalOutgoingTxBatches
+
+	found := false
+	err := k.IterateOutgoingTxBatches(sdk.UnwrapSDKContext(ctx), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
+		esitmate, err := k.GetBatchGasEstimate(sdk.UnwrapSDKContext(ctx), batch.BatchNonce, batch.TokenContract, req.Address)
+		if err != nil {
+			return false
+		}
+		foundConfirm := esitmate != nil
+		if !foundConfirm {
+			pendingBatchReq = append(pendingBatchReq, batch)
+			found = true
+
+			return true
+		}
+
+		return false
+	})
+	if err != nil {
+		return nil, err
+	}
+	if found {
+		ref := pendingBatchReq.ToExternalArray()
+		return &types.QueryLastPendingBatchForGasEstimationResponse{Batch: ref}, nil
+	}
+
+	return &types.QueryLastPendingBatchForGasEstimationResponse{Batch: nil}, nil
 }

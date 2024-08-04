@@ -62,6 +62,12 @@ service Query {
     option (google.api.http).get =
       "/palomachain/paloma/skyway/light_node_sale_contracts";
   }
+
+  rpc LastPendingBatchForGasEstimation(QueryLastPendingBatchForGasEstimationRequest)
+      returns (QueryLastPendingBatchForGasEstimationResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/pending_batch_for_gas_estimation";
+        }
 }
 
 message QueryParamsRequest {}
@@ -183,4 +189,15 @@ message QueryBridgeTransferLimitsResponse {
 
 message QueryLightNodeSaleContractsResponse {
   repeated LightNodeSaleContract light_node_sale_contracts = 1;
+}
+
+message QueryLastPendingBatchForGasEstimationRequest { 
+  // Address of the asking to estimate
+  bytes address = 1 [ (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+  // Chain reference id of the remote chain to query for
+  string chain_reference_id = 2;
+}
+
+message QueryLastPendingBatchForGasEstimationResponse {
+  repeated OutgoingTxBatch batch = 1 [ (gogoproto.nullable) = false ];
 }
