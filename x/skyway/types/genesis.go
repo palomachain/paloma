@@ -70,6 +70,7 @@ func DefaultGenesisState() *GenesisState {
 		SkywayNonces:       []SkywayNonces{},
 		Batches:            []OutgoingTxBatch{},
 		BatchConfirms:      []MsgConfirmBatch{},
+		BatchGasEstimates:  []MsgEstimateBatchGas{},
 		Attestations:       []Attestation{},
 		Erc20ToDenoms:      []ERC20ToDenom{},
 		UnbatchedTransfers: []OutgoingTransferTx{},

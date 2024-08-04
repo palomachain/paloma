@@ -91,6 +91,7 @@ type InternalOutgoingTxBatch struct {
 	ChainReferenceID   string
 	BytesToSign        []byte
 	Assignee           string
+	GasEstimate        uint64
 }
 
 func NewInternalOutgingTxBatch(
@@ -102,6 +103,7 @@ func NewInternalOutgingTxBatch(
 	chainReferenceID string,
 	turnstoneID string,
 	assignee string,
+	gasEstimate uint64,
 ) (*InternalOutgoingTxBatch, error) {
 	ret := &InternalOutgoingTxBatch{
 		BatchNonce:         nonce,
@@ -111,6 +113,7 @@ func NewInternalOutgingTxBatch(
 		PalomaBlockCreated: blockCreated,
 		ChainReferenceID:   chainReferenceID,
 		Assignee:           assignee,
+		GasEstimate:        gasEstimate,
 	}
 	bytesToSign, err := ret.GetCheckpoint(turnstoneID)
 	if err != nil {
@@ -147,6 +150,7 @@ func NewInternalOutgingTxBatchFromExternalBatch(batch OutgoingTxBatch) (*Interna
 		ChainReferenceID:   batch.ChainReferenceId,
 		BytesToSign:        batch.BytesToSign,
 		Assignee:           batch.Assignee,
+		GasEstimate:        batch.GasEstimate,
 	}
 	return &intBatch, nil
 }
@@ -169,6 +173,7 @@ func (i *InternalOutgoingTxBatch) ToExternal() OutgoingTxBatch {
 		ChainReferenceId:   i.ChainReferenceID,
 		BytesToSign:        i.BytesToSign,
 		Assignee:           i.Assignee,
+		GasEstimate:        i.GasEstimate,
 	}
 }
 
@@ -190,6 +195,7 @@ func (i *InternalOutgoingTxBatches) ToExternalArray() []OutgoingTxBatch {
 			ChainReferenceId:   val.ChainReferenceID,
 			BytesToSign:        val.BytesToSign,
 			Assignee:           val.Assignee,
+			GasEstimate:        val.GasEstimate,
 		})
 	}
 

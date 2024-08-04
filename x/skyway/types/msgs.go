@@ -104,6 +104,38 @@ func (msg MsgConfirmBatch) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(&msg)
 }
 
+// Route should return the name of the module
+func (msg MsgEstimateBatchGas) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgEstimateBatchGas) Type() string { return "estimate_batch_gas" }
+
+// ValidateBasic performs stateless checks
+func (msg MsgEstimateBatchGas) ValidateBasic() error {
+	if err := libmeta.ValidateBasic(&msg); err != nil {
+		return err
+	}
+
+	if err := ValidateEthAddress(msg.EthSigner); err != nil {
+		return sdkerrors.Wrap(err, "eth signer")
+	}
+
+	if msg.Estimate < 1 {
+		return sdkerrors.Wrap(ErrInvalidClaim, "gas estimate must be positive")
+	}
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgEstimateBatchGas) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgEstimateBatchGas) GetSigners() []sdk.AccAddress {
+	return libmeta.GetSigners(&msg)
+}
+
 // EthereumClaim represents a claim on ethereum state
 type EthereumClaim interface {
 	// All Ethereum claims that we relay from the Skyway contract and into the module

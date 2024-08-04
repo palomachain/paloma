@@ -33,6 +33,14 @@ func initBridgeDataFromGenesis(ctx context.Context, k Keeper, data types.Genesis
 			panic(err)
 		}
 	}
+
+	// reset batch gas estimates in state
+	for _, estimate := range data.BatchGasEstimates {
+		_, err := k.SetBatchGasEstimate(ctx, &estimate)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 // InitGenesis starts a chain from a genesis state
@@ -176,11 +184,12 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 	}
 
 	var (
-		p             = k.GetParams(ctx)
-		batchconfs    = []types.MsgConfirmBatch{}
-		attestations  = []types.Attestation{}
-		erc20ToDenoms = []types.ERC20ToDenom{}
-		nonces        = []types.SkywayNonces{}
+		p              = k.GetParams(ctx)
+		batchconfs     = []types.MsgConfirmBatch{}
+		batchestimates = []types.MsgEstimateBatchGas{}
+		attestations   = []types.Attestation{}
+		erc20ToDenoms  = []types.ERC20ToDenom{}
+		nonces         = []types.SkywayNonces{}
 	)
 
 	lastSlashedBlock, err := k.GetLastSlashedBatchBlock(ctx)
@@ -230,8 +239,13 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		if err != nil {
 			panic(err)
 		}
-		batchconfs = append(batchconfs,
-			batchConfirms...)
+		estimates, err := k.GetBatchGasEstimateByNonceAndTokenContract(ctx, batch.BatchNonce, batch.TokenContract)
+		if err != nil {
+			panic(err)
+		}
+		batchconfs = append(batchconfs, batchConfirms...)
+		batchestimates = append(batchestimates, estimates...)
+
 		extBatches[i] = batch.ToExternal()
 	}
 
@@ -265,6 +279,7 @@ func ExportGenesis(ctx context.Context, k Keeper) types.GenesisState {
 		SkywayNonces:           nonces,
 		Batches:                extBatches,
 		BatchConfirms:          batchconfs,
+		BatchGasEstimates:      batchestimates,
 		Attestations:           attestations,
 		Erc20ToDenoms:          erc20ToDenoms,
 		UnbatchedTransfers:     unbatchedTxs,
