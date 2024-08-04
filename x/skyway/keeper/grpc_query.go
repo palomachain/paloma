@@ -399,11 +399,11 @@ func (k Keeper) LastPendingBatchForGasEstimation(ctx context.Context, req *types
 
 	found := false
 	err := k.IterateOutgoingTxBatches(sdk.UnwrapSDKContext(ctx), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
-		esitmate, err := k.GetBatchGasEstimate(sdk.UnwrapSDKContext(ctx), batch.BatchNonce, batch.TokenContract, req.Address)
+		estimate, err := k.GetBatchGasEstimate(sdk.UnwrapSDKContext(ctx), batch.BatchNonce, batch.TokenContract, req.Address)
 		if err != nil {
 			return false
 		}
-		foundConfirm := esitmate != nil
+		foundConfirm := estimate != nil
 		if !foundConfirm {
 			pendingBatchReq = append(pendingBatchReq, batch)
 			found = true
