@@ -275,7 +275,7 @@ func ValidateStore(ctx sdk.Context, k Keeper) error {
 	k.IterateBatchConfirms(ctx, func(key []byte, confirm types.MsgConfirmBatch) (stop bool) {
 		err = confirm.ValidateBasic()
 		if err != nil {
-			err = fmt.Errorf("invalid batch confirm %v under key %v in IterateBatchConfirms: %v", confirm, key, err)
+			err = fmt.Errorf("invalid batch confirm %+v under key %v in IterateBatchConfirms: %w", confirm, key, err)
 			return true
 		}
 		return false
@@ -284,6 +284,19 @@ func ValidateStore(ctx sdk.Context, k Keeper) error {
 		return err
 	}
 	// SequenceKeyPrefix HAS BEEN REMOVED
+	//
+	// BatchGasEstimateKey
+	k.IterateBatchGasEstimates(ctx, func(key []byte, estimate types.MsgEstimateBatchGas) (stop bool) {
+		err = estimate.ValidateBasic()
+		if err != nil {
+			err = fmt.Errorf("invalid gas estimate %+v under key %v in IterateBatchGasEstimates: %w", estimate, key, err)
+			return true
+		}
+		return false
+	})
+	if err != nil {
+		return err
+	}
 
 	// KeyLastTXPoolID (type checked when fetching)
 	_, err = k.getID(ctx, types.KeyLastTXPoolID)

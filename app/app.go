@@ -120,6 +120,7 @@ import (
 	palomamempool "github.com/palomachain/paloma/app/mempool"
 	chainparams "github.com/palomachain/paloma/app/params"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	"github.com/palomachain/paloma/util/libcons"
 	consensusmodule "github.com/palomachain/paloma/x/consensus"
 	consensusmodulekeeper "github.com/palomachain/paloma/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
@@ -787,7 +788,7 @@ func New(
 	valsetModule := valsetmodule.NewAppModule(appCodec, app.ValsetKeeper, app.AccountKeeper, app.BankKeeper)
 	schedulerModule := schedulermodule.NewAppModule(appCodec, app.SchedulerKeeper, app.AccountKeeper, app.BankKeeper)
 	palomaModule := palomamodule.NewAppModule(appCodec, app.PalomaKeeper, app.AccountKeeper, app.BankKeeper)
-	skywayModule := skywaymodule.NewAppModule(appCodec, app.SkywayKeeper, app.BankKeeper, app.GetSubspace(skywaymoduletypes.ModuleName))
+	skywayModule := skywaymodule.NewAppModule(appCodec, app.SkywayKeeper, app.BankKeeper, app.GetSubspace(skywaymoduletypes.ModuleName), libcons.New(app.ValsetKeeper.GetCurrentSnapshot, appCodec))
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	metrixModule := metrix.NewAppModule(appCodec, app.MetrixKeeper)
 

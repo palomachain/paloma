@@ -10,7 +10,7 @@ import (
 // ignore
 func TestPrefixKeysSameLength(t *testing.T) {
 	allKeys := getAllKeys(t)
-	prefixKeys := allKeys[0:19]
+	prefixKeys := allKeys[0:20]
 	length := len(HashString("All keys should be same length when hashed"))
 
 	for _, key := range prefixKeys {
@@ -31,7 +31,7 @@ func getAllKeys(t *testing.T) [][]byte {
 	i := 0
 	inc := func(i *int) *int { *i += 1; return i }
 
-	keys := make([][]byte, 33)
+	keys := make([][]byte, 36)
 
 	keys[i] = EthAddressByValidatorKey
 	keys[*inc(&i)] = ValidatorByEthAddressKey
@@ -52,6 +52,7 @@ func getAllKeys(t *testing.T) [][]byte {
 	keys[*inc(&i)] = LastSlashedBatchBlock
 	keys[*inc(&i)] = LastUnBondingBlockHeight
 	keys[*inc(&i)] = PastEthSignatureCheckpointKey
+	keys[*inc(&i)] = BatchGasEstimateKey
 
 	// sdk.AccAddress, sdk.ValAddress
 	dummyAddr := []byte("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
@@ -87,14 +88,21 @@ func getAllKeys(t *testing.T) [][]byte {
 	keys[*inc(&i)] = GetBatchConfirmNonceContractPrefix(dummyEthAddr, dummyNonce)
 
 	batchConfirmKey, err := GetBatchConfirmKey(dummyEthAddr, dummyNonce, dummyAddr)
+	require.NoError(t, err)
 	keys[*inc(&i)] = batchConfirmKey
 
 	lastEventNonceByValidatorKey, err := GetLastEventNonceByValidatorKey(dummyAddr)
+	require.NoError(t, err)
 	keys[*inc(&i)] = lastEventNonceByValidatorKey
 
 	keys[*inc(&i)] = GetDenomToERC20Key(dummyChainReferenceID, dummyDenom)
 	keys[*inc(&i)] = GetERC20ToDenomKey(dummyChainReferenceID, dummyEthAddr)
 	keys[*inc(&i)] = GetPastEthSignatureCheckpointKey(dummyBytes)
+	keys[*inc(&i)] = GetBatchGasEstimateNonceContractPrefix(dummyEthAddr, dummyNonce)
+
+	batchGasEstimateKey, err := GetBatchGasEstimateKey(dummyEthAddr, dummyNonce, dummyAddr)
+	require.NoError(t, err)
+	keys[*inc(&i)] = batchGasEstimateKey
 
 	return keys
 }

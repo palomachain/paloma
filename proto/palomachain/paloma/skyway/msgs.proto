@@ -18,6 +18,8 @@ option go_package = "github.com/palomachain/paloma/x/skyway/types";
 service Msg {
   rpc SendToRemote(MsgSendToRemote) returns (MsgSendToRemoteResponse) {}
   rpc ConfirmBatch(MsgConfirmBatch) returns (MsgConfirmBatchResponse) {}
+  rpc EstimateBatchGas(MsgEstimateBatchGas) 
+      returns (google.protobuf.Empty) {}
   rpc SendToPalomaClaim(MsgSendToPalomaClaim)
       returns (MsgSendToPalomaClaimResponse) {}
   rpc BatchSendToRemoteClaim(MsgBatchSendToRemoteClaim)
@@ -238,4 +240,18 @@ message MsgLightNodeSaleClaim {
     (gogoproto.nullable) = false
   ];
   string smart_contract_address = 9;
+}
+
+// MsgEstimateBatchGas is a message to estimate the gas for a batch
+// Pigeons will send this message to transmit their gas estimation
+// for a given batch.
+message MsgEstimateBatchGas {
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+
+  uint64 nonce = 2;
+  string token_contract = 3;
+  string eth_signer = 4;
+  uint64 estimate = 5;
 }

@@ -36,7 +36,7 @@ var (
 	// Note: This is a LEGACY key, i.e. it is no longer in use!
 	// ** DO NOT USE THIS OUTSIDE OF MIGRATION TESTING! **
 	//
-	// i.e. skywayvaloper1ahx7f8wyertuus9r20284ej0asrs085ceqtfnm
+	// i.e. palomavaloper1ahx7f8wyertuus9r20284ej0asrs085ceqtfnm
 	// A claim is named more intuitively than an Attestation, it is literally
 	// a validator making a claim to have seen something happen. Claims are
 	// attached to attestations which can be thought of as 'the event' that
@@ -45,7 +45,7 @@ var (
 	LEGACYOracleClaimKey = HashString("OracleClaimKey")
 
 	// OracleAttestationKey attestation details by nonce and validator address
-	// i.e. skywayvaloper1ahx7f8wyertuus9r20284ej0asrs085ceqtfnm
+	// i.e. palomavaloper1ahx7f8wyertuus9r20284ej0asrs085ceqtfnm
 	// An attestation can be thought of as the 'event to be executed' while
 	// the Claims are an individual validator saying that they saw an event
 	// occur the Attestation is 'the event' that multiple claims vote on and
@@ -65,6 +65,9 @@ var (
 	// [0x75b935a854d50880236724b9c4822daf]
 	BatchConfirmKey = HashString("BatchConfirmKey")
 
+	// BatchGasEstimateKey indexes validator gas estimates by token contract address
+	// [0xb1571f7250f5547c08def1e44f4d0c98]
+	BatchGasEstimateKey = HashString("GasEstimateKey")
 	// LastEventNonceByValidatorKey indexes lateset event nonce by validator
 	// [0xeefcb999cc3d7b80b052b55106a6ba5e]
 	LastEventNonceByValidatorKey = HashString("LastEventNonceByValidatorKey")
@@ -137,7 +140,7 @@ func GetOrchestratorAddressKey(orc sdk.AccAddress) ([]byte, error) {
 
 // GetEthAddressByValidatorKey returns the following key format
 // prefix              cosmos-validator
-// [0x0][skywayvaloper1ahx7f8wyertuus9r20284ej0asrs085ceqtfnm]
+// [0x0][palomavaloper1ahx7f8wyertuus9r20284ej0asrs085ceqtfnm]
 func GetEthAddressByValidatorKey(validator sdk.ValAddress) ([]byte, error) {
 	if err := sdk.VerifyAddressFormat(validator); err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid validator address")
@@ -202,12 +205,29 @@ func GetBatchConfirmNonceContractPrefix(tokenContract EthAddress, batchNonce uin
 
 // GetBatchConfirmKey returns the following key format
 // prefix           eth-contract-address                BatchNonce                       Validator-address
-// [0x0		][0xc783df8a850f42e7F7e57013759C285caa701eB6][0 0 0 0 0 0 0 1][skywayvaloper1ahx7f8wyertuus9r20284ej0asrs085ceqtfnm]
+// [0x0		][0xc783df8a850f42e7F7e57013759C285caa701eB6][0 0 0 0 0 0 0 1][palomavaloper1ahx7f8wyertuus9r20284ej0asrs085ceqtfnm]
 func GetBatchConfirmKey(tokenContract EthAddress, batchNonce uint64, validator sdk.AccAddress) ([]byte, error) {
 	if err := sdk.VerifyAddressFormat(validator); err != nil {
 		return nil, sdkerrors.Wrap(err, "invalid validator address")
 	}
 	return AppendBytes(GetBatchConfirmNonceContractPrefix(tokenContract, batchNonce), validator.Bytes()), nil
+}
+
+// GetBatchGasEstimateNonceContractPrefix returns
+// prefix           eth-contract-address                BatchNonce
+// [0x0][0xc783df8a850f42e7F7e57013759C285caa701eB6][0 0 0 0 0 0 0 1]
+func GetBatchGasEstimateNonceContractPrefix(tokenContract EthAddress, batchNonce uint64) []byte {
+	return AppendBytes(BatchGasEstimateKey, tokenContract.GetAddress().Bytes(), UInt64Bytes(batchNonce))
+}
+
+// GetBatchGasEstimateKey returns the following key format
+// prefix           eth-contract-address                BatchNonce                       Validator-address
+// [0x0		][0xc783df8a850f42e7F7e57013759C285caa701eB6][0 0 0 0 0 0 0 1][palomavaloper1ahx7f8wyertuus9r20284ej0asrs085ceqtfnm]
+func GetBatchGasEstimateKey(tokenContract EthAddress, batchNonce uint64, validator sdk.ValAddress) ([]byte, error) {
+	if err := sdk.VerifyAddressFormat(validator); err != nil {
+		return nil, sdkerrors.Wrap(err, "invalid validator address")
+	}
+	return AppendBytes(GetBatchGasEstimateNonceContractPrefix(tokenContract, batchNonce), validator.Bytes()), nil
 }
 
 // GetLastEventNonceByValidatorKey indexes latest event nonce by validator
