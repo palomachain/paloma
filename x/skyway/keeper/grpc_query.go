@@ -399,6 +399,11 @@ func (k Keeper) LastPendingBatchForGasEstimation(ctx context.Context, req *types
 
 	found := false
 	err := k.IterateOutgoingTxBatches(sdk.UnwrapSDKContext(ctx), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
+		// Filter out batches that don't match the chain reference ID
+		if batch.ChainReferenceID != req.ChainReferenceId {
+			return false
+		}
+
 		estimate, err := k.GetBatchGasEstimate(sdk.UnwrapSDKContext(ctx), batch.BatchNonce, batch.TokenContract, req.Address)
 		if err != nil {
 			return false
