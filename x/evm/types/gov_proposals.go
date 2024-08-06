@@ -14,6 +14,7 @@ const (
 	ProposalDeployNewSmartContract      = "EVMDeployNewSmartContract"
 	ProposalTypeChangeMinOnChainBalance = "EVMProposalChangeMinOnChainBalance"
 	ProposalTypeRelayWeights            = "EVMProposalRelayWeights"
+	ProposalTypeSetFeeManagerAddress    = "EVMProposalSetFeeManagerAddress"
 )
 
 var (
@@ -21,6 +22,7 @@ var (
 	_ govv1beta1types.Content = &RemoveChainProposal{}
 	_ govv1beta1types.Content = &DeployNewSmartContractProposal{}
 	_ govv1beta1types.Content = &RelayWeightsProposal{}
+	_ govv1beta1types.Content = &SetFeeManagerAddressProposal{}
 )
 
 func init() {
@@ -29,6 +31,7 @@ func init() {
 	govv1beta1types.RegisterProposalType(ProposalDeployNewSmartContract)
 	govv1beta1types.RegisterProposalType(ProposalTypeChangeMinOnChainBalance)
 	govv1beta1types.RegisterProposalType(ProposalTypeRelayWeights)
+	govv1beta1types.RegisterProposalType(ProposalTypeSetFeeManagerAddress)
 }
 
 func (a *AddChainProposal) ProposalRoute() string { return RouterKey }
@@ -84,6 +87,17 @@ func (a *ChangeMinOnChainBalanceProposal) ValidateBasic() error {
 func (a *RelayWeightsProposal) ProposalRoute() string { return RouterKey }
 func (a *RelayWeightsProposal) ProposalType() string  { return ProposalTypeRelayWeights }
 func (a *RelayWeightsProposal) ValidateBasic() error {
+	if err := govv1beta1types.ValidateAbstract(a); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *SetFeeManagerAddressProposal) ProposalRoute() string  { return RouterKey }
+func (a *SetFeeManagerAddressProposal) ProposalType() string   { return ProposalTypeSetFeeManagerAddress }
+func (a *SetFeeManagerAddressProposal) GetDescription() string { return a.Summary }
+func (a *SetFeeManagerAddressProposal) ValidateBasic() error {
 	if err := govv1beta1types.ValidateAbstract(a); err != nil {
 		return err
 	}
