@@ -277,6 +277,8 @@ var _ = g.Describe("attest router", func() {
 					big.NewInt(55),
 				)
 				Expect(err).To(BeNil())
+				err = k.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+				Expect(err).To(BeNil())
 
 				sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))
 				Expect(err).To(BeNil())

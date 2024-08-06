@@ -37,6 +37,8 @@ message ChainInfo {
   string minOnChainBalance = 12;
 
   RelayWeights relayWeights = 13;
+
+  string feeManagerAddr = 14;
 }
 
 message SmartContract {

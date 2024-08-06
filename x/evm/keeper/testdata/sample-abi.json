@@ -180,6 +180,10 @@
         ],
         "name": "valset",
         "type": "tuple"
+      },
+      {
+        "name": "_fee_manager",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
