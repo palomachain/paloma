@@ -71,6 +71,8 @@ var _ = g.Describe("genesis", func() {
 							[]byte("abc"),
 						)
 						Expect(err).To(BeNil())
+						err = a.evmKeeper.SetFeeManagerAddress(ctx, ci.ChainReferenceID, cDummyFeeMgrAddress)
+						require.NoError(t, err)
 					}
 				}
 				got := evm.ExportGenesis(ctx, *k)
@@ -92,6 +94,7 @@ var _ = g.Describe("genesis", func() {
 						BlockHeight:       123,
 						BlockHashAtHeight: "0x1234",
 						MinOnChainBalance: "555",
+						FeeManagerAddr:    cDummyFeeMgrAddress,
 						RelayWeights: &types.RelayWeights{
 							Fee:           "1.0",
 							Uptime:        "1.0",
@@ -106,6 +109,7 @@ var _ = g.Describe("genesis", func() {
 						BlockHeight:       124,
 						BlockHashAtHeight: "0x5555",
 						MinOnChainBalance: "555",
+						FeeManagerAddr:    cDummyFeeMgrAddress,
 						RelayWeights: &types.RelayWeights{
 							Fee:           "1.0",
 							Uptime:        "1.0",
@@ -132,6 +136,39 @@ var _ = g.Describe("genesis", func() {
 					BlockHeight:       123,
 					BlockHashAtHeight: "0x1234",
 					MinOnChainBalance: "123invalid",
+					FeeManagerAddr:    cDummyFeeMgrAddress,
+					RelayWeights: &types.RelayWeights{
+						Fee:           "1.0",
+						Uptime:        "1.0",
+						SuccessRate:   "1.0",
+						ExecutionTime: "1.0",
+						FeatureSet:    "1.0",
+					},
+				},
+			}
+			Expect(func() {
+				evm.InitGenesis(ctx, *k, genesisState)
+			}).Should(Panic())
+		})
+	})
+
+	g.Context("invalid fee manager address", func() {
+		g.It("panics if the fee manager address is invalid", func() {
+			genesisState.Chains = []*types.GenesisChainInfo{
+				{
+					ChainReferenceID:  "eth-main",
+					ChainID:           1,
+					BlockHeight:       123,
+					BlockHashAtHeight: "0x1234",
+					MinOnChainBalance: "555",
+					FeeManagerAddr:    "123invalid",
+					RelayWeights: &types.RelayWeights{
+						Fee:           "1.0",
+						Uptime:        "1.0",
+						SuccessRate:   "1.0",
+						ExecutionTime: "1.0",
+						FeatureSet:    "1.0",
+					},
 				},
 			}
 			Expect(func() {
@@ -149,6 +186,7 @@ var _ = g.Describe("genesis", func() {
 					BlockHeight:       123,
 					BlockHashAtHeight: "0x1234",
 					MinOnChainBalance: "555",
+					FeeManagerAddr:    cDummyFeeMgrAddress,
 				},
 			}
 

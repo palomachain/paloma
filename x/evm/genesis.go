@@ -37,6 +37,10 @@ func InitGenesis(ctx context.Context, k keeper.Keeper, genState types.GenesisSta
 		if err != nil {
 			panic(err)
 		}
+		err = k.SetFeeManagerAddress(ctx, chainInfo.GetChainReferenceID(), chainInfo.GetFeeManagerAddr())
+		if err != nil {
+			panic(err)
+		}
 
 		err = k.SetRelayWeights(
 			ctx,
@@ -85,6 +89,7 @@ func ExportGenesis(ctx context.Context, k keeper.Keeper) *types.GenesisState {
 			BlockHashAtHeight: chainInfo.GetReferenceBlockHash(),
 			MinOnChainBalance: whoops.Must(chainInfo.GetMinOnChainBalanceBigInt()).Text(10),
 			RelayWeights:      whoops.Must(k.GetRelayWeights(ctx, chainInfo.GetChainReferenceID())),
+			FeeManagerAddr:    chainInfo.GetFeeManagerAddr(),
 		})
 	}
 	genesis.Chains = genesisChainInfos

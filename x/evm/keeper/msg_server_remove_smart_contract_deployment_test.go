@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const cDummyFeeMgrAddress = "0xb794f5ea0ba39494ce839613fffba74279579268"
+
 func addDeploymentToKeeper(t *testing.T, ctx sdk.Context, k *Keeper, mockServices mockedServices) {
 	unpublishedSnapshot := &valsettypes.Snapshot{
 		Id:          1,
@@ -46,6 +48,8 @@ func addDeploymentToKeeper(t *testing.T, ctx sdk.Context, k *Keeper, mockService
 		"0x1234",
 		big.NewInt(55),
 	)
+	require.NoError(t, err)
+	err = k.SetFeeManagerAddress(ctx, "test-chain", cDummyFeeMgrAddress)
 	require.NoError(t, err)
 
 	sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))

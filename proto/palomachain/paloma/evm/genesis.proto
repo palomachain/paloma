@@ -23,6 +23,7 @@ message GenesisChainInfo {
   string blockHashAtHeight = 4;
   string minOnChainBalance = 5;
   RelayWeights relayWeights = 6;
+  string feeManagerAddr = 7;
 }
 
 message GenesisSmartContract {

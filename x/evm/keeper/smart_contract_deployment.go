@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
@@ -218,6 +219,13 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 		}
 	}()
 	logger := k.Logger(ctx)
+	if len(chainInfo.FeeManagerAddr) < 1 {
+		return fmt.Errorf("feemanager address is not set")
+	}
+	if !common.IsHexAddress(chainInfo.FeeManagerAddr) {
+		return fmt.Errorf("invalid feemanager address")
+	}
+	feeMgrAddr := common.HexToAddress(chainInfo.FeeManagerAddr)
 	contractABI, err := abi.JSON(strings.NewReader(smartContract.GetAbiJSON()))
 	if err != nil {
 		return err
@@ -276,7 +284,7 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 		"validators-size", len(valset.GetValidators()),
 		"power-size", len(valset.GetPowers()),
 	)
-	input, err := contractABI.Pack("", uniqueID, big.NewInt(0), (&big.Int{}).SetUint64(lastSkywayNonce), types.TransformValsetToCompassValset(&valset))
+	input, err := contractABI.Pack("", uniqueID, big.NewInt(0), (&big.Int{}).SetUint64(lastSkywayNonce), types.TransformValsetToCompassValset(&valset), feeMgrAddr)
 	if err != nil {
 		return err
 	}

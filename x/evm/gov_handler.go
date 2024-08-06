@@ -56,6 +56,8 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govv1beta1type
 					FeatureSet:    c.FeatureSet,
 				},
 			)
+		case *types.SetFeeManagerAddressProposal:
+			return k.SetFeeManagerAddress(ctx, c.ChainReferenceID, c.FeeManagerAddress)
 		}
 
 		return sdkerrors.ErrUnknownRequest
