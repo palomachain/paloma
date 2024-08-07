@@ -928,3 +928,55 @@ func (k Keeper) GetValidatorAddressByEthAddress(ctx context.Context, ethAddr sky
 	}
 	return
 }
+
+func (k Keeper) AddJustInTimeValsetUpdates(ctx context.Context) {
+	chainInfos, err := k.GetAllChainInfos(ctx)
+	if err != nil {
+		k.Logger(ctx).Error("failed to get chains infos", "err", err)
+		return
+	}
+
+	for _, chainInfo := range chainInfos {
+		queueName := consensustypes.Queue(
+			types.ConsensusTurnstoneMessage,
+			xchainType,
+			xchain.ReferenceID(chainInfo.GetChainReferenceID()),
+		)
+
+		messages, err := k.ConsensusKeeper.GetMessagesFromQueue(ctx, queueName, 0)
+		if err != nil {
+			k.Logger(ctx).Error("failed to get messages from queue", "err", err)
+			return
+		}
+
+		var hasUpdateValset, hasFeePayer bool
+
+		for _, msg := range messages {
+			consMsg, err := msg.ConsensusMsg(k.cdc)
+			if err != nil {
+				continue
+			}
+
+			mmsg, ok := consMsg.(*types.Message)
+			if !ok {
+				continue
+			}
+
+			switch mmsg.Action.(type) {
+			case *types.Message_UpdateValset:
+				hasUpdateValset = true
+			case types.FeePayer:
+				hasFeePayer = true
+			}
+		}
+
+		if hasFeePayer && !hasUpdateValset {
+			// Check if we need the valset update and add it to the queue
+			err = k.justInTimeValsetUpdate(ctx, chainInfo)
+			if err != nil {
+				k.Logger(ctx).Error("failed to issue valset update", "err", err)
+				return
+			}
+		}
+	}
+}
