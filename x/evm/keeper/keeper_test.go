@@ -8,8 +8,12 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/evm/types"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/evm/types/mocks"
 	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
@@ -600,4 +604,96 @@ func TestKeeper_PublishSnapshotToAllChains(t *testing.T) {
 			asserter.Equal(tt.expectedError, actualErr)
 		})
 	}
+}
+
+func TestKeeper_SendValsetMsgForChain(t *testing.T) {
+	k, ms, ctx := NewEvmKeeper(t)
+	mSender := msgSender{
+		ConsensusKeeper: k.ConsensusKeeper,
+		cdc:             k.cdc,
+	}
+	valset := types.Valset{
+		ValsetID:   2,
+		Validators: []string{"addr1", "addr2"},
+		Powers:     []uint64{15, 5},
+	}
+	chainInfo := &types.ChainInfo{
+		ChainID:               100,
+		ChainReferenceID:      "test-chain",
+		ReferenceBlockHeight:  1000,
+		ReferenceBlockHash:    "0x00",
+		MinOnChainBalance:     "100",
+		SmartContractUniqueID: []byte("abc"),
+		RelayWeights: &types.RelayWeights{
+			Fee:           "1.0",
+			Uptime:        "1.0",
+			SuccessRate:   "1.0",
+			ExecutionTime: "1.0",
+			FeatureSet:    "1.0",
+		},
+	}
+
+	t.Run("Should do nothing if valset update is already scheduled", func(t *testing.T) {
+		qMsg, _ := codectypes.NewAnyWithValue(&evmtypes.Message{
+			TurnstoneID:      "abc",
+			ChainReferenceID: "test-chain",
+			Assignee:         "addr4",
+			Action: &evmtypes.Message_UpdateValset{
+				UpdateValset: &evmtypes.UpdateValset{
+					Valset: &evmtypes.Valset{
+						ValsetID: 2,
+					},
+				},
+			},
+		})
+
+		msgs := []consensustypes.QueuedSignedMessageI{
+			&consensustypes.QueuedSignedMessage{
+				Id:  1,
+				Msg: qMsg,
+			},
+		}
+
+		ms.ConsensusKeeper.On("GetMessagesFromQueue", mock.Anything, mock.Anything, mock.Anything).
+			Return(msgs, nil).
+			Once()
+
+		err := mSender.SendValsetMsgForChain(ctx, chainInfo, valset, "addr3")
+		assert.NoError(t, err)
+	})
+
+	t.Run("Should add valset update to queue", func(t *testing.T) {
+		qMsg, _ := codectypes.NewAnyWithValue(&evmtypes.Message{
+			TurnstoneID:      "abc",
+			ChainReferenceID: "test-chain",
+			Assignee:         "addr4",
+			Action: &evmtypes.Message_UpdateValset{
+				UpdateValset: &evmtypes.UpdateValset{
+					Valset: &evmtypes.Valset{
+						ValsetID: 1,
+					},
+				},
+			},
+		})
+
+		msgs := []consensustypes.QueuedSignedMessageI{
+			&consensustypes.QueuedSignedMessage{
+				Id:  1,
+				Msg: qMsg,
+			},
+		}
+
+		ms.ConsensusKeeper.On("GetMessagesFromQueue", mock.Anything, mock.Anything, mock.Anything).
+			Return(msgs, nil).
+			Once()
+		ms.ConsensusKeeper.On("DeleteJob", mock.Anything, mock.Anything, mock.Anything).
+			Return(nil).
+			Once()
+		ms.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+			Return(uint64(1), nil).
+			Once()
+
+		err := mSender.SendValsetMsgForChain(ctx, chainInfo, valset, "addr3")
+		assert.NoError(t, err)
+	})
 }
