@@ -21,9 +21,15 @@ func (k Keeper) QueuedMessagesForGasEstimation(goCtx context.Context, req *types
 		return nil, fmt.Errorf("failed to query messages for gas estimation: %w", err)
 	}
 
-	var res []types.MessageToSign
+	var res []types.MessageWithSignatures
 	for _, msg := range msgs {
-		res = append(res, *queuedMessageToMessageToSign(k.cdc, msg))
+		if msg.GetRequireSignatures() {
+			msgWithSignatures, err := k.queuedMessageToMessageWithSignatures(msg)
+			if err != nil {
+				return nil, fmt.Errorf("failed to convert queued message to message with signatures: %w", err)
+			}
+			res = append(res, msgWithSignatures)
+		}
 	}
 
 	return &types.QueryQueuedMessagesForGasEstimationResponse{

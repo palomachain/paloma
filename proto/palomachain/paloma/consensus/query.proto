@@ -160,5 +160,5 @@ message QueryQueuedMessagesForGasEstimationRequest {
 }
 
 message QueryQueuedMessagesForGasEstimationResponse {
-  repeated MessageToSign messagesToEstimate = 1 [ (gogoproto.nullable) = false ];
+  repeated MessageWithSignatures messagesToEstimate = 1 [ (gogoproto.nullable) = false ];
 }
