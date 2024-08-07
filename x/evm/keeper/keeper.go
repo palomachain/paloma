@@ -664,11 +664,17 @@ func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.C
 		}
 
 		mmsg := cmsg.(*types.Message)
-		act := mmsg.GetAction()
 		if mmsg.GetTurnstoneID() != string(chainInfo.GetSmartContractUniqueID()) {
 			return nil
 		}
-		if _, ok := act.(*types.Message_UpdateValset); ok {
+
+		if action, ok := mmsg.GetAction().(*types.Message_UpdateValset); ok {
+			if action.UpdateValset.Valset.ValsetID == valset.ValsetID {
+				// We already have an update valset scheduled for the same ID
+				// so there's nothing we need to do
+				return nil
+			}
+
 			err := m.ConsensusKeeper.DeleteJob(ctx, queueName, msg.GetId())
 			if err != nil {
 				m.Logger(sdkCtx).Error("unable to delete message", "err", err)
