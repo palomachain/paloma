@@ -48,6 +48,8 @@ func (msg *MsgBatchSendToEthClaim) ClaimHash() ([]byte, error) {
 	return tmhash.Sum([]byte(path)), nil
 }
 
+func (msg *MsgBatchSendToEthClaim) GetCompassID() string { return "" }
+
 func (msg MsgBatchSendToEthClaim) GetClaimer() sdk.AccAddress {
 	err := msg.ValidateBasic()
 	if err != nil {

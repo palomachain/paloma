@@ -267,12 +267,22 @@ func (k Keeper) DeleteAttestation(ctx context.Context, chainReferenceID string, 
 func (k Keeper) GetAttestationMapping(ctx context.Context, chainReferenceID string) (attestationMapping map[uint64][]types.Attestation, orderedKeys []uint64, err error) {
 	attestationMapping = make(map[uint64][]types.Attestation)
 	var g whoops.Group
+
+	lastCompassID := k.GetLatestCompassID(ctx, chainReferenceID)
+
 	g.Add(
 		k.IterateAttestations(ctx, chainReferenceID, false, func(_ []byte, att types.Attestation) bool {
 			claim, err := k.UnpackAttestationClaim(&att)
 			if err != nil {
 				g.Add(err)
 				return true
+			}
+
+			// Do not include claims originating from the other compass
+			// versions, since we won't be able to attest them anyway. They may
+			// also repeat the nonce, so we can't list them here.
+			if lastCompassID != "" && claim.GetCompassID() != lastCompassID {
+				return false
 			}
 
 			if val, ok := attestationMapping[claim.GetSkywayNonce()]; !ok {
@@ -454,12 +464,13 @@ func (k Keeper) setLastObservedSkywayNonce(ctx context.Context, chainReferenceID
 	if err != nil {
 		return err
 	}
+
 	// event nonce must increase, unless it's zero at which point allow zero to be set
 	// as many times as needed (genesis test setup etc)
-	zeroCase := last == 0 && nonce == 0
-	if last >= nonce && !zeroCase {
+	if nonce != 0 && nonce < last {
 		return fmt.Errorf("event nonce going backwards or replay")
 	}
+
 	store.Set(types.LastObservedEventNonceKey, types.UInt64Bytes(nonce))
 	return nil
 }
@@ -527,4 +538,26 @@ func (k Keeper) IterateValidatorLastEventNonces(ctx context.Context, chainRefere
 		}
 	}
 	return nil
+}
+
+// GetLatestCompassID returns the latest compass ID on record after
+// message attestation
+func (k Keeper) GetLatestCompassID(
+	ctx context.Context,
+	chainReferenceID string,
+) string {
+	store := k.GetStore(ctx, chainReferenceID)
+	bytes := store.Get(types.LatestCompassIDKey)
+
+	return string(bytes)
+}
+
+// setLatestCompassID stores the latest compass ID received
+func (k Keeper) setLatestCompassID(
+	ctx context.Context,
+	chainReferenceID string,
+	compassID string,
+) {
+	store := k.GetStore(ctx, chainReferenceID)
+	store.Set(types.LatestCompassIDKey, []byte(compassID))
 }
