@@ -696,6 +696,7 @@ func (k Keeper) queuedMessageToMessageWithSignatures(msg types.QueuedSignedMessa
 		Msg:              anyMsg,
 		PublicAccessData: publicAccessData,
 		ErrorData:        errorData,
+		GasEstimate:      msg.GetGasEstimate(),
 	}
 
 	for _, signData := range msg.GetSignData() {
