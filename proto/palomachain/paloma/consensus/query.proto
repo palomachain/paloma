@@ -111,6 +111,7 @@ message MessageWithSignatures {
   bytes errorData = 7;
   repeated Evidence evidence = 8;
   uint64 valsetID = 9;
+  uint64 gasEstimate = 10;
 }
 
 message QueryMessageByIDRequest {
