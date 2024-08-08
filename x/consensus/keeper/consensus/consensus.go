@@ -555,6 +555,7 @@ func ToMessageWithSignatures(msg types.QueuedSignedMessageI, cdc codec.BinaryCod
 		PublicAccessData: publicAccessData,
 		ValsetID:         valsetID,
 		ErrorData:        errorData,
+		GasEstimate:      msg.GetGasEstimate(),
 	}
 	for _, signData := range msg.GetSignData() {
 		approvedMessage.SignData = append(approvedMessage.SignData, &types.ValidatorSignature{
