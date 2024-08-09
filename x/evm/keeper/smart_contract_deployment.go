@@ -272,10 +272,6 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 	}
 	uniqueID := generateSmartContractID(ctx)
 	k.createSmartContractDeployment(ctx, smartContract, chainInfo, uniqueID[:])
-	lastSkywayNonce, err := k.Skyway.GetLastObservedSkywayNonce(ctx, chainInfo.GetChainReferenceID())
-	if err != nil {
-		return fmt.Errorf("failed to get last observed skyway nonce: %w", err)
-	}
 
 	// set the smart contract constructor arguments
 	logger.Info(
@@ -284,7 +280,7 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 		"validators-size", len(valset.GetValidators()),
 		"power-size", len(valset.GetPowers()),
 	)
-	input, err := contractABI.Pack("", uniqueID, big.NewInt(0), (&big.Int{}).SetUint64(lastSkywayNonce), types.TransformValsetToCompassValset(&valset), feeMgrAddr)
+	input, err := contractABI.Pack("", uniqueID, big.NewInt(0), big.NewInt(0), types.TransformValsetToCompassValset(&valset), feeMgrAddr)
 	if err != nil {
 		return err
 	}

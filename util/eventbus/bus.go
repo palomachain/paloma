@@ -8,7 +8,10 @@ import (
 	"github.com/palomachain/paloma/util/liblog"
 )
 
-var skywayBatchBuilt = newEvent[SkywayBatchBuiltEvent]()
+var (
+	skywayBatchBuilt  = newEvent[SkywayBatchBuiltEvent]()
+	evmActivatedChain = newEvent[EVMActivatedChainEvent]()
+)
 
 type (
 	EventHandler[E any] func(context.Context, E) error
@@ -57,4 +60,13 @@ type SkywayBatchBuiltEvent struct {
 
 func SkywayBatchBuilt() *Event[SkywayBatchBuiltEvent] {
 	return &skywayBatchBuilt
+}
+
+type EVMActivatedChainEvent struct {
+	ChainReferenceID      string
+	SmartContractUniqueID []byte
+}
+
+func EVMActivatedChain() *Event[EVMActivatedChainEvent] {
+	return &evmActivatedChain
 }

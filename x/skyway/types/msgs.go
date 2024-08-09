@@ -165,6 +165,8 @@ type EthereumClaim interface {
 	GetChainReferenceId() string
 	// Returns the reference ID of the remote chain on which this claim was observed.
 	GetSkywayNonce() uint64
+	// Returns the compass ID that sent the original message
+	GetCompassID() string
 }
 
 // nolint: exhaustruct
@@ -251,8 +253,12 @@ const (
 // note that the Orchestrator is the only field excluded from this hash, this is because that value is used higher up in the store
 // structure for who has made what claim and is verified by the msg ante-handler for signatures
 func (msg *MsgSendToPalomaClaim) ClaimHash() ([]byte, error) {
-	path := fmt.Sprintf("%d/%d/%s/%s/%s/%s", msg.SkywayNonce, msg.EthBlockHeight, msg.TokenContract, msg.Amount.String(), msg.EthereumSender, msg.PalomaReceiver)
+	path := fmt.Sprintf("%d/%d/%s/%s/%s/%s/%s", msg.SkywayNonce, msg.EthBlockHeight, msg.TokenContract, msg.Amount.String(), msg.EthereumSender, msg.PalomaReceiver, msg.CompassId)
 	return tmhash.Sum([]byte(path)), nil
+}
+
+func (msg *MsgSendToPalomaClaim) GetCompassID() string {
+	return msg.CompassId
 }
 
 func (msg *MsgBatchSendToRemoteClaim) SetOrchestrator(orchestrator sdk.AccAddress) {
@@ -286,8 +292,12 @@ func (e *MsgBatchSendToRemoteClaim) ValidateBasic() error {
 
 // Hash implements WithdrawBatch.Hash
 func (msg *MsgBatchSendToRemoteClaim) ClaimHash() ([]byte, error) {
-	path := fmt.Sprintf("%d/%d/%d/%s", msg.SkywayNonce, msg.EthBlockHeight, msg.BatchNonce, msg.TokenContract)
+	path := fmt.Sprintf("%d/%d/%d/%s/%s", msg.SkywayNonce, msg.EthBlockHeight, msg.BatchNonce, msg.TokenContract, msg.CompassId)
 	return tmhash.Sum([]byte(path)), nil
+}
+
+func (msg *MsgBatchSendToRemoteClaim) GetCompassID() string {
+	return msg.CompassId
 }
 
 func (msg MsgBatchSendToRemoteClaim) GetClaimer() sdk.AccAddress {
@@ -405,9 +415,13 @@ func (msg *MsgLightNodeSaleClaim) ValidateBasic() error {
 }
 
 func (msg *MsgLightNodeSaleClaim) ClaimHash() ([]byte, error) {
-	path := fmt.Sprintf("%d/%d/%s/%s", msg.SkywayNonce, msg.EthBlockHeight,
-		msg.ClientAddress, msg.Amount.String())
+	path := fmt.Sprintf("%d/%d/%s/%s/%s", msg.SkywayNonce, msg.EthBlockHeight,
+		msg.ClientAddress, msg.Amount.String(), msg.CompassId)
 	return tmhash.Sum([]byte(path)), nil
+}
+
+func (msg *MsgLightNodeSaleClaim) GetCompassID() string {
+	return msg.CompassId
 }
 
 func (msg MsgLightNodeSaleClaim) GetClaimer() sdk.AccAddress {

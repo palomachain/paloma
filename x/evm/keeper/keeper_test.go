@@ -89,7 +89,6 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 	// test-chain mocks
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), nil)
-	mockServices.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
 	mockServices.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
 		ValMetrics: getMetrics(3),
 	}, nil)
@@ -98,7 +97,6 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 	// invalid-test-chain mocks
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), nil)
-	mockServices.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
 	mockServices.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
 		ValMetrics: getMetrics(3),
 	}, nil)

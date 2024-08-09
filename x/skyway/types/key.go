@@ -126,6 +126,9 @@ var (
 	BridgeTransferLimitPrefix    = "bridge-transfer-limit"
 	BridgeTransferUsagePrefix    = "bridge-transfer-usage"
 	LightNodeSaleContractsPrefix = "light-node-sale-contracts"
+
+	// LatestCompassIDKey stores the latest compass ID received
+	LatestCompassIDKey = HashString("LatestCompassIDKey")
 )
 
 // GetOrchestratorAddressKey returns the following key format

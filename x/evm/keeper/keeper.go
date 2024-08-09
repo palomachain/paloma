@@ -412,6 +412,11 @@ func (k Keeper) ActivateChainReferenceID(
 			k.Logger(sdkCtx).Error("error while activating chain with a new smart contract", args...)
 		} else {
 			k.Logger(sdkCtx).Info("activated chain with a new smart contract", args...)
+
+			eventbus.EVMActivatedChain().Publish(ctx, eventbus.EVMActivatedChainEvent{
+				ChainReferenceID:      chainReferenceID,
+				SmartContractUniqueID: smartContractUniqueID,
+			})
 		}
 	}()
 	chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
