@@ -98,6 +98,7 @@ message MsgSendToPalomaClaim {
   palomachain.paloma.valset.MsgMetadata metadata = 9
       [ (gogoproto.nullable) = false ];
   uint64 skyway_nonce = 10;
+  string compass_id = 11;
 }
 
 message MsgSendToPalomaClaimResponse {
@@ -116,6 +117,7 @@ message MsgBatchSendToRemoteClaim {
   palomachain.paloma.valset.MsgMetadata metadata = 7
       [ (gogoproto.nullable) = false ];
   uint64 skyway_nonce = 8;
+  string compass_id = 9;
 }
 
 message MsgBatchSendToRemoteClaimResponse {}
@@ -240,6 +242,7 @@ message MsgLightNodeSaleClaim {
     (gogoproto.nullable) = false
   ];
   string smart_contract_address = 9;
+  string compass_id = 10;
 }
 
 // MsgEstimateBatchGas is a message to estimate the gas for a batch
