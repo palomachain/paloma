@@ -61,6 +61,7 @@ type ERC20Record interface {
 type SkywayKeeper interface {
 	GetLastObservedSkywayNonce(ctx context.Context, chainReferenceID string) (uint64, error)
 	CastAllERC20ToDenoms(ctx context.Context) ([]ERC20Record, error)
+	CastChainERC20ToDenoms(ctx context.Context, chainReferenceID string) ([]ERC20Record, error)
 }
 
 //go:generate mockery --name=MetrixKeeper

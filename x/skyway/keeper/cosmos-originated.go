@@ -83,6 +83,25 @@ func (k Keeper) CastAllERC20ToDenoms(ctx context.Context) ([]evmtypes.ERC20Recor
 	return cast, nil
 }
 
+func (k Keeper) CastChainERC20ToDenoms(
+	ctx context.Context,
+	chainReferenceID string,
+) ([]evmtypes.ERC20Record, error) {
+	all, err := k.GetAllERC20ToDenoms(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cast := make([]evmtypes.ERC20Record, 0, len(all))
+	for _, v := range all {
+		if v.GetChainReferenceId() == chainReferenceID {
+			cast = append(cast, v)
+		}
+	}
+
+	return cast, nil
+}
+
 func (k Keeper) setDenomToERC20(ctx context.Context, chainReferenceId, denom string, tokenContract types.EthAddress) error {
 	store := k.GetStore(ctx, types.StoreModulePrefix)
 
