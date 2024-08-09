@@ -44,6 +44,36 @@ func (_m *SkywayKeeper) CastAllERC20ToDenoms(ctx context.Context) ([]types.ERC20
 	return r0, r1
 }
 
+// CastChainERC20ToDenoms provides a mock function with given fields: ctx, chainReferenceID
+func (_m *SkywayKeeper) CastChainERC20ToDenoms(ctx context.Context, chainReferenceID string) ([]types.ERC20Record, error) {
+	ret := _m.Called(ctx, chainReferenceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CastChainERC20ToDenoms")
+	}
+
+	var r0 []types.ERC20Record
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]types.ERC20Record, error)); ok {
+		return rf(ctx, chainReferenceID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) []types.ERC20Record); ok {
+		r0 = rf(ctx, chainReferenceID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]types.ERC20Record)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, chainReferenceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetLastObservedSkywayNonce provides a mock function with given fields: ctx, chainReferenceID
 func (_m *SkywayKeeper) GetLastObservedSkywayNonce(ctx context.Context, chainReferenceID string) (uint64, error) {
 	ret := _m.Called(ctx, chainReferenceID)
@@ -77,8 +107,7 @@ func (_m *SkywayKeeper) GetLastObservedSkywayNonce(ctx context.Context, chainRef
 func NewSkywayKeeper(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *SkywayKeeper {
+}) *SkywayKeeper {
 	mock := &SkywayKeeper{}
 	mock.Mock.Test(t)
 

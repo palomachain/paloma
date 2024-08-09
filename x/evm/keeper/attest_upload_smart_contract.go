@@ -101,7 +101,8 @@ func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.Tx
 		return err
 	}
 
-	records, err := a.k.Skyway.CastAllERC20ToDenoms(ctx)
+	// Get the ERC20 tokens just for this chain
+	records, err := a.k.Skyway.CastChainERC20ToDenoms(ctx, a.chainReferenceID)
 	if err != nil {
 		a.logger.WithError(err).Error("Failed to extract ERC20 records.")
 		return err
@@ -210,6 +211,13 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 			MsgID:  msgID,
 			Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
 		})
+	}
+
+	// This shouldn't be needed anymore, since we query the ERC20 tokens for
+	// this specific chain. However, just to make double sure, we check the
+	// transfers. If there's none, just set the contract to active.
+	if len(transfers) == 0 {
+		return a.k.SetSmartContractAsActive(ctx, smartContractID, a.chainReferenceID)
 	}
 
 	deployment.Erc20Transfers = transfers
