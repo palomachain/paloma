@@ -107,8 +107,8 @@ When a major release is ready to be made, perform the following:
 1. Create a `release/vX.*.*` release.
 branch off of the desired commit on `master`, e.g. `release/v0.12.x` or `release/v1.x.x`.
 2. Create a branch off of the release branch to create a `RELEASE_NOTES.md` and update the `CHANGELOG.md` 
-3. The `RELEASE_NOTES.md` should highlight the new features and changes in this version. See [template here](https://github.com/palomachain/paloma/pull/686). Also, link back to to CHANGELOG.md
-4. In the `CHANGELOG.md`, create a new section for the the release version. The `CHANGELOG.md` must contain only the changes of that specific released version. All other changelog entries must be deleted and linked to the `main` branch changelog ([example from Cosmos SDK repo](https://github.com/cosmos/cosmos-sdk/blob/release/v0.46.x/CHANGELOG.md#previous-versions)). All links in the `CHANGELOG.md` must point to their respective PRs.
+3. The `RELEASE_NOTES.md` should highlight the new features and changes in this version. See [template here](https://github.com/palomachain/paloma/pull/686). Also, link back to CHANGELOG.md
+4. In the `CHANGELOG.md`, create a new section for the release version. The `CHANGELOG.md` must contain only the changes of that specific released version. All other changelog entries must be deleted and linked to the `main` branch changelog ([example from Cosmos SDK repo](https://github.com/cosmos/cosmos-sdk/blob/release/v0.46.x/CHANGELOG.md#previous-versions)). All links in the `CHANGELOG.md` must point to their respective PRs.
 5. Review and merge the release notes PR.
 6. Cut a release off of the release branch! Note, goreleaser should automatically
    create the release artifacts once the tag is pushed.
