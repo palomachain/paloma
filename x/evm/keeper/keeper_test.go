@@ -58,6 +58,7 @@ func getValidators(num int, chains []validatorChainInfo) []valsettypes.Validator
 			chainInfos[i] = &valsettypes.ExternalChainInfo{
 				ChainType:        chain.chainType,
 				ChainReferenceID: chain.chainReferenceID,
+				Address:          fmt.Sprintf("0x%02d", i),
 			}
 		}
 		validators[i] = valsettypes.Validator{
@@ -184,32 +185,38 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 					TotalShares: sdkmath.NewInt(75000),
 					Validators: []valsettypes.Validator{
 						{
+							Address:    sdk.ValAddress("validator-0"),
 							State:      valsettypes.ValidatorState_ACTIVE,
 							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
 									ChainReferenceID: "test-chain",
+									Address:          "0x00",
 								},
 							},
 						},
 						{
+							Address:    sdk.ValAddress("validator-1"),
 							State:      valsettypes.ValidatorState_ACTIVE,
 							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
 									ChainReferenceID: "test-chain",
+									Address:          "0x01",
 								},
 							},
 						},
 						{
+							Address:    sdk.ValAddress("validator-2"),
 							State:      valsettypes.ValidatorState_ACTIVE,
 							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
 									ChainReferenceID: "test-chain",
+									Address:          "0x02",
 								},
 							},
 						},
@@ -225,6 +232,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 
 				msgSenderMock.On(
 					"SendValsetMsgForChain",
+					mock.Anything,
 					mock.Anything,
 					mock.Anything,
 					mock.Anything,
@@ -514,7 +522,7 @@ func TestKeeper_PublishSnapshotToAllChains(t *testing.T) {
 			setup: func(ctx sdk.Context, k *Keeper, ms mockedServices) {
 				ms.ValsetKeeper.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).Return(nil, nil)
 				// SendValsetMsgForChain indicates a publish
-				ms.MsgSender.On("SendValsetMsgForChain", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				ms.MsgSender.On("SendValsetMsgForChain", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 		},
 		{
@@ -571,7 +579,7 @@ func TestKeeper_PublishSnapshotToAllChains(t *testing.T) {
 
 				ms.ValsetKeeper.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).Return(publishedSnapshot, nil)
 				// SendValsetMsgForChain indicates a publish
-				ms.MsgSender.On("SendValsetMsgForChain", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				ms.MsgSender.On("SendValsetMsgForChain", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			forcePublish: true,
 		},
@@ -656,7 +664,7 @@ func TestKeeper_SendValsetMsgForChain(t *testing.T) {
 			Return(msgs, nil).
 			Once()
 
-		err := mSender.SendValsetMsgForChain(ctx, chainInfo, valset, "addr3")
+		err := mSender.SendValsetMsgForChain(ctx, chainInfo, valset, "addr3", "0x03")
 		assert.NoError(t, err)
 	})
 
@@ -691,7 +699,7 @@ func TestKeeper_SendValsetMsgForChain(t *testing.T) {
 			Return(uint64(1), nil).
 			Once()
 
-		err := mSender.SendValsetMsgForChain(ctx, chainInfo, valset, "addr3")
+		err := mSender.SendValsetMsgForChain(ctx, chainInfo, valset, "addr3", "0x03")
 		assert.NoError(t, err)
 	})
 }

@@ -17,7 +17,7 @@ type EvmKeeper struct {
 }
 
 // PickValidatorForMessage provides a mock function with given fields: ctx, chainReferenceID, req
-func (_m *EvmKeeper) PickValidatorForMessage(ctx context.Context, chainReferenceID string, req *xchain.JobRequirements) (string, error) {
+func (_m *EvmKeeper) PickValidatorForMessage(ctx context.Context, chainReferenceID string, req *xchain.JobRequirements) (string, string, error) {
 	ret := _m.Called(ctx, chainReferenceID, req)
 
 	if len(ret) == 0 {
@@ -25,8 +25,9 @@ func (_m *EvmKeeper) PickValidatorForMessage(ctx context.Context, chainReference
 	}
 
 	var r0 string
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, *xchain.JobRequirements) (string, error)); ok {
+	var r1 string
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, *xchain.JobRequirements) (string, string, error)); ok {
 		return rf(ctx, chainReferenceID, req)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string, *xchain.JobRequirements) string); ok {
@@ -35,13 +36,19 @@ func (_m *EvmKeeper) PickValidatorForMessage(ctx context.Context, chainReference
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, *xchain.JobRequirements) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string, *xchain.JobRequirements) string); ok {
 		r1 = rf(ctx, chainReferenceID, req)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(string)
 	}
 
-	return r0, r1
+	if rf, ok := ret.Get(2).(func(context.Context, string, *xchain.JobRequirements) error); ok {
+		r2 = rf(ctx, chainReferenceID, req)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // PreJobExecution provides a mock function with given fields: ctx, job
@@ -67,8 +74,7 @@ func (_m *EvmKeeper) PreJobExecution(ctx context.Context, job *types.Job) error 
 func NewEvmKeeper(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *EvmKeeper {
+}) *EvmKeeper {
 	mock := &EvmKeeper{}
 	mock.Mock.Test(t)
 

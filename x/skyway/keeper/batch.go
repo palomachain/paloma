@@ -51,7 +51,7 @@ func (k Keeper) BuildOutgoingTXBatch(
 		return nil, err
 	}
 
-	assignee, err := k.EVMKeeper.PickValidatorForMessage(ctx, chainReferenceID, nil)
+	assignee, _, err := k.EVMKeeper.PickValidatorForMessage(ctx, chainReferenceID, nil)
 	if err != nil {
 		return nil, err
 	}

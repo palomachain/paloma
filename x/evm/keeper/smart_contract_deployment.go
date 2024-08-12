@@ -171,7 +171,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	requirements := &xchain.JobRequirements{
 		EnforceMEVRelay: logicCall.ExecutionRequirements.EnforceMEVRelay,
 	}
-	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID, requirements)
+	assignee, remoteAddr, err := k.PickValidatorForMessage(ctx, chainReferenceID, requirements)
 	if err != nil {
 		return 0, err
 	}
@@ -190,6 +190,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 				SubmitLogicCall: logicCall,
 			},
 			Assignee:              assignee,
+			AssigneeRemoteAddress: remoteAddr,
 			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
 		}, &consensus.PutOptions{
 			RequireGasEstimation: true,
@@ -324,7 +325,7 @@ func (k Keeper) AddUploadSmartContractToConsensus(
 ) (uint64, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID, nil)
+	assignee, remoteAddr, err := k.PickValidatorForMessage(ctx, chainReferenceID, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -342,6 +343,7 @@ func (k Keeper) AddUploadSmartContractToConsensus(
 				UploadSmartContract: smartContract,
 			},
 			Assignee:              assignee,
+			AssigneeRemoteAddress: remoteAddr,
 			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
 		}, nil)
 }

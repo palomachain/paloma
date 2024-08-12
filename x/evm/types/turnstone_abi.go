@@ -102,8 +102,7 @@ func (_m *Message_UpdateValset) keccak256(
 
 	bytes, err := arguments.Pack(
 		hash32,
-		// FIXME Assignee needs to be replaced by the eth address
-		common.HexToAddress(orig.Assignee),
+		common.HexToAddress(orig.AssigneeRemoteAddress),
 		new(big.Int).SetInt64(int64(gasEstimate)),
 	)
 	if err != nil {
@@ -203,8 +202,7 @@ func (_m *Message_SubmitLogicCall) keccak256(
 		new(big.Int).SetInt64(int64(nonce)),
 		bytes32,
 		big.NewInt(m.GetDeadline()),
-		// FIXME Assignee needs to be replaced by the eth address
-		common.HexToAddress(orig.Assignee),
+		common.HexToAddress(orig.AssigneeRemoteAddress),
 	)
 	if err != nil {
 		panic(err)
@@ -215,8 +213,9 @@ func (_m *Message_SubmitLogicCall) keccak256(
 	return crypto.Keccak256(bytes)
 }
 
-func (m *Message) SetAssignee(ctx sdk.Context, val string) {
+func (m *Message) SetAssignee(ctx sdk.Context, val, remoteAddr string) {
 	m.Assignee = val
+	m.AssigneeRemoteAddress = remoteAddr
 	m.AssignedAtBlockHeight = math.NewInt(ctx.BlockHeight())
 }
 

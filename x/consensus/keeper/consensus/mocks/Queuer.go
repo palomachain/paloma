@@ -249,17 +249,17 @@ func (_m *Queuer) Put(_a0 context.Context, _a1 types.ConsensusMsg, _a2 *consensu
 	return r0, r1
 }
 
-// ReassignValidator provides a mock function with given fields: ctx, id, val
-func (_m *Queuer) ReassignValidator(ctx cosmos_sdktypes.Context, id uint64, val string) error {
-	ret := _m.Called(ctx, id, val)
+// ReassignValidator provides a mock function with given fields: ctx, id, val, remoteAddr
+func (_m *Queuer) ReassignValidator(ctx cosmos_sdktypes.Context, id uint64, val string, remoteAddr string) error {
+	ret := _m.Called(ctx, id, val, remoteAddr)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ReassignValidator")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(cosmos_sdktypes.Context, uint64, string) error); ok {
-		r0 = rf(ctx, id, val)
+	if rf, ok := ret.Get(0).(func(cosmos_sdktypes.Context, uint64, string, string) error); ok {
+		r0 = rf(ctx, id, val, remoteAddr)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -344,8 +344,7 @@ func (_m *Queuer) SetPublicAccessData(ctx context.Context, id uint64, data *type
 func NewQueuer(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *Queuer {
+}) *Queuer {
 	mock := &Queuer{}
 	mock.Mock.Test(t)
 

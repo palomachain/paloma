@@ -14,17 +14,17 @@ type MsgSender struct {
 	mock.Mock
 }
 
-// SendValsetMsgForChain provides a mock function with given fields: ctx, chainInfo, valset, assignee
-func (_m *MsgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.ChainInfo, valset types.Valset, assignee string) error {
-	ret := _m.Called(ctx, chainInfo, valset, assignee)
+// SendValsetMsgForChain provides a mock function with given fields: ctx, chainInfo, valset, assignee, remoteAddr
+func (_m *MsgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.ChainInfo, valset types.Valset, assignee string, remoteAddr string) error {
+	ret := _m.Called(ctx, chainInfo, valset, assignee, remoteAddr)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SendValsetMsgForChain")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *types.ChainInfo, types.Valset, string) error); ok {
-		r0 = rf(ctx, chainInfo, valset, assignee)
+	if rf, ok := ret.Get(0).(func(context.Context, *types.ChainInfo, types.Valset, string, string) error); ok {
+		r0 = rf(ctx, chainInfo, valset, assignee, remoteAddr)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -37,8 +37,7 @@ func (_m *MsgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types
 func NewMsgSender(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *MsgSender {
+}) *MsgSender {
 	mock := &MsgSender{}
 	mock.Mock.Test(t)
 
