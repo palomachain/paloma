@@ -245,7 +245,6 @@ func (i InternalOutgoingTxBatch) GetChainReferenceID() string {
 
 // GetCheckpoint gets the checkpoint signature from the given outgoing tx batch
 func (i InternalOutgoingTxBatch) GetCheckpoint(turnstoneID string) ([]byte, error) {
-	// TODO Add relayer and gas estimate
 	arguments := abi.Arguments{
 		// token
 		{Type: whoops.Must(abi.NewType("address", "", nil))},
