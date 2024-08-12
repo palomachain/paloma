@@ -4,6 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,7 +23,7 @@ func (k Keeper) QueuedMessagesForAttesting(goCtx context.Context, req *types.Que
 
 	res := make([]types.MessageWithSignatures, len(msgs))
 	for i, msg := range msgs {
-		msgWithSignatures, err := k.queuedMessageToMessageWithSignatures(msg)
+		msgWithSignatures, err := consensus.ToMessageWithSignatures(msg, k.cdc)
 		if err != nil {
 			return nil, err
 		}

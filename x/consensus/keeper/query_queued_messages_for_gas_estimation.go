@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -24,7 +25,7 @@ func (k Keeper) QueuedMessagesForGasEstimation(goCtx context.Context, req *types
 	var res []types.MessageWithSignatures
 	for _, msg := range msgs {
 		if msg.GetRequireSignatures() {
-			msgWithSignatures, err := k.queuedMessageToMessageWithSignatures(msg)
+			msgWithSignatures, err := consensus.ToMessageWithSignatures(msg, k.cdc)
 			if err != nil {
 				return nil, fmt.Errorf("failed to convert queued message to message with signatures: %w", err)
 			}

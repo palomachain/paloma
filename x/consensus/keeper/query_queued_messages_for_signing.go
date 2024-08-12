@@ -24,7 +24,7 @@ func (k Keeper) QueuedMessagesForSigning(goCtx context.Context, req *types.Query
 	var res []*types.MessageToSign
 	for _, msg := range msgs {
 		if msg.GetRequireSignatures() {
-			res = append(res, queuedMessageToMessageToSign(k.cdc, msg))
+			res = append(res, k.queuedMessageToMessageToSign(ctx, msg))
 		}
 	}
 
@@ -33,19 +33,26 @@ func (k Keeper) QueuedMessagesForSigning(goCtx context.Context, req *types.Query
 	}, nil
 }
 
-func queuedMessageToMessageToSign(unpacker types.AnyUnpacker, msg types.QueuedSignedMessageI) *types.MessageToSign {
-	consensusMsg, err := msg.ConsensusMsg(unpacker)
+func (k Keeper) queuedMessageToMessageToSign(ctx context.Context, msg types.QueuedSignedMessageI) *types.MessageToSign {
+	consensusMsg, err := msg.ConsensusMsg(k.cdc)
 	if err != nil {
 		panic(err)
 	}
+
 	anyMsg, err := codectypes.NewAnyWithValue(consensusMsg)
 	if err != nil {
 		panic(err)
 	}
+
+	bytesToSign, err := msg.GetBytesToSign(k.cdc)
+	if err != nil {
+		panic(err)
+	}
+
 	return &types.MessageToSign{
 		Nonce:       nonceFromID(msg.GetId()),
 		Id:          msg.GetId(),
-		BytesToSign: msg.GetBytesToSign(),
+		BytesToSign: bytesToSign,
 		Msg:         anyMsg,
 	}
 }

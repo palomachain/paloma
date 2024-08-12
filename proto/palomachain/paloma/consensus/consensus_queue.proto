@@ -11,6 +11,9 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 
 // message for storing the queued signed message in the internal queue
 message QueuedSignedMessage {
+  reserved 5;
+  reserved "bytesToSign";
+
   option (gogoproto.goproto_stringer) = false;
 
   uint64 id = 1;
@@ -18,7 +21,6 @@ message QueuedSignedMessage {
   google.protobuf.Timestamp addedAt = 3
       [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
   google.protobuf.Any msg = 4;
-  bytes bytesToSign = 5;
   repeated SignData signData = 6;
   repeated Evidence evidence = 7;
   PublicAccessData publicAccessData = 8;

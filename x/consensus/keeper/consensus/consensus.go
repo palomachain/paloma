@@ -177,9 +177,6 @@ func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uin
 			RequireSignatures:  requireSignatures,
 			FlagMask:           types.BuildFlagMask(requireGasEstimation),
 			PublicAccessData:   publicAccessData,
-			BytesToSign: c.qo.BytesToSignCalculator(msg, types.Salt{
-				Nonce: mid,
-			}),
 		}
 	}
 	if err := c.save(sdkCtx, m); err != nil {
@@ -334,7 +331,12 @@ func (c Queue) AddSignature(ctx context.Context, msgID uint64, signData *types.S
 		}
 	}
 
-	if !c.qo.VerifySignature(msg.GetBytesToSign(), signData.Signature, signData.PublicKey) {
+	bytesToSign, err := msg.GetBytesToSign(c.qo.Cdc)
+	if err != nil {
+		return err
+	}
+
+	if !c.qo.VerifySignature(bytesToSign, signData.Signature, signData.PublicKey) {
 		return ErrInvalidSignature
 	}
 
@@ -522,7 +524,7 @@ func RemoveQueueCompletely(ctx context.Context, cq Queuer) {
 	}
 }
 
-func ToMessageWithSignatures(msg types.QueuedSignedMessageI, cdc codec.BinaryCodec) (types.MessageWithSignatures, error) {
+func ToMessageWithSignatures(msg types.QueuedSignedMessageI, cdc codec.Codec) (types.MessageWithSignatures, error) {
 	origMsg, err := msg.ConsensusMsg(cdc)
 	if err != nil {
 		return types.MessageWithSignatures{}, err
@@ -546,17 +548,23 @@ func ToMessageWithSignatures(msg types.QueuedSignedMessageI, cdc codec.BinaryCod
 		errorData = msg.GetErrorData().GetData()
 	}
 
+	bytesToSign, err := msg.GetBytesToSign(cdc)
+	if err != nil {
+		return types.MessageWithSignatures{}, err
+	}
+
 	approvedMessage := types.MessageWithSignatures{
 		Nonce:            msg.Nonce(),
 		Id:               msg.GetId(),
 		Msg:              anyMsg,
-		BytesToSign:      msg.GetBytesToSign(),
+		BytesToSign:      bytesToSign,
 		SignData:         []*types.ValidatorSignature{},
 		PublicAccessData: publicAccessData,
 		ValsetID:         valsetID,
 		ErrorData:        errorData,
 		GasEstimate:      msg.GetGasEstimate(),
 	}
+
 	for _, signData := range msg.GetSignData() {
 		approvedMessage.SignData = append(approvedMessage.SignData, &types.ValidatorSignature{
 			ValAddress:             signData.GetValAddress(),
