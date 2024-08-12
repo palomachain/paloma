@@ -40,6 +40,7 @@ type QueuedSignedMessageI interface {
 	SetHandledAtBlockHeight(math.Int)
 	GetHandledAtBlockHeight() *math.Int
 	GetBytesToSign() []byte
+	GetBytesToSign2(AnyUnpacker) ([]byte, error)
 	GetRequireSignatures() bool
 	GetRequireGasEstimation() bool
 	GetMsg() *types.Any
@@ -82,6 +83,19 @@ type MessageQueuedForBatchingI interface {
 }
 
 var _ MessageQueuedForBatchingI = &BatchOfConsensusMessages{}
+
+func (q *QueuedSignedMessage) GetBytesToSign2(unpacker AnyUnpacker) ([]byte, error) {
+	msg, err := q.ConsensusMsg(unpacker)
+	if err != nil {
+		return nil, err
+	}
+
+	k := msg.(interface {
+		Keccak256(uint64) []byte
+	})
+
+	return k.Keccak256(q.GetId()), nil
+}
 
 func (q *QueuedSignedMessage) String() string {
 	if q == nil {
