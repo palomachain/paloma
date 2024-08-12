@@ -990,7 +990,10 @@ func TestAddingSignatures(t *testing.T) {
 	require.Len(t, msgs, 1)
 
 	msg := msgs[0]
-	signedBytes, err := key1.Sign(msg.GetBytesToSign())
+	bytesToSign, err := msg.GetBytesToSign(keeper.cdc)
+	require.NoError(t, err)
+
+	signedBytes, err := key1.Sign(bytesToSign)
 
 	require.NoError(t, err)
 

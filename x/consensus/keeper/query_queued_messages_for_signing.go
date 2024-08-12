@@ -2,11 +2,9 @@ package keeper
 
 import (
 	"context"
-	"encoding/hex"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -46,17 +44,10 @@ func (k Keeper) queuedMessageToMessageToSign(ctx context.Context, msg types.Queu
 		panic(err)
 	}
 
-	bytesToSign, err := msg.GetBytesToSign2(k.cdc)
+	bytesToSign, err := msg.GetBytesToSign(k.cdc)
 	if err != nil {
 		panic(err)
 	}
-
-	liblog.FromKeeper(ctx, k).
-		WithFields(
-			"testing", "TESTING",
-			"bytes_to_sign", hex.EncodeToString(msg.GetBytesToSign()),
-			"new_bytes_to_sign", hex.EncodeToString(bytesToSign),
-		).Debug("New bytes to sign calculation")
 
 	return &types.MessageToSign{
 		Nonce:       nonceFromID(msg.GetId()),
