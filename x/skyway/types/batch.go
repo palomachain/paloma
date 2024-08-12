@@ -261,7 +261,7 @@ func (i InternalOutgoingTxBatch) GetCheckpoint(turnstoneID string) ([]byte, erro
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
 		// relayer eth address
 		{Type: whoops.Must(abi.NewType("address", "", nil))},
-		// gas estiamte
+		// gas estimate
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
 	}
 
