@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bytes"
 	"encoding/binary"
 	"math/big"
 	"strings"
@@ -39,10 +40,13 @@ type CompassLogicCallArgs struct {
 	LogicContractAddress common.Address
 }
 
-func (_m *Message_UpdateValset) keccak256(orig *Message, _ uint64) []byte {
+func (_m *Message_UpdateValset) keccak256(
+	orig *Message,
+	_, gasEstimate uint64,
+) []byte {
 	m := _m.UpdateValset
 	// checkpoint(address[],uint256[],uint256,bytes32)
-	arguments := abi.Arguments{
+	checkpointArgs := abi.Arguments{
 		// addresses
 		{Type: whoops.Must(abi.NewType("address[]", "", nil))},
 		// powers
@@ -52,13 +56,13 @@ func (_m *Message_UpdateValset) keccak256(orig *Message, _ uint64) []byte {
 		// turnstone id
 		{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
 	}
-	method := abi.NewMethod("checkpoint", "checkpoint", abi.Function, "", false, false, arguments, abi.Arguments{})
+	checkpointMethod := abi.NewMethod("checkpoint", "checkpoint", abi.Function, "", false, false, checkpointArgs, abi.Arguments{})
 
 	var bytes32 [32]byte
 
 	copy(bytes32[:], orig.GetTurnstoneID())
 
-	bytes, err := arguments.Pack(
+	checkpointBytes, err := checkpointArgs.Pack(
 		slice.Map(m.GetValset().GetValidators(), func(s string) common.Address {
 			return common.HexToAddress(s)
 		}),
@@ -68,11 +72,45 @@ func (_m *Message_UpdateValset) keccak256(orig *Message, _ uint64) []byte {
 		big.NewInt(int64(m.GetValset().GetValsetID())),
 		bytes32,
 	)
-	bytes = append(method.ID[:], bytes...)
-
 	if err != nil {
 		panic(err)
 	}
+
+	checkpointBytes = append(checkpointMethod.ID[:], checkpointBytes...)
+
+	checkpointHash := crypto.Keccak256(checkpointBytes)
+	var hash32 [32]byte
+	copy(hash32[:], checkpointHash)
+
+	// update_valset(bytes32,address,uint256)
+	arguments := abi.Arguments{
+		// checkpoint
+		{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
+		// relayer
+		{Type: whoops.Must(abi.NewType("address", "", nil))},
+		// gas estimate
+		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
+	}
+
+	method := abi.NewMethod("update_valset", "update_valset", abi.Function, "", false, false, arguments, abi.Arguments{})
+
+	estimate := gasEstimate
+	if estimate == 0 {
+		// If there's no estimate, we use the same default as pigeon
+		estimate = 300_000
+	}
+
+	bytes, err := arguments.Pack(
+		hash32,
+		// FIXME Assignee needs to be replaced by the eth address
+		common.HexToAddress(orig.Assignee),
+		new(big.Int).SetInt64(int64(gasEstimate)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	bytes = append(method.ID[:], bytes...)
 
 	return crypto.Keccak256(bytes)
 }
@@ -83,13 +121,19 @@ func uint64ToByte(n uint64) []byte {
 	return b
 }
 
-func (_m *Message_UploadSmartContract) keccak256(orig *Message, nonce uint64) []byte {
+func (_m *Message_UploadSmartContract) keccak256(
+	_ *Message,
+	nonce, _ uint64,
+) []byte {
 	m := _m.UploadSmartContract
 
 	return crypto.Keccak256(append(m.GetBytecode()[:], uint64ToByte(nonce)...))
 }
 
-func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte {
+func (_m *Message_SubmitLogicCall) keccak256(
+	orig *Message,
+	nonce, _ uint64,
+) []byte {
 	m := _m.SubmitLogicCall
 	// logic_call((address,bytes),uint256,uint256)
 	arguments := abi.Arguments{
@@ -98,18 +142,44 @@ func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte
 			{Name: "address", Type: "address"},
 			{Name: "payload", Type: "bytes"},
 		}))},
+		// fee arguments
+		{Type: whoops.Must(abi.NewType("tuple", "", []abi.ArgumentMarshaling{
+			{Name: "relayer_fee", Type: "uint256"},
+			{Name: "community_fee", Type: "uint256"},
+			{Name: "security_fee", Type: "uint256"},
+			{Name: "fee_payer_paloma_address", Type: "bytes32"},
+		}))},
 		// message id
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
 		// turnstone id
 		{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
 		// deadline
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
+		// relayer
+		{Type: whoops.Must(abi.NewType("address", "", nil))},
 	}
 
 	method := abi.NewMethod("logic_call", "logic_call", abi.Function, "", false, false, arguments, abi.Arguments{})
 	var bytes32 [32]byte
 
 	copy(bytes32[:], orig.GetTurnstoneID())
+
+	var fees *SubmitLogicCall_Fees
+	if m.Fees == nil {
+		// If we have no fees set in the message, we use the same defaults as
+		// pigeon
+		fees = &SubmitLogicCall_Fees{
+			RelayerFee:   100_000,
+			CommunityFee: 100_000,
+			SecurityFee:  100_000,
+		}
+	} else {
+		fees = m.Fees
+	}
+
+	// Left-pad the address with zeroes
+	padding := bytes.Repeat([]byte{0}, 32-len(m.SenderAddress))
+	senderAddress := [32]byte(append(padding, m.SenderAddress...))
 
 	bytes, err := arguments.Pack(
 		struct {
@@ -119,9 +189,22 @@ func (_m *Message_SubmitLogicCall) keccak256(orig *Message, nonce uint64) []byte
 			common.HexToAddress(m.GetHexContractAddress()),
 			m.GetPayload(),
 		},
+		struct {
+			RelayerFee            *big.Int
+			CommunityFee          *big.Int
+			SecurityFee           *big.Int
+			FeePayerPalomaAddress [32]byte
+		}{
+			new(big.Int).SetInt64(int64(fees.RelayerFee)),
+			new(big.Int).SetInt64(int64(fees.CommunityFee)),
+			new(big.Int).SetInt64(int64(fees.SecurityFee)),
+			senderAddress,
+		},
 		new(big.Int).SetInt64(int64(nonce)),
 		bytes32,
 		big.NewInt(m.GetDeadline()),
+		// FIXME Assignee needs to be replaced by the eth address
+		common.HexToAddress(orig.Assignee),
 	)
 	if err != nil {
 		panic(err)
@@ -137,15 +220,16 @@ func (m *Message) SetAssignee(ctx sdk.Context, val string) {
 	m.AssignedAtBlockHeight = math.NewInt(ctx.BlockHeight())
 }
 
-func (m *Message) Keccak256(nonce uint64) []byte {
+func (m *Message) Keccak256WithGasEstimate(nonce, gasEstimate uint64) []byte {
 	type keccak256able interface {
-		keccak256(*Message, uint64) []byte
+		keccak256(*Message, uint64, uint64) []byte
 	}
 	k, ok := m.GetAction().(keccak256able)
 	if !ok {
 		panic("message's action is not hashable")
 	}
-	return k.keccak256(m, nonce)
+
+	return k.keccak256(m, nonce, gasEstimate)
 }
 
 func (m *ValidatorBalancesAttestation) Keccak256(nonce uint64) []byte {
