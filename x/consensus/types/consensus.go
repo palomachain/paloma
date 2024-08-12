@@ -39,7 +39,7 @@ type QueuedSignedMessageI interface {
 	GetErrorData() *ErrorData
 	SetHandledAtBlockHeight(math.Int)
 	GetHandledAtBlockHeight() *math.Int
-	GetBytesToSign() []byte
+	GetBytesToSign(AnyUnpacker) ([]byte, error)
 	GetRequireSignatures() bool
 	GetRequireGasEstimation() bool
 	GetMsg() *types.Any
@@ -82,6 +82,19 @@ type MessageQueuedForBatchingI interface {
 }
 
 var _ MessageQueuedForBatchingI = &BatchOfConsensusMessages{}
+
+func (q *QueuedSignedMessage) GetBytesToSign(unpacker AnyUnpacker) ([]byte, error) {
+	msg, err := q.ConsensusMsg(unpacker)
+	if err != nil {
+		return nil, err
+	}
+
+	k := msg.(interface {
+		Keccak256(uint64) []byte
+	})
+
+	return k.Keccak256(q.GetId()), nil
+}
 
 func (q *QueuedSignedMessage) String() string {
 	if q == nil {
@@ -163,6 +176,11 @@ func (q *QueuedSignedMessage) ConsensusMsg(unpacker AnyUnpacker) (ConsensusMsg, 
 
 func (b *Batch) GetSignBytes() []byte {
 	return b.GetBytesToSign()
+}
+
+// TODO should compute hash from msgs hashes
+func (b *Batch) Keccak256(_ uint64) []byte {
+	return nil
 }
 
 func Queue(queueTypeName string, typ xchain.Type, refID xchain.ReferenceID) string {

@@ -153,10 +153,13 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, msg := range msgs {
+		bytesToSign, err := msg.GetBytesToSign(f.codec)
+		require.NoError(t, err)
+
 		sigbz, err := crypto.Sign(
 			crypto.Keccak256(
 				[]byte(keeper.SignaturePrefix),
-				msg.GetBytesToSign(),
+				bytesToSign,
 			),
 			private,
 		)

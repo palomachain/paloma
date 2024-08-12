@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -28,7 +29,7 @@ func (k Keeper) QueuedMessagesForRelaying(goCtx context.Context, req *types.Quer
 	var res []types.MessageWithSignatures
 	for _, msg := range msgs {
 		if msg.GetRequireSignatures() {
-			msgWithSignatures, err := k.queuedMessageToMessageWithSignatures(msg)
+			msgWithSignatures, err := consensus.ToMessageWithSignatures(msg, k.cdc)
 			if err != nil {
 				logger.WithError(err).Error("Failed to parse queued message to message with signatures.")
 				return nil, err

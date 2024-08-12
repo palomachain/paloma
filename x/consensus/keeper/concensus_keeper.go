@@ -6,7 +6,6 @@ import (
 
 	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/palomachain/paloma/util/libcons"
@@ -665,48 +664,4 @@ func (k Keeper) reassignMessageValidator(
 
 func nonceFromID(id uint64) []byte {
 	return sdk.Uint64ToBigEndian(id)
-}
-
-func (k Keeper) queuedMessageToMessageWithSignatures(msg types.QueuedSignedMessageI) (types.MessageWithSignatures, error) {
-	consensusMsg, err := msg.ConsensusMsg(k.cdc)
-	if err != nil {
-		return types.MessageWithSignatures{}, err
-	}
-	anyMsg, err := codectypes.NewAnyWithValue(consensusMsg)
-	if err != nil {
-		return types.MessageWithSignatures{}, err
-	}
-
-	var publicAccessData []byte
-
-	if msg.GetPublicAccessData() != nil {
-		publicAccessData = msg.GetPublicAccessData().GetData()
-	}
-
-	var errorData []byte
-
-	if msg.GetErrorData() != nil {
-		errorData = msg.GetErrorData().GetData()
-	}
-
-	respMsg := types.MessageWithSignatures{
-		Nonce:            nonceFromID(msg.GetId()),
-		Id:               msg.GetId(),
-		BytesToSign:      msg.GetBytesToSign(),
-		Msg:              anyMsg,
-		PublicAccessData: publicAccessData,
-		ErrorData:        errorData,
-		GasEstimate:      msg.GetGasEstimate(),
-	}
-
-	for _, signData := range msg.GetSignData() {
-		respMsg.SignData = append(respMsg.SignData, &types.ValidatorSignature{
-			ValAddress:             signData.GetValAddress(),
-			Signature:              signData.GetSignature(),
-			ExternalAccountAddress: signData.GetExternalAccountAddress(),
-			PublicKey:              signData.GetPublicKey(),
-		})
-	}
-
-	return respMsg, nil
 }
