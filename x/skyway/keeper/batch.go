@@ -56,7 +56,19 @@ func (k Keeper) BuildOutgoingTXBatch(
 		return nil, err
 	}
 
-	batch, err := types.NewInternalOutgingTxBatch(nextID, k.getBatchTimeoutHeight(ctx), selectedTxs, contract, 0, chainReferenceID, turnstoneID, assignee, 0)
+	assigneeValAddr, err := sdk.ValAddressFromBech32(assignee)
+	if err != nil {
+		return nil, fmt.Errorf("invalid validator address: %w", err)
+	}
+	assigneeRemoteAddress, found, err := k.GetEthAddressByValidator(ctx, assigneeValAddr, chainReferenceID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get remote address by validator: %w", err)
+	}
+	if !found {
+		return nil, fmt.Errorf("no remote address found for validator %s", assignee)
+	}
+
+	batch, err := types.NewInternalOutgingTxBatch(nextID, k.getBatchTimeoutHeight(ctx), selectedTxs, contract, 0, chainReferenceID, turnstoneID, assignee, assigneeRemoteAddress, 0)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "unable to create batch")
 	}
@@ -186,7 +198,20 @@ func (k Keeper) UpdateBatchGasEstimate(c context.Context, batch types.InternalOu
 	if entity.GasEstimate > 0 {
 		return fmt.Errorf("batch gas estimate already set")
 	}
+	// Update estimate
 	entity.GasEstimate = estimate
+
+	// Recalculate the checkpoint and store on batch
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, batch.ChainReferenceID)
+	if err != nil {
+		return fmt.Errorf("failed to get chain info: %w", err)
+	}
+	bts, err := entity.GetCheckpoint(string(ci.SmartContractUniqueID))
+	if err != nil {
+		return fmt.Errorf("failed to get checkpoint: %w", err)
+	}
+	entity.BytesToSign = bts
+
 	store := k.GetStore(ctx, types.StoreModulePrefix)
 	key := types.GetOutgoingTxBatchKey(batch.TokenContract, batch.BatchNonce)
 	externalBatch := entity.ToExternal()
