@@ -17,6 +17,7 @@ message OutgoingTxBatch {
   bytes bytes_to_sign = 7;
   string assignee = 8;
   uint64 gas_estimate = 9;
+  bytes assignee_remote_address = 10;
 }
 
 // OutgoingTransferTx represents an individual send from Paloma to remote chain

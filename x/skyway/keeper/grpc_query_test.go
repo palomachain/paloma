@@ -77,6 +77,7 @@ func TestLastPendingBatchRequest(t *testing.T) {
 			got.Batch[0].BatchTimeout = 0
 			got.Batch[0].BytesToSign = nil
 			got.Batch[0].Assignee = ""
+			got.Batch[0].AssigneeRemoteAddress = nil
 
 			assert.Equal(t, &spec.expResp, got, got)
 		})
@@ -231,6 +232,7 @@ func TestQueryBatch(t *testing.T) {
 	batch.Batch.BatchTimeout = 0
 	batch.Batch.BytesToSign = nil
 	batch.Batch.Assignee = ""
+	batch.Batch.AssigneeRemoteAddress = nil
 
 	assert.Equal(t, &expectedRes, batch, batch)
 }
@@ -260,8 +262,15 @@ func TestLastBatchesRequest(t *testing.T) {
 	require.Len(t, lastBatches.Batches, 0)
 
 	// Make sure gas is set, otherwise we don't hand it out for relaying
+	oldCheckpoints := make(map[uint64][]byte)
 	k.IterateOutgoingTxBatches(ctx, func(key []byte, batch types.InternalOutgoingTxBatch) bool {
+		oldCheckpoints[batch.BatchNonce] = batch.BytesToSign
 		k.UpdateBatchGasEstimate(ctx, batch, 21_000)
+		return false
+	})
+	// Make sure the bytes to sign are changed after updating the gas estimate
+	k.IterateOutgoingTxBatches(ctx, func(key []byte, batch types.InternalOutgoingTxBatch) bool {
+		require.NotEqual(t, oldCheckpoints[batch.BatchNonce], batch.BytesToSign, "should have changed the bytes to sign")
 		return false
 	})
 
@@ -352,9 +361,11 @@ func TestLastBatchesRequest(t *testing.T) {
 	lastBatches.Batches[0].BatchTimeout = 0
 	lastBatches.Batches[0].BytesToSign = nil
 	lastBatches.Batches[0].Assignee = ""
+	lastBatches.Batches[0].AssigneeRemoteAddress = nil
 	lastBatches.Batches[1].BatchTimeout = 0
 	lastBatches.Batches[1].BytesToSign = nil
 	lastBatches.Batches[1].Assignee = ""
+	lastBatches.Batches[1].AssigneeRemoteAddress = nil
 
 	assert.Equal(t, &expectedRes, lastBatches, "json is equal")
 }
