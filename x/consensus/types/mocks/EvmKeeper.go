@@ -16,7 +16,7 @@ type EvmKeeper struct {
 }
 
 // PickValidatorForMessage provides a mock function with given fields: ctx, chainReferenceID, requirements
-func (_m *EvmKeeper) PickValidatorForMessage(ctx context.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error) {
+func (_m *EvmKeeper) PickValidatorForMessage(ctx context.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, string, error) {
 	ret := _m.Called(ctx, chainReferenceID, requirements)
 
 	if len(ret) == 0 {
@@ -24,8 +24,9 @@ func (_m *EvmKeeper) PickValidatorForMessage(ctx context.Context, chainReference
 	}
 
 	var r0 string
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, *xchain.JobRequirements) (string, error)); ok {
+	var r1 string
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, *xchain.JobRequirements) (string, string, error)); ok {
 		return rf(ctx, chainReferenceID, requirements)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string, *xchain.JobRequirements) string); ok {
@@ -34,13 +35,19 @@ func (_m *EvmKeeper) PickValidatorForMessage(ctx context.Context, chainReference
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, *xchain.JobRequirements) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string, *xchain.JobRequirements) string); ok {
 		r1 = rf(ctx, chainReferenceID, requirements)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(string)
 	}
 
-	return r0, r1
+	if rf, ok := ret.Get(2).(func(context.Context, string, *xchain.JobRequirements) error); ok {
+		r2 = rf(ctx, chainReferenceID, requirements)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // NewEvmKeeper creates a new instance of EvmKeeper. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -48,8 +55,7 @@ func (_m *EvmKeeper) PickValidatorForMessage(ctx context.Context, chainReference
 func NewEvmKeeper(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *EvmKeeper {
+}) *EvmKeeper {
 	mock := &EvmKeeper{}
 	mock.Mock.Test(t)
 

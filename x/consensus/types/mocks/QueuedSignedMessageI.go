@@ -99,24 +99,34 @@ func (_m *QueuedSignedMessageI) GetAddedAtBlockHeight() int64 {
 	return r0
 }
 
-// GetBytesToSign provides a mock function with given fields:
-func (_m *QueuedSignedMessageI) GetBytesToSign() []byte {
-	ret := _m.Called()
+// GetBytesToSign provides a mock function with given fields: _a0
+func (_m *QueuedSignedMessageI) GetBytesToSign(_a0 codectypes.AnyUnpacker) ([]byte, error) {
+	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetBytesToSign")
 	}
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func() []byte); ok {
-		r0 = rf()
+	var r1 error
+	if rf, ok := ret.Get(0).(func(codectypes.AnyUnpacker) ([]byte, error)); ok {
+		return rf(_a0)
+	}
+	if rf, ok := ret.Get(0).(func(codectypes.AnyUnpacker) []byte); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
 		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(codectypes.AnyUnpacker) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetErrorData provides a mock function with given fields:
@@ -404,8 +414,7 @@ func (_m *QueuedSignedMessageI) String() string {
 func NewQueuedSignedMessageI(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *QueuedSignedMessageI {
+}) *QueuedSignedMessageI {
 	mock := &QueuedSignedMessageI{}
 	mock.Mock.Test(t)
 

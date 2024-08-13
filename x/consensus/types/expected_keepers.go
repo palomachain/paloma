@@ -31,5 +31,5 @@ type ValsetKeeper interface {
 
 //go:generate mockery --name=EvmKeeper
 type EvmKeeper interface {
-	PickValidatorForMessage(ctx context.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error)
+	PickValidatorForMessage(ctx context.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, string, error)
 }

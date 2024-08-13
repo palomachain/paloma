@@ -226,10 +226,10 @@ func (c Queue) AddEvidence(ctx context.Context, msgID uint64, evidence *types.Ev
 
 type assignableMessage interface {
 	proto.Message
-	SetAssignee(ctx sdk.Context, val string)
+	SetAssignee(ctx sdk.Context, val, remoteAddr string)
 }
 
-func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) error {
+func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val, remoteAddr string) error {
 	imsg, err := c.GetMsgByID(ctx, msgID)
 	if err != nil {
 		return err
@@ -243,7 +243,7 @@ func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) erro
 	if !ok {
 		return fmt.Errorf("message does not support setting assignee")
 	}
-	assignable.SetAssignee(ctx, val)
+	assignable.SetAssignee(ctx, val, remoteAddr)
 	var a proto.Message
 	a = assignable
 	msg := imsg.(*types.QueuedSignedMessage)

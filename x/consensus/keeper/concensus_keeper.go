@@ -641,7 +641,7 @@ func (k Keeper) SetMessageErrorData(
 
 func (k Keeper) reassignMessageValidator(
 	ctx sdk.Context,
-	valAddr string,
+	valAddr, remoteAddr string,
 	msgID uint64,
 	queueTypeName string,
 ) error {
@@ -659,7 +659,7 @@ func (k Keeper) reassignMessageValidator(
 		"new-assignee", valAddr,
 	)
 
-	return cq.ReassignValidator(ctx, msgID, valAddr)
+	return cq.ReassignValidator(ctx, msgID, valAddr, remoteAddr)
 }
 
 func nonceFromID(id uint64) []byte {

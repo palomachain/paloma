@@ -72,6 +72,8 @@ message Message {
     (amino.dont_omitempty) = true,
     (gogoproto.nullable) = false
   ];
+
+  string assigneeRemoteAddress = 10;
 }
 
 message TxExecutedProof { bytes serializedTX = 1; }
