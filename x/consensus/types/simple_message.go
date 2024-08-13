@@ -26,6 +26,6 @@ func (msg *SimpleMessage) ConsensusSignBytes() BytesToSignFunc {
 	})
 }
 
-func (msg *SimpleMessage) Keccak256WithGasEstimate(_, _ uint64) []byte {
+func (msg *SimpleMessage) Keccak256WithSignedMessage(_ *QueuedSignedMessage) []byte {
 	return crypto.Keccak256([]byte(msg.Sender), []byte(msg.Hello), []byte(msg.World))
 }

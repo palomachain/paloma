@@ -90,10 +90,10 @@ func (q *QueuedSignedMessage) GetBytesToSign(unpacker AnyUnpacker) ([]byte, erro
 	}
 
 	k := msg.(interface {
-		Keccak256WithGasEstimate(uint64, uint64) []byte
+		Keccak256WithSignedMessage(*QueuedSignedMessage) []byte
 	})
 
-	return k.Keccak256WithGasEstimate(q.GetId(), q.GasEstimate), nil
+	return k.Keccak256WithSignedMessage(q), nil
 }
 
 func (q *QueuedSignedMessage) String() string {
@@ -179,7 +179,7 @@ func (b *Batch) GetSignBytes() []byte {
 }
 
 // TODO should compute hash from msgs hashes
-func (b *Batch) Keccak256WithGasEstimate(_, _ uint64) []byte {
+func (b *Batch) Keccak256WithSignedMessage(_ *QueuedSignedMessage) []byte {
 	return nil
 }
 

@@ -219,7 +219,7 @@ func (m *Message) SetAssignee(ctx sdk.Context, val, remoteAddr string) {
 	m.AssignedAtBlockHeight = math.NewInt(ctx.BlockHeight())
 }
 
-func (m *Message) Keccak256WithGasEstimate(nonce, gasEstimate uint64) []byte {
+func (m *Message) Keccak256WithSignedMessage(q *consensustypes.QueuedSignedMessage) []byte {
 	type keccak256able interface {
 		keccak256(*Message, uint64, uint64) []byte
 	}
@@ -228,7 +228,7 @@ func (m *Message) Keccak256WithGasEstimate(nonce, gasEstimate uint64) []byte {
 		panic("message's action is not hashable")
 	}
 
-	return k.keccak256(m, nonce, gasEstimate)
+	return k.keccak256(m, q.GetId(), q.GasEstimate)
 }
 
 func (m *ValidatorBalancesAttestation) Keccak256(nonce uint64) []byte {
