@@ -219,7 +219,7 @@ func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.Tx
 //	if len(transfers) == 0 {
 //		return a.k.SetSmartContractAsActive(ctx, smartContractID, a.chainReferenceID)
 //	}
-//
+
 //	deployment.Erc20Transfers = transfers
 //	if err := a.k.updateSmartContractDeployment(ctx, smartContractID, a.chainReferenceID, deployment); err != nil {
 //		a.logger.WithError(err).Error("Failed to update smart contract deployment")
