@@ -15,12 +15,20 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 )
 
+type FeeArgs struct {
+	RelayerFee            *big.Int
+	CommunityFee          *big.Int
+	SecurityFee           *big.Int
+	FeePayerPalomaAddress [32]byte
+}
+
 func (m *UploadSmartContract) VerifyAgainstTX(
 	ctx context.Context,
 	tx *ethtypes.Transaction,
 	_ consensustypes.QueuedSignedMessageI,
 	_ *Valset,
 	_ *SmartContract,
+	_ string,
 ) error {
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
 		WithFields("tx_hash", tx.Hash().Hex(), "msg_id", m.Id)
@@ -67,6 +75,7 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 	msg consensustypes.QueuedSignedMessageI,
 	valset *Valset,
 	compass *SmartContract,
+	_ string,
 ) error {
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
 		WithFields("tx_hash", tx.Hash().Hex(), "valset_id", valset.ValsetID)
@@ -85,6 +94,16 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 		return err
 	}
 
+	padding := bytes.Repeat([]byte{0}, 32-len(m.SenderAddress))
+	paddedSenderAddress := [32]byte(append(padding, m.SenderAddress...))
+
+	feeArgs := FeeArgs{
+		RelayerFee:            big.NewInt(0).SetUint64(m.Fees.RelayerFee),
+		CommunityFee:          big.NewInt(0).SetUint64(m.Fees.CommunityFee),
+		SecurityFee:           big.NewInt(0).SetUint64(m.Fees.SecurityFee),
+		FeePayerPalomaAddress: paddedSenderAddress,
+	}
+
 	// Since some validators might have added their signature to the message
 	// after a pigeon start relaying it, we iteratively remove the end signature
 	// until we get a match, or there are no more signatures.
@@ -95,8 +114,10 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 				LogicContractAddress: common.HexToAddress(m.GetHexContractAddress()),
 				Payload:              m.GetPayload(),
 			},
+			feeArgs,
 			new(big.Int).SetInt64(int64(msg.GetId())),
 			new(big.Int).SetInt64(m.GetDeadline()),
+			common.BytesToAddress(m.ContractAddress),
 		}
 
 		input, err := contractABI.Pack("submit_logic_call", args...)
@@ -121,6 +142,7 @@ func (m *UpdateValset) VerifyAgainstTX(
 	msg consensustypes.QueuedSignedMessageI,
 	valset *Valset,
 	compass *SmartContract,
+	relayer string,
 ) error {
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
 		WithFields("tx_hash", tx.Hash().Hex(),
@@ -148,6 +170,8 @@ func (m *UpdateValset) VerifyAgainstTX(
 		args := []any{
 			BuildCompassConsensus(valset, msg.GetSignData()[0:i]),
 			TransformValsetToCompassValset(m.Valset),
+			common.HexToAddress(relayer),
+			big.NewInt(0).SetUint64(msg.GetGasEstimate()),
 		}
 
 		input, err := contractABI.Pack("update_valset", args...)

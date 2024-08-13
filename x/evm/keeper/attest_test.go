@@ -29,11 +29,14 @@ var (
 	contractAbi         = string(whoops.Must(os.ReadFile("testdata/sample-abi.json")))
 	contractBytecodeStr = string(whoops.Must(os.ReadFile("testdata/sample-bytecode.out")))
 
-	sampleTx1RawBytes = common.FromHex(string(whoops.Must(os.ReadFile("testdata/sample-tx-raw.hex"))))
-
-	sampleTx1 = func() *ethcoretypes.Transaction {
+	// Keeping the upload_smart_contract test on the old ABI until compass becomes more stable as
+	// updates to this test harness are tedious.
+	uscAbi         = string(whoops.Must(os.ReadFile("testdata/usc-abi.json")))
+	uscBytecodeStr = string(whoops.Must(os.ReadFile("testdata/usc-bytecode.out")))
+	uscTx1RawBytes = common.FromHex(string(whoops.Must(os.ReadFile("testdata/usc-tx-raw.hex"))))
+	uscTx1         = func() *ethcoretypes.Transaction {
 		tx := new(ethcoretypes.Transaction)
-		whoops.Assert(tx.UnmarshalBinary(sampleTx1RawBytes))
+		whoops.Assert(tx.UnmarshalBinary(uscTx1RawBytes))
 		return tx
 	}()
 
@@ -163,7 +166,9 @@ var _ = g.Describe("attest router", func() {
 	})
 
 	g.BeforeEach(func() {
-		consensusMsg = &types.Message{}
+		consensusMsg = &types.Message{
+			AssigneeRemoteAddress: "0x28E9e9bfedEd29747FCc33ccA25b4B75f05E434B",
+		}
 	})
 
 	g.JustBeforeEach(func() {
@@ -183,6 +188,7 @@ var _ = g.Describe("attest router", func() {
 			PublicAccessData: &consensustypes.PublicAccessData{
 				ValsetID: 1,
 			},
+			GasEstimate: 1000,
 		}
 	})
 
@@ -372,6 +378,11 @@ var _ = g.Describe("attest router", func() {
 								HexContractAddress: "0x51eca2efb15afacc612278c71f5edb35986f172f",
 								Abi:                []byte(contractAbi),
 								Payload:            common.FromHex(slcPayload),
+								Fees: &types.SubmitLogicCall_Fees{
+									RelayerFee:   1,
+									CommunityFee: 2,
+									SecurityFee:  3,
+								},
 							},
 						}
 					})
@@ -542,7 +553,7 @@ var _ = g.Describe("attest router", func() {
 
 				g.When("message is UploadSmartContract", func() {
 					g.BeforeEach(func() {
-						execTx = sampleTx1
+						execTx = uscTx1
 						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
 						evidence = []*consensustypes.Evidence{
 							{
@@ -561,8 +572,8 @@ var _ = g.Describe("attest router", func() {
 						consensusMsg.Action = &types.Message_UploadSmartContract{
 							UploadSmartContract: &types.UploadSmartContract{
 								Id:       1,
-								Abi:      contractAbi,
-								Bytecode: common.FromHex(contractBytecodeStr),
+								Abi:      uscAbi,
+								Bytecode: common.FromHex(uscBytecodeStr),
 							},
 						}
 						address, err := sdk.ValAddressFromBech32("cosmosvaloper1pzf9apnk8yw7pjw3v9vtmxvn6guhkslanh8r07")
