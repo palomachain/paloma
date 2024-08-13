@@ -37,7 +37,7 @@ type Queuer interface {
 	GetAll(context.Context) ([]types.QueuedSignedMessageI, error)
 	GetMsgByID(ctx context.Context, id uint64) (types.QueuedSignedMessageI, error)
 	ChainInfo() (types.ChainType, string)
-	ReassignValidator(ctx sdk.Context, id uint64, val string) error
+	ReassignValidator(ctx sdk.Context, id uint64, val, remoteAddr string) error
 }
 
 type QueueBatcher interface {

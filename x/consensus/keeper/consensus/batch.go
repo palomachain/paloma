@@ -169,8 +169,8 @@ func (c BatchQueue) AddEvidence(ctx context.Context, id uint64, evidence *types.
 	return c.base.AddEvidence(sdkCtx, id, evidence)
 }
 
-func (c BatchQueue) ReassignValidator(ctx sdk.Context, id uint64, val string) error {
-	return c.base.ReassignValidator(ctx, id, val)
+func (c BatchQueue) ReassignValidator(ctx sdk.Context, id uint64, val, remoteAddr string) error {
+	return c.base.ReassignValidator(ctx, id, val, remoteAddr)
 }
 
 func (c BatchQueue) SetPublicAccessData(ctx context.Context, id uint64, data *types.PublicAccessData) error {

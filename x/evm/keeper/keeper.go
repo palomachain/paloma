@@ -168,12 +168,40 @@ func (k *Keeper) AddMessageConsensusAttestedListener(l metrixtypes.OnConsensusMe
 	k.onMessageAttestedListeners = append(k.onMessageAttestedListeners, l)
 }
 
-func (k Keeper) PickValidatorForMessage(ctx context.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error) {
+func (k Keeper) PickValidatorForMessage(
+	ctx context.Context,
+	chainReferenceID string,
+	requirements *xchain.JobRequirements,
+) (string, string, error) {
 	weights, err := k.GetRelayWeights(ctx, chainReferenceID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return k.msgAssigner.PickValidatorForMessage(ctx, weights, chainReferenceID, requirements)
+
+	pick, err := k.msgAssigner.PickValidatorForMessage(ctx, weights, chainReferenceID, requirements)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Get the current snapshot, so we can get the validator external address
+	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
+	if err != nil {
+		return "", "", err
+	}
+
+	for _, val := range snapshot.Validators {
+		if val.Address.String() == pick {
+			for _, info := range val.ExternalChainInfos {
+				if info.ChainReferenceID == chainReferenceID {
+					return pick, info.Address, nil
+				}
+			}
+
+			break
+		}
+	}
+
+	return "", "", errors.New("picked validator is missing external address")
 }
 
 func (k Keeper) Logger(ctx context.Context) liblog.Logr {
@@ -532,12 +560,12 @@ func (k Keeper) justInTimeValsetUpdate(ctx context.Context, chain *types.ChainIn
 		return nil
 	}
 
-	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
+	assignee, remoteAddr, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
 	if err != nil {
 		return err
 	}
 
-	err = k.msgSender.SendValsetMsgForChain(ctx, chain, latestValset, assignee)
+	err = k.msgSender.SendValsetMsgForChain(ctx, chain, latestValset, assignee, remoteAddr)
 	if err != nil {
 		k.Logger(sdkCtx).Error("unable to send valset message for chain",
 			"chain", chain.GetChainReferenceID(),
@@ -567,7 +595,7 @@ func (k Keeper) PublishValsetToChain(ctx context.Context, valset types.Valset, c
 		return nil
 	}
 
-	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
+	assignee, remoteAddr, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
 	if err != nil {
 		k.Logger(sdkCtx).Error("error picking a validator to run the message",
 			"chain-reference-id", chain.GetChainReferenceID(),
@@ -577,7 +605,7 @@ func (k Keeper) PublishValsetToChain(ctx context.Context, valset types.Valset, c
 		return err
 	}
 
-	err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset, assignee)
+	err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset, assignee, remoteAddr)
 	if err != nil {
 		k.Logger(sdkCtx).Error("unable to send valset message for chain",
 			"chain", chain.GetChainReferenceID(),
@@ -644,7 +672,7 @@ func (m msgSender) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.ChainInfo, valset types.Valset, assignee string) error {
+func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.ChainInfo, valset types.Valset, assignee, remoteAddr string) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	m.Logger(sdkCtx).Info("snapshot was built and a new update valset message is being sent over",
@@ -701,6 +729,7 @@ func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.C
 				},
 			},
 			Assignee:              assignee,
+			AssigneeRemoteAddress: remoteAddr,
 			AssignedAtBlockHeight: math.NewInt(sdkCtx.BlockHeight()),
 		}, &consensus.PutOptions{
 			RequireGasEstimation: true,

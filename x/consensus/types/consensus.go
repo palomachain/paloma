@@ -90,10 +90,10 @@ func (q *QueuedSignedMessage) GetBytesToSign(unpacker AnyUnpacker) ([]byte, erro
 	}
 
 	k := msg.(interface {
-		Keccak256(uint64) []byte
+		Keccak256WithSignedMessage(*QueuedSignedMessage) ([]byte, error)
 	})
 
-	return k.Keccak256(q.GetId()), nil
+	return k.Keccak256WithSignedMessage(q)
 }
 
 func (q *QueuedSignedMessage) String() string {
@@ -179,8 +179,8 @@ func (b *Batch) GetSignBytes() []byte {
 }
 
 // TODO should compute hash from msgs hashes
-func (b *Batch) Keccak256(_ uint64) []byte {
-	return nil
+func (b *Batch) Keccak256WithSignedMessage(_ *QueuedSignedMessage) ([]byte, error) {
+	return nil, nil
 }
 
 func Queue(queueTypeName string, typ xchain.Type, refID xchain.ReferenceID) string {

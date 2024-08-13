@@ -31,7 +31,7 @@ type BankKeeper interface {
 //go:generate mockery --name=EvmKeeper
 type EvmKeeper interface {
 	PreJobExecution(ctx context.Context, job *Job) error
-	PickValidatorForMessage(ctx context.Context, chainReferenceID string, req *xchain.JobRequirements) (string, error)
+	PickValidatorForMessage(ctx context.Context, chainReferenceID string, req *xchain.JobRequirements) (string, string, error)
 }
 
 // ValsetKeeper defines the expected interface for interacting with the valset module

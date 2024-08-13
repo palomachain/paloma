@@ -86,7 +86,7 @@ func (k Keeper) ReassignOrphanedMessages(ctx sdk.Context, blockAge int64) (err e
 					return fmt.Errorf("failed to parse to evm message: %w", err)
 				}
 				req := deriveMessageRequirements(evmmsg, k.cdc)
-				newVal, err := k.evmKeeper.PickValidatorForMessage(ctx, evmmsg.ChainReferenceID, req)
+				newVal, newRemoteAddr, err := k.evmKeeper.PickValidatorForMessage(ctx, evmmsg.ChainReferenceID, req)
 				if err != nil {
 					logger.WithError(err).Error("failed to pick new validator for message.")
 					return fmt.Errorf("failed to pick validator for message: %w", err)
@@ -94,7 +94,7 @@ func (k Keeper) ReassignOrphanedMessages(ctx sdk.Context, blockAge int64) (err e
 
 				logger = logger.WithFields("current-validator", currentVal, "new-validator", newVal)
 				logger.Debug("Attepting to reassign message...")
-				if err := k.reassignMessageValidator(ctx, newVal, msg.GetId(), opt.QueueTypeName); err != nil {
+				if err := k.reassignMessageValidator(ctx, newVal, newRemoteAddr, msg.GetId(), opt.QueueTypeName); err != nil {
 					logger.WithError(err).Error("failed to reassign new validator to message.")
 					return err
 				}
