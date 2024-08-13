@@ -103,7 +103,7 @@ func (_m *Message_UpdateValset) keccak256(
 	bytes, err := arguments.Pack(
 		hash32,
 		common.HexToAddress(orig.AssigneeRemoteAddress),
-		new(big.Int).SetInt64(int64(gasEstimate)),
+		new(big.Int).SetUint64(gasEstimate),
 	)
 	if err != nil {
 		panic(err)
@@ -194,9 +194,9 @@ func (_m *Message_SubmitLogicCall) keccak256(
 			SecurityFee           *big.Int
 			FeePayerPalomaAddress [32]byte
 		}{
-			new(big.Int).SetInt64(int64(fees.RelayerFee)),
-			new(big.Int).SetInt64(int64(fees.CommunityFee)),
-			new(big.Int).SetInt64(int64(fees.SecurityFee)),
+			new(big.Int).SetUint64(fees.RelayerFee),
+			new(big.Int).SetUint64(fees.CommunityFee),
+			new(big.Int).SetUint64(fees.SecurityFee),
 			senderAddress,
 		},
 		new(big.Int).SetInt64(int64(nonce)),
