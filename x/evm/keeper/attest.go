@@ -156,8 +156,8 @@ func attestTransactionIntegrity(
 	msg consensustypes.QueuedSignedMessageI,
 	k *Keeper,
 	proof *types.TxExecutedProof,
-	chainReferenceID string,
-	verifyTx func(context.Context, *ethtypes.Transaction, consensustypes.QueuedSignedMessageI, *types.Valset, *types.SmartContract) error,
+	chainReferenceID, relayer string,
+	verifyTx func(context.Context, *ethtypes.Transaction, consensustypes.QueuedSignedMessageI, *types.Valset, *types.SmartContract, string) error,
 ) (*ethtypes.Transaction, error) {
 	// check if correct thing was called
 	tx, err := proof.GetTX()
@@ -199,7 +199,7 @@ func attestTransactionIntegrity(
 		}
 	}
 
-	err = verifyTx(ctx, tx, msg, &valset, compass)
+	err = verifyTx(ctx, tx, msg, &valset, compass, relayer)
 	if err != nil {
 		// passed in transaction doesn't seem to be created from this smart contract
 		return nil, fmt.Errorf("tx failed to verify: %w", err)

@@ -64,7 +64,7 @@
       {
         "indexed": false,
         "name": "receiver",
-        "type": "bytes32"
+        "type": "string"
       },
       {
         "indexed": false,
@@ -150,104 +150,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "depositor_paloma_address",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "FundsDepositedEvent",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "receiver",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "FundsWithdrawnEvent",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "new_compass",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "event_id",
-        "type": "uint256"
-      }
-    ],
-    "name": "UpdateCompassAddressInFeeManager",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "contract_address",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "buyer",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "paloma",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "name": "node_count",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "grain_amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "event_id",
-        "type": "uint256"
-      }
-    ],
-    "name": "NodeSaleEvent",
-    "type": "event"
-  },
-  {
     "inputs": [
       {
         "name": "_compass_id",
@@ -258,7 +160,7 @@
         "type": "uint256"
       },
       {
-        "name": "_gravity_nonce",
+        "name": "_skyway_nonce",
         "type": "uint256"
       },
       {
@@ -278,10 +180,6 @@
         ],
         "name": "valset",
         "type": "tuple"
-      },
-      {
-        "name": "fee_manager",
-        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -348,14 +246,6 @@
         ],
         "name": "new_valset",
         "type": "tuple"
-      },
-      {
-        "name": "relayer",
-        "type": "address"
-      },
-      {
-        "name": "gas_estimate",
-        "type": "uint256"
       }
     ],
     "name": "update_valset",
@@ -422,38 +312,12 @@
         "type": "tuple"
       },
       {
-        "components": [
-          {
-            "name": "relayer_fee",
-            "type": "uint256"
-          },
-          {
-            "name": "community_fee",
-            "type": "uint256"
-          },
-          {
-            "name": "security_fee",
-            "type": "uint256"
-          },
-          {
-            "name": "fee_payer_paloma_address",
-            "type": "bytes32"
-          }
-        ],
-        "name": "fee_args",
-        "type": "tuple"
-      },
-      {
         "name": "message_id",
         "type": "uint256"
       },
       {
         "name": "deadline",
         "type": "uint256"
-      },
-      {
-        "name": "relayer",
-        "type": "address"
       }
     ],
     "name": "submit_logic_call",
@@ -469,7 +333,7 @@
       },
       {
         "name": "receiver",
-        "type": "bytes32"
+        "type": "string"
       },
       {
         "name": "amount",
@@ -550,41 +414,9 @@
       {
         "name": "deadline",
         "type": "uint256"
-      },
-      {
-        "name": "relayer",
-        "type": "address"
-      },
-      {
-        "name": "gas_estimate",
-        "type": "uint256"
       }
     ],
     "name": "submit_batch",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "name": "buyer",
-        "type": "address"
-      },
-      {
-        "name": "paloma",
-        "type": "bytes32"
-      },
-      {
-        "name": "node_count",
-        "type": "uint256"
-      },
-      {
-        "name": "grain_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "emit_nodesale_event",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -613,231 +445,6 @@
       }
     ],
     "name": "deploy_erc20",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "name": "contract_address",
-        "type": "address"
-      },
-      {
-        "name": "payload",
-        "type": "bytes"
-      }
-    ],
-    "name": "arbitrary_view",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "name": "depositor_paloma_address",
-        "type": "bytes32"
-      },
-      {
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "deposit",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "name": "dex",
-        "type": "address"
-      },
-      {
-        "name": "payload",
-        "type": "bytes"
-      },
-      {
-        "name": "min_grain",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdraw",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "security_fee_topup",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "components": [
-              {
-                "name": "validators",
-                "type": "address[]"
-              },
-              {
-                "name": "powers",
-                "type": "uint256[]"
-              },
-              {
-                "name": "valset_id",
-                "type": "uint256"
-              }
-            ],
-            "name": "valset",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "name": "v",
-                "type": "uint256"
-              },
-              {
-                "name": "r",
-                "type": "uint256"
-              },
-              {
-                "name": "s",
-                "type": "uint256"
-              }
-            ],
-            "name": "signatures",
-            "type": "tuple[]"
-          }
-        ],
-        "name": "consensus",
-        "type": "tuple"
-      },
-      {
-        "name": "message_id",
-        "type": "uint256"
-      },
-      {
-        "name": "deadline",
-        "type": "uint256"
-      },
-      {
-        "name": "receiver",
-        "type": "bytes32"
-      },
-      {
-        "name": "relayer",
-        "type": "address"
-      },
-      {
-        "name": "gas_estimate",
-        "type": "uint256"
-      },
-      {
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "name": "dex",
-        "type": "address"
-      },
-      {
-        "name": "payload",
-        "type": "bytes"
-      },
-      {
-        "name": "min_grain",
-        "type": "uint256"
-      }
-    ],
-    "name": "bridge_community_tax_to_paloma",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "components": [
-              {
-                "name": "validators",
-                "type": "address[]"
-              },
-              {
-                "name": "powers",
-                "type": "uint256[]"
-              },
-              {
-                "name": "valset_id",
-                "type": "uint256"
-              }
-            ],
-            "name": "valset",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "name": "v",
-                "type": "uint256"
-              },
-              {
-                "name": "r",
-                "type": "uint256"
-              },
-              {
-                "name": "s",
-                "type": "uint256"
-              }
-            ],
-            "name": "signatures",
-            "type": "tuple[]"
-          }
-        ],
-        "name": "consensus",
-        "type": "tuple"
-      },
-      {
-        "name": "deadline",
-        "type": "uint256"
-      },
-      {
-        "name": "gas_estimate",
-        "type": "uint256"
-      },
-      {
-        "name": "_new_compass",
-        "type": "address"
-      },
-      {
-        "name": "relayer",
-        "type": "address"
-      }
-    ],
-    "name": "update_compass_address_in_fee_manager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -892,7 +499,7 @@
   },
   {
     "inputs": [],
-    "name": "last_gravity_nonce",
+    "name": "last_skyway_nonce",
     "outputs": [
       {
         "name": "",
@@ -931,30 +538,6 @@
       {
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "slc_switch",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "FEE_MANAGER",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
