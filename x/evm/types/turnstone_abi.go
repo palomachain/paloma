@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"math/big"
 	"strings"
 
@@ -43,7 +44,7 @@ type CompassLogicCallArgs struct {
 func (_m *Message_UpdateValset) keccak256(
 	orig *Message,
 	_, gasEstimate uint64,
-) []byte {
+) ([]byte, error) {
 	m := _m.UpdateValset
 	// checkpoint(address[],uint256[],uint256,bytes32)
 	checkpointArgs := abi.Arguments{
@@ -73,7 +74,7 @@ func (_m *Message_UpdateValset) keccak256(
 		bytes32,
 	)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	checkpointBytes = append(checkpointMethod.ID[:], checkpointBytes...)
@@ -106,12 +107,12 @@ func (_m *Message_UpdateValset) keccak256(
 		new(big.Int).SetUint64(gasEstimate),
 	)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	bytes = append(method.ID[:], bytes...)
 
-	return crypto.Keccak256(bytes)
+	return crypto.Keccak256(bytes), nil
 }
 
 func uint64ToByte(n uint64) []byte {
@@ -123,16 +124,16 @@ func uint64ToByte(n uint64) []byte {
 func (_m *Message_UploadSmartContract) keccak256(
 	_ *Message,
 	nonce, _ uint64,
-) []byte {
+) ([]byte, error) {
 	m := _m.UploadSmartContract
 
-	return crypto.Keccak256(append(m.GetBytecode()[:], uint64ToByte(nonce)...))
+	return crypto.Keccak256(append(m.GetBytecode()[:], uint64ToByte(nonce)...)), nil
 }
 
 func (_m *Message_SubmitLogicCall) keccak256(
 	orig *Message,
 	nonce, _ uint64,
-) []byte {
+) ([]byte, error) {
 	m := _m.SubmitLogicCall
 	// logic_call((address,bytes),uint256,uint256)
 	arguments := abi.Arguments{
@@ -205,12 +206,12 @@ func (_m *Message_SubmitLogicCall) keccak256(
 		common.HexToAddress(orig.AssigneeRemoteAddress),
 	)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	bytes = append(method.ID[:], bytes...)
 
-	return crypto.Keccak256(bytes)
+	return crypto.Keccak256(bytes), nil
 }
 
 func (m *Message) SetAssignee(ctx sdk.Context, val, remoteAddr string) {
@@ -219,13 +220,13 @@ func (m *Message) SetAssignee(ctx sdk.Context, val, remoteAddr string) {
 	m.AssignedAtBlockHeight = math.NewInt(ctx.BlockHeight())
 }
 
-func (m *Message) Keccak256WithSignedMessage(q *consensustypes.QueuedSignedMessage) []byte {
+func (m *Message) Keccak256WithSignedMessage(q *consensustypes.QueuedSignedMessage) ([]byte, error) {
 	type keccak256able interface {
-		keccak256(*Message, uint64, uint64) []byte
+		keccak256(*Message, uint64, uint64) ([]byte, error)
 	}
 	k, ok := m.GetAction().(keccak256able)
 	if !ok {
-		panic("message's action is not hashable")
+		return nil, errors.New("message's action is not hashable")
 	}
 
 	return k.keccak256(m, q.GetId(), q.GasEstimate)
