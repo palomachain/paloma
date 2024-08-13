@@ -29,6 +29,8 @@ var (
 	contractAbi         = string(whoops.Must(os.ReadFile("testdata/sample-abi.json")))
 	contractBytecodeStr = string(whoops.Must(os.ReadFile("testdata/sample-bytecode.out")))
 
+	// Keeping the upload_smart_contract test on the old ABI until compass becomes more stable as
+	// updates to this test harness are tedious.
 	uscAbi         = string(whoops.Must(os.ReadFile("testdata/usc-abi.json")))
 	uscBytecodeStr = string(whoops.Must(os.ReadFile("testdata/usc-bytecode.out")))
 	uscTx1RawBytes = common.FromHex(string(whoops.Must(os.ReadFile("testdata/usc-tx-raw.hex"))))
