@@ -583,7 +583,7 @@ var _ = g.Describe("attest router", func() {
 
 					g.When("target chain has no deployed ERC20 tokens", func() {
 						// g.BeforeEach(func() {
-						// 	gk.On("CastAllERC20ToDenoms", mock.Anything).Return(nil, nil)
+						// 	gk.On("CastChainERC20ToDenoms", mock.Anything, mock.Anything).Return(nil, nil)
 						// })
 						g.It("removes deployment", func() {
 							setupChainSupport()
@@ -603,10 +603,9 @@ var _ = g.Describe("attest router", func() {
 
 					// g.When("target chain has active ERC20 tokens deployed", func() {
 					// 	g.BeforeEach(func() {
-					// 		gk.On("CastAllERC20ToDenoms", mock.Anything).Return([]types.ERC20Record{
+					// 		gk.On("CastChainERC20ToDenoms", mock.Anything, newChain.ChainReferenceID).Return([]types.ERC20Record{
 					// 			record{"denom", "address1", newChain.ChainReferenceID},
 					// 			record{"denom2", "address2", newChain.ChainReferenceID},
-					// 			record{"denom3", "address3", "unknown-chain"},
 					// 		}, nil)
 					// 	})
 					// 	g.It("updates deployment", func() {

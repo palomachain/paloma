@@ -101,7 +101,8 @@ func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.Tx
 	// We need to reenable this in v1.16.1 after compass 2.0 is deployed.
 	// See https://github.com/VolumeFi/paloma/issues/1891
 	//
-	// records, err := a.k.Skyway.CastAllERC20ToDenoms(ctx)
+	// Get the ERC20 tokens just for this chain
+	// records, err := a.k.Skyway.CastChainERC20ToDenoms(ctx, a.chainReferenceID)
 	// if err != nil {
 	// 	a.logger.WithError(err).Error("Failed to extract ERC20 records.")
 	// 	return err
@@ -212,11 +213,18 @@ func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.Tx
 // 		})
 // 	}
 
-// 	deployment.Erc20Transfers = transfers
-// 	if err := a.k.updateSmartContractDeployment(ctx, smartContractID, a.chainReferenceID, deployment); err != nil {
-// 		a.logger.WithError(err).Error("Failed to update smart contract deployment")
-// 		return err
-// 	}
+//	// This shouldn't be needed anymore, since we query the ERC20 tokens for
+//	// this specific chain. However, just to make double sure, we check the
+//	// transfers. If there's none, just set the contract to active.
+//	if len(transfers) == 0 {
+//		return a.k.SetSmartContractAsActive(ctx, smartContractID, a.chainReferenceID)
+//	}
+
+//	deployment.Erc20Transfers = transfers
+//	if err := a.k.updateSmartContractDeployment(ctx, smartContractID, a.chainReferenceID, deployment); err != nil {
+//		a.logger.WithError(err).Error("Failed to update smart contract deployment")
+//		return err
+//	}
 
 // 	a.k.deploymentCache.Add(ctx, a.chainReferenceID, smartContractID, msgIDs...)
 // 	a.logger.Debug("attestation successful")
