@@ -19,7 +19,7 @@ import (
 // CheckAndProcessEstimatedMessages is supposed to be used within the
 // EndBlocker. It will get messages which have received gas estimates
 // and try to process them.
-func (k Keeper) CheckAndProcessEstimatedMessages(ctx context.Context) error {
+func (k Keeper) CheckAndProcessEstimatedMessages(ctx context.Context) (err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := liblog.FromKeeper(ctx, k).WithComponent("check-and-process-estimated-messages")
 	for _, supportedConsensusQueue := range k.registry.slice {
@@ -43,12 +43,14 @@ func (k Keeper) CheckAndProcessEstimatedMessages(ctx context.Context) error {
 				continue
 			}
 			for _, msg := range msgs {
-				if err := k.checkAndProcessEstimatedMessage(ctx, msg, cq); err != nil {
+				cachedCtx, commit := sdk.UnwrapSDKContext(ctx).CacheContext()
+				if err := k.checkAndProcessEstimatedMessage(cachedCtx, msg, cq); err != nil {
 					logger.WithFields("msg_id", msg.GetId()).
 						WithError(err).
 						Warn("Failed to process estimated message")
 					continue
 				}
+				commit()
 			}
 		}
 	}
