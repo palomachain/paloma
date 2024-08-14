@@ -22,13 +22,13 @@ func applyFlags(cmd *cobra.Command) {
 	flags.AddTxFlagsToCmd(cmd)
 
 	cmd.Flags().String(cli.FlagTitle, "", "title of proposal")
-	cmd.Flags().String(cli.FlagDescription, "", "description of proposal")
+	cmd.Flags().String(cli.FlagSummary, "", "summary description of proposal")
 	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
 
 	//nolint:errcheck
 	cmd.MarkFlagRequired(cli.FlagTitle)
 	//nolint:errcheck
-	cmd.MarkFlagRequired(cli.FlagDescription)
+	cmd.MarkFlagRequired(cli.FlagSummary)
 }
 
 func CmdEvmChainProposalHandler() *cobra.Command {
@@ -96,7 +96,7 @@ func CmdEvmProposeNewChain() *cobra.Command {
 					ChainReferenceID:  chainReferenceID,
 					ChainID:           uint64(chainID),
 					Title:             whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					BlockHeight:       uint64(blockHeight),
 					BlockHashAtHeight: blockHashAtHeight,
 					MinOnChainBalance: minOnChainBalance,
@@ -137,7 +137,7 @@ func CmdEvmProposalDeployNewSmartContract() *cobra.Command {
 
 				deployNewSmartContractProposal := &types.DeployNewSmartContractProposal{
 					Title:       whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description: whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description: whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					AbiJSON:     abiJSON,
 					BytecodeHex: bytecodeHex,
 				}
@@ -183,7 +183,7 @@ func CmdEvmProposalChangeMinOnChainBalance() *cobra.Command {
 
 				proposal := &types.ChangeMinOnChainBalanceProposal{
 					Title:             whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					ChainReferenceID:  chainReferenceID,
 					MinOnChainBalance: balance,
 				}
@@ -223,7 +223,7 @@ func CmdEvmProposeChainRemoval() *cobra.Command {
 
 				addChainProposal := &types.RemoveChainProposal{
 					Title:            whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					ChainReferenceID: chainReferenceID,
 				}
 
@@ -267,7 +267,7 @@ func CmdEvmProposalChangeRelayWeights() *cobra.Command {
 
 				proposal := &types.RelayWeightsProposal{
 					Title:            whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					ChainReferenceID: chainReferenceID,
 					Fee:              weights.Fee,
 					Uptime:           weights.Uptime,
