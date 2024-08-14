@@ -34,11 +34,14 @@ func (k Keeper) MessageByID(goCtx context.Context, req *types.QueryMessageByIDRe
 	if err != nil {
 		return nil, err
 	}
-	return &types.MessageQueryResult{
-		Message:      &approvedMessage,
-		Evidence:     msg.GetEvidence(),
-		GasEstimates: msg.GetGasEstimates(),
-	}, nil
+	res := &types.MessageQueryResult{
+		Message: &approvedMessage,
+	}
+
+	copy(res.Evidence, msg.GetEvidence())
+	copy(res.GasEstimates, msg.GetGasEstimates())
+
+	return res, nil
 }
 
 func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesInQueueRequest) (*types.QueryMessagesInQueueResponse, error) {
