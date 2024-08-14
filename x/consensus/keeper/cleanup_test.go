@@ -31,7 +31,6 @@ func TestDeleteOldMessages(t *testing.T) {
 						opt: consensus.ApplyOpts(nil,
 							consensus.WithQueueTypeName(queue),
 							consensus.WithStaticTypeCheck(msgType),
-							consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 							consensus.WithChainInfo(chainType, chainReferenceID),
 							consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 								return true
@@ -111,7 +110,6 @@ func TestGetMessagesOlderThan(t *testing.T) {
 						opt: consensus.ApplyOpts(nil,
 							consensus.WithQueueTypeName(queue),
 							consensus.WithStaticTypeCheck(msgType),
-							consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 							consensus.WithChainInfo(chainType, chainReferenceID),
 							consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 								return true

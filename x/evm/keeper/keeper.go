@@ -263,14 +263,6 @@ func (k Keeper) SupportedQueues(ctx context.Context) ([]consensus.SupportsConsen
 				consensus.WithChainInfo(xchainType, chainInfo.ChainReferenceID),
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(queueInfo.msgType),
-				consensus.WithBytesToSignCalc(
-					consensustypes.BytesToSignFunc(func(msg consensustypes.ConsensusMsg, salt consensustypes.Salt) []byte {
-						k := msg.(interface {
-							Keccak256(uint64) []byte
-						})
-						return k.Keccak256(salt.Nonce)
-					}),
-				),
 				consensus.WithVerifySignature(func(bz []byte, sig []byte, address []byte) bool {
 					receivedAddr := common.BytesToAddress(address)
 

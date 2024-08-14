@@ -41,7 +41,6 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 			opt: consensus.ApplyOpts(nil,
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(uvType),
-				consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte { return []byte{} }),
 				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true

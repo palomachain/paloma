@@ -47,7 +47,6 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 			opt: consensus.ApplyOpts(nil,
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
-				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true
@@ -103,7 +102,6 @@ func TestJailValidatorsWhichMissedAttestation(t *testing.T) {
 			opt: consensus.ApplyOpts(nil,
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
-				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true
@@ -387,7 +385,6 @@ func TestGetMessagesFromQueue(t *testing.T) {
 					opt: consensus.ApplyOpts(nil,
 						consensus.WithQueueTypeName(queue),
 						consensus.WithStaticTypeCheck(msgType),
-						consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 						consensus.WithChainInfo(chainType, chainReferenceID),
 						consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 							return true
@@ -422,7 +419,6 @@ func TestGetMessagesForRelaying(t *testing.T) {
 			opt: consensus.ApplyOpts(nil,
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(uvType),
-				consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte { return []byte{} }),
 				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true
@@ -433,7 +429,6 @@ func TestGetMessagesForRelaying(t *testing.T) {
 			opt: consensus.ApplyOpts(nil,
 				consensus.WithQueueTypeName(queueWithValsetUpdatesPending),
 				consensus.WithStaticTypeCheck(uvType),
-				consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte { return []byte{} }),
 				consensus.WithChainInfo(chainType, "pending-chain"),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true
@@ -926,9 +921,6 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 						consensus.WithStaticTypeCheck(&types.SimpleMessage{}),
 						consensus.WithQueueTypeName(defaultQueueName),
 						consensus.WithChainInfo(chainType, chainReferenceID),
-						consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte {
-							return []byte("sign-me")
-						}),
 						consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 							return true
 						}),
@@ -967,7 +959,6 @@ func TestAddingSignatures(t *testing.T) {
 				consensus.WithAttestator(mck),
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
-				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func(msg []byte, sig []byte, pk []byte) bool {
 					p := secp256k1.PubKey(pk)
@@ -1070,7 +1061,6 @@ func TestGetMessagesForEstimating(t *testing.T) {
 			opt: consensus.ApplyOpts(nil,
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(uvType),
-				consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte { return []byte{} }),
 				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true

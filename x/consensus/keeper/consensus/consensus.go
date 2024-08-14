@@ -29,17 +29,16 @@ type Queue struct {
 }
 
 type QueueOptions struct {
-	Batched               bool
-	QueueTypeName         string
-	Sg                    keeperutil.StoreGetter
-	Ider                  keeperutil.IDGenerator
-	Cdc                   codec.Codec
-	TypeCheck             types.TypeChecker
-	BytesToSignCalculator types.BytesToSignFunc
-	VerifySignature       types.VerifySignatureFunc
-	ChainType             types.ChainType
-	Attestator            types.Attestator
-	ChainReferenceID      string
+	Batched          bool
+	QueueTypeName    string
+	Sg               keeperutil.StoreGetter
+	Ider             keeperutil.IDGenerator
+	Cdc              codec.Codec
+	TypeCheck        types.TypeChecker
+	VerifySignature  types.VerifySignatureFunc
+	ChainType        types.ChainType
+	Attestator       types.Attestator
+	ChainReferenceID string
 }
 
 type OptFnc func(*QueueOptions)
@@ -53,12 +52,6 @@ func WithQueueTypeName(val string) OptFnc {
 func WithStaticTypeCheck(val any) OptFnc {
 	return func(opt *QueueOptions) {
 		opt.TypeCheck = types.StaticTypeChecker(val)
-	}
-}
-
-func WithBytesToSignCalc(val types.BytesToSignFunc) OptFnc {
-	return func(opt *QueueOptions) {
-		opt.BytesToSignCalculator = val
 	}
 }
 
@@ -100,10 +93,6 @@ func ApplyOpts(opts *QueueOptions, fncs ...OptFnc) *QueueOptions {
 func NewQueue(qo QueueOptions) (Queue, error) {
 	if qo.TypeCheck == nil {
 		return Queue{}, ErrNilTypeCheck
-	}
-
-	if qo.BytesToSignCalculator == nil {
-		return Queue{}, ErrNilBytesToSignCalculator
 	}
 
 	if qo.VerifySignature == nil {
