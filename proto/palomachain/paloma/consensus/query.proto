@@ -52,7 +52,7 @@ service Query {
 
   // Queries one message by ID.
   rpc MessageByID(QueryMessageByIDRequest)
-      returns (MessageWithSignatures) {
+      returns (MessageQueryResult) {
     option (google.api.http).get =
         "/palomachain/paloma/consensus/{queueTypeName}/message/{id}";
   }
@@ -102,6 +102,9 @@ message ValidatorSignature {
 }
 
 message MessageWithSignatures {
+  reserved 8;
+  reserved "evidence";
+
   bytes nonce = 1;
   uint64 id = 2;
   google.protobuf.Any msg = 3;
@@ -109,9 +112,14 @@ message MessageWithSignatures {
   bytes bytesToSign = 5;
   bytes publicAccessData = 6;
   bytes errorData = 7;
-  repeated Evidence evidence = 8;
   uint64 valsetID = 9;
   uint64 gasEstimate = 10;
+}
+
+message MessageQueryResult {
+  MessageWithSignatures message = 1;
+  repeated Evidence evidence = 2;
+  repeated GasEstimate gasEstimates = 3;
 }
 
 message QueryMessageByIDRequest {
