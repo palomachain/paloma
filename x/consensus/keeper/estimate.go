@@ -69,6 +69,11 @@ func (k Keeper) checkAndProcessEstimatedMessage(ctx context.Context,
 	if len(msg.GetGasEstimates()) < 1 {
 		return nil
 	}
+
+	// Skip messages that have gas estimate
+	if msg.GetGasEstimate() > 0 {
+		return nil
+	}
 	logger := liblog.FromKeeper(ctx, k).
 		WithComponent("check-and-process-estimated-messages").
 		WithChain(rcid).
