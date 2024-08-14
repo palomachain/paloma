@@ -186,13 +186,6 @@ func (am AppModule) EndBlock(ct context.Context) error {
 		am.keeper.Logger(ctx).Error("error while attesting to messages", "err", err)
 	}
 
-	if ctx.BlockHeight()%10 == 0 {
-		err := am.keeper.ReassignOrphanedMessages(ctx, 10)
-		if err != nil {
-			am.keeper.Logger(ctx).Error("error while reassigning orphaned messages", "err", err)
-		}
-	}
-
 	if ctx.BlockHeight()%50 == 0 {
 		err := am.keeper.PruneOldMessages(ctx, 300)
 		if err != nil {
