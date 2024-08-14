@@ -118,9 +118,10 @@ func (k Keeper) SetAsCompassContract(ctx context.Context, smartContract *types.S
 	err = k.tryDeployingSmartContractToAllChains(ctx, smartContract)
 	if err != nil {
 		// that's ok. it will try to deploy it on every end blocker
-		if !errors.Is(err, ErrConsensusNotAchieved) {
-			return fmt.Errorf("failed to deploy smart contract to all chains: %w", err)
+		if errors.Is(err, ErrConsensusNotAchieved) || errors.Is(err, ErrFeeManagerNotPresent) {
+			return nil
 		}
+		return fmt.Errorf("failed to deploy smart contract to all chains: %w", err)
 	}
 
 	return nil
@@ -221,7 +222,7 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 	}()
 	logger := k.Logger(ctx)
 	if len(chainInfo.FeeManagerAddr) < 1 {
-		return fmt.Errorf("feemanager address is not set")
+		return ErrFeeManagerNotPresent
 	}
 	if !common.IsHexAddress(chainInfo.FeeManagerAddr) {
 		return fmt.Errorf("invalid feemanager address")
