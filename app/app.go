@@ -577,7 +577,7 @@ func New(
 		app.ValsetKeeper,
 		consensusRegistry,
 		func(ctx context.Context, valAddress sdk.ValAddress, chainReferenceID string) (*consensusmoduletypes.MessageFeeSettings, error) {
-			return app.TreasuryKeeper.GetCombinedFeesForRelay(ctx, valAddress, chainReferenceID)
+			return (&(app.TreasuryKeeper)).GetCombinedFeesForRelay(ctx, valAddress, chainReferenceID)
 		},
 	)
 
