@@ -232,9 +232,17 @@ func (k Keeper) GetMessagesForAttesting(ctx context.Context, queueTypeName strin
 		return nil, err
 	}
 
+	logger := liblog.FromKeeper(ctx, k).WithComponent("GetMessagesForAttesting")
 	// Filter down to just messages that have either publicAccessData or errorData
 	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
-		return msg.GetPublicAccessData() != nil || msg.GetErrorData() != nil
+		result := msg.GetPublicAccessData() != nil || msg.GetErrorData() != nil
+		logger.
+			WithFields("msg-id", msg.GetId()).
+			WithFields("public-access-data", msg.GetPublicAccessData()).
+			WithFields("error-data", msg.GetErrorData()).
+			WithFields("result", result).
+			Info("Filtering messages.")
+		return result
 	})
 
 	// Filter out messages this validator has already attested to
@@ -251,6 +259,8 @@ func (k Keeper) GetMessagesForAttesting(ctx context.Context, queueTypeName strin
 	if len(msgs) > defaultResponseMessageCount {
 		msgs = msgs[:defaultResponseMessageCount]
 	}
+
+	logger.WithFields("msgs", msgs).Info("Messages for attesting.")
 
 	return msgs, nil
 }
