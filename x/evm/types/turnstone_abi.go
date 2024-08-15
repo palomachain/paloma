@@ -110,7 +110,7 @@ func (_m *Message_UpdateValset) keccak256(
 	bytes, err := arguments.Pack(
 		hash32,
 		common.HexToAddress(orig.AssigneeRemoteAddress),
-		big.NewInt(0).SetUint64(gasEstimate),
+		big.NewInt(0).SetUint64(estimate),
 	)
 	if err != nil {
 		return nil, err
