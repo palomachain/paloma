@@ -163,7 +163,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		helper.GetSubspace(consensusmoduletypes.ModuleName, paramsKeeper),
 		valsetKeeper,
 		consensusRegistry,
-		(&tk).GetCombinedFeesForRelay,
+		&tk,
 	)
 
 	var evmKeeper *evmmodulekeeper.Keeper = &evmmodulekeeper.Keeper{}

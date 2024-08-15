@@ -17,16 +17,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type treasyreKeeperMock struct{}
+
+func (tk *treasyreKeeperMock) GetCombinedFeesForRelay(ctx context.Context, valAddress sdk.ValAddress, chainReferenceID string) (*types.MessageFeeSettings, error) {
+	return &types.MessageFeeSettings{
+		RelayerFee:   math.LegacyMustNewDecFromStr("1.25"),
+		CommunityFee: math.LegacyMustNewDecFromStr("0.3"),
+		SecurityFee:  math.LegacyMustNewDecFromStr("0.01"),
+	}, nil
+}
+
 func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 	k, ms, ctx := newConsensusKeeper(t)
 	queue := types.Queue(defaultQueueName, chainType, chainReferenceID)
-	k.feeProvider = func(ctx context.Context, valAddress sdk.ValAddress, ChainReferenceID string) (*types.MessageFeeSettings, error) {
-		return &types.MessageFeeSettings{
-			RelayerFee:   math.LegacyMustNewDecFromStr("1.25"),
-			CommunityFee: math.LegacyMustNewDecFromStr("0.3"),
-			SecurityFee:  math.LegacyMustNewDecFromStr("0.01"),
-		}, nil
-	}
+
+	k.feeProvider = &treasyreKeeperMock{}
 
 	uvType := &evmtypes.Message{}
 
@@ -78,7 +83,7 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 	tt := []struct {
 		name     string
 		msg      *evmtypes.Message
-		slcCheck func(*evmtypes.Message, bool) bool
+		slcCheck func(*evmtypes.Message, *require.Assertions, bool) bool
 	}{
 		{
 			name: "regular old message",
@@ -87,7 +92,7 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 				ChainReferenceID: chainReferenceID,
 				Assignee:         validators[0].Address.String(),
 			},
-			slcCheck: func(_ *evmtypes.Message, expected bool) bool {
+			slcCheck: func(_ *evmtypes.Message, _ *require.Assertions, expected bool) bool {
 				return expected
 			},
 		},
@@ -101,7 +106,7 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 					SubmitLogicCall: &evmtypes.SubmitLogicCall{},
 				},
 			},
-			slcCheck: func(m *evmtypes.Message, expected bool) bool {
+			slcCheck: func(m *evmtypes.Message, r *require.Assertions, expected bool) bool {
 				slc := m.GetSubmitLogicCall()
 				if slc == nil {
 					return expected
@@ -110,10 +115,11 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 					return slc.Fees == nil
 				}
 
-				return slc.Fees != nil &&
-					slc.Fees.RelayerFee == 34500 &&
-					slc.Fees.CommunityFee == 8100 &&
-					slc.Fees.SecurityFee == 345
+				r.NotNil(slc.Fees)
+				r.Equal(uint64(34500), slc.Fees.RelayerFee, "relayer fee: got %d", slc.Fees.RelayerFee)
+				r.Equal(uint64(10350), slc.Fees.CommunityFee, "community fee: got %d", slc.Fees.CommunityFee)
+				r.Equal(uint64(345), slc.Fees.SecurityFee, "security fee: got %d", slc.Fees.SecurityFee)
+				return true
 			},
 		},
 	}
@@ -136,7 +142,7 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 			mid, err := k.PutMessageInQueue(ctx, queue, tc.msg, &consensus.PutOptions{RequireGasEstimation: true})
 			r.NoError(err)
 			r.NoError(k.CheckAndProcessEstimatedMessages(ctx))
-			tc.slcCheck(getMsg(mid), false)
+			tc.slcCheck(getMsg(mid), r, false)
 
 			// Start processing the first votes
 			// Not enough validators will have vast their vote yet
@@ -155,7 +161,7 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 				r.NoError(err)
 				r.Len(m.GetGasEstimates(), i+1)
 				r.Equal(uint64(0), m.GetGasEstimate())
-				tc.slcCheck(getMsg(mid), false)
+				tc.slcCheck(getMsg(mid), r, false)
 			}
 
 			// We now get a new estimate that will push us above the threshold
@@ -174,7 +180,7 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 			r.NoError(err)
 			r.Len(m.GetGasEstimates(), 7)
 			r.Equal(uint64(27600), m.GetGasEstimate())
-			tc.slcCheck(getMsg(mid), true)
+			tc.slcCheck(getMsg(mid), r, true)
 		})
 	}
 }

@@ -149,7 +149,8 @@ func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uin
 		if err != nil {
 			return 0, fmt.Errorf("failed to get message by id: %w", err)
 		}
-		m, ok := qsmi.(*types.QueuedSignedMessage)
+		var ok bool
+		m, ok = qsmi.(*types.QueuedSignedMessage)
 		if !ok {
 			return 0, fmt.Errorf("failed to cast to queued signed message")
 		}

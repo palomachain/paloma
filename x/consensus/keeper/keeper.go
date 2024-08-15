@@ -17,6 +17,10 @@ import (
 	"github.com/palomachain/paloma/x/consensus/types"
 )
 
+type FeeProvider interface {
+	GetCombinedFeesForRelay(ctx context.Context, valAddress sdk.ValAddress, chainReferenceID string) (*types.MessageFeeSettings, error)
+}
+
 type (
 	Keeper struct {
 		cdc        codec.Codec
@@ -30,7 +34,7 @@ type (
 		registry         *registry
 		evmKeeper        types.EvmKeeper
 		consensusChecker *libcons.ConsensusChecker
-		feeProvider      types.FeeProvider
+		feeProvider      FeeProvider
 	}
 )
 
@@ -40,7 +44,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	valsetKeeper types.ValsetKeeper,
 	reg *registry,
-	fp types.FeeProvider,
+	fp FeeProvider,
 ) *Keeper {
 	k := &Keeper{
 		cdc:         cdc,

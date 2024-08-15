@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -576,9 +575,7 @@ func New(
 		app.GetSubspace(consensusmoduletypes.ModuleName),
 		app.ValsetKeeper,
 		consensusRegistry,
-		func(ctx context.Context, valAddress sdk.ValAddress, chainReferenceID string) (*consensusmoduletypes.MessageFeeSettings, error) {
-			return (&(app.TreasuryKeeper)).GetCombinedFeesForRelay(ctx, valAddress, chainReferenceID)
-		},
+		&app.TreasuryKeeper,
 	)
 
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(

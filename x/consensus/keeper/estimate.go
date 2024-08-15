@@ -128,7 +128,7 @@ func (k Keeper) checkAndProcessEstimatedSubmitLogicCall(
 		return fmt.Errorf("failed to calculate fees for estimate: %w", err)
 	}
 	action.SubmitLogicCall.Fees = fees
-	_, err = q.Put(ctx, msg, &consensus.PutOptions{
+	_, err = q.Put(ctx, m, &consensus.PutOptions{
 		MsgIDToReplace: msg.GetId(),
 	})
 
@@ -142,7 +142,7 @@ func (k Keeper) calculateFeesForEstimate(
 	estimate uint64,
 ) (*evmtypes.SubmitLogicCall_Fees, error) {
 	fees := &evmtypes.SubmitLogicCall_Fees{}
-	multiplicators, err := k.feeProvider(ctx, relayer, chainReferenceID)
+	multiplicators, err := k.feeProvider.GetCombinedFeesForRelay(ctx, relayer, chainReferenceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get fee settings: %w", err)
 	}
@@ -151,21 +151,21 @@ func (k Keeper) calculateFeesForEstimate(
 	fees.RelayerFee = multiplicators.RelayerFee.
 		MulInt(math.NewIntFromUint64(estimate)).
 		Ceil().
-		BigInt().
+		TruncateInt().
 		Uint64()
 
 		// Community fees are stored as multiplicator of the relayer fee
 	fees.CommunityFee = multiplicators.CommunityFee.
 		MulInt(math.NewIntFromUint64(fees.RelayerFee)).
 		Ceil().
-		BigInt().
+		TruncateInt().
 		Uint64()
 
 		// Security fees are stored as multiplicator of the relayer fee
 	fees.SecurityFee = multiplicators.SecurityFee.
 		MulInt(math.NewIntFromUint64(fees.RelayerFee)).
 		Ceil().
-		BigInt().
+		TruncateInt().
 		Uint64()
 
 	return fees, nil
