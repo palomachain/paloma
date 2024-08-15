@@ -19,13 +19,13 @@ func (k msgServer) SetErrorData(goCtx context.Context, msg *types.MsgSetErrorDat
 		return nil, err
 	}
 
+	if len(msg.Data) < 1 {
+		return nil, fmt.Errorf("data must not be nil")
+	}
+
 	err := k.Keeper.SetMessageErrorData(ctx, valAddr, msg)
 	if err != nil {
 		return nil, err
-	}
-
-	if len(msg.Data) < 1 {
-		return nil, fmt.Errorf("data must not be nil")
 	}
 
 	return &types.MsgSetErrorDataResponse{}, nil

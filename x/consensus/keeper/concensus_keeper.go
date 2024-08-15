@@ -236,11 +236,27 @@ func (k Keeper) GetMessagesForAttesting(ctx context.Context, queueTypeName strin
 	// Filter down to just messages that have either publicAccessData or errorData
 	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
 		result := msg.GetPublicAccessData() != nil || msg.GetErrorData() != nil
-		logger.
-			WithFields("msg-id", msg.GetId()).
-			WithFields("public-access-data", msg.GetPublicAccessData()).
-			WithFields("error-data", msg.GetErrorData()).
+
+		var pacd []byte
+		var pacv sdk.ValAddress
+		if msg.GetPublicAccessData() != nil {
+			pacd = msg.GetPublicAccessData().GetData()
+			pacv = msg.GetPublicAccessData().GetValAddress()
+		}
+		var edd []byte
+		var edv sdk.ValAddress
+		if msg.GetErrorData() != nil {
+			edd = msg.GetErrorData().GetData()
+			edv = msg.GetErrorData().GetValAddress()
+		}
+		logger.WithFields("msg-id", msg.GetId()).
 			WithFields("result", result).
+			WithFields(
+				"public-access-data", hexutil.Encode(pacd),
+				"public-access-validator", pacv.String(),
+				"error-data", hexutil.Encode(edd),
+				"error-validator", edv.String,
+			).
 			Info("Filtering messages.")
 		return result
 	})
