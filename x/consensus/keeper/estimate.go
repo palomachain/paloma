@@ -123,7 +123,11 @@ func (k Keeper) checkAndProcessEstimatedSubmitLogicCall(
 		return nil
 	}
 
-	fees, err := k.calculateFeesForEstimate(ctx, sdk.ValAddress(m.GetAssignee()), m.GetChainReferenceID(), estimate)
+	valAddr, err := sdk.ValAddressFromBech32(m.GetAssignee())
+	if err != nil {
+		return fmt.Errorf("failed to parse validator address: %w", err)
+	}
+	fees, err := k.calculateFeesForEstimate(ctx, valAddr, m.GetChainReferenceID(), estimate)
 	if err != nil {
 		return fmt.Errorf("failed to calculate fees for estimate: %w", err)
 	}

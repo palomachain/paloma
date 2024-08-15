@@ -20,8 +20,8 @@ func (k Keeper) RelayerFee(ctx context.Context, req *types.QueryRelayerFeeReques
 		return nil, fmt.Errorf("failed to parse validator address: %w", err)
 	}
 
-	fmt.Println("RelayerFee value: %v", addr)
-	fmt.Println("RelayerFee value string: %s", addr.String())
+	fmt.Printf("RelayerFee value: %v", addr)
+	fmt.Printf("RelayerFee value string: %s", addr.String())
 
 	k.relayerFees.Iterate(sdk.UnwrapSDKContext(ctx), func(b []byte, rfs *types.RelayerFeeSetting) bool {
 		fmt.Printf("rfs: %#+v\n", rfs)
