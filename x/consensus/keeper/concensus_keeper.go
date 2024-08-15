@@ -255,7 +255,7 @@ func (k Keeper) GetMessagesForAttesting(ctx context.Context, queueTypeName strin
 				"public-access-data", hexutil.Encode(pacd),
 				"public-access-validator", pacv.String(),
 				"error-data", hexutil.Encode(edd),
-				"error-validator", edv.String,
+				"error-validator", edv.String(),
 			).
 			Info("Filtering messages.")
 		return result
@@ -275,8 +275,6 @@ func (k Keeper) GetMessagesForAttesting(ctx context.Context, queueTypeName strin
 	if len(msgs) > defaultResponseMessageCount {
 		msgs = msgs[:defaultResponseMessageCount]
 	}
-
-	logger.WithFields("msgs", msgs).Info("Messages for attesting.")
 
 	return msgs, nil
 }

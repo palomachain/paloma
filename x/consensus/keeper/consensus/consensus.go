@@ -128,9 +128,11 @@ func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uin
 		requireSignatures = opts.RequireSignatures
 		requireGasEstimation = opts.RequireGasEstimation
 		mid = opts.MsgIDToReplace
-		publicAccessData = &types.PublicAccessData{
-			ValAddress: nil,
-			Data:       opts.PublicAccessData,
+		if len(opts.PublicAccessData) > 0 {
+			publicAccessData = &types.PublicAccessData{
+				ValAddress: nil,
+				Data:       opts.PublicAccessData,
+			}
 		}
 	}
 
