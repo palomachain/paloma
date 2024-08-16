@@ -75,7 +75,7 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 	msg consensustypes.QueuedSignedMessageI,
 	valset *Valset,
 	compass *SmartContract,
-	_ string,
+	relayer string,
 ) error {
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
 		WithFields("tx_hash", tx.Hash().Hex(), "valset_id", valset.ValsetID)
@@ -117,7 +117,7 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 			feeArgs,
 			new(big.Int).SetInt64(int64(msg.GetId())),
 			new(big.Int).SetInt64(m.GetDeadline()),
-			common.BytesToAddress(m.ContractAddress),
+			common.HexToAddress(relayer),
 		}
 
 		input, err := contractABI.Pack("submit_logic_call", args...)
