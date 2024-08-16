@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"slices"
@@ -20,16 +19,6 @@ func (k Keeper) RelayerFee(ctx context.Context, req *types.QueryRelayerFeeReques
 		return nil, fmt.Errorf("failed to parse validator address: %w", err)
 	}
 
-	fmt.Printf("RelayerFee value: %v", addr)
-	fmt.Printf("RelayerFee value string: %s", addr.String())
-
-	k.relayerFees.Iterate(sdk.UnwrapSDKContext(ctx), func(b []byte, rfs *types.RelayerFeeSetting) bool {
-		fmt.Printf("rfs: %#+v\n", rfs)
-		fmt.Printf("rfs address: %s\n", rfs.ValAddress)
-		fmt.Printf("validator: %s\n", hex.EncodeToString(addr.Bytes()))
-		fmt.Printf("validator-string: %s\n", addr.String())
-		return true
-	})
 	f, err := k.relayerFees.Get(sdk.UnwrapSDKContext(ctx), addr)
 	if err != nil {
 		if errors.Is(err, keeperutil.ErrNotFound) {

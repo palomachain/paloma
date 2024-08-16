@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -14,7 +13,6 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/liblog"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/treasury/types"
 )
@@ -145,15 +143,6 @@ func (k Keeper) GetCombinedFeesForRelay(
 	valAddress sdk.ValAddress,
 	chainReferenceID string,
 ) (*consensustypes.MessageFeeSettings, error) {
-	k.relayerFees.Iterate(sdk.UnwrapSDKContext(ctx), func(b []byte, rfs *types.RelayerFeeSetting) bool {
-		liblog.FromKeeper(ctx, k).WithComponent("GetCombinedFeesForRelay").
-			WithFields("rfs", rfs).
-			WithFields("validator", hex.EncodeToString(valAddress.Bytes())).
-			WithFields("validator-string", valAddress.String()).
-			WithFields("address", rfs.ValAddress).
-			Info("Found record")
-		return true
-	})
 	rfs, err := k.relayerFees.Get(sdk.UnwrapSDKContext(ctx), valAddress)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get relayer fees: %w", err)
