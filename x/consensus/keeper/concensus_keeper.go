@@ -238,33 +238,9 @@ func (k Keeper) GetMessagesForAttesting(ctx context.Context, queueTypeName strin
 		return nil, err
 	}
 
-	logger := liblog.FromKeeper(ctx, k).WithComponent("GetMessagesForAttesting")
 	// Filter down to just messages that have either publicAccessData or errorData
 	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
-		result := msg.GetPublicAccessData() != nil || msg.GetErrorData() != nil
-
-		var pacd []byte
-		var pacv sdk.ValAddress
-		if msg.GetPublicAccessData() != nil {
-			pacd = msg.GetPublicAccessData().GetData()
-			pacv = msg.GetPublicAccessData().GetValAddress()
-		}
-		var edd []byte
-		var edv sdk.ValAddress
-		if msg.GetErrorData() != nil {
-			edd = msg.GetErrorData().GetData()
-			edv = msg.GetErrorData().GetValAddress()
-		}
-		logger.WithFields("msg-id", msg.GetId()).
-			WithFields("result", result).
-			WithFields(
-				"public-access-data", hexutil.Encode(pacd),
-				"public-access-validator", pacv.String(),
-				"error-data", hexutil.Encode(edd),
-				"error-validator", edv.String(),
-			).
-			Info("Filtering messages.")
-		return result
+		return msg.GetPublicAccessData() != nil || msg.GetErrorData() != nil
 	})
 
 	// Filter out messages this validator has already attested to
