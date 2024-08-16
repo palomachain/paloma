@@ -41,6 +41,12 @@ type CompassLogicCallArgs struct {
 	LogicContractAddress common.Address
 }
 
+var (
+	_ consensustypes.MessageHasher = (*Message)(nil)
+	_ consensustypes.MessageHasher = (*ValidatorBalancesAttestation)(nil)
+	_ consensustypes.MessageHasher = (*ReferenceBlockAttestation)(nil)
+)
+
 func (_m *Message_UpdateValset) keccak256(
 	orig *Message,
 	_, gasEstimate uint64,
@@ -104,7 +110,7 @@ func (_m *Message_UpdateValset) keccak256(
 	bytes, err := arguments.Pack(
 		hash32,
 		common.HexToAddress(orig.AssigneeRemoteAddress),
-		new(big.Int).SetUint64(gasEstimate),
+		big.NewInt(0).SetUint64(estimate),
 	)
 	if err != nil {
 		return nil, err
@@ -232,7 +238,7 @@ func (m *Message) Keccak256WithSignedMessage(q *consensustypes.QueuedSignedMessa
 	return k.keccak256(m, q.GetId(), q.GasEstimate)
 }
 
-func (m *ValidatorBalancesAttestation) Keccak256(nonce uint64) []byte {
+func (m *ValidatorBalancesAttestation) Keccak256WithSignedMessage(_ *consensustypes.QueuedSignedMessage) ([]byte, error) {
 	var sb strings.Builder
 	sb.WriteString(m.FromBlockTime.String())
 	sb.WriteRune('\n')
@@ -243,11 +249,11 @@ func (m *ValidatorBalancesAttestation) Keccak256(nonce uint64) []byte {
 		sb.WriteRune('\n')
 	}
 
-	return crypto.Keccak256([]byte(sb.String()))
+	return crypto.Keccak256([]byte(sb.String())), nil
 }
 
-func (m *ReferenceBlockAttestation) Keccak256(nonce uint64) []byte {
-	return crypto.Keccak256([]byte(m.FromBlockTime.String()))
+func (m *ReferenceBlockAttestation) Keccak256WithSignedMessage(_ *consensustypes.QueuedSignedMessage) ([]byte, error) {
+	return crypto.Keccak256([]byte(m.FromBlockTime.String())), nil
 }
 
 func BuildCompassConsensus(

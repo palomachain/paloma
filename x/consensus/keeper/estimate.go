@@ -19,7 +19,7 @@ import (
 // CheckAndProcessEstimatedMessages is supposed to be used within the
 // EndBlocker. It will get messages which have received gas estimates
 // and try to process them.
-func (k Keeper) CheckAndProcessEstimatedMessages(ctx context.Context) error {
+func (k Keeper) CheckAndProcessEstimatedMessages(ctx context.Context) (err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	logger := liblog.FromKeeper(ctx, k).WithComponent("check-and-process-estimated-messages")
 	for _, supportedConsensusQueue := range k.registry.slice {
@@ -43,12 +43,14 @@ func (k Keeper) CheckAndProcessEstimatedMessages(ctx context.Context) error {
 				continue
 			}
 			for _, msg := range msgs {
-				if err := k.checkAndProcessEstimatedMessage(ctx, msg, cq); err != nil {
+				cachedCtx, commit := sdk.UnwrapSDKContext(ctx).CacheContext()
+				if err := k.checkAndProcessEstimatedMessage(cachedCtx, msg, cq); err != nil {
 					logger.WithFields("msg_id", msg.GetId()).
 						WithError(err).
 						Warn("Failed to process estimated message")
 					continue
 				}
+				commit()
 			}
 		}
 	}
@@ -67,6 +69,11 @@ func (k Keeper) checkAndProcessEstimatedMessage(ctx context.Context,
 
 	// Skip messages that don't have gas estimates
 	if len(msg.GetGasEstimates()) < 1 {
+		return nil
+	}
+
+	// Skip messages that have gas estimate
+	if msg.GetGasEstimate() > 0 {
 		return nil
 	}
 	logger := liblog.FromKeeper(ctx, k).
@@ -116,12 +123,16 @@ func (k Keeper) checkAndProcessEstimatedSubmitLogicCall(
 		return nil
 	}
 
-	fees, err := k.calculateFeesForEstimate(ctx, sdk.ValAddress(m.GetAssignee()), m.GetChainReferenceID(), estimate)
+	valAddr, err := sdk.ValAddressFromBech32(m.GetAssignee())
+	if err != nil {
+		return fmt.Errorf("failed to parse validator address: %w", err)
+	}
+	fees, err := k.calculateFeesForEstimate(ctx, valAddr, m.GetChainReferenceID(), estimate)
 	if err != nil {
 		return fmt.Errorf("failed to calculate fees for estimate: %w", err)
 	}
 	action.SubmitLogicCall.Fees = fees
-	_, err = q.Put(ctx, msg, &consensus.PutOptions{
+	_, err = q.Put(ctx, m, &consensus.PutOptions{
 		MsgIDToReplace: msg.GetId(),
 	})
 
@@ -135,7 +146,7 @@ func (k Keeper) calculateFeesForEstimate(
 	estimate uint64,
 ) (*evmtypes.SubmitLogicCall_Fees, error) {
 	fees := &evmtypes.SubmitLogicCall_Fees{}
-	multiplicators, err := k.feeProvider(ctx, relayer, chainReferenceID)
+	multiplicators, err := k.feeProvider.GetCombinedFeesForRelay(ctx, relayer, chainReferenceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get fee settings: %w", err)
 	}
@@ -144,21 +155,21 @@ func (k Keeper) calculateFeesForEstimate(
 	fees.RelayerFee = multiplicators.RelayerFee.
 		MulInt(math.NewIntFromUint64(estimate)).
 		Ceil().
-		BigInt().
+		TruncateInt().
 		Uint64()
 
 		// Community fees are stored as multiplicator of the relayer fee
 	fees.CommunityFee = multiplicators.CommunityFee.
 		MulInt(math.NewIntFromUint64(fees.RelayerFee)).
 		Ceil().
-		BigInt().
+		TruncateInt().
 		Uint64()
 
 		// Security fees are stored as multiplicator of the relayer fee
 	fees.SecurityFee = multiplicators.SecurityFee.
 		MulInt(math.NewIntFromUint64(fees.RelayerFee)).
 		Ceil().
-		BigInt().
+		TruncateInt().
 		Uint64()
 
 	return fees, nil

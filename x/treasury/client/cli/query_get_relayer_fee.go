@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -32,6 +33,8 @@ func CmdGetRelayerFee() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
+			fmt.Printf("CLI value: %v", validator)
+			fmt.Printf("CLI arg: %s", validator.String())
 			res, err := queryClient.RelayerFee(cmd.Context(), &types.QueryRelayerFeeRequest{
 				ValAddress: validator.String(),
 			})

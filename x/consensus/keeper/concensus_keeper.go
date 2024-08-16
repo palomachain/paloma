@@ -123,6 +123,12 @@ func (k Keeper) GetMessagesForGasEstimation(ctx context.Context, queueTypeName s
 		return nil, err
 	}
 
+	// Check for existing valset update messages on any target chains
+	valsetUpdatesOnChain, err := k.GetPendingValsetUpdates(ctx, queueTypeName)
+	if err != nil {
+		return nil, err
+	}
+
 	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
 		// Filter out messages which don't require gas estimation
 		if !msg.GetRequireGasEstimation() {
@@ -141,7 +147,7 @@ func (k Keeper) GetMessagesForGasEstimation(ctx context.Context, queueTypeName s
 			}
 		}
 
-		return true
+		return filters.IsNotBlockedByValset(valsetUpdatesOnChain, msg)
 	})
 
 	if len(msgs) > defaultResponseMessageCount {

@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) MessageByID(goCtx context.Context, req *types.QueryMessageByIDRequest) (*types.MessageWithSignatures, error) {
+func (k Keeper) MessageByID(goCtx context.Context, req *types.QueryMessageByIDRequest) (*types.MessageQueryResult, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -34,8 +34,14 @@ func (k Keeper) MessageByID(goCtx context.Context, req *types.QueryMessageByIDRe
 	if err != nil {
 		return nil, err
 	}
-	approvedMessage.Evidence = append(approvedMessage.Evidence, msg.GetEvidence()...)
-	return &approvedMessage, nil
+	res := &types.MessageQueryResult{
+		Message: &approvedMessage,
+	}
+
+	copy(res.Evidence, msg.GetEvidence())
+	copy(res.GasEstimates, msg.GetGasEstimates())
+
+	return res, nil
 }
 
 func (k Keeper) MessagesInQueue(goCtx context.Context, req *types.QueryMessagesInQueueRequest) (*types.QueryMessagesInQueueResponse, error) {

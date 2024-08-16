@@ -207,14 +207,12 @@ func (c ConsensusChecker) VerifyGasEstimates(ctx context.Context, p liblog.LogPr
 	var cp consensusPower
 	cp.setTotal(snapshot.TotalShares)
 
-	values := make(map[uint64]int, len(estimates))
 	for _, v := range estimates {
 		val, found := snapshot.GetValidator(v.GetValAddress())
 		if !found {
 			continue
 		}
 		cp.add(val.ShareCount)
-		values[v.GetValue()]++
 	}
 
 	result.totalFromConsensus(cp)
@@ -222,27 +220,14 @@ func (c ConsensusChecker) VerifyGasEstimates(ctx context.Context, p liblog.LogPr
 		return 0, ErrConsensusNotAchieved
 	}
 
-	// Identify esimate with more than 1 validator agreeing on the vote
-	validEstimates := make([]uint64, 0, len(estimates))
-	for k, v := range values {
-		if v < 2 {
-			// We need at least 2 validators to agree on the same gas estimate
-			// in order to include it in the calculation.
-			logger.WithFields("value", k).Debug("Rejecting value with less than 2 votes.")
-			continue
-		}
-
-		logger.WithFields("value", k, "voters", v).Debug("Including value in the calculation.")
-		validEstimates = append(validEstimates, k)
-	}
-
-	if len(validEstimates) < 1 {
-		return 0, fmt.Errorf("no gas estimate has been agreed upon")
+	estimateValues := make([]uint64, len(estimates))
+	for i := range estimates {
+		estimateValues[i] = estimates[i].GetValue()
 	}
 
 	// Retrieve the median value of the gas estimates and
 	// multiply value by 1.2 to allow for some security margin
-	winner := palomath.Median(validEstimates)
+	winner := palomath.Median(estimateValues)
 	logger.WithFields("gas-estimate", winner).Debug("Built median value of gas estimates.")
 
 	if winner == 0 {

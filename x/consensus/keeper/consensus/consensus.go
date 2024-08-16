@@ -29,17 +29,16 @@ type Queue struct {
 }
 
 type QueueOptions struct {
-	Batched               bool
-	QueueTypeName         string
-	Sg                    keeperutil.StoreGetter
-	Ider                  keeperutil.IDGenerator
-	Cdc                   codec.Codec
-	TypeCheck             types.TypeChecker
-	BytesToSignCalculator types.BytesToSignFunc
-	VerifySignature       types.VerifySignatureFunc
-	ChainType             types.ChainType
-	Attestator            types.Attestator
-	ChainReferenceID      string
+	Batched          bool
+	QueueTypeName    string
+	Sg               keeperutil.StoreGetter
+	Ider             keeperutil.IDGenerator
+	Cdc              codec.Codec
+	TypeCheck        types.TypeChecker
+	VerifySignature  types.VerifySignatureFunc
+	ChainType        types.ChainType
+	Attestator       types.Attestator
+	ChainReferenceID string
 }
 
 type OptFnc func(*QueueOptions)
@@ -53,12 +52,6 @@ func WithQueueTypeName(val string) OptFnc {
 func WithStaticTypeCheck(val any) OptFnc {
 	return func(opt *QueueOptions) {
 		opt.TypeCheck = types.StaticTypeChecker(val)
-	}
-}
-
-func WithBytesToSignCalc(val types.BytesToSignFunc) OptFnc {
-	return func(opt *QueueOptions) {
-		opt.BytesToSignCalculator = val
 	}
 }
 
@@ -102,10 +95,6 @@ func NewQueue(qo QueueOptions) (Queue, error) {
 		return Queue{}, ErrNilTypeCheck
 	}
 
-	if qo.BytesToSignCalculator == nil {
-		return Queue{}, ErrNilBytesToSignCalculator
-	}
-
 	if qo.VerifySignature == nil {
 		return Queue{}, ErrNilVerifySignature
 	}
@@ -139,9 +128,11 @@ func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uin
 		requireSignatures = opts.RequireSignatures
 		requireGasEstimation = opts.RequireGasEstimation
 		mid = opts.MsgIDToReplace
-		publicAccessData = &types.PublicAccessData{
-			ValAddress: nil,
-			Data:       opts.PublicAccessData,
+		if len(opts.PublicAccessData) > 0 {
+			publicAccessData = &types.PublicAccessData{
+				ValAddress: nil,
+				Data:       opts.PublicAccessData,
+			}
 		}
 	}
 
@@ -160,7 +151,8 @@ func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uin
 		if err != nil {
 			return 0, fmt.Errorf("failed to get message by id: %w", err)
 		}
-		m, ok := qsmi.(*types.QueuedSignedMessage)
+		var ok bool
+		m, ok = qsmi.(*types.QueuedSignedMessage)
 		if !ok {
 			return 0, fmt.Errorf("failed to cast to queued signed message")
 		}

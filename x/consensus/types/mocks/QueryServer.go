@@ -45,23 +45,23 @@ func (_m *QueryServer) GetAllQueueNames(_a0 context.Context, _a1 *types.QueryGet
 }
 
 // MessageByID provides a mock function with given fields: _a0, _a1
-func (_m *QueryServer) MessageByID(_a0 context.Context, _a1 *types.QueryMessageByIDRequest) (*types.MessageWithSignatures, error) {
+func (_m *QueryServer) MessageByID(_a0 context.Context, _a1 *types.QueryMessageByIDRequest) (*types.MessageQueryResult, error) {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for MessageByID")
 	}
 
-	var r0 *types.MessageWithSignatures
+	var r0 *types.MessageQueryResult
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryMessageByIDRequest) (*types.MessageWithSignatures, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryMessageByIDRequest) (*types.MessageQueryResult, error)); ok {
 		return rf(_a0, _a1)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryMessageByIDRequest) *types.MessageWithSignatures); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *types.QueryMessageByIDRequest) *types.MessageQueryResult); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.MessageWithSignatures)
+			r0 = ret.Get(0).(*types.MessageQueryResult)
 		}
 	}
 

@@ -575,7 +575,7 @@ func New(
 		app.GetSubspace(consensusmoduletypes.ModuleName),
 		app.ValsetKeeper,
 		consensusRegistry,
-		(&app.TreasuryKeeper).GetCombinedFeesForRelay,
+		&app.TreasuryKeeper,
 	)
 
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(

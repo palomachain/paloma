@@ -41,13 +41,12 @@ func TestConsensusQueueAllMethods(t *testing.T) {
 	mck.On("ValidateEvidence", mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
 	cq := Queue{
 		qo: QueueOptions{
-			QueueTypeName:         "simple-message",
-			Sg:                    sg,
-			Ider:                  keeperutil.NewIDGenerator(sg, nil),
-			Cdc:                   types.ModuleCdc,
-			TypeCheck:             types.StaticTypeChecker(msgType),
-			Attestator:            mck,
-			BytesToSignCalculator: msgType.ConsensusSignBytes(),
+			QueueTypeName: "simple-message",
+			Sg:            sg,
+			Ider:          keeperutil.NewIDGenerator(sg, nil),
+			Cdc:           types.ModuleCdc,
+			TypeCheck:     types.StaticTypeChecker(msgType),
+			Attestator:    mck,
 			VerifySignature: func([]byte, []byte, []byte) bool {
 				return true
 			},

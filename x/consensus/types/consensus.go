@@ -15,6 +15,10 @@ const (
 	cFlagGasEstimationRequired = 1 << 0 // Bit 0
 )
 
+type MessageHasher interface {
+	Keccak256WithSignedMessage(*QueuedSignedMessage) ([]byte, error)
+}
+
 type ConsensusQueueType string
 
 //go:generate mockery --name=QueuedSignedMessageI
@@ -89,10 +93,10 @@ func (q *QueuedSignedMessage) GetBytesToSign(unpacker AnyUnpacker) ([]byte, erro
 		return nil, err
 	}
 
-	k := msg.(interface {
-		Keccak256WithSignedMessage(*QueuedSignedMessage) ([]byte, error)
-	})
-
+	k, ok := msg.(MessageHasher)
+	if !ok {
+		return nil, fmt.Errorf("message's action is not hashable: %T", msg)
+	}
 	return k.Keccak256WithSignedMessage(q)
 }
 
