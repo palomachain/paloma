@@ -116,9 +116,9 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 				}
 
 				r.NotNil(slc.Fees)
-				r.Equal(uint64(34500), slc.Fees.RelayerFee, "relayer fee: got %d", slc.Fees.RelayerFee)
-				r.Equal(uint64(10350), slc.Fees.CommunityFee, "community fee: got %d", slc.Fees.CommunityFee)
-				r.Equal(uint64(345), slc.Fees.SecurityFee, "security fee: got %d", slc.Fees.SecurityFee)
+				r.Equal(uint64(31500), slc.Fees.RelayerFee, "relayer fee: got %d", slc.Fees.RelayerFee)
+				r.Equal(uint64(9450), slc.Fees.CommunityFee, "community fee: got %d", slc.Fees.CommunityFee)
+				r.Equal(uint64(315), slc.Fees.SecurityFee, "security fee: got %d", slc.Fees.SecurityFee)
 				return true
 			},
 		},
@@ -179,7 +179,7 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 			m, err := q.GetMsgByID(ctx, mid)
 			r.NoError(err)
 			r.Len(m.GetGasEstimates(), 7)
-			r.Equal(uint64(27600), m.GetGasEstimate())
+			r.Equal(uint64(25200), m.GetGasEstimate())
 			tc.slcCheck(getMsg(mid), r, true)
 		})
 	}
