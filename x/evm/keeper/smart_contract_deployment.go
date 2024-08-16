@@ -14,9 +14,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/keeper/deployment"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -116,9 +118,10 @@ func (k Keeper) SetAsCompassContract(ctx context.Context, smartContract *types.S
 	err = k.tryDeployingSmartContractToAllChains(ctx, smartContract)
 	if err != nil {
 		// that's ok. it will try to deploy it on every end blocker
-		if !errors.Is(err, ErrConsensusNotAchieved) {
-			return fmt.Errorf("failed to deploy smart contract to all chains: %w", err)
+		if errors.Is(err, ErrConsensusNotAchieved) || errors.Is(err, ErrFeeManagerNotPresent) {
+			return nil
 		}
+		return fmt.Errorf("failed to deploy smart contract to all chains: %w", err)
 	}
 
 	return nil
@@ -169,7 +172,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 	requirements := &xchain.JobRequirements{
 		EnforceMEVRelay: logicCall.ExecutionRequirements.EnforceMEVRelay,
 	}
-	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID, requirements)
+	assignee, remoteAddr, err := k.PickValidatorForMessage(ctx, chainReferenceID, requirements)
 	if err != nil {
 		return 0, err
 	}
@@ -188,8 +191,12 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 				SubmitLogicCall: logicCall,
 			},
 			Assignee:              assignee,
+			AssigneeRemoteAddress: remoteAddr,
 			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
-		}, nil)
+		}, &consensus.PutOptions{
+			RequireGasEstimation: true,
+			RequireSignatures:    true,
+		})
 }
 
 func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types.ChainInfo, smartContract *types.SmartContract) (retErr error) {
@@ -214,6 +221,13 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 		}
 	}()
 	logger := k.Logger(ctx)
+	if len(chainInfo.FeeManagerAddr) < 1 {
+		return ErrFeeManagerNotPresent
+	}
+	if !common.IsHexAddress(chainInfo.FeeManagerAddr) {
+		return fmt.Errorf("invalid feemanager address")
+	}
+	feeMgrAddr := common.HexToAddress(chainInfo.FeeManagerAddr)
 	contractABI, err := abi.JSON(strings.NewReader(smartContract.GetAbiJSON()))
 	if err != nil {
 		return err
@@ -260,10 +274,6 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 	}
 	uniqueID := generateSmartContractID(ctx)
 	k.createSmartContractDeployment(ctx, smartContract, chainInfo, uniqueID[:])
-	lastSkywayNonce, err := k.Skyway.GetLastObservedSkywayNonce(ctx, chainInfo.GetChainReferenceID())
-	if err != nil {
-		return fmt.Errorf("failed to get last observed skyway nonce: %w", err)
-	}
 
 	// set the smart contract constructor arguments
 	logger.Info(
@@ -272,7 +282,7 @@ func (k Keeper) deploySmartContractToChain(ctx context.Context, chainInfo *types
 		"validators-size", len(valset.GetValidators()),
 		"power-size", len(valset.GetPowers()),
 	)
-	input, err := contractABI.Pack("", uniqueID, big.NewInt(0), (&big.Int{}).SetUint64(lastSkywayNonce), types.TransformValsetToCompassValset(&valset))
+	input, err := contractABI.Pack("", uniqueID, big.NewInt(0), big.NewInt(0), types.TransformValsetToCompassValset(&valset), feeMgrAddr)
 	if err != nil {
 		return err
 	}
@@ -316,7 +326,7 @@ func (k Keeper) AddUploadSmartContractToConsensus(
 ) (uint64, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID, nil)
+	assignee, remoteAddr, err := k.PickValidatorForMessage(ctx, chainReferenceID, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -334,6 +344,7 @@ func (k Keeper) AddUploadSmartContractToConsensus(
 				UploadSmartContract: smartContract,
 			},
 			Assignee:              assignee,
+			AssigneeRemoteAddress: remoteAddr,
 			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
 		}, nil)
 }

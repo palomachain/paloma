@@ -11,6 +11,9 @@ option go_package = "github.com/palomachain/paloma/x/consensus/types";
 
 // message for storing the queued signed message in the internal queue
 message QueuedSignedMessage {
+  reserved 5;
+  reserved "bytesToSign";
+
   option (gogoproto.goproto_stringer) = false;
 
   uint64 id = 1;
@@ -18,7 +21,6 @@ message QueuedSignedMessage {
   google.protobuf.Timestamp addedAt = 3
       [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
   google.protobuf.Any msg = 4;
-  bytes bytesToSign = 5;
   repeated SignData signData = 6;
   repeated Evidence evidence = 7;
   PublicAccessData publicAccessData = 8;
@@ -33,6 +35,12 @@ message QueuedSignedMessage {
     (amino.dont_omitempty) = true,
     (gogoproto.nullable) = true
   ];
+
+  repeated GasEstimate gasEstimates = 12;
+  // flagMask is a bitmask of flags that the message has.
+  // 1 = require gas estimate
+  uint32 flagMask = 13;
+  uint64 gasEstimate = 14;
 }
 
 message BatchOfConsensusMessages { google.protobuf.Any msg = 1; }
@@ -58,6 +66,12 @@ message Evidence {
                              "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
 
   google.protobuf.Any proof = 2;
+}
+
+message GasEstimate {
+  bytes valAddress = 1 [ (gogoproto.casttype) =
+                             "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
+  uint64 value = 2;
 }
 
 message PublicAccessData {

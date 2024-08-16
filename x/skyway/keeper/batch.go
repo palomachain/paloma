@@ -51,12 +51,24 @@ func (k Keeper) BuildOutgoingTXBatch(
 		return nil, err
 	}
 
-	assignee, err := k.EVMKeeper.PickValidatorForMessage(ctx, chainReferenceID, nil)
+	assignee, _, err := k.EVMKeeper.PickValidatorForMessage(ctx, chainReferenceID, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	batch, err := types.NewInternalOutgingTxBatch(nextID, k.getBatchTimeoutHeight(ctx), selectedTxs, contract, 0, chainReferenceID, turnstoneID, assignee)
+	assigneeValAddr, err := sdk.ValAddressFromBech32(assignee)
+	if err != nil {
+		return nil, fmt.Errorf("invalid validator address: %w", err)
+	}
+	assigneeRemoteAddress, found, err := k.GetEthAddressByValidator(ctx, assigneeValAddr, chainReferenceID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get remote address by validator: %w", err)
+	}
+	if !found {
+		return nil, fmt.Errorf("no remote address found for validator %s", assignee)
+	}
+
+	batch, err := types.NewInternalOutgingTxBatch(nextID, k.getBatchTimeoutHeight(ctx), selectedTxs, contract, 0, chainReferenceID, turnstoneID, assignee, assigneeRemoteAddress, 0)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "unable to create batch")
 	}
@@ -95,7 +107,15 @@ func (k Keeper) getBatchTimeoutHeight(ctx context.Context) uint64 {
 
 // OutgoingTxBatchExecuted is run when the Cosmos chain detects that a batch has been executed on Ethereum
 // It frees all the transactions in the batch
-func (k Keeper) OutgoingTxBatchExecuted(ctx context.Context, tokenContract types.EthAddress, claim types.MsgBatchSendToRemoteClaim) error {
+func (k Keeper) OutgoingTxBatchExecuted(c context.Context, tokenContract types.EthAddress, claim types.MsgBatchSendToRemoteClaim) (err error) {
+	ctx, commit := sdk.UnwrapSDKContext(c).CacheContext()
+	defer func() {
+		// Make sure all changes succeed before committing
+		if err == nil {
+			commit()
+		}
+	}()
+
 	b, err := k.GetOutgoingTXBatch(ctx, tokenContract, claim.BatchNonce)
 	if err != nil {
 		return err
@@ -104,7 +124,7 @@ func (k Keeper) OutgoingTxBatchExecuted(ctx context.Context, tokenContract types
 		return fmt.Errorf("unknown batch nonce for outgoing tx batch %s %d", tokenContract.GetAddress().Hex(), claim.BatchNonce)
 	}
 	if b.BatchTimeout <= claim.EthBlockHeight {
-		return fmt.Errorf("Batch with nonce %d submitted after it timed out (submission %d >= timeout %d)?", claim.BatchNonce, claim.EthBlockHeight, b.BatchTimeout)
+		return fmt.Errorf("batch with nonce %d submitted after it timed out (submission %d >= timeout %d)?", claim.BatchNonce, claim.EthBlockHeight, b.BatchTimeout)
 	}
 
 	totalToBurn := math.NewInt(0)
@@ -130,7 +150,12 @@ func (k Keeper) OutgoingTxBatchExecuted(ctx context.Context, tokenContract types
 		return err
 	}
 
-	return k.DeleteBatchConfirms(ctx, *b)
+	err = k.DeleteBatchConfirms(ctx, *b)
+	if err != nil {
+		return err
+	}
+
+	return k.DeleteBatchGasEstimates(ctx, *b)
 }
 
 // StoreBatch stores a transaction batch, it will refuse to overwrite an existing
@@ -148,6 +173,50 @@ func (k Keeper) StoreBatch(ctx context.Context, batch types.InternalOutgoingTxBa
 	}
 	store.Set(key, k.cdc.MustMarshal(&externalBatch))
 	return nil
+}
+
+// UpdateBatchGasEstimate updates the gas estimate for a batch
+func (k Keeper) UpdateBatchGasEstimate(c context.Context, batch types.InternalOutgoingTxBatch, estimate uint64) (err error) {
+	ctx, commit := sdk.UnwrapSDKContext(c).CacheContext()
+	defer func() {
+		// Make sure all changes succeed before committing
+		// Only set gas value if batch confirms successfully remove
+		if err == nil {
+			commit()
+		}
+	}()
+	if err := batch.ValidateBasic(); err != nil {
+		return sdkerrors.Wrap(err, "attempted to update invalid batch")
+	}
+	entity, err := k.GetOutgoingTXBatch(ctx, batch.TokenContract, batch.BatchNonce)
+	if err != nil {
+		return fmt.Errorf("failed to get batch from store: %w", err)
+	}
+	if entity == nil {
+		return fmt.Errorf("batch not found")
+	}
+	if entity.GasEstimate > 0 {
+		return fmt.Errorf("batch gas estimate already set")
+	}
+	// Update estimate
+	entity.GasEstimate = estimate
+
+	// Recalculate the checkpoint and store on batch
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, batch.ChainReferenceID)
+	if err != nil {
+		return fmt.Errorf("failed to get chain info: %w", err)
+	}
+	bts, err := entity.GetCheckpoint(string(ci.SmartContractUniqueID))
+	if err != nil {
+		return fmt.Errorf("failed to get checkpoint: %w", err)
+	}
+	entity.BytesToSign = bts
+
+	store := k.GetStore(ctx, types.StoreModulePrefix)
+	key := types.GetOutgoingTxBatchKey(batch.TokenContract, batch.BatchNonce)
+	externalBatch := entity.ToExternal()
+	store.Set(key, k.cdc.MustMarshal(&externalBatch))
+	return k.DeleteBatchConfirms(ctx, batch)
 }
 
 // DeleteBatch deletes an outgoing transaction batch
@@ -220,7 +289,14 @@ func (k Keeper) GetOutgoingTXBatch(ctx context.Context, tokenContract types.EthA
 }
 
 // CancelOutgoingTXBatch releases all TX in the batch and deletes the batch
-func (k Keeper) CancelOutgoingTXBatch(ctx context.Context, tokenContract types.EthAddress, nonce uint64) error {
+func (k Keeper) CancelOutgoingTXBatch(c context.Context, tokenContract types.EthAddress, nonce uint64) (err error) {
+	ctx, commit := sdk.UnwrapSDKContext(c).CacheContext()
+	defer func() {
+		// Make sure all changes succeed before committing
+		if err == nil {
+			commit()
+		}
+	}()
 	batch, err := k.GetOutgoingTXBatch(ctx, tokenContract, nonce)
 	if err != nil {
 		return err
@@ -243,6 +319,12 @@ func (k Keeper) CancelOutgoingTXBatch(ctx context.Context, tokenContract types.E
 
 	// Delete its confirmations as well
 	err = k.DeleteBatchConfirms(ctx, *batch)
+	if err != nil {
+		return err
+	}
+
+	// Delete its gas estimates as well
+	err = k.DeleteBatchGasEstimates(ctx, *batch)
 	if err != nil {
 		return err
 	}

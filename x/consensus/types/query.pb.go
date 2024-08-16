@@ -6,6 +6,10 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
@@ -15,15 +19,14 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	io "io"
-	math "math"
-	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -32,8 +35,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
-type QueryParamsRequest struct {
-}
+type QueryParamsRequest struct{}
 
 func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
 func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
@@ -41,9 +43,11 @@ func (*QueryParamsRequest) ProtoMessage()    {}
 func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{0}
 }
+
 func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsRequest.Marshal(b, m, deterministic)
@@ -56,12 +60,15 @@ func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
+
 func (m *QueryParamsRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsRequest.Merge(m, src)
 }
+
 func (m *QueryParamsRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsRequest.DiscardUnknown(m)
 }
@@ -80,9 +87,11 @@ func (*QueryParamsResponse) ProtoMessage()    {}
 func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{1}
 }
+
 func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsResponse.Marshal(b, m, deterministic)
@@ -95,12 +104,15 @@ func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
+
 func (m *QueryParamsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsResponse.Merge(m, src)
 }
+
 func (m *QueryParamsResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryParamsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsResponse.DiscardUnknown(m)
 }
@@ -125,9 +137,11 @@ func (*QueryQueuedMessagesForSigningRequest) ProtoMessage()    {}
 func (*QueryQueuedMessagesForSigningRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{2}
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForSigningRequest.Marshal(b, m, deterministic)
@@ -140,12 +154,15 @@ func (m *QueryQueuedMessagesForSigningRequest) XXX_Marshal(b []byte, determinist
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForSigningRequest.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForSigningRequest.DiscardUnknown(m)
 }
@@ -176,9 +193,11 @@ func (*QueryQueuedMessagesForSigningResponse) ProtoMessage()    {}
 func (*QueryQueuedMessagesForSigningResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{3}
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForSigningResponse.Marshal(b, m, deterministic)
@@ -191,12 +210,15 @@ func (m *QueryQueuedMessagesForSigningResponse) XXX_Marshal(b []byte, determinis
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForSigningResponse.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForSigningResponse.DiscardUnknown(m)
 }
@@ -223,9 +245,11 @@ func (*MessageToSign) ProtoMessage()    {}
 func (*MessageToSign) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{4}
 }
+
 func (m *MessageToSign) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MessageToSign) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MessageToSign.Marshal(b, m, deterministic)
@@ -238,12 +262,15 @@ func (m *MessageToSign) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 		return b[:n], nil
 	}
 }
+
 func (m *MessageToSign) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MessageToSign.Merge(m, src)
 }
+
 func (m *MessageToSign) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MessageToSign) XXX_DiscardUnknown() {
 	xxx_messageInfo_MessageToSign.DiscardUnknown(m)
 }
@@ -292,9 +319,11 @@ func (*ValidatorSignature) ProtoMessage()    {}
 func (*ValidatorSignature) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{5}
 }
+
 func (m *ValidatorSignature) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *ValidatorSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ValidatorSignature.Marshal(b, m, deterministic)
@@ -307,12 +336,15 @@ func (m *ValidatorSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
+
 func (m *ValidatorSignature) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ValidatorSignature.Merge(m, src)
 }
+
 func (m *ValidatorSignature) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *ValidatorSignature) XXX_DiscardUnknown() {
 	xxx_messageInfo_ValidatorSignature.DiscardUnknown(m)
 }
@@ -362,8 +394,8 @@ type MessageWithSignatures struct {
 	BytesToSign      []byte                `protobuf:"bytes,5,opt,name=bytesToSign,proto3" json:"bytesToSign,omitempty"`
 	PublicAccessData []byte                `protobuf:"bytes,6,opt,name=publicAccessData,proto3" json:"publicAccessData,omitempty"`
 	ErrorData        []byte                `protobuf:"bytes,7,opt,name=errorData,proto3" json:"errorData,omitempty"`
-	Evidence         []*Evidence           `protobuf:"bytes,8,rep,name=evidence,proto3" json:"evidence,omitempty"`
 	ValsetID         uint64                `protobuf:"varint,9,opt,name=valsetID,proto3" json:"valsetID,omitempty"`
+	GasEstimate      uint64                `protobuf:"varint,10,opt,name=gasEstimate,proto3" json:"gasEstimate,omitempty"`
 }
 
 func (m *MessageWithSignatures) Reset()         { *m = MessageWithSignatures{} }
@@ -372,9 +404,11 @@ func (*MessageWithSignatures) ProtoMessage()    {}
 func (*MessageWithSignatures) Descriptor() ([]byte, []int) {
 	return fileDescriptor_186b66ae011355e3, []int{6}
 }
+
 func (m *MessageWithSignatures) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *MessageWithSignatures) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MessageWithSignatures.Marshal(b, m, deterministic)
@@ -387,12 +421,15 @@ func (m *MessageWithSignatures) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
+
 func (m *MessageWithSignatures) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MessageWithSignatures.Merge(m, src)
 }
+
 func (m *MessageWithSignatures) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *MessageWithSignatures) XXX_DiscardUnknown() {
 	xxx_messageInfo_MessageWithSignatures.DiscardUnknown(m)
 }
@@ -448,18 +485,83 @@ func (m *MessageWithSignatures) GetErrorData() []byte {
 	return nil
 }
 
-func (m *MessageWithSignatures) GetEvidence() []*Evidence {
+func (m *MessageWithSignatures) GetValsetID() uint64 {
+	if m != nil {
+		return m.ValsetID
+	}
+	return 0
+}
+
+func (m *MessageWithSignatures) GetGasEstimate() uint64 {
+	if m != nil {
+		return m.GasEstimate
+	}
+	return 0
+}
+
+type MessageQueryResult struct {
+	Message      *MessageWithSignatures `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Evidence     []*Evidence            `protobuf:"bytes,2,rep,name=evidence,proto3" json:"evidence,omitempty"`
+	GasEstimates []*GasEstimate         `protobuf:"bytes,3,rep,name=gasEstimates,proto3" json:"gasEstimates,omitempty"`
+}
+
+func (m *MessageQueryResult) Reset()         { *m = MessageQueryResult{} }
+func (m *MessageQueryResult) String() string { return proto.CompactTextString(m) }
+func (*MessageQueryResult) ProtoMessage()    {}
+func (*MessageQueryResult) Descriptor() ([]byte, []int) {
+	return fileDescriptor_186b66ae011355e3, []int{7}
+}
+
+func (m *MessageQueryResult) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *MessageQueryResult) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MessageQueryResult.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *MessageQueryResult) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MessageQueryResult.Merge(m, src)
+}
+
+func (m *MessageQueryResult) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *MessageQueryResult) XXX_DiscardUnknown() {
+	xxx_messageInfo_MessageQueryResult.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MessageQueryResult proto.InternalMessageInfo
+
+func (m *MessageQueryResult) GetMessage() *MessageWithSignatures {
+	if m != nil {
+		return m.Message
+	}
+	return nil
+}
+
+func (m *MessageQueryResult) GetEvidence() []*Evidence {
 	if m != nil {
 		return m.Evidence
 	}
 	return nil
 }
 
-func (m *MessageWithSignatures) GetValsetID() uint64 {
+func (m *MessageQueryResult) GetGasEstimates() []*GasEstimate {
 	if m != nil {
-		return m.ValsetID
+		return m.GasEstimates
 	}
-	return 0
+	return nil
 }
 
 type QueryMessageByIDRequest struct {
@@ -471,11 +573,13 @@ func (m *QueryMessageByIDRequest) Reset()         { *m = QueryMessageByIDRequest
 func (m *QueryMessageByIDRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryMessageByIDRequest) ProtoMessage()    {}
 func (*QueryMessageByIDRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{7}
+	return fileDescriptor_186b66ae011355e3, []int{8}
 }
+
 func (m *QueryMessageByIDRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryMessageByIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryMessageByIDRequest.Marshal(b, m, deterministic)
@@ -488,12 +592,15 @@ func (m *QueryMessageByIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
+
 func (m *QueryMessageByIDRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryMessageByIDRequest.Merge(m, src)
 }
+
 func (m *QueryMessageByIDRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryMessageByIDRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryMessageByIDRequest.DiscardUnknown(m)
 }
@@ -523,11 +630,13 @@ func (m *QueryMessagesInQueueRequest) Reset()         { *m = QueryMessagesInQueu
 func (m *QueryMessagesInQueueRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryMessagesInQueueRequest) ProtoMessage()    {}
 func (*QueryMessagesInQueueRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{8}
+	return fileDescriptor_186b66ae011355e3, []int{9}
 }
+
 func (m *QueryMessagesInQueueRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryMessagesInQueueRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryMessagesInQueueRequest.Marshal(b, m, deterministic)
@@ -540,12 +649,15 @@ func (m *QueryMessagesInQueueRequest) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
+
 func (m *QueryMessagesInQueueRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryMessagesInQueueRequest.Merge(m, src)
 }
+
 func (m *QueryMessagesInQueueRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryMessagesInQueueRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryMessagesInQueueRequest.DiscardUnknown(m)
 }
@@ -574,11 +686,13 @@ func (m *QueryMessagesInQueueResponse) Reset()         { *m = QueryMessagesInQue
 func (m *QueryMessagesInQueueResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryMessagesInQueueResponse) ProtoMessage()    {}
 func (*QueryMessagesInQueueResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{9}
+	return fileDescriptor_186b66ae011355e3, []int{10}
 }
+
 func (m *QueryMessagesInQueueResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryMessagesInQueueResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryMessagesInQueueResponse.Marshal(b, m, deterministic)
@@ -591,12 +705,15 @@ func (m *QueryMessagesInQueueResponse) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
+
 func (m *QueryMessagesInQueueResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryMessagesInQueueResponse.Merge(m, src)
 }
+
 func (m *QueryMessagesInQueueResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryMessagesInQueueResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryMessagesInQueueResponse.DiscardUnknown(m)
 }
@@ -619,11 +736,13 @@ func (m *QueryQueuedMessagesForRelayingRequest) Reset()         { *m = QueryQueu
 func (m *QueryQueuedMessagesForRelayingRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryQueuedMessagesForRelayingRequest) ProtoMessage()    {}
 func (*QueryQueuedMessagesForRelayingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{10}
+	return fileDescriptor_186b66ae011355e3, []int{11}
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForRelayingRequest.Marshal(b, m, deterministic)
@@ -636,12 +755,15 @@ func (m *QueryQueuedMessagesForRelayingRequest) XXX_Marshal(b []byte, determinis
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForRelayingRequest.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForRelayingRequest.DiscardUnknown(m)
 }
@@ -672,11 +794,13 @@ func (m *QueryQueuedMessagesForRelayingResponse) Reset() {
 func (m *QueryQueuedMessagesForRelayingResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryQueuedMessagesForRelayingResponse) ProtoMessage()    {}
 func (*QueryQueuedMessagesForRelayingResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{11}
+	return fileDescriptor_186b66ae011355e3, []int{12}
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForRelayingResponse.Marshal(b, m, deterministic)
@@ -689,12 +813,15 @@ func (m *QueryQueuedMessagesForRelayingResponse) XXX_Marshal(b []byte, determini
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForRelayingResponse.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForRelayingResponse.DiscardUnknown(m)
 }
@@ -719,11 +846,13 @@ func (m *QueryQueuedMessagesForAttestingRequest) Reset() {
 func (m *QueryQueuedMessagesForAttestingRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryQueuedMessagesForAttestingRequest) ProtoMessage()    {}
 func (*QueryQueuedMessagesForAttestingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{12}
+	return fileDescriptor_186b66ae011355e3, []int{13}
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForAttestingRequest.Marshal(b, m, deterministic)
@@ -736,12 +865,15 @@ func (m *QueryQueuedMessagesForAttestingRequest) XXX_Marshal(b []byte, determini
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForAttestingRequest.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForAttestingRequest.DiscardUnknown(m)
 }
@@ -772,11 +904,13 @@ func (m *QueryQueuedMessagesForAttestingResponse) Reset() {
 func (m *QueryQueuedMessagesForAttestingResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryQueuedMessagesForAttestingResponse) ProtoMessage()    {}
 func (*QueryQueuedMessagesForAttestingResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{13}
+	return fileDescriptor_186b66ae011355e3, []int{14}
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryQueuedMessagesForAttestingResponse.Marshal(b, m, deterministic)
@@ -789,12 +923,15 @@ func (m *QueryQueuedMessagesForAttestingResponse) XXX_Marshal(b []byte, determin
 		return b[:n], nil
 	}
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryQueuedMessagesForAttestingResponse.Merge(m, src)
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryQueuedMessagesForAttestingResponse.DiscardUnknown(m)
 }
@@ -808,18 +945,19 @@ func (m *QueryQueuedMessagesForAttestingResponse) GetMessages() []MessageWithSig
 	return nil
 }
 
-type QueryGetAllQueueNamesRequest struct {
-}
+type QueryGetAllQueueNamesRequest struct{}
 
 func (m *QueryGetAllQueueNamesRequest) Reset()         { *m = QueryGetAllQueueNamesRequest{} }
 func (m *QueryGetAllQueueNamesRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryGetAllQueueNamesRequest) ProtoMessage()    {}
 func (*QueryGetAllQueueNamesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{14}
+	return fileDescriptor_186b66ae011355e3, []int{15}
 }
+
 func (m *QueryGetAllQueueNamesRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryGetAllQueueNamesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetAllQueueNamesRequest.Marshal(b, m, deterministic)
@@ -832,12 +970,15 @@ func (m *QueryGetAllQueueNamesRequest) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
+
 func (m *QueryGetAllQueueNamesRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetAllQueueNamesRequest.Merge(m, src)
 }
+
 func (m *QueryGetAllQueueNamesRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryGetAllQueueNamesRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetAllQueueNamesRequest.DiscardUnknown(m)
 }
@@ -852,11 +993,13 @@ func (m *QueryGetAllQueueNamesResponse) Reset()         { *m = QueryGetAllQueueN
 func (m *QueryGetAllQueueNamesResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryGetAllQueueNamesResponse) ProtoMessage()    {}
 func (*QueryGetAllQueueNamesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_186b66ae011355e3, []int{15}
+	return fileDescriptor_186b66ae011355e3, []int{16}
 }
+
 func (m *QueryGetAllQueueNamesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryGetAllQueueNamesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetAllQueueNamesResponse.Marshal(b, m, deterministic)
@@ -869,12 +1012,15 @@ func (m *QueryGetAllQueueNamesResponse) XXX_Marshal(b []byte, deterministic bool
 		return b[:n], nil
 	}
 }
+
 func (m *QueryGetAllQueueNamesResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetAllQueueNamesResponse.Merge(m, src)
 }
+
 func (m *QueryGetAllQueueNamesResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryGetAllQueueNamesResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetAllQueueNamesResponse.DiscardUnknown(m)
 }
@@ -888,6 +1034,122 @@ func (m *QueryGetAllQueueNamesResponse) GetQueues() []string {
 	return nil
 }
 
+type QueryQueuedMessagesForGasEstimationRequest struct {
+	QueueTypeName string                                        `protobuf:"bytes,1,opt,name=queueTypeName,proto3" json:"queueTypeName,omitempty"`
+	ValAddress    github_com_cosmos_cosmos_sdk_types.ValAddress `protobuf:"bytes,2,opt,name=valAddress,proto3,casttype=github.com/cosmos/cosmos-sdk/types.ValAddress" json:"valAddress,omitempty"`
+}
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) Reset() {
+	*m = QueryQueuedMessagesForGasEstimationRequest{}
+}
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryQueuedMessagesForGasEstimationRequest) ProtoMessage() {}
+func (*QueryQueuedMessagesForGasEstimationRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_186b66ae011355e3, []int{17}
+}
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryQueuedMessagesForGasEstimationRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryQueuedMessagesForGasEstimationRequest.Merge(m, src)
+}
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryQueuedMessagesForGasEstimationRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryQueuedMessagesForGasEstimationRequest proto.InternalMessageInfo
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) GetQueueTypeName() string {
+	if m != nil {
+		return m.QueueTypeName
+	}
+	return ""
+}
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) GetValAddress() github_com_cosmos_cosmos_sdk_types.ValAddress {
+	if m != nil {
+		return m.ValAddress
+	}
+	return nil
+}
+
+type QueryQueuedMessagesForGasEstimationResponse struct {
+	MessagesToEstimate []MessageWithSignatures `protobuf:"bytes,1,rep,name=messagesToEstimate,proto3" json:"messagesToEstimate"`
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) Reset() {
+	*m = QueryQueuedMessagesForGasEstimationResponse{}
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryQueuedMessagesForGasEstimationResponse) ProtoMessage() {}
+func (*QueryQueuedMessagesForGasEstimationResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_186b66ae011355e3, []int{18}
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryQueuedMessagesForGasEstimationResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryQueuedMessagesForGasEstimationResponse.Merge(m, src)
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryQueuedMessagesForGasEstimationResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryQueuedMessagesForGasEstimationResponse proto.InternalMessageInfo
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) GetMessagesToEstimate() []MessageWithSignatures {
+	if m != nil {
+		return m.MessagesToEstimate
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "palomachain.paloma.consensus.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "palomachain.paloma.consensus.QueryParamsResponse")
@@ -896,6 +1158,7 @@ func init() {
 	proto.RegisterType((*MessageToSign)(nil), "palomachain.paloma.consensus.MessageToSign")
 	proto.RegisterType((*ValidatorSignature)(nil), "palomachain.paloma.consensus.ValidatorSignature")
 	proto.RegisterType((*MessageWithSignatures)(nil), "palomachain.paloma.consensus.MessageWithSignatures")
+	proto.RegisterType((*MessageQueryResult)(nil), "palomachain.paloma.consensus.MessageQueryResult")
 	proto.RegisterType((*QueryMessageByIDRequest)(nil), "palomachain.paloma.consensus.QueryMessageByIDRequest")
 	proto.RegisterType((*QueryMessagesInQueueRequest)(nil), "palomachain.paloma.consensus.QueryMessagesInQueueRequest")
 	proto.RegisterType((*QueryMessagesInQueueResponse)(nil), "palomachain.paloma.consensus.QueryMessagesInQueueResponse")
@@ -905,6 +1168,8 @@ func init() {
 	proto.RegisterType((*QueryQueuedMessagesForAttestingResponse)(nil), "palomachain.paloma.consensus.QueryQueuedMessagesForAttestingResponse")
 	proto.RegisterType((*QueryGetAllQueueNamesRequest)(nil), "palomachain.paloma.consensus.QueryGetAllQueueNamesRequest")
 	proto.RegisterType((*QueryGetAllQueueNamesResponse)(nil), "palomachain.paloma.consensus.QueryGetAllQueueNamesResponse")
+	proto.RegisterType((*QueryQueuedMessagesForGasEstimationRequest)(nil), "palomachain.paloma.consensus.QueryQueuedMessagesForGasEstimationRequest")
+	proto.RegisterType((*QueryQueuedMessagesForGasEstimationResponse)(nil), "palomachain.paloma.consensus.QueryQueuedMessagesForGasEstimationResponse")
 }
 
 func init() {
@@ -912,81 +1177,92 @@ func init() {
 }
 
 var fileDescriptor_186b66ae011355e3 = []byte{
-	// 1089 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x57, 0xcf, 0x6f, 0xdc, 0x44,
-	0x14, 0xce, 0x6c, 0x7e, 0x90, 0xbc, 0x34, 0x50, 0x0d, 0xa1, 0x6c, 0x4d, 0xd8, 0x46, 0x56, 0x08,
-	0xe1, 0x47, 0x6d, 0x92, 0x08, 0x50, 0x1a, 0x10, 0xda, 0x6d, 0x4a, 0x15, 0x41, 0xa1, 0x31, 0xa5,
-	0x08, 0x2e, 0xab, 0x59, 0x7b, 0xea, 0x58, 0xf5, 0x7a, 0x36, 0x9e, 0x71, 0x94, 0xa5, 0x8a, 0x8a,
-	0xf8, 0x0b, 0x90, 0x38, 0x72, 0x00, 0xfe, 0x10, 0x2e, 0x1c, 0x50, 0xb9, 0x15, 0x71, 0xe1, 0x54,
-	0xa1, 0x04, 0x71, 0xe0, 0xc0, 0x1d, 0x2e, 0x20, 0x8f, 0xc7, 0x8e, 0x77, 0x37, 0xfb, 0x23, 0x1b,
-	0x22, 0x71, 0x5a, 0x7b, 0x66, 0xde, 0x37, 0xdf, 0xf7, 0xbd, 0x99, 0xe7, 0xb7, 0xb0, 0xd4, 0x20,
-	0x3e, 0xab, 0x13, 0x7b, 0x9b, 0x78, 0x81, 0x99, 0x3c, 0x9b, 0x36, 0x0b, 0x38, 0x0d, 0x78, 0xc4,
-	0xcd, 0x9d, 0x88, 0x86, 0x4d, 0xa3, 0x11, 0x32, 0xc1, 0xf0, 0x5c, 0x6e, 0xa5, 0x91, 0x3c, 0x1b,
-	0xd9, 0x4a, 0x6d, 0xd6, 0x65, 0x2e, 0x93, 0x0b, 0xcd, 0xf8, 0x29, 0x89, 0xd1, 0xe6, 0x5c, 0xc6,
-	0x5c, 0x9f, 0x9a, 0xa4, 0xe1, 0x99, 0x24, 0x08, 0x98, 0x20, 0xc2, 0x63, 0x01, 0x57, 0xb3, 0x2b,
-	0x3d, 0xf7, 0xce, 0x9e, 0xaa, 0x3b, 0x11, 0x8d, 0xa8, 0x8a, 0x79, 0xa1, 0x67, 0x4c, 0x83, 0x84,
-	0xa4, 0x9e, 0xc2, 0x5f, 0x54, 0x9b, 0xcb, 0xb7, 0x5a, 0x74, 0xc7, 0x24, 0x81, 0xd2, 0xa2, 0xcf,
-	0x02, 0xde, 0x8a, 0xa5, 0xdd, 0x94, 0xeb, 0x2d, 0xba, 0x13, 0x51, 0x2e, 0xf4, 0x8f, 0xe1, 0xc9,
-	0x96, 0x51, 0xde, 0x88, 0x81, 0x71, 0x05, 0x26, 0x12, 0xdc, 0x22, 0x9a, 0x47, 0x4b, 0xd3, 0x2b,
-	0x0b, 0x46, 0x2f, 0x27, 0x8c, 0x24, 0xba, 0x32, 0xf6, 0xe0, 0xd1, 0xa5, 0x11, 0x4b, 0x45, 0xea,
-	0x5f, 0x23, 0x58, 0x90, 0xd8, 0x5b, 0xb1, 0x16, 0xe7, 0x06, 0xe5, 0x9c, 0xb8, 0x94, 0xbf, 0xcd,
-	0xc2, 0x0f, 0x3c, 0x37, 0xf0, 0x02, 0x57, 0x71, 0xc0, 0x5b, 0x00, 0xbb, 0xc4, 0x2f, 0x3b, 0x4e,
-	0x48, 0x79, 0xb2, 0xe1, 0xb9, 0xca, 0xf2, 0xdf, 0x8f, 0x2e, 0x5d, 0x76, 0x3d, 0xb1, 0x1d, 0xd5,
-	0x0c, 0x9b, 0xd5, 0x4d, 0x9b, 0xf1, 0x3a, 0xe3, 0xea, 0xe7, 0x32, 0x77, 0xee, 0x9a, 0xa2, 0xd9,
-	0xa0, 0xdc, 0xb8, 0x9d, 0x05, 0x5a, 0x39, 0x10, 0xbc, 0x00, 0x33, 0xd2, 0xc1, 0x5b, 0xcd, 0x06,
-	0x7d, 0x8f, 0xd4, 0x69, 0xb1, 0x30, 0x8f, 0x96, 0xa6, 0xac, 0xd6, 0x41, 0xfd, 0x53, 0x78, 0xae,
-	0x0f, 0x41, 0x65, 0xc7, 0x16, 0xcc, 0xd4, 0x93, 0xd9, 0x5b, 0x2c, 0x9e, 0x2b, 0xa2, 0xf9, 0xd1,
-	0xa5, 0xe9, 0x95, 0x97, 0x7a, 0xbb, 0x72, 0x23, 0x1f, 0x62, 0xb5, 0x22, 0xe8, 0xf7, 0x61, 0xa6,
-	0x65, 0x1e, 0xcf, 0xc2, 0x78, 0xc0, 0x02, 0x9b, 0x26, 0x06, 0x58, 0xc9, 0x0b, 0x7e, 0x1c, 0x0a,
-	0x9e, 0x23, 0xd9, 0x8f, 0x59, 0x05, 0xcf, 0xc1, 0xf3, 0x30, 0x5d, 0x6b, 0x0a, 0xca, 0x15, 0x8f,
-	0x51, 0xb9, 0x36, 0x3f, 0x84, 0x17, 0x61, 0xb4, 0xce, 0xdd, 0xe2, 0x98, 0xcc, 0xdb, 0xac, 0x91,
-	0x1c, 0x08, 0x23, 0x3d, 0x10, 0x46, 0x39, 0x68, 0x5a, 0xf1, 0x02, 0xfd, 0x2f, 0x04, 0xf8, 0x36,
-	0xf1, 0x3d, 0x87, 0x88, 0x44, 0x30, 0x11, 0x51, 0x48, 0xcf, 0x22, 0x19, 0x73, 0x30, 0xc5, 0x53,
-	0x7c, 0x29, 0xe5, 0x9c, 0x75, 0x34, 0x10, 0xcf, 0xd2, 0x3d, 0x11, 0x92, 0x0d, 0x22, 0x88, 0xd2,
-	0x73, 0x34, 0x80, 0x5f, 0x83, 0x0b, 0x74, 0x4f, 0xd0, 0x30, 0x20, 0x7e, 0xd9, 0xb6, 0x59, 0x14,
-	0x88, 0x94, 0xda, 0x98, 0xcc, 0x68, 0x97, 0xd9, 0x18, 0xb5, 0x11, 0xd5, 0x7c, 0xcf, 0x7e, 0x87,
-	0x36, 0x8b, 0xe3, 0x09, 0x6a, 0x36, 0xa0, 0xff, 0x53, 0x80, 0xa7, 0x94, 0xfb, 0x1f, 0x79, 0x62,
-	0x3b, 0x53, 0xcf, 0x07, 0xcc, 0x82, 0xf2, 0x78, 0xb4, 0x8f, 0xc7, 0xf8, 0x5d, 0x98, 0x8c, 0x85,
-	0x4a, 0x69, 0x63, 0xf2, 0xc8, 0xbc, 0xd2, 0xfb, 0xc8, 0x74, 0x26, 0xc4, 0xca, 0x10, 0xda, 0x73,
-	0x3f, 0xde, 0x99, 0xfb, 0x17, 0xe1, 0x7c, 0x22, 0xb2, 0x6c, 0xdb, 0x94, 0x73, 0xb9, 0xef, 0x84,
-	0x5c, 0xd6, 0x31, 0x2e, 0x7d, 0x0f, 0x43, 0x16, 0xca, 0x45, 0x8f, 0x29, 0xdf, 0xd3, 0x01, 0x5c,
-	0x81, 0x49, 0xba, 0xeb, 0x39, 0x34, 0xb6, 0x62, 0x52, 0x32, 0x5f, 0xec, 0xcd, 0xfc, 0x9a, 0x5a,
-	0x6d, 0x65, 0x71, 0x58, 0x83, 0xc9, 0x5d, 0xe2, 0x73, 0x2a, 0x36, 0x37, 0x8a, 0x53, 0xd2, 0xbb,
-	0xec, 0x5d, 0x7f, 0x1f, 0x9e, 0x96, 0x57, 0x4f, 0x65, 0xa1, 0xd2, 0xdc, 0xdc, 0x48, 0xcb, 0x41,
-	0xc7, 0xdd, 0x45, 0xc7, 0xdc, 0xdd, 0xf6, 0x94, 0xe8, 0xdf, 0x23, 0x78, 0x26, 0x8f, 0xc8, 0x37,
-	0x03, 0x79, 0xad, 0x4f, 0x86, 0xba, 0x0f, 0xf3, 0xfc, 0xae, 0xd7, 0x48, 0xc5, 0xdc, 0x0c, 0x59,
-	0xfc, 0xe4, 0x54, 0x9a, 0x47, 0x47, 0x3b, 0x39, 0xc1, 0xc3, 0xdc, 0x89, 0xbe, 0xd0, 0x7a, 0x04,
-	0x73, 0xc7, 0x6b, 0x50, 0x75, 0xe8, 0x43, 0x98, 0x54, 0x55, 0x84, 0xab, 0x12, 0xb4, 0x3a, 0x50,
-	0x09, 0x6a, 0x3d, 0xe4, 0xaa, 0x4e, 0x67, 0x50, 0xfa, 0x37, 0xa8, 0x5b, 0x21, 0xb4, 0xa8, 0x4f,
-	0x9a, 0xb9, 0x52, 0x3d, 0x98, 0x8b, 0xad, 0x35, 0xa4, 0xf0, 0x1f, 0xd4, 0x10, 0xfd, 0x3e, 0x2c,
-	0xf6, 0x63, 0x78, 0xb6, 0x1e, 0x7d, 0x8b, 0xba, 0x31, 0x28, 0x0b, 0x41, 0xb9, 0xf8, 0x3f, 0x98,
-	0xf4, 0x19, 0x82, 0xe7, 0xfb, 0x72, 0x3c, 0x5b, 0x9b, 0x4a, 0xea, 0x04, 0x5f, 0xa7, 0xa2, 0xec,
-	0xfb, 0x92, 0x47, 0xac, 0x36, 0xeb, 0x37, 0x5e, 0x87, 0x67, 0xbb, 0xcc, 0x2b, 0x5e, 0x17, 0x60,
-	0x42, 0xfa, 0x94, 0xb0, 0x9a, 0xb2, 0xd4, 0xdb, 0xca, 0x8f, 0xd3, 0x30, 0x2e, 0x23, 0xf1, 0x57,
-	0x08, 0x26, 0x92, 0x86, 0x03, 0xf7, 0xa9, 0xa6, 0x9d, 0xfd, 0x8e, 0xb6, 0x7c, 0x82, 0x88, 0x84,
-	0x91, 0xfe, 0xf2, 0xe7, 0x3f, 0xff, 0xf6, 0x65, 0x61, 0x11, 0x2f, 0x98, 0x03, 0xf4, 0x61, 0xf8,
-	0x77, 0x04, 0xc5, 0x6e, 0xfd, 0x04, 0xae, 0x0c, 0xb0, 0x7b, 0x9f, 0x6e, 0x49, 0xbb, 0x7a, 0x2a,
-	0x0c, 0xa5, 0xa9, 0x2c, 0x35, 0xad, 0xe3, 0x35, 0xb3, 0x5f, 0x2f, 0x1c, 0x51, 0xa7, 0x9a, 0x66,
-	0xb7, 0x7a, 0x87, 0x85, 0x55, 0xae, 0xb4, 0xfc, 0x81, 0xe0, 0x62, 0xd7, 0xdb, 0x88, 0x87, 0x62,
-	0xd9, 0x56, 0x6d, 0xb4, 0x8d, 0xd3, 0x81, 0x28, 0xad, 0x15, 0xa9, 0xf5, 0x0d, 0x7c, 0xe5, 0xe4,
-	0x5a, 0xc3, 0x54, 0xce, 0x9f, 0x08, 0xb4, 0xee, 0x97, 0x0a, 0x0f, 0x45, 0xb4, 0xbd, 0x6e, 0x68,
-	0xd7, 0x4e, 0x89, 0xa2, 0xf4, 0x5e, 0x95, 0x7a, 0xdf, 0xc4, 0xeb, 0x27, 0xd7, 0x4b, 0x32, 0x45,
-	0x3f, 0x21, 0x78, 0xa2, 0xed, 0x2b, 0x84, 0xd7, 0x06, 0xe0, 0x77, 0xfc, 0xd7, 0x57, 0xbb, 0x32,
-	0x4c, 0xa8, 0xd2, 0x73, 0x5d, 0xea, 0x29, 0xe3, 0xb7, 0x7a, 0xeb, 0xc9, 0x84, 0x78, 0x41, 0xf2,
-	0xef, 0xc9, 0xbc, 0xd7, 0x52, 0x70, 0xf7, 0xf1, 0x77, 0x08, 0xa6, 0x73, 0xfd, 0x06, 0x7e, 0x75,
-	0x70, 0x52, 0xb9, 0xfe, 0x44, 0x1b, 0xa6, 0x4e, 0x0e, 0x7a, 0x08, 0xdb, 0x28, 0xa7, 0xa2, 0xcc,
-	0x7b, 0x9e, 0xb3, 0x8f, 0x7f, 0x40, 0x70, 0xbe, 0xbd, 0x6e, 0xe2, 0x41, 0x9c, 0xed, 0x52, 0x8c,
-	0xb5, 0xf5, 0xa1, 0x62, 0x55, 0x5a, 0xd6, 0xa4, 0xa2, 0x55, 0xbc, 0xdc, 0x5b, 0x91, 0x4b, 0x45,
-	0x95, 0xf8, 0x7e, 0x92, 0x92, 0x6a, 0x10, 0x43, 0x54, 0x36, 0x1f, 0x1c, 0x94, 0xd0, 0xc3, 0x83,
-	0x12, 0xfa, 0xf5, 0xa0, 0x84, 0xbe, 0x38, 0x2c, 0x8d, 0x3c, 0x3c, 0x2c, 0x8d, 0xfc, 0x72, 0x58,
-	0x1a, 0xf9, 0xc4, 0xcc, 0x7d, 0xfc, 0x8e, 0x81, 0xdd, 0xcb, 0x01, 0xcb, 0x2f, 0x61, 0x6d, 0x42,
-	0x36, 0xdd, 0xab, 0xff, 0x06, 0x00, 0x00, 0xff, 0xff, 0x87, 0x9e, 0xaa, 0x43, 0xd4, 0x0f, 0x00,
-	0x00,
+	// 1235 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x98, 0xcf, 0x6f, 0x1b, 0x45,
+	0x14, 0xc7, 0x33, 0x8e, 0x93, 0x3a, 0x2f, 0x0d, 0x54, 0x43, 0x28, 0xee, 0x12, 0xdc, 0x68, 0x15,
+	0x42, 0xda, 0x52, 0x6f, 0x93, 0x08, 0x50, 0x1a, 0x10, 0xd8, 0x4d, 0x48, 0x03, 0x04, 0x9a, 0x25,
+	0x14, 0xc1, 0xc5, 0x9a, 0xd8, 0xd3, 0xcd, 0xaa, 0xeb, 0x5d, 0x67, 0x67, 0x36, 0x8a, 0xa9, 0xa2,
+	0x22, 0xfe, 0x02, 0x24, 0x2e, 0x48, 0x1c, 0x80, 0x03, 0xff, 0x04, 0x47, 0x0e, 0x28, 0xc7, 0x22,
+	0x2e, 0x9c, 0x2a, 0x94, 0x20, 0x0e, 0x48, 0x70, 0x44, 0x82, 0x0b, 0x68, 0x67, 0x67, 0xd7, 0x6b,
+	0xc7, 0x3f, 0x36, 0x4e, 0x23, 0x38, 0x65, 0x76, 0x66, 0xde, 0x77, 0xde, 0xe7, 0xbd, 0x99, 0x37,
+	0xe3, 0xc0, 0x4c, 0x8d, 0x58, 0x4e, 0x95, 0x94, 0xb7, 0x88, 0x69, 0x6b, 0x41, 0x5b, 0x2b, 0x3b,
+	0x36, 0xa3, 0x36, 0xf3, 0x98, 0xb6, 0xed, 0x51, 0xb7, 0x9e, 0xaf, 0xb9, 0x0e, 0x77, 0xf0, 0x44,
+	0x6c, 0x66, 0x3e, 0x68, 0xe7, 0xa3, 0x99, 0xca, 0xb8, 0xe1, 0x18, 0x8e, 0x98, 0xa8, 0xf9, 0xad,
+	0xc0, 0x46, 0x99, 0x30, 0x1c, 0xc7, 0xb0, 0xa8, 0x46, 0x6a, 0xa6, 0x46, 0x6c, 0xdb, 0xe1, 0x84,
+	0x9b, 0x8e, 0xcd, 0xe4, 0xe8, 0x5c, 0xd7, 0xb5, 0xa3, 0x56, 0x69, 0xdb, 0xa3, 0x1e, 0x95, 0x36,
+	0x97, 0xba, 0xda, 0xd4, 0x88, 0x4b, 0xaa, 0xa1, 0xfc, 0x05, 0xb9, 0xb8, 0xf8, 0xda, 0xf4, 0xee,
+	0x68, 0xc4, 0x96, 0x2c, 0xea, 0x38, 0xe0, 0x75, 0x1f, 0xed, 0x96, 0x98, 0xaf, 0xd3, 0x6d, 0x8f,
+	0x32, 0xae, 0x7e, 0x00, 0x4f, 0x34, 0xf5, 0xb2, 0x9a, 0x2f, 0x8c, 0x8b, 0x30, 0x1c, 0xe8, 0x66,
+	0xd1, 0x24, 0x9a, 0x19, 0x9d, 0x9b, 0xca, 0x77, 0x8b, 0x44, 0x3e, 0xb0, 0x2e, 0xa6, 0xf7, 0x1f,
+	0x5e, 0x1c, 0xd0, 0xa5, 0xa5, 0xfa, 0x25, 0x82, 0x29, 0xa1, 0xbd, 0xee, 0xb3, 0x54, 0xd6, 0x28,
+	0x63, 0xc4, 0xa0, 0xec, 0x75, 0xc7, 0x7d, 0xd7, 0x34, 0x6c, 0xd3, 0x36, 0xa4, 0x0f, 0x78, 0x1d,
+	0x60, 0x87, 0x58, 0x85, 0x4a, 0xc5, 0xa5, 0x2c, 0x58, 0xf0, 0x6c, 0x71, 0xf6, 0xef, 0x87, 0x17,
+	0xaf, 0x1a, 0x26, 0xdf, 0xf2, 0x36, 0xf3, 0x65, 0xa7, 0xaa, 0x95, 0x1d, 0x56, 0x75, 0x98, 0xfc,
+	0x73, 0x95, 0x55, 0xee, 0x6a, 0xbc, 0x5e, 0xa3, 0x2c, 0x7f, 0x3b, 0x32, 0xd4, 0x63, 0x22, 0x78,
+	0x0a, 0xc6, 0x44, 0x04, 0x37, 0xea, 0x35, 0xfa, 0x36, 0xa9, 0xd2, 0x6c, 0x6a, 0x12, 0xcd, 0x8c,
+	0xe8, 0xcd, 0x9d, 0xea, 0x47, 0xf0, 0x6c, 0x0f, 0x07, 0x65, 0x38, 0xd6, 0x61, 0xac, 0x1a, 0x8c,
+	0x6e, 0x38, 0xfe, 0x58, 0x16, 0x4d, 0x0e, 0xce, 0x8c, 0xce, 0x5d, 0xe9, 0x1e, 0x95, 0xb5, 0xb8,
+	0x89, 0xde, 0xac, 0xa0, 0xde, 0x87, 0xb1, 0xa6, 0x71, 0x3c, 0x0e, 0x43, 0xb6, 0x63, 0x97, 0x69,
+	0x10, 0x00, 0x3d, 0xf8, 0xc0, 0x8f, 0x41, 0xca, 0xac, 0x08, 0xef, 0xd3, 0x7a, 0xca, 0xac, 0xe0,
+	0x49, 0x18, 0xdd, 0xac, 0x73, 0xca, 0xa4, 0x1f, 0x83, 0x62, 0x6e, 0xbc, 0x0b, 0x4f, 0xc3, 0x60,
+	0x95, 0x19, 0xd9, 0xb4, 0xc8, 0xdb, 0x78, 0x3e, 0xd8, 0x10, 0xf9, 0x70, 0x43, 0xe4, 0x0b, 0x76,
+	0x5d, 0xf7, 0x27, 0xa8, 0x7f, 0x21, 0xc0, 0xb7, 0x89, 0x65, 0x56, 0x08, 0x0f, 0x80, 0x09, 0xf7,
+	0x5c, 0x7a, 0x1a, 0xc9, 0x98, 0x80, 0x11, 0x16, 0xea, 0x0b, 0x94, 0xb3, 0x7a, 0xa3, 0xc3, 0x1f,
+	0xa5, 0xbb, 0xdc, 0x25, 0x4b, 0x84, 0x13, 0xc9, 0xd3, 0xe8, 0xc0, 0x2f, 0xc2, 0x79, 0xba, 0xcb,
+	0xa9, 0x6b, 0x13, 0xab, 0x50, 0x2e, 0x3b, 0x9e, 0xcd, 0x43, 0xd7, 0xd2, 0x22, 0xa3, 0x1d, 0x46,
+	0x7d, 0xd5, 0x9a, 0xb7, 0x69, 0x99, 0xe5, 0x37, 0x69, 0x3d, 0x3b, 0x14, 0xa8, 0x46, 0x1d, 0xea,
+	0xef, 0x29, 0x78, 0x52, 0x46, 0xff, 0x7d, 0x93, 0x6f, 0x45, 0xf4, 0x2c, 0x61, 0x16, 0x64, 0x8c,
+	0x07, 0x7b, 0xc4, 0x18, 0xbf, 0x05, 0x19, 0x1f, 0x54, 0xa0, 0xa5, 0xc5, 0x96, 0xb9, 0xd6, 0x7d,
+	0xcb, 0x1c, 0x4d, 0x88, 0x1e, 0x29, 0xb4, 0xe6, 0x7e, 0xe8, 0x68, 0xee, 0x2f, 0xc3, 0xb9, 0x00,
+	0xb2, 0x50, 0x2e, 0x53, 0xc6, 0xc4, 0xba, 0xc3, 0x62, 0xda, 0x91, 0x7e, 0x11, 0x77, 0xd7, 0x75,
+	0x5c, 0x31, 0xe9, 0x8c, 0x8c, 0x7b, 0xd8, 0x81, 0x15, 0xc8, 0xec, 0x10, 0x8b, 0x51, 0xbe, 0xba,
+	0x94, 0x1d, 0x11, 0xdc, 0xd1, 0xb7, 0xef, 0x87, 0x41, 0xd8, 0x32, 0xe3, 0x66, 0x95, 0x70, 0x9a,
+	0x05, 0x31, 0x1c, 0xef, 0x7a, 0x23, 0x9d, 0xc9, 0x9c, 0x1b, 0xd1, 0x33, 0x74, 0xc7, 0xac, 0x50,
+	0xbb, 0x4c, 0xd5, 0x3f, 0x11, 0x60, 0x19, 0x6f, 0x71, 0xe0, 0x74, 0xca, 0x3c, 0x8b, 0xe3, 0x35,
+	0x38, 0x23, 0x0f, 0x85, 0x2c, 0x33, 0xf3, 0x89, 0x0e, 0x54, 0x73, 0xca, 0xf4, 0x50, 0x03, 0x17,
+	0x21, 0x5a, 0x31, 0x9b, 0x12, 0xd1, 0x9e, 0xee, 0xae, 0xb7, 0x2c, 0x67, 0x37, 0x3c, 0xc5, 0x6b,
+	0x70, 0x36, 0x06, 0xc2, 0xb2, 0x83, 0x42, 0xe7, 0x52, 0x77, 0x9d, 0x95, 0x86, 0x85, 0xde, 0x64,
+	0xae, 0xbe, 0x03, 0x4f, 0x09, 0x60, 0xe9, 0x79, 0xb1, 0xbe, 0xba, 0x14, 0x56, 0xbd, 0x23, 0x25,
+	0x0a, 0xb5, 0x29, 0x51, 0xad, 0x3b, 0x4f, 0xfd, 0x0e, 0xc1, 0xd3, 0x71, 0x45, 0xb6, 0x6a, 0x8b,
+	0xea, 0x75, 0x3c, 0xd5, 0x3d, 0x98, 0x64, 0x77, 0xcd, 0x5a, 0xc8, 0x7f, 0xcb, 0x75, 0xfc, 0x56,
+	0xa5, 0x58, 0x6f, 0x9c, 0xe0, 0xe0, 0xa0, 0xf6, 0x73, 0xf4, 0x7b, 0x4a, 0xab, 0x1e, 0x4c, 0xb4,
+	0x67, 0x90, 0xe5, 0xf6, 0x3d, 0xc8, 0xc8, 0x9c, 0x32, 0x59, 0x69, 0xfb, 0xd9, 0x18, 0xf2, 0x3a,
+	0x8a, 0xa4, 0xd4, 0xaf, 0x50, 0xa7, 0x7a, 0xaf, 0x53, 0x8b, 0xd4, 0x63, 0x37, 0x52, 0xb2, 0x28,
+	0x36, 0x97, 0xca, 0xd4, 0x23, 0x28, 0x95, 0xea, 0x7d, 0x98, 0xee, 0xe5, 0xe1, 0xe9, 0xc6, 0xe8,
+	0x6b, 0xd4, 0xc9, 0x83, 0x02, 0xe7, 0x94, 0xf1, 0xff, 0x43, 0x90, 0x3e, 0x46, 0xf0, 0x5c, 0x4f,
+	0x1f, 0x4f, 0x37, 0x4c, 0x39, 0xb9, 0x83, 0x57, 0x28, 0x2f, 0x58, 0x96, 0xf0, 0xc3, 0xa7, 0x8d,
+	0x9e, 0x55, 0x2f, 0xc1, 0x33, 0x1d, 0xc6, 0xa5, 0x5f, 0xe7, 0x61, 0x58, 0xc4, 0x29, 0xf0, 0x6a,
+	0x44, 0x97, 0x5f, 0xea, 0x37, 0x08, 0x2e, 0xb7, 0x67, 0x6b, 0x14, 0x19, 0xd3, 0xb1, 0xff, 0xf3,
+	0x1c, 0x7c, 0x8e, 0xe0, 0x4a, 0x22, 0x3f, 0x25, 0xaf, 0x09, 0x38, 0x0c, 0xde, 0x86, 0x13, 0x5d,
+	0x1d, 0x27, 0xce, 0x48, 0x1b, 0xd1, 0xb9, 0xfd, 0x31, 0x18, 0x12, 0xae, 0xe1, 0x2f, 0x10, 0x0c,
+	0x07, 0x4f, 0x53, 0xdc, 0xe3, 0xde, 0x3d, 0xfa, 0x32, 0x56, 0x66, 0x8f, 0x61, 0x11, 0x40, 0xaa,
+	0xcf, 0x7f, 0xf2, 0xe3, 0x2f, 0x9f, 0xa5, 0xa6, 0xf1, 0x94, 0x96, 0xe0, 0xc5, 0x8e, 0x7f, 0x45,
+	0x90, 0xed, 0xf4, 0xf2, 0xc4, 0xc5, 0x04, 0xab, 0xf7, 0x78, 0x57, 0x2b, 0x37, 0x4e, 0xa4, 0x21,
+	0x99, 0x0a, 0x82, 0x69, 0x11, 0x2f, 0x68, 0xbd, 0x7e, 0x35, 0x79, 0xb4, 0x52, 0x0a, 0xd3, 0x51,
+	0xba, 0xe3, 0xb8, 0x25, 0x26, 0x59, 0x7e, 0x43, 0x70, 0xa1, 0x63, 0x41, 0xc3, 0x7d, 0x79, 0xd9,
+	0x52, 0xb0, 0x95, 0xa5, 0x93, 0x89, 0x48, 0xd6, 0xa2, 0x60, 0x7d, 0x19, 0x5f, 0x3f, 0x3e, 0xab,
+	0x1b, 0xe2, 0xfc, 0x83, 0x20, 0xd7, 0xfd, 0x4c, 0xe0, 0x9b, 0xfd, 0x38, 0xdb, 0xee, 0xf8, 0x2b,
+	0xab, 0x8f, 0x40, 0x49, 0xb2, 0xdf, 0x14, 0xec, 0x45, 0xfc, 0xda, 0xf1, 0xd9, 0x0d, 0xc2, 0x4a,
+	0xb4, 0x81, 0xf7, 0x07, 0x02, 0xa5, 0x73, 0x65, 0xc6, 0x7d, 0xa5, 0xaa, 0xf5, 0xf2, 0x51, 0x96,
+	0x4f, 0xa8, 0x22, 0xa9, 0x6f, 0x08, 0xea, 0x57, 0xf0, 0xe2, 0xf1, 0xa9, 0x49, 0x44, 0xf4, 0x03,
+	0x82, 0xc7, 0x5b, 0x9e, 0x32, 0x78, 0x21, 0x81, 0x7f, 0xed, 0x9f, 0x70, 0xca, 0xf5, 0x7e, 0x4c,
+	0x25, 0xcf, 0x8a, 0xe0, 0x29, 0xe0, 0x57, 0xbb, 0xf3, 0x44, 0x20, 0xa6, 0x1d, 0xfc, 0xa7, 0x41,
+	0xbb, 0xd7, 0x74, 0x63, 0xec, 0xe1, 0x6f, 0x11, 0x8c, 0xc6, 0x1e, 0xad, 0xf8, 0x85, 0xe4, 0x4e,
+	0xc5, 0x1e, 0xb9, 0xca, 0xb5, 0x44, 0xa5, 0x3d, 0xf6, 0x9b, 0x20, 0xe9, 0x19, 0x6c, 0xf1, 0x37,
+	0x24, 0xd2, 0xee, 0x99, 0x95, 0x3d, 0xfc, 0x3d, 0x82, 0x73, 0xad, 0x37, 0x2f, 0x4e, 0x12, 0xd6,
+	0x0e, 0xd7, 0xb9, 0xb2, 0xd8, 0x97, 0xad, 0xcc, 0xc9, 0x82, 0x20, 0x9a, 0xc7, 0xb3, 0xdd, 0x89,
+	0x0c, 0xca, 0x4b, 0xc4, 0xb2, 0x82, 0x7c, 0x94, 0x6c, 0x5f, 0xa2, 0xb8, 0xba, 0x7f, 0x90, 0x43,
+	0x0f, 0x0e, 0x72, 0xe8, 0xe7, 0x83, 0x1c, 0xfa, 0xf4, 0x30, 0x37, 0xf0, 0xe0, 0x30, 0x37, 0xf0,
+	0xd3, 0x61, 0x6e, 0xe0, 0x43, 0x2d, 0x76, 0x75, 0xb7, 0x91, 0xdd, 0x8d, 0x09, 0x8b, 0x7b, 0x7c,
+	0x73, 0x58, 0xfc, 0x3a, 0x9d, 0xff, 0x37, 0x00, 0x00, 0xff, 0xff, 0x5e, 0x96, 0xd0, 0xdb, 0xfd,
+	0x12, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -1002,12 +1278,14 @@ type QueryClient interface {
 	QueuedMessagesForSigning(ctx context.Context, in *QueryQueuedMessagesForSigningRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForSigningResponse, error)
 	// Queries a list of QueuedMessagesForRelaying items.
 	QueuedMessagesForRelaying(ctx context.Context, in *QueryQueuedMessagesForRelayingRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForRelayingResponse, error)
+	// Queries a list of QueuedMessagesForGasEstimation items.
+	QueuedMessagesForGasEstimation(ctx context.Context, in *QueryQueuedMessagesForGasEstimationRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForGasEstimationResponse, error)
 	// Queries a list of QueuedMessagesForAttesting items.
 	QueuedMessagesForAttesting(ctx context.Context, in *QueryQueuedMessagesForAttestingRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForAttestingResponse, error)
 	// Queries a list of MessagesInQueue items.
 	MessagesInQueue(ctx context.Context, in *QueryMessagesInQueueRequest, opts ...grpc.CallOption) (*QueryMessagesInQueueResponse, error)
 	// Queries one message by ID.
-	MessageByID(ctx context.Context, in *QueryMessageByIDRequest, opts ...grpc.CallOption) (*MessageWithSignatures, error)
+	MessageByID(ctx context.Context, in *QueryMessageByIDRequest, opts ...grpc.CallOption) (*MessageQueryResult, error)
 	// Queries a list of GetAllQueueNames items.
 	GetAllQueueNames(ctx context.Context, in *QueryGetAllQueueNamesRequest, opts ...grpc.CallOption) (*QueryGetAllQueueNamesResponse, error)
 }
@@ -1047,6 +1325,15 @@ func (c *queryClient) QueuedMessagesForRelaying(ctx context.Context, in *QueryQu
 	return out, nil
 }
 
+func (c *queryClient) QueuedMessagesForGasEstimation(ctx context.Context, in *QueryQueuedMessagesForGasEstimationRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForGasEstimationResponse, error) {
+	out := new(QueryQueuedMessagesForGasEstimationResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.consensus.Query/QueuedMessagesForGasEstimation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) QueuedMessagesForAttesting(ctx context.Context, in *QueryQueuedMessagesForAttestingRequest, opts ...grpc.CallOption) (*QueryQueuedMessagesForAttestingResponse, error) {
 	out := new(QueryQueuedMessagesForAttestingResponse)
 	err := c.cc.Invoke(ctx, "/palomachain.paloma.consensus.Query/QueuedMessagesForAttesting", in, out, opts...)
@@ -1065,8 +1352,8 @@ func (c *queryClient) MessagesInQueue(ctx context.Context, in *QueryMessagesInQu
 	return out, nil
 }
 
-func (c *queryClient) MessageByID(ctx context.Context, in *QueryMessageByIDRequest, opts ...grpc.CallOption) (*MessageWithSignatures, error) {
-	out := new(MessageWithSignatures)
+func (c *queryClient) MessageByID(ctx context.Context, in *QueryMessageByIDRequest, opts ...grpc.CallOption) (*MessageQueryResult, error) {
+	out := new(MessageQueryResult)
 	err := c.cc.Invoke(ctx, "/palomachain.paloma.consensus.Query/MessageByID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1091,38 +1378,49 @@ type QueryServer interface {
 	QueuedMessagesForSigning(context.Context, *QueryQueuedMessagesForSigningRequest) (*QueryQueuedMessagesForSigningResponse, error)
 	// Queries a list of QueuedMessagesForRelaying items.
 	QueuedMessagesForRelaying(context.Context, *QueryQueuedMessagesForRelayingRequest) (*QueryQueuedMessagesForRelayingResponse, error)
+	// Queries a list of QueuedMessagesForGasEstimation items.
+	QueuedMessagesForGasEstimation(context.Context, *QueryQueuedMessagesForGasEstimationRequest) (*QueryQueuedMessagesForGasEstimationResponse, error)
 	// Queries a list of QueuedMessagesForAttesting items.
 	QueuedMessagesForAttesting(context.Context, *QueryQueuedMessagesForAttestingRequest) (*QueryQueuedMessagesForAttestingResponse, error)
 	// Queries a list of MessagesInQueue items.
 	MessagesInQueue(context.Context, *QueryMessagesInQueueRequest) (*QueryMessagesInQueueResponse, error)
 	// Queries one message by ID.
-	MessageByID(context.Context, *QueryMessageByIDRequest) (*MessageWithSignatures, error)
+	MessageByID(context.Context, *QueryMessageByIDRequest) (*MessageQueryResult, error)
 	// Queries a list of GetAllQueueNames items.
 	GetAllQueueNames(context.Context, *QueryGetAllQueueNamesRequest) (*QueryGetAllQueueNamesResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
-type UnimplementedQueryServer struct {
-}
+type UnimplementedQueryServer struct{}
 
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
+
 func (*UnimplementedQueryServer) QueuedMessagesForSigning(ctx context.Context, req *QueryQueuedMessagesForSigningRequest) (*QueryQueuedMessagesForSigningResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueuedMessagesForSigning not implemented")
 }
+
 func (*UnimplementedQueryServer) QueuedMessagesForRelaying(ctx context.Context, req *QueryQueuedMessagesForRelayingRequest) (*QueryQueuedMessagesForRelayingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueuedMessagesForRelaying not implemented")
 }
+
+func (*UnimplementedQueryServer) QueuedMessagesForGasEstimation(ctx context.Context, req *QueryQueuedMessagesForGasEstimationRequest) (*QueryQueuedMessagesForGasEstimationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueuedMessagesForGasEstimation not implemented")
+}
+
 func (*UnimplementedQueryServer) QueuedMessagesForAttesting(ctx context.Context, req *QueryQueuedMessagesForAttestingRequest) (*QueryQueuedMessagesForAttestingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueuedMessagesForAttesting not implemented")
 }
+
 func (*UnimplementedQueryServer) MessagesInQueue(ctx context.Context, req *QueryMessagesInQueueRequest) (*QueryMessagesInQueueResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MessagesInQueue not implemented")
 }
-func (*UnimplementedQueryServer) MessageByID(ctx context.Context, req *QueryMessageByIDRequest) (*MessageWithSignatures, error) {
+
+func (*UnimplementedQueryServer) MessageByID(ctx context.Context, req *QueryMessageByIDRequest) (*MessageQueryResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MessageByID not implemented")
 }
+
 func (*UnimplementedQueryServer) GetAllQueueNames(ctx context.Context, req *QueryGetAllQueueNamesRequest) (*QueryGetAllQueueNamesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllQueueNames not implemented")
 }
@@ -1181,6 +1479,24 @@ func _Query_QueuedMessagesForRelaying_Handler(srv interface{}, ctx context.Conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).QueuedMessagesForRelaying(ctx, req.(*QueryQueuedMessagesForRelayingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueuedMessagesForGasEstimation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryQueuedMessagesForGasEstimationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueuedMessagesForGasEstimation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/palomachain.paloma.consensus.Query/QueuedMessagesForGasEstimation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueuedMessagesForGasEstimation(ctx, req.(*QueryQueuedMessagesForGasEstimationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1272,6 +1588,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "QueuedMessagesForRelaying",
 			Handler:    _Query_QueuedMessagesForRelaying_Handler,
+		},
+		{
+			MethodName: "QueuedMessagesForGasEstimation",
+			Handler:    _Query_QueuedMessagesForGasEstimation_Handler,
 		},
 		{
 			MethodName: "QueuedMessagesForAttesting",
@@ -1556,24 +1876,15 @@ func (m *MessageWithSignatures) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.GasEstimate != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.GasEstimate))
+		i--
+		dAtA[i] = 0x50
+	}
 	if m.ValsetID != 0 {
 		i = encodeVarintQuery(dAtA, i, uint64(m.ValsetID))
 		i--
 		dAtA[i] = 0x48
-	}
-	if len(m.Evidence) > 0 {
-		for iNdEx := len(m.Evidence) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Evidence[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintQuery(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x42
-		}
 	}
 	if len(m.ErrorData) > 0 {
 		i -= len(m.ErrorData)
@@ -1631,6 +1942,69 @@ func (m *MessageWithSignatures) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.Nonce)
 		copy(dAtA[i:], m.Nonce)
 		i = encodeVarintQuery(dAtA, i, uint64(len(m.Nonce)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MessageQueryResult) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MessageQueryResult) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MessageQueryResult) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.GasEstimates) > 0 {
+		for iNdEx := len(m.GasEstimates) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.GasEstimates[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.Evidence) > 0 {
+		for iNdEx := len(m.Evidence) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Evidence[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if m.Message != nil {
+		{
+			size, err := m.Message.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1949,6 +2323,80 @@ func (m *QueryGetAllQueueNamesResponse) MarshalToSizedBuffer(dAtA []byte) (int, 
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryQueuedMessagesForGasEstimationRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ValAddress) > 0 {
+		i -= len(m.ValAddress)
+		copy(dAtA[i:], m.ValAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ValAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.QueueTypeName) > 0 {
+		i -= len(m.QueueTypeName)
+		copy(dAtA[i:], m.QueueTypeName)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.QueueTypeName)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.MessagesToEstimate) > 0 {
+		for iNdEx := len(m.MessagesToEstimate) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.MessagesToEstimate[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -1960,6 +2408,7 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
 func (m *QueryParamsRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2100,14 +2549,36 @@ func (m *MessageWithSignatures) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
+	if m.ValsetID != 0 {
+		n += 1 + sovQuery(uint64(m.ValsetID))
+	}
+	if m.GasEstimate != 0 {
+		n += 1 + sovQuery(uint64(m.GasEstimate))
+	}
+	return n
+}
+
+func (m *MessageQueryResult) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Message != nil {
+		l = m.Message.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
 	if len(m.Evidence) > 0 {
 		for _, e := range m.Evidence {
 			l = e.Size()
 			n += 1 + l + sovQuery(uint64(l))
 		}
 	}
-	if m.ValsetID != 0 {
-		n += 1 + sovQuery(uint64(m.ValsetID))
+	if len(m.GasEstimates) > 0 {
+		for _, e := range m.GasEstimates {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
 	}
 	return n
 }
@@ -2248,12 +2719,46 @@ func (m *QueryGetAllQueueNamesResponse) Size() (n int) {
 	return n
 }
 
+func (m *QueryQueuedMessagesForGasEstimationRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.QueueTypeName)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.ValAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.MessagesToEstimate) > 0 {
+		for _, e := range m.MessagesToEstimate {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	return n
+}
+
 func sovQuery(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
+
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+
 func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2304,6 +2809,7 @@ func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2387,6 +2893,7 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForSigningRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2503,6 +3010,7 @@ func (m *QueryQueuedMessagesForSigningRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForSigningResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2587,6 +3095,7 @@ func (m *QueryQueuedMessagesForSigningResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MessageToSign) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2760,6 +3269,7 @@ func (m *MessageToSign) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *ValidatorSignature) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2978,6 +3488,7 @@ func (m *ValidatorSignature) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *MessageWithSignatures) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3232,7 +3743,132 @@ func (m *MessageWithSignatures) Unmarshal(dAtA []byte) error {
 				m.ErrorData = []byte{}
 			}
 			iNdEx = postIndex
-		case 8:
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValsetID", wireType)
+			}
+			m.ValsetID = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValsetID |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 10:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GasEstimate", wireType)
+			}
+			m.GasEstimate = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.GasEstimate |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *MessageQueryResult) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MessageQueryResult: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MessageQueryResult: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Message == nil {
+				m.Message = &MessageWithSignatures{}
+			}
+			if err := m.Message.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Evidence", wireType)
 			}
@@ -3266,11 +3902,11 @@ func (m *MessageWithSignatures) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 9:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValsetID", wireType)
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GasEstimates", wireType)
 			}
-			m.ValsetID = 0
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowQuery
@@ -3280,11 +3916,26 @@ func (m *MessageWithSignatures) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.ValsetID |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.GasEstimates = append(m.GasEstimates, &GasEstimate{})
+			if err := m.GasEstimates[len(m.GasEstimates)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -3306,6 +3957,7 @@ func (m *MessageWithSignatures) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryMessageByIDRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3407,6 +4059,7 @@ func (m *QueryMessageByIDRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryMessagesInQueueRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3523,6 +4176,7 @@ func (m *QueryMessagesInQueueRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryMessagesInQueueResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3607,6 +4261,7 @@ func (m *QueryMessagesInQueueResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForRelayingRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3723,6 +4378,7 @@ func (m *QueryQueuedMessagesForRelayingRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForRelayingResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3807,6 +4463,7 @@ func (m *QueryQueuedMessagesForRelayingResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForAttestingRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3923,6 +4580,7 @@ func (m *QueryQueuedMessagesForAttestingRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryQueuedMessagesForAttestingResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4007,6 +4665,7 @@ func (m *QueryQueuedMessagesForAttestingResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryGetAllQueueNamesRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4057,6 +4716,7 @@ func (m *QueryGetAllQueueNamesRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryGetAllQueueNamesResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4139,6 +4799,209 @@ func (m *QueryGetAllQueueNamesResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
+func (m *QueryQueuedMessagesForGasEstimationRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForGasEstimationRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForGasEstimationRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QueueTypeName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.QueueTypeName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValAddress", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValAddress = append(m.ValAddress[:0], dAtA[iNdEx:postIndex]...)
+			if m.ValAddress == nil {
+				m.ValAddress = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *QueryQueuedMessagesForGasEstimationResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForGasEstimationResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryQueuedMessagesForGasEstimationResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MessagesToEstimate", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.MessagesToEstimate = append(m.MessagesToEstimate, MessageWithSignatures{})
+			if err := m.MessagesToEstimate[len(m.MessagesToEstimate)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
 func skipQuery(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

@@ -119,23 +119,12 @@ func (k msgServer) ConfirmBatch(c context.Context, msg *types.MsgConfirmBatch) (
 // checkOrchestratorValidatorInSet checks that the orchestrator refers to a validator that is
 // currently in the set
 func (k msgServer) checkOrchestratorValidatorInSet(ctx context.Context, orchestrator string) error {
-	orchaddr, err := sdk.AccAddressFromBech32(orchestrator)
-	if err != nil {
-		return sdkerrors.Wrap(types.ErrInvalid, "acc address invalid")
-	}
-	validator, found, err := k.GetOrchestratorValidator(ctx, orchaddr)
-	if err != nil {
-		return err
-	}
-	if !found {
-		return sdkerrors.Wrap(types.ErrUnknown, "validator")
-	}
-	valAddress, err := utilkeeper.ValAddressFromBech32(k.AddressCodec, validator.GetOperator())
+	valAddr, err := k.valAddressFromAccAddress(ctx, orchestrator)
 	if err != nil {
 		return err
 	}
 	// return an error if the validator isn't in the active set
-	val, err := k.StakingKeeper.Validator(ctx, valAddress)
+	val, err := k.StakingKeeper.Validator(ctx, valAddr)
 	if err != nil {
 		return err
 	}
@@ -144,6 +133,22 @@ func (k msgServer) checkOrchestratorValidatorInSet(ctx context.Context, orchestr
 	}
 
 	return nil
+}
+
+func (k msgServer) valAddressFromAccAddress(ctx context.Context, address string) (sdk.ValAddress, error) {
+	orchaddr, err := sdk.AccAddressFromBech32(address)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "acc address invalid")
+	}
+	validator, found, err := k.GetOrchestratorValidator(ctx, orchaddr)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, sdkerrors.Wrap(types.ErrUnknown, "validator")
+	}
+
+	return utilkeeper.ValAddressFromBech32(k.AddressCodec, validator.GetOperator())
 }
 
 // claimHandlerCommon is an internal function that provides common code for processing claims once they are
@@ -358,4 +363,56 @@ func (k msgServer) LightNodeSaleClaim(
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (k msgServer) EstimateBatchGas(
+	c context.Context,
+	msg *types.MsgEstimateBatchGas,
+) (*emptypb.Empty, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	valAddr, err := k.valAddressFromAccAddress(ctx, msg.Metadata.Creator)
+	if err != nil {
+		return nil, fmt.Errorf("invalid validator address: %w", err)
+	}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrap(err, "invalid MsgConfirmBatch")
+	}
+	contract, err := types.NewEthAddress(msg.TokenContract)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "eth address invalid")
+	}
+
+	if err := k.checkOrchestratorValidatorInSet(ctx, msg.Metadata.Creator); err != nil {
+		return nil, fmt.Errorf("cannot accept esimtate from inactive validator: %w", err)
+	}
+
+	// fetch the outgoing batch given the nonce
+	batch, err := k.GetOutgoingTXBatch(ctx, *contract, msg.Nonce)
+	if err != nil {
+		return nil, err
+	}
+	if batch == nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "couldn't find batch")
+	}
+
+	// check if we already have this estimate
+	estimate, err := k.GetBatchGasEstimate(ctx, msg.Nonce, *contract, valAddr)
+	if err != nil {
+		return nil, err
+	}
+	if estimate != nil {
+		return nil, sdkerrors.Wrap(types.ErrDuplicate, "gas estimate already received from sender")
+	}
+	key, err := k.SetBatchGasEstimate(ctx, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, ctx.EventManager().EmitTypedEvent(
+		&types.EventBatchConfirmKey{
+			Message:         msg.Type(),
+			BatchConfirmKey: string(key),
+		},
+	)
 }

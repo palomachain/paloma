@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"math/big"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -45,6 +46,10 @@ func setupTestChainSupport(
 	)
 	if err != nil {
 		return err
+	}
+
+	if err := k.SetFeeManagerAddress(ctx, chain.GetChainReferenceID(), cDummyFeeMgrAddress); err != nil {
+		return fmt.Errorf("failed to set fee manager address: %w", err)
 	}
 
 	sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))

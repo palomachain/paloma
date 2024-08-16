@@ -104,6 +104,38 @@ func (msg MsgConfirmBatch) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(&msg)
 }
 
+// Route should return the name of the module
+func (msg MsgEstimateBatchGas) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgEstimateBatchGas) Type() string { return "estimate_batch_gas" }
+
+// ValidateBasic performs stateless checks
+func (msg MsgEstimateBatchGas) ValidateBasic() error {
+	if err := libmeta.ValidateBasic(&msg); err != nil {
+		return err
+	}
+
+	if err := ValidateEthAddress(msg.EthSigner); err != nil {
+		return sdkerrors.Wrap(err, "eth signer")
+	}
+
+	if msg.Estimate < 1 {
+		return sdkerrors.Wrap(ErrInvalidClaim, "gas estimate must be positive")
+	}
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgEstimateBatchGas) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgEstimateBatchGas) GetSigners() []sdk.AccAddress {
+	return libmeta.GetSigners(&msg)
+}
+
 // EthereumClaim represents a claim on ethereum state
 type EthereumClaim interface {
 	// All Ethereum claims that we relay from the Skyway contract and into the module
@@ -133,6 +165,8 @@ type EthereumClaim interface {
 	GetChainReferenceId() string
 	// Returns the reference ID of the remote chain on which this claim was observed.
 	GetSkywayNonce() uint64
+	// Returns the compass ID that sent the original message
+	GetCompassID() string
 }
 
 // nolint: exhaustruct
@@ -219,8 +253,12 @@ const (
 // note that the Orchestrator is the only field excluded from this hash, this is because that value is used higher up in the store
 // structure for who has made what claim and is verified by the msg ante-handler for signatures
 func (msg *MsgSendToPalomaClaim) ClaimHash() ([]byte, error) {
-	path := fmt.Sprintf("%d/%d/%s/%s/%s/%s", msg.SkywayNonce, msg.EthBlockHeight, msg.TokenContract, msg.Amount.String(), msg.EthereumSender, msg.PalomaReceiver)
+	path := fmt.Sprintf("%d/%d/%s/%s/%s/%s/%s", msg.SkywayNonce, msg.EthBlockHeight, msg.TokenContract, msg.Amount.String(), msg.EthereumSender, msg.PalomaReceiver, msg.CompassId)
 	return tmhash.Sum([]byte(path)), nil
+}
+
+func (msg *MsgSendToPalomaClaim) GetCompassID() string {
+	return msg.CompassId
 }
 
 func (msg *MsgBatchSendToRemoteClaim) SetOrchestrator(orchestrator sdk.AccAddress) {
@@ -254,8 +292,12 @@ func (e *MsgBatchSendToRemoteClaim) ValidateBasic() error {
 
 // Hash implements WithdrawBatch.Hash
 func (msg *MsgBatchSendToRemoteClaim) ClaimHash() ([]byte, error) {
-	path := fmt.Sprintf("%d/%d/%d/%s", msg.SkywayNonce, msg.EthBlockHeight, msg.BatchNonce, msg.TokenContract)
+	path := fmt.Sprintf("%d/%d/%d/%s/%s", msg.SkywayNonce, msg.EthBlockHeight, msg.BatchNonce, msg.TokenContract, msg.CompassId)
 	return tmhash.Sum([]byte(path)), nil
+}
+
+func (msg *MsgBatchSendToRemoteClaim) GetCompassID() string {
+	return msg.CompassId
 }
 
 func (msg MsgBatchSendToRemoteClaim) GetClaimer() sdk.AccAddress {
@@ -373,9 +415,13 @@ func (msg *MsgLightNodeSaleClaim) ValidateBasic() error {
 }
 
 func (msg *MsgLightNodeSaleClaim) ClaimHash() ([]byte, error) {
-	path := fmt.Sprintf("%d/%d/%s/%s", msg.SkywayNonce, msg.EthBlockHeight,
-		msg.ClientAddress, msg.Amount.String())
+	path := fmt.Sprintf("%d/%d/%s/%s/%s", msg.SkywayNonce, msg.EthBlockHeight,
+		msg.ClientAddress, msg.Amount.String(), msg.CompassId)
 	return tmhash.Sum([]byte(path)), nil
+}
+
+func (msg *MsgLightNodeSaleClaim) GetCompassID() string {
+	return msg.CompassId
 }
 
 func (msg MsgLightNodeSaleClaim) GetClaimer() sdk.AccAddress {

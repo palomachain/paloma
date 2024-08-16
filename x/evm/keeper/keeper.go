@@ -168,12 +168,40 @@ func (k *Keeper) AddMessageConsensusAttestedListener(l metrixtypes.OnConsensusMe
 	k.onMessageAttestedListeners = append(k.onMessageAttestedListeners, l)
 }
 
-func (k Keeper) PickValidatorForMessage(ctx context.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, error) {
+func (k Keeper) PickValidatorForMessage(
+	ctx context.Context,
+	chainReferenceID string,
+	requirements *xchain.JobRequirements,
+) (string, string, error) {
 	weights, err := k.GetRelayWeights(ctx, chainReferenceID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return k.msgAssigner.PickValidatorForMessage(ctx, weights, chainReferenceID, requirements)
+
+	pick, err := k.msgAssigner.PickValidatorForMessage(ctx, weights, chainReferenceID, requirements)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Get the current snapshot, so we can get the validator external address
+	snapshot, err := k.Valset.GetCurrentSnapshot(ctx)
+	if err != nil {
+		return "", "", err
+	}
+
+	for _, val := range snapshot.Validators {
+		if val.Address.String() == pick {
+			for _, info := range val.ExternalChainInfos {
+				if info.ChainReferenceID == chainReferenceID {
+					return pick, info.Address, nil
+				}
+			}
+
+			break
+		}
+	}
+
+	return "", "", errors.New("picked validator is missing external address")
 }
 
 func (k Keeper) Logger(ctx context.Context) liblog.Logr {
@@ -187,6 +215,18 @@ func (k Keeper) ChangeMinOnChainBalance(ctx sdk.Context, chainReferenceID string
 		return err
 	}
 	ci.MinOnChainBalance = balance.Text(10)
+	return k.updateChainInfo(ctx, ci)
+}
+
+func (k Keeper) SetFeeManagerAddress(ctx context.Context, chainReferenceID string, address string) error {
+	if !common.IsHexAddress(address) {
+		return fmt.Errorf("invalid address: %s", address)
+	}
+	ci, err := k.GetChainInfo(ctx, chainReferenceID)
+	if err != nil {
+		return err
+	}
+	ci.FeeManagerAddr = address
 	return k.updateChainInfo(ctx, ci)
 }
 
@@ -223,14 +263,6 @@ func (k Keeper) SupportedQueues(ctx context.Context) ([]consensus.SupportsConsen
 				consensus.WithChainInfo(xchainType, chainInfo.ChainReferenceID),
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(queueInfo.msgType),
-				consensus.WithBytesToSignCalc(
-					consensustypes.BytesToSignFunc(func(msg consensustypes.ConsensusMsg, salt consensustypes.Salt) []byte {
-						k := msg.(interface {
-							Keccak256(uint64) []byte
-						})
-						return k.Keccak256(salt.Nonce)
-					}),
-				),
 				consensus.WithVerifySignature(func(bz []byte, sig []byte, address []byte) bool {
 					receivedAddr := common.BytesToAddress(address)
 
@@ -400,6 +432,11 @@ func (k Keeper) ActivateChainReferenceID(
 			k.Logger(sdkCtx).Error("error while activating chain with a new smart contract", args...)
 		} else {
 			k.Logger(sdkCtx).Info("activated chain with a new smart contract", args...)
+
+			eventbus.EVMActivatedChain().Publish(ctx, eventbus.EVMActivatedChainEvent{
+				ChainReferenceID:      chainReferenceID,
+				SmartContractUniqueID: smartContractUniqueID,
+			})
 		}
 	}()
 	chainInfo, err := k.GetChainInfo(ctx, chainReferenceID)
@@ -515,12 +552,12 @@ func (k Keeper) justInTimeValsetUpdate(ctx context.Context, chain *types.ChainIn
 		return nil
 	}
 
-	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
+	assignee, remoteAddr, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
 	if err != nil {
 		return err
 	}
 
-	err = k.msgSender.SendValsetMsgForChain(ctx, chain, latestValset, assignee)
+	err = k.msgSender.SendValsetMsgForChain(ctx, chain, latestValset, assignee, remoteAddr)
 	if err != nil {
 		k.Logger(sdkCtx).Error("unable to send valset message for chain",
 			"chain", chain.GetChainReferenceID(),
@@ -550,7 +587,7 @@ func (k Keeper) PublishValsetToChain(ctx context.Context, valset types.Valset, c
 		return nil
 	}
 
-	assignee, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
+	assignee, remoteAddr, err := k.PickValidatorForMessage(ctx, chain.GetChainReferenceID(), nil)
 	if err != nil {
 		k.Logger(sdkCtx).Error("error picking a validator to run the message",
 			"chain-reference-id", chain.GetChainReferenceID(),
@@ -560,7 +597,7 @@ func (k Keeper) PublishValsetToChain(ctx context.Context, valset types.Valset, c
 		return err
 	}
 
-	err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset, assignee)
+	err = k.msgSender.SendValsetMsgForChain(ctx, chain, valset, assignee, remoteAddr)
 	if err != nil {
 		k.Logger(sdkCtx).Error("unable to send valset message for chain",
 			"chain", chain.GetChainReferenceID(),
@@ -627,7 +664,7 @@ func (m msgSender) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.ChainInfo, valset types.Valset, assignee string) error {
+func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.ChainInfo, valset types.Valset, assignee, remoteAddr string) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	m.Logger(sdkCtx).Info("snapshot was built and a new update valset message is being sent over",
@@ -652,11 +689,17 @@ func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.C
 		}
 
 		mmsg := cmsg.(*types.Message)
-		act := mmsg.GetAction()
 		if mmsg.GetTurnstoneID() != string(chainInfo.GetSmartContractUniqueID()) {
 			return nil
 		}
-		if _, ok := act.(*types.Message_UpdateValset); ok {
+
+		if action, ok := mmsg.GetAction().(*types.Message_UpdateValset); ok {
+			if action.UpdateValset.Valset.ValsetID == valset.ValsetID {
+				// We already have an update valset scheduled for the same ID
+				// so there's nothing we need to do
+				return nil
+			}
+
 			err := m.ConsensusKeeper.DeleteJob(ctx, queueName, msg.GetId())
 			if err != nil {
 				m.Logger(sdkCtx).Error("unable to delete message", "err", err)
@@ -678,8 +721,12 @@ func (m msgSender) SendValsetMsgForChain(ctx context.Context, chainInfo *types.C
 				},
 			},
 			Assignee:              assignee,
+			AssigneeRemoteAddress: remoteAddr,
 			AssignedAtBlockHeight: math.NewInt(sdkCtx.BlockHeight()),
-		}, nil,
+		}, &consensus.PutOptions{
+			RequireGasEstimation: true,
+			RequireSignatures:    true,
+		},
 	)
 	if err != nil {
 		m.Logger(sdkCtx).Error("unable to put message in the queue", "err", err)

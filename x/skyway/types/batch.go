@@ -9,8 +9,12 @@ import (
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	gethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+)
+
+const (
+	cConservativeDummyGasEstimate = 300_000
 )
 
 func (o OutgoingTransferTx) ToInternal() (*InternalOutgoingTransferTx, error) {
@@ -83,14 +87,16 @@ type InternalOutgoingTxBatches []InternalOutgoingTxBatch
 
 // InternalOutgoingTxBatch is an internal duplicate of OutgoingTxBatch with validation
 type InternalOutgoingTxBatch struct {
-	BatchNonce         uint64
-	BatchTimeout       uint64
-	Transactions       []*InternalOutgoingTransferTx
-	TokenContract      EthAddress
-	PalomaBlockCreated uint64
-	ChainReferenceID   string
-	BytesToSign        []byte
-	Assignee           string
+	BatchNonce            uint64
+	BatchTimeout          uint64
+	Transactions          []*InternalOutgoingTransferTx
+	TokenContract         EthAddress
+	PalomaBlockCreated    uint64
+	ChainReferenceID      string
+	BytesToSign           []byte
+	Assignee              string
+	GasEstimate           uint64
+	AssigneeRemoteAddress common.Address
 }
 
 func NewInternalOutgingTxBatch(
@@ -102,15 +108,19 @@ func NewInternalOutgingTxBatch(
 	chainReferenceID string,
 	turnstoneID string,
 	assignee string,
+	assigneeRemoteAddress *EthAddress,
+	gasEstimate uint64,
 ) (*InternalOutgoingTxBatch, error) {
 	ret := &InternalOutgoingTxBatch{
-		BatchNonce:         nonce,
-		BatchTimeout:       timeout,
-		Transactions:       transactions,
-		TokenContract:      contract,
-		PalomaBlockCreated: blockCreated,
-		ChainReferenceID:   chainReferenceID,
-		Assignee:           assignee,
+		BatchNonce:            nonce,
+		BatchTimeout:          timeout,
+		Transactions:          transactions,
+		TokenContract:         contract,
+		PalomaBlockCreated:    blockCreated,
+		ChainReferenceID:      chainReferenceID,
+		Assignee:              assignee,
+		GasEstimate:           gasEstimate,
+		AssigneeRemoteAddress: assigneeRemoteAddress.GetAddress(),
 	}
 	bytesToSign, err := ret.GetCheckpoint(turnstoneID)
 	if err != nil {
@@ -139,14 +149,16 @@ func NewInternalOutgingTxBatchFromExternalBatch(batch OutgoingTxBatch) (*Interna
 	}
 
 	intBatch := InternalOutgoingTxBatch{
-		BatchNonce:         batch.BatchNonce,
-		BatchTimeout:       batch.BatchTimeout,
-		Transactions:       txs,
-		TokenContract:      *contractAddr,
-		PalomaBlockCreated: batch.PalomaBlockCreated,
-		ChainReferenceID:   batch.ChainReferenceId,
-		BytesToSign:        batch.BytesToSign,
-		Assignee:           batch.Assignee,
+		BatchNonce:            batch.BatchNonce,
+		BatchTimeout:          batch.BatchTimeout,
+		Transactions:          txs,
+		TokenContract:         *contractAddr,
+		PalomaBlockCreated:    batch.PalomaBlockCreated,
+		ChainReferenceID:      batch.ChainReferenceId,
+		BytesToSign:           batch.BytesToSign,
+		Assignee:              batch.Assignee,
+		AssigneeRemoteAddress: common.BytesToAddress(batch.AssigneeRemoteAddress),
+		GasEstimate:           batch.GasEstimate,
 	}
 	return &intBatch, nil
 }
@@ -161,14 +173,16 @@ func (i *InternalOutgoingTxBatch) ToExternal() OutgoingTxBatch {
 		txs[i] = tx.ToExternal()
 	}
 	return OutgoingTxBatch{
-		BatchNonce:         i.BatchNonce,
-		BatchTimeout:       i.BatchTimeout,
-		Transactions:       txs,
-		TokenContract:      i.TokenContract.GetAddress().Hex(),
-		PalomaBlockCreated: i.PalomaBlockCreated,
-		ChainReferenceId:   i.ChainReferenceID,
-		BytesToSign:        i.BytesToSign,
-		Assignee:           i.Assignee,
+		BatchNonce:            i.BatchNonce,
+		BatchTimeout:          i.BatchTimeout,
+		Transactions:          txs,
+		TokenContract:         i.TokenContract.GetAddress().Hex(),
+		PalomaBlockCreated:    i.PalomaBlockCreated,
+		ChainReferenceId:      i.ChainReferenceID,
+		BytesToSign:           i.BytesToSign,
+		Assignee:              i.Assignee,
+		GasEstimate:           i.GasEstimate,
+		AssigneeRemoteAddress: i.AssigneeRemoteAddress.Bytes(),
 	}
 }
 
@@ -182,14 +196,16 @@ func (i *InternalOutgoingTxBatches) ToExternalArray() []OutgoingTxBatch {
 		}
 
 		arr = append(arr, OutgoingTxBatch{
-			BatchNonce:         val.BatchNonce,
-			BatchTimeout:       val.BatchTimeout,
-			Transactions:       txs,
-			TokenContract:      val.TokenContract.GetAddress().Hex(),
-			PalomaBlockCreated: val.PalomaBlockCreated,
-			ChainReferenceId:   val.ChainReferenceID,
-			BytesToSign:        val.BytesToSign,
-			Assignee:           val.Assignee,
+			BatchNonce:            val.BatchNonce,
+			BatchTimeout:          val.BatchTimeout,
+			Transactions:          txs,
+			TokenContract:         val.TokenContract.GetAddress().Hex(),
+			PalomaBlockCreated:    val.PalomaBlockCreated,
+			ChainReferenceId:      val.ChainReferenceID,
+			BytesToSign:           val.BytesToSign,
+			Assignee:              val.Assignee,
+			GasEstimate:           val.GasEstimate,
+			AssigneeRemoteAddress: val.AssigneeRemoteAddress.Bytes(),
 		})
 	}
 
@@ -243,6 +259,10 @@ func (i InternalOutgoingTxBatch) GetCheckpoint(turnstoneID string) ([]byte, erro
 		{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
 		// deadline
 		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
+		// relayer eth address
+		{Type: whoops.Must(abi.NewType("address", "", nil))},
+		// gas estimate
+		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
 	}
 
 	var turnstoneBytes32 [32]byte
@@ -256,18 +276,23 @@ func (i InternalOutgoingTxBatch) GetCheckpoint(turnstoneID string) ([]byte, erro
 
 	// Run through the elements of the batch and serialize them
 	txAmounts := make([]*big.Int, len(i.Transactions))
-	txDestinations := make([]gethcommon.Address, len(i.Transactions))
+	txDestinations := make([]common.Address, len(i.Transactions))
 	for j, tx := range i.Transactions {
 		txAmounts[j] = tx.Erc20Token.Amount.BigInt()
 		txDestinations[j] = tx.DestAddress.GetAddress()
 	}
 
 	args := struct {
-		Receiver []gethcommon.Address
+		Receiver []common.Address
 		Amount   []*big.Int
 	}{
 		Receiver: txDestinations,
 		Amount:   txAmounts,
+	}
+
+	estimate := big.NewInt(cConservativeDummyGasEstimate)
+	if i.GasEstimate != 0 {
+		estimate.SetUint64(i.GasEstimate)
 	}
 
 	abiEncodedBatch, err := arguments.Pack(
@@ -276,6 +301,8 @@ func (i InternalOutgoingTxBatch) GetCheckpoint(turnstoneID string) ([]byte, erro
 		big.NewInt(int64(i.BatchNonce)),
 		turnstoneBytes32,
 		big.NewInt(int64(i.BatchTimeout)),
+		i.AssigneeRemoteAddress,
+		estimate,
 	)
 	// this should never happen outside of test since any case that could crash on encoding
 	// should be filtered above.

@@ -8,8 +8,12 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/evm/types"
+	evmtypes "github.com/palomachain/paloma/x/evm/types"
 	"github.com/palomachain/paloma/x/evm/types/mocks"
 	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
@@ -54,6 +58,7 @@ func getValidators(num int, chains []validatorChainInfo) []valsettypes.Validator
 			chainInfos[i] = &valsettypes.ExternalChainInfo{
 				ChainType:        chain.chainType,
 				ChainReferenceID: chain.chainReferenceID,
+				Address:          fmt.Sprintf("0x%02d", i),
 			}
 		}
 		validators[i] = valsettypes.Validator{
@@ -85,7 +90,6 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 	// test-chain mocks
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), nil)
-	mockServices.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
 	mockServices.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
 		ValMetrics: getMetrics(3),
 	}, nil)
@@ -94,7 +98,6 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 	// invalid-test-chain mocks
 	mockServices.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(unpublishedSnapshot, nil)
 	mockServices.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), nil)
-	mockServices.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).Return(uint64(100), nil)
 	mockServices.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
 		ValMetrics: getMetrics(3),
 	}, nil)
@@ -109,6 +112,8 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 		"0x1234",
 		big.NewInt(55),
 	)
+	require.NoError(t, err)
+	err = k.SetFeeManagerAddress(ctx, "test-chain", cDummyFeeMgrAddress)
 	require.NoError(t, err)
 
 	sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))
@@ -136,6 +141,8 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 		"",
 		big.NewInt(55),
 	)
+	require.NoError(t, err)
+	err = k.SetFeeManagerAddress(ctx, "inactive-test-chain", cDummyFeeMgrAddress)
 	require.NoError(t, err)
 
 	sc, err = k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))
@@ -178,32 +185,38 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 					TotalShares: sdkmath.NewInt(75000),
 					Validators: []valsettypes.Validator{
 						{
+							Address:    sdk.ValAddress("validator-0"),
 							State:      valsettypes.ValidatorState_ACTIVE,
 							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
 									ChainReferenceID: "test-chain",
+									Address:          "0x00",
 								},
 							},
 						},
 						{
+							Address:    sdk.ValAddress("validator-1"),
 							State:      valsettypes.ValidatorState_ACTIVE,
 							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
 									ChainReferenceID: "test-chain",
+									Address:          "0x01",
 								},
 							},
 						},
 						{
+							Address:    sdk.ValAddress("validator-2"),
 							State:      valsettypes.ValidatorState_ACTIVE,
 							ShareCount: sdkmath.NewInt(25000),
 							ExternalChainInfos: []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
 									ChainReferenceID: "test-chain",
+									Address:          "0x02",
 								},
 							},
 						},
@@ -219,6 +232,7 @@ func TestKeeper_PreJobExecution(t *testing.T) {
 
 				msgSenderMock.On(
 					"SendValsetMsgForChain",
+					mock.Anything,
 					mock.Anything,
 					mock.Anything,
 					mock.Anything,
@@ -508,7 +522,7 @@ func TestKeeper_PublishSnapshotToAllChains(t *testing.T) {
 			setup: func(ctx sdk.Context, k *Keeper, ms mockedServices) {
 				ms.ValsetKeeper.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).Return(nil, nil)
 				// SendValsetMsgForChain indicates a publish
-				ms.MsgSender.On("SendValsetMsgForChain", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				ms.MsgSender.On("SendValsetMsgForChain", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 		},
 		{
@@ -565,7 +579,7 @@ func TestKeeper_PublishSnapshotToAllChains(t *testing.T) {
 
 				ms.ValsetKeeper.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).Return(publishedSnapshot, nil)
 				// SendValsetMsgForChain indicates a publish
-				ms.MsgSender.On("SendValsetMsgForChain", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				ms.MsgSender.On("SendValsetMsgForChain", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			},
 			forcePublish: true,
 		},
@@ -596,4 +610,96 @@ func TestKeeper_PublishSnapshotToAllChains(t *testing.T) {
 			asserter.Equal(tt.expectedError, actualErr)
 		})
 	}
+}
+
+func TestKeeper_SendValsetMsgForChain(t *testing.T) {
+	k, ms, ctx := NewEvmKeeper(t)
+	mSender := msgSender{
+		ConsensusKeeper: k.ConsensusKeeper,
+		cdc:             k.cdc,
+	}
+	valset := types.Valset{
+		ValsetID:   2,
+		Validators: []string{"addr1", "addr2"},
+		Powers:     []uint64{15, 5},
+	}
+	chainInfo := &types.ChainInfo{
+		ChainID:               100,
+		ChainReferenceID:      "test-chain",
+		ReferenceBlockHeight:  1000,
+		ReferenceBlockHash:    "0x00",
+		MinOnChainBalance:     "100",
+		SmartContractUniqueID: []byte("abc"),
+		RelayWeights: &types.RelayWeights{
+			Fee:           "1.0",
+			Uptime:        "1.0",
+			SuccessRate:   "1.0",
+			ExecutionTime: "1.0",
+			FeatureSet:    "1.0",
+		},
+	}
+
+	t.Run("Should do nothing if valset update is already scheduled", func(t *testing.T) {
+		qMsg, _ := codectypes.NewAnyWithValue(&evmtypes.Message{
+			TurnstoneID:      "abc",
+			ChainReferenceID: "test-chain",
+			Assignee:         "addr4",
+			Action: &evmtypes.Message_UpdateValset{
+				UpdateValset: &evmtypes.UpdateValset{
+					Valset: &evmtypes.Valset{
+						ValsetID: 2,
+					},
+				},
+			},
+		})
+
+		msgs := []consensustypes.QueuedSignedMessageI{
+			&consensustypes.QueuedSignedMessage{
+				Id:  1,
+				Msg: qMsg,
+			},
+		}
+
+		ms.ConsensusKeeper.On("GetMessagesFromQueue", mock.Anything, mock.Anything, mock.Anything).
+			Return(msgs, nil).
+			Once()
+
+		err := mSender.SendValsetMsgForChain(ctx, chainInfo, valset, "addr3", "0x03")
+		assert.NoError(t, err)
+	})
+
+	t.Run("Should add valset update to queue", func(t *testing.T) {
+		qMsg, _ := codectypes.NewAnyWithValue(&evmtypes.Message{
+			TurnstoneID:      "abc",
+			ChainReferenceID: "test-chain",
+			Assignee:         "addr4",
+			Action: &evmtypes.Message_UpdateValset{
+				UpdateValset: &evmtypes.UpdateValset{
+					Valset: &evmtypes.Valset{
+						ValsetID: 1,
+					},
+				},
+			},
+		})
+
+		msgs := []consensustypes.QueuedSignedMessageI{
+			&consensustypes.QueuedSignedMessage{
+				Id:  1,
+				Msg: qMsg,
+			},
+		}
+
+		ms.ConsensusKeeper.On("GetMessagesFromQueue", mock.Anything, mock.Anything, mock.Anything).
+			Return(msgs, nil).
+			Once()
+		ms.ConsensusKeeper.On("DeleteJob", mock.Anything, mock.Anything, mock.Anything).
+			Return(nil).
+			Once()
+		ms.ConsensusKeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+			Return(uint64(1), nil).
+			Once()
+
+		err := mSender.SendValsetMsgForChain(ctx, chainInfo, valset, "addr3", "0x03")
+		assert.NoError(t, err)
+	})
 }

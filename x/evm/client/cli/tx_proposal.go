@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/big"
 	"strconv"
 
@@ -12,6 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/evm/types"
 	"github.com/spf13/cobra"
 )
@@ -20,13 +22,13 @@ func applyFlags(cmd *cobra.Command) {
 	flags.AddTxFlagsToCmd(cmd)
 
 	cmd.Flags().String(cli.FlagTitle, "", "title of proposal")
-	cmd.Flags().String(cli.FlagDescription, "", "description of proposal")
+	cmd.Flags().String(cli.FlagSummary, "", "summary description of proposal")
 	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
 
 	//nolint:errcheck
 	cmd.MarkFlagRequired(cli.FlagTitle)
 	//nolint:errcheck
-	cmd.MarkFlagRequired(cli.FlagDescription)
+	cmd.MarkFlagRequired(cli.FlagSummary)
 }
 
 func CmdEvmChainProposalHandler() *cobra.Command {
@@ -40,6 +42,7 @@ func CmdEvmChainProposalHandler() *cobra.Command {
 	cmd.AddCommand(CmdEvmProposalDeployNewSmartContract())
 	cmd.AddCommand(CmdEvmProposalChangeMinOnChainBalance())
 	cmd.AddCommand(CmdEvmProposalChangeRelayWeights())
+	cmd.AddCommand(CmdEvmProposalSetFeeManagerAddress())
 
 	return cmd
 }
@@ -93,7 +96,7 @@ func CmdEvmProposeNewChain() *cobra.Command {
 					ChainReferenceID:  chainReferenceID,
 					ChainID:           uint64(chainID),
 					Title:             whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					BlockHeight:       uint64(blockHeight),
 					BlockHashAtHeight: blockHashAtHeight,
 					MinOnChainBalance: minOnChainBalance,
@@ -134,7 +137,7 @@ func CmdEvmProposalDeployNewSmartContract() *cobra.Command {
 
 				deployNewSmartContractProposal := &types.DeployNewSmartContractProposal{
 					Title:       whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description: whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description: whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					AbiJSON:     abiJSON,
 					BytecodeHex: bytecodeHex,
 				}
@@ -180,7 +183,7 @@ func CmdEvmProposalChangeMinOnChainBalance() *cobra.Command {
 
 				proposal := &types.ChangeMinOnChainBalanceProposal{
 					Title:             whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description:       whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					ChainReferenceID:  chainReferenceID,
 					MinOnChainBalance: balance,
 				}
@@ -220,7 +223,7 @@ func CmdEvmProposeChainRemoval() *cobra.Command {
 
 				addChainProposal := &types.RemoveChainProposal{
 					Title:            whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					ChainReferenceID: chainReferenceID,
 				}
 
@@ -264,7 +267,7 @@ func CmdEvmProposalChangeRelayWeights() *cobra.Command {
 
 				proposal := &types.RelayWeightsProposal{
 					Title:            whoops.Must(cmd.Flags().GetString(cli.FlagTitle)),
-					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagDescription)),
+					Description:      whoops.Must(cmd.Flags().GetString(cli.FlagSummary)),
 					ChainReferenceID: chainReferenceID,
 					Fee:              weights.Fee,
 					Uptime:           weights.Uptime,
@@ -287,6 +290,80 @@ func CmdEvmProposalChangeRelayWeights() *cobra.Command {
 				err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 				whoops.Assert(err)
 			})
+		},
+	}
+	applyFlags(cmd)
+
+	return cmd
+}
+
+func CmdEvmProposalSetFeeManagerAddress() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "set-fee-manager-address [chain-reference-id] [remote-address]",
+		Short:   "Changes the fee manager contract address for a given EVM chain referenced by the chain-reference-id",
+		Example: "set-fee-manager-address eth-main 0xb794f5ea0ba39494ce839613fffba74279579268",
+		Args:    cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			whoops.Assert(err)
+
+			chainReferenceID, address := args[0], args[1]
+
+			if !gethcommon.IsHexAddress(address) {
+				return fmt.Errorf("address(%s) doesn't pass format validation", address)
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			params := &types.QueryChainsInfosRequest{}
+			res, err := queryClient.ChainsInfos(cmd.Context(), params)
+			if err != nil {
+				return fmt.Errorf("failed to query chains: %w", err)
+			}
+
+			found := false
+			for _, ci := range res.ChainsInfos {
+				if ci.ChainReferenceID == chainReferenceID {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("chain-reference-id %s not found", chainReferenceID)
+			}
+
+			from := clientCtx.GetFromAddress()
+
+			title, err := cmd.Flags().GetString(cli.FlagTitle)
+			if err != nil {
+				return fmt.Errorf("failed to get title: %w", err)
+			}
+			summary, err := cmd.Flags().GetString(cli.FlagSummary)
+			if err != nil {
+				return fmt.Errorf("failed to get summary: %w", err)
+			}
+
+			proposal := &types.SetFeeManagerAddressProposal{
+				Title:             title,
+				Summary:           summary,
+				ChainReferenceID:  chainReferenceID,
+				FeeManagerAddress: address,
+			}
+			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+			if err != nil {
+				return fmt.Errorf("failed to get deposit: %w", err)
+			}
+
+			deposit, err := sdk.ParseCoinsNormalized(depositStr)
+			if err != nil {
+				return fmt.Errorf("failed to parse coins: %w", err)
+			}
+
+			msg, err := govv1beta1types.NewMsgSubmitProposal(proposal, deposit, from)
+			if err != nil {
+				return fmt.Errorf("failed to create new msg submit proposal: %w", err)
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
 	applyFlags(cmd)

@@ -6,6 +6,11 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+
+	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
@@ -14,15 +19,14 @@ import (
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	io "io"
-	math "math"
-	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -30,8 +34,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type QueryParamsRequest struct {
-}
+type QueryParamsRequest struct{}
 
 func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
 func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
@@ -39,9 +42,11 @@ func (*QueryParamsRequest) ProtoMessage()    {}
 func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{0}
 }
+
 func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsRequest.Marshal(b, m, deterministic)
@@ -54,12 +59,15 @@ func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
+
 func (m *QueryParamsRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsRequest.Merge(m, src)
 }
+
 func (m *QueryParamsRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsRequest.DiscardUnknown(m)
 }
@@ -76,9 +84,11 @@ func (*QueryParamsResponse) ProtoMessage()    {}
 func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{1}
 }
+
 func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsResponse.Marshal(b, m, deterministic)
@@ -91,12 +101,15 @@ func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
+
 func (m *QueryParamsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsResponse.Merge(m, src)
 }
+
 func (m *QueryParamsResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryParamsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsResponse.DiscardUnknown(m)
 }
@@ -117,6 +130,7 @@ type QueryLastPendingBatchRequestByAddrRequest struct {
 func (m *QueryLastPendingBatchRequestByAddrRequest) Reset() {
 	*m = QueryLastPendingBatchRequestByAddrRequest{}
 }
+
 func (m *QueryLastPendingBatchRequestByAddrRequest) String() string {
 	return proto.CompactTextString(m)
 }
@@ -124,9 +138,11 @@ func (*QueryLastPendingBatchRequestByAddrRequest) ProtoMessage() {}
 func (*QueryLastPendingBatchRequestByAddrRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{2}
 }
+
 func (m *QueryLastPendingBatchRequestByAddrRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryLastPendingBatchRequestByAddrRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryLastPendingBatchRequestByAddrRequest.Marshal(b, m, deterministic)
@@ -139,12 +155,15 @@ func (m *QueryLastPendingBatchRequestByAddrRequest) XXX_Marshal(b []byte, determ
 		return b[:n], nil
 	}
 }
+
 func (m *QueryLastPendingBatchRequestByAddrRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryLastPendingBatchRequestByAddrRequest.Merge(m, src)
 }
+
 func (m *QueryLastPendingBatchRequestByAddrRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryLastPendingBatchRequestByAddrRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryLastPendingBatchRequestByAddrRequest.DiscardUnknown(m)
 }
@@ -165,6 +184,7 @@ type QueryLastPendingBatchRequestByAddrResponse struct {
 func (m *QueryLastPendingBatchRequestByAddrResponse) Reset() {
 	*m = QueryLastPendingBatchRequestByAddrResponse{}
 }
+
 func (m *QueryLastPendingBatchRequestByAddrResponse) String() string {
 	return proto.CompactTextString(m)
 }
@@ -172,9 +192,11 @@ func (*QueryLastPendingBatchRequestByAddrResponse) ProtoMessage() {}
 func (*QueryLastPendingBatchRequestByAddrResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{3}
 }
+
 func (m *QueryLastPendingBatchRequestByAddrResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryLastPendingBatchRequestByAddrResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryLastPendingBatchRequestByAddrResponse.Marshal(b, m, deterministic)
@@ -187,12 +209,15 @@ func (m *QueryLastPendingBatchRequestByAddrResponse) XXX_Marshal(b []byte, deter
 		return b[:n], nil
 	}
 }
+
 func (m *QueryLastPendingBatchRequestByAddrResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryLastPendingBatchRequestByAddrResponse.Merge(m, src)
 }
+
 func (m *QueryLastPendingBatchRequestByAddrResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryLastPendingBatchRequestByAddrResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryLastPendingBatchRequestByAddrResponse.DiscardUnknown(m)
 }
@@ -217,9 +242,11 @@ func (*QueryOutgoingTxBatchesRequest) ProtoMessage()    {}
 func (*QueryOutgoingTxBatchesRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{4}
 }
+
 func (m *QueryOutgoingTxBatchesRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryOutgoingTxBatchesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryOutgoingTxBatchesRequest.Marshal(b, m, deterministic)
@@ -232,12 +259,15 @@ func (m *QueryOutgoingTxBatchesRequest) XXX_Marshal(b []byte, deterministic bool
 		return b[:n], nil
 	}
 }
+
 func (m *QueryOutgoingTxBatchesRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryOutgoingTxBatchesRequest.Merge(m, src)
 }
+
 func (m *QueryOutgoingTxBatchesRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryOutgoingTxBatchesRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryOutgoingTxBatchesRequest.DiscardUnknown(m)
 }
@@ -268,9 +298,11 @@ func (*QueryOutgoingTxBatchesResponse) ProtoMessage()    {}
 func (*QueryOutgoingTxBatchesResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{5}
 }
+
 func (m *QueryOutgoingTxBatchesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryOutgoingTxBatchesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryOutgoingTxBatchesResponse.Marshal(b, m, deterministic)
@@ -283,12 +315,15 @@ func (m *QueryOutgoingTxBatchesResponse) XXX_Marshal(b []byte, deterministic boo
 		return b[:n], nil
 	}
 }
+
 func (m *QueryOutgoingTxBatchesResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryOutgoingTxBatchesResponse.Merge(m, src)
 }
+
 func (m *QueryOutgoingTxBatchesResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryOutgoingTxBatchesResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryOutgoingTxBatchesResponse.DiscardUnknown(m)
 }
@@ -313,9 +348,11 @@ func (*QueryBatchRequestByNonceRequest) ProtoMessage()    {}
 func (*QueryBatchRequestByNonceRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{6}
 }
+
 func (m *QueryBatchRequestByNonceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryBatchRequestByNonceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryBatchRequestByNonceRequest.Marshal(b, m, deterministic)
@@ -328,12 +365,15 @@ func (m *QueryBatchRequestByNonceRequest) XXX_Marshal(b []byte, deterministic bo
 		return b[:n], nil
 	}
 }
+
 func (m *QueryBatchRequestByNonceRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryBatchRequestByNonceRequest.Merge(m, src)
 }
+
 func (m *QueryBatchRequestByNonceRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryBatchRequestByNonceRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryBatchRequestByNonceRequest.DiscardUnknown(m)
 }
@@ -364,9 +404,11 @@ func (*QueryBatchRequestByNonceResponse) ProtoMessage()    {}
 func (*QueryBatchRequestByNonceResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{7}
 }
+
 func (m *QueryBatchRequestByNonceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryBatchRequestByNonceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryBatchRequestByNonceResponse.Marshal(b, m, deterministic)
@@ -379,12 +421,15 @@ func (m *QueryBatchRequestByNonceResponse) XXX_Marshal(b []byte, deterministic b
 		return b[:n], nil
 	}
 }
+
 func (m *QueryBatchRequestByNonceResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryBatchRequestByNonceResponse.Merge(m, src)
 }
+
 func (m *QueryBatchRequestByNonceResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryBatchRequestByNonceResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryBatchRequestByNonceResponse.DiscardUnknown(m)
 }
@@ -409,9 +454,11 @@ func (*QueryBatchConfirmsRequest) ProtoMessage()    {}
 func (*QueryBatchConfirmsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{8}
 }
+
 func (m *QueryBatchConfirmsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryBatchConfirmsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryBatchConfirmsRequest.Marshal(b, m, deterministic)
@@ -424,12 +471,15 @@ func (m *QueryBatchConfirmsRequest) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
+
 func (m *QueryBatchConfirmsRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryBatchConfirmsRequest.Merge(m, src)
 }
+
 func (m *QueryBatchConfirmsRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryBatchConfirmsRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryBatchConfirmsRequest.DiscardUnknown(m)
 }
@@ -460,9 +510,11 @@ func (*QueryBatchConfirmsResponse) ProtoMessage()    {}
 func (*QueryBatchConfirmsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{9}
 }
+
 func (m *QueryBatchConfirmsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryBatchConfirmsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryBatchConfirmsResponse.Marshal(b, m, deterministic)
@@ -475,12 +527,15 @@ func (m *QueryBatchConfirmsResponse) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
+
 func (m *QueryBatchConfirmsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryBatchConfirmsResponse.Merge(m, src)
 }
+
 func (m *QueryBatchConfirmsResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryBatchConfirmsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryBatchConfirmsResponse.DiscardUnknown(m)
 }
@@ -504,9 +559,11 @@ func (*QueryLastObservedSkywayNonceRequest) ProtoMessage()    {}
 func (*QueryLastObservedSkywayNonceRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{10}
 }
+
 func (m *QueryLastObservedSkywayNonceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryLastObservedSkywayNonceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryLastObservedSkywayNonceRequest.Marshal(b, m, deterministic)
@@ -519,12 +576,15 @@ func (m *QueryLastObservedSkywayNonceRequest) XXX_Marshal(b []byte, deterministi
 		return b[:n], nil
 	}
 }
+
 func (m *QueryLastObservedSkywayNonceRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryLastObservedSkywayNonceRequest.Merge(m, src)
 }
+
 func (m *QueryLastObservedSkywayNonceRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryLastObservedSkywayNonceRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryLastObservedSkywayNonceRequest.DiscardUnknown(m)
 }
@@ -546,6 +606,7 @@ type QueryLastObservedSkywayNonceByAddrRequest struct {
 func (m *QueryLastObservedSkywayNonceByAddrRequest) Reset() {
 	*m = QueryLastObservedSkywayNonceByAddrRequest{}
 }
+
 func (m *QueryLastObservedSkywayNonceByAddrRequest) String() string {
 	return proto.CompactTextString(m)
 }
@@ -553,9 +614,11 @@ func (*QueryLastObservedSkywayNonceByAddrRequest) ProtoMessage() {}
 func (*QueryLastObservedSkywayNonceByAddrRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{11}
 }
+
 func (m *QueryLastObservedSkywayNonceByAddrRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryLastObservedSkywayNonceByAddrRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryLastObservedSkywayNonceByAddrRequest.Marshal(b, m, deterministic)
@@ -568,12 +631,15 @@ func (m *QueryLastObservedSkywayNonceByAddrRequest) XXX_Marshal(b []byte, determ
 		return b[:n], nil
 	}
 }
+
 func (m *QueryLastObservedSkywayNonceByAddrRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryLastObservedSkywayNonceByAddrRequest.Merge(m, src)
 }
+
 func (m *QueryLastObservedSkywayNonceByAddrRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryLastObservedSkywayNonceByAddrRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryLastObservedSkywayNonceByAddrRequest.DiscardUnknown(m)
 }
@@ -604,9 +670,11 @@ func (*QueryLastObservedSkywayNonceResponse) ProtoMessage()    {}
 func (*QueryLastObservedSkywayNonceResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{12}
 }
+
 func (m *QueryLastObservedSkywayNonceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryLastObservedSkywayNonceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryLastObservedSkywayNonceResponse.Marshal(b, m, deterministic)
@@ -619,12 +687,15 @@ func (m *QueryLastObservedSkywayNonceResponse) XXX_Marshal(b []byte, determinist
 		return b[:n], nil
 	}
 }
+
 func (m *QueryLastObservedSkywayNonceResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryLastObservedSkywayNonceResponse.Merge(m, src)
 }
+
 func (m *QueryLastObservedSkywayNonceResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryLastObservedSkywayNonceResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryLastObservedSkywayNonceResponse.DiscardUnknown(m)
 }
@@ -648,9 +719,11 @@ func (*QueryLastObservedSkywayBlockRequest) ProtoMessage()    {}
 func (*QueryLastObservedSkywayBlockRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{13}
 }
+
 func (m *QueryLastObservedSkywayBlockRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryLastObservedSkywayBlockRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryLastObservedSkywayBlockRequest.Marshal(b, m, deterministic)
@@ -663,12 +736,15 @@ func (m *QueryLastObservedSkywayBlockRequest) XXX_Marshal(b []byte, deterministi
 		return b[:n], nil
 	}
 }
+
 func (m *QueryLastObservedSkywayBlockRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryLastObservedSkywayBlockRequest.Merge(m, src)
 }
+
 func (m *QueryLastObservedSkywayBlockRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryLastObservedSkywayBlockRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryLastObservedSkywayBlockRequest.DiscardUnknown(m)
 }
@@ -692,9 +768,11 @@ func (*QueryLastObservedSkywayBlockResponse) ProtoMessage()    {}
 func (*QueryLastObservedSkywayBlockResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{14}
 }
+
 func (m *QueryLastObservedSkywayBlockResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryLastObservedSkywayBlockResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryLastObservedSkywayBlockResponse.Marshal(b, m, deterministic)
@@ -707,12 +785,15 @@ func (m *QueryLastObservedSkywayBlockResponse) XXX_Marshal(b []byte, determinist
 		return b[:n], nil
 	}
 }
+
 func (m *QueryLastObservedSkywayBlockResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryLastObservedSkywayBlockResponse.Merge(m, src)
 }
+
 func (m *QueryLastObservedSkywayBlockResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryLastObservedSkywayBlockResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryLastObservedSkywayBlockResponse.DiscardUnknown(m)
 }
@@ -737,9 +818,11 @@ func (*QueryERC20ToDenomRequest) ProtoMessage()    {}
 func (*QueryERC20ToDenomRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{15}
 }
+
 func (m *QueryERC20ToDenomRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryERC20ToDenomRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryERC20ToDenomRequest.Marshal(b, m, deterministic)
@@ -752,12 +835,15 @@ func (m *QueryERC20ToDenomRequest) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
+
 func (m *QueryERC20ToDenomRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryERC20ToDenomRequest.Merge(m, src)
 }
+
 func (m *QueryERC20ToDenomRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryERC20ToDenomRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryERC20ToDenomRequest.DiscardUnknown(m)
 }
@@ -788,9 +874,11 @@ func (*QueryERC20ToDenomResponse) ProtoMessage()    {}
 func (*QueryERC20ToDenomResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{16}
 }
+
 func (m *QueryERC20ToDenomResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryERC20ToDenomResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryERC20ToDenomResponse.Marshal(b, m, deterministic)
@@ -803,12 +891,15 @@ func (m *QueryERC20ToDenomResponse) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
+
 func (m *QueryERC20ToDenomResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryERC20ToDenomResponse.Merge(m, src)
 }
+
 func (m *QueryERC20ToDenomResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryERC20ToDenomResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryERC20ToDenomResponse.DiscardUnknown(m)
 }
@@ -833,9 +924,11 @@ func (*QueryDenomToERC20Request) ProtoMessage()    {}
 func (*QueryDenomToERC20Request) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{17}
 }
+
 func (m *QueryDenomToERC20Request) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryDenomToERC20Request) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryDenomToERC20Request.Marshal(b, m, deterministic)
@@ -848,12 +941,15 @@ func (m *QueryDenomToERC20Request) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
+
 func (m *QueryDenomToERC20Request) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryDenomToERC20Request.Merge(m, src)
 }
+
 func (m *QueryDenomToERC20Request) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryDenomToERC20Request) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryDenomToERC20Request.DiscardUnknown(m)
 }
@@ -884,9 +980,11 @@ func (*QueryDenomToERC20Response) ProtoMessage()    {}
 func (*QueryDenomToERC20Response) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{18}
 }
+
 func (m *QueryDenomToERC20Response) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryDenomToERC20Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryDenomToERC20Response.Marshal(b, m, deterministic)
@@ -899,12 +997,15 @@ func (m *QueryDenomToERC20Response) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
+
 func (m *QueryDenomToERC20Response) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryDenomToERC20Response.Merge(m, src)
 }
+
 func (m *QueryDenomToERC20Response) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryDenomToERC20Response) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryDenomToERC20Response.DiscardUnknown(m)
 }
@@ -948,9 +1049,11 @@ func (*QueryAttestationsRequest) ProtoMessage()    {}
 func (*QueryAttestationsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{19}
 }
+
 func (m *QueryAttestationsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryAttestationsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryAttestationsRequest.Marshal(b, m, deterministic)
@@ -963,12 +1066,15 @@ func (m *QueryAttestationsRequest) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
+
 func (m *QueryAttestationsRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryAttestationsRequest.Merge(m, src)
 }
+
 func (m *QueryAttestationsRequest) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryAttestationsRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryAttestationsRequest.DiscardUnknown(m)
 }
@@ -1027,9 +1133,11 @@ func (*QueryAttestationsResponse) ProtoMessage()    {}
 func (*QueryAttestationsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{20}
 }
+
 func (m *QueryAttestationsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryAttestationsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryAttestationsResponse.Marshal(b, m, deterministic)
@@ -1042,12 +1150,15 @@ func (m *QueryAttestationsResponse) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
+
 func (m *QueryAttestationsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryAttestationsResponse.Merge(m, src)
 }
+
 func (m *QueryAttestationsResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryAttestationsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryAttestationsResponse.DiscardUnknown(m)
 }
@@ -1061,8 +1172,7 @@ func (m *QueryAttestationsResponse) GetAttestations() []Attestation {
 	return nil
 }
 
-type QueryErc20ToDenoms struct {
-}
+type QueryErc20ToDenoms struct{}
 
 func (m *QueryErc20ToDenoms) Reset()         { *m = QueryErc20ToDenoms{} }
 func (m *QueryErc20ToDenoms) String() string { return proto.CompactTextString(m) }
@@ -1070,9 +1180,11 @@ func (*QueryErc20ToDenoms) ProtoMessage()    {}
 func (*QueryErc20ToDenoms) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{21}
 }
+
 func (m *QueryErc20ToDenoms) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryErc20ToDenoms) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryErc20ToDenoms.Marshal(b, m, deterministic)
@@ -1085,12 +1197,15 @@ func (m *QueryErc20ToDenoms) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
+
 func (m *QueryErc20ToDenoms) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryErc20ToDenoms.Merge(m, src)
 }
+
 func (m *QueryErc20ToDenoms) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryErc20ToDenoms) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryErc20ToDenoms.DiscardUnknown(m)
 }
@@ -1107,9 +1222,11 @@ func (*QueryErc20ToDenomsResponse) ProtoMessage()    {}
 func (*QueryErc20ToDenomsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{22}
 }
+
 func (m *QueryErc20ToDenomsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryErc20ToDenomsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryErc20ToDenomsResponse.Marshal(b, m, deterministic)
@@ -1122,12 +1239,15 @@ func (m *QueryErc20ToDenomsResponse) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
+
 func (m *QueryErc20ToDenomsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryErc20ToDenomsResponse.Merge(m, src)
 }
+
 func (m *QueryErc20ToDenomsResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryErc20ToDenomsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryErc20ToDenomsResponse.DiscardUnknown(m)
 }
@@ -1151,9 +1271,11 @@ func (*QueryPendingSendToRemote) ProtoMessage()    {}
 func (*QueryPendingSendToRemote) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{23}
 }
+
 func (m *QueryPendingSendToRemote) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryPendingSendToRemote) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryPendingSendToRemote.Marshal(b, m, deterministic)
@@ -1166,12 +1288,15 @@ func (m *QueryPendingSendToRemote) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
+
 func (m *QueryPendingSendToRemote) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryPendingSendToRemote.Merge(m, src)
 }
+
 func (m *QueryPendingSendToRemote) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryPendingSendToRemote) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryPendingSendToRemote.DiscardUnknown(m)
 }
@@ -1196,9 +1321,11 @@ func (*QueryPendingSendToRemoteResponse) ProtoMessage()    {}
 func (*QueryPendingSendToRemoteResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{24}
 }
+
 func (m *QueryPendingSendToRemoteResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryPendingSendToRemoteResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryPendingSendToRemoteResponse.Marshal(b, m, deterministic)
@@ -1211,12 +1338,15 @@ func (m *QueryPendingSendToRemoteResponse) XXX_Marshal(b []byte, deterministic b
 		return b[:n], nil
 	}
 }
+
 func (m *QueryPendingSendToRemoteResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryPendingSendToRemoteResponse.Merge(m, src)
 }
+
 func (m *QueryPendingSendToRemoteResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryPendingSendToRemoteResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryPendingSendToRemoteResponse.DiscardUnknown(m)
 }
@@ -1247,9 +1377,11 @@ func (*QueryBridgeTaxesResponse) ProtoMessage()    {}
 func (*QueryBridgeTaxesResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{25}
 }
+
 func (m *QueryBridgeTaxesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryBridgeTaxesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryBridgeTaxesResponse.Marshal(b, m, deterministic)
@@ -1262,12 +1394,15 @@ func (m *QueryBridgeTaxesResponse) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
+
 func (m *QueryBridgeTaxesResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryBridgeTaxesResponse.Merge(m, src)
 }
+
 func (m *QueryBridgeTaxesResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryBridgeTaxesResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryBridgeTaxesResponse.DiscardUnknown(m)
 }
@@ -1291,9 +1426,11 @@ func (*QueryBridgeTransferLimitsResponse) ProtoMessage()    {}
 func (*QueryBridgeTransferLimitsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{26}
 }
+
 func (m *QueryBridgeTransferLimitsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryBridgeTransferLimitsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryBridgeTransferLimitsResponse.Marshal(b, m, deterministic)
@@ -1306,12 +1443,15 @@ func (m *QueryBridgeTransferLimitsResponse) XXX_Marshal(b []byte, deterministic 
 		return b[:n], nil
 	}
 }
+
 func (m *QueryBridgeTransferLimitsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryBridgeTransferLimitsResponse.Merge(m, src)
 }
+
 func (m *QueryBridgeTransferLimitsResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryBridgeTransferLimitsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryBridgeTransferLimitsResponse.DiscardUnknown(m)
 }
@@ -1333,6 +1473,7 @@ type QueryBridgeTransferLimitsResponse_LimitUsage struct {
 func (m *QueryBridgeTransferLimitsResponse_LimitUsage) Reset() {
 	*m = QueryBridgeTransferLimitsResponse_LimitUsage{}
 }
+
 func (m *QueryBridgeTransferLimitsResponse_LimitUsage) String() string {
 	return proto.CompactTextString(m)
 }
@@ -1340,9 +1481,11 @@ func (*QueryBridgeTransferLimitsResponse_LimitUsage) ProtoMessage() {}
 func (*QueryBridgeTransferLimitsResponse_LimitUsage) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{26, 0}
 }
+
 func (m *QueryBridgeTransferLimitsResponse_LimitUsage) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryBridgeTransferLimitsResponse_LimitUsage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryBridgeTransferLimitsResponse_LimitUsage.Marshal(b, m, deterministic)
@@ -1355,12 +1498,15 @@ func (m *QueryBridgeTransferLimitsResponse_LimitUsage) XXX_Marshal(b []byte, det
 		return b[:n], nil
 	}
 }
+
 func (m *QueryBridgeTransferLimitsResponse_LimitUsage) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryBridgeTransferLimitsResponse_LimitUsage.Merge(m, src)
 }
+
 func (m *QueryBridgeTransferLimitsResponse_LimitUsage) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryBridgeTransferLimitsResponse_LimitUsage) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryBridgeTransferLimitsResponse_LimitUsage.DiscardUnknown(m)
 }
@@ -1391,9 +1537,11 @@ func (*QueryLightNodeSaleContractsResponse) ProtoMessage()    {}
 func (*QueryLightNodeSaleContractsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_933fccfef6a08c1d, []int{27}
 }
+
 func (m *QueryLightNodeSaleContractsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *QueryLightNodeSaleContractsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryLightNodeSaleContractsResponse.Marshal(b, m, deterministic)
@@ -1406,12 +1554,15 @@ func (m *QueryLightNodeSaleContractsResponse) XXX_Marshal(b []byte, deterministi
 		return b[:n], nil
 	}
 }
+
 func (m *QueryLightNodeSaleContractsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryLightNodeSaleContractsResponse.Merge(m, src)
 }
+
 func (m *QueryLightNodeSaleContractsResponse) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *QueryLightNodeSaleContractsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryLightNodeSaleContractsResponse.DiscardUnknown(m)
 }
@@ -1421,6 +1572,124 @@ var xxx_messageInfo_QueryLightNodeSaleContractsResponse proto.InternalMessageInf
 func (m *QueryLightNodeSaleContractsResponse) GetLightNodeSaleContracts() []*LightNodeSaleContract {
 	if m != nil {
 		return m.LightNodeSaleContracts
+	}
+	return nil
+}
+
+type QueryLastPendingBatchForGasEstimationRequest struct {
+	// Address of the asking to estimate
+	Address github_com_cosmos_cosmos_sdk_types.ValAddress `protobuf:"bytes,1,opt,name=address,proto3,casttype=github.com/cosmos/cosmos-sdk/types.ValAddress" json:"address,omitempty"`
+	// Chain reference id of the remote chain to query for
+	ChainReferenceId string `protobuf:"bytes,2,opt,name=chain_reference_id,json=chainReferenceId,proto3" json:"chain_reference_id,omitempty"`
+}
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) Reset() {
+	*m = QueryLastPendingBatchForGasEstimationRequest{}
+}
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryLastPendingBatchForGasEstimationRequest) ProtoMessage() {}
+func (*QueryLastPendingBatchForGasEstimationRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_933fccfef6a08c1d, []int{28}
+}
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLastPendingBatchForGasEstimationRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLastPendingBatchForGasEstimationRequest.Merge(m, src)
+}
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLastPendingBatchForGasEstimationRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLastPendingBatchForGasEstimationRequest proto.InternalMessageInfo
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) GetAddress() github_com_cosmos_cosmos_sdk_types.ValAddress {
+	if m != nil {
+		return m.Address
+	}
+	return nil
+}
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) GetChainReferenceId() string {
+	if m != nil {
+		return m.ChainReferenceId
+	}
+	return ""
+}
+
+type QueryLastPendingBatchForGasEstimationResponse struct {
+	Batch []OutgoingTxBatch `protobuf:"bytes,1,rep,name=batch,proto3" json:"batch"`
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) Reset() {
+	*m = QueryLastPendingBatchForGasEstimationResponse{}
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryLastPendingBatchForGasEstimationResponse) ProtoMessage() {}
+func (*QueryLastPendingBatchForGasEstimationResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_933fccfef6a08c1d, []int{29}
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLastPendingBatchForGasEstimationResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLastPendingBatchForGasEstimationResponse.Merge(m, src)
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLastPendingBatchForGasEstimationResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLastPendingBatchForGasEstimationResponse proto.InternalMessageInfo
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) GetBatch() []OutgoingTxBatch {
+	if m != nil {
+		return m.Batch
 	}
 	return nil
 }
@@ -1455,6 +1724,8 @@ func init() {
 	proto.RegisterType((*QueryBridgeTransferLimitsResponse)(nil), "palomachain.paloma.skyway.QueryBridgeTransferLimitsResponse")
 	proto.RegisterType((*QueryBridgeTransferLimitsResponse_LimitUsage)(nil), "palomachain.paloma.skyway.QueryBridgeTransferLimitsResponse.LimitUsage")
 	proto.RegisterType((*QueryLightNodeSaleContractsResponse)(nil), "palomachain.paloma.skyway.QueryLightNodeSaleContractsResponse")
+	proto.RegisterType((*QueryLastPendingBatchForGasEstimationRequest)(nil), "palomachain.paloma.skyway.QueryLastPendingBatchForGasEstimationRequest")
+	proto.RegisterType((*QueryLastPendingBatchForGasEstimationResponse)(nil), "palomachain.paloma.skyway.QueryLastPendingBatchForGasEstimationResponse")
 }
 
 func init() {
@@ -1462,104 +1733,113 @@ func init() {
 }
 
 var fileDescriptor_933fccfef6a08c1d = []byte{
-	// 1466 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x58, 0x4b, 0x8f, 0xd4, 0xc6,
-	0x16, 0x6e, 0x0f, 0xf3, 0xe2, 0x0c, 0x8f, 0xb9, 0xc5, 0x68, 0xe8, 0xf1, 0xbd, 0x34, 0x50, 0x97,
-	0xf7, 0x85, 0x6e, 0x18, 0xe0, 0x86, 0x24, 0x24, 0x68, 0x9a, 0x19, 0x5a, 0x20, 0x02, 0xa4, 0xa7,
-	0x93, 0x45, 0x14, 0xc5, 0x72, 0xb7, 0x6b, 0x3c, 0xce, 0xb8, 0x5d, 0x8d, 0xab, 0x9a, 0x4c, 0x27,
-	0x52, 0x16, 0x59, 0x46, 0x51, 0x84, 0x92, 0x4d, 0x16, 0x91, 0xb2, 0x4c, 0x56, 0x91, 0xf2, 0x2f,
-	0x58, 0x22, 0x65, 0xc3, 0x2a, 0x8a, 0x20, 0xfb, 0xfc, 0x85, 0xc8, 0xe5, 0x2a, 0xb7, 0xcd, 0xf8,
-	0xd1, 0xd3, 0xb0, 0x73, 0x95, 0xcf, 0xf9, 0xce, 0x77, 0x4e, 0x3d, 0xce, 0x67, 0xc3, 0xc9, 0x9e,
-	0xe9, 0xd2, 0xae, 0xd9, 0xd9, 0x34, 0x1d, 0xaf, 0x16, 0x3e, 0xd7, 0xd8, 0xd6, 0xe0, 0x33, 0x73,
-	0x50, 0x7b, 0xd8, 0x27, 0xfe, 0xa0, 0xda, 0xf3, 0x29, 0xa7, 0x68, 0x29, 0x66, 0x56, 0x0d, 0x9f,
-	0xab, 0xa1, 0x99, 0x7e, 0x22, 0x1b, 0xa1, 0x47, 0xa9, 0x1b, 0x02, 0xe8, 0x39, 0x71, 0xda, 0x26,
-	0xef, 0x6c, 0x4a, 0xb3, 0xff, 0x65, 0x9b, 0x99, 0x9c, 0x13, 0xc6, 0x4d, 0xee, 0x50, 0x4f, 0x1a,
-	0x2f, 0xd8, 0xd4, 0xa6, 0xe2, 0xb1, 0x16, 0x3c, 0xc9, 0xd9, 0xff, 0xd8, 0x94, 0xda, 0x2e, 0xa9,
-	0x99, 0x3d, 0xa7, 0x66, 0x7a, 0x1e, 0x0d, 0x5d, 0x98, 0x7c, 0x7b, 0x3a, 0x3b, 0x80, 0x4d, 0x3c,
-	0xc2, 0x1c, 0x56, 0x4c, 0x98, 0x0f, 0x7a, 0x44, 0x99, 0xe5, 0x64, 0xdf, 0x65, 0xb6, 0xb2, 0x3a,
-	0x95, 0x53, 0x23, 0xd3, 0x37, 0xbb, 0xca, 0xee, 0x5c, 0x4e, 0x95, 0x7c, 0xc7, 0xb2, 0x89, 0xc1,
-	0xcd, 0x6d, 0x69, 0x7b, 0xb5, 0xd8, 0xd6, 0x37, 0x3d, 0xb6, 0x41, 0x7c, 0xc3, 0x75, 0xba, 0x0e,
-	0x97, 0x6e, 0xd7, 0xb2, 0xdd, 0x5c, 0xc7, 0xde, 0xe4, 0x86, 0x47, 0x2d, 0x62, 0x30, 0xd3, 0x25,
-	0x46, 0x87, 0x7a, 0xdc, 0x37, 0x3b, 0xca, 0xf3, 0xdf, 0xb2, 0xb0, 0x62, 0xd4, 0xee, 0x6f, 0xd4,
-	0x48, 0xb7, 0xc7, 0xe5, 0x06, 0xc1, 0x0b, 0x80, 0xde, 0x0f, 0xf6, 0xcb, 0x03, 0x91, 0x4e, 0x93,
-	0x3c, 0xec, 0x13, 0xc6, 0xf1, 0x87, 0x70, 0x28, 0x31, 0xcb, 0x7a, 0xd4, 0x63, 0x04, 0xdd, 0x80,
-	0xe9, 0x30, 0xed, 0xb2, 0x76, 0x4c, 0x3b, 0x33, 0xb7, 0x7c, 0xbc, 0x9a, 0xb9, 0xbd, 0xaa, 0xa1,
-	0x6b, 0x7d, 0xf2, 0xc9, 0x1f, 0x47, 0x4b, 0x4d, 0xe9, 0x86, 0xd7, 0xe0, 0xac, 0xc0, 0xbd, 0x6b,
-	0x32, 0xfe, 0x80, 0x78, 0x96, 0xe3, 0xd9, 0xf5, 0x60, 0x17, 0xc9, 0xb8, 0xf5, 0xc1, 0x8a, 0x65,
-	0xf9, 0x72, 0x80, 0xca, 0x30, 0x63, 0x5a, 0x96, 0x4f, 0x58, 0x18, 0x6e, 0x6f, 0x53, 0x0d, 0x31,
-	0x87, 0x73, 0xa3, 0xc0, 0x48, 0xd6, 0xb7, 0x60, 0x4a, 0x6c, 0xd5, 0xb2, 0x76, 0x6c, 0xcf, 0x99,
-	0xb9, 0xe5, 0x73, 0x39, 0xa4, 0xef, 0xf7, 0xb9, 0x4d, 0x1d, 0xcf, 0x6e, 0x6d, 0x0b, 0x3c, 0xc9,
-	0x3e, 0x74, 0xc7, 0x0e, 0x1c, 0x11, 0x51, 0x5f, 0x32, 0x22, 0xaa, 0x6a, 0xe8, 0x3c, 0x20, 0x01,
-	0x6a, 0xf8, 0x64, 0x83, 0xf8, 0xc4, 0xeb, 0x10, 0xc3, 0xb1, 0x24, 0xf7, 0x79, 0xf1, 0xa6, 0xa9,
-	0x5e, 0xdc, 0xb6, 0x90, 0x0e, 0xb3, 0x26, 0x63, 0x8e, 0xed, 0x11, 0x52, 0x9e, 0x10, 0x36, 0xd1,
-	0x18, 0xbb, 0x50, 0xc9, 0x0a, 0x25, 0x93, 0xba, 0x03, 0x33, 0xed, 0x70, 0x6a, 0xec, 0xb4, 0x14,
-	0x00, 0x6e, 0xc3, 0x51, 0x11, 0x2d, 0x59, 0xc3, 0x7b, 0xd4, 0xeb, 0x10, 0x95, 0xda, 0x02, 0x4c,
-	0x79, 0xc1, 0x58, 0x64, 0x33, 0xd9, 0x0c, 0x07, 0xe8, 0x2c, 0xcc, 0xab, 0xbd, 0x66, 0xa8, 0xa5,
-	0x0a, 0x53, 0x39, 0xa8, 0xe6, 0x57, 0xe4, 0x92, 0x7d, 0x0a, 0xc7, 0xb2, 0x63, 0xec, 0x5c, 0x28,
-	0xed, 0x55, 0x16, 0xea, 0x63, 0x58, 0x1a, 0xc6, 0xba, 0x49, 0xbd, 0x0d, 0xc7, 0x8f, 0xb6, 0xf6,
-	0xeb, 0xc8, 0x44, 0x4f, 0x43, 0x97, 0x39, 0xdc, 0x85, 0xd9, 0x8e, 0x9c, 0x1b, 0x61, 0x61, 0xde,
-	0x63, 0xb6, 0x44, 0x88, 0xa7, 0x11, 0x21, 0xe0, 0x75, 0xf8, 0x6f, 0xb4, 0xd1, 0xef, 0xb7, 0x19,
-	0xf1, 0x1f, 0x11, 0x6b, 0x5d, 0xb8, 0x26, 0x56, 0x67, 0x57, 0x1b, 0x0f, 0xb3, 0xd8, 0x21, 0x4c,
-	0x01, 0x1d, 0xf1, 0x10, 0x66, 0x04, 0x9d, 0xc8, 0x08, 0x7a, 0x1d, 0x4e, 0xe4, 0x67, 0x22, 0xeb,
-	0x97, 0xba, 0x3c, 0x39, 0x75, 0xa8, 0xbb, 0xb4, 0xb3, 0x35, 0x5e, 0x1d, 0xb2, 0x29, 0x49, 0xd0,
-	0x21, 0xa5, 0x76, 0x30, 0xa1, 0x28, 0x89, 0x01, 0xfe, 0x04, 0xca, 0xc2, 0x7b, 0xad, 0x79, 0x73,
-	0xf9, 0x62, 0x8b, 0xae, 0x12, 0x8f, 0x76, 0x63, 0x7b, 0x8c, 0xf8, 0x9d, 0xe5, 0x8b, 0x32, 0x74,
-	0x38, 0xd8, 0x65, 0xc1, 0x2e, 0xc9, 0x4d, 0x9c, 0xc4, 0x1f, 0x52, 0xb2, 0x82, 0x09, 0x15, 0x40,
-	0x0c, 0x22, 0x4a, 0xc2, 0xb6, 0x45, 0x85, 0x67, 0x8c, 0xd2, 0x4e, 0x8f, 0x31, 0x29, 0x25, 0xf1,
-	0x87, 0x94, 0x76, 0xe6, 0x8c, 0x9f, 0x69, 0x92, 0xd3, 0xca, 0x50, 0x05, 0xc4, 0x8f, 0xa2, 0xe8,
-	0x70, 0xaa, 0xb0, 0x62, 0x80, 0x96, 0x60, 0x96, 0xfa, 0x16, 0xf1, 0x8d, 0xf6, 0x40, 0x32, 0x99,
-	0x11, 0xe3, 0xfa, 0x00, 0x1d, 0x01, 0xe8, 0xb8, 0xa6, 0xd3, 0x35, 0x82, 0x4e, 0x5e, 0xde, 0x23,
-	0x5e, 0xee, 0x15, 0x33, 0xad, 0x41, 0x2f, 0xb6, 0x77, 0x26, 0xe3, 0x47, 0x7b, 0x11, 0xa6, 0x37,
-	0x49, 0xd0, 0x21, 0xcb, 0x53, 0x62, 0x5a, 0x8e, 0x32, 0x72, 0x9f, 0x49, 0xcf, 0xfd, 0xce, 0xe4,
-	0xec, 0xf4, 0xfc, 0x4c, 0x13, 0xfa, 0x8c, 0x18, 0x8f, 0x2e, 0x19, 0x5b, 0x64, 0x80, 0xbb, 0xb2,
-	0x1a, 0xc9, 0xcc, 0x64, 0x35, 0x1e, 0xc0, 0xbe, 0x98, 0xee, 0x51, 0x57, 0xc1, 0xa9, 0x9c, 0xab,
-	0x20, 0x06, 0x23, 0xaf, 0x81, 0x04, 0x42, 0xd4, 0xa8, 0xd7, 0x82, 0xba, 0xca, 0xfd, 0xc0, 0xf0,
-	0x43, 0x79, 0x19, 0x25, 0x66, 0x23, 0x16, 0xeb, 0x70, 0x40, 0x2c, 0x83, 0xc1, 0xa9, 0xa1, 0x56,
-	0x3f, 0xe0, 0x71, 0x3a, 0x87, 0x47, 0x7c, 0xbf, 0x29, 0x22, 0x24, 0x86, 0x8e, 0x57, 0xe4, 0x8a,
-	0xca, 0xc6, 0xbb, 0x4e, 0x3c, 0xab, 0x45, 0x9b, 0xa4, 0x4b, 0x39, 0x41, 0x27, 0xe1, 0x00, 0x23,
-	0x5e, 0xb0, 0x78, 0xc9, 0x4b, 0x63, 0x7f, 0x38, 0xab, 0xae, 0xd0, 0xbf, 0x35, 0xd9, 0x0d, 0x52,
-	0x30, 0x22, 0xf2, 0x04, 0x16, 0x94, 0x10, 0x62, 0x86, 0xe3, 0x19, 0xc9, 0x76, 0x77, 0x61, 0x94,
-	0xe6, 0x20, 0xdd, 0x5b, 0xdb, 0x32, 0x11, 0x14, 0x01, 0xde, 0xf6, 0x64, 0x43, 0x45, 0x16, 0x1c,
-	0xea, 0x7b, 0x21, 0xb6, 0x15, 0x29, 0xaf, 0xe0, 0xf2, 0x1f, 0x3f, 0x4a, 0x84, 0xa7, 0x5e, 0x31,
-	0xdc, 0x91, 0x45, 0xab, 0x0b, 0x85, 0xd7, 0x32, 0xb7, 0x63, 0xad, 0xbc, 0x01, 0xfb, 0x86, 0x22,
-	0x31, 0x4a, 0xf0, 0x44, 0x4e, 0xe8, 0x08, 0xa5, 0x39, 0xd7, 0x1e, 0x02, 0xe2, 0x9f, 0x26, 0xe0,
-	0x78, 0x3c, 0x8a, 0x8c, 0x7e, 0x37, 0x38, 0x56, 0xc3, 0x70, 0x06, 0x4c, 0x8b, 0x83, 0xa6, 0x02,
-	0x35, 0x72, 0x02, 0x15, 0xa2, 0x55, 0xc5, 0xf0, 0x03, 0x66, 0xda, 0xa4, 0x29, 0x61, 0xf5, 0x1f,
-	0x34, 0x80, 0xe1, 0x34, 0x5a, 0x8d, 0x9f, 0xf2, 0xb9, 0xe5, 0x6a, 0x71, 0x5e, 0xf1, 0x48, 0xea,
-	0x56, 0x58, 0x85, 0xa9, 0x7e, 0x00, 0x27, 0xae, 0x84, 0xdd, 0xa0, 0x84, 0xdc, 0x42, 0x67, 0xfc,
-	0x9d, 0xa6, 0x1a, 0x49, 0x70, 0x05, 0xdc, 0xa3, 0x16, 0x59, 0x37, 0x5d, 0x72, 0x53, 0x76, 0xf8,
-	0x61, 0x8d, 0xb6, 0x60, 0x29, 0x4b, 0x54, 0xab, 0xb2, 0x5d, 0xcc, 0x61, 0x90, 0x8a, 0xde, 0x5c,
-	0x74, 0x53, 0x83, 0x2e, 0xff, 0x8c, 0x60, 0x4a, 0x90, 0x42, 0x0e, 0x4c, 0x87, 0xb2, 0x19, 0x5d,
-	0x28, 0x5a, 0x94, 0x84, 0x5e, 0xd7, 0xab, 0xa3, 0x9a, 0x87, 0xf9, 0xe1, 0x12, 0xfa, 0x55, 0x83,
-	0x23, 0xb9, 0xf2, 0x19, 0xad, 0x16, 0x61, 0x8e, 0x22, 0xe2, 0xf5, 0xb5, 0x57, 0x44, 0x89, 0x08,
-	0xff, 0xa8, 0xc1, 0xe1, 0x0c, 0xf1, 0x80, 0xde, 0x1d, 0x25, 0x48, 0xb6, 0x7e, 0xd2, 0x6f, 0x8c,
-	0xed, 0x1f, 0xd1, 0xfb, 0x45, 0xd6, 0x33, 0x53, 0x50, 0x8d, 0x56, 0xcf, 0x22, 0x3d, 0xf6, 0x3a,
-	0xa8, 0xa6, 0x57, 0x52, 0x68, 0x9e, 0x71, 0x2a, 0x19, 0x57, 0x60, 0xe3, 0xd0, 0x4b, 0x88, 0x2d,
-	0x5c, 0x42, 0x5f, 0x6b, 0xf0, 0xaf, 0x1d, 0xdf, 0x3d, 0xe8, 0x5a, 0x11, 0x70, 0xd6, 0x57, 0x99,
-	0xfe, 0xe6, 0x18, 0x9e, 0x11, 0x99, 0xc7, 0x1a, 0x1c, 0x4a, 0xf9, 0x64, 0x41, 0x6f, 0x15, 0x5e,
-	0x9a, 0x99, 0xdf, 0x52, 0xfa, 0xdb, 0x63, 0xf9, 0x46, 0x94, 0xbe, 0x84, 0xfd, 0x89, 0x4f, 0x0f,
-	0x74, 0x65, 0x24, 0xbc, 0x97, 0xbe, 0x83, 0xf4, 0xab, 0xbb, 0xf4, 0x8a, 0xe2, 0x7f, 0x01, 0xfb,
-	0xe2, 0x1a, 0x01, 0x5d, 0x2e, 0x02, 0x4a, 0x51, 0xc8, 0xfa, 0x95, 0xdd, 0x39, 0xc5, 0x83, 0xc7,
-	0xd5, 0x67, 0x71, 0xf0, 0x14, 0x2d, 0x5c, 0x1c, 0x3c, 0x4d, 0xe0, 0x8a, 0xca, 0x1f, 0x6c, 0x10,
-	0x1e, 0xd7, 0x7b, 0xc5, 0xf1, 0x53, 0x74, 0x6f, 0x71, 0xfc, 0x34, 0x49, 0x89, 0x4b, 0xe8, 0x73,
-	0x98, 0x6f, 0x10, 0x9e, 0x90, 0x7a, 0xc5, 0x8d, 0x22, 0x61, 0x5e, 0xbc, 0xea, 0xa9, 0x42, 0x12,
-	0x97, 0xd0, 0x37, 0x1a, 0x2c, 0x36, 0x08, 0x4f, 0x13, 0x7d, 0x85, 0x35, 0x48, 0x71, 0x2a, 0x3e,
-	0x04, 0x39, 0xd2, 0x10, 0x97, 0xd0, 0xb7, 0x1a, 0x1c, 0x68, 0x10, 0x1e, 0x93, 0x53, 0x68, 0xb1,
-	0x1a, 0xfe, 0xe7, 0xaa, 0xaa, 0xff, 0x5c, 0xd5, 0xb5, 0x6e, 0x8f, 0x0f, 0xf4, 0xcb, 0x23, 0xea,
-	0x9b, 0xb8, 0x26, 0xc3, 0xb5, 0xaf, 0x7e, 0xff, 0xeb, 0xfb, 0x89, 0xb3, 0xe8, 0x74, 0x6d, 0x94,
-	0x3f, 0x7b, 0x84, 0x05, 0xfd, 0xf4, 0xf0, 0x90, 0x50, 0x42, 0x2b, 0x65, 0x32, 0xbb, 0xfe, 0x2a,
-	0xca, 0x0b, 0xbf, 0x23, 0x28, 0xbe, 0x81, 0xae, 0xe6, 0x50, 0x34, 0x5d, 0xd7, 0x48, 0xfd, 0xa9,
-	0xc8, 0xd0, 0x6f, 0x1a, 0x2c, 0x35, 0x08, 0x4f, 0x17, 0x42, 0x99, 0x94, 0x8b, 0xfb, 0x43, 0xae,
-	0xb0, 0xc2, 0xd7, 0x05, 0xe9, 0xff, 0xa3, 0x2b, 0xb5, 0xdd, 0xff, 0xce, 0x64, 0xf5, 0x5b, 0x4f,
-	0x9e, 0x57, 0xb4, 0xa7, 0xcf, 0x2b, 0xda, 0x9f, 0xcf, 0x2b, 0xda, 0xe3, 0x17, 0x95, 0xd2, 0xd3,
-	0x17, 0x95, 0xd2, 0xb3, 0x17, 0x95, 0xd2, 0x47, 0xe7, 0x6d, 0x87, 0x6f, 0xf6, 0xdb, 0xd5, 0x0e,
-	0xed, 0xa6, 0x21, 0x6f, 0x27, 0x7e, 0x01, 0xb7, 0xa7, 0x45, 0x56, 0x97, 0xff, 0x09, 0x00, 0x00,
-	0xff, 0xff, 0x7c, 0xc0, 0xc1, 0x26, 0x45, 0x17, 0x00, 0x00,
+	// 1579 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x59, 0xcd, 0x6f, 0xd4, 0x46,
+	0x1b, 0x5f, 0x87, 0x7c, 0xf1, 0x24, 0x40, 0xde, 0x21, 0x0a, 0x1b, 0xbf, 0x2f, 0x4b, 0xf0, 0xcb,
+	0xf7, 0x4b, 0x76, 0x21, 0xc0, 0x5b, 0x5a, 0xa0, 0x28, 0x9b, 0x84, 0x2d, 0x94, 0x02, 0xdd, 0x6c,
+	0x39, 0x54, 0x55, 0x2d, 0xef, 0x7a, 0xe2, 0xb8, 0xb1, 0x3d, 0x8b, 0xc7, 0x0b, 0xd9, 0x56, 0xea,
+	0xa1, 0xc7, 0xaa, 0xaa, 0x50, 0x7b, 0xe9, 0xa1, 0x52, 0x2f, 0x3d, 0xb4, 0x97, 0x4a, 0xfd, 0x2f,
+	0x38, 0x22, 0xf5, 0xc2, 0x09, 0x55, 0xd0, 0x7b, 0xef, 0x9c, 0x2a, 0x8f, 0x67, 0xbc, 0x36, 0xf1,
+	0xc7, 0xee, 0x86, 0x53, 0x76, 0xc6, 0xf3, 0xfc, 0x9e, 0xdf, 0xf3, 0xcc, 0x78, 0x9e, 0xdf, 0xe3,
+	0xc0, 0xf1, 0xb6, 0x66, 0x11, 0x5b, 0x6b, 0x6d, 0x6a, 0xa6, 0x53, 0x09, 0x7e, 0x57, 0xe8, 0x56,
+	0xf7, 0x91, 0xd6, 0xad, 0x3c, 0xe8, 0x60, 0xb7, 0x5b, 0x6e, 0xbb, 0xc4, 0x23, 0x68, 0x3e, 0xb2,
+	0xac, 0x1c, 0xfc, 0x2e, 0x07, 0xcb, 0xe4, 0x63, 0xe9, 0x08, 0x6d, 0x42, 0xac, 0x00, 0x40, 0xce,
+	0xf0, 0xd3, 0xd4, 0xbc, 0xd6, 0x26, 0x5f, 0xf6, 0xbf, 0xf4, 0x65, 0x9a, 0xe7, 0x61, 0xea, 0x69,
+	0x9e, 0x49, 0x1c, 0xbe, 0x78, 0xd6, 0x20, 0x06, 0x61, 0x3f, 0x2b, 0xfe, 0x2f, 0x3e, 0xfb, 0x1f,
+	0x83, 0x10, 0xc3, 0xc2, 0x15, 0xad, 0x6d, 0x56, 0x34, 0xc7, 0x21, 0x81, 0x09, 0xe5, 0x4f, 0x4f,
+	0xa6, 0x3b, 0x30, 0xb0, 0x83, 0xa9, 0x49, 0xf3, 0x09, 0x7b, 0xdd, 0x36, 0x16, 0xcb, 0x32, 0xa2,
+	0xb7, 0xa9, 0x21, 0x56, 0x9d, 0xc8, 0xc8, 0x91, 0xe6, 0x6a, 0xb6, 0x58, 0x77, 0x26, 0x23, 0x4b,
+	0xae, 0xa9, 0x1b, 0x58, 0xf5, 0xb4, 0x6d, 0xbe, 0xf6, 0x52, 0xfe, 0x5a, 0x57, 0x73, 0xe8, 0x06,
+	0x76, 0x55, 0xcb, 0xb4, 0x4d, 0x8f, 0x9b, 0x5d, 0x4e, 0x37, 0xb3, 0x4c, 0x63, 0xd3, 0x53, 0x1d,
+	0xa2, 0x63, 0x95, 0x6a, 0x16, 0x56, 0x5b, 0xc4, 0xf1, 0x5c, 0xad, 0x25, 0x2c, 0xff, 0xcd, 0x13,
+	0xcb, 0x46, 0xcd, 0xce, 0x46, 0x05, 0xdb, 0x6d, 0x8f, 0x1f, 0x10, 0x65, 0x16, 0xd0, 0x87, 0xfe,
+	0x79, 0xb9, 0xc7, 0xc2, 0xa9, 0xe3, 0x07, 0x1d, 0x4c, 0x3d, 0xe5, 0x3e, 0x1c, 0x8c, 0xcd, 0xd2,
+	0x36, 0x71, 0x28, 0x46, 0xd7, 0x61, 0x3c, 0x08, 0xbb, 0x28, 0x2d, 0x48, 0xa7, 0xa6, 0x96, 0x8e,
+	0x96, 0x53, 0x8f, 0x57, 0x39, 0x30, 0xad, 0x8e, 0x3e, 0x79, 0x7e, 0xa4, 0x50, 0xe7, 0x66, 0xca,
+	0x1a, 0x9c, 0x66, 0xb8, 0xb7, 0x35, 0xea, 0xdd, 0xc3, 0x8e, 0x6e, 0x3a, 0x46, 0xd5, 0x3f, 0x45,
+	0xdc, 0x6f, 0xb5, 0xbb, 0xac, 0xeb, 0x2e, 0x1f, 0xa0, 0x22, 0x4c, 0x68, 0xba, 0xee, 0x62, 0x1a,
+	0xb8, 0xdb, 0x5b, 0x17, 0x43, 0xc5, 0x83, 0x33, 0xfd, 0xc0, 0x70, 0xd6, 0x37, 0x60, 0x8c, 0x1d,
+	0xd5, 0xa2, 0xb4, 0xb0, 0xe7, 0xd4, 0xd4, 0xd2, 0x99, 0x0c, 0xd2, 0x77, 0x3b, 0x9e, 0x41, 0x4c,
+	0xc7, 0x68, 0x6c, 0x33, 0x3c, 0xce, 0x3e, 0x30, 0x57, 0x4c, 0x38, 0xcc, 0xbc, 0xbe, 0xb6, 0x08,
+	0x8b, 0xac, 0xa1, 0xb3, 0x80, 0x18, 0xa8, 0xea, 0xe2, 0x0d, 0xec, 0x62, 0xa7, 0x85, 0x55, 0x53,
+	0xe7, 0xdc, 0x67, 0xd8, 0x93, 0xba, 0x78, 0x70, 0x53, 0x47, 0x32, 0x4c, 0x6a, 0x94, 0x9a, 0x86,
+	0x83, 0x71, 0x71, 0x84, 0xad, 0x09, 0xc7, 0x8a, 0x05, 0xa5, 0x34, 0x57, 0x3c, 0xa8, 0x5b, 0x30,
+	0xd1, 0x0c, 0xa6, 0x86, 0x0e, 0x4b, 0x00, 0x28, 0x4d, 0x38, 0xc2, 0xbc, 0xc5, 0x73, 0x78, 0x87,
+	0x38, 0x2d, 0x2c, 0x42, 0x9b, 0x85, 0x31, 0xc7, 0x1f, 0xb3, 0x68, 0x46, 0xeb, 0xc1, 0x00, 0x9d,
+	0x86, 0x19, 0x71, 0xd6, 0x54, 0xb1, 0x55, 0x41, 0x28, 0x07, 0xc4, 0xfc, 0x32, 0xdf, 0xb2, 0xcf,
+	0x60, 0x21, 0xdd, 0xc7, 0xce, 0x8d, 0x92, 0x76, 0xb3, 0x51, 0x9f, 0xc0, 0x7c, 0xcf, 0xd7, 0x0a,
+	0x71, 0x36, 0x4c, 0x37, 0x3c, 0xda, 0x6f, 0x22, 0x12, 0x39, 0x09, 0x9d, 0xc7, 0x70, 0x1b, 0x26,
+	0x5b, 0x7c, 0xae, 0x8f, 0x8d, 0xf9, 0x80, 0x1a, 0x1c, 0x21, 0x1a, 0x46, 0x88, 0xa0, 0xac, 0xc3,
+	0x7f, 0xc3, 0x83, 0x7e, 0xb7, 0x49, 0xb1, 0xfb, 0x10, 0xeb, 0xeb, 0xcc, 0x34, 0xb6, 0x3b, 0x03,
+	0x1d, 0x3c, 0x85, 0x46, 0x5e, 0xc2, 0x04, 0xd0, 0x3e, 0x5f, 0xc2, 0x14, 0xa7, 0x23, 0x29, 0x4e,
+	0xaf, 0xc2, 0xb1, 0xec, 0x48, 0x78, 0xfe, 0x12, 0xb7, 0x27, 0x23, 0x0f, 0x55, 0x8b, 0xb4, 0xb6,
+	0x86, 0xcb, 0x43, 0x3a, 0x25, 0x0e, 0xda, 0xa3, 0xd4, 0xf4, 0x27, 0x04, 0x25, 0x36, 0x50, 0x3e,
+	0x85, 0x22, 0xb3, 0x5e, 0xab, 0xaf, 0x2c, 0x9d, 0x6b, 0x90, 0x55, 0xec, 0x10, 0x3b, 0x72, 0xc6,
+	0xb0, 0xdb, 0x5a, 0x3a, 0xc7, 0x5d, 0x07, 0x83, 0x01, 0x13, 0x76, 0x9e, 0x1f, 0xe2, 0x38, 0x7e,
+	0x8f, 0x92, 0xee, 0x4f, 0x08, 0x07, 0x6c, 0x10, 0x52, 0x62, 0x6b, 0x1b, 0x84, 0x59, 0x46, 0x28,
+	0xed, 0xb4, 0x18, 0x92, 0x52, 0x1c, 0xbf, 0x47, 0x69, 0x67, 0xcc, 0xca, 0x33, 0x89, 0x73, 0x5a,
+	0xee, 0xa9, 0x80, 0xe8, 0xab, 0xc8, 0x2a, 0x9c, 0x48, 0x2c, 0x1b, 0xa0, 0x79, 0x98, 0x24, 0xae,
+	0x8e, 0x5d, 0xb5, 0xd9, 0xe5, 0x4c, 0x26, 0xd8, 0xb8, 0xda, 0x45, 0x87, 0x01, 0x5a, 0x96, 0x66,
+	0xda, 0xaa, 0x5f, 0xc9, 0x8b, 0x7b, 0xd8, 0xc3, 0xbd, 0x6c, 0xa6, 0xd1, 0x6d, 0x47, 0xce, 0xce,
+	0x68, 0xf4, 0xd5, 0x9e, 0x83, 0xf1, 0x4d, 0xec, 0x57, 0xc8, 0xe2, 0x18, 0x9b, 0xe6, 0xa3, 0x94,
+	0xd8, 0x27, 0x92, 0x63, 0xbf, 0x35, 0x3a, 0x39, 0x3e, 0x33, 0x51, 0x87, 0x0e, 0xc5, 0xea, 0xc3,
+	0xf3, 0xea, 0x16, 0xee, 0x2a, 0x36, 0xcf, 0x46, 0x3c, 0x32, 0x9e, 0x8d, 0x7b, 0x30, 0x1d, 0xd1,
+	0x3d, 0xe2, 0x2a, 0x38, 0x91, 0x71, 0x15, 0x44, 0x60, 0xf8, 0x35, 0x10, 0x43, 0x08, 0x0b, 0xf5,
+	0x9a, 0x9f, 0x57, 0x7e, 0x1e, 0xa8, 0xf2, 0x80, 0x5f, 0x46, 0xb1, 0xd9, 0x90, 0xc5, 0x3a, 0xec,
+	0x67, 0xdb, 0xa0, 0x7a, 0x44, 0x15, 0xbb, 0xef, 0xf3, 0x38, 0x99, 0xc1, 0x23, 0x7a, 0xde, 0x04,
+	0x11, 0x1c, 0x41, 0x57, 0x96, 0xf9, 0x8e, 0xf2, 0xc2, 0xbb, 0x8e, 0x1d, 0xbd, 0x41, 0xea, 0xd8,
+	0x26, 0x1e, 0x46, 0xc7, 0x61, 0x3f, 0xc5, 0x8e, 0xbf, 0x79, 0xf1, 0x4b, 0x63, 0x5f, 0x30, 0x2b,
+	0xae, 0xd0, 0xbf, 0x25, 0x5e, 0x0d, 0x12, 0x30, 0x42, 0xf2, 0x18, 0x66, 0x85, 0x10, 0xa2, 0xaa,
+	0xe9, 0xa8, 0xf1, 0x72, 0xb7, 0xd8, 0x4f, 0x71, 0xe0, 0xe6, 0x8d, 0x6d, 0x1e, 0x08, 0x0a, 0x01,
+	0x6f, 0x3a, 0xbc, 0xa0, 0x22, 0x1d, 0x0e, 0x76, 0x9c, 0x00, 0x5b, 0x0f, 0x95, 0x97, 0x7f, 0xf9,
+	0x0f, 0xef, 0x25, 0xc4, 0x13, 0x8f, 0xa8, 0xd2, 0xe2, 0x49, 0xab, 0x32, 0x85, 0xd7, 0xd0, 0xb6,
+	0x23, 0xa5, 0xbc, 0x06, 0xd3, 0x3d, 0x91, 0x18, 0x06, 0x78, 0x2c, 0xc3, 0x75, 0x88, 0x52, 0x9f,
+	0x6a, 0xf6, 0x00, 0x95, 0x9f, 0x46, 0xe0, 0x68, 0xd4, 0x0b, 0xf7, 0x7e, 0xdb, 0x7f, 0xad, 0x7a,
+	0xee, 0x54, 0x18, 0x67, 0x2f, 0x9a, 0x70, 0x54, 0xcb, 0x70, 0x94, 0x8b, 0x56, 0x66, 0xc3, 0x8f,
+	0xa8, 0x66, 0xe0, 0x3a, 0x87, 0x95, 0x7f, 0x90, 0x00, 0x7a, 0xd3, 0x68, 0x35, 0xfa, 0x96, 0x4f,
+	0x2d, 0x95, 0xf3, 0xe3, 0x8a, 0x7a, 0x12, 0xb7, 0xc2, 0x2a, 0x8c, 0x75, 0x7c, 0x38, 0x76, 0x25,
+	0x0c, 0x82, 0x12, 0x70, 0x0b, 0x8c, 0x95, 0xef, 0x24, 0x51, 0x48, 0xfc, 0x2b, 0xe0, 0x0e, 0xd1,
+	0xf1, 0xba, 0x66, 0xe1, 0x15, 0x5e, 0xe1, 0x7b, 0x39, 0xda, 0x82, 0xf9, 0x34, 0x51, 0x2d, 0xd2,
+	0x76, 0x2e, 0x83, 0x41, 0x22, 0x7a, 0x7d, 0xce, 0x4a, 0x74, 0xaa, 0xfc, 0x2a, 0xc1, 0xd9, 0x44,
+	0x39, 0x7b, 0x83, 0xb8, 0x35, 0x8d, 0xae, 0x51, 0xcf, 0xb4, 0xd9, 0x25, 0x20, 0xee, 0xcd, 0xf7,
+	0xe3, 0x35, 0x79, 0xba, 0x7a, 0xfe, 0xd5, 0xf3, 0x23, 0x8b, 0x86, 0xe9, 0x6d, 0x76, 0x9a, 0xe5,
+	0x16, 0xb1, 0x2b, 0x2d, 0x42, 0x6d, 0x42, 0xf9, 0x9f, 0x45, 0xaa, 0x6f, 0xf1, 0xd6, 0xe7, 0xbe,
+	0x66, 0xf1, 0x57, 0x70, 0xd8, 0x32, 0xfe, 0x08, 0x16, 0xfb, 0xa4, 0xfa, 0x66, 0xc5, 0xf7, 0xd2,
+	0xcf, 0xb3, 0x30, 0xc6, 0x3c, 0x23, 0x13, 0xc6, 0x83, 0xde, 0x02, 0x2d, 0xe6, 0x9d, 0xdc, 0x58,
+	0x53, 0x23, 0x97, 0xfb, 0x5d, 0x1e, 0x50, 0x57, 0x0a, 0xe8, 0x37, 0x09, 0x0e, 0x67, 0xf6, 0x18,
+	0x68, 0x35, 0x0f, 0xb3, 0x9f, 0x4e, 0x47, 0x5e, 0xdb, 0x25, 0x4a, 0x48, 0xf8, 0x47, 0x09, 0x0e,
+	0xa5, 0x28, 0x2c, 0xf4, 0x6e, 0x3f, 0x4e, 0xd2, 0x45, 0xa6, 0x7c, 0x7d, 0x68, 0xfb, 0x90, 0xde,
+	0x2f, 0x3c, 0x9f, 0xa9, 0xaa, 0xb3, 0xbf, 0x7c, 0xe6, 0x89, 0xd6, 0x37, 0x41, 0x35, 0x39, 0x93,
+	0x4c, 0x18, 0x0e, 0x93, 0xc9, 0xa8, 0x4c, 0x1d, 0x86, 0x5e, 0x4c, 0x91, 0x2a, 0x05, 0xf4, 0xb5,
+	0x04, 0xff, 0xda, 0xd1, 0x1c, 0xa2, 0xcb, 0x79, 0xc0, 0x69, 0xad, 0xab, 0xfc, 0xf6, 0x10, 0x96,
+	0x21, 0x99, 0xc7, 0x12, 0x1c, 0x4c, 0xe8, 0xeb, 0xd0, 0x3b, 0xb9, 0x95, 0x25, 0xb5, 0xe1, 0x94,
+	0xaf, 0x0c, 0x65, 0x1b, 0x52, 0xfa, 0x12, 0xf6, 0xc5, 0xfa, 0x33, 0x74, 0xb1, 0x2f, 0xbc, 0xd7,
+	0x9a, 0x45, 0xf9, 0xd2, 0x80, 0x56, 0xa1, 0xff, 0x2f, 0x60, 0x3a, 0x2a, 0xa4, 0xd0, 0x85, 0x3c,
+	0xa0, 0x84, 0x36, 0x42, 0xbe, 0x38, 0x98, 0x51, 0xd4, 0x79, 0x54, 0xa2, 0xe7, 0x3b, 0x4f, 0x68,
+	0x18, 0xf2, 0x9d, 0x27, 0x75, 0x01, 0x2c, 0xf3, 0x07, 0x6a, 0xd8, 0x8b, 0x8a, 0xe2, 0x7c, 0xff,
+	0x09, 0xcd, 0x41, 0xbe, 0xff, 0x24, 0xdd, 0xad, 0x14, 0xd0, 0xe7, 0x30, 0x53, 0xc3, 0x5e, 0x4c,
+	0x0f, 0xe7, 0x17, 0x8a, 0xd8, 0xf2, 0xfc, 0x5d, 0x4f, 0x54, 0xdb, 0x4a, 0x01, 0x7d, 0x23, 0xc1,
+	0x5c, 0x0d, 0x7b, 0x49, 0xca, 0x38, 0x37, 0x07, 0x09, 0x46, 0xf9, 0x2f, 0x41, 0x86, 0x7e, 0x56,
+	0x0a, 0xe8, 0x5b, 0x09, 0xf6, 0xd7, 0xb0, 0x17, 0xd1, 0x9c, 0x68, 0xae, 0x1c, 0x7c, 0x0c, 0x2c,
+	0x8b, 0x8f, 0x81, 0xe5, 0x35, 0xbb, 0xed, 0x75, 0xe5, 0x0b, 0x7d, 0x8a, 0xc0, 0xa8, 0x70, 0x55,
+	0x2a, 0x5f, 0xfd, 0xf1, 0xd7, 0xf7, 0x23, 0xa7, 0xd1, 0xc9, 0x4a, 0x3f, 0x9f, 0x3f, 0x31, 0xf5,
+	0xeb, 0xe9, 0xa1, 0x1e, 0xa1, 0x98, 0xa0, 0x4c, 0x65, 0x76, 0x75, 0x37, 0xf2, 0x54, 0xb9, 0xc6,
+	0x28, 0xbe, 0x85, 0x2e, 0x65, 0x50, 0xd4, 0x2c, 0x4b, 0x4d, 0xfc, 0xf2, 0x4a, 0xd1, 0xef, 0x12,
+	0xcc, 0xd7, 0xb0, 0x97, 0xac, 0x16, 0x53, 0x29, 0xe7, 0xd7, 0x87, 0x4c, 0xf5, 0xa9, 0x5c, 0x65,
+	0xa4, 0xff, 0x8f, 0x2e, 0x56, 0x06, 0xff, 0xe6, 0x4b, 0xd1, 0x2b, 0x09, 0x16, 0xf2, 0xe4, 0x19,
+	0xaa, 0x0d, 0xaa, 0x38, 0x52, 0xb4, 0xa8, 0xfc, 0xde, 0xee, 0x81, 0x78, 0xd4, 0x2b, 0x2c, 0xea,
+	0x6b, 0xe8, 0x4a, 0x46, 0xd4, 0xed, 0x00, 0x28, 0xe8, 0x05, 0xd5, 0x0d, 0xe2, 0xaa, 0x86, 0x46,
+	0x55, 0x1c, 0x82, 0x55, 0x6f, 0x3c, 0x79, 0x51, 0x92, 0x9e, 0xbe, 0x28, 0x49, 0x7f, 0xbe, 0x28,
+	0x49, 0x8f, 0x5f, 0x96, 0x0a, 0x4f, 0x5f, 0x96, 0x0a, 0xcf, 0x5e, 0x96, 0x0a, 0x1f, 0x9f, 0x8d,
+	0xe8, 0xe3, 0x04, 0x07, 0xdb, 0xb1, 0x7f, 0x12, 0x34, 0xc7, 0xd9, 0x96, 0x5e, 0xf8, 0x27, 0x00,
+	0x00, 0xff, 0xff, 0xd3, 0xe7, 0x4f, 0xed, 0x67, 0x19, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
+var (
+	_ context.Context
+	_ grpc.ClientConn
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -1585,6 +1865,7 @@ type QueryClient interface {
 	GetBridgeTaxes(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*QueryBridgeTaxesResponse, error)
 	GetBridgeTransferLimits(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*QueryBridgeTransferLimitsResponse, error)
 	GetLightNodeSaleContracts(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*QueryLightNodeSaleContractsResponse, error)
+	LastPendingBatchForGasEstimation(ctx context.Context, in *QueryLastPendingBatchForGasEstimationRequest, opts ...grpc.CallOption) (*QueryLastPendingBatchForGasEstimationResponse, error)
 }
 
 type queryClient struct {
@@ -1739,6 +2020,15 @@ func (c *queryClient) GetLightNodeSaleContracts(ctx context.Context, in *emptypb
 	return out, nil
 }
 
+func (c *queryClient) LastPendingBatchForGasEstimation(ctx context.Context, in *QueryLastPendingBatchForGasEstimationRequest, opts ...grpc.CallOption) (*QueryLastPendingBatchForGasEstimationResponse, error) {
+	out := new(QueryLastPendingBatchForGasEstimationResponse)
+	err := c.cc.Invoke(ctx, "/palomachain.paloma.skyway.Query/LastPendingBatchForGasEstimation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
@@ -1757,59 +2047,78 @@ type QueryServer interface {
 	GetBridgeTaxes(context.Context, *emptypb.Empty) (*QueryBridgeTaxesResponse, error)
 	GetBridgeTransferLimits(context.Context, *emptypb.Empty) (*QueryBridgeTransferLimitsResponse, error)
 	GetLightNodeSaleContracts(context.Context, *emptypb.Empty) (*QueryLightNodeSaleContractsResponse, error)
+	LastPendingBatchForGasEstimation(context.Context, *QueryLastPendingBatchForGasEstimationRequest) (*QueryLastPendingBatchForGasEstimationResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
-type UnimplementedQueryServer struct {
-}
+type UnimplementedQueryServer struct{}
 
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
+
 func (*UnimplementedQueryServer) LastPendingBatchRequestByAddr(ctx context.Context, req *QueryLastPendingBatchRequestByAddrRequest) (*QueryLastPendingBatchRequestByAddrResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LastPendingBatchRequestByAddr not implemented")
 }
+
 func (*UnimplementedQueryServer) LastObservedSkywayNonce(ctx context.Context, req *QueryLastObservedSkywayNonceRequest) (*QueryLastObservedSkywayNonceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LastObservedSkywayNonce not implemented")
 }
+
 func (*UnimplementedQueryServer) LastObservedSkywayNonceByAddr(ctx context.Context, req *QueryLastObservedSkywayNonceByAddrRequest) (*QueryLastObservedSkywayNonceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LastObservedSkywayNonceByAddr not implemented")
 }
+
 func (*UnimplementedQueryServer) LastObservedSkywayBlock(ctx context.Context, req *QueryLastObservedSkywayBlockRequest) (*QueryLastObservedSkywayBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LastObservedSkywayBlock not implemented")
 }
+
 func (*UnimplementedQueryServer) OutgoingTxBatches(ctx context.Context, req *QueryOutgoingTxBatchesRequest) (*QueryOutgoingTxBatchesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OutgoingTxBatches not implemented")
 }
+
 func (*UnimplementedQueryServer) BatchRequestByNonce(ctx context.Context, req *QueryBatchRequestByNonceRequest) (*QueryBatchRequestByNonceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchRequestByNonce not implemented")
 }
+
 func (*UnimplementedQueryServer) BatchConfirms(ctx context.Context, req *QueryBatchConfirmsRequest) (*QueryBatchConfirmsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchConfirms not implemented")
 }
+
 func (*UnimplementedQueryServer) ERC20ToDenom(ctx context.Context, req *QueryERC20ToDenomRequest) (*QueryERC20ToDenomResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ERC20ToDenom not implemented")
 }
+
 func (*UnimplementedQueryServer) DenomToERC20(ctx context.Context, req *QueryDenomToERC20Request) (*QueryDenomToERC20Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DenomToERC20 not implemented")
 }
+
 func (*UnimplementedQueryServer) GetAttestations(ctx context.Context, req *QueryAttestationsRequest) (*QueryAttestationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAttestations not implemented")
 }
+
 func (*UnimplementedQueryServer) GetErc20ToDenoms(ctx context.Context, req *QueryErc20ToDenoms) (*QueryErc20ToDenomsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetErc20ToDenoms not implemented")
 }
+
 func (*UnimplementedQueryServer) GetPendingSendToRemote(ctx context.Context, req *QueryPendingSendToRemote) (*QueryPendingSendToRemoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPendingSendToRemote not implemented")
 }
+
 func (*UnimplementedQueryServer) GetBridgeTaxes(ctx context.Context, req *emptypb.Empty) (*QueryBridgeTaxesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBridgeTaxes not implemented")
 }
+
 func (*UnimplementedQueryServer) GetBridgeTransferLimits(ctx context.Context, req *emptypb.Empty) (*QueryBridgeTransferLimitsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBridgeTransferLimits not implemented")
 }
+
 func (*UnimplementedQueryServer) GetLightNodeSaleContracts(ctx context.Context, req *emptypb.Empty) (*QueryLightNodeSaleContractsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLightNodeSaleContracts not implemented")
+}
+
+func (*UnimplementedQueryServer) LastPendingBatchForGasEstimation(ctx context.Context, req *QueryLastPendingBatchForGasEstimationRequest) (*QueryLastPendingBatchForGasEstimationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LastPendingBatchForGasEstimation not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -2104,6 +2413,24 @@ func _Query_GetLightNodeSaleContracts_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_LastPendingBatchForGasEstimation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLastPendingBatchForGasEstimationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).LastPendingBatchForGasEstimation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/palomachain.paloma.skyway.Query/LastPendingBatchForGasEstimation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).LastPendingBatchForGasEstimation(ctx, req.(*QueryLastPendingBatchForGasEstimationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "palomachain.paloma.skyway.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -2171,6 +2498,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLightNodeSaleContracts",
 			Handler:    _Query_GetLightNodeSaleContracts_Handler,
+		},
+		{
+			MethodName: "LastPendingBatchForGasEstimation",
+			Handler:    _Query_LastPendingBatchForGasEstimation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -3196,6 +3527,80 @@ func (m *QueryLightNodeSaleContractsResponse) MarshalToSizedBuffer(dAtA []byte) 
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryLastPendingBatchForGasEstimationRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ChainReferenceId) > 0 {
+		i -= len(m.ChainReferenceId)
+		copy(dAtA[i:], m.ChainReferenceId)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ChainReferenceId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Batch) > 0 {
+		for iNdEx := len(m.Batch) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Batch[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -3207,6 +3612,7 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
 func (m *QueryParamsRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -3637,12 +4043,46 @@ func (m *QueryLightNodeSaleContractsResponse) Size() (n int) {
 	return n
 }
 
+func (m *QueryLastPendingBatchForGasEstimationRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.ChainReferenceId)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Batch) > 0 {
+		for _, e := range m.Batch {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	return n
+}
+
 func sovQuery(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
+
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+
 func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3693,6 +4133,7 @@ func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3776,6 +4217,7 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryLastPendingBatchRequestByAddrRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3858,6 +4300,7 @@ func (m *QueryLastPendingBatchRequestByAddrRequest) Unmarshal(dAtA []byte) error
 	}
 	return nil
 }
+
 func (m *QueryLastPendingBatchRequestByAddrResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3942,6 +4385,7 @@ func (m *QueryLastPendingBatchRequestByAddrResponse) Unmarshal(dAtA []byte) erro
 	}
 	return nil
 }
+
 func (m *QueryOutgoingTxBatchesRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4056,6 +4500,7 @@ func (m *QueryOutgoingTxBatchesRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryOutgoingTxBatchesResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4140,6 +4585,7 @@ func (m *QueryOutgoingTxBatchesResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryBatchRequestByNonceRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4241,6 +4687,7 @@ func (m *QueryBatchRequestByNonceRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryBatchRequestByNonceResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4324,6 +4771,7 @@ func (m *QueryBatchRequestByNonceResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryBatchConfirmsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4425,6 +4873,7 @@ func (m *QueryBatchConfirmsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryBatchConfirmsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4509,6 +4958,7 @@ func (m *QueryBatchConfirmsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryLastObservedSkywayNonceRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4591,6 +5041,7 @@ func (m *QueryLastObservedSkywayNonceRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryLastObservedSkywayNonceByAddrRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4705,6 +5156,7 @@ func (m *QueryLastObservedSkywayNonceByAddrRequest) Unmarshal(dAtA []byte) error
 	}
 	return nil
 }
+
 func (m *QueryLastObservedSkywayNonceResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4774,6 +5226,7 @@ func (m *QueryLastObservedSkywayNonceResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryLastObservedSkywayBlockRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4856,6 +5309,7 @@ func (m *QueryLastObservedSkywayBlockRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryLastObservedSkywayBlockResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4925,6 +5379,7 @@ func (m *QueryLastObservedSkywayBlockResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryERC20ToDenomRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5039,6 +5494,7 @@ func (m *QueryERC20ToDenomRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryERC20ToDenomResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5121,6 +5577,7 @@ func (m *QueryERC20ToDenomResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryDenomToERC20Request) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5235,6 +5692,7 @@ func (m *QueryDenomToERC20Request) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryDenomToERC20Response) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5317,6 +5775,7 @@ func (m *QueryDenomToERC20Response) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryAttestationsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5520,6 +5979,7 @@ func (m *QueryAttestationsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryAttestationsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5604,6 +6064,7 @@ func (m *QueryAttestationsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryErc20ToDenoms) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5654,6 +6115,7 @@ func (m *QueryErc20ToDenoms) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryErc20ToDenomsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5738,6 +6200,7 @@ func (m *QueryErc20ToDenomsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryPendingSendToRemote) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5820,6 +6283,7 @@ func (m *QueryPendingSendToRemote) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryPendingSendToRemoteResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5938,6 +6402,7 @@ func (m *QueryPendingSendToRemoteResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryBridgeTaxesResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -6022,6 +6487,7 @@ func (m *QueryBridgeTaxesResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryBridgeTransferLimitsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -6106,6 +6572,7 @@ func (m *QueryBridgeTransferLimitsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *QueryBridgeTransferLimitsResponse_LimitUsage) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -6228,6 +6695,7 @@ func (m *QueryBridgeTransferLimitsResponse_LimitUsage) Unmarshal(dAtA []byte) er
 	}
 	return nil
 }
+
 func (m *QueryLightNodeSaleContractsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -6312,6 +6780,209 @@ func (m *QueryLightNodeSaleContractsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
+func (m *QueryLastPendingBatchForGasEstimationRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLastPendingBatchForGasEstimationRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLastPendingBatchForGasEstimationRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = append(m.Address[:0], dAtA[iNdEx:postIndex]...)
+			if m.Address == nil {
+				m.Address = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainReferenceId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChainReferenceId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *QueryLastPendingBatchForGasEstimationResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLastPendingBatchForGasEstimationResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLastPendingBatchForGasEstimationResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Batch", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Batch = append(m.Batch, OutgoingTxBatch{})
+			if err := m.Batch[len(m.Batch)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
 func skipQuery(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

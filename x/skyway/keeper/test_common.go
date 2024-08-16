@@ -726,6 +726,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		getSubspace(paramsKeeper, consensustypes.ModuleName),
 		valsetKeeper,
 		consensusRegistry,
+		nil,
 	)
 
 	var evmKeeper *evmkeeper.Keeper = &evmkeeper.Keeper{}

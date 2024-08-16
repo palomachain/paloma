@@ -13,7 +13,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/libcons"
 	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -48,7 +50,11 @@ func (k Keeper) attestMessageWrapper(ctx context.Context, q consensus.Queuer, ms
 		}
 	}()
 
-	result, err := k.consensusChecker.VerifyEvidence(cacheCtx, msg.GetEvidence())
+	result, err := k.consensusChecker.VerifyEvidence(ctx,
+		slice.Map(msg.GetEvidence(), func(evidence *consensustypes.Evidence) libcons.Evidence {
+			return evidence
+		}),
+	)
 	if err != nil {
 		if errors.Is(err, ErrConsensusNotAchieved) {
 			logger.WithFields(
@@ -150,8 +156,8 @@ func attestTransactionIntegrity(
 	msg consensustypes.QueuedSignedMessageI,
 	k *Keeper,
 	proof *types.TxExecutedProof,
-	chainReferenceID string,
-	verifyTx func(context.Context, *ethtypes.Transaction, consensustypes.QueuedSignedMessageI, *types.Valset, *types.SmartContract) error,
+	chainReferenceID, relayer string,
+	verifyTx func(context.Context, *ethtypes.Transaction, consensustypes.QueuedSignedMessageI, *types.Valset, *types.SmartContract, string) error,
 ) (*ethtypes.Transaction, error) {
 	// check if correct thing was called
 	tx, err := proof.GetTX()
@@ -193,7 +199,7 @@ func attestTransactionIntegrity(
 		}
 	}
 
-	err = verifyTx(ctx, tx, msg, &valset, compass)
+	err = verifyTx(ctx, tx, msg, &valset, compass, relayer)
 	if err != nil {
 		// passed in transaction doesn't seem to be created from this smart contract
 		return nil, fmt.Errorf("tx failed to verify: %w", err)

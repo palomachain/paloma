@@ -18,6 +18,8 @@ option go_package = "github.com/palomachain/paloma/x/skyway/types";
 service Msg {
   rpc SendToRemote(MsgSendToRemote) returns (MsgSendToRemoteResponse) {}
   rpc ConfirmBatch(MsgConfirmBatch) returns (MsgConfirmBatchResponse) {}
+  rpc EstimateBatchGas(MsgEstimateBatchGas) 
+      returns (google.protobuf.Empty) {}
   rpc SendToPalomaClaim(MsgSendToPalomaClaim)
       returns (MsgSendToPalomaClaimResponse) {}
   rpc BatchSendToRemoteClaim(MsgBatchSendToRemoteClaim)
@@ -51,8 +53,7 @@ message MsgSendToRemote {
       [ (gogoproto.nullable) = false ];
 }
 
-message MsgSendToRemoteResponse {
-}
+message MsgSendToRemoteResponse {}
 
 // MsgConfirmBatch
 // When validators observe a MsgRequestBatch they form a batch by ordering
@@ -97,6 +98,7 @@ message MsgSendToPalomaClaim {
   palomachain.paloma.valset.MsgMetadata metadata = 9
       [ (gogoproto.nullable) = false ];
   uint64 skyway_nonce = 10;
+  string compass_id = 11;
 }
 
 message MsgSendToPalomaClaimResponse {
@@ -115,10 +117,10 @@ message MsgBatchSendToRemoteClaim {
   palomachain.paloma.valset.MsgMetadata metadata = 7
       [ (gogoproto.nullable) = false ];
   uint64 skyway_nonce = 8;
+  string compass_id = 9;
 }
 
-message MsgBatchSendToRemoteClaimResponse {
-}
+message MsgBatchSendToRemoteClaimResponse {}
 
 // This call allows the sender (and only the sender)
 // to cancel a given MsgSendToRemote and recieve a refund
@@ -132,8 +134,7 @@ message MsgCancelSendToRemote {
       [ (gogoproto.nullable) = false ];
 }
 
-message MsgCancelSendToRemoteResponse {
-}
+message MsgCancelSendToRemoteResponse {}
 
 // This call allows anyone to submit evidence that a
 // validator has signed a batch that never
@@ -142,7 +143,7 @@ message MsgCancelSendToRemoteResponse {
 message MsgSubmitBadSignatureEvidence {
   option (cosmos.msg.v1.signer) = "metadata";
   google.protobuf.Any subject = 1
-      [ (cosmos_proto.accepts_interface) = "RemoteereumSigned" ];
+      [ (cosmos_proto.accepts_interface) = "RemoteSigned" ];
   string signature = 2;
   string sender = 3 [ deprecated = true ];
   string chain_reference_id = 4;
@@ -241,4 +242,19 @@ message MsgLightNodeSaleClaim {
     (gogoproto.nullable) = false
   ];
   string smart_contract_address = 9;
+  string compass_id = 10;
+}
+
+// MsgEstimateBatchGas is a message to estimate the gas for a batch
+// Pigeons will send this message to transmit their gas estimation
+// for a given batch.
+message MsgEstimateBatchGas {
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+
+  uint64 nonce = 2;
+  string token_contract = 3;
+  string eth_signer = 4;
+  uint64 estimate = 5;
 }

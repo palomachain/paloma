@@ -11,8 +11,10 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/palomachain/paloma/util/libcons"
 	"github.com/palomachain/paloma/x/skyway/keeper"
 	"github.com/palomachain/paloma/x/skyway/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,6 +25,7 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 	input, ctx := keeper.SetupFiveValChain(t)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	cc := libcons.New(input.ValsetKeeper.GetCurrentSnapshot, input.Marshaler)
 
 	pk := input.SkywayKeeper
 
@@ -77,6 +80,7 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 		Transactions:       []types.OutgoingTransferTx{},
 		TokenContract:      keeper.TokenContractAddrs[0],
 		PalomaBlockCreated: uint64(sdkCtx.BlockHeight() - 1),
+		ChainReferenceId:   "test-chain",
 	})
 	require.NoError(t, err)
 	pk.StoreBatch(ctx, *batch)
@@ -108,7 +112,7 @@ func TestNonValidatorBatchConfirm(t *testing.T) {
 	_, err = stakingMsgSvr.Undelegate(input.Context, keeper.NewTestMsgUnDelegateValidator(valAddr, math.NewIntFromUint64(1)))
 	require.NoError(t, err)
 
-	EndBlocker(ctx, pk)
+	EndBlocker(ctx, pk, cc)
 }
 
 // Test batch timeout
@@ -116,6 +120,7 @@ func TestBatchTimeout(t *testing.T) {
 	input, ctx := keeper.SetupFiveValChain(t)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	cc := libcons.New(input.ValsetKeeper.GetCurrentSnapshot, input.Marshaler)
 
 	pk := input.SkywayKeeper
 	var (
@@ -198,7 +203,7 @@ func TestBatchTimeout(t *testing.T) {
 	// when, beyond the timeout
 	ctx = sdkCtx.WithBlockTime(testTime.Add(20 * time.Minute))
 
-	EndBlocker(ctx, pk)
+	EndBlocker(ctx, pk, cc)
 
 	// this had a timeout of zero should be deleted.
 	gotFirstBatch, err = input.SkywayKeeper.GetOutgoingTXBatch(ctx, b1.TokenContract, b1.BatchNonce)
@@ -214,4 +219,157 @@ func TestBatchTimeout(t *testing.T) {
 	secondBatchConfirms, err = input.SkywayKeeper.GetBatchConfirmByNonceAndTokenContract(ctx, b2.BatchNonce, b2.TokenContract)
 	require.NoError(t, err)
 	require.Equal(t, 0, len(secondBatchConfirms))
+}
+
+func TestGasEstimation(t *testing.T) {
+	input, ctx := keeper.SetupFiveValChain(t)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer func() { sdkCtx.Logger().Info("Asserting invariants at test end"); input.AssertInvariants() }()
+	cc := libcons.New(input.ValsetKeeper.GetCurrentSnapshot, input.Marshaler)
+
+	pk := input.SkywayKeeper
+	var (
+		mySender, e1     = sdk.AccAddressFromBech32("paloma1ahx7f8wyertuus9r20284ej0asrs085c945jyk")
+		myReceiver       = "0xd041c41EA1bf0F006ADBb6d2c9ef9D425dE5eaD7"
+		testERC20Address = "0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e"
+		testDenom        = "ugrain"
+		token, e2        = types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
+		allVouchers      = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
+		estimates        = []uint64{
+			21_000,
+			25_000,
+			19_000,
+			21_000,
+			25_000,
+		}
+	)
+	require.NoError(t, e1)
+	require.NoError(t, e2)
+	receiver, err := types.NewEthAddress(myReceiver)
+	require.NoError(t, err)
+	tokenContract, err := types.NewEthAddress(testERC20Address)
+	require.NoError(t, err)
+
+	// mint some vouchers first
+	require.NoError(t, input.BankKeeper.MintCoins(ctx, types.ModuleName, allVouchers))
+	// set senders balance
+	input.AccountKeeper.NewAccountWithAddress(ctx, mySender)
+	require.NoError(t, input.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, mySender, allVouchers))
+
+	// add some TX to the pool
+	for i := 0; i < 6; i++ {
+		amountToken, err := types.NewInternalERC20Token(math.NewInt(int64(i+100)), testERC20Address, "test-chain")
+		require.NoError(t, err)
+		amount := sdk.NewCoin(testDenom, amountToken.Amount)
+
+		_, err = input.SkywayKeeper.AddToOutgoingPool(ctx, mySender, *receiver, amount, "test-chain")
+		require.NoError(t, err)
+	}
+
+	// check that we can make a batch without first setting an ethereum block height
+	b, err := pk.BuildOutgoingTXBatch(ctx, "test-chain", *tokenContract, 1)
+	require.NoError(t, err)
+
+	// make sure the batches got stored in the first place
+	gotBatch, err := input.SkywayKeeper.GetOutgoingTXBatch(ctx, b.TokenContract, b.BatchNonce)
+	require.NoError(t, err)
+	require.NotNil(t, gotBatch)
+
+	for i, val := range keeper.AccAddrs {
+		ethAddr, err := types.NewEthAddress(keeper.EthAddrs[i].String())
+		require.NoError(t, err)
+
+		conf := &types.MsgConfirmBatch{
+			Nonce:         b.BatchNonce,
+			TokenContract: b.TokenContract.GetAddress().Hex(),
+			EthSigner:     ethAddr.GetAddress().Hex(),
+			Orchestrator:  val.String(),
+			Signature:     "dummysig",
+			Metadata: valsettypes.MsgMetadata{
+				Creator: val.String(),
+				Signers: []string{
+					val.String(),
+				},
+			},
+		}
+
+		input.SkywayKeeper.SetBatchConfirm(ctx, conf)
+	}
+
+	// verify that confirms are persisted
+	batchConfirms, err := input.SkywayKeeper.GetBatchConfirmByNonceAndTokenContract(ctx, b.BatchNonce, b.TokenContract)
+	require.NoError(t, err)
+	require.Equal(t, len(keeper.OrchAddrs), len(batchConfirms))
+
+	// verify that no estimates persent yet
+	batchEstimates, err := input.SkywayKeeper.GetBatchGasEstimateByNonceAndTokenContract(ctx, b.BatchNonce, b.TokenContract)
+	require.NoError(t, err)
+	require.Len(t, batchEstimates, 0)
+
+	for i, val := range keeper.AccAddrs[:2] {
+		ethAddr, err := types.NewEthAddress(keeper.EthAddrs[i].String())
+		require.NoError(t, err)
+		estimate := &types.MsgEstimateBatchGas{
+			Nonce:         b.BatchNonce,
+			TokenContract: b.TokenContract.GetAddress().Hex(),
+			EthSigner:     ethAddr.GetAddress().Hex(),
+			Estimate:      estimates[i],
+			Metadata: valsettypes.MsgMetadata{
+				Creator: val.String(),
+				Signers: []string{
+					val.String(),
+				},
+			},
+		}
+
+		_, err = input.SkywayKeeper.SetBatchGasEstimate(ctx, estimate)
+		require.NoError(t, err)
+	}
+
+	batchEstimates, err = input.SkywayKeeper.GetBatchGasEstimateByNonceAndTokenContract(ctx, b.BatchNonce, b.TokenContract)
+	require.NoError(t, err)
+	require.Len(t, batchEstimates, 2)
+	gotBatch, err = input.SkywayKeeper.GetOutgoingTXBatch(ctx, b.TokenContract, b.BatchNonce)
+	require.NoError(t, err)
+	require.Equal(t, uint64(0), gotBatch.GasEstimate)
+
+	EndBlocker(ctx, pk, cc)
+
+	gotBatch, err = input.SkywayKeeper.GetOutgoingTXBatch(ctx, b.TokenContract, b.BatchNonce)
+	require.NoError(t, err)
+	require.Equal(t, uint64(0), gotBatch.GasEstimate)
+
+	for i, val := range keeper.AccAddrs[2:] {
+		ethAddr, err := types.NewEthAddress(keeper.EthAddrs[i].String())
+		require.NoError(t, err)
+		estimate := &types.MsgEstimateBatchGas{
+			Nonce:         b.BatchNonce,
+			TokenContract: b.TokenContract.GetAddress().Hex(),
+			EthSigner:     ethAddr.GetAddress().Hex(),
+			Estimate:      estimates[i],
+			Metadata: valsettypes.MsgMetadata{
+				Creator: val.String(),
+				Signers: []string{
+					val.String(),
+				},
+			},
+		}
+
+		_, err = input.SkywayKeeper.SetBatchGasEstimate(ctx, estimate)
+		require.NoError(t, err)
+	}
+
+	batchEstimates, err = input.SkywayKeeper.GetBatchGasEstimateByNonceAndTokenContract(ctx, b.BatchNonce, b.TokenContract)
+	require.NoError(t, err)
+	require.Len(t, batchEstimates, 5)
+
+	EndBlocker(ctx, pk, cc)
+
+	gotBatch, err = input.SkywayKeeper.GetOutgoingTXBatch(ctx, b.TokenContract, b.BatchNonce)
+	require.NoError(t, err)
+	require.Equal(t, uint64(25200), gotBatch.GasEstimate)
+
+	// Removing those again to avoid invariant issues due to dummy signatures
+	err = input.SkywayKeeper.CancelOutgoingTXBatch(ctx, gotBatch.TokenContract, gotBatch.BatchNonce)
+	require.NoError(t, err)
 }

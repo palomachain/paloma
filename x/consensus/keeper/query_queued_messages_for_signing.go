@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/types"
 	"google.golang.org/grpc/codes"
@@ -23,11 +24,35 @@ func (k Keeper) QueuedMessagesForSigning(goCtx context.Context, req *types.Query
 	var res []*types.MessageToSign
 	for _, msg := range msgs {
 		if msg.GetRequireSignatures() {
-			res = append(res, k.queuedMessageToMessageToSign(msg))
+			res = append(res, k.queuedMessageToMessageToSign(ctx, msg))
 		}
 	}
 
 	return &types.QueryQueuedMessagesForSigningResponse{
 		MessageToSign: res,
 	}, nil
+}
+
+func (k Keeper) queuedMessageToMessageToSign(ctx context.Context, msg types.QueuedSignedMessageI) *types.MessageToSign {
+	consensusMsg, err := msg.ConsensusMsg(k.cdc)
+	if err != nil {
+		panic(err)
+	}
+
+	anyMsg, err := codectypes.NewAnyWithValue(consensusMsg)
+	if err != nil {
+		panic(err)
+	}
+
+	bytesToSign, err := msg.GetBytesToSign(k.cdc)
+	if err != nil {
+		panic(err)
+	}
+
+	return &types.MessageToSign{
+		Nonce:       nonceFromID(msg.GetId()),
+		Id:          msg.GetId(),
+		BytesToSign: bytesToSign,
+		Msg:         anyMsg,
+	}
 }

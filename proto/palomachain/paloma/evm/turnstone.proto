@@ -16,6 +16,11 @@ message Valset {
 
 message SubmitLogicCall {
   message ExecutionRequirements { bool enforceMEVRelay = 1; }
+  message Fees {
+    uint64 relayerFee = 1;
+    uint64 communityFee = 2;
+    uint64 securityFee = 3;
+    }
   string hexContractAddress = 1;
   bytes abi = 2;
   bytes payload = 3;
@@ -25,9 +30,13 @@ message SubmitLogicCall {
   ExecutionRequirements executionRequirements = 7
       [ (gogoproto.nullable) = false ];
   uint32 retries = 8;
+  Fees fees = 10 
+      [ (gogoproto.nullable) = true ];
 }
 
-message UpdateValset { Valset valset = 1; }
+message UpdateValset { 
+  Valset valset = 1; 
+}
 
 message UploadSmartContract {
   bytes bytecode = 1;
@@ -63,6 +72,8 @@ message Message {
     (amino.dont_omitempty) = true,
     (gogoproto.nullable) = false
   ];
+
+  string assigneeRemoteAddress = 10;
 }
 
 message TxExecutedProof { bytes serializedTX = 1; }

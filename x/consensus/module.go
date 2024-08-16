@@ -178,15 +178,12 @@ func (am AppModule) BeginBlock(context.Context) error {
 func (am AppModule) EndBlock(ct context.Context) error {
 	ctx := sdk.UnwrapSDKContext(ct)
 	am.keeper.Logger(ctx).Info("abci-validator-size", abci.ValidatorUpdates{}.Len())
-	if err := am.keeper.CheckAndProcessAttestedMessages(ctx); err != nil {
-		am.keeper.Logger(ctx).Error("error while attesting to messages", "err", err)
+	if err := am.keeper.CheckAndProcessEstimatedMessages(ctx); err != nil {
+		am.keeper.Logger(ctx).Error("error while estimating to messages", "err", err)
 	}
 
-	if ctx.BlockHeight()%10 == 0 {
-		err := am.keeper.ReassignOrphanedMessages(ctx, 10)
-		if err != nil {
-			am.keeper.Logger(ctx).Error("error while reassigning orphaned messages", "err", err)
-		}
+	if err := am.keeper.CheckAndProcessAttestedMessages(ctx); err != nil {
+		am.keeper.Logger(ctx).Error("error while attesting to messages", "err", err)
 	}
 
 	if ctx.BlockHeight()%50 == 0 {

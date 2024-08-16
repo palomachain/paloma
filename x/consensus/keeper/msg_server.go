@@ -2,9 +2,11 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/consensus/types"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type msgServer struct {
@@ -38,4 +40,35 @@ func (k msgServer) AddMessagesSignatures(goCtx context.Context, msg *types.MsgAd
 	}
 
 	return &types.MsgAddMessagesSignaturesResponse{}, nil
+}
+
+func (k msgServer) AddMessageEstimates(goCtx context.Context, msg *types.MsgAddMessageGasEstimates) (*emptypb.Empty, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	creator, _ := sdk.AccAddressFromBech32(msg.Metadata.Creator)
+	valAddr := sdk.ValAddress(creator.Bytes())
+
+	if err := k.Keeper.valset.CanAcceptValidator(ctx, valAddr); err != nil {
+		return nil, err
+	}
+
+	if msg.Estimates == nil {
+		return nil, nil
+	}
+
+	for _, estimate := range msg.Estimates {
+		if estimate.GetValue() < 1 {
+			return nil, fmt.Errorf("invalid gas estimate")
+		}
+	}
+
+	if err := k.AddMessageGasEstimates(
+		ctx,
+		valAddr,
+		msg.Estimates,
+	); err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, nil
 }

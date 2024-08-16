@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -40,7 +41,16 @@ func TestOutgoingTxBatchCheckpoint(t *testing.T) {
 
 	actualHashHex := hex.EncodeToString(actualHash)
 	// hash from bridge contract
-	expectedHash := "0xcab79faf47d1556c5b273afb063ab1889461e35bc6403e410af240cefdb0fd8e"[2:]
+	expectedHash := "cefc086a77b3115791a9bffa373e3dee2fa4c56e10e3be21eb0eb55b47d1df44"
 
+	assert.Equal(t, expectedHash, actualHashHex)
+
+	src.AssigneeRemoteAddress = common.HexToAddress("0x28E9e9bfedEd29747FCc33ccA25b4B75f05E434B").Bytes()
+
+	actualHash, err = src.GetCheckpoint("5270")
+	require.NoError(t, err)
+
+	actualHashHex = hex.EncodeToString(actualHash)
+	expectedHash = "b1938e2034d12e4fe6e1448df12793db17c75494c573fa8e842da5bc9dd12f38"
 	assert.Equal(t, expectedHash, actualHashHex)
 }

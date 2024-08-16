@@ -24,7 +24,7 @@ func CmdDeploySmartContract() *cobra.Command {
 
 			creator := clientCtx.GetFromAddress()
 			title := whoops.Must(cmd.Flags().GetString(cli.FlagTitle))
-			description := whoops.Must(cmd.Flags().GetString(cli.FlagDescription))
+			description := whoops.Must(cmd.Flags().GetString(cli.FlagSummary))
 			abiJSON, bytecodeHex := args[0], args[1]
 
 			msg := types.NewMsgDeployNewSmartContractRequest(creator, title, description, abiJSON, bytecodeHex)

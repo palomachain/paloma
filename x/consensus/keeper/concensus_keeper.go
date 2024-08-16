@@ -6,9 +6,9 @@ import (
 
 	"cosmossdk.io/math"
 	"github.com/VolumeFi/whoops"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/palomachain/paloma/util/libcons"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
@@ -116,6 +116,47 @@ func (k Keeper) GetMessagesForSigning(ctx context.Context, queueTypeName string,
 	return msgs, nil
 }
 
+func (k Keeper) GetMessagesForGasEstimation(ctx context.Context, queueTypeName string, valAddress sdk.ValAddress) (msgs []types.QueuedSignedMessageI, err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msgs, err = k.GetMessagesFromQueue(sdkCtx, queueTypeName, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check for existing valset update messages on any target chains
+	valsetUpdatesOnChain, err := k.GetPendingValsetUpdates(ctx, queueTypeName)
+	if err != nil {
+		return nil, err
+	}
+
+	msgs = slice.Filter(msgs, func(msg types.QueuedSignedMessageI) bool {
+		// Filter out messages which don't require gas estimation
+		if !msg.GetRequireGasEstimation() {
+			return false
+		}
+
+		// Filter out already estimated messages
+		if msg.GetGasEstimate() > 0 {
+			return false
+		}
+
+		// Filter out messages that already have been estimated by the validator
+		for _, v := range msg.GetGasEstimates() {
+			if v.ValAddress.Equals(valAddress) {
+				return false
+			}
+		}
+
+		return filters.IsNotBlockedByValset(valsetUpdatesOnChain, msg)
+	})
+
+	if len(msgs) > defaultResponseMessageCount {
+		msgs = msgs[:defaultResponseMessageCount]
+	}
+
+	return msgs, nil
+}
+
 // TODO: The infusion of EVM types into the consensus module is a bit of a code smell.
 // We should consider moving the entire logic of message assignment and retrieval
 // to the EVM module to keep the consensus module content-agnostic.
@@ -178,6 +219,7 @@ func (k Keeper) GetMessagesForRelaying(ctx context.Context, queueTypeName string
 		return filters.IsNotBlockedByValset(valsetUpdatesOnChain, msg) &&
 			filters.IsUnprocessed(msg) &&
 			filters.IsOldestMsgPerSender(msgLut, unpackedMsg) &&
+			filters.HasGasEstimate(msg) &&
 			filters.IsAssignedTo(unpackedMsg, valAddress.String())
 	})
 
@@ -274,7 +316,11 @@ func (k Keeper) jailValidatorsWhichMissedAttestation(ctx sdk.Context, queueTypeN
 		return nil
 	}
 
-	r, err := k.consensusChecker.VerifyEvidence(ctx, msg.GetEvidence())
+	r, err := k.consensusChecker.VerifyEvidence(ctx,
+		slice.Map(msg.GetEvidence(), func(evidence *types.Evidence) libcons.Evidence {
+			return evidence
+		}),
+	)
 	if err == nil {
 		// We expect only messages which fail this verification to be in the queue at this point.
 		return fmt.Errorf("VerifyEvidence: unexpected message with valid consensus found, skipping jailing steps")
@@ -457,6 +503,40 @@ func (k Keeper) AddMessageSignature(
 	return err
 }
 
+func (k Keeper) AddMessageGasEstimates(
+	ctx context.Context,
+	valAddr sdk.ValAddress,
+	msgs []*types.MsgAddMessageGasEstimates_GasEstimate,
+) error {
+	for _, msg := range msgs {
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		cq := whoops.Must(
+			k.getConsensusQueue(sdkCtx, msg.GetQueueTypeName()),
+		)
+		chainType, chainReferenceID := cq.ChainInfo()
+
+		if err := cq.AddGasEstimate(
+			sdkCtx,
+			msg.MsgId,
+			&types.GasEstimate{
+				ValAddress: valAddr,
+				Value:      msg.Value,
+			}); err != nil {
+			return fmt.Errorf("error while adding gas estimate: %w", err)
+		}
+
+		liblog.FromKeeper(ctx, k).WithFields(
+			"message-id", msg.GetMsgId(),
+			"queue-type-name", msg.GetQueueTypeName(),
+			"chain-type", chainType,
+			"validator", valAddr.String(),
+			"chain-reference-id", chainReferenceID).
+			Info("added message gas estimate.")
+	}
+
+	return nil
+}
+
 func (k Keeper) AddMessageEvidence(
 	ctx context.Context,
 	valAddr sdk.ValAddress,
@@ -567,7 +647,7 @@ func (k Keeper) SetMessageErrorData(
 
 func (k Keeper) reassignMessageValidator(
 	ctx sdk.Context,
-	valAddr string,
+	valAddr, remoteAddr string,
 	msgID uint64,
 	queueTypeName string,
 ) error {
@@ -585,69 +665,9 @@ func (k Keeper) reassignMessageValidator(
 		"new-assignee", valAddr,
 	)
 
-	return cq.ReassignValidator(ctx, msgID, valAddr)
+	return cq.ReassignValidator(ctx, msgID, valAddr, remoteAddr)
 }
 
 func nonceFromID(id uint64) []byte {
 	return sdk.Uint64ToBigEndian(id)
-}
-
-func (k Keeper) queuedMessageToMessageToSign(msg types.QueuedSignedMessageI) *types.MessageToSign {
-	consensusMsg, err := msg.ConsensusMsg(k.cdc)
-	if err != nil {
-		panic(err)
-	}
-	anyMsg, err := codectypes.NewAnyWithValue(consensusMsg)
-	if err != nil {
-		panic(err)
-	}
-	return &types.MessageToSign{
-		Nonce:       nonceFromID(msg.GetId()),
-		Id:          msg.GetId(),
-		BytesToSign: msg.GetBytesToSign(),
-		Msg:         anyMsg,
-	}
-}
-
-func (k Keeper) queuedMessageToMessageWithSignatures(msg types.QueuedSignedMessageI) (types.MessageWithSignatures, error) {
-	consensusMsg, err := msg.ConsensusMsg(k.cdc)
-	if err != nil {
-		return types.MessageWithSignatures{}, err
-	}
-	anyMsg, err := codectypes.NewAnyWithValue(consensusMsg)
-	if err != nil {
-		return types.MessageWithSignatures{}, err
-	}
-
-	var publicAccessData []byte
-
-	if msg.GetPublicAccessData() != nil {
-		publicAccessData = msg.GetPublicAccessData().GetData()
-	}
-
-	var errorData []byte
-
-	if msg.GetErrorData() != nil {
-		errorData = msg.GetErrorData().GetData()
-	}
-
-	respMsg := types.MessageWithSignatures{
-		Nonce:            nonceFromID(msg.GetId()),
-		Id:               msg.GetId(),
-		BytesToSign:      msg.GetBytesToSign(),
-		Msg:              anyMsg,
-		PublicAccessData: publicAccessData,
-		ErrorData:        errorData,
-	}
-
-	for _, signData := range msg.GetSignData() {
-		respMsg.SignData = append(respMsg.SignData, &types.ValidatorSignature{
-			ValAddress:             signData.GetValAddress(),
-			Signature:              signData.GetSignature(),
-			ExternalAccountAddress: signData.GetExternalAccountAddress(),
-			PublicKey:              signData.GetPublicKey(),
-		})
-	}
-
-	return respMsg, nil
 }

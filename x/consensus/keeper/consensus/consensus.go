@@ -29,17 +29,16 @@ type Queue struct {
 }
 
 type QueueOptions struct {
-	Batched               bool
-	QueueTypeName         string
-	Sg                    keeperutil.StoreGetter
-	Ider                  keeperutil.IDGenerator
-	Cdc                   codec.Codec
-	TypeCheck             types.TypeChecker
-	BytesToSignCalculator types.BytesToSignFunc
-	VerifySignature       types.VerifySignatureFunc
-	ChainType             types.ChainType
-	Attestator            types.Attestator
-	ChainReferenceID      string
+	Batched          bool
+	QueueTypeName    string
+	Sg               keeperutil.StoreGetter
+	Ider             keeperutil.IDGenerator
+	Cdc              codec.Codec
+	TypeCheck        types.TypeChecker
+	VerifySignature  types.VerifySignatureFunc
+	ChainType        types.ChainType
+	Attestator       types.Attestator
+	ChainReferenceID string
 }
 
 type OptFnc func(*QueueOptions)
@@ -53,12 +52,6 @@ func WithQueueTypeName(val string) OptFnc {
 func WithStaticTypeCheck(val any) OptFnc {
 	return func(opt *QueueOptions) {
 		opt.TypeCheck = types.StaticTypeChecker(val)
-	}
-}
-
-func WithBytesToSignCalc(val types.BytesToSignFunc) OptFnc {
-	return func(opt *QueueOptions) {
-		opt.BytesToSignCalculator = val
 	}
 }
 
@@ -102,10 +95,6 @@ func NewQueue(qo QueueOptions) (Queue, error) {
 		return Queue{}, ErrNilTypeCheck
 	}
 
-	if qo.BytesToSignCalculator == nil {
-		return Queue{}, ErrNilBytesToSignCalculator
-	}
-
 	if qo.VerifySignature == nil {
 		return Queue{}, ErrNilVerifySignature
 	}
@@ -130,43 +119,62 @@ func NewQueue(qo QueueOptions) (Queue, error) {
 // Put puts raw message into a signing queue.
 func (c Queue) Put(ctx context.Context, msg ConsensusMsg, opts *PutOptions) (uint64, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	requireSignatures := true
 	var publicAccessData *types.PublicAccessData
+	var mid uint64
+	requireSignatures := true
+	requireGasEstimation := false
 
 	if opts != nil {
 		requireSignatures = opts.RequireSignatures
-		publicAccessData = &types.PublicAccessData{
-			ValAddress: nil,
-			Data:       opts.PublicAccessData,
+		requireGasEstimation = opts.RequireGasEstimation
+		mid = opts.MsgIDToReplace
+		if len(opts.PublicAccessData) > 0 {
+			publicAccessData = &types.PublicAccessData{
+				ValAddress: nil,
+				Data:       opts.PublicAccessData,
+			}
 		}
 	}
 
 	if !c.qo.TypeCheck(msg) {
 		return 0, ErrIncorrectMessageType.Format(msg)
 	}
-	newID := c.qo.Ider.IncrementNextID(sdkCtx, consensusQueueIDCounterKey)
-	// just so it's clear that nonce is an actual ID
-	nonce := newID
 	anyMsg, err := codectypes.NewAnyWithValue(msg)
 	if err != nil {
 		return 0, err
 	}
-	queuedMsg := &types.QueuedSignedMessage{
-		Id:                 newID,
-		Msg:                anyMsg,
-		SignData:           []*types.SignData{},
-		AddedAtBlockHeight: sdkCtx.BlockHeight(),
-		AddedAt:            sdkCtx.BlockTime(),
-		RequireSignatures:  requireSignatures,
-		PublicAccessData:   publicAccessData,
-		BytesToSign: c.qo.BytesToSignCalculator(msg, types.Salt{
-			Nonce: nonce,
-		}),
+
+	var m *types.QueuedSignedMessage
+	if mid != 0 {
+		// TODO: You need your own implementation since cons msg doesn thave iD
+		qsmi, err := c.GetMsgByID(sdkCtx, mid)
+		if err != nil {
+			return 0, fmt.Errorf("failed to get message by id: %w", err)
+		}
+		var ok bool
+		m, ok = qsmi.(*types.QueuedSignedMessage)
+		if !ok {
+			return 0, fmt.Errorf("failed to cast to queued signed message")
+		}
+		m.Msg = anyMsg
+	} else {
+		mid = c.qo.Ider.IncrementNextID(sdkCtx, consensusQueueIDCounterKey)
+		m = &types.QueuedSignedMessage{
+			Id:                 mid,
+			Msg:                anyMsg,
+			SignData:           []*types.SignData{},
+			GasEstimates:       []*types.GasEstimate{},
+			AddedAtBlockHeight: sdkCtx.BlockHeight(),
+			AddedAt:            sdkCtx.BlockTime(),
+			RequireSignatures:  requireSignatures,
+			FlagMask:           types.BuildFlagMask(requireGasEstimation),
+			PublicAccessData:   publicAccessData,
+		}
 	}
-	if err := c.save(sdkCtx, queuedMsg); err != nil {
+	if err := c.save(sdkCtx, m); err != nil {
 		return 0, err
 	}
-	return newID, nil
+	return mid, nil
 }
 
 // getAll returns all messages from a signing queu
@@ -210,10 +218,10 @@ func (c Queue) AddEvidence(ctx context.Context, msgID uint64, evidence *types.Ev
 
 type assignableMessage interface {
 	proto.Message
-	SetAssignee(ctx sdk.Context, val string)
+	SetAssignee(ctx sdk.Context, val, remoteAddr string)
 }
 
-func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) error {
+func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val, remoteAddr string) error {
 	imsg, err := c.GetMsgByID(ctx, msgID)
 	if err != nil {
 		return err
@@ -227,7 +235,7 @@ func (c Queue) ReassignValidator(ctx sdk.Context, msgID uint64, val string) erro
 	if !ok {
 		return fmt.Errorf("message does not support setting assignee")
 	}
-	assignable.SetAssignee(ctx, val)
+	assignable.SetAssignee(ctx, val, remoteAddr)
 	var a proto.Message
 	a = assignable
 	msg := imsg.(*types.QueuedSignedMessage)
@@ -315,13 +323,58 @@ func (c Queue) AddSignature(ctx context.Context, msgID uint64, signData *types.S
 		}
 	}
 
-	if !c.qo.VerifySignature(msg.GetBytesToSign(), signData.Signature, signData.PublicKey) {
+	bytesToSign, err := msg.GetBytesToSign(c.qo.Cdc)
+	if err != nil {
+		return err
+	}
+
+	if !c.qo.VerifySignature(bytesToSign, signData.Signature, signData.PublicKey) {
 		return ErrInvalidSignature
 	}
 
 	msg.AddSignData(signData)
 
 	return c.save(sdkCtx, msg)
+}
+
+// AddGasEstimate adds a gas estimate to the message
+func (c Queue) AddGasEstimate(ctx context.Context, msgID uint64, estimate *types.GasEstimate) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	msg, err := c.GetMsgByID(sdkCtx, msgID)
+	if err != nil {
+		return err
+	}
+
+	if !msg.GetRequireGasEstimation() {
+		return fmt.Errorf("message %d does not require gas estimation", msgID)
+	}
+
+	for _, v := range msg.GetGasEstimates() {
+		if estimate.ValAddress.Equals(v.ValAddress) {
+			return fmt.Errorf("gas estimate already exists for validator %s", v.ValAddress)
+		}
+	}
+
+	msg.AddGasEstimate(estimate)
+	return c.save(sdkCtx, msg)
+}
+
+func (c Queue) SetElectedGasEstimate(ctx context.Context, msgID uint64, estimate uint64) error {
+	msg, err := c.GetMsgByID(ctx, msgID)
+	if err != nil {
+		return err
+	}
+
+	if !msg.GetRequireGasEstimation() {
+		return fmt.Errorf("message %d does not require gas estimation", msgID)
+	}
+
+	if msg.GetGasEstimate() != 0 {
+		return fmt.Errorf("gas estimate already exists for message %d", msgID)
+	}
+
+	msg.SetElectedGasEstimate(estimate)
+	return c.save(ctx, msg)
 }
 
 // remove removes the message from the queue.
@@ -463,7 +516,7 @@ func RemoveQueueCompletely(ctx context.Context, cq Queuer) {
 	}
 }
 
-func ToMessageWithSignatures(msg types.QueuedSignedMessageI, cdc codec.BinaryCodec) (types.MessageWithSignatures, error) {
+func ToMessageWithSignatures(msg types.QueuedSignedMessageI, cdc codec.Codec) (types.MessageWithSignatures, error) {
 	origMsg, err := msg.ConsensusMsg(cdc)
 	if err != nil {
 		return types.MessageWithSignatures{}, err
@@ -487,16 +540,23 @@ func ToMessageWithSignatures(msg types.QueuedSignedMessageI, cdc codec.BinaryCod
 		errorData = msg.GetErrorData().GetData()
 	}
 
+	bytesToSign, err := msg.GetBytesToSign(cdc)
+	if err != nil {
+		return types.MessageWithSignatures{}, err
+	}
+
 	approvedMessage := types.MessageWithSignatures{
 		Nonce:            msg.Nonce(),
 		Id:               msg.GetId(),
 		Msg:              anyMsg,
-		BytesToSign:      msg.GetBytesToSign(),
+		BytesToSign:      bytesToSign,
 		SignData:         []*types.ValidatorSignature{},
 		PublicAccessData: publicAccessData,
 		ValsetID:         valsetID,
 		ErrorData:        errorData,
+		GasEstimate:      msg.GetGasEstimate(),
 	}
+
 	for _, signData := range msg.GetSignData() {
 		approvedMessage.SignData = append(approvedMessage.SignData, &types.ValidatorSignature{
 			ValAddress:             signData.GetValAddress(),

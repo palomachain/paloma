@@ -29,11 +29,14 @@ var (
 	contractAbi         = string(whoops.Must(os.ReadFile("testdata/sample-abi.json")))
 	contractBytecodeStr = string(whoops.Must(os.ReadFile("testdata/sample-bytecode.out")))
 
-	sampleTx1RawBytes = common.FromHex(string(whoops.Must(os.ReadFile("testdata/sample-tx-raw.hex"))))
-
-	sampleTx1 = func() *ethcoretypes.Transaction {
+	// Keeping the upload_smart_contract test on the old ABI until compass becomes more stable as
+	// updates to this test harness are tedious.
+	uscAbi         = string(whoops.Must(os.ReadFile("testdata/usc-abi.json")))
+	uscBytecodeStr = string(whoops.Must(os.ReadFile("testdata/usc-bytecode.out")))
+	uscTx1RawBytes = common.FromHex(string(whoops.Must(os.ReadFile("testdata/usc-tx-raw.hex"))))
+	uscTx1         = func() *ethcoretypes.Transaction {
 		tx := new(ethcoretypes.Transaction)
-		whoops.Assert(tx.UnmarshalBinary(sampleTx1RawBytes))
+		whoops.Assert(tx.UnmarshalBinary(uscTx1RawBytes))
 		return tx
 	}()
 
@@ -47,15 +50,15 @@ var (
 	})
 )
 
-type record struct {
-	denom string
-	erc20 string
-	chain string
-}
+// type record struct {
+// 	denom string
+// 	erc20 string
+// 	chain string
+// }
 
-func (r record) GetDenom() string            { return r.denom }
-func (r record) GetErc20() string            { return r.erc20 }
-func (r record) GetChainReferenceId() string { return r.chain }
+// func (r record) GetDenom() string            { return r.denom }
+// func (r record) GetErc20() string            { return r.erc20 }
+// func (r record) GetChainReferenceId() string { return r.chain }
 
 func TestKeeperGinkgo(t *testing.T) {
 	RegisterFailHandler(g.Fail)
@@ -114,7 +117,7 @@ var _ = g.Describe("attest router", func() {
 	var ctx sdk.Context
 	var q *consensusmocks.Queuer
 	var v *evmmocks.ValsetKeeper
-	var gk *evmmocks.SkywayKeeper
+	// var gk *evmmocks.SkywayKeeper
 	var consensukeeper *evmmocks.ConsensusKeeper
 	var mk *evmmocks.MetrixKeeper
 	var tk *evmmocks.TreasuryKeeper
@@ -147,7 +150,7 @@ var _ = g.Describe("attest router", func() {
 		ctx = _ctx
 		k = *kpr
 		v = ms.ValsetKeeper
-		gk = ms.SkywayKeeper
+		// gk = ms.SkywayKeeper
 		tk = ms.TreasuryKeeper
 		mk = ms.MetrixKeeper
 		consensukeeper = ms.ConsensusKeeper
@@ -163,7 +166,9 @@ var _ = g.Describe("attest router", func() {
 	})
 
 	g.BeforeEach(func() {
-		consensusMsg = &types.Message{}
+		consensusMsg = &types.Message{
+			AssigneeRemoteAddress: "0x28E9e9bfedEd29747FCc33ccA25b4B75f05E434B",
+		}
 	})
 
 	g.JustBeforeEach(func() {
@@ -183,6 +188,7 @@ var _ = g.Describe("attest router", func() {
 			PublicAccessData: &consensustypes.PublicAccessData{
 				ValsetID: 1,
 			},
+			GasEstimate: 1000,
 		}
 	})
 
@@ -277,6 +283,8 @@ var _ = g.Describe("attest router", func() {
 					big.NewInt(55),
 				)
 				Expect(err).To(BeNil())
+				err = k.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+				Expect(err).To(BeNil())
 
 				sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))
 				Expect(err).To(BeNil())
@@ -370,6 +378,11 @@ var _ = g.Describe("attest router", func() {
 								HexContractAddress: "0x51eca2efb15afacc612278c71f5edb35986f172f",
 								Abi:                []byte(contractAbi),
 								Payload:            common.FromHex(slcPayload),
+								Fees: &types.SubmitLogicCall_Fees{
+									RelayerFee:   1,
+									CommunityFee: 2,
+									SecurityFee:  3,
+								},
 							},
 						}
 					})
@@ -540,7 +553,7 @@ var _ = g.Describe("attest router", func() {
 
 				g.When("message is UploadSmartContract", func() {
 					g.BeforeEach(func() {
-						execTx = sampleTx1
+						execTx = uscTx1
 						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
 						evidence = []*consensustypes.Evidence{
 							{
@@ -559,8 +572,8 @@ var _ = g.Describe("attest router", func() {
 						consensusMsg.Action = &types.Message_UploadSmartContract{
 							UploadSmartContract: &types.UploadSmartContract{
 								Id:       1,
-								Abi:      contractAbi,
-								Bytecode: common.FromHex(contractBytecodeStr),
+								Abi:      uscAbi,
+								Bytecode: common.FromHex(uscBytecodeStr),
 							},
 						}
 						address, err := sdk.ValAddressFromBech32("cosmosvaloper1pzf9apnk8yw7pjw3v9vtmxvn6guhkslanh8r07")
@@ -569,9 +582,9 @@ var _ = g.Describe("attest router", func() {
 					})
 
 					g.When("target chain has no deployed ERC20 tokens", func() {
-						g.BeforeEach(func() {
-							gk.On("CastChainERC20ToDenoms", mock.Anything, mock.Anything).Return(nil, nil)
-						})
+						// g.BeforeEach(func() {
+						// 	gk.On("CastChainERC20ToDenoms", mock.Anything, mock.Anything).Return(nil, nil)
+						// })
 						g.It("removes deployment", func() {
 							setupChainSupport()
 							Expect(subject()).To(BeNil())
@@ -588,43 +601,43 @@ var _ = g.Describe("attest router", func() {
 						})
 					})
 
-					g.When("target chain has active ERC20 tokens deployed", func() {
-						g.BeforeEach(func() {
-							gk.On("CastChainERC20ToDenoms", mock.Anything, newChain.ChainReferenceID).Return([]types.ERC20Record{
-								record{"denom", "address1", newChain.ChainReferenceID},
-								record{"denom2", "address2", newChain.ChainReferenceID},
-							}, nil)
-						})
-						g.It("updates deployment", func() {
-							setupChainSupport()
-							Expect(subject()).To(BeNil())
-							v, key := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
-							Expect(key).ToNot(BeNil())
-							Expect(v).ToNot(BeNil())
-							Expect(v.GetStatus()).To(BeEquivalentTo(types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER))
-							Expect(v.GetErc20Transfers()).To(BeEquivalentTo([]types.SmartContractDeployment_ERC20Transfer{
-								{
-									Denom:  "denom",
-									Erc20:  "address1",
-									MsgID:  10,
-									Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
-								},
-								{
-									Denom:  "denom2",
-									Erc20:  "address2",
-									MsgID:  10,
-									Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
-								},
-							}))
-						})
-						g.It("doesn't set the chain as active", func() {
-							setupChainSupport()
-							Expect(subject()).To(BeNil())
-							v, err := k.GetChainInfo(ctx, newChain.GetChainReferenceID())
-							Expect(err).To(BeNil())
-							Expect(v.GetActiveSmartContractID()).To(BeEquivalentTo(uint64(0)))
-						})
-					})
+					// g.When("target chain has active ERC20 tokens deployed", func() {
+					// 	g.BeforeEach(func() {
+					// 		gk.On("CastChainERC20ToDenoms", mock.Anything, newChain.ChainReferenceID).Return([]types.ERC20Record{
+					// 			record{"denom", "address1", newChain.ChainReferenceID},
+					// 			record{"denom2", "address2", newChain.ChainReferenceID},
+					// 		}, nil)
+					// 	})
+					// 	g.It("updates deployment", func() {
+					// 		setupChainSupport()
+					// 		Expect(subject()).To(BeNil())
+					// 		v, key := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+					// 		Expect(key).ToNot(BeNil())
+					// 		Expect(v).ToNot(BeNil())
+					// 		Expect(v.GetStatus()).To(BeEquivalentTo(types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER))
+					// 		Expect(v.GetErc20Transfers()).To(BeEquivalentTo([]types.SmartContractDeployment_ERC20Transfer{
+					// 			{
+					// 				Denom:  "denom",
+					// 				Erc20:  "address1",
+					// 				MsgID:  10,
+					// 				Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
+					// 			},
+					// 			{
+					// 				Denom:  "denom2",
+					// 				Erc20:  "address2",
+					// 				MsgID:  10,
+					// 				Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
+					// 			},
+					// 		}))
+					// 	})
+					// 	g.It("doesn't set the chain as active", func() {
+					// 		setupChainSupport()
+					// 		Expect(subject()).To(BeNil())
+					// 		v, err := k.GetChainInfo(ctx, newChain.GetChainReferenceID())
+					// 		Expect(err).To(BeNil())
+					// 		Expect(v.GetActiveSmartContractID()).To(BeEquivalentTo(uint64(0)))
+					// 	})
+					// })
 				})
 
 				g.JustAfterEach(func() {

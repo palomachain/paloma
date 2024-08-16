@@ -13,6 +13,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/treasury/types"
 )
 
@@ -135,6 +136,59 @@ func (k Keeper) GetRelayerFeesByChainReferenceID(ctx context.Context, chainRefer
 	})
 
 	return r, err
+}
+
+func (k Keeper) GetCombinedFeesForRelay(
+	ctx context.Context,
+	valAddress sdk.ValAddress,
+	chainReferenceID string,
+) (*consensustypes.MessageFeeSettings, error) {
+	rfs, err := k.relayerFees.Get(sdk.UnwrapSDKContext(ctx), valAddress)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get relayer fees: %w", err)
+	}
+
+	var rf math.LegacyDec
+	for _, v := range rfs.Fees {
+		if v.ChainReferenceId == chainReferenceID {
+			rf = v.Multiplicator
+			break
+		}
+	}
+
+	if rf.IsZero() {
+		// This should basically never happen, as Paloma will
+		// only assign to Validators which have valid
+		// fees set.
+		return nil, fmt.Errorf("relayer fee zero or not found")
+	}
+
+	fees, err := k.GetFees(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get fees: %w", err)
+	}
+
+	cf, err := math.LegacyNewDecFromStr(fees.CommunityFundFee)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse community fund fee: %w", err)
+	}
+
+	sf, err := math.LegacyNewDecFromStr(fees.SecurityFee)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse security fee: %w", err)
+	}
+
+	if cf.IsZero() || sf.IsZero() {
+		return nil, fmt.Errorf("invalid fund settings, community fund fee: %s, security fee: %s",
+			fees.CommunityFundFee,
+			fees.SecurityFee)
+	}
+
+	return &consensustypes.MessageFeeSettings{
+		RelayerFee:   rf,
+		CommunityFee: cf,
+		SecurityFee:  sf,
+	}, nil
 }
 
 func (k Keeper) setFees(ctx context.Context, fees *types.Fees) error {

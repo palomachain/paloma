@@ -52,7 +52,7 @@ func (a *updateValsetAttester) Execute(ctx sdk.Context) error {
 
 func (a *updateValsetAttester) attest(ctx sdk.Context, evidence *types.TxExecutedProof) error {
 	_, err := attestTransactionIntegrity(ctx, a.originalMessage, a.k, evidence,
-		a.chainReferenceID, a.action.VerifyAgainstTX)
+		a.chainReferenceID, a.msg.AssigneeRemoteAddress, a.action.VerifyAgainstTX)
 	if err != nil {
 		a.logger.WithError(err).Error("Failed to verify transaction integrity.")
 		return err

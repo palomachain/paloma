@@ -2,15 +2,20 @@ package skyway
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/util/libcons"
 	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/util/slice"
 	"github.com/palomachain/paloma/x/skyway/keeper"
+	"github.com/palomachain/paloma/x/skyway/types"
 )
 
 // EndBlocker is called at the end of every block
-func EndBlocker(ctx context.Context, k keeper.Keeper) {
+func EndBlocker(ctx context.Context, k keeper.Keeper, cc *libcons.ConsensusChecker) {
 	logger := liblog.FromKeeper(ctx, k).WithComponent("skyway-endblocker")
 	defer func() {
 		if r := recover(); r != nil {
@@ -39,10 +44,91 @@ func EndBlocker(ctx context.Context, k keeper.Keeper) {
 		}
 	}
 
+	err = processGasEstimates(ctx, k, cc)
+	if err != nil {
+		logger.WithError(err).Warn("Failed to process gas estimates.")
+	}
+
 	err = cleanupTimedOutBatches(ctx, k)
 	if err != nil {
 		logger.WithError(err).Warn("Failed to cleanup timed out batches.")
 	}
+}
+
+// lce is a light data structure to
+// implementing libcons.Estimate
+type lce struct {
+	addr sdk.ValAddress
+	v    uint64
+}
+
+func (l lce) GetValAddress() sdk.ValAddress { return l.addr }
+func (l lce) GetValue() uint64              { return l.v }
+
+// Iterates over all outgoing batches and builds a gas estimate for each one
+// if enough estimates have been collected.
+func processGasEstimates(ctx context.Context, k keeper.Keeper, cc *libcons.ConsensusChecker) error {
+	err := k.IterateOutgoingTxBatches(ctx, func(key []byte, batch types.InternalOutgoingTxBatch) bool {
+		// Skip batches that already have a gas estimate
+		if batch.GasEstimate > 0 {
+			return false
+		}
+		logger := liblog.FromKeeper(ctx, k).
+			WithComponent("skyway-process-gas-estimates").
+			WithFields(
+				"batch-nonce", batch.BatchNonce,
+				"token-contract", batch.TokenContract,
+				"chain-reference-id", batch.ChainReferenceID,
+			)
+		logger.Debug("Processing gas estimates for batch")
+		batchEstimates, err := k.GetBatchGasEstimateByNonceAndTokenContract(ctx, batch.BatchNonce, batch.TokenContract)
+		if err != nil {
+			logger.WithError(err).Warn("Failed to get gas estimates")
+			return false
+		}
+		if len(batchEstimates) < 1 {
+			logger.Debug("Skipping batch, not enough gas estimates")
+			return false
+		}
+
+		lc := make([]lce, len(batchEstimates))
+		for i, estimate := range batchEstimates {
+			addr, err := sdk.AccAddressFromBech32(estimate.Metadata.Creator)
+			if err != nil {
+				logger.WithFields(
+					"validator", estimate.Metadata.Creator,
+				).WithError(err).
+					Warn("Failed to get validator address from estimate")
+				return false
+			}
+			lc[i] = lce{sdk.ValAddress(addr), estimate.Estimate}
+		}
+
+		// Try to get consensus on the gas estimate
+		estimate, err := cc.VerifyGasEstimates(ctx, k,
+			slice.Map(lc, func(ge lce) libcons.GasEstimate {
+				return ge
+			}))
+		if err != nil {
+			if errors.Is(err, libcons.ErrConsensusNotAchieved) {
+				logger.WithError(err).Debug("Consensus not achieved for gas estimates")
+				return false
+			}
+			err = fmt.Errorf("failed to verify gas estimates: %w", err)
+			logger.WithError(err).Warn("Failed to verify gas estimates")
+			return false
+		}
+
+		if err := k.UpdateBatchGasEstimate(ctx, batch, estimate); err != nil {
+			logger.WithError(err).Warn("Failed to set gas estimate")
+		}
+
+		return false
+	})
+	if err != nil {
+		return fmt.Errorf("failed to iterate outgoing tx batches: %w", err)
+	}
+	return nil
 }
 
 // Create a batch of transactions for each token

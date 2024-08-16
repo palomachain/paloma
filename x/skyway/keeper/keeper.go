@@ -20,6 +20,7 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	"github.com/palomachain/paloma/util/eventbus"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/skyway/types"
@@ -88,6 +89,39 @@ func NewKeeper(
 	attestationHandler.ValidateMembers()
 	k.AttestationHandler = attestationHandler
 	k.authority = authority
+
+	eventbus.EVMActivatedChain().Subscribe(
+		"skyway-keeper",
+		func(ctx context.Context, e eventbus.EVMActivatedChainEvent) error {
+			logger := liblog.FromKeeper(ctx, k).
+				WithComponent("skyway-activated-chain-callback").
+				WithFields(
+					"chain_reference_id", e.ChainReferenceID,
+					"smart_contract_unique_id", string(e.SmartContractUniqueID),
+				)
+
+			k.setLatestCompassID(ctx, e.ChainReferenceID, string(e.SmartContractUniqueID))
+
+			err := k.setLastObservedSkywayNonce(ctx, e.ChainReferenceID, 0)
+			if err != nil {
+				logger.WithError(err).Warn("Failed to reset skyway nonce")
+				return err
+			}
+
+			err = k.IterateValidatorLastEventNonces(ctx, e.ChainReferenceID, func(key []byte, _ uint64) bool {
+				store := k.GetStore(ctx, e.ChainReferenceID)
+				store.Delete(key)
+				return false
+			})
+			if err != nil {
+				logger.WithError(err).Warn("Failed to reset validator skyway nonces")
+				return err
+			}
+
+			logger.Info("Updated last observed nonce successfully")
+			return nil
+		})
+
 	return k
 }
 

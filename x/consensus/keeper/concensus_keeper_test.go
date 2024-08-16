@@ -47,7 +47,6 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 			opt: consensus.ApplyOpts(nil,
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
-				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true
@@ -103,7 +102,6 @@ func TestJailValidatorsWhichMissedAttestation(t *testing.T) {
 			opt: consensus.ApplyOpts(nil,
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
-				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true
@@ -387,7 +385,6 @@ func TestGetMessagesFromQueue(t *testing.T) {
 					opt: consensus.ApplyOpts(nil,
 						consensus.WithQueueTypeName(queue),
 						consensus.WithStaticTypeCheck(msgType),
-						consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 						consensus.WithChainInfo(chainType, chainReferenceID),
 						consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 							return true
@@ -422,7 +419,6 @@ func TestGetMessagesForRelaying(t *testing.T) {
 			opt: consensus.ApplyOpts(nil,
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(uvType),
-				consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte { return []byte{} }),
 				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true
@@ -433,7 +429,6 @@ func TestGetMessagesForRelaying(t *testing.T) {
 			opt: consensus.ApplyOpts(nil,
 				consensus.WithQueueTypeName(queueWithValsetUpdatesPending),
 				consensus.WithStaticTypeCheck(uvType),
-				consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte { return []byte{} }),
 				consensus.WithChainInfo(chainType, "pending-chain"),
 				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 					return true
@@ -926,9 +921,6 @@ func TestGettingMessagesThatHaveReachedConsensus(t *testing.T) {
 						consensus.WithStaticTypeCheck(&types.SimpleMessage{}),
 						consensus.WithQueueTypeName(defaultQueueName),
 						consensus.WithChainInfo(chainType, chainReferenceID),
-						consensus.WithBytesToSignCalc(func(msg types.ConsensusMsg, salt types.Salt) []byte {
-							return []byte("sign-me")
-						}),
 						consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
 							return true
 						}),
@@ -967,7 +959,6 @@ func TestAddingSignatures(t *testing.T) {
 				consensus.WithAttestator(mck),
 				consensus.WithQueueTypeName(queue),
 				consensus.WithStaticTypeCheck(msgType),
-				consensus.WithBytesToSignCalc(msgType.ConsensusSignBytes()),
 				consensus.WithChainInfo(chainType, chainReferenceID),
 				consensus.WithVerifySignature(func(msg []byte, sig []byte, pk []byte) bool {
 					p := secp256k1.PubKey(pk)
@@ -990,7 +981,10 @@ func TestAddingSignatures(t *testing.T) {
 	require.Len(t, msgs, 1)
 
 	msg := msgs[0]
-	signedBytes, err := key1.Sign(msg.GetBytesToSign())
+	bytesToSign, err := msg.GetBytesToSign(keeper.cdc)
+	require.NoError(t, err)
+
+	signedBytes, err := key1.Sign(bytesToSign)
 
 	require.NoError(t, err)
 
@@ -1048,4 +1042,66 @@ func (q queueSupporter) SupportedQueues(ctx context.Context) ([]consensus.Suppor
 			QueueOptions: *q.opt,
 		},
 	}, nil
+}
+
+func TestGetMessagesForEstimating(t *testing.T) {
+	k, _, ctx := newConsensusKeeper(t)
+	queue := types.Queue(defaultQueueName, chainType, chainReferenceID)
+
+	uvType := &evmtypes.Message{}
+
+	types.RegisterInterfaces(types.ModuleCdc.InterfaceRegistry())
+	evmtypes.RegisterInterfaces(types.ModuleCdc.InterfaceRegistry())
+
+	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*types.ConsensusMsg)(nil), &evmtypes.Message{})
+	types.ModuleCdc.InterfaceRegistry().RegisterImplementations((*evmtypes.TurnstoneMsg)(nil), &evmtypes.Message{})
+
+	k.registry.Add(
+		queueSupporter{
+			opt: consensus.ApplyOpts(nil,
+				consensus.WithQueueTypeName(queue),
+				consensus.WithStaticTypeCheck(uvType),
+				consensus.WithChainInfo(chainType, chainReferenceID),
+				consensus.WithVerifySignature(func([]byte, []byte, []byte) bool {
+					return true
+				}),
+			),
+		},
+	)
+
+	val := sdk.ValAddress("validator-1")
+
+	// message with no need for estimation
+	_, err := k.PutMessageInQueue(ctx, queue, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: chainReferenceID,
+		Assignee:         val.String(),
+	}, nil)
+	require.NoError(t, err)
+
+	msgs, err := k.GetMessagesForGasEstimation(ctx, queue, val)
+	require.NoError(t, err)
+	require.Len(t, msgs, 0, "validator should get 0 messages, since estimation isn't needed")
+
+	// message with estimation needed
+	mid, err := k.PutMessageInQueue(ctx, queue, &evmtypes.Message{
+		TurnstoneID:      "abc",
+		ChainReferenceID: chainReferenceID,
+		Assignee:         val.String(),
+	}, &consensus.PutOptions{RequireGasEstimation: true})
+	require.NoError(t, err)
+
+	msgs, err = k.GetMessagesForGasEstimation(ctx, queue, val)
+	require.NoError(t, err)
+	require.Len(t, msgs, 1, "validator should get 1 message requiring gas estimation")
+
+	// Update message with gas estimate
+	q, err := k.getConsensusQueue(ctx, queue)
+	require.NoError(t, err)
+	err = q.SetElectedGasEstimate(ctx, mid, 1000)
+	require.NoError(t, err)
+
+	msgs, err = k.GetMessagesForGasEstimation(ctx, queue, val)
+	require.NoError(t, err)
+	require.Len(t, msgs, 0, "validator should not get message requiring gas estimation after gas estimate is set")
 }

@@ -31,6 +31,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const cDummyFeeMgrAddress = "0xb794f5ea0ba39494ce839613fffba74279579268"
+
 var (
 	contractAbi         = string(whoops.Must(os.ReadFile("testdata/sample-abi.json")))
 	contractBytecodeStr = string(whoops.Must(os.ReadFile("testdata/sample-bytecode.out")))
@@ -62,6 +64,8 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		newChain.GetBlockHashAtHeight(),
 		big.NewInt(55),
 	)
+	require.NoError(t, err)
+	err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 	require.NoError(t, err)
 
 	err = f.evmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, "addr", []byte("abc"))
@@ -149,10 +153,13 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, msg := range msgs {
+		bytesToSign, err := msg.GetBytesToSign(f.codec)
+		require.NoError(t, err)
+
 		sigbz, err := crypto.Sign(
 			crypto.Keccak256(
 				[]byte(keeper.SignaturePrefix),
-				msg.GetBytesToSign(),
+				bytesToSign,
 			),
 			private,
 		)
@@ -196,6 +203,8 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 		newChain.GetBlockHashAtHeight(),
 		big.NewInt(55),
 	)
+	require.NoError(t, err)
+	err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 	require.NoError(t, err)
 	err = f.evmKeeper.ActivateChainReferenceID(
 		ctx,
@@ -268,6 +277,8 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 		newChain.GetBlockHashAtHeight(),
 		big.NewInt(55),
 	)
+	err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+	require.NoError(t, err)
 	require.NoError(t, err)
 	err = f.evmKeeper.ActivateChainReferenceID(
 		ctx,
@@ -374,6 +385,8 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 		newChain.GetBlockHashAtHeight(),
 		big.NewInt(55),
 	)
+	require.NoError(t, err)
+	err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 	require.NoError(t, err)
 	err = f.evmKeeper.ActivateChainReferenceID(
 		ctx,
@@ -511,6 +524,8 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			big.NewInt(55),
 		)
 		require.NoError(t, err)
+		err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+		require.NoError(t, err)
 
 		gotChainInfo, err := f.evmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
 		require.NoError(t, err)
@@ -616,6 +631,8 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 						big.NewInt(55),
 					)
 					require.NoError(t, err)
+					err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+					require.NoError(t, err)
 
 					err = a.evmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, fmt.Sprintf("addr%d", i), []byte("abc"))
 					require.NoError(t, err)
@@ -669,6 +686,8 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 						newChain.GetBlockHashAtHeight(),
 						big.NewInt(55),
 					)
+					require.NoError(t, err)
+					err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 					require.NoError(t, err)
 
 					err = a.evmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, fmt.Sprintf("addr%d", i), []byte("abc"))
@@ -862,6 +881,8 @@ var _ = Describe("evm", func() {
 					big.NewInt(55),
 				)
 				Expect(err).To(BeNil())
+				err = a.evmKeeper.SetFeeManagerAddress(ctx, chain1.GetChainReferenceID(), cDummyFeeMgrAddress)
+				require.NoError(t, err)
 
 				By("adding chain2 works")
 				err = a.evmKeeper.AddSupportForNewChain(
@@ -873,6 +894,8 @@ var _ = Describe("evm", func() {
 					big.NewInt(55),
 				)
 				Expect(err).To(BeNil())
+				err = a.evmKeeper.SetFeeManagerAddress(ctx, chain2.GetChainReferenceID(), cDummyFeeMgrAddress)
+				require.NoError(t, err)
 			})
 
 			Context("adding smart contract", func() {
@@ -1020,6 +1043,8 @@ var _ = Describe("evm", func() {
 						big.NewInt(55),
 					)
 					Expect(err).To(BeNil())
+					err = a.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+					require.NoError(t, err)
 
 					sc, err := a.evmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
 					Expect(err).To(BeNil())
@@ -1076,6 +1101,8 @@ var _ = Describe("evm", func() {
 							big.NewInt(55),
 						)
 						Expect(err).To(BeNil())
+						err = a.evmKeeper.SetFeeManagerAddress(ctx, "new-chain", cDummyFeeMgrAddress)
+						require.NoError(t, err)
 					})
 
 					It("tries to deploy a smart contract to it", func() {
@@ -1106,6 +1133,8 @@ var _ = Describe("evm", func() {
 							big.NewInt(55),
 						)
 						Expect(err).To(BeNil())
+						err = a.evmKeeper.SetFeeManagerAddress(ctx, "new-chain", cDummyFeeMgrAddress)
+						require.NoError(t, err)
 						err = a.evmKeeper.ActivateChainReferenceID(ctx, "new-chain", &types.SmartContract{Id: 123}, "addr", []byte("abc"))
 						Expect(err).To(BeNil())
 						for _, val := range validators {
@@ -1201,6 +1230,8 @@ var _ = Describe("evm", func() {
 						big.NewInt(55),
 					)
 					Expect(err).To(BeNil())
+					err = a.evmKeeper.SetFeeManagerAddress(ctx, newChain.ChainReferenceID, cDummyFeeMgrAddress)
+					require.NoError(t, err)
 					sc, err := a.evmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
 					Expect(err).To(BeNil())
 					err = a.evmKeeper.SetAsCompassContract(ctx, sc)
@@ -1238,6 +1269,8 @@ var _ = Describe("change min on chain balance", func() {
 		BeforeEach(func() {
 			err := a.evmKeeper.AddSupportForNewChain(ctx, newChain.GetChainReferenceID(), newChain.GetChainID(), 1, "a", big.NewInt(55))
 			Expect(err).To(BeNil())
+			err = a.evmKeeper.SetFeeManagerAddress(ctx, newChain.ChainReferenceID, cDummyFeeMgrAddress)
+			require.NoError(t, err)
 		})
 
 		BeforeEach(func() {
@@ -1289,6 +1322,8 @@ var _ = Describe("change relay weights", func() {
 		BeforeEach(func() {
 			err := a.evmKeeper.AddSupportForNewChain(ctx, newChain.GetChainReferenceID(), newChain.GetChainID(), 1, "a", big.NewInt(55))
 			Expect(err).To(BeNil())
+			err = a.evmKeeper.SetFeeManagerAddress(ctx, newChain.ChainReferenceID, cDummyFeeMgrAddress)
+			require.NoError(t, err)
 		})
 
 		BeforeEach(func() {
