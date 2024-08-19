@@ -154,15 +154,20 @@ func (k Keeper) CreateUserSmartContractDeployment(
 	bytecode := slices.Concat(common.FromHex(contract.Bytecode),
 		common.FromHex(contract.ConstructorInput))
 
+	senderAddr, err := sdk.ValAddressFromBech32(addr)
+	if err != nil {
+		return 0, err
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	userSmartContract := &types.UploadUserSmartContract{
 		Bytecode:        bytecode,
 		DeployerAddress: chainInfo.SmartContractDeployerAddr,
 		// 10 minute deadline, same as SLCs
-		Deadline:    sdkCtx.BlockTime().Add(10 * time.Minute).Unix(),
-		Author:      addr,
-		BlockHeight: blockHeight,
-		Id:          id,
+		Deadline:      sdkCtx.BlockTime().Add(10 * time.Minute).Unix(),
+		SenderAddress: senderAddr,
+		BlockHeight:   blockHeight,
+		Id:            id,
 	}
 
 	return k.AddUploadUserSmartContractToConsensus(ctx, targetChain, userSmartContract)

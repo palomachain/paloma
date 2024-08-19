@@ -2,12 +2,18 @@ package keeper
 
 import (
 	"encoding/hex"
+	"math/big"
+	"os"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core"
+	ethcoretypes "github.com/ethereum/go-ethereum/core/types"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/palomachain/paloma/testutil/sample"
 	consensusmocks "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
@@ -27,7 +33,8 @@ var _ = Describe("attest upload user smart contract", func() {
 		evidence        []*consensustypes.Evidence
 		retries         uint32
 	)
-	valAddr := "palomavaloper1tsu8nthuspe4zlkejtj3v27rtq8qz7q6983zt2"
+
+	valAddr := "cosmosvaloper1pzf9apnk8yw7pjw3v9vtmxvn6guhkslanh8r07"
 
 	testChain := &types.AddChainProposal{
 		ChainReferenceID:  "eth-main",
@@ -37,11 +44,15 @@ var _ = Describe("attest upload user smart contract", func() {
 		BlockHashAtHeight: "0x1234",
 	}
 
+	compassABI, _ := os.ReadFile("testdata/sample-abi.json")
+	compassBytecode, _ := os.ReadFile("testdata/sample-bytecode.out")
+	txData, _ := os.ReadFile("testdata/user-smart-contract-tx-data.hex")
+
 	testContract := &types.UserSmartContract{
 		Author:           valAddr,
 		Title:            "Test Contract",
-		AbiJson:          sample.SimpleABI,
-		Bytecode:         "0x01",
+		AbiJson:          string(compassABI),
+		Bytecode:         string(compassBytecode),
 		ConstructorInput: "0x00",
 	}
 
@@ -85,32 +96,72 @@ var _ = Describe("attest upload user smart contract", func() {
 	})
 
 	JustBeforeEach(func() {
+		bytecode, _ := hex.DecodeString("0x00")
+		senderAddr, _ := sdk.ValAddressFromBech32(valAddr)
+
 		consensusMsg, err := codectypes.NewAnyWithValue(&types.Message{
 			Action: &types.Message_UploadUserSmartContract{
 				UploadUserSmartContract: &types.UploadUserSmartContract{
-					Id:          1,
-					Author:      valAddr,
-					BlockHeight: ctx.BlockHeight(),
-					Retries:     retries,
+					Bytecode:      bytecode,
+					Id:            1,
+					SenderAddress: senderAddr,
+					BlockHeight:   ctx.BlockHeight(),
+					Retries:       retries,
+					Fees: &types.Fees{
+						RelayerFee:   1,
+						CommunityFee: 2,
+						SecurityFee:  3,
+					},
 				},
 			},
 		})
 		Expect(err).To(BeNil())
 
+		sig := make([]byte, 100)
 		msg = &consensustypes.QueuedSignedMessage{
 			Id:       123,
 			Msg:      consensusMsg,
 			Evidence: evidence,
+			SignData: []*consensustypes.SignData{{
+				ExternalAccountAddress: "addr1",
+				Signature:              sig,
+			}, {
+				ExternalAccountAddress: "addr2",
+				Signature:              sig,
+			}},
 		}
 	})
 
 	Context("attesting with success proof", func() {
+		var contractAddr string
 		BeforeEach(func() {
-			serializedTx, _ := hex.DecodeString("02f87201108405f5e100850b68a0aa00825208941f9c2e67dbbe4c457a5e2be0bc31e67ce5953a2d87470de4df82000080c001a0e05de0771f8d577ec5aa440612c0e8f560d732d5162db0187cfaf56ac50c3716a0147565f4b0924a5adda25f55330c385448e0507d1219d4dac0950e2872682124")
+			tx := ethcoretypes.NewTx(&ethcoretypes.DynamicFeeTx{
+				ChainID: big.NewInt(1),
+				Data:    common.FromHex(string(txData)),
+			})
+
+			signer := ethcoretypes.LatestSignerForChainID(big.NewInt(1))
+			privkey, err := crypto.GenerateKey()
+			Expect(err).To(BeNil())
+
+			signature, err := crypto.Sign(tx.Hash().Bytes(), privkey)
+			Expect(err).To(BeNil())
+
+			signedTX, err := tx.WithSignature(signer, signature)
+			Expect(err).To(BeNil())
+
+			serializedTX, err := signedTX.MarshalBinary()
+			Expect(err).To(BeNil())
+
+			ethMsg, err := core.TransactionToMessage(signedTX,
+				ethtypes.NewLondonSigner(signedTX.ChainId()), big.NewInt(0))
+			Expect(err).To(BeNil())
+
+			contractAddr = crypto.CreateAddress(ethMsg.From, signedTX.Nonce()).Hex()
 
 			proof, _ := codectypes.NewAnyWithValue(
 				&types.TxExecutedProof{
-					SerializedTX: serializedTx,
+					SerializedTX: serializedTX,
 				})
 			evidence = []*consensustypes.Evidence{{
 				ValAddress: sdk.ValAddress("validator-1"),
@@ -132,7 +183,7 @@ var _ = Describe("attest upload user smart contract", func() {
 				&types.UserSmartContract_Deployment{
 					ChainReferenceId: testChain.ChainReferenceID,
 					Status:           types.DeploymentStatus_ACTIVE,
-					Address:          "0x069A36eC9F812D599B558fC53b81Cc039d656153",
+					Address:          contractAddr,
 				},
 			))
 		})

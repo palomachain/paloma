@@ -268,8 +268,8 @@ func (_m *Message_UploadUserSmartContract) keccak256(
 	}
 
 	// Left-pad the address with zeroes
-	padding := bytes.Repeat([]byte{0}, 32-len(m.Author))
-	senderAddress := [32]byte(append(padding, m.Author...))
+	padding := bytes.Repeat([]byte{0}, 32-len(m.SenderAddress))
+	senderAddress := [32]byte(append(padding, m.SenderAddress...))
 
 	bytes, err := arguments.Pack(
 		common.HexToAddress(m.GetDeployerAddress()),

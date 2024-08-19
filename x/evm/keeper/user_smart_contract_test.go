@@ -11,8 +11,8 @@ import (
 
 func TestUserSmartContracts(t *testing.T) {
 	k, ctx, _ := buildKeeper(t)
-	valAddr1 := "palomavaloper1tsu8nthuspe4zlkejtj3v27rtq8qz7q6983zt2"
-	valAddr2 := "palomavaloper1jxx2ym4pgk2yw4jkffxjc0tgddd8qqqhuaypf7"
+	valAddr1 := "cosmosvaloper1pzf9apnk8yw7pjw3v9vtmxvn6guhkslanh8r07"
+	valAddr2 := "cosmosvaloper1jxx2ym4pgk2yw4jkffxjc0tgddd8qqqhwu2tpm"
 	var id uint64
 
 	t.Run("Return empty list when not initialized", func(t *testing.T) {

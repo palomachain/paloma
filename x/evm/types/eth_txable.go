@@ -189,3 +189,68 @@ func (m *UpdateValset) VerifyAgainstTX(
 	logger.Warn("UpdateValset VerifyAgainstTX failed")
 	return ErrEthTxNotVerified
 }
+
+func (m *UploadUserSmartContract) VerifyAgainstTX(
+	ctx context.Context,
+	tx *ethtypes.Transaction,
+	msg consensustypes.QueuedSignedMessageI,
+	valset *Valset,
+	compass *SmartContract,
+	relayer string,
+) error {
+	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
+		WithFields("tx_hash", tx.Hash().Hex(), "valset_id", valset.ValsetID)
+
+	logger.Debug("UploadUserSmartContract VerifyAgainstTX")
+
+	if valset == nil || compass == nil {
+		err := errors.New("missing valset or compass for tx verification")
+		logger.WithError(err).Error("failed to verify tx")
+		return err
+	}
+
+	contractABI, err := abi.JSON(strings.NewReader(compass.GetAbiJSON()))
+	if err != nil {
+		logger.WithError(err).Warn("UploadUserSmartContract VerifyAgainstTX failed to parse compass ABI")
+		return err
+	}
+
+	padding := bytes.Repeat([]byte{0}, 32-len(m.SenderAddress))
+	paddedAuthor := [32]byte(append(padding, m.SenderAddress...))
+
+	feeArgs := FeeArgs{
+		RelayerFee:            big.NewInt(0).SetUint64(m.Fees.RelayerFee),
+		CommunityFee:          big.NewInt(0).SetUint64(m.Fees.CommunityFee),
+		SecurityFee:           big.NewInt(0).SetUint64(m.Fees.SecurityFee),
+		FeePayerPalomaAddress: paddedAuthor,
+	}
+
+	// Since some validators might have added their signature to the message
+	// after a pigeon start relaying it, we iteratively remove the end signature
+	// until we get a match, or there are no more signatures.
+	for i := len(msg.GetSignData()); i > 0; i-- {
+		args := []any{
+			BuildCompassConsensus(valset, msg.GetSignData()[0:i]),
+			common.HexToAddress(m.GetDeployerAddress()),
+			m.GetBytecode(),
+			feeArgs,
+			new(big.Int).SetInt64(int64(msg.GetId())),
+			new(big.Int).SetInt64(m.GetDeadline()),
+			common.HexToAddress(relayer),
+		}
+
+		input, err := contractABI.Pack("deploy_contract", args...)
+		if err != nil {
+			logger.WithError(err).Warn("UploadUserSmartContract VerifyAgainstTX failed to pack ABI")
+			return err
+		}
+
+		if bytes.Equal(tx.Data(), input) {
+			logger.Debug("UploadUserSmartContract VerifyAgainstTX success")
+			return nil
+		}
+	}
+
+	logger.Warn("UploadUserSmartContract VerifyAgainstTX failed")
+	return ErrEthTxNotVerified
+}

@@ -62,6 +62,13 @@ func (a *uploadUserSmartContractAttester) attest(
 	ctx sdk.Context,
 	evidence *types.TxExecutedProof,
 ) error {
+	_, err := attestTransactionIntegrity(ctx, a.originalMessage, a.k, evidence,
+		a.chainReferenceID, a.msg.AssigneeRemoteAddress, a.action.VerifyAgainstTX)
+	if err != nil {
+		a.logger.WithError(err).Error("Failed to verify transaction integrity.")
+		return err
+	}
+
 	tx, err := evidence.GetTX()
 	if err != nil {
 		return fmt.Errorf("failed to get TX: %w", err)
@@ -76,8 +83,10 @@ func (a *uploadUserSmartContractAttester) attest(
 
 	contractAddr := crypto.CreateAddress(ethMsg.From, tx.Nonce())
 
+	author := sdk.ValAddress(a.action.SenderAddress)
+
 	// Update user smart contract deployment
-	return a.k.SetUserSmartContractDeploymentActive(ctx, a.action.Author,
+	return a.k.SetUserSmartContractDeploymentActive(ctx, author.String(),
 		a.action.Id, a.action.BlockHeight, a.chainReferenceID, contractAddr.String())
 }
 
@@ -88,7 +97,9 @@ func (a *uploadUserSmartContractAttester) attemptRetry(ctx sdk.Context) {
 			"retries", a.action.Retries,
 			"chain-reference-id", a.chainReferenceID)
 
-		err := a.k.SetUserSmartContractDeploymentError(ctx, a.action.Author,
+		author := sdk.ValAddress(a.action.SenderAddress)
+
+		err := a.k.SetUserSmartContractDeploymentError(ctx, author.String(),
 			a.action.Id, a.action.BlockHeight, a.chainReferenceID)
 		if err != nil {
 			a.logger.WithError(err).Error("Failed to set UserSmartContract error")

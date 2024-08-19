@@ -193,8 +193,13 @@
     "inputs": [
       {
         "indexed": false,
-        "name": "new_compass",
+        "name": "contract_address",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "payload",
+        "type": "bytes"
       },
       {
         "indexed": false,
@@ -202,7 +207,7 @@
         "type": "uint256"
       }
     ],
-    "name": "UpdateCompassAddressInFeeManager",
+    "name": "UpdateCompass",
     "type": "event"
   },
   {
@@ -245,6 +250,28 @@
       }
     ],
     "name": "NodeSaleEvent",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "child",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "deployer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "event_id",
+        "type": "uint256"
+      }
+    ],
+    "name": "ContractDeployed",
     "type": "event"
   },
   {
@@ -821,6 +848,20 @@
         "type": "tuple"
       },
       {
+        "components": [
+          {
+            "name": "logic_contract_address",
+            "type": "address"
+          },
+          {
+            "name": "payload",
+            "type": "bytes"
+          }
+        ],
+        "name": "update_compass_args",
+        "type": "tuple[]"
+      },
+      {
         "name": "deadline",
         "type": "uint256"
       },
@@ -829,15 +870,103 @@
         "type": "uint256"
       },
       {
-        "name": "_new_compass",
+        "name": "relayer",
         "type": "address"
+      }
+    ],
+    "name": "compass_update_batch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "name": "validators",
+                "type": "address[]"
+              },
+              {
+                "name": "powers",
+                "type": "uint256[]"
+              },
+              {
+                "name": "valset_id",
+                "type": "uint256"
+              }
+            ],
+            "name": "valset",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "name": "v",
+                "type": "uint256"
+              },
+              {
+                "name": "r",
+                "type": "uint256"
+              },
+              {
+                "name": "s",
+                "type": "uint256"
+              }
+            ],
+            "name": "signatures",
+            "type": "tuple[]"
+          }
+        ],
+        "name": "consensus",
+        "type": "tuple"
+      },
+      {
+        "name": "_deployer",
+        "type": "address"
+      },
+      {
+        "name": "_bytecode",
+        "type": "bytes"
+      },
+      {
+        "components": [
+          {
+            "name": "relayer_fee",
+            "type": "uint256"
+          },
+          {
+            "name": "community_fee",
+            "type": "uint256"
+          },
+          {
+            "name": "security_fee",
+            "type": "uint256"
+          },
+          {
+            "name": "fee_payer_paloma_address",
+            "type": "bytes32"
+          }
+        ],
+        "name": "fee_args",
+        "type": "tuple"
+      },
+      {
+        "name": "message_id",
+        "type": "uint256"
+      },
+      {
+        "name": "deadline",
+        "type": "uint256"
       },
       {
         "name": "relayer",
         "type": "address"
       }
     ],
-    "name": "update_compass_address_in_fee_manager",
+    "name": "deploy_contract",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
