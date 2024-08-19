@@ -1,0 +1,11 @@
+syntax = "proto3";
+package palomachain.paloma.evm;
+
+option go_package = "github.com/palomachain/paloma/x/evm/types";
+
+message SetSmartContractDeployerProposal {
+  string title = 1;
+  string summary = 2;
+  string chainReferenceID = 3;
+  string deployerAddress = 4;
+}

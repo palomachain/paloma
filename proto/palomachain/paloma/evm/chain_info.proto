@@ -39,6 +39,8 @@ message ChainInfo {
   RelayWeights relayWeights = 13;
 
   string feeManagerAddr = 14;
+
+  string smartContractDeployerAddr = 15;
 }
 
 message SmartContract {

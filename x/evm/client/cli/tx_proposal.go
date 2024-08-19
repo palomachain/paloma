@@ -43,6 +43,7 @@ func CmdEvmChainProposalHandler() *cobra.Command {
 	cmd.AddCommand(CmdEvmProposalChangeMinOnChainBalance())
 	cmd.AddCommand(CmdEvmProposalChangeRelayWeights())
 	cmd.AddCommand(CmdEvmProposalSetFeeManagerAddress())
+	cmd.AddCommand(CmdEvmProposalSetSmartContractDeployer())
 
 	return cmd
 }
@@ -347,6 +348,80 @@ func CmdEvmProposalSetFeeManagerAddress() *cobra.Command {
 				Summary:           summary,
 				ChainReferenceID:  chainReferenceID,
 				FeeManagerAddress: address,
+			}
+			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+			if err != nil {
+				return fmt.Errorf("failed to get deposit: %w", err)
+			}
+
+			deposit, err := sdk.ParseCoinsNormalized(depositStr)
+			if err != nil {
+				return fmt.Errorf("failed to parse coins: %w", err)
+			}
+
+			msg, err := govv1beta1types.NewMsgSubmitProposal(proposal, deposit, from)
+			if err != nil {
+				return fmt.Errorf("failed to create new msg submit proposal: %w", err)
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	applyFlags(cmd)
+
+	return cmd
+}
+
+func CmdEvmProposalSetSmartContractDeployer() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "set-smart-contract-deployer [chain-reference-id] [remote-address]",
+		Short:   "Changes the address of the smart contract deployer for a given EVM chain referenced by the chain-reference-id",
+		Example: "set-smart-contract-deployer eth-main 0xb794f5ea0ba39494ce839613fffba74279579268",
+		Args:    cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			whoops.Assert(err)
+
+			chainReferenceID, address := args[0], args[1]
+
+			if !gethcommon.IsHexAddress(address) {
+				return fmt.Errorf("address(%s) doesn't pass format validation", address)
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			params := &types.QueryChainsInfosRequest{}
+			res, err := queryClient.ChainsInfos(cmd.Context(), params)
+			if err != nil {
+				return fmt.Errorf("failed to query chains: %w", err)
+			}
+
+			found := false
+			for _, ci := range res.ChainsInfos {
+				if ci.ChainReferenceID == chainReferenceID {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("chain-reference-id %s not found", chainReferenceID)
+			}
+
+			from := clientCtx.GetFromAddress()
+
+			title, err := cmd.Flags().GetString(cli.FlagTitle)
+			if err != nil {
+				return fmt.Errorf("failed to get title: %w", err)
+			}
+			summary, err := cmd.Flags().GetString(cli.FlagSummary)
+			if err != nil {
+				return fmt.Errorf("failed to get summary: %w", err)
+			}
+
+			proposal := &types.SetSmartContractDeployerProposal{
+				Title:            title,
+				Summary:          summary,
+				ChainReferenceID: chainReferenceID,
+				DeployerAddress:  address,
 			}
 			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
 			if err != nil {
