@@ -378,7 +378,7 @@ var _ = g.Describe("attest router", func() {
 								HexContractAddress: "0x51eca2efb15afacc612278c71f5edb35986f172f",
 								Abi:                []byte(contractAbi),
 								Payload:            common.FromHex(slcPayload),
-								Fees: &types.SubmitLogicCall_Fees{
+								Fees: &types.Fees{
 									RelayerFee:   1,
 									CommunityFee: 2,
 									SecurityFee:  3,

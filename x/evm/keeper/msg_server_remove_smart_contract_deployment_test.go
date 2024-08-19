@@ -14,7 +14,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const cDummyFeeMgrAddress = "0xb794f5ea0ba39494ce839613fffba74279579268"
+const (
+	cDummyFeeMgrAddress         = "0xb794f5ea0ba39494ce839613fffba74279579268"
+	cDummySmartContractDeployer = "0xb794f5ea0ba39494ce839613fffba74279579268"
+)
 
 func addDeploymentToKeeper(t *testing.T, ctx sdk.Context, k *Keeper, mockServices mockedServices) {
 	unpublishedSnapshot := &valsettypes.Snapshot{

@@ -52,6 +52,10 @@ func setupTestChainSupport(
 		return fmt.Errorf("failed to set fee manager address: %w", err)
 	}
 
+	if err := k.SetSmartContractDeployer(ctx, chain.GetChainReferenceID(), cDummySmartContractDeployer); err != nil {
+		return fmt.Errorf("failed to set smart contract deployer: %w", err)
+	}
+
 	sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))
 	if err != nil {
 		return err

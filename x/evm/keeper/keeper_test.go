@@ -113,7 +113,11 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 		big.NewInt(55),
 	)
 	require.NoError(t, err)
+
 	err = k.SetFeeManagerAddress(ctx, "test-chain", cDummyFeeMgrAddress)
+	require.NoError(t, err)
+
+	err = k.SetSmartContractDeployer(ctx, "test-chain", cDummySmartContractDeployer)
 	require.NoError(t, err)
 
 	sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))
@@ -142,7 +146,11 @@ func buildKeeper(t *testing.T) (*Keeper, sdk.Context, mockedServices) {
 		big.NewInt(55),
 	)
 	require.NoError(t, err)
+
 	err = k.SetFeeManagerAddress(ctx, "inactive-test-chain", cDummyFeeMgrAddress)
+	require.NoError(t, err)
+
+	err = k.SetSmartContractDeployer(ctx, "inactive-test-chain", cDummySmartContractDeployer)
 	require.NoError(t, err)
 
 	sc, err = k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))

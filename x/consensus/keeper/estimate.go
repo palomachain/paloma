@@ -144,8 +144,8 @@ func (k Keeper) calculateFeesForEstimate(
 	relayer sdk.ValAddress,
 	chainReferenceID string,
 	estimate uint64,
-) (*evmtypes.SubmitLogicCall_Fees, error) {
-	fees := &evmtypes.SubmitLogicCall_Fees{}
+) (*evmtypes.Fees, error) {
+	fees := &evmtypes.Fees{}
 	multiplicators, err := k.feeProvider.GetCombinedFeesForRelay(ctx, relayer, chainReferenceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get fee settings: %w", err)

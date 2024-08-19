@@ -3,6 +3,8 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"slices"
+	"time"
 
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
@@ -111,9 +113,15 @@ func (k Keeper) CreateUserSmartContractDeployment(
 		Debug("create user smart contract deployment")
 
 	// Check if target chain is supported
-	_, err := k.GetChainInfo(ctx, targetChain)
+	chainInfo, err := k.GetChainInfo(ctx, targetChain)
 	if err != nil {
 		logger.WithError(err).Warn("user smart contract deployment on invalid chain")
+		return 0, err
+	}
+
+	if chainInfo.SmartContractDeployerAddr == "" {
+		err = fmt.Errorf("missing smart contract deployer on chain %s", targetChain)
+		logger.WithError(err).Warn("failed to deploy contract to chain")
 		return 0, err
 	}
 
@@ -141,13 +149,20 @@ func (k Keeper) CreateUserSmartContractDeployment(
 		return 0, err
 	}
 
+	// To deploy the contract, we need to concatenate the contract bytecode with
+	// the ABI-encoded contructor input
+	bytecode := slices.Concat(common.FromHex(contract.Bytecode),
+		common.FromHex(contract.ConstructorInput))
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	userSmartContract := &types.UploadUserSmartContract{
-		Bytecode:         common.FromHex(contract.Bytecode),
-		Abi:              contract.AbiJson,
-		ConstructorInput: common.FromHex(contract.ConstructorInput),
-		Id:               id,
-		Author:           addr,
-		BlockHeight:      blockHeight,
+		Bytecode:        bytecode,
+		DeployerAddress: chainInfo.SmartContractDeployerAddr,
+		// 10 minute deadline, same as SLCs
+		Deadline:    sdkCtx.BlockTime().Add(10 * time.Minute).Unix(),
+		Author:      addr,
+		BlockHeight: blockHeight,
+		Id:          id,
 	}
 
 	return k.AddUploadUserSmartContractToConsensus(ctx, targetChain, userSmartContract)
