@@ -60,7 +60,7 @@ func (k Keeper) ExecuteWasmJobEventListener() wasmutil.MessengerFnc {
 			return nil, nil, whoops.Wrap(err, types.ErrWasmExecuteMessageNotValid)
 		}
 
-		msgID, err := k.ExecuteJob(ctx, executeMsg.JobID, executeMsg.Payload, nil, contractAddr)
+		msgID, err := k.ExecuteJob(ctx, executeMsg.JobID, executeMsg.Payload, contractAddr, contractAddr)
 		if err != nil {
 			logger.WithError(err).Error("Failed to trigger job execution.")
 			return nil, nil, err
