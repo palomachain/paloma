@@ -160,7 +160,7 @@ func (k Keeper) AddUploadUserSmartContractToConsensus(
 ) (uint64, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	assignee, err := k.PickValidatorForMessage(ctx, chainReferenceID, nil)
+	assignee, remoteAddr, err := k.PickValidatorForMessage(ctx, chainReferenceID, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -178,6 +178,7 @@ func (k Keeper) AddUploadUserSmartContractToConsensus(
 				UploadUserSmartContract: userSmartContract,
 			},
 			Assignee:              assignee,
+			AssigneeRemoteAddress: remoteAddr,
 			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
 		}, nil)
 }

@@ -12,12 +12,14 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	"github.com/stretchr/testify/mock"
 )
 
 var _ = Describe("attest upload user smart contract", func() {
 	var (
 		k               *Keeper
+		ms              mockedServices
 		ctx             sdk.Context
 		q               *consensusmocks.Queuer
 		msg             *consensustypes.QueuedSignedMessage
@@ -44,19 +46,19 @@ var _ = Describe("attest upload user smart contract", func() {
 	}
 
 	BeforeEach(func() {
-		var ms mockedServices
 		k, ms, ctx = NewEvmKeeper(GinkgoT())
 		consensuskeeper = ms.ConsensusKeeper
 		q = consensusmocks.NewQueuer(GinkgoT())
 
-		setupValsetKeeper(ms, testChain)
+		snapshot := createSnapshot(testChain)
+		ms.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).Return(snapshot, nil)
 
 		q.On("ChainInfo").Return("", testChain.ChainReferenceID)
 		q.On("Remove", mock.Anything, uint64(123)).Return(nil)
-		ms.GravityKeeper.On("GetLastObservedGravityNonce", mock.Anything, mock.Anything).
+		ms.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).
 			Return(uint64(100), nil).Maybe()
 
-		err := setupTestChainSupport(ctx, consensuskeeper, testChain, k)
+		err := setupTestChainSupport(ctx, consensuskeeper, ms.MetrixKeeper, ms.TreasuryKeeper, testChain, k)
 		Expect(err).To(BeNil())
 
 		// Upload the contract
@@ -69,6 +71,14 @@ var _ = Describe("attest upload user smart contract", func() {
 			mock.Anything,
 			mock.Anything,
 		).Return(uint64(10), nil).Once()
+
+		// We need more calls to these two methods here because of the user
+		// smart contract upload
+		ms.TreasuryKeeper.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil).Once()
+		ms.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
+			ValMetrics: getMetrics(3),
+		}, nil).Once()
+
 		// Create the deployment
 		_, err = k.CreateUserSmartContractDeployment(ctx, valAddr, 1, testChain.ChainReferenceID)
 		Expect(err).To(BeNil())
@@ -103,10 +113,10 @@ var _ = Describe("attest upload user smart contract", func() {
 					SerializedTX: serializedTx,
 				})
 			evidence = []*consensustypes.Evidence{{
-				ValAddress: sdk.ValAddress("addr1"),
+				ValAddress: sdk.ValAddress("validator-1"),
 				Proof:      proof,
 			}, {
-				ValAddress: sdk.ValAddress("addr2"),
+				ValAddress: sdk.ValAddress("validator-2"),
 				Proof:      proof,
 			}}
 		})
@@ -135,10 +145,10 @@ var _ = Describe("attest upload user smart contract", func() {
 					ErrorMessage: "an error",
 				})
 			evidence = []*consensustypes.Evidence{{
-				ValAddress: sdk.ValAddress("addr1"),
+				ValAddress: sdk.ValAddress("validator-1"),
 				Proof:      proof,
 			}, {
-				ValAddress: sdk.ValAddress("addr2"),
+				ValAddress: sdk.ValAddress("validator-2"),
 				Proof:      proof,
 			}}
 		})
@@ -156,6 +166,12 @@ var _ = Describe("attest upload user smart contract", func() {
 					mock.Anything,
 					mock.Anything,
 				).Return(uint64(10), nil).Once()
+
+				// We need to setup additional calls for the retry
+				ms.TreasuryKeeper.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil).Once()
+				ms.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
+					ValMetrics: getMetrics(3),
+				}, nil).Once()
 			})
 
 			It("should retry the deployment", func() {
