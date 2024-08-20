@@ -91,7 +91,10 @@ message Message {
   string assigneeRemoteAddress = 10;
 }
 
-message TxExecutedProof { bytes serializedTX = 1; }
+message TxExecutedProof {
+  bytes serializedTX = 1;
+  bytes serializedReceipt = 2 [ (gogoproto.nullable) = true ];
+}
 
 message SmartContractExecutionErrorProof { string errorMessage = 1; }
 
