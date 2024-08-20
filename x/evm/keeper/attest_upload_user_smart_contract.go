@@ -115,7 +115,8 @@ func (a *uploadUserSmartContractAttester) attemptRetry(ctx sdk.Context) {
 		"retries", a.action.Retries,
 		"chain-reference-id", a.chainReferenceID)
 
-	newMsgID, err := a.k.AddUploadUserSmartContractToConsensus(ctx, a.chainReferenceID, a.action)
+	newMsgID, err := a.k.AddUploadUserSmartContractToConsensus(ctx,
+		a.chainReferenceID, a.msg.TurnstoneID, a.action)
 	if err != nil {
 		a.logger.WithError(err).Error("Failed to retry UploadUserSmartContract")
 		return

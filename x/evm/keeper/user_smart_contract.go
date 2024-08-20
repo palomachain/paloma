@@ -15,6 +15,7 @@ import (
 	"github.com/palomachain/paloma/util/blocks"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 )
@@ -170,12 +171,14 @@ func (k Keeper) CreateUserSmartContractDeployment(
 		Id:            id,
 	}
 
-	return k.AddUploadUserSmartContractToConsensus(ctx, targetChain, userSmartContract)
+	return k.AddUploadUserSmartContractToConsensus(ctx, targetChain,
+		string(chainInfo.GetSmartContractUniqueID()), userSmartContract)
 }
 
 func (k Keeper) AddUploadUserSmartContractToConsensus(
 	ctx context.Context,
 	chainReferenceID string,
+	turnstoneID string,
 	userSmartContract *types.UploadUserSmartContract,
 ) (uint64, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -194,13 +197,17 @@ func (k Keeper) AddUploadUserSmartContractToConsensus(
 		),
 		&types.Message{
 			ChainReferenceID: chainReferenceID,
+			TurnstoneID:      turnstoneID,
 			Action: &types.Message_UploadUserSmartContract{
 				UploadUserSmartContract: userSmartContract,
 			},
 			Assignee:              assignee,
 			AssigneeRemoteAddress: remoteAddr,
 			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
-		}, nil)
+		}, &consensus.PutOptions{
+			RequireGasEstimation: true,
+			RequireSignatures:    true,
+		})
 }
 
 func (k Keeper) SetUserSmartContractDeploymentActive(
