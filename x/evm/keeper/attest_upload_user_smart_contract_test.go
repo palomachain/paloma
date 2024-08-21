@@ -8,9 +8,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
 	ethcoretypes "github.com/ethereum/go-ethereum/core/types"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -47,6 +45,8 @@ var _ = Describe("attest upload user smart contract", func() {
 	compassABI, _ := os.ReadFile("testdata/sample-abi.json")
 	compassBytecode, _ := os.ReadFile("testdata/sample-bytecode.out")
 	txData, _ := os.ReadFile("testdata/user-smart-contract-tx-data.hex")
+	rawData, _ := os.ReadFile("testdata/deployed-contract-event.hex")
+	deployedContractEventData, _ := hex.DecodeString(string(rawData))
 
 	testContract := &types.UserSmartContract{
 		Author:           valAddr,
@@ -69,7 +69,16 @@ var _ = Describe("attest upload user smart contract", func() {
 		ms.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).
 			Return(uint64(100), nil).Maybe()
 
-		err := setupTestChainSupport(ctx, consensuskeeper, ms.MetrixKeeper, ms.TreasuryKeeper, testChain, k)
+		contractID, err := setupTestChainSupport(ctx, consensuskeeper, ms.MetrixKeeper, ms.TreasuryKeeper, testChain, k)
+		Expect(err).To(BeNil())
+
+		deployment, _ := k.getSmartContractDeploymentByContractID(ctx, contractID, testChain.ChainReferenceID)
+		deployment.Status = types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER
+
+		err = k.updateSmartContractDeployment(ctx, contractID, testChain.ChainReferenceID, deployment)
+		Expect(err).To(BeNil())
+
+		err = k.SetSmartContractAsActive(ctx, contractID, testChain.ChainReferenceID)
 		Expect(err).To(BeNil())
 
 		// Upload the contract
@@ -133,7 +142,6 @@ var _ = Describe("attest upload user smart contract", func() {
 	})
 
 	Context("attesting with success proof", func() {
-		var contractAddr string
 		BeforeEach(func() {
 			tx := ethcoretypes.NewTx(&ethcoretypes.DynamicFeeTx{
 				ChainID: big.NewInt(1),
@@ -153,15 +161,21 @@ var _ = Describe("attest upload user smart contract", func() {
 			serializedTX, err := signedTX.MarshalBinary()
 			Expect(err).To(BeNil())
 
-			ethMsg, err := core.TransactionToMessage(signedTX,
-				ethtypes.NewLondonSigner(signedTX.ChainId()), big.NewInt(0))
+			receipt := ethcoretypes.Receipt{
+				Logs: []*ethcoretypes.Log{
+					{
+						Topics: []common.Hash{contractDeployedEvent},
+						Data:   deployedContractEventData,
+					},
+				},
+			}
+			serializedReceipt, err := receipt.MarshalBinary()
 			Expect(err).To(BeNil())
-
-			contractAddr = crypto.CreateAddress(ethMsg.From, signedTX.Nonce()).Hex()
 
 			proof, _ := codectypes.NewAnyWithValue(
 				&types.TxExecutedProof{
-					SerializedTX: serializedTX,
+					SerializedTX:      serializedTX,
+					SerializedReceipt: serializedReceipt,
 				})
 			evidence = []*consensustypes.Evidence{{
 				ValAddress: sdk.ValAddress("validator-1"),
@@ -183,7 +197,7 @@ var _ = Describe("attest upload user smart contract", func() {
 				&types.UserSmartContract_Deployment{
 					ChainReferenceId: testChain.ChainReferenceID,
 					Status:           types.DeploymentStatus_ACTIVE,
-					Address:          contractAddr,
+					Address:          "0x5eeA9CdF6de50497Df2c5AF93B70A02D616454a0",
 				},
 			))
 		})

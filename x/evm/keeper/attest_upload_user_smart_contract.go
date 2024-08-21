@@ -1,17 +1,22 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
-	"math/big"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/core"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/evm/types"
 )
+
+var contractDeployedEvent = crypto.Keccak256Hash([]byte(
+	"ContractDeployed(address,address,uint256)",
+))
 
 type uploadUserSmartContractAttester struct {
 	attestionParameters
@@ -69,25 +74,58 @@ func (a *uploadUserSmartContractAttester) attest(
 		return err
 	}
 
-	tx, err := evidence.GetTX()
+	// TODO this may fail if we deploy a different compass with changes to this
+	// event between uploading the contract and attesting
+	chainInfo, err := a.k.GetChainInfo(ctx, a.chainReferenceID)
 	if err != nil {
-		return fmt.Errorf("failed to get TX: %w", err)
+		a.logger.WithError(err).Error("Failed to get chain info")
+		return fmt.Errorf("failed to get chain info: %w", err)
 	}
 
-	ethMsg, err := core.TransactionToMessage(tx,
-		ethtypes.NewLondonSigner(tx.ChainId()), big.NewInt(0))
+	compassABI, err := abi.JSON(strings.NewReader(chainInfo.Abi))
 	if err != nil {
-		a.logger.WithError(err).Error("Failed to extract ethMsg")
-		return err
+		fmt.Printf("ABI: %v\n", chainInfo.Abi)
+		a.logger.WithError(err).Error("Failed to unpack compass ABI")
+		return fmt.Errorf("failed to unpack compass ABI: %w", err)
 	}
 
-	contractAddr := crypto.CreateAddress(ethMsg.From, tx.Nonce())
+	receipt, err := evidence.GetReceipt()
+	if err != nil {
+		a.logger.WithError(err).Error("Failed to get evidence receipt")
+		return fmt.Errorf("failed to get evidence receipt: %w", err)
+	}
 
-	author := sdk.ValAddress(a.action.SenderAddress)
+	for i := range receipt.Logs {
+		if len(receipt.Logs[i].Topics) == 0 {
+			a.logger.Error("Invalid topics in receipt logs")
+			return errors.New("invalid topics in receipt logs")
+		}
 
-	// Update user smart contract deployment
-	return a.k.SetUserSmartContractDeploymentActive(ctx, author.String(),
-		a.action.Id, a.action.BlockHeight, a.chainReferenceID, contractAddr.String())
+		if receipt.Logs[i].Topics[0] != contractDeployedEvent {
+			continue
+		}
+
+		// This is the event we want, so we get the contract address from it
+		event, err := compassABI.Unpack("ContractDeployed", receipt.Logs[i].Data)
+		if err != nil {
+			a.logger.WithError(err).Error("Failed to unpack event")
+			return fmt.Errorf("failed to unpack event: %w", err)
+		}
+
+		contractAddr, ok := event[0].(common.Address)
+		if !ok {
+			a.logger.Error("Invalid contract address in event")
+			return errors.New("invalid smart contract address")
+		}
+
+		// Update user smart contract deployment
+		return a.k.SetUserSmartContractDeploymentActive(ctx,
+			sdk.ValAddress(a.action.SenderAddress).String(), a.action.Id,
+			a.action.BlockHeight, a.chainReferenceID, contractAddr.String())
+	}
+
+	// Either the tx didn't generate logs, or it didn't have the one we want
+	return errors.New("failed to find deployed contract address")
 }
 
 func (a *uploadUserSmartContractAttester) attemptRetry(ctx sdk.Context) {
