@@ -91,7 +91,11 @@ func (AppModuleBasic) GetTxCmd() *cobra.Command {
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the distribution module.
 // also implements app module basic
-func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {}
+func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
+	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
+		panic(err)
+	}
+}
 
 // RegisterInterfaces implements app bmodule basic
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {

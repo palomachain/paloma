@@ -16,22 +16,55 @@ option go_package = "github.com/palomachain/paloma/x/skyway/types";
 
 // Msg defines the state transitions possible within skyway
 service Msg {
-  rpc SendToRemote(MsgSendToRemote) returns (MsgSendToRemoteResponse) {}
-  rpc ConfirmBatch(MsgConfirmBatch) returns (MsgConfirmBatchResponse) {}
-  rpc EstimateBatchGas(MsgEstimateBatchGas) 
-      returns (google.protobuf.Empty) {}
+  rpc SendToRemote(MsgSendToRemote) returns (MsgSendToRemoteResponse) {
+    option (google.api.http).post =
+      "/palomachain/paloma/skyway/send-to-remote";
+  }
+
+  rpc ConfirmBatch(MsgConfirmBatch) returns (MsgConfirmBatchResponse) {
+    option (google.api.http).post =
+      "/palomachain/paloma/skyway/confirm-batch";
+  }
+
+  rpc EstimateBatchGas(MsgEstimateBatchGas) returns (google.protobuf.Empty) {
+    option (google.api.http).post =
+      "/palomachain/paloma/skyway/estimate-batch-gas";
+  }
+
   rpc SendToPalomaClaim(MsgSendToPalomaClaim)
-      returns (MsgSendToPalomaClaimResponse) {}
+      returns (MsgSendToPalomaClaimResponse) {
+    option (google.api.http).post =
+      "/palomachain/paloma/skyway/send-to-paloma-claim";
+  }
+
   rpc BatchSendToRemoteClaim(MsgBatchSendToRemoteClaim)
-      returns (MsgBatchSendToRemoteClaimResponse) {}
+      returns (MsgBatchSendToRemoteClaimResponse) {
+    option (google.api.http).post =
+      "/palomachain/paloma/skyway/batch-send-to-remote";
+  }
+
   rpc CancelSendToRemote(MsgCancelSendToRemote)
-    returns (MsgCancelSendToRemoteResponse) {}
+      returns (MsgCancelSendToRemoteResponse) {
+    option (google.api.http).post =
+      "/palomachain/paloma/skyway/cancel-send-to-remote";
+  }
+
   rpc SubmitBadSignatureEvidence(MsgSubmitBadSignatureEvidence)
-      returns (MsgSubmitBadSignatureEvidenceResponse) {}
-  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+      returns (MsgSubmitBadSignatureEvidenceResponse) {
+    option (google.api.http).post =
+      "/palomachain/paloma/skyway/submit-bad-signature-evidence";
+  }
+
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {
+    option (google.api.http).post =
+      "/palomachain/paloma/skyway/update-params";
+  }
 
   rpc LightNodeSaleClaim(MsgLightNodeSaleClaim)
-      returns (google.protobuf.Empty) {}
+      returns (google.protobuf.Empty) {
+    option (google.api.http).post =
+      "/palomachain/paloma/skyway/light-node-sale-claim";
+  }
 }
 
 // MsgSendToRemote
