@@ -148,7 +148,7 @@ func (a *uploadUserSmartContractAttester) attemptRetry(ctx sdk.Context) {
 
 	a.action.Retries++
 
-	a.logger.Info("Retrying failed UploadSmartContract message",
+	a.logger.Info("Retrying failed UploadUserSmartContract message",
 		"message-id", a.msgID,
 		"retries", a.action.Retries,
 		"chain-reference-id", a.chainReferenceID)
