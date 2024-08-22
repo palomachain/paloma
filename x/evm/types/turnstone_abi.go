@@ -170,18 +170,7 @@ func (_m *Message_SubmitLogicCall) keccak256(
 
 	copy(bytes32[:], orig.GetTurnstoneID())
 
-	var fees *Fees
-	if m.Fees == nil {
-		// If we have no fees set in the message, we use the same defaults as
-		// pigeon
-		fees = &Fees{
-			RelayerFee:   100_000,
-			CommunityFee: 100_000,
-			SecurityFee:  100_000,
-		}
-	} else {
-		fees = m.Fees
-	}
+	fees := feesOrDefault(m.Fees)
 
 	// Left-pad the address with zeroes
 	padding := bytes.Repeat([]byte{0}, 32-len(m.SenderAddress))
@@ -254,18 +243,7 @@ func (_m *Message_UploadUserSmartContract) keccak256(
 	var bytes32 [32]byte
 	copy(bytes32[:], orig.GetTurnstoneID())
 
-	var fees *Fees
-	if m.Fees == nil {
-		// If we have no fees set in the message, we use the same defaults as
-		// pigeon
-		fees = &Fees{
-			RelayerFee:   100_000,
-			CommunityFee: 100_000,
-			SecurityFee:  100_000,
-		}
-	} else {
-		fees = m.Fees
-	}
+	fees := feesOrDefault(m.Fees)
 
 	// Left-pad the address with zeroes
 	padding := bytes.Repeat([]byte{0}, 32-len(m.SenderAddress))
@@ -386,5 +364,19 @@ func TransformValsetToCompassValset(val *Valset) CompassValset {
 			return big.NewInt(int64(p))
 		}),
 		ValsetId: big.NewInt(int64(val.GetValsetID())),
+	}
+}
+
+func feesOrDefault(fees *Fees) *Fees {
+	if fees != nil {
+		return fees
+	}
+
+	// If we have no fees set in the message, we use the same defaults as
+	// pigeon
+	return &Fees{
+		RelayerFee:   100_000,
+		CommunityFee: 100_000,
+		SecurityFee:  100_000,
 	}
 }
