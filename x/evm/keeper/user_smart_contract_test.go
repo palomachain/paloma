@@ -106,7 +106,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 		expected := &types.UserSmartContract_Deployment{
 			ChainReferenceId:     "test-chain",
-			Status:               types.DeploymentStatus_IN_FLIGHT,
+			Status:               types.UserSmartContract_Deployment_IN_FLIGHT,
 			Address:              "",
 			CreatedAtBlockHeight: ctx.BlockHeight(),
 			UpdatedAtBlockHeight: ctx.BlockHeight(),
@@ -132,7 +132,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 		expected := &types.UserSmartContract_Deployment{
 			ChainReferenceId:     "test-chain",
-			Status:               types.DeploymentStatus_ACTIVE,
+			Status:               types.UserSmartContract_Deployment_ACTIVE,
 			Address:              "contract_addr",
 			CreatedAtBlockHeight: ctx.BlockHeight(),
 			UpdatedAtBlockHeight: ctx.BlockHeight(),
@@ -152,7 +152,7 @@ func TestUserSmartContracts(t *testing.T) {
 
 		expected := &types.UserSmartContract_Deployment{
 			ChainReferenceId:     "test-chain",
-			Status:               types.DeploymentStatus_ERROR,
+			Status:               types.UserSmartContract_Deployment_ERROR,
 			Address:              "",
 			CreatedAtBlockHeight: ctx.BlockHeight(),
 			UpdatedAtBlockHeight: ctx.BlockHeight(),
@@ -174,13 +174,13 @@ func TestUserSmartContracts(t *testing.T) {
 		// Should now contain both
 		expected := []*types.UserSmartContract_Deployment{{
 			ChainReferenceId:     "test-chain",
-			Status:               types.DeploymentStatus_ERROR,
+			Status:               types.UserSmartContract_Deployment_ERROR,
 			Address:              "",
 			CreatedAtBlockHeight: ctx.BlockHeight(),
 			UpdatedAtBlockHeight: ctx.BlockHeight(),
 		}, {
 			ChainReferenceId:     "test-chain",
-			Status:               types.DeploymentStatus_IN_FLIGHT,
+			Status:               types.UserSmartContract_Deployment_IN_FLIGHT,
 			Address:              "",
 			CreatedAtBlockHeight: newCtx.BlockHeight(),
 			UpdatedAtBlockHeight: newCtx.BlockHeight(),
@@ -202,13 +202,13 @@ func TestUserSmartContracts(t *testing.T) {
 		// Should now contain both
 		expected := []*types.UserSmartContract_Deployment{{
 			ChainReferenceId:     "test-chain",
-			Status:               types.DeploymentStatus_ERROR,
+			Status:               types.UserSmartContract_Deployment_ERROR,
 			Address:              "",
 			CreatedAtBlockHeight: ctx.BlockHeight(),
 			UpdatedAtBlockHeight: ctx.BlockHeight(),
 		}, {
 			ChainReferenceId:     "test-chain",
-			Status:               types.DeploymentStatus_ACTIVE,
+			Status:               types.UserSmartContract_Deployment_ACTIVE,
 			Address:              "contract_addr",
 			CreatedAtBlockHeight: newCtx.BlockHeight(),
 			UpdatedAtBlockHeight: newCtx.BlockHeight(),

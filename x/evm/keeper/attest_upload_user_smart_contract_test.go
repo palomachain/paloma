@@ -196,7 +196,7 @@ var _ = Describe("attest upload user smart contract", func() {
 			Expect(contracts[0].Deployments).To(ConsistOf(
 				&types.UserSmartContract_Deployment{
 					ChainReferenceId: testChain.ChainReferenceID,
-					Status:           types.DeploymentStatus_ACTIVE,
+					Status:           types.UserSmartContract_Deployment_ACTIVE,
 					Address:          "0x5eeA9CdF6de50497Df2c5AF93B70A02D616454a0",
 				},
 			))
@@ -250,7 +250,7 @@ var _ = Describe("attest upload user smart contract", func() {
 				Expect(contracts[0].Deployments).To(ConsistOf(
 					&types.UserSmartContract_Deployment{
 						ChainReferenceId: testChain.ChainReferenceID,
-						Status:           types.DeploymentStatus_IN_FLIGHT,
+						Status:           types.UserSmartContract_Deployment_IN_FLIGHT,
 						Address:          "",
 					},
 				))
@@ -279,7 +279,7 @@ var _ = Describe("attest upload user smart contract", func() {
 				Expect(contracts[0].Deployments).To(ConsistOf(
 					&types.UserSmartContract_Deployment{
 						ChainReferenceId: testChain.ChainReferenceID,
-						Status:           types.DeploymentStatus_ERROR,
+						Status:           types.UserSmartContract_Deployment_ERROR,
 						Address:          "",
 					},
 				))

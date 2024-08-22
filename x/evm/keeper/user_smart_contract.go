@@ -138,7 +138,7 @@ func (k Keeper) CreateUserSmartContractDeployment(
 
 	deployment := &types.UserSmartContract_Deployment{
 		ChainReferenceId:     targetChain,
-		Status:               types.DeploymentStatus_IN_FLIGHT,
+		Status:               types.UserSmartContract_Deployment_IN_FLIGHT,
 		CreatedAtBlockHeight: blockHeight,
 		UpdatedAtBlockHeight: blockHeight,
 	}
@@ -227,7 +227,7 @@ func (k Keeper) SetUserSmartContractDeploymentActive(
 	).Debug("user smart contract deployment success")
 
 	return k.finishUserSmartContractDeployment(ctx, addr, id, blockHeight,
-		targetChain, contractAddr, types.DeploymentStatus_ACTIVE)
+		targetChain, contractAddr, types.UserSmartContract_Deployment_ACTIVE)
 }
 
 func (k Keeper) SetUserSmartContractDeploymentError(
@@ -245,7 +245,7 @@ func (k Keeper) SetUserSmartContractDeploymentError(
 	).Debug("user smart contract deployment failed")
 
 	return k.finishUserSmartContractDeployment(ctx, addr, id, blockHeight,
-		targetChain, "", types.DeploymentStatus_ERROR)
+		targetChain, "", types.UserSmartContract_Deployment_ERROR)
 }
 
 func (k Keeper) finishUserSmartContractDeployment(
@@ -255,7 +255,7 @@ func (k Keeper) finishUserSmartContractDeployment(
 	blockHeight int64,
 	targetChain string,
 	contractAddr string,
-	status types.DeploymentStatus,
+	status types.UserSmartContract_Deployment_Status,
 ) error {
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger())
 	logger.WithFields("val_address", addr, "id", id, "xchain", targetChain).
