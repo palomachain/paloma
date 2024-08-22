@@ -58,10 +58,17 @@ func NewReferenceChainReferenceIDProposalHandler(k keeper.Keeper) govv1beta1type
 			)
 		case *types.SetFeeManagerAddressProposal:
 			return k.SetFeeManagerAddress(ctx, c.ChainReferenceID, c.FeeManagerAddress)
-		case *types.SetSmartContractDeployerProposal:
-			return k.SetSmartContractDeployer(ctx, c.ChainReferenceID, c.DeployerAddress)
-		}
+		case *types.SetSmartContractDeployersProposal:
+			for _, dep := range c.Deployers {
+				err := k.SetSmartContractDeployer(ctx, dep.ChainReferenceID, dep.ContractAddress)
+				if err != nil {
+					return err
+				}
+			}
 
-		return sdkerrors.ErrUnknownRequest
+			return nil
+		default:
+			return sdkerrors.ErrUnknownRequest
+		}
 	}
 }

@@ -374,18 +374,18 @@ func CmdEvmProposalSetFeeManagerAddress() *cobra.Command {
 
 func CmdEvmProposalSetSmartContractDeployer() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "set-smart-contract-deployer [chain-reference-id] [remote-address]",
-		Short:   "Changes the address of the smart contract deployer for a given EVM chain referenced by the chain-reference-id",
-		Example: "set-smart-contract-deployer eth-main 0xb794f5ea0ba39494ce839613fffba74279579268",
-		Args:    cobra.ExactArgs(2),
+		Use:     "set-smart-contract-deployers [deployers]",
+		Short:   "Changes the address of the smart contract deployers for all given EVM chains",
+		Example: `set-smart-contract-deployers '{"gnosis-main":"0x950AA3028F1A3A09D4969C3504BEc30D7ac7d6b2"}'`,
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			whoops.Assert(err)
 
-			chainReferenceID, address := args[0], args[1]
-
-			if !gethcommon.IsHexAddress(address) {
-				return fmt.Errorf("address(%s) doesn't pass format validation", address)
+			var data map[string]string
+			err = json.Unmarshal([]byte(args[0]), &data)
+			if err != nil {
+				return err
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
@@ -395,15 +395,28 @@ func CmdEvmProposalSetSmartContractDeployer() *cobra.Command {
 				return fmt.Errorf("failed to query chains: %w", err)
 			}
 
-			found := false
-			for _, ci := range res.ChainsInfos {
-				if ci.ChainReferenceID == chainReferenceID {
-					found = true
-					break
+			deployers := make([]types.SetSmartContractDeployersProposal_Deployer, 0, len(data))
+
+			for chainReferenceID, address := range data {
+				if !gethcommon.IsHexAddress(address) {
+					return fmt.Errorf("address(%s) doesn't pass format validation", address)
 				}
-			}
-			if !found {
-				return fmt.Errorf("chain-reference-id %s not found", chainReferenceID)
+
+				found := false
+				for _, ci := range res.ChainsInfos {
+					if ci.ChainReferenceID == chainReferenceID {
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("chain-reference-id %s not found", chainReferenceID)
+				}
+
+				deployers = append(deployers, types.SetSmartContractDeployersProposal_Deployer{
+					ChainReferenceID: chainReferenceID,
+					ContractAddress:  address,
+				})
 			}
 
 			from := clientCtx.GetFromAddress()
@@ -417,11 +430,10 @@ func CmdEvmProposalSetSmartContractDeployer() *cobra.Command {
 				return fmt.Errorf("failed to get summary: %w", err)
 			}
 
-			proposal := &types.SetSmartContractDeployerProposal{
-				Title:            title,
-				Summary:          summary,
-				ChainReferenceID: chainReferenceID,
-				DeployerAddress:  address,
+			proposal := &types.SetSmartContractDeployersProposal{
+				Title:     title,
+				Summary:   summary,
+				Deployers: deployers,
 			}
 			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
 			if err != nil {

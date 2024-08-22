@@ -1,0 +1,17 @@
+syntax = "proto3";
+package palomachain.paloma.evm;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/palomachain/paloma/x/evm/types";
+
+message SetSmartContractDeployersProposal {
+  message Deployer {
+    string chainReferenceID = 1;
+    string contractAddress = 2;
+  }
+
+  string title = 1;
+  string summary = 2;
+  repeated Deployer deployers = 3 [ (gogoproto.nullable) = false ];
+}
