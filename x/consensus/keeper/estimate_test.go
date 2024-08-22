@@ -122,6 +122,32 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 				return true
 			},
 		},
+		{
+			name: "Upload user smart contract message",
+			msg: &evmtypes.Message{
+				TurnstoneID:      "abc",
+				ChainReferenceID: chainReferenceID,
+				Assignee:         validators[0].Address.String(),
+				Action: &evmtypes.Message_UploadUserSmartContract{
+					UploadUserSmartContract: &evmtypes.UploadUserSmartContract{},
+				},
+			},
+			slcCheck: func(m *evmtypes.Message, r *require.Assertions, expected bool) bool {
+				usc := m.GetUploadUserSmartContract()
+				if usc == nil {
+					return expected
+				}
+				if !expected {
+					return usc.Fees == nil
+				}
+
+				r.NotNil(usc.Fees)
+				r.Equal(uint64(31500), usc.Fees.RelayerFee, "relayer fee: got %d", usc.Fees.RelayerFee)
+				r.Equal(uint64(9450), usc.Fees.CommunityFee, "community fee: got %d", usc.Fees.CommunityFee)
+				r.Equal(uint64(315), usc.Fees.SecurityFee, "security fee: got %d", usc.Fees.SecurityFee)
+				return true
+			},
+		},
 	}
 
 	for _, tc := range tt {

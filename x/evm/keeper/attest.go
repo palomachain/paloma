@@ -125,6 +125,8 @@ func (k Keeper) routerAttester(sdkCtx sdk.Context, q consensus.Queuer, msg conse
 	switch rawAction.(type) {
 	case *types.Message_UploadSmartContract:
 		return newUploadSmartContractAttester(&k, logger, params).Execute(sdkCtx)
+	case *types.Message_UploadUserSmartContract:
+		return newUploadUserSmartContractAttester(&k, logger, params).Execute(sdkCtx)
 	case *types.Message_UpdateValset:
 		return newUpdateValsetAttester(&k, logger, q, params).Execute(sdkCtx)
 	case *types.Message_SubmitLogicCall:

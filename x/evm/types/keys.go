@@ -15,6 +15,8 @@ const (
 
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_evm"
+
+	UserSmartContractStoreKeyPrefix = "user-smart-contract"
 )
 
 func KeyPrefix(p string) []byte {

@@ -1,0 +1,35 @@
+syntax = "proto3";
+package palomachain.paloma.evm;
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/palomachain/paloma/x/evm/types";
+
+// UserSmartContract defines user-uploaded smart contracts
+// We keep them in storage, so users can decide to deploy them anywhere
+message UserSmartContract {
+  message Deployment {
+    enum Status {
+      PENDING = 0;
+      IN_FLIGHT = 1;
+      ACTIVE = 2;
+      ERROR = 3;
+    }
+
+    string chain_reference_id = 1;
+    Status status = 2;
+    string address = 3;
+    int64 created_at_block_height = 4;
+    int64 updated_at_block_height = 5;
+  }
+
+  string author = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  uint64 id = 2;
+  string title = 3;
+  string abi_json = 4;
+  string bytecode = 5;
+  string constructor_input = 6;
+  repeated Deployment deployments = 7;
+  int64 created_at_block_height = 8;
+  int64 updated_at_block_height = 9;
+}

@@ -11,16 +11,15 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgDeployNewSmartContractRequest{}, "evm/DeployNewSmartContract", nil)
 	cdc.RegisterConcrete(&MsgRemoveSmartContractDeploymentRequest{}, "evm/DeleteSmartContractDeployment", nil)
 	cdc.RegisterConcrete(&RelayWeightsProposal{}, "evm/RelayWeightsProposal", nil)
 	cdc.RegisterConcrete(&SetFeeManagerAddressProposal{}, "evm/SetFeeManagerAddressProposal", nil)
+	cdc.RegisterConcrete(&SetSmartContractDeployersProposal{}, "evm/SetSmartContractDeployersProposal", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&MsgDeployNewSmartContractRequest{},
 		&MsgRemoveSmartContractDeploymentRequest{},
 	)
 	registry.RegisterImplementations(
@@ -31,6 +30,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&ChangeMinOnChainBalanceProposal{},
 		&RelayWeightsProposal{},
 		&SetFeeManagerAddressProposal{},
+		&SetSmartContractDeployersProposal{},
 	)
 	registry.RegisterImplementations(
 		(*consensustypes.ConsensusMsg)(nil),

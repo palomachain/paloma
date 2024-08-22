@@ -43,6 +43,7 @@ func CmdEvmChainProposalHandler() *cobra.Command {
 	cmd.AddCommand(CmdEvmProposalChangeMinOnChainBalance())
 	cmd.AddCommand(CmdEvmProposalChangeRelayWeights())
 	cmd.AddCommand(CmdEvmProposalSetFeeManagerAddress())
+	cmd.AddCommand(CmdEvmProposalSetSmartContractDeployer())
 
 	return cmd
 }
@@ -347,6 +348,92 @@ func CmdEvmProposalSetFeeManagerAddress() *cobra.Command {
 				Summary:           summary,
 				ChainReferenceID:  chainReferenceID,
 				FeeManagerAddress: address,
+			}
+			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
+			if err != nil {
+				return fmt.Errorf("failed to get deposit: %w", err)
+			}
+
+			deposit, err := sdk.ParseCoinsNormalized(depositStr)
+			if err != nil {
+				return fmt.Errorf("failed to parse coins: %w", err)
+			}
+
+			msg, err := govv1beta1types.NewMsgSubmitProposal(proposal, deposit, from)
+			if err != nil {
+				return fmt.Errorf("failed to create new msg submit proposal: %w", err)
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	applyFlags(cmd)
+
+	return cmd
+}
+
+func CmdEvmProposalSetSmartContractDeployer() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "set-smart-contract-deployers [deployers]",
+		Short:   "Changes the address of the smart contract deployers for all given EVM chains",
+		Example: `set-smart-contract-deployers '{"gnosis-main":"0x950AA3028F1A3A09D4969C3504BEc30D7ac7d6b2"}'`,
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			whoops.Assert(err)
+
+			var data map[string]string
+			err = json.Unmarshal([]byte(args[0]), &data)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			params := &types.QueryChainsInfosRequest{}
+			res, err := queryClient.ChainsInfos(cmd.Context(), params)
+			if err != nil {
+				return fmt.Errorf("failed to query chains: %w", err)
+			}
+
+			deployers := make([]types.SetSmartContractDeployersProposal_Deployer, 0, len(data))
+
+			for chainReferenceID, address := range data {
+				if !gethcommon.IsHexAddress(address) {
+					return fmt.Errorf("address(%s) doesn't pass format validation", address)
+				}
+
+				found := false
+				for _, ci := range res.ChainsInfos {
+					if ci.ChainReferenceID == chainReferenceID {
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("chain-reference-id %s not found", chainReferenceID)
+				}
+
+				deployers = append(deployers, types.SetSmartContractDeployersProposal_Deployer{
+					ChainReferenceID: chainReferenceID,
+					ContractAddress:  address,
+				})
+			}
+
+			from := clientCtx.GetFromAddress()
+
+			title, err := cmd.Flags().GetString(cli.FlagTitle)
+			if err != nil {
+				return fmt.Errorf("failed to get title: %w", err)
+			}
+			summary, err := cmd.Flags().GetString(cli.FlagSummary)
+			if err != nil {
+				return fmt.Errorf("failed to get summary: %w", err)
+			}
+
+			proposal := &types.SetSmartContractDeployersProposal{
+				Title:     title,
+				Summary:   summary,
+				Deployers: deployers,
 			}
 			depositStr, err := cmd.Flags().GetString(cli.FlagDeposit)
 			if err != nil {

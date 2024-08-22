@@ -21,8 +21,10 @@ func GetTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(CmdDeploySmartContract())
 	cmd.AddCommand(CmdRemoveSmartContractDeployment())
+	cmd.AddCommand(CmdUploadUserSmartContract())
+	cmd.AddCommand(CmdRemoveUserSmartContract())
+	cmd.AddCommand(CmdDeployUserSmartContract())
 
 	return cmd
 }

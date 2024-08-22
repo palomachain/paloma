@@ -100,14 +100,14 @@ func (k Keeper) checkAndProcessEstimatedMessage(ctx context.Context,
 		return fmt.Errorf("failed to set elected gas estimate: %w", err)
 	}
 
-	if err := k.checkAndProcessEstimatedSubmitLogicCall(ctx, msg, q, estimate); err != nil {
+	if err := k.checkAndProcessEstimatedFeePayer(ctx, msg, q, estimate); err != nil {
 		return fmt.Errorf("failed to process estimated submit logic call: %w", err)
 	}
 
 	return nil
 }
 
-func (k Keeper) checkAndProcessEstimatedSubmitLogicCall(
+func (k Keeper) checkAndProcessEstimatedFeePayer(
 	ctx context.Context,
 	msg types.QueuedSignedMessageI,
 	q consensus.Queuer,
@@ -117,9 +117,9 @@ func (k Keeper) checkAndProcessEstimatedSubmitLogicCall(
 	if err != nil {
 		return fmt.Errorf("failed to convert message to evm message: %w", err)
 	}
-	action, ok := m.Action.(*evmtypes.Message_SubmitLogicCall)
+	action, ok := m.Action.(evmtypes.FeePayer)
 	if !ok {
-		// Skip messages that are not SubmitLogicCall
+		// Skip messages that do not contain fees
 		return nil
 	}
 
@@ -127,11 +127,14 @@ func (k Keeper) checkAndProcessEstimatedSubmitLogicCall(
 	if err != nil {
 		return fmt.Errorf("failed to parse validator address: %w", err)
 	}
+
 	fees, err := k.calculateFeesForEstimate(ctx, valAddr, m.GetChainReferenceID(), estimate)
 	if err != nil {
 		return fmt.Errorf("failed to calculate fees for estimate: %w", err)
 	}
-	action.SubmitLogicCall.Fees = fees
+
+	action.SetFees(fees)
+
 	_, err = q.Put(ctx, m, &consensus.PutOptions{
 		MsgIDToReplace: msg.GetId(),
 	})
@@ -144,8 +147,8 @@ func (k Keeper) calculateFeesForEstimate(
 	relayer sdk.ValAddress,
 	chainReferenceID string,
 	estimate uint64,
-) (*evmtypes.SubmitLogicCall_Fees, error) {
-	fees := &evmtypes.SubmitLogicCall_Fees{}
+) (*evmtypes.Fees, error) {
+	fees := &evmtypes.Fees{}
 	multiplicators, err := k.feeProvider.GetCombinedFeesForRelay(ctx, relayer, chainReferenceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get fee settings: %w", err)

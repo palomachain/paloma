@@ -24,7 +24,7 @@ func setupTestChainSupport(
 	tk *evmmocks.TreasuryKeeper,
 	chain *types.AddChainProposal,
 	k *Keeper,
-) error {
+) (uint64, error) {
 	consensuskeeper.On("PutMessageInQueue",
 		mock.Anything,
 		mock.Anything,
@@ -45,19 +45,23 @@ func setupTestChainSupport(
 		big.NewInt(55),
 	)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if err := k.SetFeeManagerAddress(ctx, chain.GetChainReferenceID(), cDummyFeeMgrAddress); err != nil {
-		return fmt.Errorf("failed to set fee manager address: %w", err)
+		return 0, fmt.Errorf("failed to set fee manager address: %w", err)
+	}
+
+	if err := k.SetSmartContractDeployer(ctx, chain.GetChainReferenceID(), cDummySmartContractDeployer); err != nil {
+		return 0, fmt.Errorf("failed to set smart contract deployer: %w", err)
 	}
 
 	sc, err := k.SaveNewSmartContract(ctx, contractAbi, common.FromHex(contractBytecodeStr))
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return k.SetAsCompassContract(ctx, sc)
+	return sc.Id, k.SetAsCompassContract(ctx, sc)
 }
 
 var _ = Describe("attest upload smart contract", func() {
@@ -95,7 +99,7 @@ var _ = Describe("attest upload smart contract", func() {
 		ms.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).
 			Return(uint64(100), nil).Maybe()
 
-		err := setupTestChainSupport(ctx, consensuskeeper, ms.MetrixKeeper, ms.TreasuryKeeper, testChain, k)
+		_, err := setupTestChainSupport(ctx, consensuskeeper, ms.MetrixKeeper, ms.TreasuryKeeper, testChain, k)
 		Expect(err).To(BeNil())
 	})
 

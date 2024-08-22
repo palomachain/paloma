@@ -2,6 +2,7 @@ package types
 
 import (
 	fmt "fmt"
+	"slices"
 
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 )
@@ -20,7 +21,28 @@ func (h *TxExecutedProof) BytesToHash() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return tx.MarshalBinary()
+
+	if h.SerializedReceipt == nil {
+		// We don't have a receipt, just return the transaction
+		return tx.MarshalBinary()
+	}
+
+	receipt, err := h.GetReceipt()
+	if err != nil {
+		return nil, err
+	}
+
+	serializedTX, err := tx.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	serializedReceipt, err := receipt.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	return slices.Concat(serializedTX, serializedReceipt), nil
 }
 
 func (h *TxExecutedProof) GetTX() (*ethtypes.Transaction, error) {
@@ -32,6 +54,17 @@ func (h *TxExecutedProof) GetTX() (*ethtypes.Transaction, error) {
 	}
 
 	return tx, nil
+}
+
+func (h *TxExecutedProof) GetReceipt() (*ethtypes.Receipt, error) {
+	receipt := &ethtypes.Receipt{}
+
+	err := receipt.UnmarshalBinary(h.SerializedReceipt)
+	if err != nil {
+		return nil, err
+	}
+
+	return receipt, nil
 }
 
 func (h *SmartContractExecutionErrorProof) BytesToHash() ([]byte, error) {

@@ -170,18 +170,7 @@ func (_m *Message_SubmitLogicCall) keccak256(
 
 	copy(bytes32[:], orig.GetTurnstoneID())
 
-	var fees *SubmitLogicCall_Fees
-	if m.Fees == nil {
-		// If we have no fees set in the message, we use the same defaults as
-		// pigeon
-		fees = &SubmitLogicCall_Fees{
-			RelayerFee:   100_000,
-			CommunityFee: 100_000,
-			SecurityFee:  100_000,
-		}
-	} else {
-		fees = m.Fees
-	}
+	fees := feesOrDefault(m.Fees)
 
 	// Left-pad the address with zeroes
 	padding := bytes.Repeat([]byte{0}, 32-len(m.SenderAddress))
@@ -195,6 +184,74 @@ func (_m *Message_SubmitLogicCall) keccak256(
 			common.HexToAddress(m.GetHexContractAddress()),
 			m.GetPayload(),
 		},
+		struct {
+			RelayerFee            *big.Int
+			CommunityFee          *big.Int
+			SecurityFee           *big.Int
+			FeePayerPalomaAddress [32]byte
+		}{
+			new(big.Int).SetUint64(fees.RelayerFee),
+			new(big.Int).SetUint64(fees.CommunityFee),
+			new(big.Int).SetUint64(fees.SecurityFee),
+			senderAddress,
+		},
+		new(big.Int).SetInt64(int64(nonce)),
+		bytes32,
+		big.NewInt(m.GetDeadline()),
+		common.HexToAddress(orig.AssigneeRemoteAddress),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	bytes = append(method.ID[:], bytes...)
+
+	return crypto.Keccak256(bytes), nil
+}
+
+func (_m *Message_UploadUserSmartContract) keccak256(
+	orig *Message,
+	nonce, _ uint64,
+) ([]byte, error) {
+	m := _m.UploadUserSmartContract
+	// deploy_contract(address,bytes,(uint256,uint256,uint256,bytes32),uint256,bytes32,uint256,address)
+	arguments := abi.Arguments{
+		// deployer
+		{Type: whoops.Must(abi.NewType("address", "", nil))},
+		// bytecode
+		{Type: whoops.Must(abi.NewType("bytes", "", nil))},
+		// fee arguments
+		{Type: whoops.Must(abi.NewType("tuple", "", []abi.ArgumentMarshaling{
+			{Name: "relayer_fee", Type: "uint256"},
+			{Name: "community_fee", Type: "uint256"},
+			{Name: "security_fee", Type: "uint256"},
+			{Name: "fee_payer_paloma_address", Type: "bytes32"},
+		}))},
+		// message id
+		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
+		// turnstone id
+		{Type: whoops.Must(abi.NewType("bytes32", "", nil))},
+		// deadline
+		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
+		// relayer
+		{Type: whoops.Must(abi.NewType("address", "", nil))},
+	}
+
+	method := abi.NewMethod("deploy_contract", "deploy_contract", abi.Function,
+		"", false, false, arguments, abi.Arguments{})
+
+	var bytes32 [32]byte
+	copy(bytes32[:], orig.GetTurnstoneID())
+
+	fees := feesOrDefault(m.Fees)
+
+	// Left-pad the address with zeroes
+	padding := bytes.Repeat([]byte{0}, 32-len(m.SenderAddress))
+	senderAddress := [32]byte(append(padding, m.SenderAddress...))
+
+	bytes, err := arguments.Pack(
+		common.HexToAddress(m.GetDeployerAddress()),
+		m.GetBytecode(),
 		struct {
 			RelayerFee            *big.Int
 			CommunityFee          *big.Int
@@ -307,5 +364,19 @@ func TransformValsetToCompassValset(val *Valset) CompassValset {
 			return big.NewInt(int64(p))
 		}),
 		ValsetId: big.NewInt(int64(val.GetValsetID())),
+	}
+}
+
+func feesOrDefault(fees *Fees) *Fees {
+	if fees != nil {
+		return fees
+	}
+
+	// If we have no fees set in the message, we use the same defaults as
+	// pigeon
+	return &Fees{
+		RelayerFee:   100_000,
+		CommunityFee: 100_000,
+		SecurityFee:  100_000,
 	}
 }

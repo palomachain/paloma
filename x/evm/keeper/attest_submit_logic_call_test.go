@@ -48,7 +48,7 @@ var _ = Describe("attest submit logic call", func() {
 		ms.SkywayKeeper.On("GetLastObservedSkywayNonce", mock.Anything, mock.Anything).
 			Return(uint64(100), nil).Maybe()
 
-		err := setupTestChainSupport(ctx, consensuskeeper, mk, tk, testChain, k)
+		_, err := setupTestChainSupport(ctx, consensuskeeper, mk, tk, testChain, k)
 		Expect(err).To(BeNil())
 	})
 

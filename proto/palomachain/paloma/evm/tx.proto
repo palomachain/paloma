@@ -1,32 +1,28 @@
 syntax = "proto3";
 package palomachain.paloma.evm;
 
-import "gogoproto/gogo.proto";
 import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/empty.proto";
 import "palomachain/paloma/valset/common.proto";
+
 option go_package = "github.com/palomachain/paloma/x/evm/types";
 
 service Msg {
-  rpc DeployNewSmartContract(MsgDeployNewSmartContractRequest)
-      returns (DeployNewSmartContractResponse);
   rpc RemoveSmartContractDeployment(MsgRemoveSmartContractDeploymentRequest)
       returns (RemoveSmartContractDeploymentResponse);
+
+  // ===== User Smart Contracts =====
+  rpc UploadUserSmartContract(MsgUploadUserSmartContractRequest)
+      returns (MsgUploadUserSmartContractResponse);
+
+  rpc RemoveUserSmartContract(MsgRemoveUserSmartContractRequest)
+      returns (google.protobuf.Empty);
+
+  rpc DeployUserSmartContract(MsgDeployUserSmartContractRequest)
+      returns (MsgDeployUserSmartContractResponse);
 }
-
-message MsgDeployNewSmartContractRequest {
-  option (cosmos.msg.v1.signer) = "metadata";
-  reserved 1;  
-  reserved "creator";
-  string title = 2;
-  string description = 3;
-
-  string abiJSON = 4;
-  string bytecodeHex = 5;
-
-  palomachain.paloma.valset.MsgMetadata metadata = 6
-      [ (gogoproto.nullable) = false ];
-}
-message DeployNewSmartContractResponse {}
 
 message MsgRemoveSmartContractDeploymentRequest {
   option (cosmos.msg.v1.signer) = "metadata";
@@ -39,3 +35,42 @@ message MsgRemoveSmartContractDeploymentRequest {
       [ (gogoproto.nullable) = false ];
 }
 message RemoveSmartContractDeploymentResponse {}
+
+message MsgUploadUserSmartContractRequest {
+  option (cosmos.msg.v1.signer) = "metadata";
+
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+
+  string title = 2;
+  string abi_json = 3;
+  string bytecode = 4;
+  string constructor_input = 5;
+}
+
+message MsgUploadUserSmartContractResponse {
+  uint64 id = 1;
+}
+
+message MsgRemoveUserSmartContractRequest {
+  option (cosmos.msg.v1.signer) = "metadata";
+
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+
+  uint64 id = 2;
+}
+
+message MsgDeployUserSmartContractRequest {
+  option (cosmos.msg.v1.signer) = "metadata";
+
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+
+  uint64 id = 2;
+  string target_chain = 3;
+}
+
+message MsgDeployUserSmartContractResponse {
+  uint64 msg_id = 1;
+}

@@ -14,13 +14,14 @@ message Valset {
   uint64 valsetID = 3;
 }
 
+message Fees {
+  uint64 relayerFee = 1;
+  uint64 communityFee = 2;
+  uint64 securityFee = 3;
+}
+
 message SubmitLogicCall {
   message ExecutionRequirements { bool enforceMEVRelay = 1; }
-  message Fees {
-    uint64 relayerFee = 1;
-    uint64 communityFee = 2;
-    uint64 securityFee = 3;
-    }
   string hexContractAddress = 1;
   bytes abi = 2;
   bytes payload = 3;
@@ -47,6 +48,19 @@ message UploadSmartContract {
   uint32 retries = 5;
 }
 
+message UploadUserSmartContract {
+  bytes bytecode = 1;
+  string deployerAddress = 2;
+  int64 deadline = 3;
+
+  bytes senderAddress = 4;
+  int64 blockHeight = 5;
+  uint64 id = 6;
+  uint32 retries = 7;
+
+  Fees fees = 8 [ (gogoproto.nullable) = true ];
+}
+
 message Message {
   // Previous definitions no longer in use.
   reserved 8;
@@ -59,6 +73,7 @@ message Message {
     SubmitLogicCall submitLogicCall = 3;
     UpdateValset updateValset = 4;
     UploadSmartContract uploadSmartContract = 5;
+    UploadUserSmartContract uploadUserSmartContract = 11;
   }
 
   string compassAddr = 6;
@@ -76,7 +91,10 @@ message Message {
   string assigneeRemoteAddress = 10;
 }
 
-message TxExecutedProof { bytes serializedTX = 1; }
+message TxExecutedProof {
+  bytes serializedTX = 1;
+  bytes serializedReceipt = 2 [ (gogoproto.nullable) = true ];
+}
 
 message SmartContractExecutionErrorProof { string errorMessage = 1; }
 
