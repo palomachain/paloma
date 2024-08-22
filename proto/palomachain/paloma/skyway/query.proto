@@ -1,73 +1,121 @@
 syntax = "proto3";
 package palomachain.paloma.skyway;
 
-import "palomachain/paloma/skyway/pool.proto";
-import "palomachain/paloma/skyway/batch.proto";
-import "palomachain/paloma/skyway/attestation.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "palomachain/paloma/skyway/genesis.proto";
-import "palomachain/paloma/skyway/types.proto";
-import "palomachain/paloma/skyway/msgs.proto";
-import "palomachain/paloma/skyway/params.proto";
+import "google/protobuf/empty.proto";
+import "palomachain/paloma/skyway/attestation.proto";
+import "palomachain/paloma/skyway/batch.proto";
 import "palomachain/paloma/skyway/bridge_tax.proto";
 import "palomachain/paloma/skyway/bridge_transfer_limit.proto";
+import "palomachain/paloma/skyway/genesis.proto";
 import "palomachain/paloma/skyway/light_node_sale_contract.proto";
-import "google/protobuf/empty.proto";
+import "palomachain/paloma/skyway/msgs.proto";
+import "palomachain/paloma/skyway/params.proto";
+import "palomachain/paloma/skyway/pool.proto";
+import "palomachain/paloma/skyway/types.proto";
 
 option go_package = "github.com/palomachain/paloma/x/skyway/types";
 
 // Query defines the gRPC querier service
 service Query {
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {}
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/palomachain/paloma/skyway/params";
+  }
+
   rpc LastPendingBatchRequestByAddr(QueryLastPendingBatchRequestByAddrRequest)
-      returns (QueryLastPendingBatchRequestByAddrResponse) {}
+      returns (QueryLastPendingBatchRequestByAddrResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/last-pending-batch-request-by-addr/{address}";
+  }
+
   rpc LastObservedSkywayNonce(QueryLastObservedSkywayNonceRequest)
-      returns (QueryLastObservedSkywayNonceResponse) {}
+      returns (QueryLastObservedSkywayNonceResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/last-observed-skyway-nonce/{chain_reference_id}";
+  }
+
   rpc LastObservedSkywayNonceByAddr(QueryLastObservedSkywayNonceByAddrRequest)
-      returns (QueryLastObservedSkywayNonceResponse) {}
+      returns (QueryLastObservedSkywayNonceResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/last-observed-skyway-nonce/{chain_reference_id}";
+  }
+
   rpc LastObservedSkywayBlock(QueryLastObservedSkywayBlockRequest)
-      returns (QueryLastObservedSkywayBlockResponse) {}
+      returns (QueryLastObservedSkywayBlockResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/last-observed-skyway-block/{chain_reference_id}";
+  }
+
   rpc OutgoingTxBatches(QueryOutgoingTxBatchesRequest)
-      returns (QueryOutgoingTxBatchesResponse) {}
+      returns (QueryOutgoingTxBatchesResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/outgoing-tx-batches/{chain_reference_id}";
+  }
+
   rpc BatchRequestByNonce(QueryBatchRequestByNonceRequest)
-      returns (QueryBatchRequestByNonceResponse) {}
+      returns (QueryBatchRequestByNonceResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/batch-request-by-nonce";
+  }
+
   rpc BatchConfirms(QueryBatchConfirmsRequest)
-      returns (QueryBatchConfirmsResponse) {}
+      returns (QueryBatchConfirmsResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/batch-confirms";
+  }
+
   rpc ERC20ToDenom(QueryERC20ToDenomRequest)
-      returns (QueryERC20ToDenomResponse) {}
+      returns (QueryERC20ToDenomResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/erc20-to-denom/{chain_reference_id}";
+  }
+
   rpc DenomToERC20(QueryDenomToERC20Request)
-      returns (QueryDenomToERC20Response) {}
+      returns (QueryDenomToERC20Response) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/denom-to-erc20/{chain_reference_id}";
+  }
+
   rpc GetAttestations(QueryAttestationsRequest)
-      returns (QueryAttestationsResponse) {}
+      returns (QueryAttestationsResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/attestations/{chain_reference_id}";
+  }
 
   rpc GetErc20ToDenoms(QueryErc20ToDenoms)
-      returns (QueryErc20ToDenomsResponse) {}
+      returns (QueryErc20ToDenomsResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/erc20-to-denoms";
+  }
 
   rpc GetPendingSendToRemote(QueryPendingSendToRemote)
-      returns (QueryPendingSendToRemoteResponse) {}
+      returns (QueryPendingSendToRemoteResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/pending-send-to-remote/{sender_address}";
+  }
 
   rpc GetBridgeTaxes(google.protobuf.Empty) returns (QueryBridgeTaxesResponse) {
-    option (google.api.http).get = "/palomachain/paloma/skyway/bridge_taxes";
+    option (google.api.http).get = "/palomachain/paloma/skyway/bridge-taxes";
   }
 
   rpc GetBridgeTransferLimits(google.protobuf.Empty)
       returns (QueryBridgeTransferLimitsResponse) {
     option (google.api.http).get =
-      "/palomachain/paloma/skyway/all_bridge_transfer_limits";
+      "/palomachain/paloma/skyway/all-bridge-transfer-limits";
   }
 
   rpc GetLightNodeSaleContracts(google.protobuf.Empty)
       returns (QueryLightNodeSaleContractsResponse) {
     option (google.api.http).get =
-      "/palomachain/paloma/skyway/light_node_sale_contracts";
+      "/palomachain/paloma/skyway/light-node-sale-contracts";
   }
 
   rpc LastPendingBatchForGasEstimation(QueryLastPendingBatchForGasEstimationRequest)
       returns (QueryLastPendingBatchForGasEstimationResponse) {
     option (google.api.http).get =
-      "/palomachain/paloma/skyway/pending_batch_for_gas_estimation";
-        }
+      "/palomachain/paloma/skyway/pending-batch-for-gas-estimation/{chain_reference_id}";
+  }
 }
 
 message QueryParamsRequest {}
