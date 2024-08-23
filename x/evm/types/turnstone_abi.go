@@ -17,6 +17,10 @@ import (
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 )
 
+type keccak256able interface {
+	keccak256(*Message, uint64, uint64) ([]byte, error)
+}
+
 type Signature struct {
 	V *big.Int
 	R *big.Int
@@ -37,14 +41,19 @@ type CompassConsensus struct {
 }
 
 type CompassLogicCallArgs struct {
-	Payload              []byte
 	LogicContractAddress common.Address
+	Payload              []byte
 }
 
 var (
 	_ consensustypes.MessageHasher = (*Message)(nil)
 	_ consensustypes.MessageHasher = (*ValidatorBalancesAttestation)(nil)
 	_ consensustypes.MessageHasher = (*ReferenceBlockAttestation)(nil)
+	_ keccak256able                = (*Message_UpdateValset)(nil)
+	_ keccak256able                = (*Message_SubmitLogicCall)(nil)
+	_ keccak256able                = (*Message_UploadSmartContract)(nil)
+	_ keccak256able                = (*Message_UploadUserSmartContract)(nil)
+	_ keccak256able                = (*Message_CompassHandover)(nil)
 )
 
 func (_m *Message_UpdateValset) keccak256(
@@ -209,6 +218,58 @@ func (_m *Message_SubmitLogicCall) keccak256(
 	return crypto.Keccak256(bytes), nil
 }
 
+func (_m *Message_CompassHandover) keccak256(
+	orig *Message,
+	_, gasEstimate uint64,
+) ([]byte, error) {
+	m := _m.CompassHandover
+	// compass_update_batch((address,bytes)[],uint256,address,uint256)
+	arguments := abi.Arguments{
+		// arguments
+		{Type: whoops.Must(abi.NewType("tuple[]", "", []abi.ArgumentMarshaling{
+			{Name: "address", Type: "address"},
+			{Name: "payload", Type: "bytes"},
+		}))},
+		// deadline
+		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
+		// relayer
+		{Type: whoops.Must(abi.NewType("address", "", nil))},
+		// gas estimate
+		{Type: whoops.Must(abi.NewType("uint256", "", nil))},
+	}
+
+	method := abi.NewMethod("compass_update_batch", "compass_update_batch", abi.Function, "", false, false, arguments, abi.Arguments{})
+	estimate := gasEstimate
+	if estimate == 0 {
+		// If there's no estimate, we use the same default as pigeon
+		estimate = 300_000
+	}
+
+	type logicCallArg struct {
+		Address common.Address
+		Payload []byte
+	}
+
+	bytes, err := arguments.Pack(
+		slice.Map(m.GetForwardCallArgs(), func(arg CompassHandover_ForwardCallArgs) logicCallArg {
+			return logicCallArg{
+				common.HexToAddress(arg.GetHexContractAddress()),
+				arg.GetPayload(),
+			}
+		}),
+		big.NewInt(m.GetDeadline()),
+		common.HexToAddress(orig.AssigneeRemoteAddress),
+		big.NewInt(0).SetUint64(estimate),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	bytes = append(method.ID[:], bytes...)
+
+	return crypto.Keccak256(bytes), nil
+}
+
 func (_m *Message_UploadUserSmartContract) keccak256(
 	orig *Message,
 	nonce, _ uint64,
@@ -284,9 +345,6 @@ func (m *Message) SetAssignee(ctx sdk.Context, val, remoteAddr string) {
 }
 
 func (m *Message) Keccak256WithSignedMessage(q *consensustypes.QueuedSignedMessage) ([]byte, error) {
-	type keccak256able interface {
-		keccak256(*Message, uint64, uint64) ([]byte, error)
-	}
 	k, ok := m.GetAction().(keccak256able)
 	if !ok {
 		return nil, errors.New("message's action is not hashable")
