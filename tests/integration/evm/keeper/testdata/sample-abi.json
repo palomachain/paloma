@@ -1,550 +1,1130 @@
 [
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "checkpoint",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "name": "valset_id",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "event_id",
-        "type": "uint256"
-      }
-    ],
-    "name": "ValsetUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "logic_contract_address",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "payload",
-        "type": "bytes"
-      },
-      {
-        "indexed": false,
-        "name": "message_id",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "event_id",
-        "type": "uint256"
-      }
-    ],
-    "name": "LogicCallEvent",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "receiver",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "event_id",
-        "type": "uint256"
-      }
-    ],
-    "name": "SendToPalomaEvent",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "batch_id",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "nonce",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "event_id",
-        "type": "uint256"
-      }
-    ],
-    "name": "BatchSendEvent",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "paloma_denom",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "name": "token_contract",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "name": "symbol",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "name": "decimals",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "name": "event_id",
-        "type": "uint256"
-      }
-    ],
-    "name": "ERC20DeployedEvent",
-    "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "name": "_compass_id",
-        "type": "bytes32"
-      },
-      {
-        "name": "_event_id",
-        "type": "uint256"
-      },
-      {
-        "name": "_gravity_nonce",
-        "type": "uint256"
-      },
-      {
-        "components": [
-          {
-            "name": "validators",
-            "type": "address[]"
-          },
-          {
-            "name": "powers",
-            "type": "uint256[]"
-          },
-          {
-            "name": "valset_id",
-            "type": "uint256"
-          }
-        ],
-        "name": "valset",
-        "type": "tuple"
-      },
-      {
-        "name": "_fee_manager",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "components": [
-              {
-                "name": "validators",
-                "type": "address[]"
-              },
-              {
-                "name": "powers",
-                "type": "uint256[]"
-              },
-              {
-                "name": "valset_id",
-                "type": "uint256"
-              }
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":false,
+            "name":"checkpoint",
+            "type":"bytes32"
+         },
+         {
+            "indexed":false,
+            "name":"valset_id",
+            "type":"uint256"
+         },
+         {
+            "indexed":false,
+            "name":"event_id",
+            "type":"uint256"
+         }
+      ],
+      "name":"ValsetUpdated",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":false,
+            "name":"logic_contract_address",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"payload",
+            "type":"bytes"
+         },
+         {
+            "indexed":false,
+            "name":"message_id",
+            "type":"uint256"
+         },
+         {
+            "indexed":false,
+            "name":"event_id",
+            "type":"uint256"
+         }
+      ],
+      "name":"LogicCallEvent",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":false,
+            "name":"token",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"sender",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"receiver",
+            "type":"bytes32"
+         },
+         {
+            "indexed":false,
+            "name":"amount",
+            "type":"uint256"
+         },
+         {
+            "indexed":false,
+            "name":"nonce",
+            "type":"uint256"
+         },
+         {
+            "indexed":false,
+            "name":"event_id",
+            "type":"uint256"
+         }
+      ],
+      "name":"SendToPalomaEvent",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":false,
+            "name":"token",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"batch_id",
+            "type":"uint256"
+         },
+         {
+            "indexed":false,
+            "name":"nonce",
+            "type":"uint256"
+         },
+         {
+            "indexed":false,
+            "name":"event_id",
+            "type":"uint256"
+         }
+      ],
+      "name":"BatchSendEvent",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":false,
+            "name":"paloma_denom",
+            "type":"string"
+         },
+         {
+            "indexed":false,
+            "name":"token_contract",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"name",
+            "type":"string"
+         },
+         {
+            "indexed":false,
+            "name":"symbol",
+            "type":"string"
+         },
+         {
+            "indexed":false,
+            "name":"decimals",
+            "type":"uint8"
+         },
+         {
+            "indexed":false,
+            "name":"event_id",
+            "type":"uint256"
+         }
+      ],
+      "name":"ERC20DeployedEvent",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":false,
+            "name":"depositor_paloma_address",
+            "type":"bytes32"
+         },
+         {
+            "indexed":false,
+            "name":"sender",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"amount",
+            "type":"uint256"
+         }
+      ],
+      "name":"FundsDepositedEvent",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":false,
+            "name":"receiver",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"amount",
+            "type":"uint256"
+         }
+      ],
+      "name":"FundsWithdrawnEvent",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":false,
+            "name":"contract_address",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"payload",
+            "type":"bytes"
+         },
+         {
+            "indexed":false,
+            "name":"event_id",
+            "type":"uint256"
+         }
+      ],
+      "name":"UpdateCompass",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":false,
+            "name":"contract_address",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"buyer",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"paloma",
+            "type":"bytes32"
+         },
+         {
+            "indexed":false,
+            "name":"node_count",
+            "type":"uint256"
+         },
+         {
+            "indexed":false,
+            "name":"grain_amount",
+            "type":"uint256"
+         },
+         {
+            "indexed":false,
+            "name":"nonce",
+            "type":"uint256"
+         },
+         {
+            "indexed":false,
+            "name":"event_id",
+            "type":"uint256"
+         }
+      ],
+      "name":"NodeSaleEvent",
+      "type":"event"
+   },
+   {
+      "anonymous":false,
+      "inputs":[
+         {
+            "indexed":false,
+            "name":"child",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"deployer",
+            "type":"address"
+         },
+         {
+            "indexed":false,
+            "name":"event_id",
+            "type":"uint256"
+         }
+      ],
+      "name":"ContractDeployed",
+      "type":"event"
+   },
+   {
+      "inputs":[
+         {
+            "name":"_compass_id",
+            "type":"bytes32"
+         },
+         {
+            "name":"_event_id",
+            "type":"uint256"
+         },
+         {
+            "name":"_gravity_nonce",
+            "type":"uint256"
+         },
+         {
+            "components":[
+               {
+                  "name":"validators",
+                  "type":"address[]"
+               },
+               {
+                  "name":"powers",
+                  "type":"uint256[]"
+               },
+               {
+                  "name":"valset_id",
+                  "type":"uint256"
+               }
             ],
-            "name": "valset",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "name": "v",
-                "type": "uint256"
-              },
-              {
-                "name": "r",
-                "type": "uint256"
-              },
-              {
-                "name": "s",
-                "type": "uint256"
-              }
+            "name":"valset",
+            "type":"tuple"
+         },
+         {
+            "name":"fee_manager",
+            "type":"address"
+         }
+      ],
+      "stateMutability":"nonpayable",
+      "type":"constructor"
+   },
+   {
+      "inputs":[
+         {
+            "components":[
+               {
+                  "components":[
+                     {
+                        "name":"validators",
+                        "type":"address[]"
+                     },
+                     {
+                        "name":"powers",
+                        "type":"uint256[]"
+                     },
+                     {
+                        "name":"valset_id",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"valset",
+                  "type":"tuple"
+               },
+               {
+                  "components":[
+                     {
+                        "name":"v",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"r",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"s",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"signatures",
+                  "type":"tuple[]"
+               }
             ],
-            "name": "signatures",
-            "type": "tuple[]"
-          }
-        ],
-        "name": "consensus",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "name": "validators",
-            "type": "address[]"
-          },
-          {
-            "name": "powers",
-            "type": "uint256[]"
-          },
-          {
-            "name": "valset_id",
-            "type": "uint256"
-          }
-        ],
-        "name": "new_valset",
-        "type": "tuple"
-      }
-    ],
-    "name": "update_valset",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "components": [
-              {
-                "name": "validators",
-                "type": "address[]"
-              },
-              {
-                "name": "powers",
-                "type": "uint256[]"
-              },
-              {
-                "name": "valset_id",
-                "type": "uint256"
-              }
+            "name":"consensus",
+            "type":"tuple"
+         },
+         {
+            "components":[
+               {
+                  "name":"validators",
+                  "type":"address[]"
+               },
+               {
+                  "name":"powers",
+                  "type":"uint256[]"
+               },
+               {
+                  "name":"valset_id",
+                  "type":"uint256"
+               }
             ],
-            "name": "valset",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "name": "v",
-                "type": "uint256"
-              },
-              {
-                "name": "r",
-                "type": "uint256"
-              },
-              {
-                "name": "s",
-                "type": "uint256"
-              }
+            "name":"new_valset",
+            "type":"tuple"
+         },
+         {
+            "name":"relayer",
+            "type":"address"
+         },
+         {
+            "name":"gas_estimate",
+            "type":"uint256"
+         }
+      ],
+      "name":"update_valset",
+      "outputs":[
+         
+      ],
+      "stateMutability":"nonpayable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "components":[
+               {
+                  "components":[
+                     {
+                        "name":"validators",
+                        "type":"address[]"
+                     },
+                     {
+                        "name":"powers",
+                        "type":"uint256[]"
+                     },
+                     {
+                        "name":"valset_id",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"valset",
+                  "type":"tuple"
+               },
+               {
+                  "components":[
+                     {
+                        "name":"v",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"r",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"s",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"signatures",
+                  "type":"tuple[]"
+               }
             ],
-            "name": "signatures",
-            "type": "tuple[]"
-          }
-        ],
-        "name": "consensus",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "name": "logic_contract_address",
-            "type": "address"
-          },
-          {
-            "name": "payload",
-            "type": "bytes"
-          }
-        ],
-        "name": "args",
-        "type": "tuple"
-      },
-      {
-        "name": "message_id",
-        "type": "uint256"
-      },
-      {
-        "name": "deadline",
-        "type": "uint256"
-      }
-    ],
-    "name": "submit_logic_call",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "name": "receiver",
-        "type": "string"
-      },
-      {
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "send_token_to_paloma",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "components": [
-              {
-                "name": "validators",
-                "type": "address[]"
-              },
-              {
-                "name": "powers",
-                "type": "uint256[]"
-              },
-              {
-                "name": "valset_id",
-                "type": "uint256"
-              }
+            "name":"consensus",
+            "type":"tuple"
+         },
+         {
+            "components":[
+               {
+                  "name":"logic_contract_address",
+                  "type":"address"
+               },
+               {
+                  "name":"payload",
+                  "type":"bytes"
+               }
             ],
-            "name": "valset",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "name": "v",
-                "type": "uint256"
-              },
-              {
-                "name": "r",
-                "type": "uint256"
-              },
-              {
-                "name": "s",
-                "type": "uint256"
-              }
+            "name":"args",
+            "type":"tuple"
+         },
+         {
+            "components":[
+               {
+                  "name":"relayer_fee",
+                  "type":"uint256"
+               },
+               {
+                  "name":"community_fee",
+                  "type":"uint256"
+               },
+               {
+                  "name":"security_fee",
+                  "type":"uint256"
+               },
+               {
+                  "name":"fee_payer_paloma_address",
+                  "type":"bytes32"
+               }
             ],
-            "name": "signatures",
-            "type": "tuple[]"
-          }
-        ],
-        "name": "consensus",
-        "type": "tuple"
-      },
-      {
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "components": [
-          {
-            "name": "receiver",
-            "type": "address[]"
-          },
-          {
-            "name": "amount",
-            "type": "uint256[]"
-          }
-        ],
-        "name": "args",
-        "type": "tuple"
-      },
-      {
-        "name": "batch_id",
-        "type": "uint256"
-      },
-      {
-        "name": "deadline",
-        "type": "uint256"
-      }
-    ],
-    "name": "submit_batch",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "name": "_paloma_denom",
-        "type": "string"
-      },
-      {
-        "name": "_name",
-        "type": "string"
-      },
-      {
-        "name": "_symbol",
-        "type": "string"
-      },
-      {
-        "name": "_decimals",
-        "type": "uint8"
-      },
-      {
-        "name": "_blueprint",
-        "type": "address"
-      }
-    ],
-    "name": "deploy_erc20",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "compass_id",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "last_checkpoint",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "last_valset_id",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "last_event_id",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "last_gravity_nonce",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "name": "arg0",
-        "type": "address"
-      }
-    ],
-    "name": "last_batch_id",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "name": "arg0",
-        "type": "uint256"
-      }
-    ],
-    "name": "message_id_used",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
+            "name":"fee_args",
+            "type":"tuple"
+         },
+         {
+            "name":"message_id",
+            "type":"uint256"
+         },
+         {
+            "name":"deadline",
+            "type":"uint256"
+         },
+         {
+            "name":"relayer",
+            "type":"address"
+         }
+      ],
+      "name":"submit_logic_call",
+      "outputs":[
+         
+      ],
+      "stateMutability":"nonpayable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "name":"token",
+            "type":"address"
+         },
+         {
+            "name":"receiver",
+            "type":"bytes32"
+         },
+         {
+            "name":"amount",
+            "type":"uint256"
+         }
+      ],
+      "name":"send_token_to_paloma",
+      "outputs":[
+         
+      ],
+      "stateMutability":"nonpayable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "components":[
+               {
+                  "components":[
+                     {
+                        "name":"validators",
+                        "type":"address[]"
+                     },
+                     {
+                        "name":"powers",
+                        "type":"uint256[]"
+                     },
+                     {
+                        "name":"valset_id",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"valset",
+                  "type":"tuple"
+               },
+               {
+                  "components":[
+                     {
+                        "name":"v",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"r",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"s",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"signatures",
+                  "type":"tuple[]"
+               }
+            ],
+            "name":"consensus",
+            "type":"tuple"
+         },
+         {
+            "name":"token",
+            "type":"address"
+         },
+         {
+            "components":[
+               {
+                  "name":"receiver",
+                  "type":"address[]"
+               },
+               {
+                  "name":"amount",
+                  "type":"uint256[]"
+               }
+            ],
+            "name":"args",
+            "type":"tuple"
+         },
+         {
+            "name":"batch_id",
+            "type":"uint256"
+         },
+         {
+            "name":"deadline",
+            "type":"uint256"
+         },
+         {
+            "name":"relayer",
+            "type":"address"
+         },
+         {
+            "name":"gas_estimate",
+            "type":"uint256"
+         }
+      ],
+      "name":"submit_batch",
+      "outputs":[
+         
+      ],
+      "stateMutability":"nonpayable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "name":"buyer",
+            "type":"address"
+         },
+         {
+            "name":"paloma",
+            "type":"bytes32"
+         },
+         {
+            "name":"node_count",
+            "type":"uint256"
+         },
+         {
+            "name":"grain_amount",
+            "type":"uint256"
+         }
+      ],
+      "name":"emit_nodesale_event",
+      "outputs":[
+         
+      ],
+      "stateMutability":"nonpayable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "name":"_paloma_denom",
+            "type":"string"
+         },
+         {
+            "name":"_name",
+            "type":"string"
+         },
+         {
+            "name":"_symbol",
+            "type":"string"
+         },
+         {
+            "name":"_decimals",
+            "type":"uint8"
+         },
+         {
+            "name":"_blueprint",
+            "type":"address"
+         }
+      ],
+      "name":"deploy_erc20",
+      "outputs":[
+         
+      ],
+      "stateMutability":"nonpayable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "name":"contract_address",
+            "type":"address"
+         },
+         {
+            "name":"payload",
+            "type":"bytes"
+         }
+      ],
+      "name":"arbitrary_view",
+      "outputs":[
+         {
+            "name":"",
+            "type":"bytes"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "name":"depositor_paloma_address",
+            "type":"bytes32"
+         },
+         {
+            "name":"amount",
+            "type":"uint256"
+         }
+      ],
+      "name":"deposit",
+      "outputs":[
+         
+      ],
+      "stateMutability":"payable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "name":"amount",
+            "type":"uint256"
+         },
+         {
+            "name":"dex",
+            "type":"address"
+         },
+         {
+            "name":"payload",
+            "type":"bytes"
+         },
+         {
+            "name":"min_grain",
+            "type":"uint256"
+         }
+      ],
+      "name":"withdraw",
+      "outputs":[
+         
+      ],
+      "stateMutability":"nonpayable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "name":"amount",
+            "type":"uint256"
+         }
+      ],
+      "name":"security_fee_topup",
+      "outputs":[
+         
+      ],
+      "stateMutability":"payable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "components":[
+               {
+                  "components":[
+                     {
+                        "name":"validators",
+                        "type":"address[]"
+                     },
+                     {
+                        "name":"powers",
+                        "type":"uint256[]"
+                     },
+                     {
+                        "name":"valset_id",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"valset",
+                  "type":"tuple"
+               },
+               {
+                  "components":[
+                     {
+                        "name":"v",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"r",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"s",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"signatures",
+                  "type":"tuple[]"
+               }
+            ],
+            "name":"consensus",
+            "type":"tuple"
+         },
+         {
+            "name":"message_id",
+            "type":"uint256"
+         },
+         {
+            "name":"deadline",
+            "type":"uint256"
+         },
+         {
+            "name":"receiver",
+            "type":"bytes32"
+         },
+         {
+            "name":"relayer",
+            "type":"address"
+         },
+         {
+            "name":"gas_estimate",
+            "type":"uint256"
+         },
+         {
+            "name":"amount",
+            "type":"uint256"
+         },
+         {
+            "name":"dex",
+            "type":"address"
+         },
+         {
+            "name":"payload",
+            "type":"bytes"
+         },
+         {
+            "name":"min_grain",
+            "type":"uint256"
+         }
+      ],
+      "name":"bridge_community_tax_to_paloma",
+      "outputs":[
+         
+      ],
+      "stateMutability":"nonpayable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "components":[
+               {
+                  "components":[
+                     {
+                        "name":"validators",
+                        "type":"address[]"
+                     },
+                     {
+                        "name":"powers",
+                        "type":"uint256[]"
+                     },
+                     {
+                        "name":"valset_id",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"valset",
+                  "type":"tuple"
+               },
+               {
+                  "components":[
+                     {
+                        "name":"v",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"r",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"s",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"signatures",
+                  "type":"tuple[]"
+               }
+            ],
+            "name":"consensus",
+            "type":"tuple"
+         },
+         {
+            "components":[
+               {
+                  "name":"logic_contract_address",
+                  "type":"address"
+               },
+               {
+                  "name":"payload",
+                  "type":"bytes"
+               }
+            ],
+            "name":"update_compass_args",
+            "type":"tuple[]"
+         },
+         {
+            "name":"deadline",
+            "type":"uint256"
+         },
+         {
+            "name":"gas_estimate",
+            "type":"uint256"
+         },
+         {
+            "name":"relayer",
+            "type":"address"
+         }
+      ],
+      "name":"compass_update_batch",
+      "outputs":[
+         
+      ],
+      "stateMutability":"nonpayable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "components":[
+               {
+                  "components":[
+                     {
+                        "name":"validators",
+                        "type":"address[]"
+                     },
+                     {
+                        "name":"powers",
+                        "type":"uint256[]"
+                     },
+                     {
+                        "name":"valset_id",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"valset",
+                  "type":"tuple"
+               },
+               {
+                  "components":[
+                     {
+                        "name":"v",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"r",
+                        "type":"uint256"
+                     },
+                     {
+                        "name":"s",
+                        "type":"uint256"
+                     }
+                  ],
+                  "name":"signatures",
+                  "type":"tuple[]"
+               }
+            ],
+            "name":"consensus",
+            "type":"tuple"
+         },
+         {
+            "name":"_deployer",
+            "type":"address"
+         },
+         {
+            "name":"_bytecode",
+            "type":"bytes"
+         },
+         {
+            "components":[
+               {
+                  "name":"relayer_fee",
+                  "type":"uint256"
+               },
+               {
+                  "name":"community_fee",
+                  "type":"uint256"
+               },
+               {
+                  "name":"security_fee",
+                  "type":"uint256"
+               },
+               {
+                  "name":"fee_payer_paloma_address",
+                  "type":"bytes32"
+               }
+            ],
+            "name":"fee_args",
+            "type":"tuple"
+         },
+         {
+            "name":"message_id",
+            "type":"uint256"
+         },
+         {
+            "name":"deadline",
+            "type":"uint256"
+         },
+         {
+            "name":"relayer",
+            "type":"address"
+         }
+      ],
+      "name":"deploy_contract",
+      "outputs":[
+         
+      ],
+      "stateMutability":"nonpayable",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         
+      ],
+      "name":"compass_id",
+      "outputs":[
+         {
+            "name":"",
+            "type":"bytes32"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         
+      ],
+      "name":"last_checkpoint",
+      "outputs":[
+         {
+            "name":"",
+            "type":"bytes32"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         
+      ],
+      "name":"last_valset_id",
+      "outputs":[
+         {
+            "name":"",
+            "type":"uint256"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         
+      ],
+      "name":"last_event_id",
+      "outputs":[
+         {
+            "name":"",
+            "type":"uint256"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         
+      ],
+      "name":"last_gravity_nonce",
+      "outputs":[
+         {
+            "name":"",
+            "type":"uint256"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "name":"arg0",
+            "type":"address"
+         }
+      ],
+      "name":"last_batch_id",
+      "outputs":[
+         {
+            "name":"",
+            "type":"uint256"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         {
+            "name":"arg0",
+            "type":"uint256"
+         }
+      ],
+      "name":"message_id_used",
+      "outputs":[
+         {
+            "name":"",
+            "type":"bool"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         
+      ],
+      "name":"slc_switch",
+      "outputs":[
+         {
+            "name":"",
+            "type":"bool"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   },
+   {
+      "inputs":[
+         
+      ],
+      "name":"FEE_MANAGER",
+      "outputs":[
+         {
+            "name":"",
+            "type":"address"
+         }
+      ],
+      "stateMutability":"view",
+      "type":"function"
+   }
 ]

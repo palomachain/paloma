@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// TODO: Implement
 var _ = Describe("attest submit logic call", func() {
 	var k *Keeper
 	var ctx sdk.Context
@@ -130,35 +131,6 @@ var _ = Describe("attest submit logic call", func() {
 				It("should not put message back into the queue", func() {
 					// Should be called only once on setup
 					consensuskeeper.AssertNumberOfCalls(GinkgoT(), "PutMessageInQueue", 1)
-				})
-			})
-
-			Context("with ERC20 transfer", func() {
-				BeforeEach(func() {
-					k.deploymentCache.Add(ctx, testChain.GetChainReferenceID(), 1, 123)
-					dep, _ := k.getSmartContractDeploymentByContractID(ctx, 1, testChain.GetChainReferenceID())
-					dep.Erc20Transfers = append(dep.Erc20Transfers, types.SmartContractDeployment_ERC20Transfer{
-						Denom:  "test-denom",
-						Erc20:  "test-denom",
-						MsgID:  123,
-						Status: types.SmartContractDeployment_ERC20Transfer_FAIL,
-					})
-					k.updateSmartContractDeployment(ctx, 1, testChain.ChainReferenceID, dep)
-					consensuskeeper.On("PutMessageInQueue",
-						mock.Anything,
-						mock.Anything,
-						mock.Anything,
-						mock.Anything,
-					).Return(uint64(10), nil).Once()
-					mk.On("Validators", mock.Anything, mock.Anything).Return(&metrixtypes.QueryValidatorsResponse{
-						ValMetrics: getMetrics(3),
-					}, nil)
-					tk.On("GetRelayerFeesByChainReferenceID", mock.Anything, mock.Anything).Return(getFees(3), nil)
-				})
-
-				It("should put message back into the queue", func() {
-					// Should be called only once on setup
-					consensuskeeper.AssertNumberOfCalls(GinkgoT(), "PutMessageInQueue", 2)
 				})
 			})
 		})

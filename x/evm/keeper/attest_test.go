@@ -387,122 +387,139 @@ var _ = g.Describe("attest router", func() {
 						}
 					})
 					successfulProcess()
+				})
 
-					g.When("message is attesting to successful erc20 relink", func() {
-						g.When("no more pending messages after this", func() {
-							g.It("remove the deployment and activate the chain", func() {
-								setupChainSupport()
-								dep, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
-								Expect(dep).ToNot(BeNil())
-								dep.Status = types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER
-								dep.Erc20Transfers = []types.SmartContractDeployment_ERC20Transfer{
-									{
-										Denom:  "denom",
-										Erc20:  "address",
-										MsgID:  123,
-										Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
-									},
-								}
-								err := k.updateSmartContractDeployment(ctx, uint64(1), newChain.ChainReferenceID, dep)
-								Expect(err).To(BeNil())
-								k.deploymentCache.Add(ctx, newChain.ChainReferenceID, uint64(1), 123)
-								Expect(subject()).To(BeNil())
-								res, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
-								Expect(res).To(BeNil())
-								info, err := k.GetChainInfo(ctx, newChain.ChainReferenceID)
-								Expect(err).To(BeNil())
-								Expect(info.ActiveSmartContractID).To(Equal(uint64(1)))
-							})
+				g.Context("there is error proof", func() {
+					g.BeforeEach(func() {
+						// We're not expecting an error, but the tx won't be
+						// processed either
+						isTxProcessed = false
+						proof, _ := codectypes.NewAnyWithValue(&types.SmartContractExecutionErrorProof{ErrorMessage: "doesn't matter"})
+						evidence = []*consensustypes.Evidence{
+							{
+								ValAddress: sdk.ValAddress("validator-1"),
+								Proof:      proof,
+							},
+							{
+								ValAddress: sdk.ValAddress("validator-2"),
+								Proof:      proof,
+							},
+						}
+					})
+
+					g.When("message has not been retried", func() {
+						g.BeforeEach(func() {
+							consensusMsg.Action = &types.Message_SubmitLogicCall{
+								SubmitLogicCall: &types.SubmitLogicCall{
+									Retries: uint32(0),
+								},
+							}
+							consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil).Once()
 						})
-						g.When("more pending messages after this", func() {
-							g.It("updates the deployment", func() {
-								setupChainSupport()
-								dep, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
-								Expect(dep).ToNot(BeNil())
-								dep.Status = types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER
-								dep.Erc20Transfers = []types.SmartContractDeployment_ERC20Transfer{
-									{
-										Denom:  "denom",
-										Erc20:  "address",
-										MsgID:  123,
-										Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
-									},
-									{
-										Denom:  "denom2",
-										Erc20:  "address2",
-										MsgID:  1234,
-										Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
-									},
-								}
-								err := k.updateSmartContractDeployment(ctx, uint64(1), newChain.ChainReferenceID, dep)
-								Expect(err).To(BeNil())
-								k.deploymentCache.Add(ctx, newChain.ChainReferenceID, uint64(1), 123)
-								Expect(subject()).To(BeNil())
-								res, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
-								Expect(res.Erc20Transfers).To(HaveLen(2))
-								Expect(res.Erc20Transfers[0].Status).To(Equal(types.SmartContractDeployment_ERC20Transfer_OK))
-								Expect(res.Erc20Transfers[1].Status).To(Equal(types.SmartContractDeployment_ERC20Transfer_PENDING))
-								info, err := k.GetChainInfo(ctx, newChain.ChainReferenceID)
-								Expect(err).To(BeNil())
-								Expect(info.ActiveSmartContractID).To(Equal(uint64(0)))
-							})
+
+						g.It("should attempt to retry", func() {
+							setupChainSupport()
+							Expect(subject()).To(BeNil())
+							consensukeeper.AssertNumberOfCalls(g.GinkgoT(), "PutMessageInQueue", 2)
 						})
 					})
 
-					g.Context("there is error proof", func() {
+					g.When("message has been retried too many times", func() {
 						g.BeforeEach(func() {
-							// We're not expecting an error, but the tx won't be
-							// processed either
-							isTxProcessed = false
-							proof, _ := codectypes.NewAnyWithValue(&types.SmartContractExecutionErrorProof{ErrorMessage: "doesn't matter"})
-							evidence = []*consensustypes.Evidence{
-								{
-									ValAddress: sdk.ValAddress("validator-1"),
-									Proof:      proof,
-								},
-								{
-									ValAddress: sdk.ValAddress("validator-2"),
-									Proof:      proof,
+							consensusMsg.Action = &types.Message_SubmitLogicCall{
+								SubmitLogicCall: &types.SubmitLogicCall{
+									Retries: uint32(2),
 								},
 							}
 						})
 
-						g.When("message has not been retried", func() {
-							g.BeforeEach(func() {
-								consensusMsg.Action = &types.Message_SubmitLogicCall{
-									SubmitLogicCall: &types.SubmitLogicCall{
-										Retries: uint32(0),
-									},
-								}
-								consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(10), nil).Once()
-							})
-
-							g.It("should attempt to retry", func() {
-								setupChainSupport()
-								Expect(subject()).To(BeNil())
-								consensukeeper.AssertNumberOfCalls(g.GinkgoT(), "PutMessageInQueue", 2)
-							})
-						})
-
-						g.When("message has been retried too many times", func() {
-							g.BeforeEach(func() {
-								consensusMsg.Action = &types.Message_SubmitLogicCall{
-									SubmitLogicCall: &types.SubmitLogicCall{
-										Retries: uint32(2),
-									},
-								}
-							})
-
-							g.It("should not attempt to retry", func() {
-								setupChainSupport()
-								Expect(subject()).To(BeNil())
-								consensukeeper.AssertNumberOfCalls(g.GinkgoT(), "PutMessageInQueue", 1)
-							})
+						g.It("should not attempt to retry", func() {
+							setupChainSupport()
+							Expect(subject()).To(BeNil())
+							consensukeeper.AssertNumberOfCalls(g.GinkgoT(), "PutMessageInQueue", 1)
 						})
 					})
 				})
 
 				g.When("message is UpdateValset", func() {
+					g.BeforeEach(func() {
+						execTx = valsetTx1
+						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
+						evidence = []*consensustypes.Evidence{
+							{
+								ValAddress: sdk.ValAddress("validator-1"),
+								Proof:      proof,
+							},
+							{
+								ValAddress: sdk.ValAddress("validator-2"),
+								Proof:      proof,
+							},
+							{
+								ValAddress: sdk.ValAddress("validator-3"),
+								Proof:      proof,
+							},
+						}
+						consensusMsg.Action = &types.Message_UpdateValset{
+							UpdateValset: &types.UpdateValset{
+								Valset: &types.Valset{
+									ValsetID:   1,
+									Validators: []string{"addr1", "addr2"},
+									Powers:     []uint64{15, 5},
+								},
+							},
+						}
+					})
+
+					g.BeforeEach(func() {
+						q.On("GetAll", mock.Anything).Return(nil, nil)
+					})
+
+					g.When("successfully sets valset for chain", func() {
+						g.BeforeEach(func() {
+							v.On("SetSnapshotOnChain", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+						})
+						successfulProcess()
+					})
+
+					g.When("unsuccessfully sets valset for chain", func() {
+						// We still process successfully even if we get an error here
+						g.BeforeEach(func() {
+							v.On("SetSnapshotOnChain", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("example error"))
+						})
+						successfulProcess()
+					})
+				})
+
+				g.When("message is CompassHandover", func() {
+					// TODO: Implement
+					//      // TODO: move to attest handover
+					// g.When("message is attesting to successful erc20 relink", func() {
+					// 	g.When("no more pending messages after this", func() {
+					// 		g.It("remove the deployment and activate the chain", func() {
+					// 			setupChainSupport()
+					// 			dep, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+					// 			Expect(dep).ToNot(BeNil())
+					// 			dep.Status = types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER
+					// 			dep.Erc20Transfers = []types.SmartContractDeployment_ERC20Transfer{
+					// 				{
+					// 					Denom:  "denom",
+					// 					Erc20:  "address",
+					// 					MsgID:  123,
+					// 					Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
+					// 				},
+					// 			}
+					// 			err := k.updateSmartContractDeployment(ctx, uint64(1), newChain.ChainReferenceID, dep)
+					// 			Expect(err).To(BeNil())
+					// 			k.deploymentCache.Add(ctx, newChain.ChainReferenceID, uint64(1), 123)
+					// 			Expect(subject()).To(BeNil())
+					// 			res, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
+					// 			Expect(res).To(BeNil())
+					// 			info, err := k.GetChainInfo(ctx, newChain.ChainReferenceID)
+					// 			Expect(err).To(BeNil())
+					// 			Expect(info.ActiveSmartContractID).To(Equal(uint64(1)))
+					// 		})
+					// 	})
+					// 	})
 					g.BeforeEach(func() {
 						execTx = valsetTx1
 						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))

@@ -31,12 +31,21 @@ message SubmitLogicCall {
   ExecutionRequirements executionRequirements = 7
       [ (gogoproto.nullable) = false ];
   uint32 retries = 8;
-  Fees fees = 10 
+  Fees fees = 10
       [ (gogoproto.nullable) = true ];
 }
 
-message UpdateValset { 
-  Valset valset = 1; 
+message UpdateValset {
+  Valset valset = 1;
+}
+
+message CompassHandover {
+  message ForwardCallArgs {
+    string hexContractAddress = 1;
+    bytes payload = 2;
+  }
+  repeated ForwardCallArgs forwardCallArgs = 1 [ (gogoproto.nullable) = false ];
+  int64 deadline = 2;
 }
 
 message UploadSmartContract {
@@ -74,6 +83,7 @@ message Message {
     UpdateValset updateValset = 4;
     UploadSmartContract uploadSmartContract = 5;
     UploadUserSmartContract uploadUserSmartContract = 11;
+    CompassHandover compassHandover = 12;
   }
 
   string compassAddr = 6;
@@ -97,10 +107,3 @@ message TxExecutedProof {
 }
 
 message SmartContractExecutionErrorProof { string errorMessage = 1; }
-
-// This is no longer in active use.
-message TransferERC20Ownership {
-  option deprecated = true;
-  uint64 smartContractID = 1;
-  bytes newCompassAddress = 2;
-}
