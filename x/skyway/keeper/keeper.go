@@ -108,14 +108,22 @@ func NewKeeper(
 				return err
 			}
 
+			// Iterators are unsafe to use when writing to the underlying store
+			// see https://docs.cosmos.network/v0.46/core/store.html#base-layer-kvstores
+			keys := [][]byte{}
 			err = k.IterateValidatorLastEventNonces(ctx, e.ChainReferenceID, func(key []byte, _ uint64) bool {
-				store := k.GetStore(ctx, e.ChainReferenceID)
-				store.Delete(key)
+				keys = append(keys, key)
 				return false
 			})
 			if err != nil {
 				logger.WithError(err).Warn("Failed to reset validator skyway nonces")
 				return err
+			}
+
+			store := k.GetStore(ctx, e.ChainReferenceID)
+			for _, key := range keys {
+				prefixStore := prefix.NewStore(store, types.LastEventNonceByValidatorKey)
+				prefixStore.Delete(key)
 			}
 
 			logger.Info("Updated last observed nonce successfully")
@@ -472,5 +480,52 @@ func (k Keeper) SetAllLighNodeSaleContracts(
 		}
 	}
 
+	return nil
+}
+
+// TODO: Remove implementation once the nonce migration is complete
+func (k Keeper) overrideNonce(ctx context.Context, chainReferenceId string, nonce uint64) error {
+	cacheCtx, commit := sdk.UnwrapSDKContext(ctx).CacheContext()
+	logger := liblog.FromKeeper(ctx, k).WithComponent("nonce-override")
+
+	err := k.setLastObservedSkywayNonce(cacheCtx, chainReferenceId, nonce)
+	if err != nil {
+		logger.WithError(err).Warn("Failed to reset skyway nonce")
+		return err
+	}
+
+	keys := [][]byte{}
+	err = k.IterateValidatorLastEventNonces(cacheCtx, chainReferenceId, func(key []byte, _ uint64) bool {
+		keys = append(keys, key)
+		return false
+	})
+	if err != nil {
+		logger.WithError(err).Warn("Failed to reset validator skyway nonces")
+		return err
+	}
+
+	store := k.GetStore(cacheCtx, chainReferenceId)
+	for _, key := range keys {
+		prefixStore := prefix.NewStore(store, types.LastEventNonceByValidatorKey)
+		prefixStore.Delete(key)
+	}
+
+	items := 0
+	err = k.IterateValidatorLastEventNonces(cacheCtx, chainReferenceId, func(key []byte, _ uint64) bool {
+		items += 1
+		return false
+	})
+	if err != nil {
+		logger.WithError(err).Warn("Failed iterate validator skyway nonces")
+		return err
+	}
+
+	if items > 0 {
+		logger.WithFields("items", items).Warn("Failed to reset validator skyway nonces")
+		return errors.New("failed to reset validator skyway nonces")
+	}
+
+	commit()
+	logger.Info("Updated last observed nonce successfully")
 	return nil
 }

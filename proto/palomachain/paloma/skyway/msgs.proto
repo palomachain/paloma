@@ -65,6 +65,18 @@ service Msg {
     option (google.api.http).post =
       "/palomachain/paloma/skyway/light-node-sale-claim";
   }
+
+  rpc OverrideNonceProposal(MsgNonceOverrideProposal) returns (google.protobuf.Empty);
+}
+
+// TODO: Remove this message after usage
+message MsgNonceOverrideProposal {
+  option deprecated = true;
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+  string chain_reference_id = 2;
+  uint64 nonce = 3;
 }
 
 // MsgSendToRemote
