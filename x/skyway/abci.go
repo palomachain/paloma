@@ -42,10 +42,6 @@ func EndBlocker(ctx context.Context, k keeper.Keeper, cc *libcons.ConsensusCheck
 		if err != nil {
 			logger.WithError(err).Warn("Failed to prune attestations.")
 		}
-		err = k.IterateValidatorLastEventNonces(ctx, v, func(key []byte, val uint64) bool {
-			logger.WithFields("chain-reference-id", v, "validator", key, "nonce", val).Debug("Iterating over validator last event nonces")
-			return false
-		})
 	}
 
 	err = processGasEstimates(ctx, k, cc)
