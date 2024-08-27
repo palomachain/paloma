@@ -151,6 +151,6 @@ func TestOverrideNonceProposal(t *testing.T) {
 	for k := range map[int]uint64{1: 15, 2: 14, 3: 13} {
 		lastObserved, err = input.SkywayKeeper.GetLastSkywayNonceByValidator(ctx, sdk.ValAddress(fmt.Sprintf("validator-%d", k)), "test-chain")
 		require.NoError(t, err)
-		require.Equal(t, uint64(0), lastObserved, "failed with validator %d", k)
+		require.Equal(t, proposal.Nonce, lastObserved, "failed with validator %d", k)
 	}
 }

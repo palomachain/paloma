@@ -93,37 +93,8 @@ func NewKeeper(
 	eventbus.EVMActivatedChain().Subscribe(
 		"skyway-keeper",
 		func(ctx context.Context, e eventbus.EVMActivatedChainEvent) error {
-			logger := liblog.FromKeeper(ctx, k).
-				WithComponent("skyway-activated-chain-callback").
-				WithFields(
-					"chain_reference_id", e.ChainReferenceID,
-					"smart_contract_unique_id", string(e.SmartContractUniqueID),
-				)
-
 			k.setLatestCompassID(ctx, e.ChainReferenceID, string(e.SmartContractUniqueID))
-
-			store := k.GetStore(ctx, e.ChainReferenceID)
-			store.Set(types.LastObservedEventNonceKey, types.UInt64Bytes(0))
-
-			// Iterators are unsafe to use when writing to the underlying store
-			// see https://docs.cosmos.network/v0.46/core/store.html#base-layer-kvstores
-			keys := [][]byte{}
-			err := k.IterateValidatorLastEventNonces(ctx, e.ChainReferenceID, func(key []byte, _ uint64) bool {
-				keys = append(keys, key)
-				return false
-			})
-			if err != nil {
-				logger.WithError(err).Warn("Failed to reset validator skyway nonces")
-				return err
-			}
-
-			for _, key := range keys {
-				prefixStore := prefix.NewStore(store, types.LastEventNonceByValidatorKey)
-				prefixStore.Set(key, types.UInt64Bytes(0))
-			}
-
-			logger.Info("Updated last observed nonce successfully")
-			return nil
+			return k.overrideNonce(ctx, e.ChainReferenceID, 0)
 		})
 
 	return k
@@ -479,7 +450,6 @@ func (k Keeper) SetAllLighNodeSaleContracts(
 	return nil
 }
 
-// TODO: Remove implementation once the nonce migration is complete
 func (k Keeper) overrideNonce(ctx context.Context, chainReferenceId string, nonce uint64) error {
 	cacheCtx, commit := sdk.UnwrapSDKContext(ctx).CacheContext()
 	logger := liblog.FromKeeper(ctx, k).WithComponent("nonce-override")
@@ -499,7 +469,7 @@ func (k Keeper) overrideNonce(ctx context.Context, chainReferenceId string, nonc
 
 	for _, key := range keys {
 		prefixStore := prefix.NewStore(store, types.LastEventNonceByValidatorKey)
-		prefixStore.Set(key, types.UInt64Bytes(0))
+		prefixStore.Set(key, types.UInt64Bytes(nonce))
 	}
 
 	commit()
