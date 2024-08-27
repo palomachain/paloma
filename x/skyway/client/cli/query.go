@@ -35,6 +35,7 @@ func GetQueryCmd() *cobra.Command {
 		CmdGetAttestations(),
 		CmdGetLastObservedEthBlock(),
 		CmdGetLastObservedEthNonce(),
+		CmdGetLastObservedEthNoncesByValAddress(),
 		CmdGetQueryParams(),
 		CmdGetQueryBridgeTax(),
 		CmdGetQueryBridgeTransferLimits(),
@@ -296,6 +297,39 @@ func CmdGetLastObservedEthNonce() *cobra.Command {
 				ChainReferenceId: args[0],
 			}
 			res, err := queryClient.LastObservedSkywayNonce(cmd.Context(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func CmdGetLastObservedEthNoncesByValAddress() *cobra.Command {
+	short := "Query the last observed event nonce on the remote chain."
+	long := short + "\n\nThis value is expected to lag behind actual remote block height significantly due to 1. Remote Chain Finality and 2. Consensus mirroring the state."
+
+	// nolint: exhaustruct
+	cmd := &cobra.Command{
+		Use:   "last-observed-nonce-by-val [chain-reference-id] [val-addr]",
+		Short: short,
+		Long:  long,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QueryLastObservedSkywayNonceByAddrRequest{
+				Address:          args[1],
+				ChainReferenceId: args[0],
+			}
+			res, err := queryClient.LastObservedSkywayNonceByAddr(cmd.Context(), req)
 			if err != nil {
 				return err
 			}

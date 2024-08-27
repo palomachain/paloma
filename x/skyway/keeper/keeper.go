@@ -93,33 +93,8 @@ func NewKeeper(
 	eventbus.EVMActivatedChain().Subscribe(
 		"skyway-keeper",
 		func(ctx context.Context, e eventbus.EVMActivatedChainEvent) error {
-			logger := liblog.FromKeeper(ctx, k).
-				WithComponent("skyway-activated-chain-callback").
-				WithFields(
-					"chain_reference_id", e.ChainReferenceID,
-					"smart_contract_unique_id", string(e.SmartContractUniqueID),
-				)
-
 			k.setLatestCompassID(ctx, e.ChainReferenceID, string(e.SmartContractUniqueID))
-
-			err := k.setLastObservedSkywayNonce(ctx, e.ChainReferenceID, 0)
-			if err != nil {
-				logger.WithError(err).Warn("Failed to reset skyway nonce")
-				return err
-			}
-
-			err = k.IterateValidatorLastEventNonces(ctx, e.ChainReferenceID, func(key []byte, _ uint64) bool {
-				store := k.GetStore(ctx, e.ChainReferenceID)
-				store.Delete(key)
-				return false
-			})
-			if err != nil {
-				logger.WithError(err).Warn("Failed to reset validator skyway nonces")
-				return err
-			}
-
-			logger.Info("Updated last observed nonce successfully")
-			return nil
+			return k.overrideNonce(ctx, e.ChainReferenceID, 0)
 		})
 
 	return k
@@ -472,5 +447,36 @@ func (k Keeper) SetAllLighNodeSaleContracts(
 		}
 	}
 
+	return nil
+}
+
+// overrideNonce purposefully circumvents keeper setters and getters, as those perform
+// some biased operations and may end up inserting a different value or dropping it altogether.
+// it should never be used outside of the EVM activation event handler or a
+// proposal.
+func (k Keeper) overrideNonce(ctx context.Context, chainReferenceId string, nonce uint64) error {
+	cacheCtx, commit := sdk.UnwrapSDKContext(ctx).CacheContext()
+	logger := liblog.FromKeeper(ctx, k).WithComponent("nonce-override")
+
+	store := k.GetStore(ctx, chainReferenceId)
+	store.Set(types.LastObservedEventNonceKey, types.UInt64Bytes(nonce))
+
+	keys := [][]byte{}
+	err := k.IterateValidatorLastEventNonces(cacheCtx, chainReferenceId, func(key []byte, _ uint64) bool {
+		keys = append(keys, key)
+		return false
+	})
+	if err != nil {
+		logger.WithError(err).Warn("Failed to reset validator skyway nonces")
+		return err
+	}
+
+	for _, key := range keys {
+		prefixStore := prefix.NewStore(store, types.LastEventNonceByValidatorKey)
+		prefixStore.Set(key, types.UInt64Bytes(nonce))
+	}
+
+	commit()
+	logger.Info("Updated last observed nonce successfully")
 	return nil
 }

@@ -416,3 +416,10 @@ func (k msgServer) EstimateBatchGas(
 		},
 	)
 }
+
+func (k *msgServer) OverrideNonceProposal(ctx context.Context, req *types.MsgNonceOverrideProposal) (*emptypb.Empty, error) {
+	if req.Metadata.Creator != k.authority {
+		return nil, sdkerrors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, req.Metadata.Creator)
+	}
+	return &emptypb.Empty{}, k.overrideNonce(ctx, req.ChainReferenceId, req.Nonce)
+}

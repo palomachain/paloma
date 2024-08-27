@@ -30,6 +30,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		&MsgCancelSendToRemote{},
 		&MsgSubmitBadSignatureEvidence{},
 		&MsgLightNodeSaleClaim{},
+		&MsgNonceOverrideProposal{},
 	)
 
 	registry.RegisterInterface(
@@ -83,4 +84,5 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&SetBridgeTransferLimitProposal{}, "skyway/SetBridgeTransferLimitProposal", nil)
 	cdc.RegisterConcrete(&MsgLightNodeSaleClaim{}, "skyway/MsgLightNodeSaleClaim", nil)
 	cdc.RegisterConcrete(&SetLightNodeSaleContractsProposal{}, "skyway/SetLightNodeSaleContractsProposal", nil)
+	cdc.RegisterConcrete(&MsgNonceOverrideProposal{}, "skyway/MsgNonceOverrideProposal", nil)
 }
