@@ -345,7 +345,7 @@ func CmdGetLastObservedEthNoncesByValAddress() *cobra.Command {
 func CmdGetQueryParams() *cobra.Command {
 	// nolint: exhaustruct
 	cmd := &cobra.Command{
-		Use:   "",
+		Use:   "params",
 		Args:  cobra.NoArgs,
 		Short: "Query skyway params",
 		RunE: func(cmd *cobra.Command, _ []string) error {
