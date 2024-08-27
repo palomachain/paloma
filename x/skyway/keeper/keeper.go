@@ -450,8 +450,10 @@ func (k Keeper) SetAllLighNodeSaleContracts(
 	return nil
 }
 
-// purposefully circumvents keeper setters and getters, as those perform some biased operations and may end up inserting 
-// a different value or dropping it altogether.
+// overrideNonce purposefully circumvents keeper setters and getters, as those perform
+// some biased operations and may end up inserting a different value or dropping it altogether.
+// it should never be used outside of the EVM activation event handler or a
+// proposal.
 func (k Keeper) overrideNonce(ctx context.Context, chainReferenceId string, nonce uint64) error {
 	cacheCtx, commit := sdk.UnwrapSDKContext(ctx).CacheContext()
 	logger := liblog.FromKeeper(ctx, k).WithComponent("nonce-override")
