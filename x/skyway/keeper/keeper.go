@@ -102,16 +102,13 @@ func NewKeeper(
 
 			k.setLatestCompassID(ctx, e.ChainReferenceID, string(e.SmartContractUniqueID))
 
-			err := k.setLastObservedSkywayNonce(ctx, e.ChainReferenceID, 0)
-			if err != nil {
-				logger.WithError(err).Warn("Failed to reset skyway nonce")
-				return err
-			}
+			store := k.GetStore(ctx, e.ChainReferenceID)
+			store.Set(types.LastObservedEventNonceKey, types.UInt64Bytes(0))
 
 			// Iterators are unsafe to use when writing to the underlying store
 			// see https://docs.cosmos.network/v0.46/core/store.html#base-layer-kvstores
 			keys := [][]byte{}
-			err = k.IterateValidatorLastEventNonces(ctx, e.ChainReferenceID, func(key []byte, _ uint64) bool {
+			err := k.IterateValidatorLastEventNonces(ctx, e.ChainReferenceID, func(key []byte, _ uint64) bool {
 				keys = append(keys, key)
 				return false
 			})
@@ -120,10 +117,9 @@ func NewKeeper(
 				return err
 			}
 
-			store := k.GetStore(ctx, e.ChainReferenceID)
 			for _, key := range keys {
 				prefixStore := prefix.NewStore(store, types.LastEventNonceByValidatorKey)
-				prefixStore.Delete(key)
+				prefixStore.Set(key, types.UInt64Bytes(0))
 			}
 
 			logger.Info("Updated last observed nonce successfully")
@@ -488,14 +484,11 @@ func (k Keeper) overrideNonce(ctx context.Context, chainReferenceId string, nonc
 	cacheCtx, commit := sdk.UnwrapSDKContext(ctx).CacheContext()
 	logger := liblog.FromKeeper(ctx, k).WithComponent("nonce-override")
 
-	err := k.setLastObservedSkywayNonce(cacheCtx, chainReferenceId, nonce)
-	if err != nil {
-		logger.WithError(err).Warn("Failed to reset skyway nonce")
-		return err
-	}
+	store := k.GetStore(ctx, chainReferenceId)
+	store.Set(types.LastObservedEventNonceKey, types.UInt64Bytes(nonce))
 
 	keys := [][]byte{}
-	err = k.IterateValidatorLastEventNonces(cacheCtx, chainReferenceId, func(key []byte, _ uint64) bool {
+	err := k.IterateValidatorLastEventNonces(cacheCtx, chainReferenceId, func(key []byte, _ uint64) bool {
 		keys = append(keys, key)
 		return false
 	})
@@ -504,25 +497,9 @@ func (k Keeper) overrideNonce(ctx context.Context, chainReferenceId string, nonc
 		return err
 	}
 
-	store := k.GetStore(cacheCtx, chainReferenceId)
 	for _, key := range keys {
 		prefixStore := prefix.NewStore(store, types.LastEventNonceByValidatorKey)
-		prefixStore.Delete(key)
-	}
-
-	items := 0
-	err = k.IterateValidatorLastEventNonces(cacheCtx, chainReferenceId, func(key []byte, _ uint64) bool {
-		items += 1
-		return false
-	})
-	if err != nil {
-		logger.WithError(err).Warn("Failed iterate validator skyway nonces")
-		return err
-	}
-
-	if items > 0 {
-		logger.WithFields("items", items).Warn("Failed to reset validator skyway nonces")
-		return errors.New("failed to reset validator skyway nonces")
+		prefixStore.Set(key, types.UInt64Bytes(0))
 	}
 
 	commit()

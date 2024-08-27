@@ -3,6 +3,7 @@ package keeper
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
+	"fmt"
 	"math/rand"
 	"strings"
 	"testing"
@@ -10,6 +11,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/x/skyway/types"
+	valsettypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -105,4 +107,50 @@ func TestConfirmHandlerCommonWithMixedCaseAddress(t *testing.T) {
 
 	ret_err := confirmHandlerCommonWithAddress(t, string(mixedCase), initVar)
 	assert.Nil(t, ret_err)
+}
+
+func TestOverrideNonceProposal(t *testing.T) {
+	input, ctx := SetupFiveValChain(t)
+	defer func() {
+		sdk.UnwrapSDKContext(ctx).Logger().Info("Asserting invariants at test end")
+		input.AssertInvariants()
+	}()
+
+	proposal := types.MsgNonceOverrideProposal{
+		Metadata: valsettypes.MsgMetadata{
+			Creator: input.SkywayKeeper.authority,
+			Signers: []string{input.SkywayKeeper.authority},
+		},
+		ChainReferenceId: "test-chain",
+		Nonce:            3,
+	}
+
+	err := input.SkywayKeeper.setLastObservedSkywayNonce(ctx, "test-chain", 15)
+	require.NoError(t, err)
+
+	lastObserved, err := input.SkywayKeeper.GetLastObservedSkywayNonce(ctx, "test-chain")
+	require.NoError(t, err)
+	require.Equal(t, uint64(15), lastObserved)
+
+	for k, v := range map[int]uint64{1: 15, 2: 14, 3: 13} {
+		err = input.SkywayKeeper.SetLastSkywayNonceByValidator(ctx, sdk.ValAddress(fmt.Sprintf("validator-%d", k)), "test-chain", v)
+		require.NoError(t, err)
+		lastObserved, err = input.SkywayKeeper.GetLastSkywayNonceByValidator(ctx, sdk.ValAddress(fmt.Sprintf("validator-%d", k)), "test-chain")
+		require.NoError(t, err)
+		require.Equal(t, v, lastObserved)
+	}
+
+	sv := msgServer{input.SkywayKeeper}
+	_, err = sv.OverrideNonceProposal(ctx, &proposal)
+	require.NoError(t, err)
+
+	lastObserved, err = input.SkywayKeeper.GetLastObservedSkywayNonce(ctx, "test-chain")
+	require.NoError(t, err)
+	require.Equal(t, proposal.Nonce, lastObserved)
+
+	for k := range map[int]uint64{1: 15, 2: 14, 3: 13} {
+		lastObserved, err = input.SkywayKeeper.GetLastSkywayNonceByValidator(ctx, sdk.ValAddress(fmt.Sprintf("validator-%d", k)), "test-chain")
+		require.NoError(t, err)
+		require.Equal(t, uint64(0), lastObserved, "failed with validator %d", k)
+	}
 }
