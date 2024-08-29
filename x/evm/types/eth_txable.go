@@ -3,7 +3,6 @@ package types
 import (
 	"bytes"
 	"context"
-	"encoding/hex"
 	"errors"
 	"math/big"
 	"strings"
@@ -148,9 +147,6 @@ func (m *CompassHandover) VerifyAgainstTX(
 ) error {
 	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
 		WithFields("tx_hash", tx.Hash().Hex(), "valset_id", valset.ValsetID)
-
-		// TODO: Remove
-	logger.WithFields("tx-data", hex.EncodeToString(tx.Data())).Info("DEBUGTEST")
 
 	logger.Debug("CompassHandover VerifyAgainstTX")
 

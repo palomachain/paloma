@@ -49,6 +49,9 @@ var (
 	valsetTx1 = ethcoretypes.NewTx(&ethcoretypes.DynamicFeeTx{
 		Data: common.FromHex(string(whoops.Must(os.ReadFile("testdata/valset-tx-data.hex")))),
 	})
+	handoverTx1 = ethcoretypes.NewTx(&ethcoretypes.DynamicFeeTx{
+		Data: common.FromHex(string(whoops.Must(os.ReadFile("testdata/cosmos-handover-tx-data.hex")))),
+	})
 )
 
 type record struct {
