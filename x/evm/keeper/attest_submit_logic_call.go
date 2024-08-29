@@ -48,47 +48,6 @@ func (a *submitLogicCallAttester) attest(ctx sdk.Context, evidence *types.TxExec
 		return err
 	}
 
-	if a.k.deploymentCache.Has(ctx, a.chainReferenceID, a.msgID) {
-		smartContractID := a.k.deploymentCache.Get(ctx, a.chainReferenceID, a.msgID)
-		deployment, _ := a.k.getSmartContractDeploymentByContractID(ctx, smartContractID, a.chainReferenceID)
-		if deployment == nil {
-			a.logger.WithError(err).Error("Deployment not found")
-			return ErrCannotActiveSmartContractThatIsNotDeploying
-		}
-
-		hasPendingTransfers := false
-		for i, v := range deployment.Erc20Transfers {
-			if v.GetMsgID() == a.msgID {
-				if v.GetStatus() != types.SmartContractDeployment_ERC20Transfer_PENDING {
-					err = fmt.Errorf("invalid transfer status: %v", v.GetStatus())
-					a.logger.WithError(err).WithFields("transfer-status", v.GetStatus()).Error("Failed to attest ERC20 transfer message, invalid status.")
-					return err
-				}
-				deployment.Erc20Transfers[i].Status = types.SmartContractDeployment_ERC20Transfer_OK
-			}
-
-			if deployment.Erc20Transfers[i].Status != types.SmartContractDeployment_ERC20Transfer_OK {
-				hasPendingTransfers = true
-			}
-		}
-
-		if err := a.k.updateSmartContractDeployment(ctx, smartContractID, a.chainReferenceID, deployment); err != nil {
-			a.logger.WithError(err).Error("Failed to update smart contract deployment.")
-			return err
-		}
-
-		if !hasPendingTransfers {
-			if err := a.k.SetSmartContractAsActive(ctx, smartContractID, a.chainReferenceID); err != nil {
-				a.logger.WithError(err).Error("Failed to set smart contract as active")
-				return err
-			}
-
-			a.logger.Debug("attestation successful")
-		}
-
-		a.k.deploymentCache.Delete(ctx, a.chainReferenceID, a.msgID)
-	}
-
 	return nil
 }
 
@@ -100,41 +59,11 @@ func (a *submitLogicCallAttester) attemptRetry(ctx sdk.Context, proof *types.Sma
 		types.SmartContractExecutionMessageType.With(fmt.Sprintf("%T", a.action)),
 	)
 
-	// Check if failed message was an ERC20 transfer. If so, override any
-	// max retries and keep going.
-	// Update deployment accordingly if exists
-	// Sets existing transfer state to FAILAED and removes it from the cache.
-	var deployment *types.SmartContractDeployment
-	var failedTransfer *types.SmartContractDeployment_ERC20Transfer
-	var smartContractID uint64
-	if a.k.deploymentCache.Has(ctx, a.chainReferenceID, a.msgID) {
-		smartContractID = a.k.deploymentCache.Get(ctx, a.chainReferenceID, a.msgID)
-		deployment, _ = a.k.getSmartContractDeploymentByContractID(ctx, smartContractID, a.chainReferenceID)
-		if deployment == nil {
-			err := fmt.Errorf("no matching deployment found for contract ID %v on chain %v", smartContractID, a.chainReferenceID)
-			a.logger.WithError(err).Error(err.Error())
-			return err
-		}
-
-		for i, v := range deployment.Erc20Transfers {
-			if v.GetMsgID() == a.msgID {
-				if v.GetStatus() != types.SmartContractDeployment_ERC20Transfer_PENDING {
-					a.logger.WithFields("transfer-status", v.GetStatus()).Error("Unexpected status of failed message")
-				}
-				deployment.Erc20Transfers[i].Status = types.SmartContractDeployment_ERC20Transfer_FAIL
-				failedTransfer = &deployment.Erc20Transfers[i]
-			}
-		}
-
-		a.k.deploymentCache.Delete(ctx, a.chainReferenceID, a.msgID)
-	}
-
 	// Retry message if eligible
 	// Must be less than cMaxSubmitLogicCallRetries
-	// ERC20 transfer do not have a limit
 	var newMsgID uint64
 	slc := a.action
-	if slc.Retries < cMaxSubmitLogicCallRetries || failedTransfer != nil {
+	if slc.Retries < cMaxSubmitLogicCallRetries {
 		slc.Retries++
 		a.logger.Info("retrying failed SubmitLogicCall message",
 			"message-id", a.msgID,
@@ -157,24 +86,6 @@ func (a *submitLogicCallAttester) attemptRetry(ctx sdk.Context, proof *types.Sma
 			"message-id", a.msgID,
 			"retries", slc.Retries,
 			"chain-reference-id", a.chainReferenceID)
-	}
-
-	// If retry is happening, creates a new transfer record on the
-	// deployment and adds it to the cache.
-	if newMsgID != 0 && failedTransfer != nil {
-		deployment.Erc20Transfers = append(deployment.Erc20Transfers, types.SmartContractDeployment_ERC20Transfer{
-			Denom:  failedTransfer.Denom,
-			Erc20:  failedTransfer.Erc20,
-			MsgID:  newMsgID,
-			Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
-		})
-
-		if err := a.k.updateSmartContractDeployment(ctx, smartContractID, a.chainReferenceID, deployment); err != nil {
-			a.logger.WithError(err).Error("Failed to update smart contract deployment.")
-			return err
-		}
-
-		a.k.deploymentCache.Add(ctx, a.chainReferenceID, smartContractID, newMsgID)
 	}
 
 	return nil
