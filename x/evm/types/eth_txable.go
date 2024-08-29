@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"errors"
 	"math/big"
 	"strings"
@@ -149,7 +150,7 @@ func (m *CompassHandover) VerifyAgainstTX(
 		WithFields("tx_hash", tx.Hash().Hex(), "valset_id", valset.ValsetID)
 
 		// TODO: Remove
-	logger.WithFields("tx-data", tx.Data()).Info("DEBUGTEST")
+	logger.WithFields("tx-data", hex.EncodeToString(tx.Data())).Info("DEBUGTEST")
 
 	logger.Debug("CompassHandover VerifyAgainstTX")
 
@@ -165,29 +166,33 @@ func (m *CompassHandover) VerifyAgainstTX(
 		return err
 	}
 
-	// compass_update_batch((address,bytes)[],uint256,address,uint256)
-	m.GetForwardCallArgs()
-	args := []any{
-		slice.Map(m.GetForwardCallArgs(), func(arg CompassHandover_ForwardCallArgs) CompassLogicCallArgs {
-			return CompassLogicCallArgs{
-				common.HexToAddress(arg.GetHexContractAddress()),
-				arg.GetPayload(),
-			}
-		}),
-		big.NewInt(m.GetDeadline()),
-		common.HexToAddress(relayer),
-		big.NewInt(0).SetUint64(msg.GetGasEstimate()),
-	}
+	// Since some validators might have added their signature to the message
+	// after a pigeon start relaying it, we iteratively remove the end signature
+	// until we get a match, or there are no more signatures.
+	for i := len(msg.GetSignData()); i > 0; i-- {
+		args := []any{
+			BuildCompassConsensus(valset, msg.GetSignData()[0:i]),
+			slice.Map(m.GetForwardCallArgs(), func(arg CompassHandover_ForwardCallArgs) CompassLogicCallArgs {
+				return CompassLogicCallArgs{
+					common.HexToAddress(arg.GetHexContractAddress()),
+					arg.GetPayload(),
+				}
+			}),
+			big.NewInt(m.GetDeadline()),
+			common.HexToAddress(relayer),
+			big.NewInt(0).SetUint64(msg.GetGasEstimate()),
+		}
 
-	input, err := contractABI.Pack("compass_update_batch", args...)
-	if err != nil {
-		logger.WithError(err).Warn("CompassHandover VerifyAgainstTX failed to pack ABI")
-		return err
-	}
+		input, err := contractABI.Pack("compass_update_batch", args...)
+		if err != nil {
+			logger.WithError(err).Warn("CompassHandover VerifyAgainstTX failed to pack ABI")
+			return err
+		}
 
-	if bytes.Equal(tx.Data(), input) {
-		logger.Debug("CompassHandover VerifyAgainstTX success")
-		return nil
+		if bytes.Equal(tx.Data(), input) {
+			logger.Debug("CompassHandover VerifyAgainstTX success")
+			return nil
+		}
 	}
 
 	logger.Warn("CompassHandover VerifyAgainstTX failed")
