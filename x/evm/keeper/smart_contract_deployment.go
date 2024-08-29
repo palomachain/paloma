@@ -17,8 +17,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
+	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/x/evm/keeper/deployment"
 	"github.com/palomachain/paloma/x/evm/types"
 )
 
@@ -55,9 +57,22 @@ func (k Keeper) HasAnySmartContractDeployment(ctx context.Context, chainReferenc
 
 func (k Keeper) DeleteSmartContractDeploymentByContractID(ctx context.Context, smartContractID uint64, chainReferenceID string) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	_, key := k.getSmartContractDeploymentByContractID(sdkCtx, smartContractID, chainReferenceID)
+	c, key := k.getSmartContractDeploymentByContractID(sdkCtx, smartContractID, chainReferenceID)
 	if key == nil {
 		return
+	}
+	lkup := make(map[string]bool)
+	for _, v := range c.Erc20Transfers {
+		if ok, fnd := lkup[v.GetErc20()]; fnd && ok {
+			continue
+		}
+		lkup[v.GetErc20()] = v.GetStatus() == types.SmartContractDeployment_ERC20Transfer_OK
+	}
+	for _, v := range c.Erc20Transfers {
+		if !lkup[v.GetErc20()] {
+			liblog.FromSDKLogger(k.Logger(ctx)).WithFields("erc20", k).Error("cannot delete smart contract deployment due to pending erc20 transfer", "erc20", key)
+			return
+		}
 	}
 	k.Logger(ctx).Info("removing a smart contract deployment", "smart-contract-id", smartContractID, "chain-reference-id", chainReferenceID)
 	k.provideSmartContractDeploymentStore(sdkCtx).Delete(key)
@@ -174,40 +189,6 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 			TurnstoneID:      turnstoneID,
 			Action: &types.Message_SubmitLogicCall{
 				SubmitLogicCall: logicCall,
-			},
-			Assignee:              assignee,
-			AssigneeRemoteAddress: remoteAddr,
-			AssignedAtBlockHeight: sdkmath.NewInt(sdkCtx.BlockHeight()),
-		}, &consensus.PutOptions{
-			RequireGasEstimation: true,
-			RequireSignatures:    true,
-		})
-}
-
-func (k Keeper) scheduleCompassHandover(
-	ctx context.Context,
-	chainReferenceID,
-	turnstoneID string,
-	handover *types.CompassHandover,
-) (uint64, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	assignee, remoteAddr, err := k.PickValidatorForMessage(ctx, chainReferenceID, nil)
-	if err != nil {
-		return 0, err
-	}
-
-	return k.ConsensusKeeper.PutMessageInQueue(
-		ctx,
-		consensustypes.Queue(
-			types.ConsensusTurnstoneMessage,
-			xchainType,
-			chainReferenceID,
-		),
-		&types.Message{
-			ChainReferenceID: chainReferenceID,
-			TurnstoneID:      turnstoneID,
-			Action: &types.Message_CompassHandover{
-				CompassHandover: handover,
 			},
 			Assignee:              assignee,
 			AssigneeRemoteAddress: remoteAddr,
@@ -484,4 +465,23 @@ func (k Keeper) provideSmartContractStore(ctx context.Context) storetypes.KVStor
 func (k Keeper) provideLastCompassContractStore(ctx context.Context) storetypes.KVStore {
 	kvstore := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
 	return prefix.NewStore(kvstore, []byte("latest-smart-contract"))
+}
+
+func provideDeploymentCacheBootstrapper(k *Keeper) func(context.Context, *deployment.Cache) {
+	return func(ctx context.Context, c *deployment.Cache) {
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		d, err := k.AllSmartContractsDeployments(sdkCtx)
+		if err != nil {
+			liblog.FromSDKLogger(k.Logger(sdkCtx)).WithError(err).Error("Failed to load smart contract deployments")
+			// This should only happen once during cache initialisation.
+			// A better approach would be to use the cache as a wrapper that gets cold data on demand.
+			panic(err)
+		}
+
+		for _, v := range d {
+			for _, t := range v.Erc20Transfers {
+				c.Add(ctx, v.GetChainReferenceID(), t.GetMsgID())
+			}
+		}
+	}
 }
