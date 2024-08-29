@@ -15,6 +15,7 @@ import (
 	ethcoretypes "github.com/ethereum/go-ethereum/core/types"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/slice"
 	consensusmocks "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
@@ -50,15 +51,15 @@ var (
 	})
 )
 
-// type record struct {
-// 	denom string
-// 	erc20 string
-// 	chain string
-// }
+type record struct {
+	denom string
+	erc20 string
+	chain string
+}
 
-// func (r record) GetDenom() string            { return r.denom }
-// func (r record) GetErc20() string            { return r.erc20 }
-// func (r record) GetChainReferenceId() string { return r.chain }
+func (r record) GetDenom() string            { return r.denom }
+func (r record) GetErc20() string            { return r.erc20 }
+func (r record) GetChainReferenceId() string { return r.chain }
 
 func TestKeeperGinkgo(t *testing.T) {
 	RegisterFailHandler(g.Fail)
@@ -117,7 +118,7 @@ var _ = g.Describe("attest router", func() {
 	var ctx sdk.Context
 	var q *consensusmocks.Queuer
 	var v *evmmocks.ValsetKeeper
-	// var gk *evmmocks.SkywayKeeper
+	var sk *evmmocks.SkywayKeeper
 	var consensukeeper *evmmocks.ConsensusKeeper
 	var mk *evmmocks.MetrixKeeper
 	var tk *evmmocks.TreasuryKeeper
@@ -150,7 +151,7 @@ var _ = g.Describe("attest router", func() {
 		ctx = _ctx
 		k = *kpr
 		v = ms.ValsetKeeper
-		// gk = ms.SkywayKeeper
+		sk = ms.SkywayKeeper
 		tk = ms.TreasuryKeeper
 		mk = ms.MetrixKeeper
 		consensukeeper = ms.ConsensusKeeper
@@ -490,84 +491,6 @@ var _ = g.Describe("attest router", func() {
 					})
 				})
 
-				g.When("message is CompassHandover", func() {
-					// TODO: Implement
-					//      // TODO: move to attest handover
-					// g.When("message is attesting to successful erc20 relink", func() {
-					// 	g.When("no more pending messages after this", func() {
-					// 		g.It("remove the deployment and activate the chain", func() {
-					// 			setupChainSupport()
-					// 			dep, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
-					// 			Expect(dep).ToNot(BeNil())
-					// 			dep.Status = types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER
-					// 			dep.Erc20Transfers = []types.SmartContractDeployment_ERC20Transfer{
-					// 				{
-					// 					Denom:  "denom",
-					// 					Erc20:  "address",
-					// 					MsgID:  123,
-					// 					Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
-					// 				},
-					// 			}
-					// 			err := k.updateSmartContractDeployment(ctx, uint64(1), newChain.ChainReferenceID, dep)
-					// 			Expect(err).To(BeNil())
-					// 			k.deploymentCache.Add(ctx, newChain.ChainReferenceID, uint64(1), 123)
-					// 			Expect(subject()).To(BeNil())
-					// 			res, _ := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
-					// 			Expect(res).To(BeNil())
-					// 			info, err := k.GetChainInfo(ctx, newChain.ChainReferenceID)
-					// 			Expect(err).To(BeNil())
-					// 			Expect(info.ActiveSmartContractID).To(Equal(uint64(1)))
-					// 		})
-					// 	})
-					// 	})
-					g.BeforeEach(func() {
-						execTx = valsetTx1
-						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
-						evidence = []*consensustypes.Evidence{
-							{
-								ValAddress: sdk.ValAddress("validator-1"),
-								Proof:      proof,
-							},
-							{
-								ValAddress: sdk.ValAddress("validator-2"),
-								Proof:      proof,
-							},
-							{
-								ValAddress: sdk.ValAddress("validator-3"),
-								Proof:      proof,
-							},
-						}
-						consensusMsg.Action = &types.Message_UpdateValset{
-							UpdateValset: &types.UpdateValset{
-								Valset: &types.Valset{
-									ValsetID:   1,
-									Validators: []string{"addr1", "addr2"},
-									Powers:     []uint64{15, 5},
-								},
-							},
-						}
-					})
-
-					g.BeforeEach(func() {
-						q.On("GetAll", mock.Anything).Return(nil, nil)
-					})
-
-					g.When("successfully sets valset for chain", func() {
-						g.BeforeEach(func() {
-							v.On("SetSnapshotOnChain", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-						})
-						successfulProcess()
-					})
-
-					g.When("unsuccessfully sets valset for chain", func() {
-						// We still process successfully even if we get an error here
-						g.BeforeEach(func() {
-							v.On("SetSnapshotOnChain", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("example error"))
-						})
-						successfulProcess()
-					})
-				})
-
 				g.When("message is UploadSmartContract", func() {
 					g.BeforeEach(func() {
 						execTx = uscTx1
@@ -598,10 +521,13 @@ var _ = g.Describe("attest router", func() {
 						consensusMsg.Assignee = address.String()
 					})
 
-					g.When("target chain has no deployed ERC20 tokens", func() {
-						// g.BeforeEach(func() {
-						// 	gk.On("CastChainERC20ToDenoms", mock.Anything, mock.Anything).Return(nil, nil)
-						// })
+					g.When("target chain has no previous deployment of compass", func() {
+						g.BeforeEach(func() {
+							v.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).Unset()
+							v.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).
+								Return(nil, keeperutil.ErrNotFound).Once()
+							v.On("SetSnapshotOnChain", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+						})
 						g.It("removes deployment", func() {
 							setupChainSupport()
 							Expect(subject()).To(BeNil())
@@ -618,43 +544,27 @@ var _ = g.Describe("attest router", func() {
 						})
 					})
 
-					// g.When("target chain has active ERC20 tokens deployed", func() {
-					// 	g.BeforeEach(func() {
-					// 		gk.On("CastChainERC20ToDenoms", mock.Anything, newChain.ChainReferenceID).Return([]types.ERC20Record{
-					// 			record{"denom", "address1", newChain.ChainReferenceID},
-					// 			record{"denom2", "address2", newChain.ChainReferenceID},
-					// 		}, nil)
-					// 	})
-					// 	g.It("updates deployment", func() {
-					// 		setupChainSupport()
-					// 		Expect(subject()).To(BeNil())
-					// 		v, key := k.getSmartContractDeploymentByContractID(ctx, uint64(1), newChain.GetChainReferenceID())
-					// 		Expect(key).ToNot(BeNil())
-					// 		Expect(v).ToNot(BeNil())
-					// 		Expect(v.GetStatus()).To(BeEquivalentTo(types.SmartContractDeployment_WAITING_FOR_ERC20_OWNERSHIP_TRANSFER))
-					// 		Expect(v.GetErc20Transfers()).To(BeEquivalentTo([]types.SmartContractDeployment_ERC20Transfer{
-					// 			{
-					// 				Denom:  "denom",
-					// 				Erc20:  "address1",
-					// 				MsgID:  10,
-					// 				Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
-					// 			},
-					// 			{
-					// 				Denom:  "denom2",
-					// 				Erc20:  "address2",
-					// 				MsgID:  10,
-					// 				Status: types.SmartContractDeployment_ERC20Transfer_PENDING,
-					// 			},
-					// 		}))
-					// 	})
-					// 	g.It("doesn't set the chain as active", func() {
-					// 		setupChainSupport()
-					// 		Expect(subject()).To(BeNil())
-					// 		v, err := k.GetChainInfo(ctx, newChain.GetChainReferenceID())
-					// 		Expect(err).To(BeNil())
-					// 		Expect(v.GetActiveSmartContractID()).To(BeEquivalentTo(uint64(0)))
-					// 	})
-					// })
+					g.When("target chain has previous deployment of compass", func() {
+						g.BeforeEach(func() {
+							sk.On("CastChainERC20ToDenoms", mock.Anything, mock.Anything).Return([]types.ERC20Record{
+								record{
+									denom: "ugrain",
+									erc20: "0xb794f5ea0ba39494ce839613fffba74279579268",
+									chain: "test-chain",
+								},
+								record{
+									denom: "ugrain2",
+									erc20: "0xc794f5ea0ba39494ce839613fffba74279579268",
+									chain: "test-chain",
+								},
+							}, nil)
+							consensukeeper.On("PutMessageInQueue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(11), nil)
+						})
+						g.It("puts the handover message in the queue", func() {
+							setupChainSupport()
+							Expect(subject()).To(BeNil())
+						})
+					})
 				})
 
 				g.JustAfterEach(func() {
