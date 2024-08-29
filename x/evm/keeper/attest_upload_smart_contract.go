@@ -125,7 +125,7 @@ func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.Tx
 			return err
 		}
 
-		// Since this is the intial deployment, we need to set the smart contract
+		// Since this is the initial deployment, we need to set the smart contract
 		// as active and can skip the handover process.
 		return a.k.SetSmartContractAsActive(ctx, smartContractID, a.chainReferenceID)
 	}
