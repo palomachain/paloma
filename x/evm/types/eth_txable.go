@@ -166,21 +166,23 @@ func (m *CompassHandover) VerifyAgainstTX(
 		return err
 	}
 
+	forwardArgs := slice.Map(m.GetForwardCallArgs(), func(arg CompassHandover_ForwardCallArgs) CompassLogicCallArgs {
+		return CompassLogicCallArgs{
+			common.HexToAddress(arg.GetHexContractAddress()),
+			arg.GetPayload(),
+		}
+	})
+
 	// Since some validators might have added their signature to the message
 	// after a pigeon start relaying it, we iteratively remove the end signature
 	// until we get a match, or there are no more signatures.
 	for i := len(msg.GetSignData()); i > 0; i-- {
 		args := []any{
 			BuildCompassConsensus(valset, msg.GetSignData()[0:i]),
-			slice.Map(m.GetForwardCallArgs(), func(arg CompassHandover_ForwardCallArgs) CompassLogicCallArgs {
-				return CompassLogicCallArgs{
-					common.HexToAddress(arg.GetHexContractAddress()),
-					arg.GetPayload(),
-				}
-			}),
-			big.NewInt(m.GetDeadline()),
-			common.HexToAddress(relayer),
+			forwardArgs,
+			new(big.Int).SetInt64(m.GetDeadline()),
 			big.NewInt(0).SetUint64(msg.GetGasEstimate()),
+			common.HexToAddress(relayer),
 		}
 
 		input, err := contractABI.Pack("compass_update_batch", args...)
