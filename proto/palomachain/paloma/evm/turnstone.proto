@@ -46,6 +46,8 @@ message CompassHandover {
   }
   repeated ForwardCallArgs forwardCallArgs = 1 [ (gogoproto.nullable) = false ];
   int64 deadline = 2;
+  // Contains ID of the new smart contract
+  uint64 id = 3;
 }
 
 message UploadSmartContract {
