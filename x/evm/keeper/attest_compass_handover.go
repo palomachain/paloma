@@ -57,5 +57,10 @@ func (a *compassHandoverAttester) attest(ctx sdk.Context, evidence *types.TxExec
 		return err
 	}
 
+	if err = a.k.SetSmartContractAsActive(ctx, a.action.GetId(), a.chainReferenceID); err != nil {
+		a.logger.WithError(err).Error("Failed to set smart contract as active.")
+		return err
+	}
+
 	return nil
 }

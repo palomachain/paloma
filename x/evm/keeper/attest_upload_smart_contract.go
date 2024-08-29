@@ -182,6 +182,7 @@ func (a *uploadSmartContractAttester) startCompassHandover(
 		a.chainReferenceID,
 		string(ci.GetSmartContractUniqueID()),
 		&types.CompassHandover{
+			Id:              a.action.GetId(),
 			ForwardCallArgs: forwardCallArgs,
 			Deadline:        ctx.BlockTime().Add(10 * time.Minute).Unix(),
 		},
