@@ -124,12 +124,9 @@ func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.Tx
 		if err != nil {
 			return err
 		}
-
-		return a.startTokenRelink(ctx, deployment, newCompassAddr, smartContractID)
 	}
 
-	// We don't have any tokens on the target chain. Set contract as active immediately.
-	return a.k.SetSmartContractAsActive(ctx, smartContractID, a.chainReferenceID)
+	return a.startTokenRelink(ctx, deployment, newCompassAddr, smartContractID)
 }
 
 func (a *uploadSmartContractAttester) startTokenRelink(
