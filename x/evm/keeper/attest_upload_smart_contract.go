@@ -124,16 +124,20 @@ func (a *uploadSmartContractAttester) attest(ctx sdk.Context, evidence *types.Tx
 		if err != nil {
 			return err
 		}
+
+		// Since this is the intial deployment, we need to set the smart contract
+		// as active and can skip the handover process.
+		return a.k.SetSmartContractAsActive(ctx, smartContractID, a.chainReferenceID)
 	}
 
-	return a.startTokenRelink(ctx, deployment, newCompassAddr, smartContractID)
+	// If we got this far, it means we have a snapshot on chain and we can
+	// proceed with the handover process.
+	return a.startCompassHandover(ctx, newCompassAddr)
 }
 
-func (a *uploadSmartContractAttester) startTokenRelink(
+func (a *uploadSmartContractAttester) startCompassHandover(
 	ctx sdk.Context,
-	deployment *types.SmartContractDeployment,
 	newCompassAddr common.Address,
-	smartContractID uint64,
 ) error {
 	ci, err := a.k.GetChainInfo(ctx, a.chainReferenceID)
 	if err != nil {
@@ -162,7 +166,6 @@ func (a *uploadSmartContractAttester) startTokenRelink(
 	}
 
 	for _, v := range tokens {
-		// TODO: what about existing tokens? Can we have a migration that deletes them?
 		forwardCallArgs = append(forwardCallArgs, types.CompassHandover_ForwardCallArgs{
 			HexContractAddress: v.GetErc20(),
 			Payload:            erc20payload,
