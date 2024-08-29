@@ -77,10 +77,6 @@ message SmartContractDeployment {
   Status status = 4;
 
   message ERC20Transfer {
-    // individual transfers are no longer needed with the new atomic update mechanism
-    // TODO: remove once the new mechanism is rolled out
-    option deprecated = true;
-
     // Paloma denom of the ERC20 token
     string denom = 1;
     // Address of the ERC20 token on the target chain

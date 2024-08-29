@@ -131,8 +131,6 @@ func (k Keeper) routerAttester(sdkCtx sdk.Context, q consensus.Queuer, msg conse
 		return newUpdateValsetAttester(&k, logger, q, params).Execute(sdkCtx)
 	case *types.Message_SubmitLogicCall:
 		return newSubmitLogicCallAttester(&k, logger, params).Execute(sdkCtx)
-	case *types.Message_CompassHandover:
-		return newCompassHandoverAttester(&k, logger, params).Execute(sdkCtx)
 	}
 
 	return nil
