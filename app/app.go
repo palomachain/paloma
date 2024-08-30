@@ -158,8 +158,6 @@ import (
 
 const (
 	Name = "paloma"
-
-	wasmAvailableCapabilities = "iterator,staking,stargate,paloma"
 )
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -712,6 +710,7 @@ func New(
 		panic("error while reading wasm config: " + err.Error())
 	}
 
+	wasmAvailableCapabilities := []string{"iterator", "staking", "stargate", "paloma"}
 	app.wasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
