@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/util/slice"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 )
 
@@ -133,6 +134,66 @@ func (m *SubmitLogicCall) VerifyAgainstTX(
 	}
 
 	logger.Warn("SubmitLogicCall VerifyAgainstTX failed")
+	return ErrEthTxNotVerified
+}
+
+func (m *CompassHandover) VerifyAgainstTX(
+	ctx context.Context,
+	tx *ethtypes.Transaction,
+	msg consensustypes.QueuedSignedMessageI,
+	valset *Valset,
+	compass *SmartContract,
+	relayer string,
+) error {
+	logger := liblog.FromSDKLogger(sdk.UnwrapSDKContext(ctx).Logger()).
+		WithFields("tx_hash", tx.Hash().Hex(), "valset_id", valset.ValsetID)
+
+	logger.Debug("CompassHandover VerifyAgainstTX")
+
+	if valset == nil || compass == nil {
+		err := errors.New("missing valset or compass for tx verification")
+		logger.WithError(err).Error("failed to verify tx")
+		return err
+	}
+
+	contractABI, err := abi.JSON(strings.NewReader(compass.GetAbiJSON()))
+	if err != nil {
+		logger.WithError(err).Warn("CompassHandover VerifyAgainstTX failed to parse compass ABI")
+		return err
+	}
+
+	forwardArgs := slice.Map(m.GetForwardCallArgs(), func(arg CompassHandover_ForwardCallArgs) CompassLogicCallArgs {
+		return CompassLogicCallArgs{
+			common.HexToAddress(arg.GetHexContractAddress()),
+			arg.GetPayload(),
+		}
+	})
+
+	// Since some validators might have added their signature to the message
+	// after a pigeon start relaying it, we iteratively remove the end signature
+	// until we get a match, or there are no more signatures.
+	for i := len(msg.GetSignData()); i > 0; i-- {
+		args := []any{
+			BuildCompassConsensus(valset, msg.GetSignData()[0:i]),
+			forwardArgs,
+			new(big.Int).SetInt64(m.GetDeadline()),
+			big.NewInt(0).SetUint64(msg.GetGasEstimate()),
+			common.HexToAddress(relayer),
+		}
+
+		input, err := contractABI.Pack("compass_update_batch", args...)
+		if err != nil {
+			logger.WithError(err).Warn("CompassHandover VerifyAgainstTX failed to pack ABI")
+			return err
+		}
+
+		if bytes.Equal(tx.Data(), input) {
+			logger.Debug("CompassHandover VerifyAgainstTX success")
+			return nil
+		}
+	}
+
+	logger.Warn("CompassHandover VerifyAgainstTX failed")
 	return ErrEthTxNotVerified
 }
 

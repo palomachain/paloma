@@ -29,7 +29,6 @@ import (
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	"github.com/palomachain/paloma/x/evm/keeper/deployment"
 	"github.com/palomachain/paloma/x/evm/types"
 	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	ptypes "github.com/palomachain/paloma/x/paloma/types"
@@ -118,7 +117,6 @@ type Keeper struct {
 	msgSender       types.MsgSender
 	msgAssigner     types.MsgAssigner
 	AddressCodec    address.Codec
-	deploymentCache *deployment.Cache
 
 	onMessageAttestedListeners []metrixtypes.OnConsensusMessageAttestedListener
 	consensusChecker           *libcons.ConsensusChecker
@@ -146,7 +144,6 @@ func NewKeeper(
 	}
 
 	k.msgAssigner = newMsgAssigner(valsetKeeper, metrixKeeper, treasuryKeeper, k.Logger)
-	k.deploymentCache = deployment.NewCache(provideDeploymentCacheBootstrapper(k))
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(k.provideSmartContractStore), []byte("id-key"))
 	k.consensusChecker = libcons.New(k.Valset.GetCurrentSnapshot, k.cdc)
 
