@@ -5,7 +5,6 @@ go 1.22.2
 require (
 	cosmossdk.io/errors v1.0.1
 	github.com/CosmWasm/wasmd v0.53.0
-	github.com/CosmWasm/wasmvm v1.5.2
 	github.com/VolumeFi/whoops v0.7.2
 	github.com/cometbft/cometbft v0.38.11
 	github.com/cometbft/cometbft-db v0.9.1 // indirect
@@ -42,6 +41,7 @@ require (
 	cosmossdk.io/x/feegrant v0.1.1
 	cosmossdk.io/x/tx v0.13.4
 	cosmossdk.io/x/upgrade v0.1.4
+	github.com/CosmWasm/wasmvm/v2 v2.1.2
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
 	github.com/cosmos/ibc-go/v8 v8.4.0
@@ -64,7 +64,6 @@ require (
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.1 // indirect
-	github.com/CosmWasm/wasmvm/v2 v2.1.2 // indirect
 	github.com/DataDog/datadog-go v3.2.0+incompatible // indirect
 	github.com/DataDog/zstd v1.5.5 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
