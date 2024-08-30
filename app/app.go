@@ -528,6 +528,8 @@ func New(
 		app.MsgServiceRouter(),
 		authorityAddress,
 	)
+	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
+
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec,
 		keys[icacontrollertypes.StoreKey],
