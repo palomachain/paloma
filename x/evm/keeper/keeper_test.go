@@ -7,10 +7,12 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/palomachain/paloma/util/slice"
 	consensustypes "github.com/palomachain/paloma/x/consensus/types"
 	"github.com/palomachain/paloma/x/evm/types"
 	evmtypes "github.com/palomachain/paloma/x/evm/types"
@@ -709,5 +711,257 @@ func TestKeeper_SendValsetMsgForChain(t *testing.T) {
 
 		err := mSender.SendValsetMsgForChain(ctx, chainInfo, valset, "addr3", "0x03")
 		assert.NoError(t, err)
+	})
+}
+
+func TestKeeper_AddJustInTimeValsetUpdates(t *testing.T) {
+	chainInfo := &types.ChainInfo{
+		ChainID:               100,
+		ChainReferenceID:      "test-chain",
+		ReferenceBlockHeight:  1000,
+		ReferenceBlockHash:    "0x00",
+		MinOnChainBalance:     "100",
+		SmartContractUniqueID: []byte("abc"),
+		SmartContractAddr:     "0x01",
+		RelayWeights: &types.RelayWeights{
+			Fee:           "1.0",
+			Uptime:        "1.0",
+			SuccessRate:   "1.0",
+			ExecutionTime: "1.0",
+			FeatureSet:    "1.0",
+		},
+	}
+
+	type valpower struct {
+		valAddr       sdk.ValAddress
+		power         int64
+		externalChain []*valsettypes.ExternalChainInfo
+	}
+
+	var totalPower int64 = 20
+	valpowers := []valpower{
+		{
+			valAddr: sdk.ValAddress("validator-1"),
+			power:   15,
+			externalChain: []*valsettypes.ExternalChainInfo{
+				{
+					ChainType:        "evm",
+					ChainReferenceID: chainInfo.GetChainReferenceID(),
+					Address:          "addr1",
+					Pubkey:           []byte("1"),
+				},
+			},
+		},
+		{
+			valAddr: sdk.ValAddress("validator-2"),
+			power:   5,
+			externalChain: []*valsettypes.ExternalChainInfo{
+				{
+					ChainType:        "evm",
+					ChainReferenceID: chainInfo.GetChainReferenceID(),
+					Address:          "addr1",
+					Pubkey:           []byte("1"),
+				},
+			},
+		},
+	}
+
+	currentSnapshot := &valsettypes.Snapshot{
+		Id: 5,
+		Validators: slice.Map(valpowers, func(p valpower) valsettypes.Validator {
+			return valsettypes.Validator{
+				ShareCount:         sdkmath.NewInt(p.power),
+				Address:            p.valAddr,
+				ExternalChainInfos: p.externalChain,
+			}
+		}),
+		TotalShares: sdkmath.NewInt(totalPower),
+	}
+
+	validatorMetrics := &metrixtypes.QueryValidatorsResponse{
+		ValMetrics: []metrixtypes.ValidatorMetrics{
+			{
+				ValAddress:    sdk.ValAddress("validator-1").String(),
+				Uptime:        sdkmath.LegacyOneDec(),
+				SuccessRate:   sdkmath.LegacyOneDec(),
+				ExecutionTime: sdkmath.NewInt(0),
+				Fee:           sdkmath.NewInt(0),
+				FeatureSet:    sdkmath.LegacyOneDec(),
+			},
+		},
+	}
+
+	fee, _ := sdkmath.LegacyNewDecFromStr("1.1")
+	relayerFees := map[string]math.LegacyDec{
+		sdk.ValAddress("validator-1").String(): fee,
+	}
+
+	t.Run("Should add valset update with SLC", func(t *testing.T) {
+		k, ms, ctx := NewEvmKeeper(t)
+		err := k.updateChainInfo(ctx, chainInfo)
+		require.NoError(t, err)
+
+		qMsg, _ := codectypes.NewAnyWithValue(&evmtypes.Message{
+			TurnstoneID:      "abc",
+			ChainReferenceID: "test-chain",
+			Assignee:         "addr4",
+			Action: &evmtypes.Message_SubmitLogicCall{
+				SubmitLogicCall: &evmtypes.SubmitLogicCall{
+					SenderAddress: sdk.ValAddress("sender"),
+				},
+			},
+		})
+
+		msgs := []consensustypes.QueuedSignedMessageI{
+			&consensustypes.QueuedSignedMessage{
+				Id:  1,
+				Msg: qMsg,
+			},
+		}
+
+		ms.ConsensusKeeper.On("GetMessagesFromQueue", mock.Anything,
+			mock.Anything, mock.Anything).
+			Return(msgs, nil).
+			Once()
+
+		ms.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).
+			Return(currentSnapshot, nil)
+
+		ms.ValsetKeeper.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).
+			Return(&valsettypes.Snapshot{Id: 1}, nil)
+
+		ms.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).
+			Return(validatorMetrics, nil)
+
+		ms.TreasuryKeeper.On("GetRelayerFeesByChainReferenceID", mock.Anything,
+			chainInfo.ChainReferenceID).
+			Return(relayerFees, nil)
+
+		ms.MsgSender.On("SendValsetMsgForChain", mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
+
+		k.AddJustInTimeValsetUpdates(ctx)
+	})
+
+	t.Run("Should do nothing if no SLC in queue", func(t *testing.T) {
+		k, ms, ctx := NewEvmKeeper(t)
+		err := k.updateChainInfo(ctx, chainInfo)
+		require.NoError(t, err)
+
+		qMsg, _ := codectypes.NewAnyWithValue(&evmtypes.Message{
+			TurnstoneID:      "abc",
+			ChainReferenceID: "test-chain",
+			Assignee:         "addr4",
+			Action: &evmtypes.Message_UploadSmartContract{
+				UploadSmartContract: &evmtypes.UploadSmartContract{},
+			},
+		})
+
+		msgs := []consensustypes.QueuedSignedMessageI{
+			&consensustypes.QueuedSignedMessage{
+				Id:  1,
+				Msg: qMsg,
+			},
+		}
+
+		ms.ConsensusKeeper.On("GetMessagesFromQueue", mock.Anything, mock.Anything, mock.Anything).
+			Return(msgs, nil).
+			Once()
+
+		k.AddJustInTimeValsetUpdates(ctx)
+	})
+
+	t.Run("Should do nothing if valset update is already scheduled", func(t *testing.T) {
+		k, ms, ctx := NewEvmKeeper(t)
+		err := k.updateChainInfo(ctx, chainInfo)
+		require.NoError(t, err)
+
+		qMsg, _ := codectypes.NewAnyWithValue(&evmtypes.Message{
+			TurnstoneID:      "abc",
+			ChainReferenceID: "test-chain",
+			Assignee:         "addr4",
+			Action: &evmtypes.Message_UpdateValset{
+				UpdateValset: &evmtypes.UpdateValset{
+					Valset: &evmtypes.Valset{
+						ValsetID: 2,
+					},
+				},
+			},
+		})
+
+		slcMsg, _ := codectypes.NewAnyWithValue(&evmtypes.Message{
+			TurnstoneID:      "abc",
+			ChainReferenceID: "test-chain",
+			Assignee:         "addr4",
+			Action: &evmtypes.Message_SubmitLogicCall{
+				SubmitLogicCall: &evmtypes.SubmitLogicCall{
+					SenderAddress: sdk.ValAddress("sender"),
+				},
+			},
+		})
+
+		msgs := []consensustypes.QueuedSignedMessageI{
+			&consensustypes.QueuedSignedMessage{
+				Id:  1,
+				Msg: qMsg,
+			},
+			&consensustypes.QueuedSignedMessage{
+				Id:  2,
+				Msg: slcMsg,
+			},
+		}
+
+		ms.ConsensusKeeper.On("GetMessagesFromQueue", mock.Anything, mock.Anything, mock.Anything).
+			Return(msgs, nil).
+			Once()
+
+		k.AddJustInTimeValsetUpdates(ctx)
+	})
+
+	t.Run("Should add valset update with UploadUserSmartContract", func(t *testing.T) {
+		k, ms, ctx := NewEvmKeeper(t)
+		err := k.updateChainInfo(ctx, chainInfo)
+		require.NoError(t, err)
+
+		qMsg, _ := codectypes.NewAnyWithValue(&evmtypes.Message{
+			TurnstoneID:      "abc",
+			ChainReferenceID: "test-chain",
+			Assignee:         "addr4",
+			Action: &evmtypes.Message_UploadUserSmartContract{
+				UploadUserSmartContract: &evmtypes.UploadUserSmartContract{},
+			},
+		})
+
+		msgs := []consensustypes.QueuedSignedMessageI{
+			&consensustypes.QueuedSignedMessage{
+				Id:  1,
+				Msg: qMsg,
+			},
+		}
+
+		ms.ConsensusKeeper.On("GetMessagesFromQueue", mock.Anything,
+			mock.Anything, mock.Anything).
+			Return(msgs, nil).
+			Once()
+
+		ms.ValsetKeeper.On("GetCurrentSnapshot", mock.Anything).
+			Return(currentSnapshot, nil)
+
+		ms.ValsetKeeper.On("GetLatestSnapshotOnChain", mock.Anything, mock.Anything).
+			Return(&valsettypes.Snapshot{Id: 1}, nil)
+
+		ms.MetrixKeeper.On("Validators", mock.Anything, mock.Anything).
+			Return(validatorMetrics, nil)
+
+		ms.TreasuryKeeper.On("GetRelayerFeesByChainReferenceID", mock.Anything,
+			chainInfo.ChainReferenceID).
+			Return(relayerFees, nil)
+
+		ms.MsgSender.On("SendValsetMsgForChain", mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything).
+			Return(nil)
+
+		k.AddJustInTimeValsetUpdates(ctx)
 	})
 }

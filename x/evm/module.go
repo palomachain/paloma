@@ -183,6 +183,10 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	am.keeper.TryDeployingLastCompassContractToAllChains(sdkCtx)
 
+	// Add valset updates to queue if we have SLCs in the queue and a valset
+	// mismatch. This should prevent SLCs from getting stuck.
+	am.keeper.AddJustInTimeValsetUpdates(sdkCtx)
+
 	if sdkCtx.BlockHeight()%300 == 0 {
 		if err := am.scheduleExternalBalances(sdkCtx); err != nil {
 			liblog.FromSDKLogger(sdkCtx.Logger()).WithError(err).
