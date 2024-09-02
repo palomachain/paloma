@@ -1,6 +1,5 @@
 ## What's Changed
-* Add nonce override by @byte-bandit in https://github.com/palomachain/paloma/pull/1275
-* chore: update README by @byte-bandit in https://github.com/palomachain/paloma/pull/1276
+* fix: set light node sale amount in GRAIN by @maharifu in https://github.com/palomachain/paloma/pull/1280
 
 
-**Full Changelog**: https://github.com/palomachain/paloma/compare/v2.1.0...v2.1.1
+**Full Changelog**: https://github.com/palomachain/paloma/compare/v2.1.1...v2.1.2
