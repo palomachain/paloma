@@ -219,7 +219,10 @@ func TestCreateSaleLightNodeClientLicense(t *testing.T) {
 	amount := math.NewInt(100)
 	license := &types.LightNodeClientLicense{
 		ClientAddress: clientAddr,
-		Amount:        sdk.Coin{Amount: amount, Denom: testBondDenom},
+		Amount: sdk.Coin{
+			Amount: amount.Mul(math.NewInt(1_000_000)),
+			Denom:  testBondDenom,
+		},
 		VestingMonths: 24,
 	}
 

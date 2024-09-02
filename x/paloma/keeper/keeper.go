@@ -329,7 +329,9 @@ func (k Keeper) CreateSaleLightNodeClientLicense(
 	clientAddr string,
 	amount math.Int,
 ) error {
-	coin := sdk.NewCoin(k.bondDenom, amount)
+	// The amount will be set in GRAIN, but we want it here in uGRAIN, so we
+	// need to multiply by 1_000_000
+	coin := sdk.NewCoin(k.bondDenom, amount.Mul(math.NewInt(1_000_000)))
 
 	feegranter, err := k.LightNodeClientFeegranter(ctx)
 	if err != nil {
