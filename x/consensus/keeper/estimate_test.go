@@ -116,9 +116,9 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 				}
 
 				r.NotNil(slc.Fees)
-				r.Equal(uint64(31500), slc.Fees.RelayerFee, "relayer fee: got %d", slc.Fees.RelayerFee)
-				r.Equal(uint64(9450), slc.Fees.CommunityFee, "community fee: got %d", slc.Fees.CommunityFee)
-				r.Equal(uint64(315), slc.Fees.SecurityFee, "security fee: got %d", slc.Fees.SecurityFee)
+				r.Equal(uint64(26250), slc.Fees.RelayerFee, "relayer fee: got %d", slc.Fees.RelayerFee)
+				r.Equal(uint64(7875), slc.Fees.CommunityFee, "community fee: got %d", slc.Fees.CommunityFee)
+				r.Equal(uint64(263), slc.Fees.SecurityFee, "security fee: got %d", slc.Fees.SecurityFee)
 				return true
 			},
 		},
@@ -142,9 +142,9 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 				}
 
 				r.NotNil(usc.Fees)
-				r.Equal(uint64(31500), usc.Fees.RelayerFee, "relayer fee: got %d", usc.Fees.RelayerFee)
-				r.Equal(uint64(9450), usc.Fees.CommunityFee, "community fee: got %d", usc.Fees.CommunityFee)
-				r.Equal(uint64(315), usc.Fees.SecurityFee, "security fee: got %d", usc.Fees.SecurityFee)
+				r.Equal(uint64(26250), usc.Fees.RelayerFee, "relayer fee: got %d", usc.Fees.RelayerFee)
+				r.Equal(uint64(7875), usc.Fees.CommunityFee, "community fee: got %d", usc.Fees.CommunityFee)
+				r.Equal(uint64(263), usc.Fees.SecurityFee, "security fee: got %d", usc.Fees.SecurityFee)
 				return true
 			},
 		},
@@ -205,7 +205,7 @@ func Test_CheckAndProcessEstimatedMessages(t *testing.T) {
 			m, err := q.GetMsgByID(ctx, mid)
 			r.NoError(err)
 			r.Len(m.GetGasEstimates(), 7)
-			r.Equal(uint64(25200), m.GetGasEstimate())
+			r.Equal(uint64(21000), m.GetGasEstimate())
 			tc.slcCheck(getMsg(mid), r, true)
 		})
 	}
