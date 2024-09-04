@@ -15,5 +15,6 @@ var (
 
 var (
 	ErrEthTxNotVerified = whoops.String("transaction not verified")
+	ErrEthTxFailed      = whoops.String("transaction failed to execute")
 	ErrInvalidBalance   = whoops.Errorf("invalid balance: %s")
 )

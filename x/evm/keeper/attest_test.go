@@ -49,6 +49,10 @@ var (
 	valsetTx1 = ethcoretypes.NewTx(&ethcoretypes.DynamicFeeTx{
 		Data: common.FromHex(string(whoops.Must(os.ReadFile("testdata/valset-tx-data.hex")))),
 	})
+
+	serializedReceipt, _ = (&ethcoretypes.Receipt{
+		Status: ethcoretypes.ReceiptStatusSuccessful,
+	}).MarshalBinary()
 )
 
 type record struct {
@@ -359,7 +363,10 @@ var _ = g.Describe("attest router", func() {
 				g.When("message is SubmitLogicCall", func() {
 					g.BeforeEach(func() {
 						execTx = slcTx1
-						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
+						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{
+							SerializedTX:      whoops.Must(execTx.MarshalBinary()),
+							SerializedReceipt: serializedReceipt,
+						}))
 						evidence = []*consensustypes.Evidence{
 							{
 								ValAddress: sdk.ValAddress("validator-1"),
@@ -445,7 +452,10 @@ var _ = g.Describe("attest router", func() {
 				g.When("message is UpdateValset", func() {
 					g.BeforeEach(func() {
 						execTx = valsetTx1
-						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
+						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{
+							SerializedTX:      whoops.Must(execTx.MarshalBinary()),
+							SerializedReceipt: serializedReceipt,
+						}))
 						evidence = []*consensustypes.Evidence{
 							{
 								ValAddress: sdk.ValAddress("validator-1"),
@@ -494,7 +504,10 @@ var _ = g.Describe("attest router", func() {
 				g.When("message is UploadSmartContract", func() {
 					g.BeforeEach(func() {
 						execTx = uscTx1
-						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{SerializedTX: whoops.Must(execTx.MarshalBinary())}))
+						proof := whoops.Must(codectypes.NewAnyWithValue(&types.TxExecutedProof{
+							SerializedTX:      whoops.Must(execTx.MarshalBinary()),
+							SerializedReceipt: serializedReceipt,
+						}))
 						evidence = []*consensustypes.Evidence{
 							{
 								ValAddress: sdk.ValAddress("validator-1"),
