@@ -65,6 +65,8 @@ func (a *submitLogicCallAttester) attemptRetry(ctx sdk.Context, proof *types.Sma
 	slc := a.action
 	if slc.Retries < cMaxSubmitLogicCallRetries {
 		slc.Retries++
+		// We must clear fees before retry or the signature verification fails
+		slc.Fees = nil
 		a.logger.Info("retrying failed SubmitLogicCall message",
 			"message-id", a.msgID,
 			"retries", slc.Retries,
