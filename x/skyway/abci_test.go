@@ -367,7 +367,7 @@ func TestGasEstimation(t *testing.T) {
 
 	gotBatch, err = input.SkywayKeeper.GetOutgoingTXBatch(ctx, b.TokenContract, b.BatchNonce)
 	require.NoError(t, err)
-	require.Equal(t, uint64(25200), gotBatch.GasEstimate)
+	require.Equal(t, uint64(21000), gotBatch.GasEstimate, "want: %d, got: %d", uint64(20000), gotBatch.GasEstimate)
 
 	// Removing those again to avoid invariant issues due to dummy signatures
 	err = input.SkywayKeeper.CancelOutgoingTXBatch(ctx, gotBatch.TokenContract, gotBatch.BatchNonce)

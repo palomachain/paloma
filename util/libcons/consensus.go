@@ -226,7 +226,6 @@ func (c ConsensusChecker) VerifyGasEstimates(ctx context.Context, p liblog.LogPr
 	}
 
 	// Retrieve the median value of the gas estimates and
-	// multiply value by 1.2 to allow for some security margin
 	winner := palomath.Median(estimateValues)
 	logger.WithFields("gas-estimate", winner).Debug("Built median value of gas estimates.")
 
@@ -234,8 +233,5 @@ func (c ConsensusChecker) VerifyGasEstimates(ctx context.Context, p liblog.LogPr
 		return 0, fmt.Errorf("gas estimate is zero")
 	}
 
-	winner = (winner * 6) / 5
-
-	logger.WithFields("gas-estimate", winner).Debug("Adding security margin.")
 	return winner, nil
 }
