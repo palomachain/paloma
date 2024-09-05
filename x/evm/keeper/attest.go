@@ -45,7 +45,8 @@ func (k Keeper) attestMessageWrapper(ctx context.Context, q consensus.Queuer, ms
 	defer func() {
 		// If there is no error, or we can't verify this transaction, we flush
 		// the context, so we never see it again
-		if retErr == nil || errors.Is(retErr, types.ErrEthTxNotVerified) {
+		if retErr == nil || errors.Is(retErr, types.ErrEthTxNotVerified) ||
+			errors.Is(retErr, types.ErrEthTxFailed) {
 			writeCache()
 		}
 	}()
@@ -122,6 +123,25 @@ func (k Keeper) routerAttester(sdkCtx sdk.Context, q consensus.Queuer, msg conse
 		rawEvidence:      winner,
 		msg:              message,
 	}
+
+	switch winner := winner.(type) {
+	case *types.TxExecutedProof:
+		// If we have proof of a transaction, we need to check the status on
+		// the receipt
+		receipt, err := winner.GetReceipt()
+		if err != nil {
+			logger.WithFields("message-id", msg.GetId()).
+				WithError(err).Error("Failed to get transaction receipt")
+			return err
+		}
+
+		if receipt.Status != ethtypes.ReceiptStatusSuccessful {
+			logger.WithFields("message-id", msg.GetId(), "status", receipt.Status).
+				Warn("Transaction execution failed")
+			return types.ErrEthTxFailed
+		}
+	}
+
 	switch rawAction.(type) {
 	case *types.Message_UploadSmartContract:
 		return newUploadSmartContractAttester(&k, logger, params).Execute(sdkCtx)

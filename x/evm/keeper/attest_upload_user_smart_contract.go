@@ -147,6 +147,8 @@ func (a *uploadUserSmartContractAttester) attemptRetry(ctx sdk.Context) {
 	}
 
 	a.action.Retries++
+	// We must clear fees before retry or the signature verification fails
+	a.action.Fees = nil
 
 	a.logger.Info("Retrying failed UploadUserSmartContract message",
 		"message-id", a.msgID,

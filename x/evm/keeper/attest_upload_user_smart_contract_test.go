@@ -162,6 +162,7 @@ var _ = Describe("attest upload user smart contract", func() {
 			Expect(err).To(BeNil())
 
 			receipt := ethcoretypes.Receipt{
+				Status: ethcoretypes.ReceiptStatusSuccessful,
 				Logs: []*ethcoretypes.Log{
 					{
 						Topics: []common.Hash{contractDeployedEvent},

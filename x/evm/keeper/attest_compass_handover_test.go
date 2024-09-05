@@ -162,6 +162,7 @@ var _ = Describe("attest compass handover", func() {
 			Expect(err).To(BeNil())
 
 			receipt := ethcoretypes.Receipt{
+				Status: ethcoretypes.ReceiptStatusSuccessful,
 				Logs: []*ethcoretypes.Log{
 					{
 						Topics: []common.Hash{contractDeployedEvent},
