@@ -233,6 +233,5 @@ func (c ConsensusChecker) VerifyGasEstimates(ctx context.Context, p liblog.LogPr
 		return 0, fmt.Errorf("gas estimate is zero")
 	}
 
-	logger.WithFields("gas-estimate", winner).Debug("Adding security margin.")
 	return winner, nil
 }
