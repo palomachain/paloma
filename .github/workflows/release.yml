@@ -30,7 +30,7 @@ jobs:
         with:
           distribution: goreleaser
           args: release --auto-snapshot --clean --release-notes ./RELEASE_NOTES.md
-          version: "~> v2"
+          version: latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
