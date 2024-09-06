@@ -6,6 +6,8 @@ on:
     # Sequence of patterns matched against refs/tags
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+-?*" # Push events to matching examples like v1.2.3, v1.2.3-beta1
+    branches:
+      - patch-1
 
 permissions:
   contents: read
