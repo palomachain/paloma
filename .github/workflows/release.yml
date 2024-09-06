@@ -28,7 +28,7 @@ jobs:
       - name: Create release
         uses: goreleaser/goreleaser-action@v5
         with:
-          distribution: goreleases
+          distribution: goreleaser
           args: release --clean --release-notes ./RELEASE_NOTES.md
           version: latest
         env:
