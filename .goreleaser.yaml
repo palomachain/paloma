@@ -1,8 +1,14 @@
 # This is an example .goreleaser.yml file with some sensible defaults.
 # Make sure to check the documentation at https://goreleaser.com
+version: 2
+before:
+  hooks:
+    - go mod tidy
 builds:
   - main: ./cmd/palomad
     binary: palomad
+    env:
+      - CGO_ENABLED=1
     tags:
       - netgo
       - gcc
@@ -15,15 +21,14 @@ builds:
       - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .FullCommit }}
     goos:
       - linux
-    goarch:
-      - amd64
-
+      - darwin
 
 archives:
   - name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
+      {{- if eq .Arch "arm64" }}aarch64
       {{- else }}{{ .Arch }}{{ end }}
     files:
       - LICENSE
