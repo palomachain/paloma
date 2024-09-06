@@ -27,7 +27,8 @@ jobs:
         run: git fetch --prune --unshallow
       - name: Create release
         uses: goreleaser/goreleaser-action@v5
+        version: latest
         with:
-          args: release --rm-dist --release-notes ./RELEASE_NOTES.md
+          args: release --clean --release-notes ./RELEASE_NOTES.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
