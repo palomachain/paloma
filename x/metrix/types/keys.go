@@ -29,6 +29,14 @@ const (
 	MessageNonceCacheKey CacheKey = "highest-message-nonce"
 )
 
+var (
+	TelemetryPigeonUptime        = []string{"pigeon", "uptime"}
+	TelemetryPigeonSuccessRate   = []string{"pigeon", "success_rate"}
+	TelemetryPigeonExecutionTime = []string{"pigeon", "execution_time"}
+	TelemetryPigeonFee           = []string{"pigeon", "fee"}
+	TelemetryPigeonFeatureSet    = []string{"pigeon", "feature_set"}
+)
+
 type CacheKey string
 
 func (m CacheKey) Bytes() []byte { return []byte(m) }

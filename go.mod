@@ -47,6 +47,7 @@ require (
 	github.com/cosmos/ibc-go/v8 v8.2.0
 	github.com/ethereum/go-ethereum v1.13.15
 	github.com/golang/protobuf v1.5.4
+	github.com/hashicorp/go-metrics v0.5.3
 	github.com/onsi/ginkgo/v2 v2.17.2
 	golang.org/x/mod v0.19.0
 )
@@ -145,7 +146,6 @@ require (
 	github.com/hashicorp/go-getter v1.7.5 // indirect
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
-	github.com/hashicorp/go-metrics v0.5.3 // indirect
 	github.com/hashicorp/go-plugin v1.5.2 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
