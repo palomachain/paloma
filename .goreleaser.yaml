@@ -2,7 +2,7 @@
 # Make sure to check the documentation at https://goreleaser.com
 before:
   hooks:
-    - go mod tidy
+    - go mod download
 builds:
   - main: ./cmd/palomad
     binary: palomad
@@ -21,6 +21,17 @@ builds:
     goos:
       - linux
       - darwin
+    goarch:
+      - amd64
+      - arm64
+    goamd64:
+      - v3
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goarm: mips64
+      - gomips: hardfloat
+      - goamd64: v4
 
 archives:
   - name_template: >-
