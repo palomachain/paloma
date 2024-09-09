@@ -12,11 +12,13 @@ import (
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/gogoproto/proto"
+	"github.com/hashicorp/go-metrics"
 	keeperutil "github.com/palomachain/paloma/util/keeper"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/util/palomath"
@@ -451,6 +453,9 @@ func (k Keeper) tryUpdateRecord(ctx context.Context, valAddr sdk.ValAddress, pat
 
 	patched := patch.apply(*record.ValueOrDefault(valAddr))
 
+	// Keep telemetry up-to-date
+	k.updateTelemetry(ctx, valAddr, patched)
+
 	// Do not override if no changes
 	if record != nil && record.Equal(patched) {
 		return nil
@@ -462,6 +467,39 @@ func (k Keeper) tryUpdateRecord(ctx context.Context, valAddr sdk.ValAddress, pat
 	}
 
 	return nil
+}
+
+func (k Keeper) updateTelemetry(
+	ctx context.Context,
+	valAddr sdk.ValAddress,
+	val *types.ValidatorMetrics,
+) {
+	liblog.FromSDKLogger(k.Logger(ctx)).
+		WithComponent("metrix.updateTelemetry").
+		WithValidator(valAddr.String()).
+		Debug("Updating telemetry values")
+
+	uptime, _ := val.Uptime.Float64()
+	successRate, _ := val.SuccessRate.Float64()
+	executionTime := val.ExecutionTime.Int64()
+	fee := val.Fee.Int64()
+	featureSet, _ := val.FeatureSet.Float64()
+
+	labels := []metrics.Label{{
+		Name:  "validator_address",
+		Value: valAddr.String(),
+	}}
+
+	telemetry.SetGaugeWithLabels(types.TelemetryPigeonUptime,
+		float32(uptime), labels)
+	telemetry.SetGaugeWithLabels(types.TelemetryPigeonSuccessRate,
+		float32(successRate), labels)
+	telemetry.SetGaugeWithLabels(types.TelemetryPigeonExecutionTime,
+		float32(executionTime), labels)
+	telemetry.SetGaugeWithLabels(types.TelemetryPigeonFee,
+		float32(fee), labels)
+	telemetry.SetGaugeWithLabels(types.TelemetryPigeonFeatureSet,
+		float32(featureSet), labels)
 }
 
 func calculateUptime(window, missed int64) math.LegacyDec {
