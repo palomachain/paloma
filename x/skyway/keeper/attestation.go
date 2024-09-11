@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"strconv"
 
@@ -567,4 +568,54 @@ func (k Keeper) setLatestCompassID(
 ) {
 	store := k.GetStore(ctx, chainReferenceID)
 	store.Set(types.LatestCompassIDKey, []byte(compassID))
+}
+
+// UnobservedBlocksByAddr returns the blocks with reported events that
+// are still unobserved and are not yet voted by `valAddr`
+func (k Keeper) UnobservedBlocksByAddr(
+	ctx context.Context,
+	chainReferenceID string,
+	valAddr string,
+) ([]uint64, error) {
+	lastCompassID := k.GetLatestCompassID(ctx, chainReferenceID)
+
+	var err error
+	var blocks []uint64
+
+	iterErr := k.IterateAttestations(ctx, chainReferenceID, false, func(_ []byte, att types.Attestation) bool {
+		if att.Observed {
+			return false
+		}
+
+		if slices.Contains(att.Votes, valAddr) {
+			return false
+		}
+
+		var claim types.EthereumClaim
+		claim, err = k.UnpackAttestationClaim(&att)
+		if err != nil {
+			return true
+		}
+
+		// Only include claims from current compass deployment
+		if lastCompassID != "" && claim.GetCompassID() != lastCompassID {
+			return false
+		}
+
+		blocks = append(blocks, claim.GetEthBlockHeight())
+
+		return false
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if iterErr != nil {
+		return nil, iterErr
+	}
+
+	// Return the blocks in ascending order
+	slices.Sort(blocks)
+
+	return blocks, nil
 }

@@ -428,3 +428,17 @@ func (k Keeper) LastPendingBatchForGasEstimation(ctx context.Context, req *types
 
 	return &types.QueryLastPendingBatchForGasEstimationResponse{Batch: nil}, nil
 }
+
+func (k Keeper) GetUnobservedBlocksByAddr(
+	ctx context.Context,
+	req *types.QueryUnobservedBlocksByAddrRequest,
+) (*types.QueryUnobservedBlocksByAddrResponse, error) {
+	blocks, err := k.UnobservedBlocksByAddr(ctx, req.ChainReferenceId, req.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryUnobservedBlocksByAddrResponse{
+		Blocks: blocks,
+	}, nil
+}

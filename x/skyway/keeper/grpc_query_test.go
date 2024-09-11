@@ -2,12 +2,16 @@ package keeper
 
 import (
 	"bytes"
+	"context"
 	"math/big"
 	"testing"
 	"time"
 
 	"cosmossdk.io/math"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/palomachain/paloma/x/skyway/types"
 	vtypes "github.com/palomachain/paloma/x/valset/types"
 	"github.com/stretchr/testify/assert"
@@ -537,4 +541,169 @@ func TestQueryPendingSendToRemote(t *testing.T) {
 	}
 
 	assert.Equal(t, &expectedRes, response, "json is equal")
+}
+
+func TestGetUnobservedBlocksByAddr(t *testing.T) {
+	chainReferenceID := "test-chain"
+	address := common.BytesToAddress(bytes.Repeat([]byte{0x1}, 20)).String()
+
+	tests := []struct {
+		name     string
+		setup    func(context.Context, Keeper)
+		expected []uint64
+	}{
+		{
+			name: "three unobserved messages for current compass",
+			setup: func(ctx context.Context, k Keeper) {
+				sdkCtx := sdktypes.UnwrapSDKContext(ctx)
+
+				for i := 0; i < 3; i++ {
+					msg := types.MsgLightNodeSaleClaim{
+						SkywayNonce:    uint64(i + 1),
+						EthBlockHeight: uint64(i + 1),
+					}
+					claim, err := codectypes.NewAnyWithValue(&msg)
+					require.NoError(t, err)
+
+					hash, err := msg.ClaimHash()
+					require.NoError(t, err)
+
+					att := &types.Attestation{
+						Observed: false,
+						Votes:    []string{},
+						Height:   uint64(sdkCtx.BlockHeight()),
+						Claim:    claim,
+					}
+
+					k.SetAttestation(ctx, chainReferenceID, uint64(i+1), hash, att)
+				}
+			},
+			expected: []uint64{1, 2, 3},
+		},
+		{
+			name: "three observed messages for current compass",
+			setup: func(ctx context.Context, k Keeper) {
+				sdkCtx := sdktypes.UnwrapSDKContext(ctx)
+
+				for i := 0; i < 3; i++ {
+					msg := types.MsgLightNodeSaleClaim{
+						SkywayNonce:    uint64(i + 1),
+						EthBlockHeight: uint64(i + 1),
+					}
+					claim, err := codectypes.NewAnyWithValue(&msg)
+					require.NoError(t, err)
+
+					hash, err := msg.ClaimHash()
+					require.NoError(t, err)
+
+					att := &types.Attestation{
+						Observed: true,
+						Votes:    []string{},
+						Height:   uint64(sdkCtx.BlockHeight()),
+						Claim:    claim,
+					}
+
+					k.SetAttestation(ctx, chainReferenceID, uint64(i+1), hash, att)
+				}
+			},
+			expected: nil,
+		},
+		{
+			name: "unobserved message already signed by validator",
+			setup: func(ctx context.Context, k Keeper) {
+				sdkCtx := sdktypes.UnwrapSDKContext(ctx)
+
+				for i := 0; i < 3; i++ {
+					msg := types.MsgLightNodeSaleClaim{
+						SkywayNonce:    uint64(i + 1),
+						EthBlockHeight: uint64(i + 1),
+					}
+					claim, err := codectypes.NewAnyWithValue(&msg)
+					require.NoError(t, err)
+
+					hash, err := msg.ClaimHash()
+					require.NoError(t, err)
+
+					att := &types.Attestation{
+						Observed: true,
+						Votes:    []string{address},
+						Height:   uint64(sdkCtx.BlockHeight()),
+						Claim:    claim,
+					}
+
+					k.SetAttestation(ctx, chainReferenceID, uint64(i+1), hash, att)
+				}
+			},
+			expected: nil,
+		},
+		{
+			name: "unobserved messages for current and porevious compass",
+			setup: func(ctx context.Context, k Keeper) {
+				sdkCtx := sdktypes.UnwrapSDKContext(ctx)
+
+				k.setLatestCompassID(ctx, chainReferenceID, "2")
+
+				msg := types.MsgLightNodeSaleClaim{
+					SkywayNonce:    2,
+					EthBlockHeight: 2,
+					CompassId:      "1",
+				}
+				claim, err := codectypes.NewAnyWithValue(&msg)
+				require.NoError(t, err)
+
+				hash, err := msg.ClaimHash()
+				require.NoError(t, err)
+
+				att := &types.Attestation{
+					Observed: false,
+					Votes:    []string{},
+					Height:   uint64(sdkCtx.BlockHeight()),
+					Claim:    claim,
+				}
+
+				k.SetAttestation(ctx, chainReferenceID, 2, hash, att)
+
+				msg = types.MsgLightNodeSaleClaim{
+					SkywayNonce:    1,
+					EthBlockHeight: 1,
+					CompassId:      "2",
+				}
+				claim, err = codectypes.NewAnyWithValue(&msg)
+				require.NoError(t, err)
+
+				hash, err = msg.ClaimHash()
+				require.NoError(t, err)
+
+				att = &types.Attestation{
+					Observed: false,
+					Votes:    []string{},
+					Height:   uint64(sdkCtx.BlockHeight()),
+					Claim:    claim,
+				}
+
+				k.SetAttestation(ctx, chainReferenceID, 1, hash, att)
+			},
+			expected: []uint64{1},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			input := CreateTestEnv(t)
+
+			k := input.SkywayKeeper
+			ctx := input.Context
+
+			tt.setup(ctx, k)
+
+			req := &types.QueryUnobservedBlocksByAddrRequest{
+				ChainReferenceId: chainReferenceID,
+				Address:          address,
+			}
+
+			res, err := k.GetUnobservedBlocksByAddr(ctx, req)
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, res.Blocks)
+		})
+	}
 }

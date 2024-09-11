@@ -116,6 +116,12 @@ service Query {
     option (google.api.http).get =
       "/palomachain/paloma/skyway/pending-batch-for-gas-estimation/{chain_reference_id}";
   }
+
+  rpc GetUnobservedBlocksByAddr(QueryUnobservedBlocksByAddrRequest)
+      returns (QueryUnobservedBlocksByAddrResponse) {
+    option (google.api.http).get =
+      "/palomachain/paloma/skyway/unobserved-blocks-by-addr/{chain_reference_id}";
+  }
 }
 
 message QueryParamsRequest {}
@@ -248,4 +254,13 @@ message QueryLastPendingBatchForGasEstimationRequest {
 
 message QueryLastPendingBatchForGasEstimationResponse {
   repeated OutgoingTxBatch batch = 1 [ (gogoproto.nullable) = false ];
+}
+
+message QueryUnobservedBlocksByAddrRequest {
+  string chain_reference_id = 1;
+  string address = 2;
+}
+
+message QueryUnobservedBlocksByAddrResponse {
+  repeated uint64 blocks = 1;
 }
