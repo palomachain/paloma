@@ -480,3 +480,31 @@ func (k Keeper) overrideNonce(ctx context.Context, chainReferenceId string, nonc
 	logger.Info("Updated last observed nonce successfully")
 	return nil
 }
+
+// updateValidatorNoncesIfHigher updates all validator nonces to `newNonce` only
+// if it is higher than the current record
+func (k Keeper) updateValidatorNoncesIfHigher(
+	ctx context.Context,
+	chainReferenceId string,
+	newNonce uint64,
+) error {
+	logger := liblog.FromKeeper(ctx, k).WithComponent("update-validator-nonces-if-higher")
+
+	store := k.GetStore(ctx, chainReferenceId)
+	prefixStore := prefix.NewStore(store, types.LastEventNonceByValidatorKey)
+
+	err := k.IterateValidatorLastEventNonces(ctx, chainReferenceId, func(key []byte, nonce uint64) bool {
+		if newNonce > nonce {
+			prefixStore.Set(key, types.UInt64Bytes(newNonce))
+		}
+
+		return false
+	})
+	if err != nil {
+		logger.WithError(err).Warn("Failed to update validator skyway nonces")
+		return err
+	}
+
+	logger.Info("Updated validator nonces to highest successfully")
+	return nil
+}
