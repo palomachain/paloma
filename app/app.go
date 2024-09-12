@@ -58,6 +58,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
+	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -234,6 +237,7 @@ type App struct {
 	ParamsKeeper          paramskeeper.Keeper
 	EvidenceKeeper        evidencekeeper.Keeper
 	FeeGrantKeeper        feegrantkeeper.Keeper
+	AuthzKeeper           authzkeeper.Keeper
 
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
@@ -339,6 +343,7 @@ func New(
 		metrixmoduletypes.StoreKey,
 		wasmtypes.StoreKey,
 		palomamoduletypes.StoreKey,
+		authzkeeper.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(
@@ -732,6 +737,8 @@ func New(
 		}),
 	)
 
+	app.AuthzKeeper = authzkeeper.NewKeeper(runtime.NewKVStoreService(keys[authzkeeper.StoreKey]), appCodec, app.MsgServiceRouter(), app.AccountKeeper)
+
 	// register wasm gov proposal types
 	// enabledProposals := GetEnabledProposals()
 	// if len(enabledProposals) != 0 {
@@ -830,6 +837,7 @@ func New(
 		ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		ibctm.NewAppModule(),
+		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 	)
 
 	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
@@ -867,6 +875,7 @@ func New(
 		authtypes.ModuleName,
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
+		authz.ModuleName,
 		valsetmoduletypes.ModuleName,
 		palomamoduletypes.ModuleName,
 		evmmoduletypes.ModuleName,
@@ -935,6 +944,7 @@ func New(
 		vestingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
+		authz.ModuleName,
 		ibctransfertypes.ModuleName,
 		schedulermoduletypes.ModuleName,
 		consensusmoduletypes.ModuleName,
