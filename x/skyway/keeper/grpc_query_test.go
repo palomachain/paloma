@@ -609,7 +609,7 @@ func TestGetUnobservedBlocksByAddr(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name: "unobserved message already signed by validator",
+			name: "unobserved messages already signed by validator",
 			setup: func(ctx context.Context, k Keeper) {
 				sdkCtx := sdktypes.UnwrapSDKContext(ctx)
 
@@ -625,7 +625,7 @@ func TestGetUnobservedBlocksByAddr(t *testing.T) {
 					require.NoError(t, err)
 
 					att := &types.Attestation{
-						Observed: true,
+						Observed: false,
 						Votes:    []string{address},
 						Height:   uint64(sdkCtx.BlockHeight()),
 						Claim:    claim,
@@ -635,6 +635,37 @@ func TestGetUnobservedBlocksByAddr(t *testing.T) {
 				}
 			},
 			expected: nil,
+		},
+		{
+			name: "unobserved messages behind last observed nonce",
+			setup: func(ctx context.Context, k Keeper) {
+				sdkCtx := sdktypes.UnwrapSDKContext(ctx)
+
+				err := k.setLastObservedSkywayNonce(ctx, chainReferenceID, 2)
+				require.NoError(t, err)
+
+				for i := 0; i < 3; i++ {
+					msg := types.MsgLightNodeSaleClaim{
+						SkywayNonce:    uint64(i + 1),
+						EthBlockHeight: uint64(i + 1),
+					}
+					claim, err := codectypes.NewAnyWithValue(&msg)
+					require.NoError(t, err)
+
+					hash, err := msg.ClaimHash()
+					require.NoError(t, err)
+
+					att := &types.Attestation{
+						Observed: false,
+						Votes:    []string{},
+						Height:   uint64(sdkCtx.BlockHeight()),
+						Claim:    claim,
+					}
+
+					k.SetAttestation(ctx, chainReferenceID, uint64(i+1), hash, att)
+				}
+			},
+			expected: []uint64{3},
 		},
 		{
 			name: "unobserved messages for current and porevious compass",
