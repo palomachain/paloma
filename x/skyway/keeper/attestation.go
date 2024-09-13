@@ -165,13 +165,6 @@ func (k Keeper) TryAttestation(ctx context.Context, att *types.Attestation) erro
 					return err
 				}
 
-				// Update all validator nonces to the claim nonce that was just
-				// processed
-				err = k.updateValidatorNoncesIfHigher(ctx, claim.GetChainReferenceId(), claim.GetSkywayNonce())
-				if err != nil {
-					return err
-				}
-
 				break
 			}
 		}

@@ -14,8 +14,12 @@ import (
 	"github.com/palomachain/paloma/x/skyway/types"
 )
 
+const updateValidatorNoncesPeriod = 50
+
 // EndBlocker is called at the end of every block
 func EndBlocker(ctx context.Context, k keeper.Keeper, cc *libcons.ConsensusChecker) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	logger := liblog.FromKeeper(ctx, k).WithComponent("skyway-endblocker")
 	defer func() {
 		if r := recover(); r != nil {
@@ -41,6 +45,17 @@ func EndBlocker(ctx context.Context, k keeper.Keeper, cc *libcons.ConsensusCheck
 		err = pruneAttestations(ctx, k, v)
 		if err != nil {
 			logger.WithError(err).Warn("Failed to prune attestations.")
+		}
+
+		if sdkCtx.BlockHeight()%updateValidatorNoncesPeriod == 0 {
+			// Update all validator nonces to the latest observed nonce, if
+			// suitable This makes sure validators don't get stuck waiting for
+			// events they can't get from the RPC, even though these events are
+			// already observed
+			err = k.UpdateValidatorNoncesToLatest(ctx, v)
+			if err != nil {
+				logger.WithError(err).Warn("Failed to update validator nonces.")
+			}
 		}
 	}
 
