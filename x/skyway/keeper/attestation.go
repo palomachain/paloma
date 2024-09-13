@@ -579,7 +579,11 @@ func (k Keeper) UnobservedBlocksByAddr(
 ) ([]uint64, error) {
 	lastCompassID := k.GetLatestCompassID(ctx, chainReferenceID)
 
-	var err error
+	lastObservedNonce, err := k.GetLastObservedSkywayNonce(ctx, chainReferenceID)
+	if err != nil {
+		return nil, err
+	}
+
 	var blocks []uint64
 
 	iterErr := k.IterateAttestations(ctx, chainReferenceID, false, func(_ []byte, att types.Attestation) bool {
@@ -599,6 +603,13 @@ func (k Keeper) UnobservedBlocksByAddr(
 
 		// Only include claims from current compass deployment
 		if lastCompassID != "" && claim.GetCompassID() != lastCompassID {
+			return false
+		}
+
+		// If we ever reset the latest skyway nonce ahead of any observed claim,
+		// we don't need nor want pigeons trying to attest to them. So, we can
+		// filter claims that are behind the latest attested claim.
+		if claim.GetSkywayNonce() <= lastObservedNonce {
 			return false
 		}
 
