@@ -42,6 +42,14 @@ func EndBlocker(ctx context.Context, k keeper.Keeper, cc *libcons.ConsensusCheck
 		if err != nil {
 			logger.WithError(err).Warn("Failed to prune attestations.")
 		}
+
+		// Update all validator nonces to the latest observed nonce, if suitable
+		// This makes sure validators don't get stuck waiting for events they
+		// can't get from the RPC, even though these events are already observed
+		err = k.UpdateValidatorNoncesToLatest(ctx, v)
+		if err != nil {
+			logger.WithError(err).Warn("Failed to update validator nonces.")
+		}
 	}
 
 	err = processGasEstimates(ctx, k, cc)
