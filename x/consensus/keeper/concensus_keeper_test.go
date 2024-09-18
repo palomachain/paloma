@@ -90,10 +90,10 @@ func TestEndToEndTestingOfPuttingAndGettingMessagesOfTheConsensusQueue(t *testin
 	})
 }
 
-func TestJailValidatorsWhichMissedAttestation(t *testing.T) {
+func TestJailValidatorsIfNecessary(t *testing.T) {
 	queue := types.Queue(defaultQueueName, chainType, chainReferenceID)
 	keeper, ms, ctx := newConsensusKeeper(t)
-	msgType := &types.SimpleMessage{}
+	msgType := &evmtypes.Message{}
 	serializedTx, err := hex.DecodeString("02f87201108405f5e100850b68a0aa00825208941f9c2e67dbbe4c457a5e2be0bc31e67ce5953a2d87470de4df82000080c001a0e05de0771f8d577ec5aa440612c0e8f560d732d5162db0187cfaf56ac50c3716a0147565f4b0924a5adda25f55330c385448e0507d1219d4dac0950e2872682124")
 	require.NoError(t, err)
 
@@ -125,7 +125,10 @@ func TestJailValidatorsWhichMissedAttestation(t *testing.T) {
 		require.ErrorContains(t, err, "getMsgByID", "returns an error")
 	})
 
-	testMsg := types.SimpleMessage{Sender: "user", Hello: "foo", World: "bar"}
+	assignee, _ := sdk.ValAddressFromBech32("palomavaloper1tsu8nthuspe4zlkejtj3v27rtq8qz7q6983zt2")
+	testMsg := evmtypes.Message{
+		Assignee: assignee.String(),
+	}
 	t.Run("with message that actually forms consensus", func(t *testing.T) {
 		mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg, &consensus.PutOptions{PublicAccessData: []byte{1}})
 		require.NoError(t, err)
@@ -201,6 +204,7 @@ func TestJailValidatorsWhichMissedAttestation(t *testing.T) {
 			err = keeper.jailValidatorsIfNecessary(ctx, queue, mID)
 			require.NoError(t, err, "should not do anything")
 		})
+
 		t.Run("with expected validators missing", func(t *testing.T) {
 			mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg, &consensus.PutOptions{PublicAccessData: []byte{1}})
 			require.NoError(t, err)
@@ -244,10 +248,13 @@ func TestJailValidatorsWhichMissedAttestation(t *testing.T) {
 			mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg, nil)
 			require.NoError(t, err)
 
+			ms.ValsetKeeper.On("Jail", mock.Anything, assignee, mock.Anything).Return(nil)
+
 			err = keeper.jailValidatorsIfNecessary(ctx, queue, mID)
 			require.NoError(t, err, "should not do anything")
 		})
 	})
+
 	t.Run("with expected validators missing, but less than 10% share supplied evidence", func(t *testing.T) {
 		mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg, &consensus.PutOptions{PublicAccessData: []byte{1}})
 		require.NoError(t, err)
@@ -285,6 +292,7 @@ func TestJailValidatorsWhichMissedAttestation(t *testing.T) {
 		require.Error(t, err, "should return error")
 		require.ErrorContains(t, err, "message consensus failure likely caused by faulty response data")
 	})
+
 	t.Run("with expected validators missing, but 10% of share or more supplied evidence", func(t *testing.T) {
 		mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg, &consensus.PutOptions{PublicAccessData: []byte{1}})
 		require.NoError(t, err)

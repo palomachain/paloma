@@ -25,6 +25,10 @@ type mockedServices struct {
 }
 
 func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("paloma", "pub")
+	config.SetBech32PrefixForValidator("palomavaloper", "valoperpub")
+
 	logger := log.NewNopLogger()
 
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
