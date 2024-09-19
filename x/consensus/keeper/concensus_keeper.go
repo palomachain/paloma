@@ -331,6 +331,12 @@ func (k Keeper) jailValidatorsWhichMissedRelaying(
 	sdkCtx sdk.Context,
 	msg types.QueuedSignedMessageI,
 ) error {
+	if msg.GetGasEstimate() == 0 {
+		// If we don't have a gas estimate, this was probably not the
+		// validator's fault, so we do nothing
+		return nil
+	}
+
 	consensusMsg, err := msg.ConsensusMsg(k.cdc)
 	if err != nil {
 		return err
