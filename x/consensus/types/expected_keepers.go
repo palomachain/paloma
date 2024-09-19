@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	xchain "github.com/palomachain/paloma/internal/x-chain"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -32,4 +33,9 @@ type ValsetKeeper interface {
 //go:generate mockery --name=EvmKeeper
 type EvmKeeper interface {
 	PickValidatorForMessage(ctx context.Context, chainReferenceID string, requirements *xchain.JobRequirements) (string, string, error)
+}
+
+//go:generate mockery --name=MetrixKeeper
+type MetrixKeeper interface {
+	OnConsensusMessageAttested(context.Context, metrixtypes.MessageAttestedEvent)
 }

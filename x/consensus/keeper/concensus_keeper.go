@@ -318,8 +318,8 @@ func (k Keeper) jailValidatorsIfNecessary(
 
 	if msg.GetPublicAccessData() == nil && msg.GetErrorData() == nil {
 		// The message was never delivered, so we need to update the validator
-		// metrics with a failure and jail the validator
-		return k.jailValidatorsWhichMissedRelaying(sdkCtx, msg)
+		// metrics with a failure
+		return k.punishValidatorForMissingRelay(sdkCtx, msg)
 	}
 
 	// Otherwise, there was a delivery attempt, so only jail validators that
@@ -327,7 +327,7 @@ func (k Keeper) jailValidatorsIfNecessary(
 	return k.jailValidatorsWhichMissedAttestation(sdkCtx, msg)
 }
 
-func (k Keeper) jailValidatorsWhichMissedRelaying(
+func (k Keeper) punishValidatorForMissingRelay(
 	sdkCtx sdk.Context,
 	msg types.QueuedSignedMessageI,
 ) error {
@@ -363,8 +363,7 @@ func (k Keeper) jailValidatorsWhichMissedRelaying(
 		})
 	}
 
-	jailMsg := fmt.Sprintf("Failed to relay message %d", msg.GetId())
-	return k.valset.Jail(sdkCtx, valAddr, jailMsg)
+	return nil
 }
 
 func (k Keeper) jailValidatorsWhichMissedAttestation(

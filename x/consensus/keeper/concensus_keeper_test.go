@@ -244,11 +244,26 @@ func TestJailValidatorsIfNecessary(t *testing.T) {
 			err = keeper.jailValidatorsIfNecessary(ctx, queue, mID)
 			require.NoError(t, err, "should not do anything")
 		})
-		t.Run("with neither error nor public access data set", func(t *testing.T) {
-			mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg, nil)
+		t.Run("with neither error nor public access data set without gas estimate", func(t *testing.T) {
+			mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg,
+				&consensus.PutOptions{RequireGasEstimation: true})
 			require.NoError(t, err)
 
-			ms.ValsetKeeper.On("Jail", mock.Anything, assignee, mock.Anything).Return(nil)
+			err = keeper.jailValidatorsIfNecessary(ctx, queue, mID)
+			require.NoError(t, err, "should not do anything")
+		})
+		t.Run("with neither error nor public access data set with gas estimate", func(t *testing.T) {
+			mID, err := keeper.PutMessageInQueue(ctx, queue, &testMsg,
+				&consensus.PutOptions{RequireGasEstimation: true})
+			require.NoError(t, err)
+
+			cq, err := keeper.getConsensusQueue(ctx, queue)
+			require.NoError(t, err)
+
+			err = cq.SetElectedGasEstimate(ctx, mID, 1)
+			require.NoError(t, err)
+
+			ms.MetrixKeeper.On("OnConsensusMessageAttested", mock.Anything, mock.Anything).Return(nil)
 
 			err = keeper.jailValidatorsIfNecessary(ctx, queue, mID)
 			require.NoError(t, err, "should not do anything")

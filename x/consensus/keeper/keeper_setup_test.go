@@ -22,6 +22,7 @@ import (
 
 type mockedServices struct {
 	ValsetKeeper *mocks.ValsetKeeper
+	MetrixKeeper *mocks.MetrixKeeper
 }
 
 func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
@@ -56,8 +57,12 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		memStoreKey,
 		"ConsensusParams",
 	)
+
+	metrixKeeper := mocks.NewMetrixKeeper(t)
+
 	ms := mockedServices{
 		ValsetKeeper: mocks.NewValsetKeeper(t),
+		MetrixKeeper: metrixKeeper,
 	}
 	k := NewKeeper(
 		appCodec,
@@ -67,6 +72,8 @@ func newConsensusKeeper(t testing.TB) (*Keeper, mockedServices, sdk.Context) {
 		NewRegistry(),
 		nil,
 	)
+
+	k.AddMessageConsensusAttestedListener(metrixKeeper)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
 
