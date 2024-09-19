@@ -582,6 +582,7 @@ func New(
 		consensusRegistry,
 		&app.TreasuryKeeper,
 	)
+	app.ConsensusKeeper.AddMessageConsensusAttestedListener(&app.MetrixKeeper)
 
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
 		appCodec,

@@ -15,6 +15,7 @@ import (
 	"github.com/palomachain/paloma/util/libcons"
 	"github.com/palomachain/paloma/util/liblog"
 	"github.com/palomachain/paloma/x/consensus/types"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 )
 
 type FeeProvider interface {
@@ -31,10 +32,11 @@ type (
 
 		valset types.ValsetKeeper
 
-		registry         *registry
-		evmKeeper        types.EvmKeeper
-		consensusChecker *libcons.ConsensusChecker
-		feeProvider      FeeProvider
+		registry                   *registry
+		evmKeeper                  types.EvmKeeper
+		consensusChecker           *libcons.ConsensusChecker
+		feeProvider                FeeProvider
+		onMessageAttestedListeners []metrixtypes.OnConsensusMessageAttestedListener
 	}
 )
 
@@ -47,18 +49,23 @@ func NewKeeper(
 	fp FeeProvider,
 ) *Keeper {
 	k := &Keeper{
-		cdc:         cdc,
-		storeKey:    storeKey,
-		paramstore:  ps,
-		valset:      valsetKeeper,
-		registry:    reg,
-		feeProvider: fp,
+		cdc:                        cdc,
+		storeKey:                   storeKey,
+		paramstore:                 ps,
+		valset:                     valsetKeeper,
+		registry:                   reg,
+		feeProvider:                fp,
+		onMessageAttestedListeners: make([]metrixtypes.OnConsensusMessageAttestedListener, 0),
 	}
 	ider := keeperutil.NewIDGenerator(k, nil)
 	k.ider = ider
 	k.consensusChecker = libcons.New(k.valset.GetCurrentSnapshot, k.cdc)
 
 	return k
+}
+
+func (k *Keeper) AddMessageConsensusAttestedListener(l metrixtypes.OnConsensusMessageAttestedListener) {
+	k.onMessageAttestedListeners = append(k.onMessageAttestedListeners, l)
 }
 
 func (k Keeper) Logger(ctx context.Context) log.Logger {

@@ -15,6 +15,7 @@ import (
 	"github.com/palomachain/paloma/x/consensus/keeper/filters"
 	"github.com/palomachain/paloma/x/consensus/types"
 	evmtypes "github.com/palomachain/paloma/x/evm/types"
+	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
@@ -287,35 +288,88 @@ func (k Keeper) GetMessagesFromQueue(ctx context.Context, queueTypeName string, 
 // Any message that actually reached consensus will be removed from the queue during
 // attestation, other messages like superfluous valset updates will get removed
 // in their respective logic flows, but none of them should be using this function.
-func (k Keeper) PruneJob(ctx sdk.Context, queueTypeName string, id uint64) (err error) {
-	if err := k.jailValidatorsWhichMissedAttestation(ctx, queueTypeName, id); err != nil {
-		liblog.FromSDKLogger(k.Logger(ctx)).
+func (k Keeper) PruneJob(sdkCtx sdk.Context, queueTypeName string, id uint64) error {
+	err := k.jailValidatorsIfNecessary(sdkCtx, queueTypeName, id)
+	if err != nil {
+		liblog.FromSDKLogger(k.Logger(sdkCtx)).
 			WithError(err).
 			WithFields("msg-id", id).
 			WithFields("queue-type-name", queueTypeName).
-			Error("Failed to jail validators that missed attestation.")
+			Error("Failed to jail validators.")
 	}
 
-	return k.DeleteJob(ctx, queueTypeName, id)
+	return k.DeleteJob(sdkCtx, queueTypeName, id)
 }
 
-func (k Keeper) jailValidatorsWhichMissedAttestation(ctx sdk.Context, queueTypeName string, id uint64) error {
-	cq, err := k.getConsensusQueue(ctx, queueTypeName)
+func (k Keeper) jailValidatorsIfNecessary(
+	sdkCtx sdk.Context,
+	queueTypeName string,
+	id uint64,
+) error {
+	cq, err := k.getConsensusQueue(sdkCtx, queueTypeName)
 	if err != nil {
 		return fmt.Errorf("getConsensusQueue: %w", err)
 	}
 
-	msg, err := cq.GetMsgByID(ctx, id)
+	msg, err := cq.GetMsgByID(sdkCtx, id)
 	if err != nil {
 		return fmt.Errorf("getMsgByID: %w", err)
 	}
 
 	if msg.GetPublicAccessData() == nil && msg.GetErrorData() == nil {
-		// This message was never successfully handled, attestation flock
-		// should not be punished for this.
+		// The message was never delivered, so we need to update the validator
+		// metrics with a failure
+		return k.punishValidatorForMissingRelay(sdkCtx, msg)
+	}
+
+	// Otherwise, there was a delivery attempt, so only jail validators that
+	// missed attestation
+	return k.jailValidatorsWhichMissedAttestation(sdkCtx, msg)
+}
+
+func (k Keeper) punishValidatorForMissingRelay(
+	sdkCtx sdk.Context,
+	msg types.QueuedSignedMessageI,
+) error {
+	if msg.GetGasEstimate() == 0 {
+		// If we don't have a gas estimate, this was probably not the
+		// validator's fault, so we do nothing
 		return nil
 	}
 
+	consensusMsg, err := msg.ConsensusMsg(k.cdc)
+	if err != nil {
+		return err
+	}
+
+	message, ok := consensusMsg.(*evmtypes.Message)
+	if !ok {
+		// If this is not a turnstone message, we don't want it
+		return nil
+	}
+
+	valAddr, err := sdk.ValAddressFromBech32(message.Assignee)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range k.onMessageAttestedListeners {
+		v.OnConsensusMessageAttested(sdkCtx, metrixtypes.MessageAttestedEvent{
+			AssignedAtBlockHeight:  message.AssignedAtBlockHeight,
+			HandledAtBlockHeight:   math.NewInt(sdkCtx.BlockHeight()),
+			Assignee:               valAddr,
+			MessageID:              msg.GetId(),
+			WasRelayedSuccessfully: false,
+		})
+	}
+
+	return nil
+}
+
+func (k Keeper) jailValidatorsWhichMissedAttestation(
+	ctx sdk.Context,
+	msg types.QueuedSignedMessageI,
+) error {
 	r, err := k.consensusChecker.VerifyEvidence(ctx,
 		slice.Map(msg.GetEvidence(), func(evidence *types.Evidence) libcons.Evidence {
 			return evidence
@@ -371,7 +425,7 @@ func (k Keeper) jailValidatorsWhichMissedAttestation(ctx sdk.Context, queueTypeN
 			// This validator is part of the active valset but did not supply evidence.
 			// That's not very nice. Let's jail them.
 			if err := k.valset.Jail(ctx, v.GetAddress(), fmt.Sprintf("No evidence supplied for contentious message %d", msg.GetId())); err != nil {
-				liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithValidator(v.GetAddress().String()).WithFields("msg-id", id).Error("Failed to jail validator.")
+				liblog.FromSDKLogger(k.Logger(ctx)).WithError(err).WithValidator(v.GetAddress().String()).WithFields("msg-id", msg.GetId()).Error("Failed to jail validator.")
 			}
 		}
 	}
