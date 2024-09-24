@@ -17,6 +17,9 @@ import (
 	valsettypes "github.com/palomachain/paloma/x/valset/types"
 )
 
+// topValidatorPoolSize is the number of validators considered when picking
+const topValidatorPoolSize = 5
+
 type msgAssigner struct {
 	ValsetKeeper   types.ValsetKeeper
 	metrixKeeper   types.MetrixKeeper
@@ -73,7 +76,12 @@ func (ma msgAssigner) PickValidatorForMessage(ctx context.Context, weights *type
 		return "", errors.New("no assignable validators for message")
 	}
 
-	winner := assignableValidators[0].address
+	ts := sdk.UnwrapSDKContext(ctx).BlockTime().Unix()
+
+	// Use block timestamp to pick a random validator from the top validators
+	winnerIdx := ts % int64(min(len(assignableValidators), topValidatorPoolSize))
+
+	winner := assignableValidators[winnerIdx].address
 	ma.scores = removeWinnerFromSnapshot(ma.scores, winner)
 	return winner, nil
 }
