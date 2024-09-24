@@ -45,6 +45,9 @@ const (
 	// cSuccessRateDecrement specifies the decrement applied to the
 	// message relay success rate for every failed attempt.
 	cSuccessRateDecrement = 0.02
+
+	// cDefaultSuccessRateScore specifies the initial score value.
+	cDefaultSuccessRateScore = 0.5
 )
 
 var _ valsettypes.OnSnapshotBuiltListener = &Keeper{}
@@ -305,7 +308,7 @@ func (k *Keeper) UpdateRelayMetrics(ctx context.Context) {
 			return true
 		}
 
-		successRateScore := 0.5
+		successRateScore := cDefaultSuccessRateScore
 		executionTimes := make([]uint64, len(history.Records))
 
 		for i, v := range history.Records {
@@ -313,7 +316,13 @@ func (k *Keeper) UpdateRelayMetrics(ctx context.Context) {
 			if v.Success {
 				successRateScore += cSuccessRateIncrement
 			} else {
-				successRateScore -= cSuccessRateDecrement
+				// If a validator fails to relay, we bring their score back to
+				// the default value
+				if successRateScore > cDefaultSuccessRateScore {
+					successRateScore = cDefaultSuccessRateScore
+				} else {
+					successRateScore -= cSuccessRateDecrement
+				}
 			}
 		}
 

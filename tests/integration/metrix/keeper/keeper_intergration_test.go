@@ -592,9 +592,12 @@ var _ = Describe("update relay metrics", func() {
 			Expect(metrics[1].ExecutionTime).To(Equal(math.NewInt(349)))
 			Expect(metrics[2].ExecutionTime).To(Equal(math.NewInt(399)))
 
+			// First validator always succeeds
 			Expect(metrics[0].SuccessRate).To(Equal(palomath.LegacyDecFromFloat64(1)))
+			// Second validator always fails
 			Expect(metrics[1].SuccessRate).To(Equal(palomath.LegacyDecFromFloat64(0)))
-			Expect(metrics[2].SuccessRate).To(Equal(palomath.LegacyDecFromFloat64(.9)))
+			// Third validator fails the last message (j = 100)
+			Expect(metrics[2].SuccessRate).To(Equal(palomath.LegacyDecFromFloat64(.5)))
 		})
 	})
 })
