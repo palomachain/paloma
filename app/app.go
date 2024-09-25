@@ -712,7 +712,17 @@ func New(
 		panic("error while reading wasm config: " + err.Error())
 	}
 
-	wasmAvailableCapabilities := []string{"iterator", "staking", "stargate", "paloma"}
+	wasmAvailableCapabilities := []string{
+		"iterator",
+		"staking",
+		"stargate",
+		"paloma",
+		"cosmwasm_1_1",
+		"cosmwasm_1_2",
+		"cosmwasm_1_3",
+		"cosmwasm_1_4",
+		"cosmwasm_2_0",
+	}
 	app.wasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
@@ -740,12 +750,6 @@ func New(
 	)
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(runtime.NewKVStoreService(keys[authzkeeper.StoreKey]), appCodec, app.MsgServiceRouter(), app.AccountKeeper)
-
-	// register wasm gov proposal types
-	// enabledProposals := GetEnabledProposals()
-	// if len(enabledProposals) != 0 {
-	// 	govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
-	// }
 
 	// Create Transfer Stack
 	var transferStack porttypes.IBCModule
