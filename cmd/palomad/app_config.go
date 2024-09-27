@@ -50,7 +50,7 @@ func initAppConfig() (string, interface{}) {
 	customAppConfig := CustomAppConfig{
 		Config: *srvCfg,
 		WASM: WASMConfig{
-			LRUSize:       1,
+			LRUSize:       0,
 			QueryGasLimit: 300000,
 		},
 	}

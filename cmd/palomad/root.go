@@ -32,9 +32,20 @@ import (
 func NewRootCmd() *cobra.Command {
 	// set Bech32 address configuration
 	params.SetAddressConfig()
+	tempDir := tempDir()
 	appOptions := make(db.OptionsMap, 0)
-	appOptions[flags.FlagHome] = palomaapp.DefaultNodeHome
+	appOptions[flags.FlagHome] = tempDir
+
 	tempApp := palomaapp.New(cosmoslog.NewNopLogger(), db.NewMemDB(), io.MultiWriter(), true, appOptions)
+	defer func() {
+		if err := tempApp.Close(); err != nil {
+			panic(err)
+		}
+		if tempDir != palomaapp.DefaultNodeHome {
+			os.RemoveAll(tempDir)
+		}
+	}()
+
 	encCfg := params.EncodingConfig{
 		InterfaceRegistry: tempApp.InterfaceRegistry(),
 		Codec:             tempApp.AppCodec(),
@@ -206,4 +217,14 @@ func rootPreRunE(cmd *cobra.Command, args []string) error {
 	}()
 
 	return nil
+}
+
+var tempDir = func() string {
+	dir, err := os.MkdirTemp("", ".paloma")
+	if err != nil {
+		panic(fmt.Sprintf("failed creating temp directory: %s", err.Error()))
+	}
+	defer os.RemoveAll(dir)
+
+	return dir
 }
