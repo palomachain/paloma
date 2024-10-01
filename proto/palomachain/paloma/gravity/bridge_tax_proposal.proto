@@ -3,7 +3,7 @@ package palomachain.paloma.gravity;
 
 import "cosmos_proto/cosmos.proto";
 
-option go_package = "github.com/palomachain/paloma/x/skyway/types/gravity";
+option go_package = "github.com/palomachain/paloma/v2/x/skyway/types/gravity";
 
 message SetBridgeTaxProposal {
   string title = 1;

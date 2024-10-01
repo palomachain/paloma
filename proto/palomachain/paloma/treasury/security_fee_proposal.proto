@@ -3,7 +3,7 @@ package palomachain.paloma.treasury;
 
 import "cosmos_proto/cosmos.proto";
 
-option go_package = "github.com/palomachain/paloma/x/treasury/types";
+option go_package = "github.com/palomachain/paloma/v2/x/treasury/types";
 
 message SecurityFeeProposal {
   string title = 1;

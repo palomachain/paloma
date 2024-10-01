@@ -14,9 +14,9 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/x/consensus/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
 )
 
 var _ Queuer = Queue{}

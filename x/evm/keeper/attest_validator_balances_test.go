@@ -9,9 +9,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/palomachain/paloma/util/slice"
-	"github.com/palomachain/paloma/x/evm/types"
-	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
+	"github.com/palomachain/paloma/v2/util/slice"
+	"github.com/palomachain/paloma/v2/x/evm/types"
+	evmmocks "github.com/palomachain/paloma/v2/x/evm/types/mocks"
 	"github.com/stretchr/testify/mock"
 )
 

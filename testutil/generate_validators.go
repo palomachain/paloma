@@ -6,7 +6,7 @@ import (
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/palomachain/paloma/testutil/rand"
+	"github.com/palomachain/paloma/v2/testutil/rand"
 )
 
 func GenValidators(numValidators, totalConsPower int) []stakingtypes.Validator {

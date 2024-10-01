@@ -2,8 +2,8 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/libmeta"
-	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/util/libmeta"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 const TypeMsgCreateJob = "create_job"

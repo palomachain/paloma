@@ -15,11 +15,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	"github.com/palomachain/paloma/x/evm/types"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper/consensus"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 var lastSmartContractKey = []byte{0x1}

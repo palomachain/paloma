@@ -3,7 +3,7 @@ package palomachain.paloma.skyway;
 
 import "palomachain/paloma/skyway/light_node_sale_contract.proto";
 
-option go_package = "github.com/palomachain/paloma/x/skyway/types";
+option go_package = "github.com/palomachain/paloma/v2/x/skyway/types";
 
 message SetLightNodeSaleContractsProposal {
   string title = 1;

@@ -1,7 +1,7 @@
 syntax = "proto3";
 package palomachain.paloma.evm;
 
-option go_package = "github.com/palomachain/paloma/x/evm/types";
+option go_package = "github.com/palomachain/paloma/v2/x/evm/types";
 
 message DeployNewSmartContractProposal {
   string title = 1;

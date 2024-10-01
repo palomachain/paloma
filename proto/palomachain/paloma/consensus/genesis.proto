@@ -4,7 +4,7 @@ package palomachain.paloma.consensus;
 import "gogoproto/gogo.proto";
 import "palomachain/paloma/consensus/params.proto";
 
-option go_package = "github.com/palomachain/paloma/x/consensus/types";
+option go_package = "github.com/palomachain/paloma/v2/x/consensus/types";
 
 // GenesisState defines the consensus module's genesis state.
 message GenesisState {

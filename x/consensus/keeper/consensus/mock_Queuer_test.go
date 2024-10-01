@@ -3,7 +3,7 @@
 package consensus
 
 import (
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
 	mock "github.com/stretchr/testify/mock"
 
 	testing "testing"

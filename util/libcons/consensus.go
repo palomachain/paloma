@@ -11,11 +11,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/liberr"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/palomath"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/util/liberr"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/util/palomath"
+	evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 const ErrConsensusNotAchieved = liberr.Error("evm: consensus not achieved")

@@ -8,8 +8,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/palomachain/paloma/x/skyway/types"
-	vtypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
+	vtypes "github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/stretchr/testify/require"
 )
 

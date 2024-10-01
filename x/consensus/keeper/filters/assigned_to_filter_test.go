@@ -3,7 +3,7 @@ package filters
 import (
 	"testing"
 
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
+	evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
 	"github.com/stretchr/testify/assert"
 )
 

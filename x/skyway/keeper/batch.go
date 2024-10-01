@@ -11,8 +11,8 @@ import (
 	"cosmossdk.io/store/prefix"
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/eventbus"
-	"github.com/palomachain/paloma/x/skyway/types"
+	"github.com/palomachain/paloma/v2/util/eventbus"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 )
 
 const OutgoingTxBatchSize = 100

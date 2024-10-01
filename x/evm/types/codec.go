@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/cosmos/gogoproto/proto"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {

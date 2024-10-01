@@ -14,9 +14,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/palomachain/paloma/x/consensus/client/cli"
-	"github.com/palomachain/paloma/x/consensus/keeper"
-	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/v2/x/consensus/client/cli"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
 	"github.com/spf13/cobra"
 )
 

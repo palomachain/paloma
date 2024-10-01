@@ -10,9 +10,9 @@ import (
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
-	"github.com/palomachain/paloma/util/slice"
-	"github.com/palomachain/paloma/x/evm/types"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
+	"github.com/palomachain/paloma/v2/util/slice"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 var xchainType = xchain.Type("evm")

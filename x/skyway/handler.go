@@ -7,8 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/palomachain/paloma/x/skyway/keeper"
-	"github.com/palomachain/paloma/x/skyway/types"
+	"github.com/palomachain/paloma/v2/x/skyway/keeper"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 )
 
 // NewHandler returns a handler for "Skyway" type messages.

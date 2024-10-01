@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/VolumeFi/whoops"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper/consensus"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 func (k Keeper) CollectJobFundEvents(ctx context.Context) error {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 	"github.com/spf13/cobra"
 )
 

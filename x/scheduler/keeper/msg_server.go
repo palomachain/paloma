@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/palomachain/paloma/v2/x/scheduler/types"
 )
 
 type msgServer struct {

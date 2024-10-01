@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/x/valset/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"

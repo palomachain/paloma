@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"cosmossdk.io/core/address"
-	"github.com/palomachain/paloma/util/liberr"
+	"github.com/palomachain/paloma/v2/util/liberr"
 )
 
 const ErrFailedToParseValAddress = liberr.Error("failed to parse validator address from bech32: %s")

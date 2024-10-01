@@ -8,10 +8,10 @@ import (
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	utilkeeper "github.com/palomachain/paloma/util/keeper"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
-	"github.com/palomachain/paloma/x/skyway/types"
+	utilkeeper "github.com/palomachain/paloma/v2/util/keeper"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 )
 
 // nolint: exhaustruct

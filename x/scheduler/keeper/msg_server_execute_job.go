@@ -4,8 +4,8 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/x/scheduler/types"
 )
 
 func (msgSrv msgServer) ExecuteJob(goCtx context.Context, msg *types.MsgExecuteJob) (*types.MsgExecuteJobResponse, error) {

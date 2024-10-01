@@ -15,7 +15,7 @@ import "palomachain/paloma/skyway/params.proto";
 import "palomachain/paloma/skyway/pool.proto";
 import "palomachain/paloma/skyway/types.proto";
 
-option go_package = "github.com/palomachain/paloma/x/skyway/types";
+option go_package = "github.com/palomachain/paloma/v2/x/skyway/types";
 
 // Query defines the gRPC querier service
 service Query {

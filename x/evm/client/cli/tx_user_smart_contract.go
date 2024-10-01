@@ -8,8 +8,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/palomachain/paloma/x/evm/types"
-	vtypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
+	vtypes "github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/spf13/cobra"
 )
 

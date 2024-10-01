@@ -3,7 +3,7 @@ package palomachain.paloma.skyway;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/palomachain/paloma/x/skyway/types";
+option go_package = "github.com/palomachain/paloma/v2/x/skyway/types";
 
 enum LimitPeriod {
   NONE = 0;

@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/palomachain/paloma/x/paloma/types"
+	"github.com/palomachain/paloma/v2/x/paloma/types"
 )
 
 // GetParams get all parameters as types.Params

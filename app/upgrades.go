@@ -17,11 +17,11 @@ import (
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
-	metrixmoduletypes "github.com/palomachain/paloma/x/metrix/types"
-	palomamoduletypes "github.com/palomachain/paloma/x/paloma/types"
-	skywaymoduletypes "github.com/palomachain/paloma/x/skyway/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	consensusmoduletypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	metrixmoduletypes "github.com/palomachain/paloma/v2/x/metrix/types"
+	palomamoduletypes "github.com/palomachain/paloma/v2/x/paloma/types"
+	skywaymoduletypes "github.com/palomachain/paloma/v2/x/skyway/types"
 )
 
 var minCommissionRate = math.LegacyMustNewDecFromStr("0.05")

@@ -5,11 +5,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	consensusmocks "github.com/palomachain/paloma/x/consensus/keeper/consensus/mocks"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	"github.com/palomachain/paloma/x/evm/types"
-	evmmocks "github.com/palomachain/paloma/x/evm/types/mocks"
-	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
+	consensusmocks "github.com/palomachain/paloma/v2/x/consensus/keeper/consensus/mocks"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
+	evmmocks "github.com/palomachain/paloma/v2/x/evm/types/mocks"
+	metrixtypes "github.com/palomachain/paloma/v2/x/metrix/types"
 	"github.com/stretchr/testify/mock"
 )
 

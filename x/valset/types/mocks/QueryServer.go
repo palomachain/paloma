@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	types "github.com/palomachain/paloma/x/valset/types"
+	types "github.com/palomachain/paloma/v2/x/valset/types"
 	mock "github.com/stretchr/testify/mock"
 )
 

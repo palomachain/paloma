@@ -15,9 +15,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	params2 "github.com/palomachain/paloma/app/params"
-	"github.com/palomachain/paloma/x/metrix/keeper"
-	"github.com/palomachain/paloma/x/metrix/types"
+	params2 "github.com/palomachain/paloma/v2/app/params"
+	"github.com/palomachain/paloma/v2/x/metrix/keeper"
+	"github.com/palomachain/paloma/v2/x/metrix/types"
 	"github.com/stretchr/testify/require"
 )
 

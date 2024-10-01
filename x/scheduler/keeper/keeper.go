@@ -15,11 +15,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/slice"
-	"github.com/palomachain/paloma/x/scheduler/types"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/util/slice"
+	"github.com/palomachain/paloma/v2/x/scheduler/types"
 )
 
 type Keeper struct {

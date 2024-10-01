@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

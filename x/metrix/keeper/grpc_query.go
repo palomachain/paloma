@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/metrix/types"
+	"github.com/palomachain/paloma/v2/x/metrix/types"
 )
 
 var _ types.QueryServer = Keeper{}

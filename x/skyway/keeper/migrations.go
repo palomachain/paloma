@@ -2,8 +2,8 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/skyway/exported"
-	v1 "github.com/palomachain/paloma/x/skyway/migrations/v1"
+	"github.com/palomachain/paloma/v2/x/skyway/exported"
+	v1 "github.com/palomachain/paloma/v2/x/skyway/migrations/v1"
 )
 
 // Migrator is a struct for handling in-place store migrations.

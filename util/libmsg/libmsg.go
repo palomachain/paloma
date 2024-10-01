@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 type Envelope interface {

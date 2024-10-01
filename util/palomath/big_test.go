@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/palomachain/paloma/util/palomath"
+	"github.com/palomachain/paloma/v2/util/palomath"
 )
 
 func TestBigetDiv(t *testing.T) {

@@ -3,8 +3,8 @@ package consensus
 import (
 	"context"
 
-	"github.com/palomachain/paloma/x/consensus/keeper"
-	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

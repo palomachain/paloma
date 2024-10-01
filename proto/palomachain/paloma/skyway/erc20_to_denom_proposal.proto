@@ -3,7 +3,7 @@ package palomachain.paloma.skyway;
 
 import "cosmos_proto/cosmos.proto";
 
-option go_package = "github.com/palomachain/paloma/x/skyway/types";
+option go_package = "github.com/palomachain/paloma/v2/x/skyway/types";
 
 message SetERC20ToDenomProposal {
   string title = 1;

@@ -3,7 +3,7 @@ package filters
 import (
 	"testing"
 
-	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
 )
 
 func Test_IsUnprocessed(t *testing.T) {

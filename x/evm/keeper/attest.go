@@ -12,14 +12,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/libcons"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/slice"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	"github.com/palomachain/paloma/x/evm/types"
-	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/util/libcons"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/util/slice"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper/consensus"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
+	metrixtypes "github.com/palomachain/paloma/v2/x/metrix/types"
 )
 
 const (

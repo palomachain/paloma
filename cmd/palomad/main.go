@@ -4,7 +4,7 @@ import (
 	"os"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	"github.com/palomachain/paloma/app"
+	"github.com/palomachain/paloma/v2/app"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package palomath_test
 import (
 	"testing"
 
-	"github.com/palomachain/paloma/util/palomath"
+	"github.com/palomachain/paloma/v2/util/palomath"
 )
 
 func TestClampInt(t *testing.T) {

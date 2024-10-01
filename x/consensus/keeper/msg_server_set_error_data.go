@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
 )
 
 func (k msgServer) SetErrorData(goCtx context.Context, msg *types.MsgSetErrorData) (*types.MsgSetErrorDataResponse, error) {

@@ -3,7 +3,7 @@ package palomachain.paloma.valset;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/palomachain/paloma/x/valset/types";
+option go_package = "github.com/palomachain/paloma/v2/x/valset/types";
 
 // Params defines the parameters for the module.
 message Params { option (gogoproto.goproto_stringer) = false; }

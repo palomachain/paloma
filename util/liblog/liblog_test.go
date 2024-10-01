@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/log"
-	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/v2/util/liblog"
 	"github.com/stretchr/testify/assert"
 )
 

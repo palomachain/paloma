@@ -1,6 +1,6 @@
 package filters
 
-import "github.com/palomachain/paloma/x/consensus/types"
+import "github.com/palomachain/paloma/v2/x/consensus/types"
 
 func IsNotBlockedByValset(pendingValsetUpdates []types.QueuedSignedMessageI, msg types.QueuedSignedMessageI) bool {
 	if pendingValsetUpdates == nil || len(pendingValsetUpdates) < 1 {

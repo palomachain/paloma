@@ -16,10 +16,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	params2 "github.com/palomachain/paloma/app/params"
-	"github.com/palomachain/paloma/testutil/common"
-	"github.com/palomachain/paloma/x/valset/types"
-	"github.com/palomachain/paloma/x/valset/types/mocks"
+	params2 "github.com/palomachain/paloma/v2/app/params"
+	"github.com/palomachain/paloma/v2/testutil/common"
+	"github.com/palomachain/paloma/v2/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/valset/types/mocks"
 	"github.com/stretchr/testify/require"
 )
 

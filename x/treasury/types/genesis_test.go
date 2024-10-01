@@ -5,7 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/treasury/types"
+	"github.com/palomachain/paloma/v2/x/treasury/types"
 	"github.com/stretchr/testify/require"
 )
 

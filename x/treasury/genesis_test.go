@@ -5,10 +5,10 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keepertest "github.com/palomachain/paloma/testutil/keeper"
-	"github.com/palomachain/paloma/testutil/nullify"
-	"github.com/palomachain/paloma/x/treasury"
-	"github.com/palomachain/paloma/x/treasury/types"
+	keepertest "github.com/palomachain/paloma/v2/testutil/keeper"
+	"github.com/palomachain/paloma/v2/testutil/nullify"
+	"github.com/palomachain/paloma/v2/x/treasury"
+	"github.com/palomachain/paloma/v2/x/treasury/types"
 	"github.com/stretchr/testify/require"
 )
 

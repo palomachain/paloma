@@ -4,8 +4,8 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)

@@ -15,11 +15,11 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/palomachain/paloma/util/libcons"
-	"github.com/palomachain/paloma/x/skyway/client/cli"
-	"github.com/palomachain/paloma/x/skyway/exported"
-	"github.com/palomachain/paloma/x/skyway/keeper"
-	"github.com/palomachain/paloma/x/skyway/types"
+	"github.com/palomachain/paloma/v2/util/libcons"
+	"github.com/palomachain/paloma/v2/x/skyway/client/cli"
+	"github.com/palomachain/paloma/v2/x/skyway/exported"
+	"github.com/palomachain/paloma/v2/x/skyway/keeper"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 	"github.com/spf13/cobra"
 )
 

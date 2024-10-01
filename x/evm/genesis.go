@@ -8,9 +8,9 @@ import (
 
 	"github.com/VolumeFi/whoops"
 	"github.com/ethereum/go-ethereum/common"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/x/evm/keeper"
-	"github.com/palomachain/paloma/x/evm/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/x/evm/keeper"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

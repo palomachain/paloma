@@ -10,7 +10,7 @@ import "palomachain/paloma/evm/turnstone.proto";
 import "palomachain/paloma/evm/chain_info.proto";
 import "palomachain/paloma/evm/user_smart_contract.proto";
 
-option go_package = "github.com/palomachain/paloma/x/evm/types";
+option go_package = "github.com/palomachain/paloma/v2/x/evm/types";
 
 // Query defines the gRPC querier service.
 service Query {

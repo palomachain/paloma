@@ -13,10 +13,10 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/liblog"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	"github.com/palomachain/paloma/x/evm/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 const (

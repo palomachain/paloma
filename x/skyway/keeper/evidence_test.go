@@ -8,7 +8,7 @@ import (
 	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/skyway/types"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 	"github.com/stretchr/testify/require"
 )
 

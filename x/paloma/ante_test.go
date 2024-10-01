@@ -11,9 +11,9 @@ import (
 	"cosmossdk.io/x/feegrant"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/paloma"
-	"github.com/palomachain/paloma/x/paloma/types"
-	vtypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/paloma"
+	"github.com/palomachain/paloma/v2/x/paloma/types"
+	vtypes "github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/stretchr/testify/require"
 	protov2 "google.golang.org/protobuf/proto"
 )

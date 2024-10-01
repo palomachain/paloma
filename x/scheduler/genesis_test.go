@@ -3,10 +3,10 @@ package scheduler_test
 import (
 	"testing"
 
-	keepertest "github.com/palomachain/paloma/testutil/keeper"
-	"github.com/palomachain/paloma/testutil/nullify"
-	"github.com/palomachain/paloma/x/scheduler"
-	"github.com/palomachain/paloma/x/scheduler/types"
+	keepertest "github.com/palomachain/paloma/v2/testutil/keeper"
+	"github.com/palomachain/paloma/v2/testutil/nullify"
+	"github.com/palomachain/paloma/v2/x/scheduler"
+	"github.com/palomachain/paloma/v2/x/scheduler/types"
 	"github.com/stretchr/testify/require"
 )
 

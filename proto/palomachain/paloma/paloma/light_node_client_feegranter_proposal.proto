@@ -1,7 +1,7 @@
 syntax = "proto3";
 package palomachain.paloma.paloma;
 
-option go_package = "github.com/palomachain/paloma/x/paloma/types";
+option go_package = "github.com/palomachain/paloma/v2/x/paloma/types";
 
 message SetLightNodeClientFeegranterProposal {
   string title = 1;

@@ -5,7 +5,7 @@ import (
 	"sort"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/liblog"
+	"github.com/palomachain/paloma/v2/util/liblog"
 )
 
 var (

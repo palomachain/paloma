@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/palomachain/paloma/v2/x/scheduler/types"
 )
 
 // GetParams get all parameters as types.Params

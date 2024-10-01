@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "palomachain/paloma/evm/params.proto";
 import "palomachain/paloma/evm/relay_weights.proto";
 
-option go_package = "github.com/palomachain/paloma/x/evm/types";
+option go_package = "github.com/palomachain/paloma/v2/x/evm/types";
 
 // GenesisState defines the evm module's genesis state.
 message GenesisState {

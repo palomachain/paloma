@@ -3,7 +3,7 @@ package types
 import (
 	"context"
 
-	xchain "github.com/palomachain/paloma/internal/x-chain"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
 )
 
 type MsgAssigner interface {

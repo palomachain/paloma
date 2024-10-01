@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/palomachain/paloma/util/liberr"
+	"github.com/palomachain/paloma/v2/util/liberr"
 )
 
 const (

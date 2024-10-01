@@ -7,9 +7,9 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/palomachain/paloma/x/evm/types"
-	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
+	metrixtypes "github.com/palomachain/paloma/v2/x/metrix/types"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )

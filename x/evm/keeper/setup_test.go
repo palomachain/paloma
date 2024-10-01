@@ -12,10 +12,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
-	"github.com/palomachain/paloma/app/params"
-	"github.com/palomachain/paloma/testutil"
-	"github.com/palomachain/paloma/x/evm/types"
-	"github.com/palomachain/paloma/x/evm/types/mocks"
+	"github.com/palomachain/paloma/v2/app/params"
+	"github.com/palomachain/paloma/v2/testutil"
+	"github.com/palomachain/paloma/v2/x/evm/types"
+	"github.com/palomachain/paloma/v2/x/evm/types/mocks"
 	"github.com/stretchr/testify/require"
 )
 

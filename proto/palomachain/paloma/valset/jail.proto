@@ -6,7 +6,7 @@ import "cosmos_proto/cosmos.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/palomachain/paloma/x/valset/types";
+option go_package = "github.com/palomachain/paloma/v2/x/valset/types";
 
 message JailRecord {
   // Address of the validator being jailed

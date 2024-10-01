@@ -4,7 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/skyway/types"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 

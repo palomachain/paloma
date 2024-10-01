@@ -7,13 +7,13 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/libcons"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/libmsg"
-	"github.com/palomachain/paloma/util/slice"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
-	"github.com/palomachain/paloma/x/consensus/types"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/v2/util/libcons"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/util/libmsg"
+	"github.com/palomachain/paloma/v2/util/slice"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper/consensus"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
+	evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 // CheckAndProcessEstimatedMessages is supposed to be used within the

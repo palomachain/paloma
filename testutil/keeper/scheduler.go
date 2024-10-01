@@ -13,8 +13,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/scheduler/keeper"
-	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/palomachain/paloma/v2/x/scheduler/keeper"
+	"github.com/palomachain/paloma/v2/x/scheduler/types"
 	"github.com/stretchr/testify/require"
 )
 

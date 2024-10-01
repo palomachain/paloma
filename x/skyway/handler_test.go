@@ -7,9 +7,9 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/skyway/keeper"
-	"github.com/palomachain/paloma/x/skyway/types"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/skyway/keeper"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

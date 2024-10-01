@@ -8,8 +8,8 @@ import (
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/palomachain/paloma/util/libmeta"
-	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/util/libmeta"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 // nolint: exhaustruct

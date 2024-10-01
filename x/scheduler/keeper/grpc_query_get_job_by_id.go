@@ -4,7 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/palomachain/paloma/v2/x/scheduler/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

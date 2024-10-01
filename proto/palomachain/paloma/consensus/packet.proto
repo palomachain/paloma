@@ -1,7 +1,7 @@
 syntax = "proto3";
 package palomachain.paloma.consensus;
 
-option go_package = "github.com/palomachain/paloma/x/consensus/types";
+option go_package = "github.com/palomachain/paloma/v2/x/consensus/types";
 
 message ConsensusPacketData {
   oneof packet { NoData noData = 1; }

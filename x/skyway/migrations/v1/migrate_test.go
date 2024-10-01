@@ -6,10 +6,10 @@ import (
 	st "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/skyway/exported"
-	"github.com/palomachain/paloma/x/skyway/keeper"
-	v1 "github.com/palomachain/paloma/x/skyway/migrations/v1"
-	"github.com/palomachain/paloma/x/skyway/types"
+	"github.com/palomachain/paloma/v2/x/skyway/exported"
+	"github.com/palomachain/paloma/v2/x/skyway/keeper"
+	v1 "github.com/palomachain/paloma/v2/x/skyway/migrations/v1"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 	"github.com/stretchr/testify/require"
 )
 

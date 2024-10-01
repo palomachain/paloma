@@ -10,8 +10,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/x/skyway/types"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 )
 
 // Check that distKeeper implements the expected type

@@ -6,10 +6,10 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper/consensus"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	metrixtypes "github.com/palomachain/paloma/v2/x/metrix/types"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)

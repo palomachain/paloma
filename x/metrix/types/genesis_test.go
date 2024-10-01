@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"github.com/palomachain/paloma/x/paloma/types"
+	"github.com/palomachain/paloma/v2/x/paloma/types"
 	"github.com/stretchr/testify/require"
 )
 

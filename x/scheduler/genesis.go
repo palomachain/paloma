@@ -2,8 +2,8 @@ package scheduler
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/scheduler/keeper"
-	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/palomachain/paloma/v2/x/scheduler/keeper"
+	"github.com/palomachain/paloma/v2/x/scheduler/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

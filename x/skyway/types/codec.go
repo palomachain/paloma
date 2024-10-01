@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	"github.com/palomachain/paloma/x/skyway/types/gravity"
+	"github.com/palomachain/paloma/v2/x/skyway/types/gravity"
 )
 
 // ModuleCdc is the codec for the module

@@ -4,7 +4,7 @@ package palomachain.paloma.paloma;
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/palomachain/paloma/x/paloma/types";
+option go_package = "github.com/palomachain/paloma/v2/x/paloma/types";
 
 message LightNodeClientFunders {
   repeated bytes accounts = 1

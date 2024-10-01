@@ -1,7 +1,7 @@
 package types
 
 import (
-	keeperutil "github.com/palomachain/paloma/util/keeper"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
 )
 
 const (

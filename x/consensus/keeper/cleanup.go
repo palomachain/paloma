@@ -5,13 +5,13 @@ import (
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/libmsg"
-	"github.com/palomachain/paloma/util/slice"
-	"github.com/palomachain/paloma/x/consensus/types"
-	evm "github.com/palomachain/paloma/x/evm/types"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/util/libmsg"
+	"github.com/palomachain/paloma/v2/util/slice"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
+	evm "github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 func (k Keeper) PruneOldMessages(ctx sdk.Context, blocksAgo int64) error {

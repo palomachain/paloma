@@ -3,7 +3,7 @@ package types
 import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/palomath"
+	"github.com/palomachain/paloma/v2/util/palomath"
 )
 
 func (m *ValidatorMetrics) ValueOrDefault(valAddr sdk.ValAddress) *ValidatorMetrics {

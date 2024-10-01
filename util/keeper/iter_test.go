@@ -3,8 +3,8 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
 	"github.com/stretchr/testify/assert"
 )
 

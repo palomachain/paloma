@@ -11,10 +11,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	"github.com/palomachain/paloma/x/treasury/types"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	"github.com/palomachain/paloma/v2/x/treasury/types"
 )
 
 const storeKey = "treasury"

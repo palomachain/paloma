@@ -3,10 +3,10 @@ package metrix_test
 import (
 	"testing"
 
-	keepertest "github.com/palomachain/paloma/testutil/keeper"
-	"github.com/palomachain/paloma/testutil/nullify"
-	"github.com/palomachain/paloma/x/metrix"
-	"github.com/palomachain/paloma/x/metrix/types"
+	keepertest "github.com/palomachain/paloma/v2/testutil/keeper"
+	"github.com/palomachain/paloma/v2/testutil/nullify"
+	"github.com/palomachain/paloma/v2/x/metrix"
+	"github.com/palomachain/paloma/v2/x/metrix/types"
 	"github.com/stretchr/testify/require"
 )
 

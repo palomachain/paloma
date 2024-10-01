@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/x/valset/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 func (k Keeper) GetPigeonRequirements(goCtx context.Context, req *types.QueryGetPigeonRequirementsRequest) (*types.QueryGetPigeonRequirementsResponse, error) {
