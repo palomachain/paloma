@@ -8,11 +8,11 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/libmsg"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
-	"github.com/palomachain/paloma/x/consensus/types"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/util/libmsg"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper/consensus"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
+	evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )

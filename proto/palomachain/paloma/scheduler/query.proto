@@ -7,7 +7,7 @@ import "cosmos/base/query/v1beta1/pagination.proto";
 import "palomachain/paloma/scheduler/params.proto";
 import "palomachain/paloma/scheduler/job.proto";
 
-option go_package = "github.com/palomachain/paloma/x/scheduler/types";
+option go_package = "github.com/palomachain/paloma/v2/x/scheduler/types";
 
 // Query defines the gRPC querier service.
 service Query {

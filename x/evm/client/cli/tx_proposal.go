@@ -14,7 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	gethcommon "github.com/ethereum/go-ethereum/common"
-	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 	"github.com/spf13/cobra"
 )
 

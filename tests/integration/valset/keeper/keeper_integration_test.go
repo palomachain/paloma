@@ -9,8 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/palomachain/paloma/testutil"
-	"github.com/palomachain/paloma/x/valset/keeper"
+	"github.com/palomachain/paloma/v2/testutil"
+	"github.com/palomachain/paloma/v2/x/valset/keeper"
 )
 
 func TestGenesisGinkgo(t *testing.T) {

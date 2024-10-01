@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "palomachain/paloma/valset/params.proto";
 import "palomachain/paloma/valset/pigeon_requirements.proto";
 
-option go_package = "github.com/palomachain/paloma/x/valset/types";
+option go_package = "github.com/palomachain/paloma/v2/x/valset/types";
 
 // GenesisState defines the valset module's genesis state.
 message GenesisState {

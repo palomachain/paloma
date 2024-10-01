@@ -5,9 +5,9 @@ import (
 	"errors"
 
 	"cosmossdk.io/store/prefix"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
-	"github.com/palomachain/paloma/x/skyway/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 )
 
 func (k Keeper) GetDenomOfERC20(ctx context.Context, chainReferenceId string, tokenContract types.EthAddress) (string, error) {

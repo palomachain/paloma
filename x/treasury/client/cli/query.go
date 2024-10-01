@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/palomachain/paloma/x/treasury/types"
+	"github.com/palomachain/paloma/v2/x/treasury/types"
 	"github.com/spf13/cobra"
 )
 

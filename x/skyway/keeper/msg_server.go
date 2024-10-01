@@ -10,8 +10,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	utilkeeper "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/x/skyway/types"
+	utilkeeper "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 

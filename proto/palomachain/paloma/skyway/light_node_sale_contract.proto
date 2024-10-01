@@ -1,7 +1,7 @@
 syntax = "proto3";
 package palomachain.paloma.skyway;
 
-option go_package = "github.com/palomachain/paloma/x/skyway/types";
+option go_package = "github.com/palomachain/paloma/v2/x/skyway/types";
 
 // LightNodeSaleContract defines parameters for each of the node sale
 // smart contracts deployed in external chains.

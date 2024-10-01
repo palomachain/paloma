@@ -14,8 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/palomachain/paloma/x/treasury/keeper"
-	"github.com/palomachain/paloma/x/treasury/types"
+	"github.com/palomachain/paloma/v2/x/treasury/keeper"
+	"github.com/palomachain/paloma/v2/x/treasury/types"
 	"github.com/stretchr/testify/require"
 )
 

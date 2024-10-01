@@ -10,9 +10,9 @@ import (
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 // StakingKeeper defines the expected staking keeper methods

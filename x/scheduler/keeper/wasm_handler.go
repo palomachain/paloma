@@ -10,9 +10,9 @@ import (
 	"github.com/VolumeFi/whoops"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/liblog"
-	wasmutil "github.com/palomachain/paloma/util/wasm"
-	"github.com/palomachain/paloma/x/scheduler/types"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	wasmutil "github.com/palomachain/paloma/v2/util/wasm"
+	"github.com/palomachain/paloma/v2/x/scheduler/types"
 )
 
 type ExecuteJobWasmEvent struct {

@@ -4,7 +4,7 @@ package mocks
 
 import (
 	codec "github.com/cosmos/cosmos-sdk/codec"
-	keeper "github.com/palomachain/paloma/util/keeper"
+	keeper "github.com/palomachain/paloma/v2/util/keeper"
 
 	mock "github.com/stretchr/testify/mock"
 

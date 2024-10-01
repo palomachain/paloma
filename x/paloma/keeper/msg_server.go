@@ -6,8 +6,8 @@ import (
 	"os"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/x/paloma/types"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/x/paloma/types"
 )
 
 const cPigeonStatusUpdateFF = "PALOMA_FF_PIGEON_STATUS_UPDATE"

@@ -7,11 +7,11 @@ import (
 
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/libcons"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/slice"
-	"github.com/palomachain/paloma/x/skyway/keeper"
-	"github.com/palomachain/paloma/x/skyway/types"
+	"github.com/palomachain/paloma/v2/util/libcons"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/util/slice"
+	"github.com/palomachain/paloma/v2/x/skyway/keeper"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 )
 
 const updateValidatorNoncesPeriod = 50

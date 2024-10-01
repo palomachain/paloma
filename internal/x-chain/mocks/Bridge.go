@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	xchain "github.com/palomachain/paloma/internal/x-chain"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
 	mock "github.com/stretchr/testify/mock"
 )
 

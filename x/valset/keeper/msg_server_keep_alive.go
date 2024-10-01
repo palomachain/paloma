@@ -4,7 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 func (k msgServer) KeepAlive(goCtx context.Context, msg *types.MsgKeepAlive) (*types.MsgKeepAliveResponse, error) {

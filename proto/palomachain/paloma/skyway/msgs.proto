@@ -12,7 +12,7 @@ import "palomachain/paloma/skyway/params.proto";
 import "palomachain/paloma/skyway/types.proto";
 import "palomachain/paloma/valset/common.proto";
 
-option go_package = "github.com/palomachain/paloma/x/skyway/types";
+option go_package = "github.com/palomachain/paloma/v2/x/skyway/types";
 
 // Msg defines the state transitions possible within skyway
 service Msg {

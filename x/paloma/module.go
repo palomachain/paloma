@@ -14,10 +14,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/x/paloma/client/cli"
-	"github.com/palomachain/paloma/x/paloma/keeper"
-	"github.com/palomachain/paloma/x/paloma/types"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/x/paloma/client/cli"
+	"github.com/palomachain/paloma/v2/x/paloma/keeper"
+	"github.com/palomachain/paloma/v2/x/paloma/types"
 	"github.com/spf13/cobra"
 )
 

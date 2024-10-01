@@ -5,8 +5,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"github.com/palomachain/paloma/testutil/sample"
-	"github.com/palomachain/paloma/x/metrix/types"
+	"github.com/palomachain/paloma/v2/testutil/sample"
+	"github.com/palomachain/paloma/v2/x/metrix/types"
 )
 
 // avoid unused import issue

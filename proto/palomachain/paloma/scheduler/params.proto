@@ -3,7 +3,7 @@ package palomachain.paloma.scheduler;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/palomachain/paloma/x/scheduler/types";
+option go_package = "github.com/palomachain/paloma/v2/x/scheduler/types";
 
 // Params defines the parameters for the module.
 message Params { option (gogoproto.goproto_stringer) = false; }

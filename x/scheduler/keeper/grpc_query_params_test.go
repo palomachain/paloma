@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	testkeeper "github.com/palomachain/paloma/testutil/keeper"
-	"github.com/palomachain/paloma/x/scheduler/types"
+	testkeeper "github.com/palomachain/paloma/v2/testutil/keeper"
+	"github.com/palomachain/paloma/v2/x/scheduler/types"
 	"github.com/stretchr/testify/require"
 )
 

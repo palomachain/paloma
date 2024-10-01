@@ -8,7 +8,7 @@ import "cosmos_proto/cosmos.proto";
 import "palomachain/paloma/metrix/params.proto";
 import "amino/amino.proto";
 
-option go_package = "github.com/palomachain/paloma/x/metrix/types";
+option go_package = "github.com/palomachain/paloma/v2/x/metrix/types";
 
 // ValidatorMetrics defines a validator's collected metrics to be
 // used during relayer selection.

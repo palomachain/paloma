@@ -5,7 +5,7 @@ import (
 
 	"github.com/VolumeFi/whoops"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

@@ -8,8 +8,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/palomachain/paloma/x/valset/types"
-	"github.com/palomachain/paloma/x/valset/types/mocks"
+	"github.com/palomachain/paloma/v2/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/valset/types/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )

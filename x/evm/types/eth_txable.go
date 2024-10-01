@@ -11,9 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/slice"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/util/slice"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
 )
 
 type FeeArgs struct {

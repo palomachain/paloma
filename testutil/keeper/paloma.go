@@ -15,11 +15,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/palomachain/paloma/app"
-	params2 "github.com/palomachain/paloma/app/params"
-	"github.com/palomachain/paloma/x/paloma/keeper"
-	"github.com/palomachain/paloma/x/paloma/types"
-	valsetkeeper "github.com/palomachain/paloma/x/valset/keeper"
+	"github.com/palomachain/paloma/v2/app"
+	params2 "github.com/palomachain/paloma/v2/app/params"
+	"github.com/palomachain/paloma/v2/x/paloma/keeper"
+	"github.com/palomachain/paloma/v2/x/paloma/types"
+	valsetkeeper "github.com/palomachain/paloma/v2/x/valset/keeper"
 	"github.com/stretchr/testify/require"
 )
 

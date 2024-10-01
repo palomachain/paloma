@@ -4,8 +4,8 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	evmtypes "github.com/palomachain/paloma/x/evm/types"
-	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
+	evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
+	schedulertypes "github.com/palomachain/paloma/v2/x/scheduler/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)

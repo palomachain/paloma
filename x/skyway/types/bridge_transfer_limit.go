@@ -1,6 +1,6 @@
 package types
 
-import "github.com/palomachain/paloma/util/blocks"
+import "github.com/palomachain/paloma/v2/util/blocks"
 
 func (m *BridgeTransferLimit) BlockLimit() int64 {
 	switch m.LimitPeriod {

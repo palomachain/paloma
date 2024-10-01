@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/spf13/cobra"
 	"golang.org/x/mod/semver"
 )

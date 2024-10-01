@@ -3,8 +3,8 @@ package keeper_test
 import (
 	"testing"
 
-	testkeeper "github.com/palomachain/paloma/testutil/keeper"
-	"github.com/palomachain/paloma/x/evm/types"
+	testkeeper "github.com/palomachain/paloma/v2/testutil/keeper"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 	"github.com/stretchr/testify/require"
 )
 

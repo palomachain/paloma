@@ -21,5 +21,5 @@ done
 cd ..
 
 # move proto files to the right places
-cp -r ./github.com/palomachain/paloma/* ./
+cp -r ./github.com/palomachain/paloma/v2/* ./
 rm -rf github.com

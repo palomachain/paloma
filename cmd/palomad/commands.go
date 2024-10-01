@@ -24,9 +24,9 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/palomachain/paloma/app"
-	palomaapp "github.com/palomachain/paloma/app"
-	"github.com/palomachain/paloma/app/params"
+	"github.com/palomachain/paloma/v2/app"
+	palomaapp "github.com/palomachain/paloma/v2/app"
+	"github.com/palomachain/paloma/v2/app/params"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

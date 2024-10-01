@@ -6,11 +6,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	keepertest "github.com/palomachain/paloma/testutil/keeper"
-	"github.com/palomachain/paloma/testutil/nullify"
-	"github.com/palomachain/paloma/x/evm"
-	"github.com/palomachain/paloma/x/evm/keeper"
-	"github.com/palomachain/paloma/x/evm/types"
+	keepertest "github.com/palomachain/paloma/v2/testutil/keeper"
+	"github.com/palomachain/paloma/v2/testutil/nullify"
+	"github.com/palomachain/paloma/v2/x/evm"
+	"github.com/palomachain/paloma/v2/x/evm/keeper"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 	"github.com/stretchr/testify/require"
 )
 

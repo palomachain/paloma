@@ -4,7 +4,7 @@ package palomachain.paloma.valset;
 import "gogoproto/gogo.proto";
 import "cosmos/msg/v1/msg.proto";
 
-option go_package = "github.com/palomachain/paloma/x/valset/types";
+option go_package = "github.com/palomachain/paloma/v2/x/valset/types";
 
 // MsgMetadata contains a record of the message creator (validator address)
 // as well as a list of message signers (e.g. operator keys, multisigs, etc...)

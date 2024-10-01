@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper/consensus"
 )
 
 type registry struct {

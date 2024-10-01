@@ -9,12 +9,12 @@ import (
 
 	math "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/slice"
-	"github.com/palomachain/paloma/x/evm/types"
-	metrixtypes "github.com/palomachain/paloma/x/metrix/types"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/util/slice"
+	"github.com/palomachain/paloma/v2/x/evm/types"
+	metrixtypes "github.com/palomachain/paloma/v2/x/metrix/types"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 // topValidatorPoolSize is the number of validators considered when picking

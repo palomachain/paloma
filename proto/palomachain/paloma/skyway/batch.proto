@@ -4,7 +4,7 @@ package palomachain.paloma.skyway;
 import "gogoproto/gogo.proto";
 import "palomachain/paloma/skyway/attestation.proto";
 
-option go_package = "github.com/palomachain/paloma/x/skyway/types";
+option go_package = "github.com/palomachain/paloma/v2/x/skyway/types";
 
 // OutgoingTxBatch represents a batch of transactions going from Paloma to remote chain
 message OutgoingTxBatch {

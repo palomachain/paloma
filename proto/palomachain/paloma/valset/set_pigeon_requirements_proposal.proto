@@ -1,7 +1,7 @@
 syntax = "proto3";
 package palomachain.paloma.valset;
 
-option go_package = "github.com/palomachain/paloma/x/valset/types";
+option go_package = "github.com/palomachain/paloma/v2/x/valset/types";
 
 message SetPigeonRequirementsProposal {
   string title = 1;

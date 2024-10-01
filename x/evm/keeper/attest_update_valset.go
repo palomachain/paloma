@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/x/consensus/keeper/consensus"
-	"github.com/palomachain/paloma/x/evm/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper/consensus"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 type updateValsetAttester struct {

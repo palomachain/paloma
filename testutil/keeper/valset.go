@@ -15,9 +15,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/palomachain/paloma/x/valset/keeper"
-	"github.com/palomachain/paloma/x/valset/types"
-	"github.com/palomachain/paloma/x/valset/types/mocks"
+	"github.com/palomachain/paloma/v2/x/valset/keeper"
+	"github.com/palomachain/paloma/v2/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/valset/types/mocks"
 	"github.com/stretchr/testify/require"
 )
 

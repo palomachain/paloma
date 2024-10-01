@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/palomachain/paloma/x/metrix/types"
+	"github.com/palomachain/paloma/v2/x/metrix/types"
 	"github.com/stretchr/testify/require"
 )
 

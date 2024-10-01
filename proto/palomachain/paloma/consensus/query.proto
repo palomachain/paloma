@@ -7,7 +7,7 @@ import "palomachain/paloma/consensus/consensus_queue.proto";
 import "palomachain/paloma/consensus/params.proto";
 import "google/protobuf/any.proto";
 
-option go_package = "github.com/palomachain/paloma/x/consensus/types";
+option go_package = "github.com/palomachain/paloma/v2/x/consensus/types";
 
 // Query defines the gRPC querier service.
 service Query {

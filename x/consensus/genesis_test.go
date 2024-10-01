@@ -3,10 +3,10 @@ package consensus_test
 import (
 	"testing"
 
-	keepertest "github.com/palomachain/paloma/testutil/keeper"
-	"github.com/palomachain/paloma/testutil/nullify"
-	"github.com/palomachain/paloma/x/consensus"
-	"github.com/palomachain/paloma/x/consensus/types"
+	keepertest "github.com/palomachain/paloma/v2/testutil/keeper"
+	"github.com/palomachain/paloma/v2/testutil/nullify"
+	"github.com/palomachain/paloma/v2/x/consensus"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
 	"github.com/stretchr/testify/require"
 )
 

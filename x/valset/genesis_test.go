@@ -3,10 +3,10 @@ package valset_test
 import (
 	"testing"
 
-	keepertest "github.com/palomachain/paloma/testutil/keeper"
-	"github.com/palomachain/paloma/testutil/nullify"
-	"github.com/palomachain/paloma/x/valset"
-	"github.com/palomachain/paloma/x/valset/types"
+	keepertest "github.com/palomachain/paloma/v2/testutil/keeper"
+	"github.com/palomachain/paloma/v2/testutil/nullify"
+	"github.com/palomachain/paloma/v2/x/valset"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/stretchr/testify/require"
 )
 

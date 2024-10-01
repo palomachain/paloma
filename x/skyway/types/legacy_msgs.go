@@ -6,7 +6,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/libmeta"
+	"github.com/palomachain/paloma/v2/util/libmeta"
 )
 
 var _ sdk.Msg = &MsgBatchSendToEthClaim{}

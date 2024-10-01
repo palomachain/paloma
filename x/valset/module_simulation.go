@@ -7,9 +7,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"github.com/palomachain/paloma/testutil/sample"
-	valsetsimulation "github.com/palomachain/paloma/x/valset/simulation"
-	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/testutil/sample"
+	valsetsimulation "github.com/palomachain/paloma/v2/x/valset/simulation"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 // avoid unused import issue

@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/libmeta"
+	"github.com/palomachain/paloma/v2/util/libmeta"
 )
 
 const TypeMsgSetErrorData = "set_error_data"

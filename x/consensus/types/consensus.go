@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
-	xchain "github.com/palomachain/paloma/internal/x-chain"
+	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
 )
 
 const (

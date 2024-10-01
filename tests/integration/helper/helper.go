@@ -19,11 +19,11 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	consensusmoduletypes "github.com/palomachain/paloma/x/consensus/types"
-	evmmoduletypes "github.com/palomachain/paloma/x/evm/types"
-	schedulertypes "github.com/palomachain/paloma/x/scheduler/types"
-	skywaymoduletypes "github.com/palomachain/paloma/x/skyway/types"
-	valsetmoduletypes "github.com/palomachain/paloma/x/valset/types"
+	consensusmoduletypes "github.com/palomachain/paloma/v2/x/consensus/types"
+	evmmoduletypes "github.com/palomachain/paloma/v2/x/evm/types"
+	schedulertypes "github.com/palomachain/paloma/v2/x/scheduler/types"
+	skywaymoduletypes "github.com/palomachain/paloma/v2/x/skyway/types"
+	valsetmoduletypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 var maccPerms = map[string][]string{

@@ -1,6 +1,6 @@
 package filters
 
-import evmtypes "github.com/palomachain/paloma/x/evm/types"
+import evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
 
 // Biased: Filter expects messages to be ordered by message ID (default)
 // Filter requires injection of a look-up table to keep track of senders

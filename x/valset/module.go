@@ -15,11 +15,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/x/valset/client/cli"
-	"github.com/palomachain/paloma/x/valset/keeper"
-	"github.com/palomachain/paloma/x/valset/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/x/valset/client/cli"
+	"github.com/palomachain/paloma/v2/x/valset/keeper"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/spf13/cobra"
 )
 

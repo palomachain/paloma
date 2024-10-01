@@ -4,7 +4,7 @@ package palomachain.paloma.metrix;
 import "gogoproto/gogo.proto";
 import "palomachain/paloma/metrix/params.proto";
 
-option go_package = "github.com/palomachain/paloma/x/metrix/types";
+option go_package = "github.com/palomachain/paloma/v2/x/metrix/types";
 
 // GenesisState defines the paloma module's genesis state.
 message GenesisState { Params params = 1 [ (gogoproto.nullable) = false ]; }

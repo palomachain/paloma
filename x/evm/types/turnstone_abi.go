@@ -13,8 +13,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/palomachain/paloma/util/slice"
-	consensustypes "github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/v2/util/slice"
+	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
 )
 
 type keccak256able interface {

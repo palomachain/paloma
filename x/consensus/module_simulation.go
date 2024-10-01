@@ -7,9 +7,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"github.com/palomachain/paloma/testutil/sample"
-	consensussimulation "github.com/palomachain/paloma/x/consensus/simulation"
-	"github.com/palomachain/paloma/x/consensus/types"
+	"github.com/palomachain/paloma/v2/testutil/sample"
+	consensussimulation "github.com/palomachain/paloma/v2/x/consensus/simulation"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
 )
 
 // avoid unused import issue

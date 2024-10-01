@@ -1,4 +1,4 @@
-module github.com/palomachain/paloma
+module github.com/palomachain/paloma/v2
 
 go 1.22.2
 

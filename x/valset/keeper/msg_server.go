@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 type msgServer struct {

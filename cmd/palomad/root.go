@@ -22,9 +22,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/palomachain/paloma/app"
-	palomaapp "github.com/palomachain/paloma/app"
-	"github.com/palomachain/paloma/app/params"
+	"github.com/palomachain/paloma/v2/app"
+	palomaapp "github.com/palomachain/paloma/v2/app"
+	"github.com/palomachain/paloma/v2/app/params"
 	"github.com/spf13/cobra"
 )
 

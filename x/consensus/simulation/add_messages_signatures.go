@@ -6,9 +6,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"github.com/palomachain/paloma/x/consensus/keeper"
-	"github.com/palomachain/paloma/x/consensus/types"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/consensus/keeper"
+	"github.com/palomachain/paloma/v2/x/consensus/types"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 func SimulateMsgAddMessagesSignatures(

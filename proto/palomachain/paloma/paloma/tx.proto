@@ -7,7 +7,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "palomachain/paloma/valset/common.proto";
 
-option go_package = "github.com/palomachain/paloma/x/paloma/types";
+option go_package = "github.com/palomachain/paloma/v2/x/paloma/types";
 
 service Msg {
   rpc AddStatusUpdate(MsgAddStatusUpdate) returns (EmptyResponse);

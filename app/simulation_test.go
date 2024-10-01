@@ -10,7 +10,7 @@ import (
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
-	palomaapp "github.com/palomachain/paloma/app"
+	palomaapp "github.com/palomachain/paloma/v2/app"
 	"github.com/stretchr/testify/require"
 )
 

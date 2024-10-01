@@ -3,7 +3,7 @@ package palomachain.paloma.evm;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/palomachain/paloma/x/evm/types";
+option go_package = "github.com/palomachain/paloma/v2/x/evm/types";
 
 message JobDefinition {
   string address = 1;

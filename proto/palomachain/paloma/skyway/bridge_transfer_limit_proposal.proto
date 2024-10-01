@@ -4,7 +4,7 @@ package palomachain.paloma.skyway;
 import "gogoproto/gogo.proto";
 import "palomachain/paloma/skyway/bridge_transfer_limit.proto";
 
-option go_package = "github.com/palomachain/paloma/x/skyway/types";
+option go_package = "github.com/palomachain/paloma/v2/x/skyway/types";
 
 message SetBridgeTransferLimitProposal {
   string title = 1;

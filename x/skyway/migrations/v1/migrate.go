@@ -4,8 +4,8 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/skyway/exported"
-	"github.com/palomachain/paloma/x/skyway/types"
+	"github.com/palomachain/paloma/v2/x/skyway/exported"
+	"github.com/palomachain/paloma/v2/x/skyway/types"
 )
 
 // migrateParams will set the params to store from subspace

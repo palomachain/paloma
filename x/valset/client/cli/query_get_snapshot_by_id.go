@@ -6,7 +6,7 @@ import (
 	"github.com/VolumeFi/whoops"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/spf13/cobra"
 )
 

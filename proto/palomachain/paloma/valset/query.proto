@@ -9,7 +9,7 @@ import "palomachain/paloma/valset/snapshot.proto";
 import "palomachain/paloma/valset/pigeon_requirements.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/palomachain/paloma/x/valset/types";
+option go_package = "github.com/palomachain/paloma/v2/x/valset/types";
 
 // Query defines the gRPC querier service.
 service Query {

@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	keeper "github.com/palomachain/paloma/util/keeper"
+	keeper "github.com/palomachain/paloma/v2/util/keeper"
 	mock "github.com/stretchr/testify/mock"
 
 	proto "github.com/cosmos/gogoproto/proto"

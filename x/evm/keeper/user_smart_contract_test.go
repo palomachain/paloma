@@ -3,9 +3,9 @@ package keeper
 import (
 	"testing"
 
-	"github.com/palomachain/paloma/testutil/sample"
-	"github.com/palomachain/paloma/util/blocks"
-	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/v2/testutil/sample"
+	"github.com/palomachain/paloma/v2/util/blocks"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 	"github.com/stretchr/testify/require"
 )
 

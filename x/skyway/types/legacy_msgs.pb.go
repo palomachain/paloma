@@ -8,7 +8,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	types "github.com/palomachain/paloma/x/valset/types"
+	types "github.com/palomachain/paloma/v2/x/valset/types"
 	io "io"
 	math "math"
 	math_bits "math/bits"

@@ -6,7 +6,7 @@ import (
 
 	"cosmossdk.io/log"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/eventbus"
+	"github.com/palomachain/paloma/v2/util/eventbus"
 	"github.com/stretchr/testify/require"
 )
 

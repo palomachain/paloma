@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/x/treasury/keeper"
-	"github.com/palomachain/paloma/x/treasury/types"
+	"github.com/palomachain/paloma/v2/x/treasury/keeper"
+	"github.com/palomachain/paloma/v2/x/treasury/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

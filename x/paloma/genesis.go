@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/x/paloma/keeper"
-	"github.com/palomachain/paloma/x/paloma/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/x/paloma/keeper"
+	"github.com/palomachain/paloma/v2/x/paloma/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

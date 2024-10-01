@@ -10,7 +10,7 @@ import "palomachain/paloma/paloma/light_node_client_funders.proto";
 import "palomachain/paloma/paloma/light_node_client_license.proto";
 import "palomachain/paloma/paloma/params.proto";
 
-option go_package = "github.com/palomachain/paloma/x/paloma/types";
+option go_package = "github.com/palomachain/paloma/v2/x/paloma/types";
 
 // Query defines the gRPC querier service.
 service Query {

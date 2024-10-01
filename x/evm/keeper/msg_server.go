@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/palomachain/paloma/x/evm/types"
+	"github.com/palomachain/paloma/v2/x/evm/types"
 )
 
 type msgServer struct {

@@ -13,10 +13,10 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/palomachain/paloma/testutil"
-	utilkeeper "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/x/paloma/keeper"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/testutil"
+	utilkeeper "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/x/paloma/keeper"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 func TestPalomaGinkgo(t *testing.T) {

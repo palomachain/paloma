@@ -19,11 +19,11 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/hashicorp/go-metrics"
-	keeperutil "github.com/palomachain/paloma/util/keeper"
-	"github.com/palomachain/paloma/util/liblog"
-	"github.com/palomachain/paloma/util/palomath"
-	"github.com/palomachain/paloma/x/metrix/types"
-	valsettypes "github.com/palomachain/paloma/x/valset/types"
+	keeperutil "github.com/palomachain/paloma/v2/util/keeper"
+	"github.com/palomachain/paloma/v2/util/liblog"
+	"github.com/palomachain/paloma/v2/util/palomath"
+	"github.com/palomachain/paloma/v2/x/metrix/types"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 const (

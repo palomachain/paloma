@@ -2,8 +2,8 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/palomachain/paloma/util/libmeta"
-	types "github.com/palomachain/paloma/x/valset/types"
+	"github.com/palomachain/paloma/v2/util/libmeta"
+	types "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 const TypeMsgAddMessagesSignatures = "add_messages_signatures"
