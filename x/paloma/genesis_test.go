@@ -2,6 +2,7 @@ package paloma_test
 
 import (
 	"testing"
+	"time"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -90,5 +91,24 @@ func TestGenesis(t *testing.T) {
 
 		require.Equal(t, genesisState.LightNodeClientFunders.Accounts,
 			got.LightNodeClientFunders.Accounts)
+	})
+
+	t.Run("With light node clients", func(t *testing.T) {
+		genesisState := types.GenesisState{
+			LightNodeClients: []*types.LightNodeClient{
+				{
+					ClientAddress: clientAddr,
+					ActivatedAt:   time.Now().UTC(),
+					LastAuthAt:    time.Now().UTC(),
+				},
+			},
+		}
+
+		k, ctx := keepertest.PalomaKeeper(t)
+		paloma.InitGenesis(ctx, *k, genesisState)
+		got := paloma.ExportGenesis(ctx, *k)
+		require.NotNil(t, got)
+
+		require.Equal(t, genesisState.LightNodeClients, got.LightNodeClients)
 	})
 }

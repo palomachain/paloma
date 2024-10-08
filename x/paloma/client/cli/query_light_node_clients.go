@@ -10,10 +10,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func CmdQueryLightNodeClientActivations() *cobra.Command {
+func CmdQueryLightNodeClients() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "light-node-client-activations",
-		Short: "Shows information about all lightnode client activated",
+		Use:   "light-node-clients",
+		Short: "Shows information about all activated lightnode clients",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
