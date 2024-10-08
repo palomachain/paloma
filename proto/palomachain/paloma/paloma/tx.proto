@@ -17,6 +17,12 @@ service Msg {
 
   rpc AddLightNodeClientLicense(MsgAddLightNodeClientLicense)
     returns (EmptyResponse);
+
+  rpc AuthLightNodeClient(MsgAuthLightNodeClient)
+    returns (EmptyResponse);
+
+  rpc SetLegacyLightNodeClients(MsgSetLegacyLightNodeClients)
+    returns (EmptyResponse);
 }
 
 message MsgAddStatusUpdate {
@@ -56,4 +62,16 @@ message MsgAddLightNodeClientLicense {
   string client_address = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
   cosmos.base.v1beta1.Coin amount = 3 [ (gogoproto.nullable) = false ];
   uint32 vesting_months = 4;
+}
+
+message MsgAuthLightNodeClient {
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+}
+
+message MsgSetLegacyLightNodeClients {
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
 }

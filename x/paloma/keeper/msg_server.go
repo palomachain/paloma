@@ -84,3 +84,37 @@ func (k msgServer) AddLightNodeClientLicense(
 
 	return nil, err
 }
+
+func (k msgServer) AuthLightNodeClient(
+	ctx context.Context,
+	msg *types.MsgAuthLightNodeClient,
+) (*types.EmptyResponse, error) {
+	client, err := k.GetLightNodeClient(ctx, msg.Metadata.Creator)
+	if err != nil {
+		return nil, err
+	}
+
+	client.LastAuthAt = sdk.UnwrapSDKContext(ctx).BlockTime()
+	err = k.SetLightNodeClient(ctx, client.ClientAddress, client)
+
+	return nil, err
+}
+
+func (k msgServer) SetLegacyLightNodeClients(
+	ctx context.Context,
+	_ *types.MsgSetLegacyLightNodeClients,
+) (*types.EmptyResponse, error) {
+	clients, err := k.GetLegacyLightNodeClients(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, client := range clients {
+		err = k.SetLightNodeClient(ctx, client.ClientAddress, client)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return nil, nil
+}
