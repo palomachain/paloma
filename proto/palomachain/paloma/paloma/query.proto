@@ -5,7 +5,7 @@ import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "palomachain/paloma/paloma/light_node_client_activation.proto";
+import "palomachain/paloma/paloma/light_node_client.proto";
 import "palomachain/paloma/paloma/light_node_client_feegranter.proto";
 import "palomachain/paloma/paloma/light_node_client_funders.proto";
 import "palomachain/paloma/paloma/light_node_client_license.proto";
@@ -38,10 +38,10 @@ service Query {
       "/palomachain/paloma/paloma/light_node_client_funders";
   }
 
-  rpc GetLightNodeClientActivations(google.protobuf.Empty)
-      returns (QueryLightNodeClientActivationsResponse) {
+  rpc GetLightNodeClients(google.protobuf.Empty)
+      returns (QueryLightNodeClientsResponse) {
     option (google.api.http).get =
-      "/palomachain/paloma/paloma/light_node_client_activations";
+      "/palomachain/paloma/paloma/light_node_clients";
   }
 }
 
@@ -67,6 +67,6 @@ message QueryLightNodeClientFundersResponse {
   LightNodeClientFunders light_node_client_funders = 1;
 }
 
-message QueryLightNodeClientActivationsResponse {
-  repeated LightNodeClientActivation light_node_client_activations = 1;
+message QueryLightNodeClientsResponse {
+  repeated LightNodeClient light_node_clients = 1;
 }

@@ -21,7 +21,7 @@ func CmdQueryLightNodeClientActivations() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			params := &emptypb.Empty{}
-			res, err := queryClient.GetLightNodeClientActivations(
+			res, err := queryClient.GetLightNodeClients(
 				context.Background(), params)
 			if err != nil {
 				return err

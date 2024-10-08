@@ -29,6 +29,7 @@ func GetTxCmd() *cobra.Command {
 
 	cmd.AddCommand(CmdRegisterLightNodeClient())
 	cmd.AddCommand(CmdAddLightNodeClientLicense())
+	cmd.AddCommand(CmdAuthLightNodeClient())
 
 	return cmd
 }
@@ -107,6 +108,39 @@ The [vesting-months] parameter determines how long the funds will take to fully 
 				ClientAddress: clientAddress,
 				Amount:        amount[0],
 				VestingMonths: uint32(vestingMonths),
+				Metadata: valsettypes.MsgMetadata{
+					Creator: creator,
+					Signers: []string{creator},
+				},
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdAuthLightNodeClient() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "auth-light-node-client",
+		Short: "Authenticate the lightnode using the `from` address",
+		Long:  "Authenticate the lightnode using the `from` address",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			creator := clientCtx.GetFromAddress().String()
+			msg := &types.MsgAuthLightNodeClient{
 				Metadata: valsettypes.MsgMetadata{
 					Creator: creator,
 					Signers: []string{creator},

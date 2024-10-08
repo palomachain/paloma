@@ -8,9 +8,10 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/palomachain/paloma/v2/x/paloma/types";
 
-message LightNodeClientActivation {
+message LightNodeClient {
   string client_address = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
-  cosmos.base.v1beta1.Coin amount = 2 [ (gogoproto.nullable) = false ];
-  google.protobuf.Timestamp created_at = 3
+  google.protobuf.Timestamp activated_at = 2
+      [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
+  google.protobuf.Timestamp last_auth_at = 3
       [ (gogoproto.nullable) = false, (gogoproto.stdtime) = true ];
 }

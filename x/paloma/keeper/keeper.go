@@ -193,11 +193,11 @@ func (k Keeper) lightNodeClientLicenseStore(
 	return prefix.NewStore(s, types.LightNodeClientLicenseKeyPrefix)
 }
 
-func (k Keeper) lightNodeClientActivationStore(
+func (k Keeper) lightNodeClientStore(
 	ctx context.Context,
 ) storetypes.KVStore {
 	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
-	return prefix.NewStore(s, types.LightNodeClientActivationKeyPrefix)
+	return prefix.NewStore(s, types.LightNodeClientKeyPrefix)
 }
 
 func (k Keeper) LightNodeClientFeegranter(
@@ -451,35 +451,36 @@ func (k Keeper) CreateLightNodeClientAccount(
 	// Delete the light node client funds
 	k.lightNodeClientLicenseStore(ctx).Delete([]byte(addr))
 
-	return k.SetLightNodeClientActivation(ctx,
+	return k.SetLightNodeClient(ctx,
 		addr,
-		&types.LightNodeClientActivation{
+		&types.LightNodeClient{
 			ClientAddress: addr,
-			CreatedAt:     sdkCtx.BlockTime(),
+			ActivatedAt:   sdkCtx.BlockTime(),
+			LastAuthAt:    sdkCtx.BlockTime(),
 		})
 }
 
-func (k Keeper) AllLightNodeClientActivations(
+func (k Keeper) AllLightNodeClients(
 	ctx context.Context,
-) ([]*types.LightNodeClientActivation, error) {
-	st := k.lightNodeClientActivationStore(ctx)
-	_, all, err := keeperutil.IterAll[*types.LightNodeClientActivation](st, k.cdc)
+) ([]*types.LightNodeClient, error) {
+	st := k.lightNodeClientStore(ctx)
+	_, all, err := keeperutil.IterAll[*types.LightNodeClient](st, k.cdc)
 	return all, err
 }
 
-func (k Keeper) SetLightNodeClientActivation(
+func (k Keeper) SetLightNodeClient(
 	ctx context.Context,
 	addr string,
-	activation *types.LightNodeClientActivation,
+	client *types.LightNodeClient,
 ) error {
-	st := k.lightNodeClientActivationStore(ctx)
-	return keeperutil.Save(st, k.cdc, []byte(addr), activation)
+	st := k.lightNodeClientStore(ctx)
+	return keeperutil.Save(st, k.cdc, []byte(addr), client)
 }
 
-func (k Keeper) GetLightNodeClientActivation(
+func (k Keeper) GetLightNodeClient(
 	ctx context.Context,
 	addr string,
-) (*types.LightNodeClientActivation, error) {
-	st := k.lightNodeClientActivationStore(ctx)
-	return keeperutil.Load[*types.LightNodeClientActivation](st, k.cdc, []byte(addr))
+) (*types.LightNodeClient, error) {
+	st := k.lightNodeClientStore(ctx)
+	return keeperutil.Load[*types.LightNodeClient](st, k.cdc, []byte(addr))
 }

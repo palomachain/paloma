@@ -18,10 +18,10 @@ const (
 )
 
 var (
-	LightNodeClientLicenseKeyPrefix    = []byte("light-node-client-license")
-	LightNodeClientActivationKeyPrefix = []byte("light-node-client-activation")
-	LightNodeClientFeegranterKey       = []byte("light-node-client-feegranter")
-	LightNodeClientFundersKey          = []byte("light-node-client-funders")
+	LightNodeClientLicenseKeyPrefix = []byte("light-node-client-license")
+	LightNodeClientKeyPrefix        = []byte("light-node-client-store")
+	LightNodeClientFeegranterKey    = []byte("light-node-client-feegranter")
+	LightNodeClientFundersKey       = []byte("light-node-client-funders")
 )
 
 func KeyPrefix(p string) []byte {
