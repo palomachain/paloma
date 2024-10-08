@@ -23,6 +23,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	cmd.AddCommand(CmdQueryLightNodeClientFeegranter())
 	cmd.AddCommand(CmdQueryLightNodeClientLicenses())
 	cmd.AddCommand(CmdQueryLightNodeClientFunders())
+	cmd.AddCommand(CmdQueryLightNodeClientActivations())
 
 	return cmd
 }
