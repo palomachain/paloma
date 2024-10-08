@@ -30,6 +30,7 @@ func GetTxCmd() *cobra.Command {
 	cmd.AddCommand(CmdRegisterLightNodeClient())
 	cmd.AddCommand(CmdAddLightNodeClientLicense())
 	cmd.AddCommand(CmdAuthLightNodeClient())
+	cmd.AddCommand(CmdSetLegacyLightNodeClients())
 
 	return cmd
 }
@@ -141,6 +142,39 @@ func CmdAuthLightNodeClient() *cobra.Command {
 
 			creator := clientCtx.GetFromAddress().String()
 			msg := &types.MsgAuthLightNodeClient{
+				Metadata: valsettypes.MsgMetadata{
+					Creator: creator,
+					Signers: []string{creator},
+				},
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdSetLegacyLightNodeClients() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-legacy-light-node-clients",
+		Short: "Set the legacy lightnode client addresses from feegranter",
+		Long:  "Set the legacy lightnode client addresses from feegranter",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			creator := clientCtx.GetFromAddress().String()
+			msg := &types.MsgSetLegacyLightNodeClients{
 				Metadata: valsettypes.MsgMetadata{
 					Creator: creator,
 					Signers: []string{creator},

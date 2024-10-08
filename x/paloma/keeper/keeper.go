@@ -18,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	query "github.com/cosmos/cosmos-sdk/types/query"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -483,4 +484,84 @@ func (k Keeper) GetLightNodeClient(
 ) (*types.LightNodeClient, error) {
 	st := k.lightNodeClientStore(ctx)
 	return keeperutil.Load[*types.LightNodeClient](st, k.cdc, []byte(addr))
+}
+
+// Since we didn't keep track of lightnodes in paloma, the way we get the legacy
+// node addresses is by querying the grants on the lightnode feegranter address.
+// Then, we remove the nodes waiting to be activated.
+func (k Keeper) GetLegacyLightNodeClients(
+	ctx context.Context,
+) ([]*types.LightNodeClient, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	nodes := make([]*types.LightNodeClient, 0)
+
+	feegranter, err := k.LightNodeClientFeegranter(ctx)
+	if err != nil {
+		if errors.Is(err, keeperutil.ErrNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	licenses, err := k.AllLightNodeClientLicenses(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var key []byte
+	for {
+		res, err := k.feegrantKeeper.AllowancesByGranter(ctx,
+			&feegrantmodule.QueryAllowancesByGranterRequest{
+				Granter: feegranter.Account.String(),
+				Pagination: &query.PageRequest{
+					Key: key,
+				},
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Remove all lightnodes waiting to be activated
+		for _, grant := range res.Allowances {
+			// Check if the client is already on our list.
+			_, err := k.GetLightNodeClient(ctx, grant.Grantee)
+			if err != nil && !errors.Is(err, keeperutil.ErrNotFound) {
+				// Something went wrong with the store, returm immediately
+				return nil, err
+			}
+
+			if err == nil {
+				// If the lightnode client is already on the list, don't add it
+				continue
+			}
+
+			found := false
+			for _, license := range licenses {
+				if license.ClientAddress == grant.Grantee {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				nodes = append(nodes, &types.LightNodeClient{
+					ClientAddress: grant.Grantee,
+					ActivatedAt:   sdkCtx.BlockTime(),
+					LastAuthAt:    sdkCtx.BlockTime(),
+				})
+			}
+		}
+
+		if res.Pagination == nil || len(res.Pagination.NextKey) == 0 {
+			// There are no more results, just break
+			break
+		}
+
+		// Move on to the next set of results
+		key = res.Pagination.NextKey
+	}
+
+	return nodes, nil
 }

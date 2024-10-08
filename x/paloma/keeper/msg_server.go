@@ -99,3 +99,22 @@ func (k msgServer) AuthLightNodeClient(
 
 	return nil, err
 }
+
+func (k msgServer) SetLegacyLightNodeClients(
+	ctx context.Context,
+	_ *types.MsgSetLegacyLightNodeClients,
+) (*types.EmptyResponse, error) {
+	clients, err := k.GetLegacyLightNodeClients(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, client := range clients {
+		err = k.SetLightNodeClient(ctx, client.ClientAddress, client)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return nil, nil
+}

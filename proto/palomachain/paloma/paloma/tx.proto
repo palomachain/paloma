@@ -20,6 +20,9 @@ service Msg {
 
   rpc AuthLightNodeClient(MsgAuthLightNodeClient)
     returns (EmptyResponse);
+
+  rpc SetLegacyLightNodeClients(MsgSetLegacyLightNodeClients)
+    returns (EmptyResponse);
 }
 
 message MsgAddStatusUpdate {
@@ -62,6 +65,12 @@ message MsgAddLightNodeClientLicense {
 }
 
 message MsgAuthLightNodeClient {
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+}
+
+message MsgSetLegacyLightNodeClients {
   option (cosmos.msg.v1.signer) = "metadata";
   palomachain.paloma.valset.MsgMetadata metadata = 1
       [ (gogoproto.nullable) = false ];
