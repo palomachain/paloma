@@ -193,6 +193,13 @@ func (k Keeper) lightNodeClientLicenseStore(
 	return prefix.NewStore(s, types.LightNodeClientLicenseKeyPrefix)
 }
 
+func (k Keeper) lightNodeClientActivationStore(
+	ctx context.Context,
+) storetypes.KVStore {
+	s := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
+	return prefix.NewStore(s, types.LightNodeClientActivationKeyPrefix)
+}
+
 func (k Keeper) LightNodeClientFeegranter(
 	ctx context.Context,
 ) (*types.LightNodeClientFeegranter, error) {
@@ -444,5 +451,35 @@ func (k Keeper) CreateLightNodeClientAccount(
 	// Delete the light node client funds
 	k.lightNodeClientLicenseStore(ctx).Delete([]byte(addr))
 
-	return nil
+	return k.SetLightNodeClientActivation(ctx,
+		addr,
+		&types.LightNodeClientActivation{
+			ClientAddress: addr,
+			CreatedAt:     sdkCtx.BlockTime(),
+		})
+}
+
+func (k Keeper) AllLightNodeClientActivations(
+	ctx context.Context,
+) ([]*types.LightNodeClientActivation, error) {
+	st := k.lightNodeClientActivationStore(ctx)
+	_, all, err := keeperutil.IterAll[*types.LightNodeClientActivation](st, k.cdc)
+	return all, err
+}
+
+func (k Keeper) SetLightNodeClientActivation(
+	ctx context.Context,
+	addr string,
+	activation *types.LightNodeClientActivation,
+) error {
+	st := k.lightNodeClientActivationStore(ctx)
+	return keeperutil.Save(st, k.cdc, []byte(addr), activation)
+}
+
+func (k Keeper) GetLightNodeClientActivation(
+	ctx context.Context,
+	addr string,
+) (*types.LightNodeClientActivation, error) {
+	st := k.lightNodeClientActivationStore(ctx)
+	return keeperutil.Load[*types.LightNodeClientActivation](st, k.cdc, []byte(addr))
 }

@@ -17,11 +17,12 @@ const (
 	MemStoreKey = "mem_paloma_store"
 )
 
-var LightNodeClientLicenseKeyPrefix = []byte("light-node-client-license")
-
-var LightNodeClientFeegranterKey = []byte("light-node-client-feegranter")
-
-var LightNodeClientFundersKey = []byte("light-node-client-funders")
+var (
+	LightNodeClientLicenseKeyPrefix    = []byte("light-node-client-license")
+	LightNodeClientActivationKeyPrefix = []byte("light-node-client-activation")
+	LightNodeClientFeegranterKey       = []byte("light-node-client-feegranter")
+	LightNodeClientFundersKey          = []byte("light-node-client-funders")
+)
 
 func KeyPrefix(p string) []byte {
 	return []byte(p)
