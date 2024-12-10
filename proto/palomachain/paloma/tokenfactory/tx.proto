@@ -4,6 +4,9 @@ package palomachain.paloma.tokenfactory;
 import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/bank/v1beta1/bank.proto";
+import "cosmos/msg/v1/msg.proto";
+
+import "palomachain/paloma/valset/common.proto";
 
 option go_package = "github.com/palomachain/paloma/v2/x/tokenfactory/types";
 
@@ -13,11 +16,10 @@ service Msg {
   rpc SetDenomMetadata(MsgSetDenomMetadata)
       returns (MsgSetDenomMetadataResponse);
 
-  // general purpose CRUD is deactivated for now 
-  // rpc Mint(MsgMint) returns (MsgMintResponse);
-  // rpc Burn(MsgBurn) returns (MsgBurnResponse);
-  // rpc ChangeAdmin(MsgChangeAdmin) returns (MsgChangeAdminResponse);
-  //
+   rpc Mint(MsgMint) returns (MsgMintResponse);
+   rpc Burn(MsgBurn) returns (MsgBurnResponse);
+   rpc ChangeAdmin(MsgChangeAdmin) returns (MsgChangeAdminResponse);
+
   // ForceTransfer is deactivated for now because we need to think through edge
   // cases rpc ForceTransfer(MsgForceTransfer) returns
   // (MsgForceTransferResponse);
@@ -33,9 +35,14 @@ service Msg {
 // originally set to be the creator, but this can be changed later. The token
 // denom does not indicate the current admin.
 message MsgCreateDenom {
-  string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
+  option (cosmos.msg.v1.signer) = "metadata";
   // subdenom can be up to 44 "alphanumeric" characters long.
-  string subdenom = 2 [ (gogoproto.moretags) = "yaml:\"subdenom\"" ];
+  string subdenom = 1 [ (gogoproto.moretags) = "yaml:\"subdenom\"" ];
+  palomachain.paloma.valset.MsgMetadata metadata = 2
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
 }
 
 // MsgCreateDenomResponse is the return value of MsgCreateDenom
@@ -48,11 +55,16 @@ message MsgCreateDenomResponse {
 // MsgSetDenomMetadata is the sdk.Msg type for allowing an admin account to set
 // the denom's bank metadata
 message MsgSetDenomMetadata {
-  string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
-  cosmos.bank.v1beta1.Metadata metadata = 2 [
-    (gogoproto.moretags) = "yaml:\"metadata\"",
+  option (cosmos.msg.v1.signer) = "metadata";
+  cosmos.bank.v1beta1.Metadata denom_metadata = 1 [
+    (gogoproto.moretags) = "yaml:\"denom_metadata\"",
     (gogoproto.nullable) = false
   ];
+  palomachain.paloma.valset.MsgMetadata metadata = 2
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
 }
 
 // MsgSetDenomMetadataResponse defines the response structure for an executed
@@ -61,39 +73,54 @@ message MsgSetDenomMetadataResponse {}
 
 // MsgMint is the sdk.Msg type for allowing an admin account to mint
 // more of a token.  For now, we only support minting to the sender account
-// message MsgMint {
-//   string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
-//   cosmos.base.v1beta1.Coin amount = 2 [
-//     (gogoproto.moretags) = "yaml:\"amount\"",
-//     (gogoproto.nullable) = false
-//   ];
-// }
-// 
-// message MsgMintResponse {}
+message MsgMint {
+  option (cosmos.msg.v1.signer) = "metadata";
+  cosmos.base.v1beta1.Coin amount = 1 [
+    (gogoproto.moretags) = "yaml:\"amount\"",
+    (gogoproto.nullable) = false
+  ];
+  palomachain.paloma.valset.MsgMetadata metadata = 2
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
+}
+
+message MsgMintResponse {}
 
 // MsgBurn is the sdk.Msg type for allowing an admin account to burn
 // a token.  For now, we only support burning from the sender account.
-// message MsgBurn {
-//   string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
-//   cosmos.base.v1beta1.Coin amount = 2 [
-//     (gogoproto.moretags) = "yaml:\"amount\"",
-//     (gogoproto.nullable) = false
-//   ];
-// }
-// 
-// message MsgBurnResponse {}
+message MsgBurn {
+  option (cosmos.msg.v1.signer) = "metadata";
+  cosmos.base.v1beta1.Coin amount = 1 [
+    (gogoproto.moretags) = "yaml:\"amount\"",
+    (gogoproto.nullable) = false
+  ];
+  palomachain.paloma.valset.MsgMetadata metadata = 2
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
+}
+
+message MsgBurnResponse {}
 
 // MsgChangeAdmin is the sdk.Msg type for allowing an admin account to reassign
 // adminship of a denom to a new account
-// message MsgChangeAdmin {
-//   string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
-//   string denom = 2 [ (gogoproto.moretags) = "yaml:\"denom\"" ];
-//   string new_admin = 3 [ (gogoproto.moretags) = "yaml:\"new_admin\"" ];
-// }
+message MsgChangeAdmin {
+  option (cosmos.msg.v1.signer) = "metadata";
+  string denom = 1 [ (gogoproto.moretags) = "yaml:\"denom\"" ];
+  string new_admin = 2 [ (gogoproto.moretags) = "yaml:\"new_admin\"" ];
+  palomachain.paloma.valset.MsgMetadata metadata = 3
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
+}
 
 // MsgChangeAdminResponse defines the response structure for an executed
 // MsgChangeAdmin message.
-//  message MsgChangeAdminResponse {}
+message MsgChangeAdminResponse {}
 
 // message MsgForceTransfer {
 //   string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
