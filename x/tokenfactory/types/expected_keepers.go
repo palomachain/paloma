@@ -8,6 +8,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
+//go:generate mockery --name=BankKeeper
 type BankKeeper interface {
 	// Methods imported from bank should be defined here
 	GetDenomMetaData(ctx context.Context, denom string) (banktypes.Metadata, bool)
@@ -27,12 +28,13 @@ type BankKeeper interface {
 	GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin
 }
 
+//go:generate mockery --name=AccountKeeper
 type AccountKeeper interface {
 	SetModuleAccount(ctx context.Context, macc sdktypes.ModuleAccountI)
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdktypes.AccountI
 }
 
-// CommunityPoolKeeper defines the contract needed to be fulfilled for community pool interactions.
+//go:generate mockery --name=CommunityPoolKeeper
 type CommunityPoolKeeper interface {
 	FundCommunityPool(ctx context.Context, amount sdk.Coins, sender sdk.AccAddress) error
 }

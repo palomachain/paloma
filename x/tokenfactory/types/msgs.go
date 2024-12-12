@@ -16,6 +16,7 @@ const (
 	TypeMsgBurn             = "tf_burn"
 	TypeMsgChangeAdmin      = "change_admin"
 	TypeMsgSetDenomMetadata = "set_denom_metadata"
+	TypeMsgUpdateParams     = "update_params"
 )
 
 var (
@@ -24,6 +25,7 @@ var (
 	_ sdk.Msg = &MsgBurn{}
 	_ sdk.Msg = &MsgChangeAdmin{}
 	_ sdk.Msg = &MsgSetDenomMetadata{}
+	_ sdk.Msg = &MsgUpdateParams{}
 )
 
 func NewMsgCreateDenom(sender, subdenom string) *MsgCreateDenom {
@@ -192,5 +194,27 @@ func (m MsgSetDenomMetadata) GetSignBytes() []byte {
 }
 
 func (m MsgSetDenomMetadata) GetSigners() []sdk.AccAddress {
+	return libmeta.GetSigners(&m)
+}
+
+func (m MsgUpdateParams) Route() string { return RouterKey }
+func (m MsgUpdateParams) Type() string  { return TypeMsgUpdateParams }
+func (m MsgUpdateParams) ValidateBasic() error {
+	if err := libmeta.ValidateBasic(&m); err != nil {
+		return err
+	}
+
+	if _, err := sdk.AccAddressFromBech32(m.Authority); err != nil {
+		return sdkerrors.Wrapf(sdktypeerrors.ErrInvalidAddress, "invalid authority address (%s)", err)
+	}
+
+	return m.Params.Validate()
+}
+
+func (m MsgUpdateParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgUpdateParams) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(&m)
 }

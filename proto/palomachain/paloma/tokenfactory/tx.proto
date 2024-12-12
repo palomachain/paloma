@@ -1,28 +1,49 @@
 syntax = "proto3";
 package palomachain.paloma.tokenfactory;
 
-import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/bank/v1beta1/bank.proto";
 import "cosmos/msg/v1/msg.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
 
+import "palomachain/paloma/tokenfactory/params.proto";
 import "palomachain/paloma/valset/common.proto";
 
 option go_package = "github.com/palomachain/paloma/v2/x/tokenfactory/types";
 
 // Msg defines the tokefactory module's gRPC message service.
 service Msg {
-  rpc CreateDenom(MsgCreateDenom) returns (MsgCreateDenomResponse);
-  rpc SetDenomMetadata(MsgSetDenomMetadata)
-      returns (MsgSetDenomMetadataResponse);
+  rpc CreateDenom(MsgCreateDenom) returns (MsgCreateDenomResponse){
+    option (google.api.http).post =
+      "/palomachain/paloma/tokenfactory/denom";
+    }
 
-   rpc Mint(MsgMint) returns (MsgMintResponse);
-   rpc Burn(MsgBurn) returns (MsgBurnResponse);
-   rpc ChangeAdmin(MsgChangeAdmin) returns (MsgChangeAdminResponse);
+  rpc SetDenomMetadata(MsgSetDenomMetadata) returns (MsgSetDenomMetadataResponse){
+    option (google.api.http).post =
+      "/palomachain/paloma/tokenfactory/denom-metadata";
+    }
 
-  // ForceTransfer is deactivated for now because we need to think through edge
-  // cases rpc ForceTransfer(MsgForceTransfer) returns
-  // (MsgForceTransferResponse);
+  rpc Mint(MsgMint) returns (MsgMintResponse){
+    option (google.api.http).post =
+      "/palomachain/paloma/tokenfactory/mint";
+    }
+
+  rpc Burn(MsgBurn) returns (MsgBurnResponse){
+    option (google.api.http).post =
+      "/palomachain/paloma/tokenfactory/burn";
+    }
+
+  rpc ChangeAdmin(MsgChangeAdmin) returns (MsgChangeAdminResponse){
+    option (google.api.http).put =
+      "/palomachain/paloma/tokenfactory/admin";
+    }
+
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {
+    option (google.api.http).put =
+      "/palomachain/paloma/tokenfactory/params";
+    }
 }
 
 // MsgCreateDenom defines the message structure for the CreateDenom gRPC service
@@ -122,16 +143,22 @@ message MsgChangeAdmin {
 // MsgChangeAdmin message.
 message MsgChangeAdminResponse {}
 
-// message MsgForceTransfer {
-//   string sender = 1 [ (gogoproto.moretags) = "yaml:\"sender\"" ];
-//   cosmos.base.v1beta1.Coin amount = 2 [
-//     (gogoproto.moretags) = "yaml:\"amount\"",
-//     (gogoproto.nullable) = false
-//   ];
-//   string transferFromAddress = 3
-//       [ (gogoproto.moretags) = "yaml:\"transfer_from_address\"" ];
-//   string transferToAddress = 4
-//       [ (gogoproto.moretags) = "yaml:\"transfer_to_address\"" ];
-// }
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  // authority is the address that controls the module (defaults to x/gov unless
+  // overwritten).
+  string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
-// message MsgForceTransferResponse {}
+  // params defines the x/tokenfactory parameters to update.
+  //
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [ (gogoproto.nullable) = false ];
+
+  palomachain.paloma.valset.MsgMetadata metadata = 3
+      [ (gogoproto.nullable) = false ];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+message MsgUpdateParamsResponse {
+}

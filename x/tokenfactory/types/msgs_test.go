@@ -5,13 +5,12 @@ import (
 	"testing"
 
 	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	testutilcommmon "github.com/palomachain/paloma/v2/testutil/common"
 	"github.com/palomachain/paloma/v2/x/tokenfactory/types"
 	"github.com/stretchr/testify/require"
-
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 func TestMsgCreateDenom(t *testing.T) {
