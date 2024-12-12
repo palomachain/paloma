@@ -8,8 +8,6 @@ import (
 )
 
 func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) {
-	k.CreateModuleAccount(ctx)
-
 	if genState.Params.DenomCreationFee == nil {
 		genState.Params.DenomCreationFee = sdk.NewCoins()
 	}
