@@ -145,6 +145,9 @@ import (
 	skywayclient "github.com/palomachain/paloma/v2/x/skyway/client"
 	skywaymodulekeeper "github.com/palomachain/paloma/v2/x/skyway/keeper"
 	skywaymoduletypes "github.com/palomachain/paloma/v2/x/skyway/types"
+	"github.com/palomachain/paloma/v2/x/tokenfactory"
+	tokenfactorymodulekeeper "github.com/palomachain/paloma/v2/x/tokenfactory/keeper"
+	tokenfactorymoduletypes "github.com/palomachain/paloma/v2/x/tokenfactory/types"
 	treasurymodule "github.com/palomachain/paloma/v2/x/treasury"
 	treasuryclient "github.com/palomachain/paloma/v2/x/treasury/client"
 	treasurymodulekeeper "github.com/palomachain/paloma/v2/x/treasury/keeper"
@@ -178,19 +181,20 @@ var (
 
 	// module account permissions
 	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:     nil,
-		distrtypes.ModuleName:          nil,
-		minttypes.ModuleName:           {authtypes.Minter},
-		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
-		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-		govtypes.ModuleName:            {authtypes.Burner},
-		skywaymoduletypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
-		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		ibcfeetypes.ModuleName:         nil,
-		icatypes.ModuleName:            nil,
-		wasmtypes.ModuleName:           {authtypes.Burner},
-		treasurymoduletypes.ModuleName: {authtypes.Burner, authtypes.Minter},
-		palomamoduletypes.ModuleName:   nil,
+		authtypes.FeeCollectorName:         nil,
+		distrtypes.ModuleName:              nil,
+		minttypes.ModuleName:               {authtypes.Minter},
+		stakingtypes.BondedPoolName:        {authtypes.Burner, authtypes.Staking},
+		stakingtypes.NotBondedPoolName:     {authtypes.Burner, authtypes.Staking},
+		govtypes.ModuleName:                {authtypes.Burner},
+		skywaymoduletypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
+		ibctransfertypes.ModuleName:        {authtypes.Minter, authtypes.Burner},
+		ibcfeetypes.ModuleName:             nil,
+		icatypes.ModuleName:                nil,
+		wasmtypes.ModuleName:               {authtypes.Burner},
+		treasurymoduletypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
+		palomamoduletypes.ModuleName:       nil,
+		tokenfactorymoduletypes.ModuleName: {authtypes.Minter, authtypes.Burner},
 	}
 )
 
@@ -250,15 +254,16 @@ type App struct {
 	ICAHostKeeper             icahostkeeper.Keeper
 	TransferKeeper            ibctransferkeeper.Keeper
 
-	SchedulerKeeper schedulermodulekeeper.Keeper
-	ConsensusKeeper consensusmodulekeeper.Keeper
-	ValsetKeeper    valsetmodulekeeper.Keeper
-	PalomaKeeper    palomamodulekeeper.Keeper
-	TreasuryKeeper  treasurymodulekeeper.Keeper
-	EvmKeeper       evmmodulekeeper.Keeper
-	SkywayKeeper    skywaymodulekeeper.Keeper
-	wasmKeeper      wasmkeeper.Keeper
-	MetrixKeeper    metrixmodulekeeper.Keeper
+	SchedulerKeeper    schedulermodulekeeper.Keeper
+	ConsensusKeeper    consensusmodulekeeper.Keeper
+	ValsetKeeper       valsetmodulekeeper.Keeper
+	PalomaKeeper       palomamodulekeeper.Keeper
+	TreasuryKeeper     treasurymodulekeeper.Keeper
+	EvmKeeper          evmmodulekeeper.Keeper
+	SkywayKeeper       skywaymodulekeeper.Keeper
+	wasmKeeper         wasmkeeper.Keeper
+	MetrixKeeper       metrixmodulekeeper.Keeper
+	TokenFactoryKeeper tokenfactorymodulekeeper.Keeper
 
 	// ModuleManager is the module manager
 	ModuleManager      *module.Manager
@@ -342,6 +347,7 @@ func New(
 		wasmtypes.StoreKey,
 		palomamoduletypes.StoreKey,
 		authzkeeper.StoreKey,
+		tokenfactorymoduletypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(
@@ -353,6 +359,7 @@ func New(
 		treasurymoduletypes.MemStoreKey,
 		palomamoduletypes.MemStoreKey,
 		metrixmoduletypes.MemStoreKey,
+		tokenfactorymoduletypes.MemStoreKey,
 	)
 
 	app := &App{
@@ -671,6 +678,14 @@ func New(
 		app.EvmKeeper,
 	)
 
+	app.TokenFactoryKeeper = tokenfactorymodulekeeper.NewKeeper(
+		keys[tokenfactorymoduletypes.StoreKey],
+		app.GetSubspace(tokenfactorymoduletypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.DistrKeeper,
+		authorityAddress)
+
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
 
 	govRouter := govv1beta1.NewRouter()
@@ -804,6 +819,7 @@ func New(
 	skywayModule := skywaymodule.NewAppModule(appCodec, app.SkywayKeeper, app.BankKeeper, app.GetSubspace(skywaymoduletypes.ModuleName), libcons.New(app.ValsetKeeper.GetCurrentSnapshot, appCodec))
 	treasuryModule := treasurymodule.NewAppModule(appCodec, app.TreasuryKeeper, app.AccountKeeper, app.BankKeeper)
 	metrixModule := metrix.NewAppModule(appCodec, app.MetrixKeeper)
+	tokenfactorymodule := tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper)
 
 	stakingAppModule := staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName))
 
@@ -836,6 +852,7 @@ func New(
 		palomaModule,
 		treasuryModule,
 		metrixModule,
+		tokenfactorymodule,
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		ibc.NewAppModule(app.IBCKeeper),
 		transfer.NewAppModule(app.TransferKeeper),
@@ -894,6 +911,7 @@ func New(
 		ibcfeetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		metrixmoduletypes.ModuleName,
+		tokenfactorymoduletypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -927,6 +945,7 @@ func New(
 		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		metrixmoduletypes.ModuleName,
+		tokenfactorymoduletypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -966,6 +985,7 @@ func New(
 		treasurymoduletypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		metrixmoduletypes.ModuleName,
+		tokenfactorymoduletypes.ModuleName,
 	)
 
 	app.configurator = module.NewConfigurator(appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
