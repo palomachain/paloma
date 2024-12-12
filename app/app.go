@@ -1258,6 +1258,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
 	paramsKeeper.Subspace(skywaymoduletypes.ModuleName).WithKeyTable(skywaymoduletypes.ParamKeyTable())
 	paramsKeeper.Subspace(metrixmoduletypes.ModuleName)
+	paramsKeeper.Subspace(tokenfactorymoduletypes.ModuleName)
 
 	paramsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())
