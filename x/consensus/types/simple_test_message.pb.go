@@ -5,16 +5,19 @@ package types
 
 import (
 	fmt "fmt"
-	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+
+	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -34,9 +37,11 @@ func (*SimpleMessage) ProtoMessage()    {}
 func (*SimpleMessage) Descriptor() ([]byte, []int) {
 	return fileDescriptor_552b11b5e7ba7b89, []int{0}
 }
+
 func (m *SimpleMessage) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *SimpleMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SimpleMessage.Marshal(b, m, deterministic)
@@ -49,12 +54,15 @@ func (m *SimpleMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 		return b[:n], nil
 	}
 }
+
 func (m *SimpleMessage) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SimpleMessage.Merge(m, src)
 }
+
 func (m *SimpleMessage) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *SimpleMessage) XXX_DiscardUnknown() {
 	xxx_messageInfo_SimpleMessage.DiscardUnknown(m)
 }
@@ -93,9 +101,11 @@ func (*EvenSimplerMessage) ProtoMessage()    {}
 func (*EvenSimplerMessage) Descriptor() ([]byte, []int) {
 	return fileDescriptor_552b11b5e7ba7b89, []int{1}
 }
+
 func (m *EvenSimplerMessage) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *EvenSimplerMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_EvenSimplerMessage.Marshal(b, m, deterministic)
@@ -108,12 +118,15 @@ func (m *EvenSimplerMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
+
 func (m *EvenSimplerMessage) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_EvenSimplerMessage.Merge(m, src)
 }
+
 func (m *EvenSimplerMessage) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *EvenSimplerMessage) XXX_DiscardUnknown() {
 	xxx_messageInfo_EvenSimplerMessage.DiscardUnknown(m)
 }
@@ -144,7 +157,7 @@ func init() {
 }
 
 var fileDescriptor_552b11b5e7ba7b89 = []byte{
-	// 221 bytes of a gzipped FileDescriptorProto
+	// 224 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x32, 0x2b, 0x48, 0xcc, 0xc9,
 	0xcf, 0x4d, 0x4c, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x87, 0xb0, 0xf5, 0x93, 0xf3, 0xf3, 0x8a, 0x53,
 	0xf3, 0x8a, 0x4b, 0x8b, 0xf5, 0x8b, 0x33, 0x73, 0x0b, 0x72, 0x52, 0xe3, 0x4b, 0x52, 0x8b, 0x4b,
@@ -154,11 +167,11 @@ var fileDescriptor_552b11b5e7ba7b89 = []byte{
 	0x1a, 0x9c, 0x41, 0x50, 0x9e, 0x90, 0x08, 0x17, 0x6b, 0x46, 0x6a, 0x4e, 0x4e, 0xbe, 0x04, 0x13,
 	0x58, 0x18, 0xc2, 0x01, 0x89, 0x96, 0xe7, 0x17, 0xe5, 0xa4, 0x48, 0x30, 0x43, 0x44, 0xc1, 0x1c,
 	0x25, 0x3b, 0x2e, 0x21, 0xd7, 0xb2, 0xd4, 0x3c, 0x88, 0xc1, 0x45, 0x84, 0x4c, 0x16, 0xe0, 0x62,
-	0x4e, 0xca, 0x87, 0x99, 0x0b, 0x62, 0x3a, 0x79, 0x9e, 0x78, 0x24, 0xc7, 0x78, 0xe1, 0x91, 0x1c,
+	0x4e, 0xca, 0x87, 0x99, 0x0b, 0x62, 0x3a, 0xf9, 0x9c, 0x78, 0x24, 0xc7, 0x78, 0xe1, 0x91, 0x1c,
 	0xe3, 0x83, 0x47, 0x72, 0x8c, 0x13, 0x1e, 0xcb, 0x31, 0x5c, 0x78, 0x2c, 0xc7, 0x70, 0xe3, 0xb1,
-	0x1c, 0x43, 0x94, 0x7e, 0x7a, 0x66, 0x49, 0x46, 0x69, 0x92, 0x5e, 0x72, 0x7e, 0xae, 0x3e, 0x96,
-	0xf0, 0xa8, 0x40, 0x0a, 0x91, 0x92, 0xca, 0x82, 0xd4, 0xe2, 0x24, 0x36, 0x70, 0x20, 0x18, 0x03,
-	0x02, 0x00, 0x00, 0xff, 0xff, 0x1e, 0x0d, 0xc4, 0xca, 0x3e, 0x01, 0x00, 0x00,
+	0x1c, 0x43, 0x94, 0x51, 0x7a, 0x66, 0x49, 0x46, 0x69, 0x92, 0x5e, 0x72, 0x7e, 0xae, 0x3e, 0x96,
+	0xf0, 0x28, 0x33, 0xd2, 0xaf, 0x40, 0x0a, 0x94, 0x92, 0xca, 0x82, 0xd4, 0xe2, 0x24, 0x36, 0x70,
+	0x38, 0x18, 0x03, 0x02, 0x00, 0x00, 0xff, 0xff, 0xd3, 0x65, 0x8c, 0x9a, 0x41, 0x01, 0x00, 0x00,
 }
 
 func (m *SimpleMessage) Marshal() (dAtA []byte, err error) {
@@ -253,6 +266,7 @@ func encodeVarintSimpleTestMessage(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
 func (m *SimpleMessage) Size() (n int) {
 	if m == nil {
 		return 0
@@ -294,9 +308,11 @@ func (m *EvenSimplerMessage) Size() (n int) {
 func sovSimpleTestMessage(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
+
 func sozSimpleTestMessage(x uint64) (n int) {
 	return sovSimpleTestMessage(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+
 func (m *SimpleMessage) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -443,6 +459,7 @@ func (m *SimpleMessage) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *EvenSimplerMessage) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -557,6 +574,7 @@ func (m *EvenSimplerMessage) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func skipSimpleTestMessage(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

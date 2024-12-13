@@ -625,6 +625,14 @@ func New(
 		app.EvmKeeper,
 	}
 
+	app.TokenFactoryKeeper = tokenfactorymodulekeeper.NewKeeper(
+		keys[tokenfactorymoduletypes.StoreKey],
+		app.GetSubspace(tokenfactorymoduletypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.DistrKeeper,
+		authorityAddress)
+
 	app.SkywayKeeper = skywaymodulekeeper.NewKeeper(
 		appCodec,
 		app.AccountKeeper,
@@ -636,6 +644,7 @@ func New(
 		app.EvmKeeper,
 		app.ConsensusKeeper,
 		app.PalomaKeeper,
+		app.TokenFactoryKeeper,
 		skywaymodulekeeper.NewSkywayStoreGetter(keys[skywaymoduletypes.StoreKey]),
 		authorityAddress,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
@@ -677,14 +686,6 @@ func New(
 		app.AccountKeeper,
 		app.EvmKeeper,
 	)
-
-	app.TokenFactoryKeeper = tokenfactorymodulekeeper.NewKeeper(
-		keys[tokenfactorymoduletypes.StoreKey],
-		app.GetSubspace(tokenfactorymoduletypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.DistrKeeper,
-		authorityAddress)
 
 	app.ScopedConsensusKeeper = scopedConsensusKeeper
 

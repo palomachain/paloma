@@ -66,6 +66,12 @@ service Msg {
       "/palomachain/paloma/skyway/light-node-sale-claim";
   }
 
+  rpc SetERC20ToTokenDenom(MsgSetERC20ToTokenDenom)
+      returns (google.protobuf.Empty) {
+    option (google.api.http).post =
+      "/palomachain/paloma/skyway/erc20-to-token-denom";
+  }
+
   rpc OverrideNonceProposal(MsgNonceOverrideProposal) returns (google.protobuf.Empty);
 }
 
@@ -302,4 +308,20 @@ message MsgEstimateBatchGas {
   string token_contract = 3;
   string eth_signer = 4;
   uint64 estimate = 5;
+}
+
+// MsgSetERC20ToTokenDenom is a message to set the mapping between an ERC20 token
+// and a denom created by the token factory.
+// Needs admin rights on the token to set the mapping.
+message MsgSetERC20ToTokenDenom {
+  option (cosmos.msg.v1.signer) = "metadata";
+
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
+  string denom = 2 [ (gogoproto.moretags) = "yaml:\"denom\"" ];
+  string chain_reference_id = 3 [ (gogoproto.moretags) = "yaml:\"chain_reference_id\"" ];
+  string erc20 = 4 [ (gogoproto.moretags) = "yaml:\"erc20\"" ];
 }

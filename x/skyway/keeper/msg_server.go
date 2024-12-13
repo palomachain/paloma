@@ -12,6 +12,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	utilkeeper "github.com/palomachain/paloma/v2/util/keeper"
 	"github.com/palomachain/paloma/v2/x/skyway/types"
+	tokenfactorytypes "github.com/palomachain/paloma/v2/x/tokenfactory/types"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -422,4 +423,46 @@ func (k *msgServer) OverrideNonceProposal(ctx context.Context, req *types.MsgNon
 		return nil, sdkerrors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, req.Metadata.Creator)
 	}
 	return &emptypb.Empty{}, k.overrideNonce(ctx, req.ChainReferenceId, req.Nonce)
+}
+
+func (k *msgServer) SetERC20ToTokenDenom(ctx context.Context, msg *types.MsgSetERC20ToTokenDenom) (*emptypb.Empty, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sender, err := sdk.AccAddressFromBech32(msg.Metadata.Creator)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "sender address invalid")
+	}
+	erc20, err := types.NewEthAddress(msg.Erc20)
+	if err != nil || erc20 == nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalid, "erc20 address invalid")
+	}
+	ci, err := k.EVMKeeper.GetChainInfo(ctx, msg.ChainReferenceId)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrUnsupported, "sender address invalid")
+	}
+	_, _, err = tokenfactorytypes.DeconstructDenom(msg.Denom)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrUnsupported, "denom invalid")
+	}
+	md, err := k.tokenFactoryKeeper.GetAuthorityMetadata(ctx, msg.Denom)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrDenomNotFound, err.Error())
+	}
+	if md.Admin != sender.String() {
+		return nil, sdkerrors.Wrap(types.ErrUnauthorized, "missing token admin permission")
+	}
+
+	if err := k.setDenomToERC20(ctx, ci.ChainReferenceID, msg.Denom, *erc20); err != nil {
+		return nil, sdkerrors.Wrap(types.ErrInternal, err.Error())
+	}
+
+	sdkCtx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeSetERC20ToTokenDenom,
+			sdk.NewAttribute(types.AttributeKeyChainReferenceID, ci.ChainReferenceID),
+			sdk.NewAttribute(types.AttributeKeyERC20Address, msg.Erc20),
+			sdk.NewAttribute(types.AttributeKeyTokenDenom, msg.Denom),
+		),
+	})
+
+	return &emptypb.Empty{}, nil
 }

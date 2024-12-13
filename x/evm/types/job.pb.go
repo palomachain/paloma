@@ -5,17 +5,20 @@ package types
 
 import (
 	fmt "fmt"
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -34,9 +37,11 @@ func (*JobDefinition) ProtoMessage()    {}
 func (*JobDefinition) Descriptor() ([]byte, []int) {
 	return fileDescriptor_0ef90eed6bbce6d4, []int{0}
 }
+
 func (m *JobDefinition) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *JobDefinition) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_JobDefinition.Marshal(b, m, deterministic)
@@ -49,12 +54,15 @@ func (m *JobDefinition) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 		return b[:n], nil
 	}
 }
+
 func (m *JobDefinition) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_JobDefinition.Merge(m, src)
 }
+
 func (m *JobDefinition) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *JobDefinition) XXX_DiscardUnknown() {
 	xxx_messageInfo_JobDefinition.DiscardUnknown(m)
 }
@@ -85,9 +93,11 @@ func (*JobPayload) ProtoMessage()    {}
 func (*JobPayload) Descriptor() ([]byte, []int) {
 	return fileDescriptor_0ef90eed6bbce6d4, []int{1}
 }
+
 func (m *JobPayload) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *JobPayload) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_JobPayload.Marshal(b, m, deterministic)
@@ -100,12 +110,15 @@ func (m *JobPayload) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
+
 func (m *JobPayload) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_JobPayload.Merge(m, src)
 }
+
 func (m *JobPayload) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *JobPayload) XXX_DiscardUnknown() {
 	xxx_messageInfo_JobPayload.DiscardUnknown(m)
 }
@@ -127,7 +140,7 @@ func init() {
 func init() { proto.RegisterFile("palomachain/paloma/evm/job.proto", fileDescriptor_0ef90eed6bbce6d4) }
 
 var fileDescriptor_0ef90eed6bbce6d4 = []byte{
-	// 210 bytes of a gzipped FileDescriptorProto
+	// 213 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x28, 0x48, 0xcc, 0xc9,
 	0xcf, 0x4d, 0x4c, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x87, 0xb0, 0xf5, 0x53, 0xcb, 0x72, 0xf5, 0xb3,
 	0xf2, 0x93, 0xf4, 0x0a, 0x8a, 0xf2, 0x4b, 0xf2, 0x85, 0xc4, 0x90, 0x54, 0xe8, 0x41, 0xd8, 0x7a,
@@ -136,12 +149,12 @@ var fileDescriptor_0ef90eed6bbce6d4 = []byte{
 	0x9e, 0x90, 0x04, 0x17, 0x7b, 0x62, 0x4a, 0x4a, 0x51, 0x6a, 0x71, 0xb1, 0x04, 0xa3, 0x02, 0xa3,
 	0x06, 0x67, 0x10, 0x8c, 0x2b, 0x24, 0xc0, 0xc5, 0xec, 0xe8, 0xe4, 0x29, 0xc1, 0x04, 0x16, 0x05,
 	0x31, 0x95, 0x74, 0xb8, 0xb8, 0xbc, 0xf2, 0x93, 0x02, 0x12, 0x2b, 0x73, 0xf2, 0x13, 0x53, 0x84,
-	0xe4, 0xb8, 0xb8, 0x32, 0x52, 0x2b, 0xa0, 0x3c, 0xa8, 0x66, 0x24, 0x11, 0x27, 0xe7, 0x13, 0x8f,
+	0xe4, 0xb8, 0xb8, 0x32, 0x52, 0x2b, 0xa0, 0x3c, 0xa8, 0x66, 0x24, 0x11, 0x27, 0xb7, 0x13, 0x8f,
 	0xe4, 0x18, 0x2f, 0x3c, 0x92, 0x63, 0x7c, 0xf0, 0x48, 0x8e, 0x71, 0xc2, 0x63, 0x39, 0x86, 0x0b,
-	0x8f, 0xe5, 0x18, 0x6e, 0x3c, 0x96, 0x63, 0x88, 0xd2, 0x4c, 0xcf, 0x2c, 0xc9, 0x28, 0x4d, 0xd2,
-	0x4b, 0xce, 0xcf, 0xd5, 0xc7, 0xe2, 0xbf, 0x0a, 0xb0, 0x0f, 0x4b, 0x2a, 0x0b, 0x52, 0x8b, 0x93,
-	0xd8, 0xc0, 0xce, 0x36, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0x97, 0x87, 0x60, 0xe2, 0x08, 0x01,
-	0x00, 0x00,
+	0x8f, 0xe5, 0x18, 0x6e, 0x3c, 0x96, 0x63, 0x88, 0xd2, 0x49, 0xcf, 0x2c, 0xc9, 0x28, 0x4d, 0xd2,
+	0x4b, 0xce, 0xcf, 0xd5, 0xc7, 0xe2, 0xbf, 0x32, 0x23, 0xfd, 0x0a, 0xb0, 0x27, 0x4b, 0x2a, 0x0b,
+	0x52, 0x8b, 0x93, 0xd8, 0xc0, 0x2e, 0x37, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0xb8, 0x12, 0x4d,
+	0x71, 0x0b, 0x01, 0x00, 0x00,
 }
 
 func (m *JobDefinition) Marshal() (dAtA []byte, err error) {
@@ -222,6 +235,7 @@ func encodeVarintJob(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
 func (m *JobDefinition) Size() (n int) {
 	if m == nil {
 		return 0
@@ -255,9 +269,11 @@ func (m *JobPayload) Size() (n int) {
 func sovJob(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
+
 func sozJob(x uint64) (n int) {
 	return sovJob(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+
 func (m *JobDefinition) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -372,6 +388,7 @@ func (m *JobDefinition) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *JobPayload) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -454,6 +471,7 @@ func (m *JobPayload) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func skipJob(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

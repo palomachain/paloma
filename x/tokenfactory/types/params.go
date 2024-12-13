@@ -7,6 +7,10 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
+const (
+	cDefaultBondDenom string = "ugrain"
+)
+
 var KeyDenomCreationFee = []byte("DenomCreationFee")
 
 func ParamKeyTable() paramtypes.KeyTable {
@@ -21,7 +25,7 @@ func NewParams(denomCreationFee sdk.Coins) Params {
 
 func DefaultParams() Params {
 	return Params{
-		DenomCreationFee: sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 10_000_000)), // 10 GRAIN
+		DenomCreationFee: sdk.NewCoins(sdk.NewInt64Coin(cDefaultBondDenom, 10_000_000)), // 10 GRAIN
 	}
 }
 

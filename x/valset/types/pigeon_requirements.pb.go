@@ -5,16 +5,19 @@ package types
 
 import (
 	fmt "fmt"
-	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+
+	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -32,9 +35,11 @@ func (*PigeonRequirements) ProtoMessage()    {}
 func (*PigeonRequirements) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5ff0dae947bdd130, []int{0}
 }
+
 func (m *PigeonRequirements) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *PigeonRequirements) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_PigeonRequirements.Marshal(b, m, deterministic)
@@ -47,12 +52,15 @@ func (m *PigeonRequirements) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
+
 func (m *PigeonRequirements) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_PigeonRequirements.Merge(m, src)
 }
+
 func (m *PigeonRequirements) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *PigeonRequirements) XXX_DiscardUnknown() {
 	xxx_messageInfo_PigeonRequirements.DiscardUnknown(m)
 }
@@ -77,9 +85,11 @@ func (*ScheduledPigeonRequirements) ProtoMessage()    {}
 func (*ScheduledPigeonRequirements) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5ff0dae947bdd130, []int{1}
 }
+
 func (m *ScheduledPigeonRequirements) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *ScheduledPigeonRequirements) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ScheduledPigeonRequirements.Marshal(b, m, deterministic)
@@ -92,12 +102,15 @@ func (m *ScheduledPigeonRequirements) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
+
 func (m *ScheduledPigeonRequirements) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ScheduledPigeonRequirements.Merge(m, src)
 }
+
 func (m *ScheduledPigeonRequirements) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *ScheduledPigeonRequirements) XXX_DiscardUnknown() {
 	xxx_messageInfo_ScheduledPigeonRequirements.DiscardUnknown(m)
 }
@@ -128,7 +141,7 @@ func init() {
 }
 
 var fileDescriptor_5ff0dae947bdd130 = []byte{
-	// 240 bytes of a gzipped FileDescriptorProto
+	// 242 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x32, 0x2e, 0x48, 0xcc, 0xc9,
 	0xcf, 0x4d, 0x4c, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x87, 0xb0, 0xf5, 0xcb, 0x12, 0x73, 0x8a, 0x53,
 	0x4b, 0xf4, 0x0b, 0x32, 0xd3, 0x53, 0xf3, 0xf3, 0xe2, 0x8b, 0x52, 0x0b, 0x4b, 0x33, 0x8b, 0x52,
@@ -139,11 +152,12 @@ var fileDescriptor_5ff0dae947bdd130 = []byte{
 	0x94, 0xe6, 0xa4, 0xa6, 0x60, 0xd1, 0x1f, 0xc8, 0xc5, 0x83, 0xec, 0x0c, 0xb0, 0x09, 0xdc, 0x46,
 	0xba, 0x7a, 0x38, 0xdd, 0xa1, 0x87, 0x69, 0x48, 0x10, 0x8a, 0x11, 0x42, 0x3a, 0x5c, 0x82, 0x25,
 	0x89, 0x45, 0xe9, 0xa9, 0x25, 0x4e, 0x39, 0xf9, 0xc9, 0xd9, 0x1e, 0xa9, 0x99, 0xe9, 0x19, 0x25,
-	0x12, 0x4c, 0x0a, 0x8c, 0x1a, 0x2c, 0x41, 0x98, 0x12, 0x4e, 0x6e, 0x27, 0x1e, 0xc9, 0x31, 0x5e,
+	0x12, 0x4c, 0x0a, 0x8c, 0x1a, 0x2c, 0x41, 0x98, 0x12, 0x4e, 0x9e, 0x27, 0x1e, 0xc9, 0x31, 0x5e,
 	0x78, 0x24, 0xc7, 0xf8, 0xe0, 0x91, 0x1c, 0xe3, 0x84, 0xc7, 0x72, 0x0c, 0x17, 0x1e, 0xcb, 0x31,
-	0xdc, 0x78, 0x2c, 0xc7, 0x10, 0xa5, 0x93, 0x9e, 0x59, 0x92, 0x51, 0x9a, 0xa4, 0x97, 0x9c, 0x9f,
-	0xab, 0x8f, 0x25, 0x2c, 0x2b, 0x60, 0xa1, 0x59, 0x52, 0x59, 0x90, 0x5a, 0x9c, 0xc4, 0x06, 0x0e,
-	0x40, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x27, 0xa4, 0x51, 0xa3, 0x77, 0x01, 0x00, 0x00,
+	0xdc, 0x78, 0x2c, 0xc7, 0x10, 0xa5, 0x9f, 0x9e, 0x59, 0x92, 0x51, 0x9a, 0xa4, 0x97, 0x9c, 0x9f,
+	0xab, 0x8f, 0x2d, 0x2c, 0x8d, 0xf4, 0x2b, 0x60, 0x01, 0x5a, 0x52, 0x59, 0x90, 0x5a, 0x9c, 0xc4,
+	0x06, 0x0e, 0x43, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0xab, 0x95, 0x31, 0xb0, 0x7a, 0x01,
+	0x00, 0x00,
 }
 
 func (m *PigeonRequirements) Marshal() (dAtA []byte, err error) {
@@ -227,6 +241,7 @@ func encodeVarintPigeonRequirements(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
 func (m *PigeonRequirements) Size() (n int) {
 	if m == nil {
 		return 0
@@ -259,9 +274,11 @@ func (m *ScheduledPigeonRequirements) Size() (n int) {
 func sovPigeonRequirements(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
+
 func sozPigeonRequirements(x uint64) (n int) {
 	return sovPigeonRequirements(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+
 func (m *PigeonRequirements) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -344,6 +361,7 @@ func (m *PigeonRequirements) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *ScheduledPigeonRequirements) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -449,6 +467,7 @@ func (m *ScheduledPigeonRequirements) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func skipPigeonRequirements(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

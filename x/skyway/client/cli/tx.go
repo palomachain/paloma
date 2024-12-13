@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"strconv"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -9,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/palomachain/paloma/v2/x/skyway/types"
+	tokenfactorytypes "github.com/palomachain/paloma/v2/x/tokenfactory/types"
 	vtypes "github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/spf13/cobra"
 )
@@ -27,6 +29,7 @@ func GetTxCmd(storeKey string) *cobra.Command {
 	skywayTxCmd.AddCommand([]*cobra.Command{
 		CmdSendToRemote(),
 		CmdCancelSendToRemote(),
+		CmdSetErc20ToTokenDenom(),
 	}...)
 
 	return skywayTxCmd
@@ -108,6 +111,45 @@ func CmdCancelSendToRemote() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), &msg)
 		},
 	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func CmdSetErc20ToTokenDenom() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-erc20-to-token-denom [erc20-address] [chain-reference-id] [token-denom]",
+		Short: "Creates or updates the ERC20 tracking address mapping for the given denom. Must have admin authority to do so.",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			sender := cliCtx.GetFromAddress()
+			erc20, err := types.NewEthAddress(args[0])
+			if err != nil {
+				return err
+			}
+			if erc20 == nil {
+				return fmt.Errorf("invalid eth address")
+			}
+			chainReferenceID := args[1]
+			denom := args[2]
+			if _, _, err := tokenfactorytypes.DeconstructDenom(denom); err != nil {
+				return err
+			}
+
+			msg := types.NewMsgSetERC20ToTokenDenom(sender, *erc20, chainReferenceID, denom)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			// Send it
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msg)
+		},
+	}
+
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

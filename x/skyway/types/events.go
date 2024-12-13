@@ -9,6 +9,7 @@ const (
 	EventTypeBridgeDepositReceived       = "deposit_received"
 	EventTypeBridgeWithdrawCanceled      = "withdraw_canceled"
 	EventTypeInvalidSendToPalomaReceiver = "invalid_send_to_paloma_receiver"
+	EventTypeSetERC20ToTokenDenom        = "set_erc20_to_token_denom"
 
 	AttributeKeyAttestationID          = "attestation_id"
 	AttributeKeyBatchConfirmKey        = "batch_confirm_key"
@@ -30,4 +31,8 @@ const (
 	AttributeKeySendToPalomaSender = "msg_send_to_cosmsos_sender"
 
 	AttributeKeyBatchSignatureSlashing = "batch_signature_slashing"
+
+	AttributeKeyChainReferenceID = "chain_reference_id"
+	AttributeKeyERC20Address     = "erc20_address"
+	AttributeKeyTokenDenom       = "token_denom"
 )

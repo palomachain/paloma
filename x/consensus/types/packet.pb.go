@@ -5,16 +5,19 @@ package types
 
 import (
 	fmt "fmt"
-	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+
+	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -35,9 +38,11 @@ func (*ConsensusPacketData) ProtoMessage()    {}
 func (*ConsensusPacketData) Descriptor() ([]byte, []int) {
 	return fileDescriptor_fa5d9a8bb2b263d1, []int{0}
 }
+
 func (m *ConsensusPacketData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *ConsensusPacketData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ConsensusPacketData.Marshal(b, m, deterministic)
@@ -50,12 +55,15 @@ func (m *ConsensusPacketData) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
+
 func (m *ConsensusPacketData) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ConsensusPacketData.Merge(m, src)
 }
+
 func (m *ConsensusPacketData) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *ConsensusPacketData) XXX_DiscardUnknown() {
 	xxx_messageInfo_ConsensusPacketData.DiscardUnknown(m)
 }
@@ -95,8 +103,7 @@ func (*ConsensusPacketData) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-type NoData struct {
-}
+type NoData struct{}
 
 func (m *NoData) Reset()         { *m = NoData{} }
 func (m *NoData) String() string { return proto.CompactTextString(m) }
@@ -104,9 +111,11 @@ func (*NoData) ProtoMessage()    {}
 func (*NoData) Descriptor() ([]byte, []int) {
 	return fileDescriptor_fa5d9a8bb2b263d1, []int{1}
 }
+
 func (m *NoData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *NoData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_NoData.Marshal(b, m, deterministic)
@@ -119,12 +128,15 @@ func (m *NoData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
+
 func (m *NoData) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_NoData.Merge(m, src)
 }
+
 func (m *NoData) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *NoData) XXX_DiscardUnknown() {
 	xxx_messageInfo_NoData.DiscardUnknown(m)
 }
@@ -141,7 +153,7 @@ func init() {
 }
 
 var fileDescriptor_fa5d9a8bb2b263d1 = []byte{
-	// 183 bytes of a gzipped FileDescriptorProto
+	// 186 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xd2, 0x2c, 0x48, 0xcc, 0xc9,
 	0xcf, 0x4d, 0x4c, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x87, 0xb0, 0xf5, 0x93, 0xf3, 0xf3, 0x8a, 0x53,
 	0xf3, 0x8a, 0x4b, 0x8b, 0xf5, 0x0b, 0x12, 0x93, 0xb3, 0x53, 0x4b, 0xf4, 0x0a, 0x8a, 0xf2, 0x4b,
@@ -149,11 +161,11 @@ var fileDescriptor_fa5d9a8bb2b263d1 = []byte{
 	0x30, 0x4e, 0x00, 0x58, 0x9b, 0x4b, 0x62, 0x49, 0xa2, 0x90, 0x1d, 0x17, 0x5b, 0x5e, 0x3e, 0x88,
 	0x25, 0xc1, 0xa8, 0xc0, 0xa8, 0xc1, 0x6d, 0xa4, 0xa2, 0x87, 0xcf, 0x14, 0x3d, 0x3f, 0xb0, 0x5a,
 	0x0f, 0x86, 0x20, 0xa8, 0x2e, 0x27, 0x0e, 0x2e, 0x36, 0x88, 0x23, 0x94, 0x38, 0xb8, 0xd8, 0x20,
-	0xb2, 0x4e, 0x9e, 0x27, 0x1e, 0xc9, 0x31, 0x5e, 0x78, 0x24, 0xc7, 0xf8, 0xe0, 0x91, 0x1c, 0xe3,
-	0x84, 0xc7, 0x72, 0x0c, 0x17, 0x1e, 0xcb, 0x31, 0xdc, 0x78, 0x2c, 0xc7, 0x10, 0xa5, 0x9f, 0x9e,
-	0x59, 0x92, 0x51, 0x9a, 0xa4, 0x97, 0x9c, 0x9f, 0xab, 0x8f, 0xc5, 0x63, 0x15, 0x48, 0x5e, 0x2b,
-	0xa9, 0x2c, 0x48, 0x2d, 0x4e, 0x62, 0x03, 0x7b, 0xcd, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0x0d,
-	0x53, 0x29, 0xed, 0x07, 0x01, 0x00, 0x00,
+	0xb2, 0x4e, 0x3e, 0x27, 0x1e, 0xc9, 0x31, 0x5e, 0x78, 0x24, 0xc7, 0xf8, 0xe0, 0x91, 0x1c, 0xe3,
+	0x84, 0xc7, 0x72, 0x0c, 0x17, 0x1e, 0xcb, 0x31, 0xdc, 0x78, 0x2c, 0xc7, 0x10, 0x65, 0x94, 0x9e,
+	0x59, 0x92, 0x51, 0x9a, 0xa4, 0x97, 0x9c, 0x9f, 0xab, 0x8f, 0xc5, 0x63, 0x65, 0x46, 0xfa, 0x15,
+	0x48, 0xbe, 0x2b, 0xa9, 0x2c, 0x48, 0x2d, 0x4e, 0x62, 0x03, 0xfb, 0xce, 0x18, 0x10, 0x00, 0x00,
+	0xff, 0xff, 0xc2, 0x96, 0x6f, 0x7e, 0x0a, 0x01, 0x00, 0x00,
 }
 
 func (m *ConsensusPacketData) Marshal() (dAtA []byte, err error) {
@@ -209,6 +221,7 @@ func (m *ConsensusPacketData_NoData) MarshalToSizedBuffer(dAtA []byte) (int, err
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *NoData) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -243,6 +256,7 @@ func encodeVarintPacket(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
 func (m *ConsensusPacketData) Size() (n int) {
 	if m == nil {
 		return 0
@@ -267,6 +281,7 @@ func (m *ConsensusPacketData_NoData) Size() (n int) {
 	}
 	return n
 }
+
 func (m *NoData) Size() (n int) {
 	if m == nil {
 		return 0
@@ -279,9 +294,11 @@ func (m *NoData) Size() (n int) {
 func sovPacket(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
+
 func sozPacket(x uint64) (n int) {
 	return sovPacket(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+
 func (m *ConsensusPacketData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -367,6 +384,7 @@ func (m *ConsensusPacketData) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *NoData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -417,6 +435,7 @@ func (m *NoData) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func skipPacket(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
