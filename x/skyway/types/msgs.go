@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/palomachain/paloma/v2/util/libmeta"
+	tokenfactorytypes "github.com/palomachain/paloma/v2/x/tokenfactory/types"
 	"github.com/palomachain/paloma/v2/x/valset/types"
 )
 
@@ -22,6 +23,7 @@ var (
 	_ sdk.Msg = &MsgSubmitBadSignatureEvidence{}
 	_ sdk.Msg = &MsgUpdateParams{}
 	_ sdk.Msg = &MsgLightNodeSaleClaim{}
+	_ sdk.Msg = &MsgSetERC20ToTokenDenom{}
 )
 
 // NewMsgSendToRemote returns a new msgSendToRemote
@@ -446,3 +448,36 @@ func (msg *MsgLightNodeSaleClaim) GetType() ClaimType {
 func (msg *MsgLightNodeSaleClaim) SetOrchestrator(orchestrator sdk.AccAddress) {
 	msg.Orchestrator = orchestrator.String()
 }
+
+func NewMsgSetERC20ToTokenDenom(sender sdk.AccAddress, erc20 EthAddress, chainReferenceID string, denom string) *MsgSetERC20ToTokenDenom {
+	return &MsgSetERC20ToTokenDenom{
+		Metadata:         types.MsgMetadata{Creator: sender.String(), Signers: []string{sender.String()}},
+		Denom:            denom,
+		ChainReferenceId: chainReferenceID,
+		Erc20:            erc20.address.Hex(),
+	}
+}
+
+func (msg *MsgSetERC20ToTokenDenom) ValidateBasic() error {
+	_, _, err := tokenfactorytypes.DeconstructDenom(msg.Denom)
+	if err != nil {
+		return sdkerrors.Wrap(ErrInvalid, "no tokenfactory denom")
+	}
+
+	if err := ValidateEthAddress(msg.Erc20); err != nil {
+		return sdkerrors.Wrap(err, "invalid erc20 address")
+	}
+
+	if msg.ChainReferenceId == "" {
+		return sdkerrors.Wrap(ErrInvalid, "chain reference id cannot be empty")
+	}
+
+	return libmeta.ValidateBasic(msg)
+}
+
+func (msg *MsgSetERC20ToTokenDenom) GetSigners() []sdk.AccAddress {
+	return libmeta.GetSigners(msg)
+}
+
+func (msg MsgSetERC20ToTokenDenom) Type() string  { return "set-erc20-to-denom" }
+func (msg MsgSetERC20ToTokenDenom) Route() string { return RouterKey }

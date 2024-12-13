@@ -13,6 +13,7 @@ import (
 	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
 	consensustypes "github.com/palomachain/paloma/v2/x/consensus/types"
 	evmtypes "github.com/palomachain/paloma/v2/x/evm/types"
+	tokenfactorytypes "github.com/palomachain/paloma/v2/x/tokenfactory/types"
 )
 
 // StakingKeeper defines the expected staking keeper methods
@@ -81,4 +82,8 @@ type EVMKeeper interface {
 
 type PalomaKeeper interface {
 	CreateSaleLightNodeClientLicense(ctx context.Context, clientAddr string, amount math.Int) error
+}
+
+type TokenFactoryKeeper interface {
+	GetAuthorityMetadata(ctx context.Context, denom string) (tokenfactorytypes.DenomAuthorityMetadata, error)
 }

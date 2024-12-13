@@ -341,6 +341,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		evmKeeper,
 		consensusKeeper,
 		nil,
+		nil,
 		skywaymodulekeeper.NewSkywayStoreGetter(keys[skywaymoduletypes.StoreKey]),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),

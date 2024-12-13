@@ -35,18 +35,19 @@ var (
 
 // Keeper maintains the link to storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc               codec.BinaryCodec // The wire codec for binary encoding/decoding.
-	bankKeeper        types.BankKeeper
-	StakingKeeper     types.StakingKeeper
-	SlashingKeeper    types.SlashingKeeper
-	DistKeeper        distrkeeper.Keeper
-	accountKeeper     types.AccountKeeper
-	ibcTransferKeeper ibctransferkeeper.Keeper
-	EVMKeeper         types.EVMKeeper
-	consensusKeeper   types.ConsensusKeeper
-	palomaKeeper      types.PalomaKeeper
-	AddressCodec      address.Codec
-	storeGetter       keeperutil.StoreGetter
+	cdc                codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	bankKeeper         types.BankKeeper
+	StakingKeeper      types.StakingKeeper
+	SlashingKeeper     types.SlashingKeeper
+	DistKeeper         distrkeeper.Keeper
+	accountKeeper      types.AccountKeeper
+	ibcTransferKeeper  ibctransferkeeper.Keeper
+	EVMKeeper          types.EVMKeeper
+	consensusKeeper    types.ConsensusKeeper
+	palomaKeeper       types.PalomaKeeper
+	tokenFactoryKeeper types.TokenFactoryKeeper
+	AddressCodec       address.Codec
+	storeGetter        keeperutil.StoreGetter
 
 	AttestationHandler interface {
 		Handle(context.Context, types.Attestation, types.EthereumClaim) error
@@ -66,6 +67,7 @@ func NewKeeper(
 	evmKeeper types.EVMKeeper,
 	consensusKeeper types.ConsensusKeeper,
 	palomaKeeper types.PalomaKeeper,
+	tokenFactoryKeeper types.TokenFactoryKeeper,
 	storeGetter keeperutil.StoreGetter,
 	authority string,
 	valAddressCodec address.Codec,
@@ -81,6 +83,7 @@ func NewKeeper(
 		EVMKeeper:          evmKeeper,
 		consensusKeeper:    consensusKeeper,
 		palomaKeeper:       palomaKeeper,
+		tokenFactoryKeeper: tokenFactoryKeeper,
 		storeGetter:        storeGetter,
 		AttestationHandler: nil,
 		AddressCodec:       valAddressCodec,

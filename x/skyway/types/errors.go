@@ -23,4 +23,5 @@ var (
 	ErrInvalidClaim             = sdkerrors.Register(ModuleName, 19, "invalid claim submitted")
 	ErrDenomNotFound            = sdkerrors.Register(ModuleName, 21, "denom not found")
 	ErrERC20NotFound            = sdkerrors.Register(ModuleName, 22, "erc20 not found")
+	ErrUnauthorized             = sdkerrors.Register(ModuleName, 23, "unauthorized")
 )

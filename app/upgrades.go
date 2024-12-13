@@ -22,6 +22,7 @@ import (
 	metrixmoduletypes "github.com/palomachain/paloma/v2/x/metrix/types"
 	palomamoduletypes "github.com/palomachain/paloma/v2/x/paloma/types"
 	skywaymoduletypes "github.com/palomachain/paloma/v2/x/skyway/types"
+	tokenfactorymoduletypes "github.com/palomachain/paloma/v2/x/tokenfactory/types"
 )
 
 var minCommissionRate = math.LegacyMustNewDecFromStr("0.05")
@@ -165,6 +166,17 @@ func (app *App) RegisterUpgradeHandlers(semverVersion string) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{
 				authzkeeper.StoreKey,
+			},
+		}
+
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
+
+	if upgradeInfo.Name == "v2.4.0" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{
+				tokenfactorymoduletypes.StoreKey,
 			},
 		}
 

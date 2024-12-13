@@ -1,0 +1,164 @@
+syntax = "proto3";
+package palomachain.paloma.tokenfactory;
+
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/bank/v1beta1/bank.proto";
+import "cosmos/msg/v1/msg.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+import "palomachain/paloma/tokenfactory/params.proto";
+import "palomachain/paloma/valset/common.proto";
+
+option go_package = "github.com/palomachain/paloma/v2/x/tokenfactory/types";
+
+// Msg defines the tokefactory module's gRPC message service.
+service Msg {
+  rpc CreateDenom(MsgCreateDenom) returns (MsgCreateDenomResponse){
+    option (google.api.http).post =
+      "/palomachain/paloma/tokenfactory/denom";
+    }
+
+  rpc SetDenomMetadata(MsgSetDenomMetadata) returns (MsgSetDenomMetadataResponse){
+    option (google.api.http).post =
+      "/palomachain/paloma/tokenfactory/denom-metadata";
+    }
+
+  rpc Mint(MsgMint) returns (MsgMintResponse){
+    option (google.api.http).post =
+      "/palomachain/paloma/tokenfactory/mint";
+    }
+
+  rpc Burn(MsgBurn) returns (MsgBurnResponse){
+    option (google.api.http).post =
+      "/palomachain/paloma/tokenfactory/burn";
+    }
+
+  rpc ChangeAdmin(MsgChangeAdmin) returns (MsgChangeAdminResponse){
+    option (google.api.http).put =
+      "/palomachain/paloma/tokenfactory/admin";
+    }
+
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {
+    option (google.api.http).put =
+      "/palomachain/paloma/tokenfactory/params";
+    }
+}
+
+// MsgCreateDenom defines the message structure for the CreateDenom gRPC service
+// method. It allows an account to create a new denom. It requires a sender
+// address and a sub denomination. The (sender_address, sub_denomination) tuple
+// must be unique and cannot be re-used.
+//
+// The resulting denom created is defined as
+// <factory/{creatorAddress}/{subdenom}>. The resulting denom's admin is
+// originally set to be the creator, but this can be changed later. The token
+// denom does not indicate the current admin.
+message MsgCreateDenom {
+  option (cosmos.msg.v1.signer) = "metadata";
+  // subdenom can be up to 44 "alphanumeric" characters long.
+  string subdenom = 1 [ (gogoproto.moretags) = "yaml:\"subdenom\"" ];
+  palomachain.paloma.valset.MsgMetadata metadata = 2
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
+}
+
+// MsgCreateDenomResponse is the return value of MsgCreateDenom
+// It returns the full string of the newly created denom
+message MsgCreateDenomResponse {
+  string new_token_denom = 1
+      [ (gogoproto.moretags) = "yaml:\"new_token_denom\"" ];
+}
+
+// MsgSetDenomMetadata is the sdk.Msg type for allowing an admin account to set
+// the denom's bank metadata
+message MsgSetDenomMetadata {
+  option (cosmos.msg.v1.signer) = "metadata";
+  cosmos.bank.v1beta1.Metadata denom_metadata = 1 [
+    (gogoproto.moretags) = "yaml:\"denom_metadata\"",
+    (gogoproto.nullable) = false
+  ];
+  palomachain.paloma.valset.MsgMetadata metadata = 2
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
+}
+
+// MsgSetDenomMetadataResponse defines the response structure for an executed
+// MsgSetDenomMetadata message.
+message MsgSetDenomMetadataResponse {}
+
+// MsgMint is the sdk.Msg type for allowing an admin account to mint
+// more of a token.  For now, we only support minting to the sender account
+message MsgMint {
+  option (cosmos.msg.v1.signer) = "metadata";
+  cosmos.base.v1beta1.Coin amount = 1 [
+    (gogoproto.moretags) = "yaml:\"amount\"",
+    (gogoproto.nullable) = false
+  ];
+  palomachain.paloma.valset.MsgMetadata metadata = 2
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
+}
+
+message MsgMintResponse {}
+
+// MsgBurn is the sdk.Msg type for allowing an admin account to burn
+// a token.  For now, we only support burning from the sender account.
+message MsgBurn {
+  option (cosmos.msg.v1.signer) = "metadata";
+  cosmos.base.v1beta1.Coin amount = 1 [
+    (gogoproto.moretags) = "yaml:\"amount\"",
+    (gogoproto.nullable) = false
+  ];
+  palomachain.paloma.valset.MsgMetadata metadata = 2
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
+}
+
+message MsgBurnResponse {}
+
+// MsgChangeAdmin is the sdk.Msg type for allowing an admin account to reassign
+// adminship of a denom to a new account
+message MsgChangeAdmin {
+  option (cosmos.msg.v1.signer) = "metadata";
+  string denom = 1 [ (gogoproto.moretags) = "yaml:\"denom\"" ];
+  string new_admin = 2 [ (gogoproto.moretags) = "yaml:\"new_admin\"" ];
+  palomachain.paloma.valset.MsgMetadata metadata = 3
+      [ 
+        (gogoproto.moretags) = "yaml:\"metadata\"",
+        (gogoproto.nullable) = false
+      ];
+}
+
+// MsgChangeAdminResponse defines the response structure for an executed
+// MsgChangeAdmin message.
+message MsgChangeAdminResponse {}
+
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  // authority is the address that controls the module (defaults to x/gov unless
+  // overwritten).
+  string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  // params defines the x/tokenfactory parameters to update.
+  //
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [ (gogoproto.nullable) = false ];
+
+  palomachain.paloma.valset.MsgMetadata metadata = 3
+      [ (gogoproto.nullable) = false ];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+message MsgUpdateParamsResponse {
+}
