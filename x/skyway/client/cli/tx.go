@@ -149,7 +149,6 @@ func CmdSetErc20ToTokenDenom() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msg)
 		},
 	}
-
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
