@@ -139,6 +139,7 @@ import (
 	palomamodulekeeper "github.com/palomachain/paloma/v2/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/v2/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/v2/x/scheduler"
+	schedulerbindings "github.com/palomachain/paloma/v2/x/scheduler/bindings"
 	schedulermodulekeeper "github.com/palomachain/paloma/v2/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/v2/x/scheduler/types"
 	skywaymodule "github.com/palomachain/paloma/v2/x/skyway"
@@ -754,6 +755,7 @@ func New(
 		panic("bankkeeper is not a BaseKeeper")
 	}
 	opts = append(opts, tokenfactorybindings.RegisterCustomPlugins(bbk, &app.TokenFactoryKeeper)...)
+	opts = append(opts, schedulerbindings.RegisterCustomPlugins(&app.SchedulerKeeper)...)
 	app.wasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),

@@ -10,11 +10,13 @@ const TypeMsgCreateJob = "create_job"
 
 var _ sdk.Msg = &MsgCreateJob{}
 
-func NewMsgCreateJob(creator string) *MsgCreateJob {
+func NewMsgCreateJob(creator string, j *Job) *MsgCreateJob {
 	return &MsgCreateJob{
 		Metadata: types.MsgMetadata{
 			Creator: creator,
+			Signers: []string{creator},
 		},
+		Job: j,
 	}
 }
 

@@ -8,7 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/palomachain/paloma/v2/x/scheduler/types"
-	vtypes "github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/spf13/cobra"
 )
 
@@ -58,13 +57,7 @@ func CmdCreateJob() *cobra.Command {
 			}
 
 			creator := clientCtx.GetFromAddress().String()
-			msg := &types.MsgCreateJob{
-				Job: job,
-				Metadata: vtypes.MsgMetadata{
-					Creator: creator,
-					Signers: []string{creator},
-				},
-			}
+			msg := types.NewMsgCreateJob(creator, job)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
