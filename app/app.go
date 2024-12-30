@@ -750,11 +750,11 @@ func New(
 			)
 		}),
 	}
-	bbk, ok := app.BankKeeper.(*bankkeeper.BaseKeeper)
+	bbk, ok := app.BankKeeper.(bankkeeper.BaseKeeper)
 	if !ok {
 		panic("bankkeeper is not a BaseKeeper")
 	}
-	opts = append(opts, tokenfactorybindings.RegisterCustomPlugins(bbk, &app.TokenFactoryKeeper)...)
+	opts = append(opts, tokenfactorybindings.RegisterCustomPlugins(&bbk, &app.TokenFactoryKeeper)...)
 	opts = append(opts, schedulerbindings.RegisterCustomPlugins(&app.SchedulerKeeper)...)
 	app.wasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
