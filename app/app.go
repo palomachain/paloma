@@ -139,6 +139,7 @@ import (
 	palomamodulekeeper "github.com/palomachain/paloma/v2/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/v2/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/v2/x/scheduler"
+	schedulerbindings "github.com/palomachain/paloma/v2/x/scheduler/bindings"
 	schedulermodulekeeper "github.com/palomachain/paloma/v2/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/v2/x/scheduler/types"
 	skywaymodule "github.com/palomachain/paloma/v2/x/skyway"
@@ -146,6 +147,7 @@ import (
 	skywaymodulekeeper "github.com/palomachain/paloma/v2/x/skyway/keeper"
 	skywaymoduletypes "github.com/palomachain/paloma/v2/x/skyway/types"
 	"github.com/palomachain/paloma/v2/x/tokenfactory"
+	tokenfactorybindings "github.com/palomachain/paloma/v2/x/tokenfactory/bindings"
 	tokenfactorymodulekeeper "github.com/palomachain/paloma/v2/x/tokenfactory/keeper"
 	tokenfactorymoduletypes "github.com/palomachain/paloma/v2/x/tokenfactory/types"
 	treasurymodule "github.com/palomachain/paloma/v2/x/treasury"
@@ -739,6 +741,21 @@ func New(
 		"cosmwasm_1_4",
 		"cosmwasm_2_0",
 	}
+
+	opts := []wasmkeeper.Option{
+		wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
+			return wasmkeeper.NewMessageHandlerChain(
+				old,
+				app.SchedulerKeeper.ExecuteWasmJobEventListener(),
+			)
+		}),
+	}
+	bbk, ok := app.BankKeeper.(bankkeeper.BaseKeeper)
+	if !ok {
+		panic("bankkeeper is not a BaseKeeper")
+	}
+	opts = append(opts, tokenfactorybindings.RegisterCustomPlugins(&bbk, &app.TokenFactoryKeeper)...)
+	opts = append(opts, schedulerbindings.RegisterCustomPlugins(&app.SchedulerKeeper)...)
 	app.wasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
@@ -757,12 +774,7 @@ func New(
 		wasmConfig,
 		wasmAvailableCapabilities,
 		authorityAddress,
-		wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
-			return wasmkeeper.NewMessageHandlerChain(
-				old,
-				app.SchedulerKeeper.ExecuteWasmJobEventListener(),
-			)
-		}),
+		opts...,
 	)
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(runtime.NewKVStoreService(keys[authzkeeper.StoreKey]), appCodec, app.MsgServiceRouter(), app.AccountKeeper)
