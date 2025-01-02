@@ -16,7 +16,31 @@ RUN \
   --mount=type=cache,target=/go/pkg/mod \
    --mount=type=cache,target=/root/.cache/go-build \
    cd /app && go build -o /palomad ./cmd/palomad
-  
+
+################################
+####     Static builder     ####
+################################
+FROM golang:1.22-alpine3.19 AS static-builder
+WORKDIR /app
+COPY . .
+RUN apk add --no-cache make git gcc linux-headers build-base curl
+
+RUN go mod download
+
+RUN WASMVM_VERSION=$(go list -m github.com/CosmWasm/wasmvm/v2 | cut -d ' ' -f 2) && \
+  wget https://github.com/CosmWasm/wasmvm/releases/download/$WASMVM_VERSION/libwasmvm_muslc.$(uname -m).a -O /lib/libwasmvm.$(uname -m).a
+
+RUN CGO_ENABLED=1 GOOS=linux go build -o ./build/palomad -tags 'netgo' -ldflags "\
+  -X github.com/cosmos/cosmos-sdk/version.Name=paloma \
+  -X github.com/cosmos/cosmos-sdk/version.AppName=palomad \
+  -X github.com/cosmos/cosmos-sdk/version.Version=$(git describe --tags) \
+  -X github.com/cosmos/cosmos-sdk/version.Commit=$(git log -1 --format='%H') \
+  -X 'github.com/cosmos/cosmos-sdk/version.BuildTags=netgo' \
+  -X github.com/cometbft/cometbft/version.TMCoreSemVer=$(go list -m github.com/cometbft/cometbft | sed 's:.* ::') \
+  -linkmode=external -extldflags '-Wl,-z,muldefs -static'" ./cmd/palomad
+
+ENTRYPOINT ["/app/build/palomad"]
+
 #################################
 ####    Local chain setup    ####
 #################################
