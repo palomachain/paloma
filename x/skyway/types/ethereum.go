@@ -3,7 +3,6 @@ package types
 import (
 	"bytes"
 	"encoding/hex"
-	"fmt"
 	"strings"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -11,6 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
 	gethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/palomachain/paloma/v2/util/libeth"
 )
 
 const (
@@ -64,25 +64,7 @@ func ZeroAddress() EthAddress {
 // Validates the input string as an Ethereum Address
 // Addresses must not be empty, have 42 character length, start with 0x and have 40 remaining characters in [0-9a-fA-F]
 func ValidateEthAddress(address string) error {
-	if address == "" {
-		return fmt.Errorf("empty")
-	}
-
-	// An auditor recommended we should check the error of hex.DecodeString, given that geth's HexToAddress ignores it
-
-	if has0xPrefix(address) {
-		address = address[2:]
-	}
-
-	if _, err := hex.DecodeString(address); err != nil {
-		return fmt.Errorf("invalid hex with error: %s", err)
-	}
-
-	if !gethcommon.IsHexAddress(address) {
-		return fmt.Errorf("address(%s) doesn't pass format validation", address)
-	}
-
-	return nil
+	return libeth.ValidateEthAddress(address)
 }
 
 // Performs validation on the wrapped string
@@ -179,10 +161,6 @@ func (i *InternalERC20Token) Add(o *InternalERC20Token) (*InternalERC20Token, er
 	}
 	sum := i.Amount.Add(o.Amount) // validation happens in NewInternalERC20Token()
 	return NewInternalERC20Token(sum, i.Contract.GetAddress().Hex(), i.ChainReferenceID)
-}
-
-func has0xPrefix(str string) bool {
-	return len(str) >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X')
 }
 
 func (m ERC20ToDenom) ValidateBasic() error {

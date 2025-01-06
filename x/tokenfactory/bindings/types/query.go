@@ -1,10 +1,6 @@
 package types
 
-type TokenFactoryQuery struct {
-	Token *TokenQuery `json:"token,omitempty"`
-}
-
-type TokenQuery struct {
+type Query struct {
 	FullDenom       *FullDenom       `json:"full_denom,omitempty"`
 	Admin           *DenomAdmin      `json:"admin,omitempty"`
 	Metadata        *GetMetadata     `json:"metadata,omitempty"`

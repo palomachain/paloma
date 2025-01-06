@@ -1,40 +1,43 @@
 package bindings
 
 import (
+	"context"
 	"encoding/json"
 
 	sdkerrors "cosmossdk.io/errors"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errtypes "github.com/cosmos/cosmos-sdk/types/errors"
 	bindingstypes "github.com/palomachain/paloma/v2/x/scheduler/bindings/types"
-	schedulerkeeper "github.com/palomachain/paloma/v2/x/scheduler/keeper"
+	schedulertypes "github.com/palomachain/paloma/v2/x/scheduler/types"
 )
 
+type Schedulerkeeper interface {
+	GetJob(context.Context, string) (*schedulertypes.Job, error)
+	ExecuteJob(context.Context, string, []byte, sdk.AccAddress, sdk.AccAddress) (uint64, error)
+}
+
 type QueryPlugin struct {
-	scheduler *schedulerkeeper.Keeper
+	k Schedulerkeeper
 }
 
-func NewQueryPlugin(s *schedulerkeeper.Keeper) *QueryPlugin {
-	return &QueryPlugin{
-		scheduler: s,
-	}
+func NewQueryPlugin(k Schedulerkeeper) wasmkeeper.CustomQuerier {
+	return customQuerier(&QueryPlugin{
+		k: k,
+	})
 }
 
-func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessage) ([]byte, error) {
+func customQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessage) ([]byte, error) {
 	return func(ctx sdk.Context, request json.RawMessage) ([]byte, error) {
-		var contractQuery bindingstypes.SchedulerQuery
-		if err := json.Unmarshal(request, &contractQuery); err != nil {
+		var q bindingstypes.Query
+		if err := json.Unmarshal(request, &q); err != nil {
 			return nil, sdkerrors.Wrap(err, "query")
 		}
-		if contractQuery.Query == nil {
-			return nil, sdkerrors.Wrap(errtypes.ErrUnknownRequest, "nil query field")
-		}
-		queryType := contractQuery.Query
 
 		switch {
-		case queryType.JobById != nil:
-			j, err := qp.scheduler.GetJob(ctx, queryType.JobById.JobId)
+		case q.JobById != nil:
+			j, err := qp.k.GetJob(ctx, q.JobById.JobId)
 			if err != nil {
 				return nil, sdkerrors.Wrap(err, "failed to query for job")
 			}

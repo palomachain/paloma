@@ -1,11 +1,7 @@
 package types
 
-type SchedulerQuery struct {
-	Query *SchedulerQueryType `json:"query,omitempty"`
-}
-
-type SchedulerQueryType struct {
-	JobById *JobByIdRequest `json:"full_denom,omitempty"`
+type Query struct {
+	JobById *JobByIdRequest `json:"job_id,omitempty"`
 }
 
 type JobByIdRequest struct {
