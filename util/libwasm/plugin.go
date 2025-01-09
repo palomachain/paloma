@@ -60,6 +60,7 @@ func NewMessenger(
 
 func (h Messenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) (a []sdk.Event, b [][]byte, c [][]*codectypes.Any, err error) {
 	logger := liblog.FromSDKLogger(ctx.Logger()).WithComponent("wasm-message-decorator")
+	logger.Debug("Dispatching message...", "contract", contractAddr, "msg", msg)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -87,9 +88,12 @@ func (h Messenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, con
 		case contractMsg.TokenFactory != nil:
 			return h.tokenfactory.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
 		}
+
+		logger.Debug("Calling legacy fallback message handler...")
+		return h.legacyFallback.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
 	}
 
-	logger.Debug("Calling fallback message handler...")
+	logger.Debug("No handler found, forwarding to chain...")
 	return h.wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
 }
 
