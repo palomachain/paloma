@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/log"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -21,6 +22,7 @@ type Messenger struct {
 	skyway         wasmkeeper.Messenger
 	tokenfactory   wasmkeeper.Messenger
 	wrapped        wasmkeeper.Messenger
+	log            log.Logger
 }
 
 type Querier struct {
@@ -42,6 +44,7 @@ type CustomQuery struct {
 }
 
 func NewMessenger(
+	log log.Logger,
 	legacyFallback wasmkeeper.Messenger,
 	scheduler wasmkeeper.Messenger,
 	skyway wasmkeeper.Messenger,
@@ -49,6 +52,7 @@ func NewMessenger(
 ) func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 		return &Messenger{
+			log:            log,
 			legacyFallback: legacyFallback,
 			scheduler:      scheduler,
 			skyway:         skyway,
@@ -59,7 +63,7 @@ func NewMessenger(
 }
 
 func (h Messenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) (a []sdk.Event, b [][]byte, c [][]*codectypes.Any, err error) {
-	logger := liblog.FromSDKLogger(ctx.Logger()).WithComponent("wasm-message-decorator")
+	logger := liblog.FromSDKLogger(h.log).WithComponent("wasm-message-decorator")
 	logger.Debug("Dispatching message...", "contract", contractAddr, "msg", msg)
 
 	defer func() {

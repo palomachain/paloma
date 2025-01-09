@@ -399,7 +399,7 @@ func New(
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
-	scopedConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
+	scopegdConsensusKeeper := app.CapabilityKeeper.ScopeToModule(consensusmoduletypes.ModuleName)
 
 	app.CapabilityKeeper.Seal()
 
@@ -750,6 +750,7 @@ func New(
 	}
 	messengerDecoratorOpt := wasmkeeper.WithMessageHandlerDecorator(
 		buildWasmMessageDecorator(
+			logger,
 			&app.SchedulerKeeper,
 			&app.SkywayKeeper,
 			&bbk,
@@ -1327,6 +1328,7 @@ func (a *App) Configurator() module.Configurator {
 }
 
 func buildWasmMessageDecorator(
+	log log.Logger,
 	scheduler *schedulermodulekeeper.Keeper,
 	skyway *skywaymodulekeeper.Keeper,
 	bank *bankkeeper.BaseKeeper,
@@ -1336,6 +1338,7 @@ func buildWasmMessageDecorator(
 	skwSrv := skywaymodulekeeper.NewMsgServerImpl(*skyway)
 
 	return libwasm.NewMessenger(
+		log,
 		schedulerbindings.NewLegacyMessenger(scheduler),
 		schedulerbindings.NewMessenger(scheduler, srv),
 		skywaybindings.NewMessenger(skwSrv),
