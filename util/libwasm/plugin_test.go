@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"cosmossdk.io/log"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -30,6 +31,7 @@ func TestDispatchMsg(t *testing.T) {
 	contractAddr := sdk.AccAddress([]byte("test_address"))
 	contractIBCPortID := "test_port"
 
+	logger := log.NewNopLogger()
 	mockScheduler := new(MockMessenger)
 	mockSkyway := new(MockMessenger)
 	mockTokenFactory := new(MockMessenger)
@@ -37,6 +39,7 @@ func TestDispatchMsg(t *testing.T) {
 	mockWrapped := new(MockMessenger)
 
 	h := Messenger{
+		log:            logger,
 		legacyFallback: mockLegacyFallback,
 		scheduler:      mockScheduler,
 		skyway:         mockSkyway,

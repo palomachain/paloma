@@ -31,7 +31,7 @@ func (c CreateJob) ValidateBasic() error {
 	return c.Job.ValidateBasic()
 }
 
-// ExecyteJob is a message to execute a job.
+// ExecuteJob is a message to execute a job.
 // JobId is the unique identifier for the job.
 // Sender is the address of the sender.
 // Payload is the data to be sent to the contract.
