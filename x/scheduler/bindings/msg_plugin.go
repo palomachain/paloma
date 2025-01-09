@@ -1,6 +1,7 @@
 package bindings
 
 import (
+	"context"
 	"encoding/json"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -8,46 +9,46 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	errtypes "github.com/cosmos/cosmos-sdk/types/errors"
 	bindingstypes "github.com/palomachain/paloma/v2/x/scheduler/bindings/types"
-	schedulerkeeper "github.com/palomachain/paloma/v2/x/scheduler/keeper"
 	schedulertypes "github.com/palomachain/paloma/v2/x/scheduler/types"
 )
 
-func CustomMessageDecorator(scheduler *schedulerkeeper.Keeper) func(wasmkeeper.Messenger) wasmkeeper.Messenger {
-	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
-		return &CustomMessenger{
-			wrapped:   old,
-			scheduler: scheduler,
-		}
+type SchedulerMsgServer interface {
+	CreateJob(context.Context, *schedulertypes.MsgCreateJob) (*schedulertypes.MsgCreateJobResponse, error)
+}
+
+func NewMessenger(k Schedulerkeeper, ms SchedulerMsgServer) wasmkeeper.Messenger {
+	return &customMessenger{
+		ms: ms,
+		k:  k,
 	}
 }
 
-type CustomMessenger struct {
-	wrapped   wasmkeeper.Messenger
-	scheduler *schedulerkeeper.Keeper
+type customMessenger struct {
+	ms SchedulerMsgServer
+	k  Schedulerkeeper
 }
 
-var _ wasmkeeper.Messenger = (*CustomMessenger)(nil)
+var _ wasmkeeper.Messenger = (*customMessenger)(nil)
 
-func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
-	if msg.Custom != nil {
-		var contractMsg bindingstypes.SchedulerMsg
+func (m *customMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, _ string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
+	if msg.Custom == nil {
+		var contractMsg bindingstypes.Message
 		if err := json.Unmarshal(msg.Custom, &contractMsg); err != nil {
 			return nil, nil, nil, sdkerrors.Wrap(err, "scheduler msg")
 		}
-		if contractMsg.Message == nil {
-			return nil, nil, nil, sdkerrors.Wrap(errtypes.ErrUnknownRequest, "nil message field")
-		}
-		msgType := contractMsg.Message
-		if msgType.CreateJob != nil {
-			return m.createJob(ctx, contractAddr, msgType.CreateJob)
+		switch {
+		case contractMsg.CreateJob != nil:
+			return m.createJob(ctx, contractAddr, contractMsg.CreateJob)
+		case contractMsg.ExecuteJob != nil:
+			return m.executeJob(ctx, contractAddr, contractMsg.ExecuteJob)
 		}
 	}
-	return m.wrapped.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
+
+	return nil, nil, nil, nil
 }
 
-func (m *CustomMessenger) createJob(ctx sdk.Context, contractAddr sdk.AccAddress, createJob *bindingstypes.CreateJob) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
+func (m *customMessenger) createJob(ctx sdk.Context, contractAddr sdk.AccAddress, createJob *bindingstypes.CreateJob) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
 	if createJob == nil {
 		return nil, nil, nil, wasmvmtypes.InvalidRequest{Err: "null create job"}
 	}
@@ -71,13 +72,12 @@ func (m *CustomMessenger) createJob(ctx sdk.Context, contractAddr sdk.AccAddress
 		return nil, nil, nil, sdkerrors.Wrap(err, "failed to validate job")
 	}
 
-	msgServer := schedulerkeeper.NewMsgServerImpl(m.scheduler)
 	msgCreateJob := schedulertypes.NewMsgCreateJob(contractAddr.String(), j)
 	if err := msgCreateJob.ValidateBasic(); err != nil {
 		return nil, nil, nil, sdkerrors.Wrap(err, "failed validating MsgCreateJob")
 	}
 
-	resp, err := msgServer.CreateJob(ctx, msgCreateJob)
+	resp, err := m.ms.CreateJob(ctx, msgCreateJob)
 	if err != nil {
 		return nil, nil, nil, sdkerrors.Wrap(err, "failed to create job")
 	}
@@ -87,4 +87,23 @@ func (m *CustomMessenger) createJob(ctx sdk.Context, contractAddr sdk.AccAddress
 		return nil, nil, nil, sdkerrors.Wrap(err, "failed to marshal response")
 	}
 	return nil, [][]byte{bz}, nil, nil
+}
+
+func (m *customMessenger) executeJob(ctx sdk.Context, contractAddr sdk.AccAddress, e *bindingstypes.ExecuteJob) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
+	if len(e.JobID) == 0 {
+		return nil, nil, nil, wasmvmtypes.InvalidRequest{Err: "invalid job id"}
+	}
+
+	if len(e.Payload) == 0 {
+		return nil, nil, nil, wasmvmtypes.InvalidRequest{Err: "missing payload"}
+	}
+
+	// We use the keeper method here instead of going via msg server,
+	// as that will allow us to set the sender contract address.
+	_, err := m.k.ExecuteJob(ctx, e.JobID, e.Payload, contractAddr, contractAddr)
+	if err != nil {
+		return nil, nil, nil, sdkerrors.Wrap(err, "failed to trigger job execution.")
+	}
+
+	return nil, nil, nil, nil
 }

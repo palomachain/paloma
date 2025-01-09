@@ -1,13 +1,14 @@
 package types
 
-type SchedulerMsg struct {
-	Message *SchedulerMsgType `json:"scheduler_msg_type,omitempty"`
-}
+import "fmt"
 
-type SchedulerMsgType struct {
+type Message struct {
 	// Contracts can create new jobs. Any number of jobs
 	// may be created, so lang as job IDs stay unique.
 	CreateJob *CreateJob `json:"create_job,omitempty"`
+
+	// Contracts can execute jobs.
+	ExecuteJob *ExecuteJob `json:"execute_job,omitempty"`
 }
 
 // CreateJob is a message to create a new job.
@@ -20,4 +21,38 @@ type SchedulerMsgType struct {
 // IsMEV indicates whether the job should be routed via an MEV pool.
 type CreateJob struct {
 	Job *Job `json:"job,omitempty"`
+}
+
+func (c CreateJob) ValidateBasic() error {
+	if c.Job == nil {
+		return fmt.Errorf("job cannot be nil")
+	}
+
+	return c.Job.ValidateBasic()
+}
+
+// ExecuteJob is a message to execute a job.
+// JobId is the unique identifier for the job.
+// Sender is the address of the sender.
+// Payload is the data to be sent to the contract.
+type ExecuteJob struct {
+	JobID   string `json:"job_id"`
+	Sender  string `json:"sender"`
+	Payload []byte `json:"payload"`
+}
+
+func (j ExecuteJob) ValidateBasic() error {
+	if j.JobID == "" {
+		return fmt.Errorf("job_id cannot be empty")
+	}
+
+	if j.Sender == "" {
+		return fmt.Errorf("sender cannot be empty")
+	}
+
+	if len(j.Payload) < 1 {
+		return fmt.Errorf("payload cannot be empty")
+	}
+
+	return nil
 }

@@ -124,6 +124,7 @@ import (
 	chainparams "github.com/palomachain/paloma/v2/app/params"
 	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
 	"github.com/palomachain/paloma/v2/util/libcons"
+	"github.com/palomachain/paloma/v2/util/libwasm"
 	consensusmodule "github.com/palomachain/paloma/v2/x/consensus"
 	consensusmodulekeeper "github.com/palomachain/paloma/v2/x/consensus/keeper"
 	consensusmoduletypes "github.com/palomachain/paloma/v2/x/consensus/types"
@@ -143,6 +144,7 @@ import (
 	schedulermodulekeeper "github.com/palomachain/paloma/v2/x/scheduler/keeper"
 	schedulermoduletypes "github.com/palomachain/paloma/v2/x/scheduler/types"
 	skywaymodule "github.com/palomachain/paloma/v2/x/skyway"
+	skywaybindings "github.com/palomachain/paloma/v2/x/skyway/bindings"
 	skywayclient "github.com/palomachain/paloma/v2/x/skyway/client"
 	skywaymodulekeeper "github.com/palomachain/paloma/v2/x/skyway/keeper"
 	skywaymoduletypes "github.com/palomachain/paloma/v2/x/skyway/types"
@@ -742,20 +744,33 @@ func New(
 		"cosmwasm_2_0",
 	}
 
-	opts := []wasmkeeper.Option{
-		wasmkeeper.WithMessageHandlerDecorator(func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
-			return wasmkeeper.NewMessageHandlerChain(
-				old,
-				app.SchedulerKeeper.ExecuteWasmJobEventListener(),
-			)
-		}),
-	}
 	bbk, ok := app.BankKeeper.(bankkeeper.BaseKeeper)
 	if !ok {
 		panic("bankkeeper is not a BaseKeeper")
 	}
-	opts = append(opts, tokenfactorybindings.RegisterCustomPlugins(&bbk, &app.TokenFactoryKeeper)...)
-	opts = append(opts, schedulerbindings.RegisterCustomPlugins(&app.SchedulerKeeper)...)
+	messengerDecoratorOpt := wasmkeeper.WithMessageHandlerDecorator(
+		buildWasmMessageDecorator(
+			logger,
+			&app.SchedulerKeeper,
+			&app.SkywayKeeper,
+			&bbk,
+			&app.TokenFactoryKeeper,
+		),
+	)
+	queryPluginOpt := wasmkeeper.WithQueryPlugins(&wasmkeeper.QueryPlugins{
+		Custom: buildWasmQuerier(
+			&app.SchedulerKeeper,
+			&app.SkywayKeeper,
+			&bbk,
+			&app.TokenFactoryKeeper,
+		),
+	})
+
+	opts := []wasmkeeper.Option{
+		messengerDecoratorOpt,
+		queryPluginOpt,
+	}
+
 	app.wasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
@@ -1310,4 +1325,36 @@ func BlockedAddresses() map[string]bool {
 
 func (a *App) Configurator() module.Configurator {
 	return a.configurator
+}
+
+func buildWasmMessageDecorator(
+	log log.Logger,
+	scheduler *schedulermodulekeeper.Keeper,
+	skyway *skywaymodulekeeper.Keeper,
+	bank *bankkeeper.BaseKeeper,
+	tokenfactory *tokenfactorymodulekeeper.Keeper,
+) func(wasmkeeper.Messenger) wasmkeeper.Messenger {
+	srv := schedulermodulekeeper.NewMsgServerImpl(scheduler)
+	skwSrv := skywaymodulekeeper.NewMsgServerImpl(*skyway)
+
+	return libwasm.NewMessenger(
+		log,
+		schedulerbindings.NewLegacyMessenger(scheduler),
+		schedulerbindings.NewMessenger(scheduler, srv),
+		skywaybindings.NewMessenger(skwSrv),
+		tokenfactorybindings.NewMessenger(bank, tokenfactory),
+	)
+}
+
+func buildWasmQuerier(
+	scheduler schedulerbindings.Schedulerkeeper,
+	skyway skywaybindings.SkywayKeeper,
+	b *bankkeeper.BaseKeeper,
+	tfk *tokenfactorymodulekeeper.Keeper,
+) wasmkeeper.CustomQuerier {
+	return libwasm.NewQuerier(
+		schedulerbindings.NewQueryPlugin(scheduler),
+		skywaybindings.NewQueryPlugin(skyway),
+		tokenfactorybindings.NewQueryPlugin(b, tfk),
+	)
 }

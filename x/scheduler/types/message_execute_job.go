@@ -10,9 +10,10 @@ const TypeMsgExecuteJob = "execute_job"
 
 var _ sdk.Msg = &MsgExecuteJob{}
 
-func NewMsgExecuteJob(creator string, jobID string) *MsgExecuteJob {
+func NewMsgExecuteJob(creator string, jobID string, payload []byte) *MsgExecuteJob {
 	return &MsgExecuteJob{
-		JobID: jobID,
+		JobID:   jobID,
+		Payload: payload,
 		Metadata: vtypes.MsgMetadata{
 			Creator: creator,
 		},

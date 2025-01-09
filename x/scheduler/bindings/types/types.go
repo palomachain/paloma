@@ -1,5 +1,7 @@
 package types
 
+import "fmt"
+
 // JobId is a unique identifier for the job.
 // ChainType is the type of chain the job is for (e.g. "evm").
 // ChainReferenceId is the reference for the chain (e.g. "eth-main").
@@ -15,4 +17,23 @@ type Job struct {
 	Payload           string `json:"payload"`
 	PayloadModifiable bool   `json:"payload_modifiable"`
 	IsMEV             bool   `json:"is_mev"`
+}
+
+func (j Job) ValidateBasic() error {
+	if j.JobId == "" {
+		return fmt.Errorf("invalid job id")
+	}
+	if j.ChainType == "" {
+		return fmt.Errorf("invalid chain type")
+	}
+	if j.ChainReferenceId == "" {
+		return fmt.Errorf("invalid chain reference id")
+	}
+	if j.Definition == "" {
+		return fmt.Errorf("invalid definition")
+	}
+	if j.Payload == "" {
+		return fmt.Errorf("invalid payload")
+	}
+	return nil
 }

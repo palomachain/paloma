@@ -4,11 +4,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 )
 
-type TokenFactoryMsg struct {
-	Token *TokenMsg `json:"token,omitempty"`
-}
-
-type TokenMsg struct {
+type Message struct {
 	/// Contracts can create denoms, namespaced under the contract's address.
 	/// A contract may create any number of independent sub-denoms.
 	CreateDenom *CreateDenom `json:"create_denom,omitempty"`
