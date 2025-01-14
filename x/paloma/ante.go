@@ -143,3 +143,10 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 
 	return next(ctx, tx, simulate)
 }
+
+// TxFeeSkipper is a TxFeeChecker that skips fee deduction entirely.
+// Every transaction will be considered valid and no fee will be deducted.
+// This also means that every transaction will be prioritized equally.
+func TxFeeSkipper(ctx sdk.Context, tx sdk.Tx) (sdk.Coins, int64, error) {
+	return sdk.NewCoins(), 42, nil
+}
