@@ -265,3 +265,37 @@ func Test_VerifyAuthorisedSignatureDecorator(t *testing.T) {
 		})
 	}
 }
+
+func Test_TxFeeSkipper(t *testing.T) {
+	t.Run("with no msgs in tx", func(t *testing.T) {
+		ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+		tx := &tx{
+			msgs: []sdk.Msg{
+				&types.MsgAddStatusUpdate{
+					Status: "bar",
+					Level:  0,
+					Metadata: vtypes.MsgMetadata{
+						Creator: "foo",
+						Signers: []string{"foo"},
+					},
+				},
+			},
+		}
+		fee, p, err := paloma.TxFeeSkipper(ctx, tx)
+
+		require.Equal(t, sdk.Coins{}, fee)
+		require.True(t, fee.IsZero())
+		require.Equal(t, int64(42), p)
+		require.NoError(t, err)
+	})
+
+	t.Run("with nil tx", func(t *testing.T) {
+		ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+		fee, p, err := paloma.TxFeeSkipper(ctx, nil)
+
+		require.Equal(t, sdk.Coins{}, fee)
+		require.True(t, fee.IsZero())
+		require.Equal(t, int64(42), p)
+		require.NoError(t, err)
+	})
+}

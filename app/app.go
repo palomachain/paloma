@@ -1057,6 +1057,7 @@ func New(
 			SignModeHandler: txConfig.SignModeHandler(),
 			FeegrantKeeper:  app.FeeGrantKeeper,
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
+			TxFeeChecker:    palomamodule.TxFeeSkipper,
 		},
 	)
 	if err != nil {
