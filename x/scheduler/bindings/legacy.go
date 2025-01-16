@@ -29,7 +29,6 @@ type customLegacyMessenger struct {
 
 type executeJobWasmEvent struct {
 	JobID   string `json:"job_id"`
-	Sender  string `json:"sender"`
 	Payload []byte `json:"payload"`
 }
 
