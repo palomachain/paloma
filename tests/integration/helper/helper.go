@@ -1,4 +1,4 @@
-package integration
+package helper
 
 import (
 	storetypes "cosmossdk.io/store/types"
@@ -33,14 +33,14 @@ import (
 var maccPerms = map[string][]string{
 	authtypes.FeeCollectorName:     nil,
 	distrtypes.ModuleName:          nil,
+	govtypes.ModuleName:            {authtypes.Burner},
 	minttypes.ModuleName:           {authtypes.Minter},
 	stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 	stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-	govtypes.ModuleName:            {authtypes.Burner},
 }
 
-// GetMaccPerms returns a copy of the module account permissions
-func GetMaccPerms() map[string][]string {
+// getMaccPerms returns a copy of the module account permissions
+func getMaccPerms() map[string][]string {
 	dupMaccPerms := make(map[string][]string)
 	for k, v := range maccPerms {
 		dupMaccPerms[k] = v
@@ -48,10 +48,10 @@ func GetMaccPerms() map[string][]string {
 	return dupMaccPerms
 }
 
-// BlockedAddresses returns all the app's blocked account addresses.
-func BlockedAddresses() map[string]bool {
+// blockedAddresses returns all the app's blocked account addresses.
+func blockedAddresses() map[string]bool {
 	modAccAddrs := make(map[string]bool)
-	for acc := range GetMaccPerms() {
+	for acc := range getMaccPerms() {
 		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
 	}
 
@@ -61,8 +61,8 @@ func BlockedAddresses() map[string]bool {
 	return modAccAddrs
 }
 
-// InitParamsKeeper init params keeper and its subspaces
-func InitParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper {
+// initParamsKeeper init params keeper and its subspaces
+func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper {
 	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
 
 	keyTable := ibcclienttypes.ParamKeyTable()
@@ -95,7 +95,7 @@ func InitParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 }
 
 // NOTE: This is solely to be used for testing purposes.
-func GetSubspace(moduleName string, paramsKeeper paramskeeper.Keeper) paramstypes.Subspace {
+func getSubspace(moduleName string, paramsKeeper paramskeeper.Keeper) paramstypes.Subspace {
 	subspace, _ := paramsKeeper.GetSubspace(moduleName)
 	return subspace
 }

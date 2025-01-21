@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	g "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/palomachain/paloma/v2/tests/integration/helper"
 	keepertest "github.com/palomachain/paloma/v2/testutil/keeper"
 	"github.com/palomachain/paloma/v2/testutil/nullify"
 	"github.com/palomachain/paloma/v2/x/evm"
@@ -37,12 +38,12 @@ var _ = g.Describe("genesis", func() {
 	var genesisState types.GenesisState
 	var k *keeper.Keeper
 	var ctx sdk.Context
-	var a *fixture
+	var a *helper.Fixture
 
 	g.BeforeEach(func() {
-		a = initFixture(t)
-		ctx = a.ctx.WithBlockHeight(5)
-		k = &a.evmKeeper
+		a = helper.InitFixture(t)
+		ctx = a.Ctx.WithBlockHeight(5)
+		k = &a.EvmKeeper
 	})
 
 	g.BeforeEach(func() {
@@ -71,7 +72,7 @@ var _ = g.Describe("genesis", func() {
 							[]byte("abc"),
 						)
 						Expect(err).To(BeNil())
-						err = a.evmKeeper.SetFeeManagerAddress(ctx, ci.ChainReferenceID, cDummyFeeMgrAddress)
+						err = a.EvmKeeper.SetFeeManagerAddress(ctx, ci.ChainReferenceID, cDummyFeeMgrAddress)
 						require.NoError(t, err)
 					}
 				}

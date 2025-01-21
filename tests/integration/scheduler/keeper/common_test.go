@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	xchain "github.com/palomachain/paloma/v2/internal/x-chain"
 	xchainmocks "github.com/palomachain/paloma/v2/internal/x-chain/mocks"
+	"github.com/palomachain/paloma/v2/tests/integration/helper"
 	"github.com/palomachain/paloma/v2/x/scheduler/keeper"
 	"github.com/palomachain/paloma/v2/x/scheduler/types"
 	"github.com/stretchr/testify/mock"
@@ -24,9 +25,9 @@ var _ = Describe("jobs!", func() {
 	var ctx sdk.Context
 	BeforeEach(func() {
 		t := GinkgoT()
-		f := initFixture(t)
-		k = &f.schedulerKeeper
-		ctx = f.ctx.WithBlockHeight(5)
+		f := helper.InitFixture(t)
+		k = &f.SchedulerKeeper
+		ctx = f.Ctx.WithBlockHeight(5)
 	})
 
 	Context("Verify the validate basics on the job", func() {

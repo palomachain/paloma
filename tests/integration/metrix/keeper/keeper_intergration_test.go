@@ -10,6 +10,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/palomachain/paloma/v2/tests/integration/helper"
 	"github.com/palomachain/paloma/v2/testutil"
 	utilkeeper "github.com/palomachain/paloma/v2/util/keeper"
 	"github.com/palomachain/paloma/v2/util/palomath"
@@ -23,25 +24,25 @@ func TestGenesisGinkgo(t *testing.T) {
 }
 
 var _ = Describe("updating uptime", func() {
-	var a *fixture
+	var a *helper.Fixture
 	var ctx sdk.Context
 	var validators []stakingtypes.Validator
 	var cons []sdk.ConsAddress
 	var uptimes []math.LegacyDec
 	BeforeEach(func() {
 		t := GinkgoT()
-		a = initFixture(t)
-		ctx = a.ctx.WithBlockHeight(5)
+		a = helper.InitFixture(t)
+		ctx = a.Ctx.WithBlockHeight(5)
 		validators := testutil.GenValidators(3, 1000)
 		for _, v := range validators {
-			bz, err := utilkeeper.ValAddressFromBech32(a.metrixkeeper.AddressCodec, v.GetOperator())
+			bz, err := utilkeeper.ValAddressFromBech32(a.MetrixKeeper.AddressCodec, v.GetOperator())
 			Expect(err).To(BeNil())
-			r, err := a.metrixkeeper.GetValidatorMetrics(ctx, bz)
+			r, err := a.MetrixKeeper.GetValidatorMetrics(ctx, bz)
 			Expect(r).To(BeNil())
 			Expect(err).To(BeNil())
 
-			a.stakingKeeper.SetValidator(ctx, v)
-			a.stakingKeeper.SetValidatorByConsAddr(ctx, v)
+			a.StakingKeeper.SetValidator(ctx, v)
+			a.StakingKeeper.SetValidatorByConsAddr(ctx, v)
 		}
 
 		cons = make([]sdk.ConsAddress, len(validators))
@@ -51,10 +52,10 @@ var _ = Describe("updating uptime", func() {
 			Expect(err).To(BeNil())
 		}
 
-		a.slashingKeeper.SetValidatorSigningInfo(ctx, cons[0], slashingtypes.NewValidatorSigningInfo(cons[0], 0, 0, time.Time{}, false, 1))
-		a.slashingKeeper.SetValidatorSigningInfo(ctx, cons[1], slashingtypes.NewValidatorSigningInfo(cons[1], 0, 0, time.Time{}, false, 10))
-		a.slashingKeeper.SetValidatorSigningInfo(ctx, cons[2], slashingtypes.NewValidatorSigningInfo(cons[2], 0, 0, time.Time{}, false, 42))
-		a.metrixkeeper.UpdateUptime(ctx)
+		a.SlashingKeeper.SetValidatorSigningInfo(ctx, cons[0], slashingtypes.NewValidatorSigningInfo(cons[0], 0, 0, time.Time{}, false, 1))
+		a.SlashingKeeper.SetValidatorSigningInfo(ctx, cons[1], slashingtypes.NewValidatorSigningInfo(cons[1], 0, 0, time.Time{}, false, 10))
+		a.SlashingKeeper.SetValidatorSigningInfo(ctx, cons[2], slashingtypes.NewValidatorSigningInfo(cons[2], 0, 0, time.Time{}, false, 42))
+		a.MetrixKeeper.UpdateUptime(ctx)
 	})
 
 	Context("with nonexisting validator", func() {
@@ -65,9 +66,9 @@ var _ = Describe("updating uptime", func() {
 				math.LegacyMustNewDecFromStr("0.58"),
 			}
 			for i, v := range validators {
-				bz, err := utilkeeper.ValAddressFromBech32(a.metrixkeeper.AddressCodec, v.GetOperator())
+				bz, err := utilkeeper.ValAddressFromBech32(a.MetrixKeeper.AddressCodec, v.GetOperator())
 				Expect(err).To(BeNil())
-				r, err := a.metrixkeeper.GetValidatorMetrics(ctx, bz)
+				r, err := a.MetrixKeeper.GetValidatorMetrics(ctx, bz)
 				Expect(r).To(Not(BeNil()))
 				Expect(err).To(BeNil())
 				Expect(r.Uptime).To(Equal(uptimes[i]))
@@ -77,17 +78,19 @@ var _ = Describe("updating uptime", func() {
 })
 
 var _ = Describe("updating feature set", func() {
-	var a *fixture
+	var a *helper.Fixture
 	var ctx sdk.Context
 	var snapshot *valsettypes.Snapshot
-	validators := testutil.GenValidators(3, 1000)
+	var validators []stakingtypes.Validator
 	BeforeEach(func() {
 		t := GinkgoT()
-		a = initFixture(t)
-		ctx = a.ctx.WithBlockHeight(5)
+		a = helper.InitFixture(t)
+		ctx = a.Ctx.WithBlockHeight(5)
+		validators = testutil.GenValidators(3, 1000)
 		Address := make([]sdk.ValAddress, 3)
 		for i := 0; i < 3; i++ {
-			bz, _ := utilkeeper.ValAddressFromBech32(a.metrixkeeper.AddressCodec, validators[i].GetOperator())
+			bz, err := utilkeeper.ValAddressFromBech32(a.MetrixKeeper.AddressCodec, validators[i].GetOperator())
+			Expect(err).To(BeNil())
 			Address[i] = bz
 		}
 		snapshot = &valsettypes.Snapshot{
@@ -150,15 +153,15 @@ var _ = Describe("updating feature set", func() {
 	Context("with no existing records", func() {
 		It("adds new records", func() {
 			for _, v := range validators {
-				bz, err := utilkeeper.ValAddressFromBech32(a.metrixkeeper.AddressCodec, v.GetOperator())
+				bz, err := utilkeeper.ValAddressFromBech32(a.MetrixKeeper.AddressCodec, v.GetOperator())
 				Expect(err).To(BeNil())
-				r, err := a.metrixkeeper.GetValidatorMetrics(ctx, bz)
+				r, err := a.MetrixKeeper.GetValidatorMetrics(ctx, bz)
 				Expect(r).To(BeNil())
 				Expect(err).To(BeNil())
-				a.stakingKeeper.SetValidator(ctx, v)
-				a.stakingKeeper.SetValidatorByConsAddr(ctx, v)
+				a.StakingKeeper.SetValidator(ctx, v)
+				a.StakingKeeper.SetValidatorByConsAddr(ctx, v)
 			}
-			a.metrixkeeper.OnSnapshotBuilt(ctx, snapshot)
+			a.MetrixKeeper.OnSnapshotBuilt(ctx, snapshot)
 
 			featureSets := []math.LegacyDec{
 				math.LegacyMustNewDecFromStr("1"),
@@ -166,9 +169,9 @@ var _ = Describe("updating feature set", func() {
 				math.LegacyMustNewDecFromStr("0.33333333"),
 			}
 			for i, v := range validators {
-				bz, err := utilkeeper.ValAddressFromBech32(a.metrixkeeper.AddressCodec, v.GetOperator())
+				bz, err := utilkeeper.ValAddressFromBech32(a.MetrixKeeper.AddressCodec, v.GetOperator())
 				Expect(err).To(BeNil())
-				r, err := a.metrixkeeper.GetValidatorMetrics(ctx, bz)
+				r, err := a.MetrixKeeper.GetValidatorMetrics(ctx, bz)
 				Expect(r).To(Not(BeNil()))
 				Expect(err).To(BeNil())
 				Expect(r.FeatureSet).To(Equal(featureSets[i]))
@@ -179,12 +182,12 @@ var _ = Describe("updating feature set", func() {
 	Context("with existing records and no change", func() {
 		It("doesn't change records", func() {
 			for _, v := range validators {
-				a.stakingKeeper.SetValidator(ctx, v)
-				a.stakingKeeper.SetValidatorByConsAddr(ctx, v)
+				a.StakingKeeper.SetValidator(ctx, v)
+				a.StakingKeeper.SetValidatorByConsAddr(ctx, v)
 			}
 
-			a.metrixkeeper.OnSnapshotBuilt(ctx, snapshot)
-			a.metrixkeeper.OnSnapshotBuilt(ctx, snapshot)
+			a.MetrixKeeper.OnSnapshotBuilt(ctx, snapshot)
+			a.MetrixKeeper.OnSnapshotBuilt(ctx, snapshot)
 
 			featureSets := []math.LegacyDec{
 				math.LegacyMustNewDecFromStr("1"),
@@ -192,9 +195,9 @@ var _ = Describe("updating feature set", func() {
 				math.LegacyMustNewDecFromStr("0.33333333"),
 			}
 			for i, v := range validators {
-				bz, err := utilkeeper.ValAddressFromBech32(a.metrixkeeper.AddressCodec, v.GetOperator())
+				bz, err := utilkeeper.ValAddressFromBech32(a.MetrixKeeper.AddressCodec, v.GetOperator())
 				Expect(err).To(BeNil())
-				r, err := a.metrixkeeper.GetValidatorMetrics(ctx, bz)
+				r, err := a.MetrixKeeper.GetValidatorMetrics(ctx, bz)
 				Expect(r).To(Not(BeNil()))
 				Expect(err).To(BeNil())
 				Expect(r.FeatureSet).To(Equal(featureSets[i]))
@@ -205,16 +208,16 @@ var _ = Describe("updating feature set", func() {
 	Context("with existing records and changed traits", func() {
 		It("updates records", func() {
 			for _, v := range validators {
-				a.stakingKeeper.SetValidator(ctx, v)
-				a.stakingKeeper.SetValidatorByConsAddr(ctx, v)
+				a.StakingKeeper.SetValidator(ctx, v)
+				a.StakingKeeper.SetValidatorByConsAddr(ctx, v)
 			}
 
-			a.metrixkeeper.OnSnapshotBuilt(ctx, snapshot)
+			a.MetrixKeeper.OnSnapshotBuilt(ctx, snapshot)
 			snapshot.Validators[0].ExternalChainInfos[0].Traits = []string{}
 			snapshot.Validators[1].ExternalChainInfos[1].Traits = []string{}
 			snapshot.Validators[2].ExternalChainInfos[0].Traits = []string{valsettypes.PIGEON_TRAIT_MEV}
 			snapshot.Validators[2].ExternalChainInfos[1].Traits = []string{valsettypes.PIGEON_TRAIT_MEV}
-			a.metrixkeeper.OnSnapshotBuilt(ctx, snapshot)
+			a.MetrixKeeper.OnSnapshotBuilt(ctx, snapshot)
 
 			featureSets := []math.LegacyDec{
 				math.LegacyMustNewDecFromStr("0.66666667"),
@@ -222,9 +225,9 @@ var _ = Describe("updating feature set", func() {
 				math.LegacyMustNewDecFromStr("0.66666667"),
 			}
 			for i, v := range validators {
-				bz, err := utilkeeper.ValAddressFromBech32(a.metrixkeeper.AddressCodec, v.GetOperator())
+				bz, err := utilkeeper.ValAddressFromBech32(a.MetrixKeeper.AddressCodec, v.GetOperator())
 				Expect(err).To(BeNil())
-				r, err := a.metrixkeeper.GetValidatorMetrics(ctx, bz)
+				r, err := a.MetrixKeeper.GetValidatorMetrics(ctx, bz)
 				Expect(r).To(Not(BeNil()))
 				Expect(err).To(BeNil())
 				Expect(r.FeatureSet).To(Equal(featureSets[i]))
@@ -234,31 +237,31 @@ var _ = Describe("updating feature set", func() {
 })
 
 var _ = Describe("handle message attested event", func() {
-	var a *fixture
+	var a *helper.Fixture
 	var ctx sdk.Context
 	valAddress := sdk.ValAddress("val-addr")
 
 	BeforeEach(func() {
 		t := GinkgoT()
-		a = initFixture(t)
-		ctx = a.ctx.WithBlockHeight(100)
+		a = helper.InitFixture(t)
+		ctx = a.Ctx.WithBlockHeight(100)
 	})
 
 	Context("with no assigned at after handled at block height", func() {
 		BeforeEach(func() {
-			a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+			a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 				Assignee:              valAddress,
 				AssignedAtBlockHeight: math.NewInt(20),
 				HandledAtBlockHeight:  math.NewInt(5),
 			})
 		})
 		It("logs an error and returns", func() {
-			data, err := a.metrixkeeper.GetValidatorHistory(ctx, valAddress)
+			data, err := a.MetrixKeeper.GetValidatorHistory(ctx, valAddress)
 			Expect(err).To(BeNil())
 			Expect(data).To(BeNil())
 		})
 		It("doesn't update the cache", func() {
-			data, err := a.metrixkeeper.GetMessageNonceCache(ctx)
+			data, err := a.MetrixKeeper.GetMessageNonceCache(ctx)
 			Expect(err).To(BeNil())
 			Expect(data).To((BeNil()))
 		})
@@ -266,19 +269,19 @@ var _ = Describe("handle message attested event", func() {
 
 	Context("with handled at block height after current block height", func() {
 		BeforeEach(func() {
-			a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+			a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 				Assignee:              valAddress,
 				AssignedAtBlockHeight: math.NewInt(5),
 				HandledAtBlockHeight:  math.NewInt(200),
 			})
 		})
 		It("logs an error and returns", func() {
-			data, err := a.metrixkeeper.GetValidatorHistory(ctx, valAddress)
+			data, err := a.MetrixKeeper.GetValidatorHistory(ctx, valAddress)
 			Expect(err).To(BeNil())
 			Expect(data).To(BeNil())
 		})
 		It("doesn't update the cache", func() {
-			data, err := a.metrixkeeper.GetMessageNonceCache(ctx)
+			data, err := a.MetrixKeeper.GetMessageNonceCache(ctx)
 			Expect(err).To(BeNil())
 			Expect(data).To((BeNil()))
 		})
@@ -286,7 +289,7 @@ var _ = Describe("handle message attested event", func() {
 
 	Context("with no pre existing history", func() {
 		BeforeEach(func() {
-			a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+			a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 				AssignedAtBlockHeight:  math.NewInt(50),
 				HandledAtBlockHeight:   math.NewInt(75),
 				Assignee:               valAddress,
@@ -295,7 +298,7 @@ var _ = Describe("handle message attested event", func() {
 			})
 		})
 		It("creates a new record with the event logged", func() {
-			data, err := a.metrixkeeper.GetValidatorHistory(ctx, valAddress)
+			data, err := a.MetrixKeeper.GetValidatorHistory(ctx, valAddress)
 			Expect(err).To(BeNil())
 			Expect(data).To(Not(BeNil()))
 			Expect(data.Records).To(HaveLen(1))
@@ -305,7 +308,7 @@ var _ = Describe("handle message attested event", func() {
 		})
 
 		It("updates the cache", func() {
-			data, err := a.metrixkeeper.GetMessageNonceCache(ctx)
+			data, err := a.MetrixKeeper.GetMessageNonceCache(ctx)
 			Expect(err).To(BeNil())
 			Expect(data).To(Not(BeNil()))
 			Expect(data.MessageId).To(Equal(uint64(42)))
@@ -315,14 +318,14 @@ var _ = Describe("handle message attested event", func() {
 	Context("with existing history", func() {
 		Context("and less than 100 messages on record", func() {
 			BeforeEach(func() {
-				a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+				a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 					AssignedAtBlockHeight:  math.NewInt(50),
 					HandledAtBlockHeight:   math.NewInt(75),
 					Assignee:               valAddress,
 					MessageID:              42,
 					WasRelayedSuccessfully: true,
 				})
-				a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+				a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 					AssignedAtBlockHeight:  math.NewInt(60),
 					HandledAtBlockHeight:   math.NewInt(80),
 					Assignee:               valAddress,
@@ -331,7 +334,7 @@ var _ = Describe("handle message attested event", func() {
 				})
 			})
 			It("appends the new event to the history", func() {
-				data, err := a.metrixkeeper.GetValidatorHistory(ctx, valAddress)
+				data, err := a.MetrixKeeper.GetValidatorHistory(ctx, valAddress)
 				Expect(err).To(BeNil())
 				Expect(data).To(Not(BeNil()))
 				Expect(data.Records).To(HaveLen(2))
@@ -340,21 +343,21 @@ var _ = Describe("handle message attested event", func() {
 				Expect(data.Records[1].ExecutionSpeedInBlocks).To(Equal(uint64(20)))
 			})
 			It("updates the cache", func() {
-				data, err := a.metrixkeeper.GetMessageNonceCache(ctx)
+				data, err := a.MetrixKeeper.GetMessageNonceCache(ctx)
 				Expect(err).To(BeNil())
 				Expect(data).To(Not(BeNil()))
 				Expect(data.MessageId).To(Equal(uint64(43)))
 			})
 			Context("and new message ID smaller than latest cache", func() {
 				It("doesn't update the cache", func() {
-					a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+					a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 						AssignedAtBlockHeight:  math.NewInt(50),
 						HandledAtBlockHeight:   math.NewInt(75),
 						Assignee:               valAddress,
 						MessageID:              10,
 						WasRelayedSuccessfully: true,
 					})
-					data, err := a.metrixkeeper.GetMessageNonceCache(ctx)
+					data, err := a.MetrixKeeper.GetMessageNonceCache(ctx)
 					Expect(err).To(BeNil())
 					Expect(data).To(Not(BeNil()))
 					Expect(data.MessageId).To(Equal(uint64(43)))
@@ -364,9 +367,9 @@ var _ = Describe("handle message attested event", func() {
 
 		Context("with more than 100 messages on record", func() {
 			BeforeEach(func() {
-				ctx = a.ctx.WithBlockHeight(1000)
+				ctx = a.Ctx.WithBlockHeight(1000)
 				for k := 0; k < 100; k++ {
-					a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+					a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 						AssignedAtBlockHeight:  math.NewInt(int64(k + 10)),
 						HandledAtBlockHeight:   math.NewInt(int64(k + 20)),
 						Assignee:               valAddress,
@@ -374,7 +377,7 @@ var _ = Describe("handle message attested event", func() {
 						WasRelayedSuccessfully: k%2 == 0,
 					})
 				}
-				a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+				a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 					AssignedAtBlockHeight:  math.NewInt(111),
 					HandledAtBlockHeight:   math.NewInt(121),
 					Assignee:               valAddress,
@@ -383,7 +386,7 @@ var _ = Describe("handle message attested event", func() {
 				})
 			})
 			It("rolls over the collected messages", func() {
-				data, err := a.metrixkeeper.GetValidatorHistory(ctx, valAddress)
+				data, err := a.MetrixKeeper.GetValidatorHistory(ctx, valAddress)
 				Expect(err).To(BeNil())
 				Expect(data).To(Not(BeNil()))
 				Expect(data.Records).To(HaveLen(100))
@@ -394,7 +397,7 @@ var _ = Describe("handle message attested event", func() {
 				}
 			})
 			It("updates the cache", func() {
-				data, err := a.metrixkeeper.GetMessageNonceCache(ctx)
+				data, err := a.MetrixKeeper.GetMessageNonceCache(ctx)
 				Expect(err).To(BeNil())
 				Expect(data).To(Not(BeNil()))
 				Expect(data.MessageId).To(Equal(uint64(101)))
@@ -404,7 +407,7 @@ var _ = Describe("handle message attested event", func() {
 })
 
 var _ = Describe("purge historic relay data", func() {
-	var a *fixture
+	var a *helper.Fixture
 	var ctx sdk.Context
 	valAddress := []sdk.ValAddress{
 		sdk.ValAddress("val-addr1"),
@@ -414,19 +417,19 @@ var _ = Describe("purge historic relay data", func() {
 
 	BeforeEach(func() {
 		t := GinkgoT()
-		a = initFixture(t)
-		ctx = a.ctx.WithBlockHeight(20000)
+		a = helper.InitFixture(t)
+		ctx = a.Ctx.WithBlockHeight(20000)
 	})
 
 	Context("with no cache entry", func() {
 		It("logs an error and returns", func() {
-			a.metrixkeeper.PurgeRelayMetrics(ctx)
+			a.MetrixKeeper.PurgeRelayMetrics(ctx)
 		})
 	})
 
 	Context("with cached message ID lower than scoring window", func() {
 		BeforeEach(func() {
-			a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+			a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 				Assignee:              valAddress[0],
 				AssignedAtBlockHeight: math.NewInt(20),
 				HandledAtBlockHeight:  math.NewInt(50),
@@ -434,7 +437,7 @@ var _ = Describe("purge historic relay data", func() {
 			})
 		})
 		It("logs an error and returns", func() {
-			a.metrixkeeper.PurgeRelayMetrics(ctx)
+			a.MetrixKeeper.PurgeRelayMetrics(ctx)
 		})
 	})
 
@@ -442,7 +445,7 @@ var _ = Describe("purge historic relay data", func() {
 		Context("and validators with no messages outside scoring window", func() {
 			BeforeEach(func() {
 				for i, v := range valAddress {
-					a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+					a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 						Assignee:              v,
 						AssignedAtBlockHeight: math.NewInt(20),
 						HandledAtBlockHeight:  math.NewInt(50),
@@ -450,11 +453,11 @@ var _ = Describe("purge historic relay data", func() {
 					})
 				}
 
-				a.metrixkeeper.PurgeRelayMetrics(ctx)
+				a.MetrixKeeper.PurgeRelayMetrics(ctx)
 			})
 			It("does not purge any records", func() {
 				for _, v := range valAddress {
-					data, err := a.metrixkeeper.GetValidatorHistory(ctx, v)
+					data, err := a.MetrixKeeper.GetValidatorHistory(ctx, v)
 					Expect(err).To(BeNil())
 					Expect(data).To(Not(BeNil()))
 					Expect(data.Records).To(HaveLen(1))
@@ -465,36 +468,36 @@ var _ = Describe("purge historic relay data", func() {
 		Context("and validators with some messages outside scoring window", func() {
 			BeforeEach(func() {
 				for i, v := range valAddress {
-					a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+					a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 						Assignee:              v,
 						AssignedAtBlockHeight: math.NewInt(20),
 						HandledAtBlockHeight:  math.NewInt(50),
 						MessageID:             uint64(500 + i),
 					})
-					a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+					a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 						Assignee:              v,
 						AssignedAtBlockHeight: math.NewInt(20),
 						HandledAtBlockHeight:  math.NewInt(50),
 						MessageID:             uint64(600 + i),
 					})
-					a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+					a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 						Assignee:              v,
 						AssignedAtBlockHeight: math.NewInt(20),
 						HandledAtBlockHeight:  math.NewInt(50),
 						MessageID:             uint64(1500 + i),
 					})
 				}
-				a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+				a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 					Assignee:              valAddress[0],
 					AssignedAtBlockHeight: math.NewInt(20),
 					HandledAtBlockHeight:  math.NewInt(50),
 					MessageID:             uint64(1550),
 				})
 
-				a.metrixkeeper.PurgeRelayMetrics(ctx)
+				a.MetrixKeeper.PurgeRelayMetrics(ctx)
 			})
 			It("purges any records outside scoring window", func() {
-				data, err := a.metrixkeeper.GetValidatorHistory(ctx, valAddress[0])
+				data, err := a.MetrixKeeper.GetValidatorHistory(ctx, valAddress[0])
 				Expect(err).To(BeNil())
 				Expect(data).To(Not(BeNil()))
 				Expect(data.Records).To(HaveLen(3))
@@ -502,14 +505,14 @@ var _ = Describe("purge historic relay data", func() {
 				Expect(data.Records[1].MessageId).To(Equal(uint64(1500)))
 				Expect(data.Records[2].MessageId).To(Equal(uint64(1550)))
 
-				data, err = a.metrixkeeper.GetValidatorHistory(ctx, valAddress[1])
+				data, err = a.MetrixKeeper.GetValidatorHistory(ctx, valAddress[1])
 				Expect(err).To(BeNil())
 				Expect(data).To(Not(BeNil()))
 				Expect(data.Records).To(HaveLen(2))
 				Expect(data.Records[0].MessageId).To(Equal(uint64(601)))
 				Expect(data.Records[1].MessageId).To(Equal(uint64(1501)))
 
-				data, err = a.metrixkeeper.GetValidatorHistory(ctx, valAddress[2])
+				data, err = a.MetrixKeeper.GetValidatorHistory(ctx, valAddress[2])
 				Expect(err).To(BeNil())
 				Expect(data).To(Not(BeNil()))
 				Expect(data.Records).To(HaveLen(2))
@@ -521,7 +524,7 @@ var _ = Describe("purge historic relay data", func() {
 })
 
 var _ = Describe("update relay metrics", func() {
-	var a *fixture
+	var a *helper.Fixture
 	var ctx sdk.Context
 	valAddress := []sdk.ValAddress{
 		sdk.ValAddress("val-addr1"),
@@ -531,11 +534,11 @@ var _ = Describe("update relay metrics", func() {
 
 	BeforeEach(func() {
 		t := GinkgoT()
-		a = initFixture(t)
-		ctx = a.ctx.WithBlockHeight(2000)
+		a = helper.InitFixture(t)
+		ctx = a.Ctx.WithBlockHeight(2000)
 		for i, v := range valAddress {
 			for j := 0; j <= 100; j++ {
-				a.metrixkeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
+				a.MetrixKeeper.OnConsensusMessageAttested(ctx, types.MessageAttestedEvent{
 					Assignee: v,
 					AssignedAtBlockHeight: func() math.Int {
 						switch true {
@@ -563,7 +566,7 @@ var _ = Describe("update relay metrics", func() {
 					}(),
 				})
 			}
-			m, err := a.metrixkeeper.GetValidatorMetrics(ctx, v)
+			m, err := a.MetrixKeeper.GetValidatorMetrics(ctx, v)
 			Expect(m).To(BeNil())
 			Expect(err).To(BeNil())
 		}
@@ -572,9 +575,9 @@ var _ = Describe("update relay metrics", func() {
 	Context("with no existing metrics on record", func() {
 		metrics := make([]types.ValidatorMetrics, len(valAddress))
 		BeforeEach(func() {
-			a.metrixkeeper.UpdateRelayMetrics(ctx)
+			a.MetrixKeeper.UpdateRelayMetrics(ctx)
 			for i, v := range valAddress {
-				m, err := a.metrixkeeper.GetValidatorMetrics(ctx, v)
+				m, err := a.MetrixKeeper.GetValidatorMetrics(ctx, v)
 				Expect(m).To(Not(BeNil()))
 				Expect(err).To(BeNil())
 				metrics[i] = *m
