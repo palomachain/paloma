@@ -26,6 +26,10 @@ func ValAddress() sdk.ValAddress {
 	return Bytes(32)
 }
 
+func AccAddress() sdk.AccAddress {
+	return Bytes(32)
+}
+
 func CryptoRandReader() io.Reader {
 	return rand.Reader
 }

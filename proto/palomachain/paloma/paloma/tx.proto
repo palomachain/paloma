@@ -1,11 +1,15 @@
 syntax = "proto3";
 package palomachain.paloma.paloma;
 
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
-import "gogoproto/gogo.proto";
+
 import "palomachain/paloma/valset/common.proto";
+import "palomachain/paloma/paloma/params.proto";
 
 option go_package = "github.com/palomachain/paloma/v2/x/paloma/types";
 
@@ -23,6 +27,11 @@ service Msg {
 
   rpc SetLegacyLightNodeClients(MsgSetLegacyLightNodeClients)
     returns (EmptyResponse);
+
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {
+    option (google.api.http).put =
+      "/palomachain/paloma/params";
+    }
 }
 
 message MsgAddStatusUpdate {
@@ -75,3 +84,18 @@ message MsgSetLegacyLightNodeClients {
   palomachain.paloma.valset.MsgMetadata metadata = 1
       [ (gogoproto.nullable) = false ];
 }
+
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  // authority is the address that controls the module (defaults to x/gov unless
+  // overwritten).
+  string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [ (gogoproto.nullable) = false ];
+
+  palomachain.paloma.valset.MsgMetadata metadata = 3
+      [ (gogoproto.nullable) = false ];
+}
+
+message MsgUpdateParamsResponse {}

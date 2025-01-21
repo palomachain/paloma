@@ -204,6 +204,10 @@ func (m MsgUpdateParams) ValidateBasic() error {
 		return err
 	}
 
+	if m.Authority != m.Metadata.Creator {
+		return ErrUnauthorized.Wrapf("authority mismatch: %s", m.Authority)
+	}
+
 	if _, err := sdk.AccAddressFromBech32(m.Authority); err != nil {
 		return sdkerrors.Wrapf(sdktypeerrors.ErrInvalidAddress, "invalid authority address (%s)", err)
 	}

@@ -5,17 +5,21 @@ package types
 
 import (
 	fmt "fmt"
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+
+	_ "github.com/cosmos/cosmos-proto"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -25,6 +29,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params defines the parameters for the module.
 type Params struct {
+	GasExemptAddresses []string `protobuf:"bytes,1,rep,name=GasExemptAddresses,proto3" json:"GasExemptAddresses,omitempty"`
 }
 
 func (m *Params) Reset()      { *m = Params{} }
@@ -32,9 +37,11 @@ func (*Params) ProtoMessage() {}
 func (*Params) Descriptor() ([]byte, []int) {
 	return fileDescriptor_955ca3c86651c37b, []int{0}
 }
+
 func (m *Params) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
+
 func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Params.Marshal(b, m, deterministic)
@@ -47,17 +54,27 @@ func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
+
 func (m *Params) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Params.Merge(m, src)
 }
+
 func (m *Params) XXX_Size() int {
 	return m.Size()
 }
+
 func (m *Params) XXX_DiscardUnknown() {
 	xxx_messageInfo_Params.DiscardUnknown(m)
 }
 
 var xxx_messageInfo_Params proto.InternalMessageInfo
+
+func (m *Params) GetGasExemptAddresses() []string {
+	if m != nil {
+		return m.GasExemptAddresses
+	}
+	return nil
+}
 
 func init() {
 	proto.RegisterType((*Params)(nil), "palomachain.paloma.paloma.Params")
@@ -68,17 +85,20 @@ func init() {
 }
 
 var fileDescriptor_955ca3c86651c37b = []byte{
-	// 145 bytes of a gzipped FileDescriptorProto
+	// 207 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x2b, 0x48, 0xcc, 0xc9,
 	0xcf, 0x4d, 0x4c, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x87, 0xb0, 0x11, 0x54, 0x51, 0x62, 0x6e, 0xb1,
 	0x5e, 0x41, 0x51, 0x7e, 0x49, 0xbe, 0x90, 0x24, 0x92, 0x3a, 0x3d, 0x08, 0x1b, 0x4a, 0x49, 0x89,
-	0xa4, 0xe7, 0xa7, 0xe7, 0x83, 0x55, 0xe9, 0x83, 0x58, 0x10, 0x0d, 0x4a, 0x7c, 0x5c, 0x6c, 0x01,
-	0x60, 0x03, 0xac, 0x58, 0x66, 0x2c, 0x90, 0x67, 0x70, 0xf2, 0x3c, 0xf1, 0x48, 0x8e, 0xf1, 0xc2,
-	0x23, 0x39, 0xc6, 0x07, 0x8f, 0xe4, 0x18, 0x27, 0x3c, 0x96, 0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1,
-	0xc6, 0x63, 0x39, 0x86, 0x28, 0xfd, 0xf4, 0xcc, 0x92, 0x8c, 0xd2, 0x24, 0xbd, 0xe4, 0xfc, 0x5c,
-	0x7d, 0x2c, 0xae, 0x29, 0x33, 0xd2, 0xaf, 0x80, 0xb1, 0x4b, 0x2a, 0x0b, 0x52, 0x8b, 0x93, 0xd8,
-	0xc0, 0x36, 0x18, 0x03, 0x02, 0x00, 0x00, 0xff, 0xff, 0xcb, 0x8f, 0x78, 0x5e, 0xbc, 0x00, 0x00,
-	0x00,
+	0xa4, 0xe7, 0xa7, 0xe7, 0x83, 0x55, 0xe9, 0x83, 0x58, 0x10, 0x0d, 0x52, 0x92, 0xc9, 0xf9, 0xc5,
+	0xb9, 0xf9, 0xc5, 0xf1, 0x10, 0x09, 0x08, 0x07, 0x22, 0xa5, 0x14, 0xc1, 0xc5, 0x16, 0x00, 0x36,
+	0x5b, 0xc8, 0x83, 0x4b, 0xc8, 0x3d, 0xb1, 0xd8, 0xb5, 0x22, 0x35, 0xb7, 0xa0, 0xc4, 0x31, 0x25,
+	0xa5, 0x28, 0xb5, 0xb8, 0x38, 0xb5, 0x58, 0x82, 0x51, 0x81, 0x59, 0x83, 0xd3, 0x49, 0xe2, 0xd2,
+	0x16, 0x5d, 0x11, 0xa8, 0x3e, 0xa8, 0x5c, 0x70, 0x49, 0x51, 0x66, 0x5e, 0x7a, 0x10, 0x16, 0x3d,
+	0x56, 0x2c, 0x33, 0x16, 0xc8, 0x33, 0x38, 0x79, 0x9e, 0x78, 0x24, 0xc7, 0x78, 0xe1, 0x91, 0x1c,
+	0xe3, 0x83, 0x47, 0x72, 0x8c, 0x13, 0x1e, 0xcb, 0x31, 0x5c, 0x78, 0x2c, 0xc7, 0x70, 0xe3, 0xb1,
+	0x1c, 0x43, 0x94, 0x7e, 0x7a, 0x66, 0x49, 0x46, 0x69, 0x92, 0x5e, 0x72, 0x7e, 0xae, 0x3e, 0x16,
+	0x2f, 0x97, 0x19, 0xe9, 0x57, 0xc0, 0xd8, 0x25, 0x95, 0x05, 0xa9, 0xc5, 0x49, 0x6c, 0x60, 0xb7,
+	0x1a, 0x03, 0x02, 0x00, 0x00, 0xff, 0xff, 0xd3, 0xbd, 0x99, 0xd0, 0x21, 0x01, 0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -101,6 +121,15 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.GasExemptAddresses) > 0 {
+		for iNdEx := len(m.GasExemptAddresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.GasExemptAddresses[iNdEx])
+			copy(dAtA[i:], m.GasExemptAddresses[iNdEx])
+			i = encodeVarintParams(dAtA, i, uint64(len(m.GasExemptAddresses[iNdEx])))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -115,21 +144,30 @@ func encodeVarintParams(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
 func (m *Params) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
+	if len(m.GasExemptAddresses) > 0 {
+		for _, s := range m.GasExemptAddresses {
+			l = len(s)
+			n += 1 + l + sovParams(uint64(l))
+		}
+	}
 	return n
 }
 
 func sovParams(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
+
 func sozParams(x uint64) (n int) {
 	return sovParams(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
+
 func (m *Params) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -159,6 +197,38 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: Params: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GasExemptAddresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.GasExemptAddresses = append(m.GasExemptAddresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])
@@ -180,6 +250,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+
 func skipParams(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

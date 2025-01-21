@@ -94,13 +94,14 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 	config := sdk.GetConfig()
 	config.SetBech32PrefixForAccount("paloma", "pub")
 	config.SetBech32PrefixForValidator("palomavaloper", "valoperpub")
-	// db := dbm.NewMemDB()
+
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey,
 		distrtypes.StoreKey, stakingtypes.StoreKey,
 		schedulertypes.StoreKey, evmmoduletypes.StoreKey,
 		valsetmoduletypes.StoreKey, consensusmoduletypes.StoreKey,
 		upgradetypes.StoreKey, slashingtypes.StoreKey,
+		palomamoduletypes.StoreKey, paramstypes.StoreKey,
 	)
 	encCfg := moduletestutil.MakeTestEncodingConfig(
 		auth.AppModuleBasic{},
@@ -119,9 +120,6 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 	cms := integration.CreateMultiStore(keys, logger)
 
 	newCtx := sdk.NewContext(cms, cmtproto.Header{}, true, logger)
-
-	// authority := authtypes.NewModuleAddress(types.ModuleName)
-
 	maccPerms := map[string][]string{
 		distrtypes.ModuleName:          nil,
 		minttypes.ModuleName:           {authtypes.Minter},
@@ -144,6 +142,11 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 	appCodec := codec.NewProtoCodec(cdc.InterfaceRegistry())
 	legacyAmino := codec.NewLegacyAmino()
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
+	cms.MountStoreWithDB(tkeys[paramstypes.TStoreKey], storetypes.StoreTypeTransient, nil)
+	err := cms.LoadLatestVersion()
+	if err != nil {
+		panic(err)
+	}
 	paramsKeeper := helper.InitParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
 	bankKeeper := bankkeeper.NewBaseKeeper(
@@ -283,6 +286,7 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		valsetKeeper,
 		upgradeKeeper,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	palomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{

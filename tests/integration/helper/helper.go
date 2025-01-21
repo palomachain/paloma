@@ -2,6 +2,7 @@ package integration
 
 import (
 	storetypes "cosmossdk.io/store/types"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -21,8 +22,11 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	consensusmoduletypes "github.com/palomachain/paloma/v2/x/consensus/types"
 	evmmoduletypes "github.com/palomachain/paloma/v2/x/evm/types"
+	metrixtypes "github.com/palomachain/paloma/v2/x/metrix/types"
+	palomatypes "github.com/palomachain/paloma/v2/x/paloma/types"
 	schedulertypes "github.com/palomachain/paloma/v2/x/scheduler/types"
 	skywaymoduletypes "github.com/palomachain/paloma/v2/x/skyway/types"
+	tokenfactorytypes "github.com/palomachain/paloma/v2/x/tokenfactory/types"
 	valsetmoduletypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
@@ -66,17 +70,21 @@ func InitParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(authtypes.ModuleName)
 	paramsKeeper.Subspace(banktypes.ModuleName)
-	paramsKeeper.Subspace(stakingtypes.ModuleName)
-	paramsKeeper.Subspace(minttypes.ModuleName)
-	paramsKeeper.Subspace(distrtypes.ModuleName)
-	paramsKeeper.Subspace(slashingtypes.ModuleName)
-	paramsKeeper.Subspace(govtypes.ModuleName)
-	paramsKeeper.Subspace(crisistypes.ModuleName)
-	paramsKeeper.Subspace(schedulertypes.ModuleName)
 	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
-	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
+	paramsKeeper.Subspace(crisistypes.ModuleName)
+	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
-	paramsKeeper.Subspace(skywaymoduletypes.ModuleName)
+	paramsKeeper.Subspace(govtypes.ModuleName)
+	paramsKeeper.Subspace(metrixtypes.ModuleName)
+	paramsKeeper.Subspace(minttypes.ModuleName)
+	paramsKeeper.Subspace(palomatypes.ModuleName)
+	paramsKeeper.Subspace(schedulertypes.ModuleName)
+	paramsKeeper.Subspace(skywaymoduletypes.ModuleName).WithKeyTable(skywaymoduletypes.ParamKeyTable())
+	paramsKeeper.Subspace(slashingtypes.ModuleName)
+	paramsKeeper.Subspace(stakingtypes.ModuleName)
+	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
+	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
+	paramsKeeper.Subspace(wasmtypes.ModuleName)
 
 	paramsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())

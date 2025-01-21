@@ -139,6 +139,7 @@ import (
 	palomaclient "github.com/palomachain/paloma/v2/x/paloma/client"
 	palomamodulekeeper "github.com/palomachain/paloma/v2/x/paloma/keeper"
 	palomamoduletypes "github.com/palomachain/paloma/v2/x/paloma/types"
+	palomatypes "github.com/palomachain/paloma/v2/x/paloma/types"
 	schedulermodule "github.com/palomachain/paloma/v2/x/scheduler"
 	schedulerbindings "github.com/palomachain/paloma/v2/x/scheduler/bindings"
 	schedulermodulekeeper "github.com/palomachain/paloma/v2/x/scheduler/keeper"
@@ -623,6 +624,7 @@ func New(
 		app.ValsetKeeper,
 		app.UpgradeKeeper,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
+		authorityAddress,
 	)
 
 	app.PalomaKeeper.ExternalChains = []palomamoduletypes.ExternalChainSupporterKeeper{
@@ -1274,20 +1276,21 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(authtypes.ModuleName)
 	paramsKeeper.Subspace(banktypes.ModuleName)
-	paramsKeeper.Subspace(stakingtypes.ModuleName)
-	paramsKeeper.Subspace(minttypes.ModuleName)
-	paramsKeeper.Subspace(distrtypes.ModuleName)
-	paramsKeeper.Subspace(slashingtypes.ModuleName)
-	paramsKeeper.Subspace(govtypes.ModuleName)
-	paramsKeeper.Subspace(crisistypes.ModuleName)
-	paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
 	paramsKeeper.Subspace(consensusmoduletypes.ModuleName)
+	paramsKeeper.Subspace(crisistypes.ModuleName)
+	paramsKeeper.Subspace(distrtypes.ModuleName)
+	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
+	paramsKeeper.Subspace(govtypes.ModuleName)
+	paramsKeeper.Subspace(metrixmoduletypes.ModuleName)
+	paramsKeeper.Subspace(minttypes.ModuleName)
+	paramsKeeper.Subspace(palomatypes.ModuleName)
+	paramsKeeper.Subspace(schedulermoduletypes.ModuleName)
+	paramsKeeper.Subspace(skywaymoduletypes.ModuleName).WithKeyTable(skywaymoduletypes.ParamKeyTable())
+	paramsKeeper.Subspace(slashingtypes.ModuleName)
+	paramsKeeper.Subspace(stakingtypes.ModuleName)
+	paramsKeeper.Subspace(tokenfactorymoduletypes.ModuleName)
 	paramsKeeper.Subspace(valsetmoduletypes.ModuleName)
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
-	paramsKeeper.Subspace(evmmoduletypes.ModuleName)
-	paramsKeeper.Subspace(skywaymoduletypes.ModuleName).WithKeyTable(skywaymoduletypes.ParamKeyTable())
-	paramsKeeper.Subspace(metrixmoduletypes.ModuleName)
-	paramsKeeper.Subspace(tokenfactorymoduletypes.ModuleName)
 
 	paramsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())

@@ -19,4 +19,5 @@ var (
 	ErrNoFunder            = errors.New("no funder set")
 	ErrNoLicense           = errors.New("no license found for this client")
 	ErrInsufficientBalance = errors.New("no funder with enough balance")
+	ErrUnauthorized        = sdkerrors.Register(ModuleName, 23, "unauthorized")
 )

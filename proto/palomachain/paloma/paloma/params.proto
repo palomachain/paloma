@@ -2,8 +2,13 @@ syntax = "proto3";
 package palomachain.paloma.paloma;
 
 import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
 
 option go_package = "github.com/palomachain/paloma/v2/x/paloma/types";
 
 // Params defines the parameters for the module.
-message Params { option (gogoproto.goproto_stringer) = false; }
+message Params { 
+  option (gogoproto.goproto_stringer) = false; 
+
+  repeated string GasExemptAddresses = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}

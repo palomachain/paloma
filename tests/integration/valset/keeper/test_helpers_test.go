@@ -204,8 +204,6 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 
 	queryClient := v1.NewQueryClient(integrationApp.QueryHelper())
 	legacyQueryClient := v1beta1.NewQueryClient(integrationApp.QueryHelper())
-	ps := helper.GetSubspace(valsetmoduletypes.ModuleName, paramsKeeper)
-	storeKey := runtime.NewKVStoreService(keys[valsetmoduletypes.StoreKey])
 
 	validators := testutil.GenValidators(1, 100)
 	err := stakingKeeper.SetValidator(sdkCtx, validators[0])
@@ -225,7 +223,5 @@ func initFixture(t ginkgo.FullGinkgoTInterface) *fixture {
 		valsetKeeper:      valsetKeeper,
 		stakingkeeper:     stakingKeeper,
 		SlashingKeeper:    SlashingKeeper,
-		paramstore:        ps,
-		storeKey:          storeKey,
 	}
 }

@@ -9,13 +9,17 @@ import (
 	"cosmossdk.io/core/header"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/palomachain/paloma/v2/testutil"
+	"github.com/palomachain/paloma/v2/testutil/rand"
 	utilkeeper "github.com/palomachain/paloma/v2/util/keeper"
 	"github.com/palomachain/paloma/v2/x/paloma/keeper"
+	palomatypes "github.com/palomachain/paloma/v2/x/paloma/types"
 	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
@@ -188,5 +192,65 @@ var _ = Describe("checking the chain version", func() {
 			Entry("higher major version", "v7.1.6", true),
 			Entry("higher minor version", "v5.2.6", true),
 		)
+	})
+})
+
+var _ = Describe("updating params", func() {
+	var ctx sdk.Context
+	var k *keeper.Keeper
+	var srv palomatypes.MsgServer
+	var addr []string
+	var f *fixture
+	var authority string
+
+	BeforeEach(func() {
+		t := GinkgoT()
+		f = initFixture(t)
+		authority = authtypes.NewModuleAddress(govtypes.ModuleName).String()
+		ctx = f.ctx.WithBlockHeight(5)
+		k = &f.palomaKeeper
+		srv = keeper.NewMsgServerImpl(*k)
+	})
+
+	When("with a valid request", func() {
+		var msg *palomatypes.MsgUpdateParams
+
+		BeforeEach(func() {
+			addr = make([]string, 3)
+			for i := range addr {
+				addr[i] = rand.AccAddress().String()
+			}
+			msg = &palomatypes.MsgUpdateParams{
+				Authority: authority,
+				Params: palomatypes.Params{
+					GasExemptAddresses: []string{
+						addr[0],
+						addr[1],
+					},
+				},
+				Metadata: valsettypes.MsgMetadata{
+					Creator: authority,
+					Signers: []string{authority},
+				},
+			}
+		})
+
+		It("should not return an error", func() {
+			_, err := srv.UpdateParams(ctx, msg)
+			Expect(err).To(BeNil())
+		})
+		It("should not return a nil response", func() {
+			res, _ := srv.UpdateParams(ctx, msg)
+			Expect(res).ToNot(BeNil())
+		})
+
+		It("should update the parameters", func() {
+			_, err := srv.UpdateParams(ctx, msg)
+			Expect(err).To(BeNil())
+
+			p := k.GetParams(ctx)
+			Expect(p.GasExemptAddresses).To(HaveLen(2))
+			Expect(p.GasExemptAddresses).To(ConsistOf(addr[0], addr[1]))
+		})
 	})
 })
