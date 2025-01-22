@@ -9,6 +9,12 @@ import (
 
 // GetParams get all parameters as types.Params
 func (k Keeper) GetParams(ctx context.Context) (params types.Params) {
+	defer func() {
+		if r := recover(); r != nil {
+			params = types.DefaultParams()
+		}
+	}()
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	k.paramstore.GetParamSet(sdkCtx, &params)
 	return params
