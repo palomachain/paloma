@@ -18,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/palomachain/paloma/v2/tests/integration/helper"
 	"github.com/palomachain/paloma/v2/testutil"
 	"github.com/palomachain/paloma/v2/testutil/rand"
 	"github.com/palomachain/paloma/v2/testutil/sample"
@@ -45,8 +46,8 @@ func genValidators(numValidators, totalConsPower int) []stakingtypes.Validator {
 func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	chainType, chainReferenceID := consensustypes.ChainTypeEVM, "eth-main"
 	t1 := GinkgoT()
-	f := initFixture(t1)
-	ctx := f.ctx.WithBlockHeight(5)
+	f := helper.InitFixture(t1)
+	ctx := f.Ctx.WithBlockHeight(5)
 
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "eth-main",
@@ -56,7 +57,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		BlockHashAtHeight: "0x1234",
 	}
 
-	err := f.evmKeeper.AddSupportForNewChain(
+	err := f.EvmKeeper.AddSupportForNewChain(
 		ctx,
 		newChain.GetChainReferenceID(),
 		newChain.GetChainID(),
@@ -65,15 +66,15 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		big.NewInt(55),
 	)
 	require.NoError(t, err)
-	err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+	err = f.EvmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 	require.NoError(t, err)
 
-	err = f.evmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, "addr", []byte("abc"))
+	err = f.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, "addr", []byte("abc"))
 	require.NoError(t, err)
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
-		f.stakingKeeper.SetValidator(ctx, val)
+		f.StakingKeeper.SetValidator(ctx, val)
 	}
 
 	for _, validator := range validators {
@@ -81,11 +82,11 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		require.NoError(t, err)
 		pubKey, err := validator.ConsPubKey()
 		require.NoError(t, err)
-		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, validator.GetOperator())
+		operator, err := utilkeeper.ValAddressFromBech32(f.EvmKeeper.AddressCodec, validator.GetOperator())
 		require.NoError(t, err)
-		valAddress, err := f.evmKeeper.AddressCodec.BytesToString(valAddr)
+		valAddress, err := f.EvmKeeper.AddressCodec.BytesToString(valAddr)
 		require.NoError(t, err)
-		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
+		err = f.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: newChain.GetChainReferenceID(),
@@ -94,7 +95,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		err = f.treasuryKeeper.SetRelayerFee(ctx, sdk.ValAddress(operator), &treasurytypes.RelayerFeeSetting{
+		err = f.TreasuryKeeper.SetRelayerFee(ctx, sdk.ValAddress(operator), &treasurytypes.RelayerFeeSetting{
 			ValAddress: sdk.ValAddress(operator).String(),
 			Fees: []treasurytypes.RelayerFeeSetting_FeeSetting{
 				{
@@ -110,12 +111,12 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	_, err = f.valsetKeeper.TriggerSnapshotBuild(ctx)
+	_, err = f.ValsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
-	f.metrixKeeper.UpdateUptime(ctx)
+	f.MetrixKeeper.UpdateUptime(ctx)
 
 	smartContractAddr := common.BytesToAddress(rand.Bytes(5))
-	_, err = f.evmKeeper.AddSmartContractExecutionToConsensus(
+	_, err = f.EvmKeeper.AddSmartContractExecutionToConsensus(
 		ctx,
 		chainReferenceID,
 		"",
@@ -136,9 +137,9 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 	require.NoError(t, err)
 
 	accAddr := crypto.PubkeyToAddress(private.PublicKey)
-	operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, validators[0].GetOperator())
+	operator, err := utilkeeper.ValAddressFromBech32(f.EvmKeeper.AddressCodec, validators[0].GetOperator())
 	require.NoError(t, err)
-	err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
+	err = f.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 		{
 			ChainType:        chainType,
 			ChainReferenceID: chainReferenceID,
@@ -149,11 +150,11 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 
 	require.NoError(t, err)
 	queue := consensustypes.Queue(types.ConsensusTurnstoneMessage, chainType, chainReferenceID)
-	msgs, err := f.consensusKeeper.GetMessagesForSigning(ctx, queue, operator)
+	msgs, err := f.ConsensusKeeper.GetMessagesForSigning(ctx, queue, operator)
 	require.NoError(t, err)
 
 	for _, msg := range msgs {
-		bytesToSign, err := msg.GetBytesToSign(f.codec)
+		bytesToSign, err := msg.GetBytesToSign(f.Codec)
 		require.NoError(t, err)
 
 		sigbz, err := crypto.Sign(
@@ -164,7 +165,7 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 			private,
 		)
 		require.NoError(t, err)
-		err = f.consensusKeeper.AddMessageSignature(
+		err = f.ConsensusKeeper.AddMessageSignature(
 			ctx,
 			operator,
 			[]*consensustypes.ConsensusMessageSignature{
@@ -182,8 +183,8 @@ func TestEndToEndForEvmArbitraryCall(t *testing.T) {
 
 func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 	t1 := GinkgoT()
-	f := initFixture(t1)
-	ctx := f.ctx.WithHeaderInfo(header.Info{
+	f := helper.InitFixture(t1)
+	ctx := f.Ctx.WithHeaderInfo(header.Info{
 		Height: 5,
 		Time:   time.Now(),
 	})
@@ -195,7 +196,7 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 		BlockHeight:       uint64(123),
 		BlockHashAtHeight: "0x1234",
 	}
-	err := f.evmKeeper.AddSupportForNewChain(
+	err := f.EvmKeeper.AddSupportForNewChain(
 		ctx,
 		newChain.GetChainReferenceID(),
 		newChain.GetChainID(),
@@ -204,9 +205,9 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 		big.NewInt(55),
 	)
 	require.NoError(t, err)
-	err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+	err = f.EvmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 	require.NoError(t, err)
-	err = f.evmKeeper.ActivateChainReferenceID(
+	err = f.EvmKeeper.ActivateChainReferenceID(
 		ctx,
 		newChain.ChainReferenceID,
 		&types.SmartContract{
@@ -219,11 +220,11 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
-		err := f.stakingKeeper.SetValidator(ctx, val)
+		err := f.StakingKeeper.SetValidator(ctx, val)
 		require.NoError(t, err)
-		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, val.GetOperator())
+		operator, err := utilkeeper.ValAddressFromBech32(f.EvmKeeper.AddressCodec, val.GetOperator())
 		require.NoError(t, err)
-		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
+		err = f.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: "bob",
@@ -235,10 +236,10 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 	}
 
 	queue := fmt.Sprintf("evm/%s/%s", newChain.GetChainReferenceID(), types.ConsensusTurnstoneMessage)
-	msgs, err := f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
+	msgs, err := f.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
 	require.NoError(t, err)
 	require.Empty(t, msgs)
-	_, err = f.consensusKeeper.PutMessageInQueue(ctx, queue, &types.Message{
+	_, err = f.ConsensusKeeper.PutMessageInQueue(ctx, queue, &types.Message{
 		TurnstoneID:      "abc",
 		ChainReferenceID: "new-chain",
 		Action: &types.Message_UpdateValset{
@@ -250,18 +251,18 @@ func TestFirstSnapshot_OnSnapshotBuilt(t *testing.T) {
 		},
 	}, nil)
 	require.NoError(t, err)
-	_, err = f.valsetKeeper.TriggerSnapshotBuild(ctx)
+	_, err = f.ValsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
 
-	msgs, err = f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
+	msgs, err = f.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
 	require.NoError(t, err)
 	require.Len(t, msgs, 1)
 }
 
 func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	t1 := GinkgoT()
-	f := initFixture(t1)
-	ctx := f.ctx
+	f := helper.InitFixture(t1)
+	ctx := f.Ctx
 	newChain := &types.AddChainProposal{
 		ChainReferenceID:  "bob",
 		Title:             "bla",
@@ -269,7 +270,7 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 		BlockHeight:       uint64(123),
 		BlockHashAtHeight: "0x1234",
 	}
-	err := f.evmKeeper.AddSupportForNewChain(
+	err := f.EvmKeeper.AddSupportForNewChain(
 		ctx,
 		newChain.GetChainReferenceID(),
 		newChain.GetChainID(),
@@ -277,10 +278,10 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 		newChain.GetBlockHashAtHeight(),
 		big.NewInt(55),
 	)
-	err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+	err = f.EvmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 	require.NoError(t, err)
 	require.NoError(t, err)
-	err = f.evmKeeper.ActivateChainReferenceID(
+	err = f.EvmKeeper.ActivateChainReferenceID(
 		ctx,
 		newChain.ChainReferenceID,
 		&types.SmartContract{
@@ -293,10 +294,10 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
-		f.stakingKeeper.SetValidator(ctx, val)
-		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, val.GetOperator())
+		f.StakingKeeper.SetValidator(ctx, val)
+		operator, err := utilkeeper.ValAddressFromBech32(f.EvmKeeper.AddressCodec, val.GetOperator())
 		require.NoError(t, err)
-		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
+		err = f.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: "bob",
@@ -309,36 +310,36 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 	queue := fmt.Sprintf("evm/%s/%s", newChain.GetChainReferenceID(), types.ConsensusTurnstoneMessage)
 
-	msgs, err := f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
+	msgs, err := f.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
 	require.NoError(t, err)
 	require.Empty(t, msgs)
 
 	// Remove the listeners to set current state
-	snapshotListeners := f.valsetKeeper.SnapshotListeners
-	f.valsetKeeper.SnapshotListeners = []valsettypes.OnSnapshotBuiltListener{}
+	snapshotListeners := f.ValsetKeeper.SnapshotListeners
+	f.ValsetKeeper.SnapshotListeners = []valsettypes.OnSnapshotBuiltListener{}
 
-	_, err = f.valsetKeeper.TriggerSnapshotBuild(ctx)
+	_, err = f.ValsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
 
-	msgs, err = f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
+	msgs, err = f.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
 	require.NoError(t, err)
 	require.Len(t, msgs, 0)
 
-	latestSnapshot, err := f.valsetKeeper.GetCurrentSnapshot(ctx)
+	latestSnapshot, err := f.ValsetKeeper.GetCurrentSnapshot(ctx)
 	require.NoError(t, err)
 
 	latestSnapshot.Chains = []string{"bob"}
-	err = f.valsetKeeper.SaveModifiedSnapshot(ctx, latestSnapshot)
+	err = f.ValsetKeeper.SaveModifiedSnapshot(ctx, latestSnapshot)
 	require.NoError(t, err)
 
 	// Add two validators to make this new snapshot worthy
 	validators = genValidators(2, 25000)
 	for _, val := range validators {
-		err := f.stakingKeeper.SetValidator(ctx, val)
+		err := f.StakingKeeper.SetValidator(ctx, val)
 		require.NoError(t, err)
-		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, val.GetOperator())
+		operator, err := utilkeeper.ValAddressFromBech32(f.EvmKeeper.AddressCodec, val.GetOperator())
 		require.NoError(t, err)
-		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
+		err = f.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: "bob",
@@ -350,22 +351,22 @@ func TestRecentPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	}
 
 	// Add the listeners back on for the test
-	f.valsetKeeper.SnapshotListeners = snapshotListeners
+	f.ValsetKeeper.SnapshotListeners = snapshotListeners
 
-	_, err = f.valsetKeeper.TriggerSnapshotBuild(ctx)
+	_, err = f.ValsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
 
-	msgs, err = f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
+	msgs, err = f.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
 	require.NoError(t, err)
 	require.Len(t, msgs, 0) // We don't expect a message because there is already a recent snapshot for the chain
 }
 
 func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
-	var f *fixture
+	var f *helper.Fixture
 	var ctx sdk.Context
 	t1 := GinkgoT()
-	f = initFixture(t1)
-	ctx = f.ctx.WithHeaderInfo(header.Info{
+	f = helper.InitFixture(t1)
+	ctx = f.Ctx.WithHeaderInfo(header.Info{
 		Height: 5,
 		Time:   time.Now(),
 	})
@@ -377,7 +378,7 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 		BlockHashAtHeight: "0x1234",
 	}
 
-	err := f.evmKeeper.AddSupportForNewChain(
+	err := f.EvmKeeper.AddSupportForNewChain(
 		ctx,
 		newChain.GetChainReferenceID(),
 		newChain.GetChainID(),
@@ -386,9 +387,9 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 		big.NewInt(55),
 	)
 	require.NoError(t, err)
-	err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+	err = f.EvmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 	require.NoError(t, err)
-	err = f.evmKeeper.ActivateChainReferenceID(
+	err = f.EvmKeeper.ActivateChainReferenceID(
 		ctx,
 		newChain.ChainReferenceID,
 		&types.SmartContract{
@@ -401,11 +402,11 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
-		err := f.stakingKeeper.SetValidator(ctx, val)
+		err := f.StakingKeeper.SetValidator(ctx, val)
 		require.NoError(t, err)
-		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, val.GetOperator())
+		operator, err := utilkeeper.ValAddressFromBech32(f.EvmKeeper.AddressCodec, val.GetOperator())
 		require.NoError(t, err)
-		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
+		err = f.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: "bob",
@@ -418,39 +419,39 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 
 	queue := fmt.Sprintf("evm/%s/%s", newChain.GetChainReferenceID(), types.ConsensusTurnstoneMessage)
 
-	msgs, err := f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
+	msgs, err := f.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 1)
 	require.NoError(t, err)
 	require.Empty(t, msgs)
 
 	// Remove the listeners to set current state
-	snapshotListeners := f.valsetKeeper.SnapshotListeners
-	f.valsetKeeper.SnapshotListeners = []valsettypes.OnSnapshotBuiltListener{}
+	snapshotListeners := f.ValsetKeeper.SnapshotListeners
+	f.ValsetKeeper.SnapshotListeners = []valsettypes.OnSnapshotBuiltListener{}
 
-	_, err = f.valsetKeeper.TriggerSnapshotBuild(ctx)
+	_, err = f.ValsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
 
-	msgs, err = f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
+	msgs, err = f.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
 	require.NoError(t, err)
 	require.Len(t, msgs, 0)
 
-	latestSnapshot, err := f.valsetKeeper.GetCurrentSnapshot(ctx)
+	latestSnapshot, err := f.ValsetKeeper.GetCurrentSnapshot(ctx)
 	require.NoError(t, err)
 
 	// Age the latest snapshot by 30 days, 1 minute, set as active on chain
 	latestSnapshot.Chains = []string{"bob"}
 
 	latestSnapshot.CreatedAt = ctx.HeaderInfo().Time.Add(-((30 * 24 * time.Hour) + time.Minute))
-	err = f.valsetKeeper.SaveModifiedSnapshot(ctx, latestSnapshot)
+	err = f.ValsetKeeper.SaveModifiedSnapshot(ctx, latestSnapshot)
 	require.NoError(t, err)
 
 	// Add two validators to make this new snapshot worthy
 	validators = genValidators(2, 25000)
 	for _, val := range validators {
-		err := f.stakingKeeper.SetValidator(ctx, val)
+		err := f.StakingKeeper.SetValidator(ctx, val)
 		require.NoError(t, err)
-		operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, val.GetOperator())
+		operator, err := utilkeeper.ValAddressFromBech32(f.EvmKeeper.AddressCodec, val.GetOperator())
 		require.NoError(t, err)
-		err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
+		err = f.ValsetKeeper.AddExternalChainInfo(ctx, operator, []*valsettypes.ExternalChainInfo{
 			{
 				ChainType:        "evm",
 				ChainReferenceID: "bob",
@@ -462,9 +463,9 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 	}
 
 	// Add the listeners back on for the test
-	f.valsetKeeper.SnapshotListeners = snapshotListeners
+	f.ValsetKeeper.SnapshotListeners = snapshotListeners
 
-	f.consensusKeeper.PutMessageInQueue(ctx, queue, &types.Message{
+	f.ConsensusKeeper.PutMessageInQueue(ctx, queue, &types.Message{
 		TurnstoneID:      "abc",
 		ChainReferenceID: "new-chain",
 		Action: &types.Message_UpdateValset{
@@ -475,37 +476,37 @@ func TestOldPublishedSnapshot_OnSnapshotBuilt(t *testing.T) {
 			},
 		},
 	}, nil)
-	_, err = f.valsetKeeper.TriggerSnapshotBuild(ctx)
+	_, err = f.ValsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
 
-	msgs, err = f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
+	msgs, err = f.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
 	require.NoError(t, err)
 	require.Len(t, msgs, 1) // We expect a new message because the previous one is a week old
 }
 
 func TestInactiveChain_OnSnapshotBuilt(t *testing.T) {
 	t1 := GinkgoT()
-	f := initFixture(t1)
-	ctx := f.ctx.WithBlockHeight(5)
+	f := helper.InitFixture(t1)
+	ctx := f.Ctx.WithBlockHeight(5)
 
 	validators := genValidators(25, 25000)
 	for _, val := range validators {
-		f.stakingKeeper.SetValidator(ctx, val)
+		f.StakingKeeper.SetValidator(ctx, val)
 	}
 
 	queue := fmt.Sprintf("evm/%s/%s", "bob", types.ConsensusTurnstoneMessage)
 
-	_, err := f.valsetKeeper.TriggerSnapshotBuild(ctx)
+	_, err := f.ValsetKeeper.TriggerSnapshotBuild(ctx)
 	require.NoError(t, err)
 
-	_, err = f.consensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
+	_, err = f.ConsensusKeeper.GetMessagesFromQueue(ctx, queue, 100)
 	require.Error(t, err) // We expect an error from this
 }
 
 func TestAddingSupportForNewChain(t *testing.T) {
 	t1 := GinkgoT()
-	f := initFixture(t1)
-	ctx := f.ctx.WithBlockHeight(5)
+	f := helper.InitFixture(t1)
+	ctx := f.Ctx.WithBlockHeight(5)
 
 	t.Run("with happy path there are no errors", func(t *testing.T) {
 		newChain := &types.AddChainProposal{
@@ -515,7 +516,7 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			BlockHeight:       uint64(123),
 			BlockHashAtHeight: "0x1234",
 		}
-		err := f.evmKeeper.AddSupportForNewChain(
+		err := f.EvmKeeper.AddSupportForNewChain(
 			ctx,
 			newChain.GetChainReferenceID(),
 			newChain.GetChainID(),
@@ -524,10 +525,10 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			big.NewInt(55),
 		)
 		require.NoError(t, err)
-		err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+		err = f.EvmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 		require.NoError(t, err)
 
-		gotChainInfo, err := f.evmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
+		gotChainInfo, err := f.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
 		require.NoError(t, err)
 
 		require.Equal(t, newChain.GetChainReferenceID(), gotChainInfo.GetChainReferenceID())
@@ -535,7 +536,7 @@ func TestAddingSupportForNewChain(t *testing.T) {
 		require.Equal(t, newChain.GetBlockHeight(), gotChainInfo.GetReferenceBlockHeight())
 		t.Run("it returns an error if we try to add a chian whose chainID already exists", func(t *testing.T) {
 			newChain.ChainReferenceID = "something_new"
-			err := f.evmKeeper.AddSupportForNewChain(
+			err := f.EvmKeeper.AddSupportForNewChain(
 				ctx,
 				newChain.GetChainReferenceID(),
 				newChain.GetChainID(),
@@ -555,7 +556,7 @@ func TestAddingSupportForNewChain(t *testing.T) {
 			BlockHeight:       uint64(123),
 			BlockHashAtHeight: "0x1234",
 		}
-		err := f.evmKeeper.AddSupportForNewChain(
+		err := f.EvmKeeper.AddSupportForNewChain(
 			ctx,
 			newChain.GetChainReferenceID(),
 			newChain.GetChainID(),
@@ -569,13 +570,13 @@ func TestAddingSupportForNewChain(t *testing.T) {
 
 	t.Run("activating chain", func(t *testing.T) {
 		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
-			err := f.evmKeeper.ActivateChainReferenceID(ctx, "i don't exist", &types.SmartContract{}, "", []byte{})
+			err := f.EvmKeeper.ActivateChainReferenceID(ctx, "i don't exist", &types.SmartContract{}, "", []byte{})
 			require.Error(t, err)
 		})
 		t.Run("works when chain exists", func(t *testing.T) {
-			err := f.evmKeeper.ActivateChainReferenceID(ctx, "bob", &types.SmartContract{Id: 123}, "addr", []byte("unique id"))
+			err := f.EvmKeeper.ActivateChainReferenceID(ctx, "bob", &types.SmartContract{Id: 123}, "addr", []byte("unique id"))
 			require.NoError(t, err)
-			gotChainInfo, err := f.evmKeeper.GetChainInfo(ctx, "bob")
+			gotChainInfo, err := f.EvmKeeper.GetChainInfo(ctx, "bob")
 			require.NoError(t, err)
 
 			require.Equal(t, "addr", gotChainInfo.GetSmartContractAddr())
@@ -585,33 +586,33 @@ func TestAddingSupportForNewChain(t *testing.T) {
 
 	t.Run("removing chain", func(t *testing.T) {
 		t.Run("if the chain does not exist it returns the error", func(t *testing.T) {
-			err := f.evmKeeper.RemoveSupportForChain(ctx, &types.RemoveChainProposal{
+			err := f.EvmKeeper.RemoveSupportForChain(ctx, &types.RemoveChainProposal{
 				ChainReferenceID: "i don't exist",
 			})
 			require.Error(t, err)
 		})
 		t.Run("works when chain exists", func(t *testing.T) {
-			err := f.evmKeeper.RemoveSupportForChain(ctx, &types.RemoveChainProposal{
+			err := f.EvmKeeper.RemoveSupportForChain(ctx, &types.RemoveChainProposal{
 				ChainReferenceID: "bob",
 			})
 			require.NoError(t, err)
-			_, err = f.evmKeeper.GetChainInfo(ctx, "bob")
+			_, err = f.EvmKeeper.GetChainInfo(ctx, "bob")
 			require.Error(t, keeper.ErrChainNotFound)
 		})
 	})
 }
 
 func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
-	var f *fixture
+	var f *helper.Fixture
 
 	testcases := []struct {
 		name     string
-		setup    func(sdk.Context, *fixture) sdk.ValAddress
+		setup    func(sdk.Context, *helper.Fixture) sdk.ValAddress
 		expected bool
 	}{
 		{
 			name: "returns true when all chains supported",
-			setup: func(ctx sdk.Context, a *fixture) sdk.ValAddress {
+			setup: func(ctx sdk.Context, a *helper.Fixture) sdk.ValAddress {
 				for i, chainId := range []string{"chain-1", "chain-2"} {
 					newChain := &types.AddChainProposal{
 						ChainReferenceID:  chainId,
@@ -622,7 +623,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 						BlockHashAtHeight: "0x1234",
 					}
 
-					err := a.evmKeeper.AddSupportForNewChain(
+					err := a.EvmKeeper.AddSupportForNewChain(
 						ctx,
 						newChain.GetChainReferenceID(),
 						newChain.GetChainID(),
@@ -631,15 +632,15 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 						big.NewInt(55),
 					)
 					require.NoError(t, err)
-					err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+					err = f.EvmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 					require.NoError(t, err)
 
-					err = a.evmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, fmt.Sprintf("addr%d", i), []byte("abc"))
+					err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, fmt.Sprintf("addr%d", i), []byte("abc"))
 					require.NoError(t, err)
 				}
 
 				validator := genValidators(1, 1000)[0]
-				err := a.stakingKeeper.SetValidator(ctx, validator)
+				err := a.StakingKeeper.SetValidator(ctx, validator)
 				require.NoError(t, err)
 				private, err := crypto.GenerateKey()
 				require.NoError(t, err)
@@ -656,9 +657,9 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 						Pubkey:           accAddr[:],
 					}
 				}
-				operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, validator.GetOperator())
+				operator, err := utilkeeper.ValAddressFromBech32(f.EvmKeeper.AddressCodec, validator.GetOperator())
 				require.NoError(t, err)
-				err = f.valsetKeeper.AddExternalChainInfo(ctx, operator, externalChains)
+				err = f.ValsetKeeper.AddExternalChainInfo(ctx, operator, externalChains)
 				require.NoError(t, err)
 
 				return operator
@@ -667,7 +668,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 		},
 		{
 			name: "returns false when a chain is not supported",
-			setup: func(ctx sdk.Context, a *fixture) sdk.ValAddress {
+			setup: func(ctx sdk.Context, a *helper.Fixture) sdk.ValAddress {
 				for i, chainId := range []string{"chain-1", "chain-2"} {
 					newChain := &types.AddChainProposal{
 						ChainReferenceID:  chainId,
@@ -678,7 +679,7 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 						BlockHashAtHeight: "0x1234",
 					}
 
-					err := a.evmKeeper.AddSupportForNewChain(
+					err := a.EvmKeeper.AddSupportForNewChain(
 						ctx,
 						newChain.GetChainReferenceID(),
 						newChain.GetChainID(),
@@ -687,15 +688,15 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 						big.NewInt(55),
 					)
 					require.NoError(t, err)
-					err = f.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+					err = f.EvmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 					require.NoError(t, err)
 
-					err = a.evmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, fmt.Sprintf("addr%d", i), []byte("abc"))
+					err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, &types.SmartContract{Id: 123}, fmt.Sprintf("addr%d", i), []byte("abc"))
 					require.NoError(t, err)
 				}
 
 				validator := genValidators(1, 1000)[0]
-				a.stakingKeeper.SetValidator(ctx, validator)
+				a.StakingKeeper.SetValidator(ctx, validator)
 
 				private, err := crypto.GenerateKey()
 				require.NoError(t, err)
@@ -703,9 +704,9 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 				accAddr := crypto.PubkeyToAddress(private.PublicKey)
 
 				// Only add support for one of two chains created
-				operator, err := utilkeeper.ValAddressFromBech32(f.evmKeeper.AddressCodec, validator.GetOperator())
+				operator, err := utilkeeper.ValAddressFromBech32(f.EvmKeeper.AddressCodec, validator.GetOperator())
 				require.NoError(t, err)
-				err = f.valsetKeeper.AddExternalChainInfo(
+				err = f.ValsetKeeper.AddExternalChainInfo(
 					ctx,
 					operator,
 					[]*valsettypes.ExternalChainInfo{
@@ -729,12 +730,12 @@ func TestKeeper_ValidatorSupportsAllChains(t *testing.T) {
 	for _, tt := range testcases {
 		t.Run(tt.name, func(t *testing.T) {
 			t1 := GinkgoT()
-			f = initFixture(t1)
-			ctx := f.ctx.WithBlockHeight(5)
+			f = helper.InitFixture(t1)
+			ctx := f.Ctx.WithBlockHeight(5)
 
 			validatorAddress := tt.setup(ctx, f)
 
-			actual := f.valsetKeeper.ValidatorSupportsAllChains(ctx, validatorAddress)
+			actual := f.ValsetKeeper.ValidatorSupportsAllChains(ctx, validatorAddress)
 			asserter.Equal(tt.expected, actual)
 		})
 	}
@@ -750,7 +751,7 @@ var _ = Describe("evm", func() {
 	// smartContractAddr := common.BytesToAddress(rand.Bytes(5))
 	// chainType, chainReferenceID := consensustypes.ChainTypeEVM, "eth-main"
 	t := GinkgoT()
-	var a *fixture
+	var a *helper.Fixture
 	var ctx sdk.Context
 	var validators []stakingtypes.Validator
 	newChain := &types.AddChainProposal{
@@ -772,14 +773,14 @@ var _ = Describe("evm", func() {
 	}
 
 	BeforeEach(func() {
-		a = initFixture(t) // app.NewTestApp(GinkgoT(), false)
-		ctx = a.ctx.WithHeaderInfo(header.Info{Height: 5})
+		a = helper.InitFixture(t) // app.NewTestApp(GinkgoT(), false)
+		ctx = a.Ctx.WithHeaderInfo(header.Info{Height: 5})
 	})
 
 	Context("multiple chains and smart contracts", func() {
 		Describe("trying to add support for the same chain twice", func() {
 			It("returns an error", func() {
-				err := a.evmKeeper.AddSupportForNewChain(
+				err := a.EvmKeeper.AddSupportForNewChain(
 					ctx,
 					newChain.GetChainReferenceID(),
 					newChain.GetChainID(),
@@ -789,7 +790,7 @@ var _ = Describe("evm", func() {
 				)
 				Expect(err).To(BeNil())
 
-				err = a.evmKeeper.AddSupportForNewChain(
+				err = a.EvmKeeper.AddSupportForNewChain(
 					ctx,
 					newChain.GetChainReferenceID(),
 					newChain.GetChainID(),
@@ -821,7 +822,7 @@ var _ = Describe("evm", func() {
 			BeforeEach(func() {
 				validators = genValidators(25, 25000)
 				for _, val := range validators {
-					a.stakingKeeper.SetValidator(ctx, val)
+					a.StakingKeeper.SetValidator(ctx, val)
 				}
 			})
 
@@ -833,9 +834,9 @@ var _ = Describe("evm", func() {
 					Expect(err).To(BeNil())
 					accAddr1 := crypto.PubkeyToAddress(private1.PublicKey)
 					accAddr2 := crypto.PubkeyToAddress(private2.PublicKey)
-					valAddr, err := utilkeeper.ValAddressFromBech32(a.valsetKeeper.AddressCodec, val.GetOperator())
+					valAddr, err := utilkeeper.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
 					Expect(err).To(BeNil())
-					err = a.valsetKeeper.AddExternalChainInfo(ctx, valAddr, []*valsettypes.ExternalChainInfo{
+					err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddr, []*valsettypes.ExternalChainInfo{
 						{
 							ChainType:        "evm",
 							ChainReferenceID: chain1.ChainReferenceID,
@@ -850,7 +851,7 @@ var _ = Describe("evm", func() {
 						},
 					})
 					Expect(err).To(BeNil())
-					err = a.treasuryKeeper.SetRelayerFee(ctx, valAddr, &treasurytypes.RelayerFeeSetting{
+					err = a.TreasuryKeeper.SetRelayerFee(ctx, valAddr, &treasurytypes.RelayerFeeSetting{
 						ValAddress: sdk.ValAddress(valAddr).String(),
 						Fees: []treasurytypes.RelayerFeeSetting_FeeSetting{
 							{
@@ -865,14 +866,14 @@ var _ = Describe("evm", func() {
 					})
 					require.NoError(t, err)
 				}
-				_, err := a.valsetKeeper.TriggerSnapshotBuild(ctx)
-				a.metrixKeeper.UpdateUptime(ctx)
+				_, err := a.ValsetKeeper.TriggerSnapshotBuild(ctx)
+				a.MetrixKeeper.UpdateUptime(ctx)
 				Expect(err).To(BeNil())
 			})
 
 			BeforeEach(func() {
 				By("adding chain1 works")
-				err := a.evmKeeper.AddSupportForNewChain(
+				err := a.EvmKeeper.AddSupportForNewChain(
 					ctx,
 					chain1.GetChainReferenceID(),
 					chain1.GetChainID(),
@@ -881,11 +882,11 @@ var _ = Describe("evm", func() {
 					big.NewInt(55),
 				)
 				Expect(err).To(BeNil())
-				err = a.evmKeeper.SetFeeManagerAddress(ctx, chain1.GetChainReferenceID(), cDummyFeeMgrAddress)
+				err = a.EvmKeeper.SetFeeManagerAddress(ctx, chain1.GetChainReferenceID(), cDummyFeeMgrAddress)
 				require.NoError(t, err)
 
 				By("adding chain2 works")
-				err = a.evmKeeper.AddSupportForNewChain(
+				err = a.EvmKeeper.AddSupportForNewChain(
 					ctx,
 					chain2.GetChainReferenceID(),
 					chain2.GetChainID(),
@@ -894,7 +895,7 @@ var _ = Describe("evm", func() {
 					big.NewInt(55),
 				)
 				Expect(err).To(BeNil())
-				err = a.evmKeeper.SetFeeManagerAddress(ctx, chain2.GetChainReferenceID(), cDummyFeeMgrAddress)
+				err = a.EvmKeeper.SetFeeManagerAddress(ctx, chain2.GetChainReferenceID(), cDummyFeeMgrAddress)
 				require.NoError(t, err)
 			})
 
@@ -905,71 +906,71 @@ var _ = Describe("evm", func() {
 					})
 					By("saving a new smart contract", func() {
 						Expect(
-							a.evmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
 						).To(BeFalse())
 						Expect(
-							a.evmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
 						).To(BeFalse())
 
-						sc, err := a.evmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+						sc, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
 						Expect(err).To(BeNil())
 
-						err = a.evmKeeper.SetAsCompassContract(ctx, sc)
+						err = a.EvmKeeper.SetAsCompassContract(ctx, sc)
 						Expect(err).To(BeNil())
 
 						Expect(
-							a.evmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
 						).To(BeTrue())
 						Expect(
-							a.evmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
 						).To(BeTrue())
 					})
 
 					By("removing a smart deployment for chain1 - it means that it was successfully uploaded", func() {
-						a.evmKeeper.DeleteSmartContractDeploymentByContractID(ctx, smartContract.GetId(), chain1.GetChainReferenceID())
+						a.EvmKeeper.DeleteSmartContractDeploymentByContractID(ctx, smartContract.GetId(), chain1.GetChainReferenceID())
 						Expect(
-							a.evmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
 						).To(BeFalse())
 						Expect(
-							a.evmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
 						).To(BeTrue())
 					})
 
 					By("activating a new smart contract it removes a deployment for chain1 but it doesn't for chain2", func() {
-						err := a.evmKeeper.ActivateChainReferenceID(ctx, chain1.GetChainReferenceID(), smartContract, "addr1", []byte("id1"))
+						err := a.EvmKeeper.ActivateChainReferenceID(ctx, chain1.GetChainReferenceID(), smartContract, "addr1", []byte("id1"))
 						Expect(err).To(BeNil())
 						Expect(
-							a.evmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
 						).To(BeFalse())
 						Expect(
-							a.evmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
 						).To(BeTrue())
 
 						By("verify that the chain's smart contract id has been deployed", func() {
-							ci, err := a.evmKeeper.GetChainInfo(ctx, chain1.GetChainReferenceID())
+							ci, err := a.EvmKeeper.GetChainInfo(ctx, chain1.GetChainReferenceID())
 							Expect(err).To(BeNil())
 							Expect(ci.GetActiveSmartContractID()).To(Equal(smartContract.GetId()))
 						})
 					})
 
 					By("adding a new smart contract deployment deploys it to chain1 only", func() {
-						sc, err := a.evmKeeper.SaveNewSmartContract(ctx, smartContract2.GetAbiJSON(), smartContract2.GetBytecode())
+						sc, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract2.GetAbiJSON(), smartContract2.GetBytecode())
 						Expect(err).To(BeNil())
-						err = a.evmKeeper.SetAsCompassContract(ctx, sc)
+						err = a.EvmKeeper.SetAsCompassContract(ctx, sc)
 						Expect(err).To(BeNil())
 						Expect(
-							a.evmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain1.GetChainReferenceID()),
 						).To(BeTrue())
 					})
 
 					By("activating a new-new smart contract it deploys it to chain 1", func() {
-						err := a.evmKeeper.ActivateChainReferenceID(ctx, chain1.GetChainReferenceID(), smartContract2, "addr2", []byte("id2"))
+						err := a.EvmKeeper.ActivateChainReferenceID(ctx, chain1.GetChainReferenceID(), smartContract2, "addr2", []byte("id2"))
 						Expect(err).To(BeNil())
 						Expect(
-							a.evmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
+							a.EvmKeeper.HasAnySmartContractDeployment(ctx, chain2.GetChainReferenceID()),
 						).To(BeTrue())
 						By("verify that the chain's smart contract id has been deployed", func() {
-							ci, err := a.evmKeeper.GetChainInfo(ctx, chain1.GetChainReferenceID())
+							ci, err := a.EvmKeeper.GetChainInfo(ctx, chain1.GetChainReferenceID())
 							Expect(err).To(BeNil())
 							Expect(ci.GetActiveSmartContractID()).To(Equal(smartContract2.GetId()))
 						})
@@ -985,7 +986,7 @@ var _ = Describe("evm", func() {
 			BeforeEach(func() {
 				validators = genValidators(25, 25000)
 				for _, val := range validators {
-					a.stakingKeeper.SetValidator(ctx, val)
+					a.StakingKeeper.SetValidator(ctx, val)
 				}
 			})
 
@@ -995,9 +996,9 @@ var _ = Describe("evm", func() {
 						private, err := crypto.GenerateKey()
 						Expect(err).To(BeNil())
 						accAddr := crypto.PubkeyToAddress(private.PublicKey)
-						valAddr, err := utilkeeper.ValAddressFromBech32(a.valsetKeeper.AddressCodec, val.GetOperator())
+						valAddr, err := utilkeeper.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
 						Expect(err).To(BeNil())
-						err = a.valsetKeeper.AddExternalChainInfo(ctx, valAddr, []*valsettypes.ExternalChainInfo{
+						err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddr, []*valsettypes.ExternalChainInfo{
 							{
 								ChainType:        "evm",
 								ChainReferenceID: newChain.ChainReferenceID,
@@ -1012,7 +1013,7 @@ var _ = Describe("evm", func() {
 							},
 						})
 						Expect(err).To(BeNil())
-						err = a.treasuryKeeper.SetRelayerFee(ctx, valAddr, &treasurytypes.RelayerFeeSetting{
+						err = a.TreasuryKeeper.SetRelayerFee(ctx, valAddr, &treasurytypes.RelayerFeeSetting{
 							ValAddress: sdk.ValAddress(valAddr).String(),
 							Fees: []treasurytypes.RelayerFeeSetting_FeeSetting{
 								{
@@ -1028,13 +1029,13 @@ var _ = Describe("evm", func() {
 						require.NoError(t, err)
 					}
 					var err error
-					snapshot, err = a.valsetKeeper.TriggerSnapshotBuild(ctx)
+					snapshot, err = a.ValsetKeeper.TriggerSnapshotBuild(ctx)
 					Expect(err).To(BeNil())
-					a.metrixKeeper.UpdateUptime(ctx)
+					a.MetrixKeeper.UpdateUptime(ctx)
 				})
 
 				BeforeEach(func() {
-					err := a.evmKeeper.AddSupportForNewChain(
+					err := a.EvmKeeper.AddSupportForNewChain(
 						ctx,
 						newChain.GetChainReferenceID(),
 						newChain.GetChainID(),
@@ -1043,24 +1044,24 @@ var _ = Describe("evm", func() {
 						big.NewInt(55),
 					)
 					Expect(err).To(BeNil())
-					err = a.evmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
+					err = a.EvmKeeper.SetFeeManagerAddress(ctx, newChain.GetChainReferenceID(), cDummyFeeMgrAddress)
 					require.NoError(t, err)
 
-					sc, err := a.evmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+					sc, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
 					Expect(err).To(BeNil())
-					err = a.evmKeeper.SetAsCompassContract(ctx, sc)
+					err = a.EvmKeeper.SetAsCompassContract(ctx, sc)
 					Expect(err).To(BeNil())
 
-					err = a.evmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract, "addr", []byte("abc"))
+					err = a.EvmKeeper.ActivateChainReferenceID(ctx, newChain.ChainReferenceID, smartContract, "addr", []byte("abc"))
 					Expect(err).To(BeNil())
 
 					By("it should have upload smart contract message", func() {
-						msgs, err := a.consensusKeeper.GetMessagesFromQueue(ctx, "evm/eth-main/evm-turnstone-message", 5)
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/eth-main/evm-turnstone-message", 5)
 
 						Expect(err).To(BeNil())
 						Expect(len(msgs)).To(Equal(1))
 
-						con, err := msgs[0].ConsensusMsg(a.codec)
+						con, err := msgs[0].ConsensusMsg(a.Codec)
 						Expect(err).To(BeNil())
 
 						evmMsg, ok := con.(*types.Message)
@@ -1069,18 +1070,18 @@ var _ = Describe("evm", func() {
 						_, ok = evmMsg.GetAction().(*types.Message_UploadSmartContract)
 						Expect(ok).To(BeTrue())
 
-						a.consensusKeeper.DeleteJob(ctx, "evm/eth-main/evm-turnstone-message", msgs[0].GetId())
+						a.ConsensusKeeper.DeleteJob(ctx, "evm/eth-main/evm-turnstone-message", msgs[0].GetId())
 					})
 				})
 
 				It("expects update valset message to exist", func() {
-					a.evmKeeper.OnSnapshotBuilt(ctx, snapshot)
-					msgs, err := a.consensusKeeper.GetMessagesFromQueue(ctx, "evm/eth-main/evm-turnstone-message", 5)
+					a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
+					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/eth-main/evm-turnstone-message", 5)
 
 					Expect(err).To(BeNil())
 					Expect(len(msgs)).To(Equal(1))
 
-					con, err := msgs[0].ConsensusMsg(a.codec)
+					con, err := msgs[0].ConsensusMsg(a.Codec)
 					Expect(err).To(BeNil())
 
 					evmMsg, ok := con.(*types.Message)
@@ -1092,7 +1093,7 @@ var _ = Describe("evm", func() {
 
 				When("adding another chain which is not yet active", func() {
 					BeforeEach(func() {
-						err := a.evmKeeper.AddSupportForNewChain(
+						err := a.EvmKeeper.AddSupportForNewChain(
 							ctx,
 							"new-chain",
 							123,
@@ -1101,17 +1102,17 @@ var _ = Describe("evm", func() {
 							big.NewInt(55),
 						)
 						Expect(err).To(BeNil())
-						err = a.evmKeeper.SetFeeManagerAddress(ctx, "new-chain", cDummyFeeMgrAddress)
+						err = a.EvmKeeper.SetFeeManagerAddress(ctx, "new-chain", cDummyFeeMgrAddress)
 						require.NoError(t, err)
 					})
 
 					It("tries to deploy a smart contract to it", func() {
-						a.evmKeeper.OnSnapshotBuilt(ctx, snapshot)
-						msgs, err := a.consensusKeeper.GetMessagesFromQueue(ctx, "evm/new-chain/evm-turnstone-message", 5)
+						a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/new-chain/evm-turnstone-message", 5)
 						Expect(err).To(BeNil())
 						Expect(len(msgs)).To(Equal(1))
 
-						con, err := msgs[0].ConsensusMsg(a.codec)
+						con, err := msgs[0].ConsensusMsg(a.Codec)
 						Expect(err).To(BeNil())
 
 						evmMsg, ok := con.(*types.Message)
@@ -1124,7 +1125,7 @@ var _ = Describe("evm", func() {
 
 				When("there is another upload valset already in", func() {
 					BeforeEach(func() {
-						err := a.evmKeeper.AddSupportForNewChain(
+						err := a.EvmKeeper.AddSupportForNewChain(
 							ctx,
 							"new-chain",
 							123,
@@ -1133,17 +1134,17 @@ var _ = Describe("evm", func() {
 							big.NewInt(55),
 						)
 						Expect(err).To(BeNil())
-						err = a.evmKeeper.SetFeeManagerAddress(ctx, "new-chain", cDummyFeeMgrAddress)
+						err = a.EvmKeeper.SetFeeManagerAddress(ctx, "new-chain", cDummyFeeMgrAddress)
 						require.NoError(t, err)
-						err = a.evmKeeper.ActivateChainReferenceID(ctx, "new-chain", &types.SmartContract{Id: 123}, "addr", []byte("abc"))
+						err = a.EvmKeeper.ActivateChainReferenceID(ctx, "new-chain", &types.SmartContract{Id: 123}, "addr", []byte("abc"))
 						Expect(err).To(BeNil())
 						for _, val := range validators {
 							private, err := crypto.GenerateKey()
 							Expect(err).To(BeNil())
 							accAddr := crypto.PubkeyToAddress(private.PublicKey)
-							valAddr, err := utilkeeper.ValAddressFromBech32(a.valsetKeeper.AddressCodec, val.GetOperator())
+							valAddr, err := utilkeeper.ValAddressFromBech32(a.ValsetKeeper.AddressCodec, val.GetOperator())
 							Expect(err).To(BeNil())
-							err = a.valsetKeeper.AddExternalChainInfo(ctx, valAddr, []*valsettypes.ExternalChainInfo{
+							err = a.ValsetKeeper.AddExternalChainInfo(ctx, valAddr, []*valsettypes.ExternalChainInfo{
 								{
 									ChainType:        "evm",
 									ChainReferenceID: "new-chain",
@@ -1152,7 +1153,7 @@ var _ = Describe("evm", func() {
 								},
 							})
 							Expect(err).To(BeNil())
-							err = a.treasuryKeeper.SetRelayerFee(ctx, valAddr, &treasurytypes.RelayerFeeSetting{
+							err = a.TreasuryKeeper.SetRelayerFee(ctx, valAddr, &treasurytypes.RelayerFeeSetting{
 								ValAddress: sdk.ValAddress(valAddr).String(),
 								Fees: []treasurytypes.RelayerFeeSetting_FeeSetting{
 									{
@@ -1167,16 +1168,16 @@ var _ = Describe("evm", func() {
 							})
 							require.NoError(t, err)
 						}
-						a.metrixKeeper.UpdateUptime(ctx)
+						a.MetrixKeeper.UpdateUptime(ctx)
 					})
 					BeforeEach(func() {
-						msgs, err := a.consensusKeeper.GetMessagesFromQueue(ctx, "evm/new-chain/evm-turnstone-message", 5)
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/new-chain/evm-turnstone-message", 5)
 						Expect(err).To(BeNil())
 						for _, msg := range msgs {
 							// we are now clearing the deploy smart contract from the queue as we don't need it
-							a.consensusKeeper.DeleteJob(ctx, "evm/new-chain/evm-turnstone-message", msg.GetId())
+							a.ConsensusKeeper.DeleteJob(ctx, "evm/new-chain/evm-turnstone-message", msg.GetId())
 						}
-						a.consensusKeeper.PutMessageInQueue(ctx, "evm/new-chain/evm-turnstone-message", &types.Message{
+						a.ConsensusKeeper.PutMessageInQueue(ctx, "evm/new-chain/evm-turnstone-message", &types.Message{
 							TurnstoneID:      "abc",
 							ChainReferenceID: "new-chain",
 							Action: &types.Message_UpdateValset{
@@ -1189,12 +1190,12 @@ var _ = Describe("evm", func() {
 						}, nil)
 					})
 					It("deletes the old smart deployment", func() {
-						a.evmKeeper.OnSnapshotBuilt(ctx, snapshot)
-						msgs, err := a.consensusKeeper.GetMessagesFromQueue(ctx, "evm/new-chain/evm-turnstone-message", 5)
+						a.EvmKeeper.OnSnapshotBuilt(ctx, snapshot)
+						msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/new-chain/evm-turnstone-message", 5)
 						Expect(err).To(BeNil())
 						Expect(len(msgs)).To(Equal(1))
 
-						con, err := msgs[0].ConsensusMsg(a.codec)
+						con, err := msgs[0].ConsensusMsg(a.Codec)
 						Expect(err).To(BeNil())
 
 						evmMsg, ok := con.(*types.Message)
@@ -1213,15 +1214,15 @@ var _ = Describe("evm", func() {
 			BeforeEach(func() {
 				validators = genValidators(25, 25000)[:5]
 				for _, val := range validators {
-					a.stakingKeeper.SetValidator(ctx, val)
+					a.StakingKeeper.SetValidator(ctx, val)
 				}
-				_, err := a.valsetKeeper.TriggerSnapshotBuild(ctx)
+				_, err := a.ValsetKeeper.TriggerSnapshotBuild(ctx)
 				Expect(err).To(BeNil())
 			})
 
 			Context("evm chain and smart contract both exist", func() {
 				BeforeEach(func() {
-					err := a.evmKeeper.AddSupportForNewChain(
+					err := a.EvmKeeper.AddSupportForNewChain(
 						ctx,
 						newChain.GetChainReferenceID(),
 						newChain.GetChainID(),
@@ -1230,16 +1231,16 @@ var _ = Describe("evm", func() {
 						big.NewInt(55),
 					)
 					Expect(err).To(BeNil())
-					err = a.evmKeeper.SetFeeManagerAddress(ctx, newChain.ChainReferenceID, cDummyFeeMgrAddress)
+					err = a.EvmKeeper.SetFeeManagerAddress(ctx, newChain.ChainReferenceID, cDummyFeeMgrAddress)
 					require.NoError(t, err)
-					sc, err := a.evmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
+					sc, err := a.EvmKeeper.SaveNewSmartContract(ctx, smartContract.GetAbiJSON(), smartContract.GetBytecode())
 					Expect(err).To(BeNil())
-					err = a.evmKeeper.SetAsCompassContract(ctx, sc)
+					err = a.EvmKeeper.SetAsCompassContract(ctx, sc)
 					Expect(err).To(BeNil())
 				})
 
 				It("doesn't put any message into a queue", func() {
-					msgs, err := a.consensusKeeper.GetMessagesFromQueue(ctx, "evm/eth-main/evm-turnstone-message", 5)
+					msgs, err := a.ConsensusKeeper.GetMessagesFromQueue(ctx, "evm/eth-main/evm-turnstone-message", 5)
 					Expect(err).To(BeNil())
 					Expect(msgs).To(BeZero())
 				})
@@ -1249,7 +1250,7 @@ var _ = Describe("evm", func() {
 })
 
 var _ = Describe("change min on chain balance", func() {
-	var a *fixture
+	var a *helper.Fixture
 	t := GinkgoT()
 	var ctx sdk.Context
 	newChain := &types.AddChainProposal{
@@ -1261,20 +1262,20 @@ var _ = Describe("change min on chain balance", func() {
 	}
 
 	BeforeEach(func() {
-		a = initFixture(t)
-		ctx = a.ctx.WithHeaderInfo(header.Info{Height: 5})
+		a = helper.InitFixture(t)
+		ctx = a.Ctx.WithHeaderInfo(header.Info{Height: 5})
 	})
 
 	When("chain info exists", func() {
 		BeforeEach(func() {
-			err := a.evmKeeper.AddSupportForNewChain(ctx, newChain.GetChainReferenceID(), newChain.GetChainID(), 1, "a", big.NewInt(55))
+			err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain.GetChainReferenceID(), newChain.GetChainID(), 1, "a", big.NewInt(55))
 			Expect(err).To(BeNil())
-			err = a.evmKeeper.SetFeeManagerAddress(ctx, newChain.ChainReferenceID, cDummyFeeMgrAddress)
+			err = a.EvmKeeper.SetFeeManagerAddress(ctx, newChain.ChainReferenceID, cDummyFeeMgrAddress)
 			require.NoError(t, err)
 		})
 
 		BeforeEach(func() {
-			ci, err := a.evmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
+			ci, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
 			Expect(err).To(BeNil())
 			balance, err := ci.GetMinOnChainBalanceBigInt()
 			Expect(err).To(BeNil())
@@ -1282,10 +1283,10 @@ var _ = Describe("change min on chain balance", func() {
 		})
 
 		It("changes the on chain balance", func() {
-			err := a.evmKeeper.ChangeMinOnChainBalance(ctx, newChain.GetChainReferenceID(), big.NewInt(888))
+			err := a.EvmKeeper.ChangeMinOnChainBalance(ctx, newChain.GetChainReferenceID(), big.NewInt(888))
 			Expect(err).To(BeNil())
 
-			ci, err := a.evmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
+			ci, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
 			Expect(err).To(BeNil())
 			balance, err := ci.GetMinOnChainBalanceBigInt()
 			Expect(err).To(BeNil())
@@ -1295,14 +1296,14 @@ var _ = Describe("change min on chain balance", func() {
 
 	When("chain info does not exists", func() {
 		It("returns an error", func() {
-			err := a.evmKeeper.ChangeMinOnChainBalance(ctx, newChain.GetChainReferenceID(), big.NewInt(888))
+			err := a.EvmKeeper.ChangeMinOnChainBalance(ctx, newChain.GetChainReferenceID(), big.NewInt(888))
 			Expect(err).To(MatchError(keeper.ErrChainNotFound))
 		})
 	})
 })
 
 var _ = Describe("change relay weights", func() {
-	var a *fixture
+	var a *helper.Fixture
 	t := GinkgoT()
 	var ctx sdk.Context
 	newChain := &types.AddChainProposal{
@@ -1314,20 +1315,20 @@ var _ = Describe("change relay weights", func() {
 	}
 
 	BeforeEach(func() {
-		a = initFixture(t)
-		ctx = a.ctx.WithHeaderInfo(header.Info{Height: 5})
+		a = helper.InitFixture(t)
+		ctx = a.Ctx.WithHeaderInfo(header.Info{Height: 5})
 	})
 
 	When("chain info exists", func() {
 		BeforeEach(func() {
-			err := a.evmKeeper.AddSupportForNewChain(ctx, newChain.GetChainReferenceID(), newChain.GetChainID(), 1, "a", big.NewInt(55))
+			err := a.EvmKeeper.AddSupportForNewChain(ctx, newChain.GetChainReferenceID(), newChain.GetChainID(), 1, "a", big.NewInt(55))
 			Expect(err).To(BeNil())
-			err = a.evmKeeper.SetFeeManagerAddress(ctx, newChain.ChainReferenceID, cDummyFeeMgrAddress)
+			err = a.EvmKeeper.SetFeeManagerAddress(ctx, newChain.ChainReferenceID, cDummyFeeMgrAddress)
 			require.NoError(t, err)
 		})
 
 		BeforeEach(func() {
-			ci, err := a.evmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
+			ci, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
 			Expect(err).To(BeNil())
 			weights := ci.GetRelayWeights()
 			Expect(weights).To(Equal(&types.RelayWeights{
@@ -1347,10 +1348,10 @@ var _ = Describe("change relay weights", func() {
 				ExecutionTime: "0.78",
 				FeatureSet:    "0.99",
 			}
-			err := a.evmKeeper.SetRelayWeights(ctx, newChain.GetChainReferenceID(), newWeights)
+			err := a.EvmKeeper.SetRelayWeights(ctx, newChain.GetChainReferenceID(), newWeights)
 			Expect(err).To(BeNil())
 
-			ci, err := a.evmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
+			ci, err := a.EvmKeeper.GetChainInfo(ctx, newChain.GetChainReferenceID())
 			Expect(err).To(BeNil())
 			weights := ci.GetRelayWeights()
 			Expect(weights).To(Equal(newWeights))
@@ -1359,7 +1360,7 @@ var _ = Describe("change relay weights", func() {
 
 	When("chain info does not exists", func() {
 		It("returns an error", func() {
-			err := a.evmKeeper.SetRelayWeights(ctx, newChain.GetChainReferenceID(), &types.RelayWeights{
+			err := a.EvmKeeper.SetRelayWeights(ctx, newChain.GetChainReferenceID(), &types.RelayWeights{
 				Fee:           "0.12",
 				Uptime:        "0.34",
 				SuccessRate:   "0.56",

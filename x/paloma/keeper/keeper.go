@@ -43,6 +43,7 @@ type Keeper struct {
 	AddressCodec   address.Codec
 	ExternalChains []types.ExternalChainSupporterKeeper
 	bondDenom      string
+	authority      string
 }
 
 func NewKeeper(
@@ -57,6 +58,7 @@ func NewKeeper(
 	valset types.ValsetKeeper,
 	upgrade types.UpgradeKeeper,
 	addressCodec address.Codec,
+	authority string,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -82,6 +84,7 @@ func NewKeeper(
 		AddressCodec:   addressCodec,
 		AppVersion:     appVersion,
 		bondDenom:      bondDenom,
+		authority:      authority,
 	}
 }
 

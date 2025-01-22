@@ -16,11 +16,30 @@ import (
 	vtypes "github.com/palomachain/paloma/v2/x/valset/types"
 	"github.com/stretchr/testify/require"
 	protov2 "google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
+
+var _ sdk.FeeTx = (*tx)(nil)
 
 type tx struct {
 	msgs    []sdk.Msg
 	address sdk.Address
+}
+
+func (t *tx) FeeGranter() []byte {
+	return nil
+}
+
+func (t *tx) FeePayer() []byte {
+	return t.address.Bytes()
+}
+
+func (t *tx) GetFee() sdk.Coins {
+	return nil
+}
+
+func (t *tx) GetGas() uint64 {
+	return 0
 }
 
 func (t *tx) GetMsgs() []sdk.Msg {
@@ -298,4 +317,80 @@ func Test_TxFeeSkipper(t *testing.T) {
 		require.Equal(t, int64(42), p)
 		require.NoError(t, err)
 	})
+}
+
+func Test_GasExemptAddressDecorator(t *testing.T) {
+	t.Run("with gas exempt address", func(t *testing.T) {
+		ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+		sender := sdk.AccAddress("exempt")
+		tx := &tx{
+			address: sender,
+		}
+		params := types.Params{
+			GasExemptAddresses: []string{sender.String()},
+		}
+		k := &mockPalomaKeeper{params: params}
+		decorator := paloma.NewGasExemptAddressDecorator(k)
+
+		_, err := decorator.AnteHandle(ctx, tx, false, func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
+			require.Contains(t, ctx.GasMeter().String(), "freeGasMeter")
+			return ctx, nil
+		})
+
+		require.NoError(t, err)
+	})
+
+	t.Run("without gas exempt address", func(t *testing.T) {
+		ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+		tx := &tx{
+			address: sdk.AccAddress("non-exempt"),
+		}
+		params := types.Params{
+			GasExemptAddresses: []string{sdk.AccAddress("exempt").String()},
+		}
+		k := &mockPalomaKeeper{params: params}
+		decorator := paloma.NewGasExemptAddressDecorator(k)
+
+		_, err := decorator.AnteHandle(ctx, tx, false, func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
+			require.Contains(t, ctx.GasMeter().String(), "InfiniteGasMeter")
+			return ctx, nil
+		})
+
+		require.NoError(t, err)
+	})
+
+	t.Run("with invalid transaction type", func(t *testing.T) {
+		ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+		tx := &mockInvalidTx{}
+		params := types.Params{
+			GasExemptAddresses: []string{"exempt"},
+		}
+		k := &mockPalomaKeeper{params: params}
+		decorator := paloma.NewGasExemptAddressDecorator(k)
+
+		_, err := decorator.AnteHandle(ctx, tx, false, func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
+			return ctx, nil
+		})
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "invalid transaction type")
+	})
+}
+
+type mockPalomaKeeper struct {
+	params types.Params
+}
+
+func (m *mockPalomaKeeper) GetParams(ctx context.Context) types.Params {
+	return m.params
+}
+
+type mockInvalidTx struct{}
+
+func (m *mockInvalidTx) GetMsgsV2() ([]protoreflect.ProtoMessage, error) {
+	return nil, nil
+}
+
+func (m *mockInvalidTx) GetMsgs() []sdk.Msg {
+	return nil
 }

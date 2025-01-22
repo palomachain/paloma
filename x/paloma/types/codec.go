@@ -9,6 +9,7 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
+	cdc.RegisterConcrete(&MsgUpdateParams{}, "paloma/UpdateParams", nil)
 	cdc.RegisterConcrete(&MsgAddStatusUpdate{}, "paloma/AddStatusUpdate", nil)
 	cdc.RegisterConcrete(&MsgRegisterLightNodeClient{}, "paloma/RegisterLightNodeClient", nil)
 	cdc.RegisterConcrete(&MsgAddLightNodeClientLicense{}, "paloma/AddLightNodeClientLicense", nil)
@@ -18,6 +19,7 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgUpdateParams{},
 		&MsgAddStatusUpdate{},
 		&MsgRegisterLightNodeClient{},
 		&MsgAddLightNodeClientLicense{},

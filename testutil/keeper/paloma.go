@@ -14,6 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/palomachain/paloma/v2/app"
 	params2 "github.com/palomachain/paloma/v2/app/params"
@@ -54,6 +56,7 @@ func PalomaKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		valsetkeeper.Keeper{},
 		nil,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
