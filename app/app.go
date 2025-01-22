@@ -1071,6 +1071,7 @@ func New(
 	anteDecorators = append(anteDecorators,
 		palomamodule.NewLogMsgDecorator(app.appCodec),
 		palomamodule.NewVerifyAuthorisedSignatureDecorator(app.FeeGrantKeeper),
+		palomamodule.NewGasExemptAddressDecorator(app.PalomaKeeper),
 	)
 	anteHandler := sdk.ChainAnteDecorators(
 		anteDecorators...,

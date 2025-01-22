@@ -3,11 +3,15 @@ package paloma
 import (
 	"context"
 	"fmt"
+	"math"
 
+	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/log"
+	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/feegrant"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	errtypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/gogo/protobuf/proto"
 	"github.com/palomachain/paloma/v2/util/liblog"
 	"github.com/palomachain/paloma/v2/util/libmeta"
@@ -139,6 +143,65 @@ func (d VerifyAuthorisedSignatureDecorator) AnteHandle(ctx sdk.Context, tx sdk.T
 		}
 
 		logger(ctx).Debug(fmt.Sprintf("found total of %d signatures from granted addresses for message %s", len(grantees), proto.MessageName(msg)))
+	}
+
+	return next(ctx, tx, simulate)
+}
+
+type PalomaKeeper interface {
+	GetParams(context.Context) types.Params
+}
+
+type freeGasMeter struct{}
+
+var _ storetypes.GasMeter = (*freeGasMeter)(nil)
+
+func (f *freeGasMeter) ConsumeGas(amount uint64, descriptor string) {}
+func (f *freeGasMeter) RefundGas(amount uint64, descriptor string)  {}
+func (f *freeGasMeter) GasConsumed() uint64                         { return 0 }
+func (f *freeGasMeter) GasConsumedToLimit() uint64                  { return 0 }
+func (f *freeGasMeter) GasRemaining() uint64                        { return math.MaxUint64 }
+func (f *freeGasMeter) IsOutOfGas() bool                            { return false }
+func (f *freeGasMeter) IsPastLimit() bool                           { return false }
+func (f *freeGasMeter) Limit() uint64                               { return math.MaxUint64 }
+func (f *freeGasMeter) String() string {
+	return fmt.Sprintf("freeGasMeter:\n  consumed: %s", "no tracking")
+}
+
+// GasExemptAddressDecorator inspects transactions sender for a matching address from the
+// whitelist of gas exempt addresses. If a match is found, the gas required for the transaction
+// is reduced to 0.
+type GasExemptAddressDecorator struct {
+	k PalomaKeeper
+}
+
+func NewGasExemptAddressDecorator(k PalomaKeeper) GasExemptAddressDecorator {
+	return GasExemptAddressDecorator{k}
+}
+
+func (d GasExemptAddressDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
+	if simulate {
+		return next(ctx, tx, simulate)
+	}
+
+	feeTx, ok := tx.(sdk.FeeTx)
+	if !ok {
+		// TODO: FIX
+		return ctx, sdkerrors.Wrap(errtypes.ErrTxDecode, "invalid transaction type")
+	}
+
+	sender := sdk.AccAddress(feeTx.FeePayer()).String()
+	params := d.k.GetParams(ctx)
+	found := false
+	for _, v := range params.GasExemptAddresses {
+		if v == sender {
+			found = true
+			break
+		}
+	}
+
+	if found {
+		ctx = ctx.WithGasMeter(&freeGasMeter{})
 	}
 
 	return next(ctx, tx, simulate)
