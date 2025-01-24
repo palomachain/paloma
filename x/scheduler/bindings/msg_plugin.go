@@ -2,13 +2,12 @@ package bindings
 
 import (
 	"context"
-	"encoding/json"
 
 	sdkerrors "cosmossdk.io/errors"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/v2/util/libwasm"
 	bindingstypes "github.com/palomachain/paloma/v2/x/scheduler/bindings/types"
 	schedulertypes "github.com/palomachain/paloma/v2/x/scheduler/types"
 )
@@ -17,7 +16,10 @@ type SchedulerMsgServer interface {
 	CreateJob(context.Context, *schedulertypes.MsgCreateJob) (*schedulertypes.MsgCreateJobResponse, error)
 }
 
-func NewMessenger(k Schedulerkeeper, ms SchedulerMsgServer) wasmkeeper.Messenger {
+func NewMessenger(
+	k Schedulerkeeper,
+	ms SchedulerMsgServer,
+) libwasm.Messenger[bindingstypes.Message] {
 	return &customMessenger{
 		ms: ms,
 		k:  k,
@@ -29,23 +31,22 @@ type customMessenger struct {
 	k  Schedulerkeeper
 }
 
-var _ wasmkeeper.Messenger = (*customMessenger)(nil)
+var _ libwasm.Messenger[bindingstypes.Message] = (*customMessenger)(nil)
 
-func (m *customMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, _ string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
-	if msg.Custom == nil {
-		var contractMsg bindingstypes.Message
-		if err := json.Unmarshal(msg.Custom, &contractMsg); err != nil {
-			return nil, nil, nil, sdkerrors.Wrap(err, "scheduler msg")
-		}
-		switch {
-		case contractMsg.CreateJob != nil:
-			return m.createJob(ctx, contractAddr, contractMsg.CreateJob)
-		case contractMsg.ExecuteJob != nil:
-			return m.executeJob(ctx, contractAddr, contractMsg.ExecuteJob)
-		}
+func (m *customMessenger) DispatchMsg(
+	ctx sdk.Context,
+	contractAddr sdk.AccAddress,
+	_ string,
+	contractMsg bindingstypes.Message,
+) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
+	switch {
+	case contractMsg.CreateJob != nil:
+		return m.createJob(ctx, contractAddr, contractMsg.CreateJob)
+	case contractMsg.ExecuteJob != nil:
+		return m.executeJob(ctx, contractAddr, contractMsg.ExecuteJob)
 	}
 
-	return nil, nil, nil, nil
+	return nil, nil, nil, libwasm.ErrUnrecognizedMessage
 }
 
 func (m *customMessenger) createJob(ctx sdk.Context, contractAddr sdk.AccAddress, createJob *bindingstypes.CreateJob) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {

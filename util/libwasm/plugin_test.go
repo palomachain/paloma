@@ -16,29 +16,28 @@ import (
 )
 
 // MockMessenger is a mock implementation of wasmkeeper.Messenger
-type MockMessenger struct {
+type MockMessenger[T any] struct {
 	mock.Mock
 }
 
-func (m *MockMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
+func (m *MockMessenger[T]) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg T) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
 	args := m.Called(ctx, contractAddr, contractIBCPortID, msg)
 	return args.Get(0).([]sdk.Event), args.Get(1).([][]byte), args.Get(2).([][]*codectypes.Any), args.Error(3)
 }
 
 func TestDispatchMsg(t *testing.T) {
-	// Setup
 	ctx := sdk.Context{}
 	contractAddr := sdk.AccAddress([]byte("test_address"))
 	contractIBCPortID := "test_port"
 
 	logger := log.NewNopLogger()
-	mockScheduler := new(MockMessenger)
-	mockSkyway := new(MockMessenger)
-	mockTokenFactory := new(MockMessenger)
-	mockLegacyFallback := new(MockMessenger)
-	mockWrapped := new(MockMessenger)
+	mockScheduler := new(MockMessenger[schedulerbindings.Message])
+	mockSkyway := new(MockMessenger[skywaybindings.Message])
+	mockTokenFactory := new(MockMessenger[tfbindings.Message])
+	mockLegacyFallback := new(MockMessenger[wasmvmtypes.CosmosMsg])
+	mockWrapped := new(MockMessenger[wasmvmtypes.CosmosMsg])
 
-	h := Messenger{
+	h := router{
 		log:            logger,
 		legacyFallback: mockLegacyFallback,
 		scheduler:      mockScheduler,

@@ -1342,7 +1342,7 @@ func buildWasmMessageDecorator(
 	srv := schedulermodulekeeper.NewMsgServerImpl(scheduler)
 	skwSrv := skywaymodulekeeper.NewMsgServerImpl(*skyway)
 
-	return libwasm.NewMessenger(
+	return libwasm.NewRouterMessageDecorator(
 		log,
 		schedulerbindings.NewLegacyMessenger(scheduler),
 		schedulerbindings.NewMessenger(scheduler, srv),

@@ -10,18 +10,25 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/palomachain/paloma/v2/util/liberr"
 	"github.com/palomachain/paloma/v2/util/liblog"
 	schedulerbindings "github.com/palomachain/paloma/v2/x/scheduler/bindings/types"
 	skywaybindings "github.com/palomachain/paloma/v2/x/skyway/bindings/types"
 	tfbindings "github.com/palomachain/paloma/v2/x/tokenfactory/bindings/types"
 )
 
-type Messenger struct {
-	legacyFallback wasmkeeper.Messenger
-	scheduler      wasmkeeper.Messenger
-	skyway         wasmkeeper.Messenger
-	tokenfactory   wasmkeeper.Messenger
-	wrapped        wasmkeeper.Messenger
+const ErrUnrecognizedMessage = liberr.Error("unrecognized message type")
+
+type Messenger[T any] interface {
+	DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, t T) (events []sdk.Event, data [][]byte, msgResponses [][]*codectypes.Any, err error)
+}
+
+type router struct {
+	legacyFallback Messenger[wasmvmtypes.CosmosMsg]
+	scheduler      Messenger[schedulerbindings.Message]
+	skyway         Messenger[skywaybindings.Message]
+	tokenfactory   Messenger[tfbindings.Message]
+	wrapped        Messenger[wasmvmtypes.CosmosMsg]
 	log            log.Logger
 }
 
@@ -43,15 +50,15 @@ type CustomQuery struct {
 	TokenFactory *tfbindings.Query        `json:"token_factory_query,omitempty"`
 }
 
-func NewMessenger(
+func NewRouterMessageDecorator(
 	log log.Logger,
-	legacyFallback wasmkeeper.Messenger,
-	scheduler wasmkeeper.Messenger,
-	skyway wasmkeeper.Messenger,
-	tokenfactory wasmkeeper.Messenger,
+	legacyFallback Messenger[wasmvmtypes.CosmosMsg],
+	scheduler Messenger[schedulerbindings.Message],
+	skyway Messenger[skywaybindings.Message],
+	tokenfactory Messenger[tfbindings.Message],
 ) func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
 	return func(old wasmkeeper.Messenger) wasmkeeper.Messenger {
-		return &Messenger{
+		return &router{
 			log:            log,
 			legacyFallback: legacyFallback,
 			scheduler:      scheduler,
@@ -62,7 +69,7 @@ func NewMessenger(
 	}
 }
 
-func (h Messenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) (a []sdk.Event, b [][]byte, c [][]*codectypes.Any, err error) {
+func (h router) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) (a []sdk.Event, b [][]byte, c [][]*codectypes.Any, err error) {
 	logger := liblog.FromSDKLogger(h.log).WithComponent("wasm-message-decorator")
 	logger.Debug("Dispatching message...", "contract", contractAddr, "msg", msg)
 
@@ -86,11 +93,11 @@ func (h Messenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, con
 		}
 		switch {
 		case contractMsg.Scheduler != nil:
-			return h.scheduler.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
+			return h.scheduler.DispatchMsg(ctx, contractAddr, contractIBCPortID, *contractMsg.Scheduler)
 		case contractMsg.Skyway != nil:
-			return h.skyway.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
+			return h.skyway.DispatchMsg(ctx, contractAddr, contractIBCPortID, *contractMsg.Skyway)
 		case contractMsg.TokenFactory != nil:
-			return h.tokenfactory.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
+			return h.tokenfactory.DispatchMsg(ctx, contractAddr, contractIBCPortID, *contractMsg.TokenFactory)
 		}
 
 		logger.Debug("Calling legacy fallback message handler...")

@@ -1,21 +1,19 @@
 package bindings
 
 import (
-	"encoding/json"
-
 	sdkerrors "cosmossdk.io/errors"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/palomachain/paloma/v2/util/libwasm"
 	bindingstypes "github.com/palomachain/paloma/v2/x/tokenfactory/bindings/types"
 	tokenfactorykeeper "github.com/palomachain/paloma/v2/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/palomachain/paloma/v2/x/tokenfactory/types"
 )
 
-func NewMessenger(bank *bankkeeper.BaseKeeper, tokenFactory *tokenfactorykeeper.Keeper) wasmkeeper.Messenger {
+func NewMessenger(bank *bankkeeper.BaseKeeper, tokenFactory *tokenfactorykeeper.Keeper) libwasm.Messenger[bindingstypes.Message] {
 	return &customMessenger{
 		bank:         bank,
 		tokenFactory: tokenFactory,
@@ -27,28 +25,23 @@ type customMessenger struct {
 	tokenFactory *tokenfactorykeeper.Keeper
 }
 
-var _ wasmkeeper.Messenger = (*customMessenger)(nil)
+var _ libwasm.Messenger[bindingstypes.Message] = (*customMessenger)(nil)
 
-func (m *customMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
-	if msg.Custom != nil {
-		var contractMsg bindingstypes.Message
-		if err := json.Unmarshal(msg.Custom, &contractMsg); err != nil {
-			return nil, nil, nil, sdkerrors.Wrap(err, "token factory msg")
-		}
-		switch {
-		case contractMsg.CreateDenom != nil:
-			return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
-		case contractMsg.MintTokens != nil:
-			return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
-		case contractMsg.ChangeAdmin != nil:
-			return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
-		case contractMsg.BurnTokens != nil:
-			return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
-		case contractMsg.SetMetadata != nil:
-			return m.setMetadata(ctx, contractAddr, contractMsg.SetMetadata)
-		}
+func (m *customMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, contractMsg bindingstypes.Message) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
+	switch {
+	case contractMsg.CreateDenom != nil:
+		return m.createDenom(ctx, contractAddr, contractMsg.CreateDenom)
+	case contractMsg.MintTokens != nil:
+		return m.mintTokens(ctx, contractAddr, contractMsg.MintTokens)
+	case contractMsg.ChangeAdmin != nil:
+		return m.changeAdmin(ctx, contractAddr, contractMsg.ChangeAdmin)
+	case contractMsg.BurnTokens != nil:
+		return m.burnTokens(ctx, contractAddr, contractMsg.BurnTokens)
+	case contractMsg.SetMetadata != nil:
+		return m.setMetadata(ctx, contractAddr, contractMsg.SetMetadata)
 	}
-	return nil, nil, nil, nil
+
+	return nil, nil, nil, libwasm.ErrUnrecognizedMessage
 }
 
 func (m *customMessenger) createDenom(ctx sdk.Context, contractAddr sdk.AccAddress, createDenom *bindingstypes.CreateDenom) ([]sdk.Event, [][]byte, [][]*codectypes.Any, error) {
