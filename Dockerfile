@@ -1,7 +1,7 @@
 ###########################
 ####     Base image    ####
 ###########################
-FROM golang:1.22-buster AS base
+FROM golang:1.23-buster AS base
 
 # TODO add non-root user
 LABEL org.opencontainers.image.authors="christian@volume.finance"

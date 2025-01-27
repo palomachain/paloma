@@ -105,6 +105,9 @@ sudo chmod +x /usr/local/bin/palomad
 
 ### To build palomad using latest release
 
+> [!IMPORTANT]  
+> Always make sure you're building against the latest released version of Go.
+
 ```shell
 git clone https://github.com/palomachain/paloma.git
 cd paloma

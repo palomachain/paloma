@@ -9,7 +9,7 @@ TM_VERSION           := $(shell go list -m github.com/cometbft/cometbft | sed 's
 DOCKER               := $(shell which docker)
 PROJECT_NAME         := paloma
 HTTPS_GIT            := https://github.com/palomachain/paloma.git
-GOLANGCILINT_VERSION := 1.51.2
+GOLANGCILINT_VERSION := 1.63.4
 
 ###############################################################################
 ##                                  Version                                  ##
