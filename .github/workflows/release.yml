@@ -14,13 +14,13 @@ jobs:
   release:
     permissions:
       contents: write # for goreleaser/goreleaser-action to create a GitHub release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # stick with older LTS release for continued debian support
     steps:
       - uses: actions/checkout@v4
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.22.2'
+          go-version: '1.23.5'
       - name: Unshallow
         run: git fetch --prune --unshallow
       - name: Create release
