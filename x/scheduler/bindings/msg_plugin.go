@@ -2,6 +2,8 @@ package bindings
 
 import (
 	"context"
+	"encoding/hex"
+	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
@@ -99,9 +101,12 @@ func (m *customMessenger) executeJob(ctx sdk.Context, contractAddr sdk.AccAddres
 		return nil, nil, nil, wasmvmtypes.InvalidRequest{Err: "missing payload"}
 	}
 
+	hexString := hex.EncodeToString(e.Payload)
+	injected := []byte(fmt.Sprintf("{\"hexPayload\":\"%s\"}", hexString))
+
 	// We use the keeper method here instead of going via msg server,
 	// as that will allow us to set the sender contract address.
-	_, err := m.k.ExecuteJob(ctx, e.JobID, e.Payload, contractAddr, contractAddr)
+	_, err := m.k.ExecuteJob(ctx, e.JobID, injected, contractAddr, contractAddr)
 	if err != nil {
 		return nil, nil, nil, sdkerrors.Wrap(err, "failed to trigger job execution.")
 	}
