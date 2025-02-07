@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "github.com/cosmos/cosmos-sdk/types/errors"
@@ -423,6 +424,46 @@ func (k *msgServer) OverrideNonceProposal(ctx context.Context, req *types.MsgNon
 		return nil, sdkerrors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, req.Metadata.Creator)
 	}
 	return &emptypb.Empty{}, k.overrideNonce(ctx, req.ChainReferenceId, req.Nonce)
+}
+
+func (k *msgServer) ReplenishLostGrainsProposal(ctx context.Context, req *types.MsgReplenishLostGrainsProposal) (*emptypb.Empty, error) {
+	if err := req.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrapf(govtypes.ErrInvalidSigner, "message validation failed: %v", err)
+	}
+	if req.Metadata.Creator != k.authority {
+		return nil, sdkerrors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, req.Metadata.Creator)
+	}
+
+	ctx, commit := sdk.UnwrapSDKContext(ctx).CacheContext()
+	store := k.GetStore(ctx, types.StoreModulePrefix)
+	if store.Get(types.ReplenishedGrainRecordsKey) != nil {
+		return nil, fmt.Errorf("operation may only be run once.")
+	}
+
+	for _, addr := range []string{
+		"paloma17t5pd5l0d8a3p54r0p92src8tx2tvs7l2afmd9",
+		"paloma1vlrsw0hf6ddkje99jtnzh4raaa4dqpwqapeaz6",
+	} {
+
+		amount := sdk.NewCoin("ugrain", math.NewInt(665625000000000))
+		err := k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(amount))
+		if err != nil {
+			return nil, fmt.Errorf("MintCoins: %w", err)
+		}
+
+		receiver := sdk.MustAccAddressFromBech32(addr)
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName,
+			receiver,
+			sdk.NewCoins(amount))
+		if err != nil {
+			return nil, fmt.Errorf("SendCoinsFromModuleToAccount: %w", err)
+		}
+	}
+
+	store.Set(types.ReplenishedGrainRecordsKey, []byte("1"))
+
+	commit()
+	return &emptypb.Empty{}, nil
 }
 
 func (k *msgServer) SetERC20ToTokenDenom(ctx context.Context, msg *types.MsgSetERC20ToTokenDenom) (*emptypb.Empty, error) {

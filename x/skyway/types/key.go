@@ -115,6 +115,8 @@ var (
 	// [0x06a6b30651341e80276e0d2e19449250]
 	LastUnBondingBlockHeight = HashString("LastUnBondingBlockHeight")
 
+	ReplenishedGrainRecordsKey = HashString("ReplenishedGrainRecordsKey")
+
 	// PastEthSignatureCheckpointKey indexes eth signature checkpoints that have existed
 	// [0x1cbe0be407a979331b98e599eeedd09f]
 	PastEthSignatureCheckpointKey = HashString("PastEthSignatureCheckpointKey")
