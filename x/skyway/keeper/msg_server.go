@@ -507,3 +507,29 @@ func (k *msgServer) SetERC20ToTokenDenom(ctx context.Context, msg *types.MsgSetE
 
 	return &emptypb.Empty{}, nil
 }
+
+func (k *msgServer) SetERC20MappingProposal(ctx context.Context, req *types.MsgSetERC20MappingProposal) (*emptypb.Empty, error) {
+	if err := req.ValidateBasic(); err != nil {
+		return nil, sdkerrors.Wrapf(govtypes.ErrInvalidSigner, "message validation failed: %v", err)
+	}
+	if req.Authority != req.Metadata.Creator {
+		return nil, sdkerrors.Wrapf(govtypes.ErrInvalidSigner, "creator mismatch; expected %s, got %s", k.authority, req.Metadata.Creator)
+	}
+	if req.Metadata.Creator != k.authority {
+		return nil, sdkerrors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, req.Metadata.Creator)
+	}
+
+	ctx, commit := sdk.UnwrapSDKContext(ctx).CacheContext()
+	for _, m := range req.Mappings {
+		ethAddr, err := types.NewEthAddress(m.GetErc20())
+		if err != nil {
+			return nil, sdkerrors.Wrapf(types.ErrInvalid, "eth address %s: %v", m.GetErc20(), err)
+		}
+		if err := k.setDenomToERC20(ctx, m.GetChainReferenceId(), m.GetDenom(), *ethAddr); err != nil {
+			return nil, err
+		}
+	}
+
+	commit()
+	return &emptypb.Empty{}, nil
+}

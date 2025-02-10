@@ -32,6 +32,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		&MsgLightNodeSaleClaim{},
 		&MsgNonceOverrideProposal{},
 		&MsgReplenishLostGrainsProposal{},
+		&MsgSetERC20MappingProposal{},
 		&MsgSetERC20ToTokenDenom{},
 	)
 
@@ -88,5 +89,6 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&SetLightNodeSaleContractsProposal{}, "skyway/SetLightNodeSaleContractsProposal", nil)
 	cdc.RegisterConcrete(&MsgNonceOverrideProposal{}, "skyway/MsgNonceOverrideProposal", nil)
 	cdc.RegisterConcrete(&MsgReplenishLostGrainsProposal{}, "skyway/MsgReplenishLostGrainsProposal", nil)
+	cdc.RegisterConcrete(&MsgSetERC20MappingProposal{}, "skyway/MsgSetERC20MappingProposal", nil)
 	cdc.RegisterConcrete(&MsgSetERC20ToTokenDenom{}, "skyway/MsgSetERC20ToTokenDenom", nil)
 }
