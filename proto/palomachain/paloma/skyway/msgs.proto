@@ -73,6 +73,7 @@ service Msg {
   }
 
   rpc ReplenishLostGrainsProposal(MsgReplenishLostGrainsProposal) returns (google.protobuf.Empty);
+  rpc SetERC20MappingProposal(MsgSetERC20MappingProposal) returns (google.protobuf.Empty);
   rpc OverrideNonceProposal(MsgNonceOverrideProposal) returns (google.protobuf.Empty);
 }
 
@@ -91,6 +92,22 @@ message MsgReplenishLostGrainsProposal {
   option deprecated = true;
   option (cosmos.msg.v1.signer) = "metadata";
   palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+}
+
+message MsgSetERC20MappingProposal {
+  option (cosmos.msg.v1.signer) = "metadata";
+  message ERC20ToDenomMapping {
+    string chain_reference_id = 1;
+    string erc20 = 2;
+    string denom = 3;
+  }
+
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+  string authority = 2 
+      [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  repeated ERC20ToDenomMapping mappings = 3
       [ (gogoproto.nullable) = false ];
 }
 

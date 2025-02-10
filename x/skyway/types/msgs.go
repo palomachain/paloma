@@ -496,3 +496,17 @@ func (msg MsgReplenishLostGrainsProposal) GetSignBytes() []byte {
 func (msg MsgReplenishLostGrainsProposal) GetSigners() []sdk.AccAddress {
 	return libmeta.GetSigners(&msg)
 }
+
+func (msg MsgSetERC20MappingProposal) Route() string { return RouterKey }
+func (msg MsgSetERC20MappingProposal) Type() string  { return "set_erc20_to_denom_proposal" }
+func (msg MsgSetERC20MappingProposal) ValidateBasic() error {
+	return libmeta.ValidateBasic(&msg)
+}
+
+func (msg MsgSetERC20MappingProposal) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgSetERC20MappingProposal) GetSigners() []sdk.AccAddress {
+	return libmeta.GetSigners(&msg)
+}
