@@ -24,6 +24,7 @@ var (
 	_ sdk.Msg = &MsgUpdateParams{}
 	_ sdk.Msg = &MsgLightNodeSaleClaim{}
 	_ sdk.Msg = &MsgSetERC20ToTokenDenom{}
+	_ sdk.Msg = &MsgReplenishLostGrainsProposal{}
 )
 
 // NewMsgSendToRemote returns a new msgSendToRemote
@@ -481,3 +482,17 @@ func (msg *MsgSetERC20ToTokenDenom) GetSigners() []sdk.AccAddress {
 
 func (msg MsgSetERC20ToTokenDenom) Type() string  { return "set-erc20-to-denom" }
 func (msg MsgSetERC20ToTokenDenom) Route() string { return RouterKey }
+
+func (msg MsgReplenishLostGrainsProposal) Route() string { return RouterKey }
+func (msg MsgReplenishLostGrainsProposal) Type() string  { return "replenish_lost_grains_proposal" }
+func (msg MsgReplenishLostGrainsProposal) ValidateBasic() error {
+	return libmeta.ValidateBasic(&msg)
+}
+
+func (msg MsgReplenishLostGrainsProposal) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgReplenishLostGrainsProposal) GetSigners() []sdk.AccAddress {
+	return libmeta.GetSigners(&msg)
+}

@@ -72,6 +72,7 @@ service Msg {
       "/palomachain/paloma/skyway/erc20-to-token-denom";
   }
 
+  rpc ReplenishLostGrainsProposal(MsgReplenishLostGrainsProposal) returns (google.protobuf.Empty);
   rpc OverrideNonceProposal(MsgNonceOverrideProposal) returns (google.protobuf.Empty);
 }
 
@@ -83,6 +84,14 @@ message MsgNonceOverrideProposal {
       [ (gogoproto.nullable) = false ];
   string chain_reference_id = 2;
   uint64 nonce = 3;
+}
+
+// TODO: Remove this message after usage
+message MsgReplenishLostGrainsProposal {
+  option deprecated = true;
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
 }
 
 // MsgSendToRemote
