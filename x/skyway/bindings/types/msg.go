@@ -20,7 +20,7 @@ type Message struct {
 	CancelTx *CancelTx `json:"cancel_tx,omitempty"`
 	// Creates or updates the ERC20 tracking address mapping
 	// for the given denom. Must have admin authority to do so.
-	SetErc20ToDenom *SetErc20ToDenom `json:"set_erc_20_to_denom,omitempty"`
+	SetErc20ToDenom *SetErc20ToDenom `json:"set_erc20_to_denom,omitempty"`
 }
 
 type (
