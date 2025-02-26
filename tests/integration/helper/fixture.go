@@ -379,6 +379,7 @@ func InitFixture(t ginkgo.FullGinkgoTInterface) *Fixture {
 	*evmKeeper = *evmmodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[evmmoduletypes.StoreKey]),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		consensusKeeper,
 		valsetKeeper,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),

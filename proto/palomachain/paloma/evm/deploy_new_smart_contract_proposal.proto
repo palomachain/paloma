@@ -3,7 +3,10 @@ package palomachain.paloma.evm;
 
 option go_package = "github.com/palomachain/paloma/v2/x/evm/types";
 
+// This message is deprecated, use MsgDeployNewSmartContractProposalV2.
 message DeployNewSmartContractProposal {
+  option deprecated = true;
+
   string title = 1;
   string description = 2;
 

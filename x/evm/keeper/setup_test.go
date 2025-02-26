@@ -12,6 +12,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/palomachain/paloma/v2/app/params"
 	"github.com/palomachain/paloma/v2/testutil"
 	"github.com/palomachain/paloma/v2/x/evm/types"
@@ -56,6 +58,7 @@ func NewEvmKeeper(t testutil.TB) (*Keeper, mockedServices, sdk.Context) {
 	k := NewKeeper(
 		appCodec,
 		storeService,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		ms.ConsensusKeeper,
 		ms.ValsetKeeper,
 		authcodec.NewBech32Codec(params.ValidatorAddressPrefix),

@@ -37,6 +37,8 @@ func EvmKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	k := keeper.NewKeeper(
 		cdc,
 		runtime.NewKVStoreService(storeKey),
+		// authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		"",
 		nil,
 		mocks.NewValsetKeeper(t),
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),

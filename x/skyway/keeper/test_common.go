@@ -749,6 +749,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 	*evmKeeper = *evmkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keyEvm),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		consensusKeeper,
 		valsetKeeper,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),

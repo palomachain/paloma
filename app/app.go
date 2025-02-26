@@ -599,6 +599,7 @@ func New(
 	app.EvmKeeper = *evmmodulekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[evmmoduletypes.StoreKey]),
+		authorityAddress,
 		app.ConsensusKeeper,
 		app.ValsetKeeper,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
