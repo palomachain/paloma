@@ -4,11 +4,6 @@ run:
   timeout: 10m
   modules-download-mode: readonly
   allow-parallel-runners: true
-  exclude-dirs-use-default: true
-  exclude-dirs:
-    - .git
-    - .docker
-    - .bin
 
 linters:
   disable-all: true
@@ -28,6 +23,11 @@ issues:
   # Restricts maximum count of issues to display with the same text, and show all instead.
   max-same-issues: 0
   max-issues-per-linter: 0
+  exclude-dirs-use-default: true
+  exclude-dirs:
+    - .git
+    - .docker
+    - .bin
   exclude-rules:
   # disabling some linters for test files
     - path: _test\.go
