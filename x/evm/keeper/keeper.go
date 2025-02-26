@@ -109,6 +109,7 @@ var _ valsettypes.OnSnapshotBuiltListener = &Keeper{}
 type Keeper struct {
 	cdc             codec.BinaryCodec
 	storeKey        corestore.KVStoreService
+	authority       string
 	ConsensusKeeper types.ConsensusKeeper
 	SchedulerKeeper types.SchedulerKeeper
 	Valset          types.ValsetKeeper
@@ -125,6 +126,7 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService corestore.KVStoreService,
+	authority string,
 	consensusKeeper types.ConsensusKeeper,
 	valsetKeeper types.ValsetKeeper, a address.Codec,
 	metrixKeeper types.MetrixKeeper,
@@ -133,6 +135,7 @@ func NewKeeper(
 	k := &Keeper{
 		cdc:             cdc,
 		storeKey:        storeService,
+		authority:       authority,
 		ConsensusKeeper: consensusKeeper,
 		Valset:          valsetKeeper,
 		msgSender: msgSender{

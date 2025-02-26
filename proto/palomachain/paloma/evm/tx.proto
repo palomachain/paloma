@@ -13,6 +13,10 @@ service Msg {
   rpc RemoveSmartContractDeployment(MsgRemoveSmartContractDeploymentRequest)
       returns (RemoveSmartContractDeploymentResponse);
 
+  // ===== Governance messages =====
+  rpc ProposeNewSmartContractDeployment(MsgDeployNewSmartContractProposalV2)
+      returns (google.protobuf.Empty);
+
   // ===== User Smart Contracts =====
   rpc UploadUserSmartContract(MsgUploadUserSmartContractRequest)
       returns (MsgUploadUserSmartContractResponse);
@@ -73,4 +77,14 @@ message MsgDeployUserSmartContractRequest {
 
 message MsgDeployUserSmartContractResponse {
   uint64 msg_id = 1;
+}
+
+message MsgDeployNewSmartContractProposalV2 {
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+  string authority = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  string abiJSON = 3;
+  string bytecodeHex = 4;
 }
