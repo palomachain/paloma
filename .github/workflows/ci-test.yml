@@ -6,7 +6,7 @@ on:
 jobs:
   run_tests:
     name: Running tests
-    runs-on: ubuntu-22.04 # stick with older LTS release for continued debian support
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
         run: gotestsum --format short-verbose ./...
   run_linters:
     name: Running linters
-    runs-on: ubuntu-22.04 # stick with older LTS release for continued debian support
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
       - name: Go lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.63.4
+          version: v1.64
           args: --verbose
           # Optional: if set to true then the all caching functionality will be complete disabled,
           #           takes precedence over all other caching options.
