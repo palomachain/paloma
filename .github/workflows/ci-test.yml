@@ -6,7 +6,7 @@ on:
 jobs:
   run_tests:
     name: Running tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # stick with older LTS release for continued debian support
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
         run: gotestsum --format short-verbose ./...
   run_linters:
     name: Running linters
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # stick with older LTS release for continued debian support
     steps:
       - name: Checkout
         uses: actions/checkout@v4
