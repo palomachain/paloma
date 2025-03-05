@@ -492,6 +492,15 @@ func (k *msgServer) SetERC20ToTokenDenom(ctx context.Context, msg *types.MsgSetE
 		return nil, sdkerrors.Wrap(types.ErrUnauthorized, "missing token admin permission")
 	}
 
+	d, err := k.GetDenomOfERC20(ctx, ci.ChainReferenceID, *erc20)
+	if err != nil && err != types.ErrDenomNotFound {
+		return nil, sdkerrors.Wrap(types.ErrInternal, "duplicate binding lookup failed")
+	}
+
+	if len(d) > 0 {
+		return nil, sdkerrors.Wrap(types.ErrDuplicateBinding, "token already bridged")
+	}
+
 	if err := k.setDenomToERC20(ctx, ci.ChainReferenceID, msg.Denom, *erc20); err != nil {
 		return nil, sdkerrors.Wrap(types.ErrInternal, err.Error())
 	}

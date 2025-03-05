@@ -24,4 +24,5 @@ var (
 	ErrDenomNotFound            = sdkerrors.Register(ModuleName, 21, "denom not found")
 	ErrERC20NotFound            = sdkerrors.Register(ModuleName, 22, "erc20 not found")
 	ErrUnauthorized             = sdkerrors.Register(ModuleName, 23, "unauthorized")
+	ErrDuplicateBinding         = sdkerrors.Register(ModuleName, 24, "erc20 already bound to denom")
 )
