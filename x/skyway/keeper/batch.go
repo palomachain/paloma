@@ -285,7 +285,7 @@ func (k Keeper) GetOutgoingTXBatch(ctx context.Context, tokenContract types.EthA
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "found invalid batch in store")
 	}
-	return ret, err
+	return ret, nil
 }
 
 // CancelOutgoingTXBatch releases all TX in the batch and deletes the batch

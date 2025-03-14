@@ -245,7 +245,7 @@ func (k Keeper) DenomToERC20(
 	var ret types.QueryDenomToERC20Response
 	ret.Erc20 = erc20.GetAddress().Hex()
 
-	return &ret, err
+	return &ret, nil
 }
 
 // ERC20ToDenom queries the ERC20 contract that maps to an Ethereum ERC20 if any
