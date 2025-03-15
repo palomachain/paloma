@@ -163,7 +163,7 @@ func (k Keeper) RemoveFromOutgoingPoolAndRefund(ctx context.Context, txId uint64
 	)
 }
 
-// addUnbatchedTx creates a new transaction in the pool
+// addUnbatchedTX creates a new transaction in the pool
 // WARNING: Do not make this function public
 func (k Keeper) addUnbatchedTX(ctx context.Context, val *types.InternalOutgoingTransferTx) error {
 	store := k.GetStore(ctx, types.StoreModulePrefix)

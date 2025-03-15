@@ -101,7 +101,7 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return sdkCtx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// addExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
+// AddExternalChainInfo adds external chain info, such as this conductor's address on outside chains so that
 // we can attribute rewards for running the jobs.
 func (k Keeper) AddExternalChainInfo(ctx context.Context, valAddr sdk.ValAddress, newChainInfo []*types.ExternalChainInfo) error {
 	return k.SetExternalChainInfoState(ctx, valAddr, newChainInfo)
