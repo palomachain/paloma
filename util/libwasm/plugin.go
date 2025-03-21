@@ -82,6 +82,23 @@ func (h router) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contra
 		if err != nil {
 			logger.WithError(err).Error("Failed to dispatch message.")
 		}
+
+		// Annoyingly enough, we cannot get the events which have been
+		// emitted during the dispatch directly without parsing.
+		evts := make([]sdk.Event, len(ctx.EventManager().Events()))
+		for i, v := range ctx.EventManager().Events() {
+			attrs := make([]sdk.Attribute, len(v.Attributes))
+			for j, k := range v.Attributes {
+				attrs[j] = sdk.Attribute{
+					Key:   k.Key,
+					Value: k.Value,
+				}
+			}
+			evts[i] = sdk.NewEvent(fmt.Sprintf("dispatcher_%s", v.Type), attrs...)
+		}
+
+		// Attaching any events emitted during the dispatch to the transaction
+		a = evts
 	}()
 
 	if msg.Custom != nil {

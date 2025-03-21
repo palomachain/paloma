@@ -162,7 +162,7 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 		return 0, err
 	}
 
-	return k.ConsensusKeeper.PutMessageInQueue(
+	id, err := k.ConsensusKeeper.PutMessageInQueue(
 		ctx,
 		consensustypes.Queue(
 			types.ConsensusTurnstoneMessage,
@@ -182,6 +182,17 @@ func (k Keeper) AddSmartContractExecutionToConsensus(
 			RequireGasEstimation: true,
 			RequireSignatures:    true,
 		})
+	if err != nil {
+		return 0, err
+	}
+
+	keeperutil.EmitEvent(k, ctx, "add_consensus_message",
+		sdk.NewAttribute("msg_id", fmt.Sprint(id)),
+		sdk.NewAttribute("chain_reference_id", chainReferenceID),
+		sdk.NewAttribute("assignee", assignee),
+		sdk.NewAttribute("assignee_remote_addr", remoteAddr),
+	)
+	return id, nil
 }
 
 func (k Keeper) scheduleCompassHandover(
