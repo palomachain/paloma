@@ -6,8 +6,11 @@ import (
 
 	"cosmossdk.io/log"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
+	"github.com/cometbft/cometbft/abci/types"
+	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/gogoproto/proto"
 	schedulerbindings "github.com/palomachain/paloma/v2/x/scheduler/bindings/types"
 	skywaybindings "github.com/palomachain/paloma/v2/x/skyway/bindings/types"
 	tfbindings "github.com/palomachain/paloma/v2/x/tokenfactory/bindings/types"
@@ -25,8 +28,19 @@ func (m *MockMessenger[T]) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddr
 	return args.Get(0).([]sdk.Event), args.Get(1).([][]byte), args.Get(2).([][]*codectypes.Any), args.Error(3)
 }
 
+var _ sdk.EventManagerI = (*mockEvtMgr)(nil)
+
+type mockEvtMgr struct{}
+
+func (m *mockEvtMgr) ABCIEvents() []types.Event                   { return nil }
+func (m *mockEvtMgr) EmitEvent(event sdk.Event)                   {}
+func (m *mockEvtMgr) EmitEvents(events sdk.Events)                {}
+func (m *mockEvtMgr) EmitTypedEvent(tev proto.Message) error      { return nil }
+func (m *mockEvtMgr) EmitTypedEvents(tevs ...proto.Message) error { return nil }
+func (m *mockEvtMgr) Events() sdk.Events                          { return nil }
+
 func TestDispatchMsg(t *testing.T) {
-	ctx := sdk.Context{}
+	ctx := sdk.NewContext(nil, tmtypes.Header{}, false, log.NewNopLogger()).WithEventManager(&mockEvtMgr{})
 	contractAddr := sdk.AccAddress([]byte("test_address"))
 	contractIBCPortID := "test_port"
 
