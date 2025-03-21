@@ -70,7 +70,7 @@ func (msg *MsgProposeNewReferenceBlockAttestation) ValidateBasic() error {
 	}
 
 	if msg.BlockHeight < 1 {
-		return ErrInvalid.Wrap("block height must be postive")
+		return ErrInvalid.Wrap("block height must be positive")
 	}
 
 	if msg.Authority != msg.Metadata.Creator {
