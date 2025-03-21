@@ -16,6 +16,7 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&SetFeeManagerAddressProposal{}, "evm/SetFeeManagerAddressProposal", nil)
 	cdc.RegisterConcrete(&SetSmartContractDeployersProposal{}, "evm/SetSmartContractDeployersProposal", nil)
 	cdc.RegisterConcrete(&MsgDeployNewSmartContractProposalV2{}, "evm/ProposeNewSmartContractDeployment", nil)
+	cdc.RegisterConcrete(&MsgProposeNewReferenceBlockAttestation{}, "evm/ProposeNewReferenceBlockAttestation", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -23,6 +24,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		(*sdk.Msg)(nil),
 		&MsgRemoveSmartContractDeploymentRequest{},
 		&MsgDeployNewSmartContractProposalV2{},
+		&MsgProposeNewReferenceBlockAttestation{},
 	)
 	registry.RegisterImplementations(
 		(*govv1beta1types.Content)(nil),

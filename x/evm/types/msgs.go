@@ -63,3 +63,37 @@ func (msg *MsgDeployNewSmartContractProposalV2) GetSignBytes() []byte {
 func (a *MsgDeployNewSmartContractProposalV2) Bytecode() []byte {
 	return common.FromHex(a.GetBytecodeHex())
 }
+
+func (msg *MsgProposeNewReferenceBlockAttestation) ValidateBasic() error {
+	if len(msg.BlockHash) < 1 || len(msg.ChainReferenceId) < 1 {
+		return ErrInvalid.Wrap("block hash or chain reference id are empty")
+	}
+
+	if msg.BlockHeight < 1 {
+		return ErrInvalid.Wrap("block height must be positive")
+	}
+
+	if msg.Authority != msg.Metadata.Creator {
+		return ErrUnauthorized.Wrapf("authority mismatch: %s", msg.Authority)
+	}
+
+	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
+		return ErrInvalid.Wrap("authority address is invalid")
+	}
+
+	return libmeta.ValidateBasic(msg)
+}
+
+func (msg *MsgProposeNewReferenceBlockAttestation) GetSigners() []sdk.AccAddress {
+	return libmeta.GetSigners(msg)
+}
+
+func (msg *MsgProposeNewReferenceBlockAttestation) Route() string { return RouterKey }
+
+func (msg *MsgProposeNewReferenceBlockAttestation) Type() string {
+	return "propose_new_reference_block_attestation"
+}
+
+func (msg *MsgProposeNewReferenceBlockAttestation) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
