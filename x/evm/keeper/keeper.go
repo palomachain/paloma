@@ -254,7 +254,16 @@ func (k Keeper) UpdateChainReferenceBlock(ctx sdk.Context, chainReferenceID stri
 
 	ci.ReferenceBlockHeight = referenceBlockHeight
 	ci.ReferenceBlockHash = referenceBlockHash
-	return k.updateChainInfo(ctx, ci)
+	err = k.updateChainInfo(ctx, ci)
+	if err != nil {
+		return err
+	}
+	keeperutil.EmitEvent(k, ctx, "update_chain_reference_block",
+		sdk.NewAttribute("chain_reference_id", chainReferenceID),
+		sdk.NewAttribute("reference_block_height", fmt.Sprint(referenceBlockHeight)),
+		sdk.NewAttribute("reference_block_hash", referenceBlockHash),
+	)
+	return nil
 }
 
 func (k Keeper) SupportedQueues(ctx context.Context) ([]consensus.SupportsConsensusQueueAction, error) {
