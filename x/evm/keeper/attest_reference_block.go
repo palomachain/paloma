@@ -13,16 +13,21 @@ func (k Keeper) attestReferenceBlock(ctx context.Context, q consensus.Queuer, ms
 	return k.attestMessageWrapper(ctx, q, msg, k.referenceBlockAttester)
 }
 
-func (k Keeper) referenceBlockAttester(sdkCtx sdk.Context, q consensus.Queuer, _ consensustypes.QueuedSignedMessageI, winner any) error {
-	_, chainReferenceID := q.ChainInfo()
-
+func (k Keeper) referenceBlockAttester(sdkCtx sdk.Context, q consensus.Queuer, msg consensustypes.QueuedSignedMessageI, winner any) error {
 	switch ref := winner.(type) {
 	case *types.ReferenceBlockAttestationRes:
-		k.Logger(sdkCtx).WithFields(
+		_, chainReferenceID := q.ChainInfo()
+		logger := k.Logger(sdkCtx).WithFields(
+			"msg-id", msg.GetId(),
 			"block-height", ref.BlockHeight,
 			"block-hash", ref.BlockHash,
-		).Debug("Changing chain reference block.")
-		return k.UpdateChainReferenceBlock(sdkCtx, chainReferenceID, ref.BlockHeight, ref.BlockHash)
+		)
+		logger.Debug("Changing chain reference block.")
+		err := k.UpdateChainReferenceBlock(sdkCtx, chainReferenceID, ref.BlockHeight, ref.BlockHash)
+		if err != nil {
+			logger.WithError(err).Error("Error updating chain reference block")
+		}
+		return err
 	default:
 		return ErrUnexpectedError.JoinErrorf("unknown type %t when attesting", winner)
 	}
