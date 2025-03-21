@@ -16,6 +16,8 @@ service Msg {
   // ===== Governance messages =====
   rpc ProposeNewSmartContractDeployment(MsgDeployNewSmartContractProposalV2)
       returns (google.protobuf.Empty);
+  rpc ProposeNewReferenceBlockAttestation(MsgProposeNewReferenceBlockAttestation)
+      returns (google.protobuf.Empty);
 
   // ===== User Smart Contracts =====
   rpc UploadUserSmartContract(MsgUploadUserSmartContractRequest)
@@ -87,4 +89,15 @@ message MsgDeployNewSmartContractProposalV2 {
 
   string abiJSON = 3;
   string bytecodeHex = 4;
+}
+
+message MsgProposeNewReferenceBlockAttestation {
+  option (cosmos.msg.v1.signer) = "metadata";
+  palomachain.paloma.valset.MsgMetadata metadata = 1
+      [ (gogoproto.nullable) = false ];
+  string authority = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  string chain_reference_id = 3;
+  uint64 blockHeight = 4;
+  string blockHash = 5;
 }

@@ -242,7 +242,7 @@ func (k Keeper) SetSmartContractDeployer(ctx context.Context, chainReferenceID s
 	return k.updateChainInfo(ctx, ci)
 }
 
-func (k Keeper) UpdateChainReferenceBlock(ctx sdk.Context, chainReferenceID string, referenceBlockHeight uint64, referenceBlockHash string) error {
+func (k Keeper) UpdateChainReferenceBlock(ctx context.Context, chainReferenceID string, referenceBlockHeight uint64, referenceBlockHash string) error {
 	ci, err := k.GetChainInfo(ctx, chainReferenceID)
 	if err != nil {
 		return err
