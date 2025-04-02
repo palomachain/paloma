@@ -89,7 +89,7 @@ func (a AttestationHandler) handleSendToPaloma(ctx context.Context, claim types.
 	// likewise nil sender would have to be caused by a bogus event
 	if errEthereumSender != nil {
 		logger.WithError(errEthereumSender).Error("Invalid ethereum sender")
-		return sdkerrors.Wrap(errTokenAddress, "invalid ethereum sender on claim")
+		return sdkerrors.Wrap(errEthereumSender, "invalid ethereum sender on claim")
 	}
 
 	denom, err := a.keeper.GetDenomOfERC20(ctx, claim.GetChainReferenceId(), *tokenAddress)
