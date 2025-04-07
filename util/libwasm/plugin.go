@@ -98,7 +98,7 @@ func (h router) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contra
 		}
 
 		// Attaching any events emitted during the dispatch to the transaction
-		a = evts
+		a = append(a, evts...)
 	}()
 
 	if msg.Custom != nil {
