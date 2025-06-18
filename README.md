@@ -98,7 +98,7 @@ rm -r ~/.paloma/data/wasm/cache
 ### To get the latest prebuilt `palomad` binary
 
 ```shell
-wget -O - https://github.com/palomachain/paloma/releases/download/v2.4.11/paloma_Linux_x86_64.tar.gz  | \
+wget -O - https://github.com/palomachain/paloma/releases/download/v2.4.12/paloma_Linux_x86_64.tar.gz  | \
   sudo tar -C /usr/local/bin -xvzf - palomad
 sudo chmod +x /usr/local/bin/palomad
 ```
@@ -111,7 +111,7 @@ sudo chmod +x /usr/local/bin/palomad
 ```shell
 git clone https://github.com/palomachain/paloma.git
 cd paloma
-git checkout v2.4.11
+git checkout v2.4.12
 make build
 sudo mv ./build/palomad /usr/local/bin/palomad
 ```
