@@ -5,20 +5,17 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -38,11 +35,9 @@ func (*SetSmartContractDeployersProposal) ProtoMessage()    {}
 func (*SetSmartContractDeployersProposal) Descriptor() ([]byte, []int) {
 	return fileDescriptor_98112a37abfe69b8, []int{0}
 }
-
 func (m *SetSmartContractDeployersProposal) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SetSmartContractDeployersProposal) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SetSmartContractDeployersProposal.Marshal(b, m, deterministic)
@@ -55,15 +50,12 @@ func (m *SetSmartContractDeployersProposal) XXX_Marshal(b []byte, deterministic 
 		return b[:n], nil
 	}
 }
-
 func (m *SetSmartContractDeployersProposal) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SetSmartContractDeployersProposal.Merge(m, src)
 }
-
 func (m *SetSmartContractDeployersProposal) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SetSmartContractDeployersProposal) XXX_DiscardUnknown() {
 	xxx_messageInfo_SetSmartContractDeployersProposal.DiscardUnknown(m)
 }
@@ -99,7 +91,6 @@ type SetSmartContractDeployersProposal_Deployer struct {
 func (m *SetSmartContractDeployersProposal_Deployer) Reset() {
 	*m = SetSmartContractDeployersProposal_Deployer{}
 }
-
 func (m *SetSmartContractDeployersProposal_Deployer) String() string {
 	return proto.CompactTextString(m)
 }
@@ -107,11 +98,9 @@ func (*SetSmartContractDeployersProposal_Deployer) ProtoMessage() {}
 func (*SetSmartContractDeployersProposal_Deployer) Descriptor() ([]byte, []int) {
 	return fileDescriptor_98112a37abfe69b8, []int{0, 0}
 }
-
 func (m *SetSmartContractDeployersProposal_Deployer) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SetSmartContractDeployersProposal_Deployer) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SetSmartContractDeployersProposal_Deployer.Marshal(b, m, deterministic)
@@ -124,15 +113,12 @@ func (m *SetSmartContractDeployersProposal_Deployer) XXX_Marshal(b []byte, deter
 		return b[:n], nil
 	}
 }
-
 func (m *SetSmartContractDeployersProposal_Deployer) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SetSmartContractDeployersProposal_Deployer.Merge(m, src)
 }
-
 func (m *SetSmartContractDeployersProposal_Deployer) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SetSmartContractDeployersProposal_Deployer) XXX_DiscardUnknown() {
 	xxx_messageInfo_SetSmartContractDeployersProposal_Deployer.DiscardUnknown(m)
 }
@@ -285,7 +271,6 @@ func encodeVarintSetSmartContractDeployersProposal(dAtA []byte, offset int, v ui
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *SetSmartContractDeployersProposal) Size() (n int) {
 	if m == nil {
 		return 0
@@ -329,11 +314,9 @@ func (m *SetSmartContractDeployersProposal_Deployer) Size() (n int) {
 func sovSetSmartContractDeployersProposal(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozSetSmartContractDeployersProposal(x uint64) (n int) {
 	return sovSetSmartContractDeployersProposal(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *SetSmartContractDeployersProposal) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -482,7 +465,6 @@ func (m *SetSmartContractDeployersProposal) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SetSmartContractDeployersProposal_Deployer) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -597,7 +579,6 @@ func (m *SetSmartContractDeployersProposal_Deployer) Unmarshal(dAtA []byte) erro
 	}
 	return nil
 }
-
 func skipSetSmartContractDeployersProposal(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

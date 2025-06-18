@@ -5,21 +5,18 @@ package types
 
 import (
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -49,11 +46,9 @@ func (*Job) ProtoMessage()    {}
 func (*Job) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a344810cdf97f973, []int{0}
 }
-
 func (m *Job) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Job) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Job.Marshal(b, m, deterministic)
@@ -66,15 +61,12 @@ func (m *Job) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Job) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Job.Merge(m, src)
 }
-
 func (m *Job) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Job) XXX_DiscardUnknown() {
 	xxx_messageInfo_Job.DiscardUnknown(m)
 }
@@ -158,11 +150,9 @@ func (*Trigger) ProtoMessage()    {}
 func (*Trigger) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a344810cdf97f973, []int{1}
 }
-
 func (m *Trigger) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Trigger) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Trigger.Marshal(b, m, deterministic)
@@ -175,15 +165,12 @@ func (m *Trigger) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Trigger) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Trigger.Merge(m, src)
 }
-
 func (m *Trigger) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Trigger) XXX_DiscardUnknown() {
 	xxx_messageInfo_Trigger.DiscardUnknown(m)
 }
@@ -235,7 +222,8 @@ func (*Trigger) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-type ScheduleTrigger struct{}
+type ScheduleTrigger struct {
+}
 
 func (m *ScheduleTrigger) Reset()         { *m = ScheduleTrigger{} }
 func (m *ScheduleTrigger) String() string { return proto.CompactTextString(m) }
@@ -243,11 +231,9 @@ func (*ScheduleTrigger) ProtoMessage()    {}
 func (*ScheduleTrigger) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a344810cdf97f973, []int{2}
 }
-
 func (m *ScheduleTrigger) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *ScheduleTrigger) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ScheduleTrigger.Marshal(b, m, deterministic)
@@ -260,22 +246,20 @@ func (m *ScheduleTrigger) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
-
 func (m *ScheduleTrigger) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ScheduleTrigger.Merge(m, src)
 }
-
 func (m *ScheduleTrigger) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *ScheduleTrigger) XXX_DiscardUnknown() {
 	xxx_messageInfo_ScheduleTrigger.DiscardUnknown(m)
 }
 
 var xxx_messageInfo_ScheduleTrigger proto.InternalMessageInfo
 
-type EventTrigger struct{}
+type EventTrigger struct {
+}
 
 func (m *EventTrigger) Reset()         { *m = EventTrigger{} }
 func (m *EventTrigger) String() string { return proto.CompactTextString(m) }
@@ -283,11 +267,9 @@ func (*EventTrigger) ProtoMessage()    {}
 func (*EventTrigger) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a344810cdf97f973, []int{3}
 }
-
 func (m *EventTrigger) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *EventTrigger) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_EventTrigger.Marshal(b, m, deterministic)
@@ -300,15 +282,12 @@ func (m *EventTrigger) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return b[:n], nil
 	}
 }
-
 func (m *EventTrigger) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_EventTrigger.Merge(m, src)
 }
-
 func (m *EventTrigger) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *EventTrigger) XXX_DiscardUnknown() {
 	xxx_messageInfo_EventTrigger.DiscardUnknown(m)
 }
@@ -326,11 +305,9 @@ func (*Permissions) ProtoMessage()    {}
 func (*Permissions) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a344810cdf97f973, []int{4}
 }
-
 func (m *Permissions) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Permissions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Permissions.Marshal(b, m, deterministic)
@@ -343,15 +320,12 @@ func (m *Permissions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return b[:n], nil
 	}
 }
-
 func (m *Permissions) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Permissions.Merge(m, src)
 }
-
 func (m *Permissions) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Permissions) XXX_DiscardUnknown() {
 	xxx_messageInfo_Permissions.DiscardUnknown(m)
 }
@@ -387,11 +361,9 @@ func (*Runner) ProtoMessage()    {}
 func (*Runner) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a344810cdf97f973, []int{5}
 }
-
 func (m *Runner) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Runner) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Runner.Marshal(b, m, deterministic)
@@ -404,15 +376,12 @@ func (m *Runner) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Runner) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Runner.Merge(m, src)
 }
-
 func (m *Runner) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Runner) XXX_DiscardUnknown() {
 	xxx_messageInfo_Runner.DiscardUnknown(m)
 }
@@ -452,11 +421,9 @@ func (*Routing) ProtoMessage()    {}
 func (*Routing) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a344810cdf97f973, []int{6}
 }
-
 func (m *Routing) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Routing) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Routing.Marshal(b, m, deterministic)
@@ -469,15 +436,12 @@ func (m *Routing) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Routing) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Routing.Merge(m, src)
 }
-
 func (m *Routing) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Routing) XXX_DiscardUnknown() {
 	xxx_messageInfo_Routing.DiscardUnknown(m)
 }
@@ -710,7 +674,6 @@ func (m *Trigger_Schedule) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	return len(dAtA) - i, nil
 }
-
 func (m *Trigger_Event) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
@@ -732,7 +695,6 @@ func (m *Trigger_Event) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	return len(dAtA) - i, nil
 }
-
 func (m *ScheduleTrigger) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -922,7 +884,6 @@ func encodeVarintJob(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *Job) Size() (n int) {
 	if m == nil {
 		return 0
@@ -988,7 +949,6 @@ func (m *Trigger_Schedule) Size() (n int) {
 	}
 	return n
 }
-
 func (m *Trigger_Event) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1001,7 +961,6 @@ func (m *Trigger_Event) Size() (n int) {
 	}
 	return n
 }
-
 func (m *ScheduleTrigger) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1082,11 +1041,9 @@ func (m *Routing) Size() (n int) {
 func sovJob(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozJob(x uint64) (n int) {
 	return sovJob(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *Job) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1411,7 +1368,6 @@ func (m *Job) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Trigger) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1532,7 +1488,6 @@ func (m *Trigger) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *ScheduleTrigger) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1583,7 +1538,6 @@ func (m *ScheduleTrigger) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *EventTrigger) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1634,7 +1588,6 @@ func (m *EventTrigger) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Permissions) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1753,7 +1706,6 @@ func (m *Permissions) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Runner) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1902,7 +1854,6 @@ func (m *Runner) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Routing) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2017,7 +1968,6 @@ func (m *Routing) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipJob(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

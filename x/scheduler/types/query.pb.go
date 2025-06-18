@@ -6,10 +6,6 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	_ "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
@@ -18,14 +14,15 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -34,7 +31,8 @@ var (
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
-type QueryParamsRequest struct{}
+type QueryParamsRequest struct {
+}
 
 func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
 func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
@@ -42,11 +40,9 @@ func (*QueryParamsRequest) ProtoMessage()    {}
 func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_200967cdd6bd676b, []int{0}
 }
-
 func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsRequest.Marshal(b, m, deterministic)
@@ -59,15 +55,12 @@ func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-
 func (m *QueryParamsRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsRequest.Merge(m, src)
 }
-
 func (m *QueryParamsRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsRequest.DiscardUnknown(m)
 }
@@ -86,11 +79,9 @@ func (*QueryParamsResponse) ProtoMessage()    {}
 func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_200967cdd6bd676b, []int{1}
 }
-
 func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsResponse.Marshal(b, m, deterministic)
@@ -103,15 +94,12 @@ func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-
 func (m *QueryParamsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsResponse.Merge(m, src)
 }
-
 func (m *QueryParamsResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryParamsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsResponse.DiscardUnknown(m)
 }
@@ -135,11 +123,9 @@ func (*QueryGetJobByIDRequest) ProtoMessage()    {}
 func (*QueryGetJobByIDRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_200967cdd6bd676b, []int{2}
 }
-
 func (m *QueryGetJobByIDRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryGetJobByIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetJobByIDRequest.Marshal(b, m, deterministic)
@@ -152,15 +138,12 @@ func (m *QueryGetJobByIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-
 func (m *QueryGetJobByIDRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetJobByIDRequest.Merge(m, src)
 }
-
 func (m *QueryGetJobByIDRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryGetJobByIDRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetJobByIDRequest.DiscardUnknown(m)
 }
@@ -184,11 +167,9 @@ func (*QueryGetJobByIDResponse) ProtoMessage()    {}
 func (*QueryGetJobByIDResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_200967cdd6bd676b, []int{3}
 }
-
 func (m *QueryGetJobByIDResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryGetJobByIDResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetJobByIDResponse.Marshal(b, m, deterministic)
@@ -201,15 +182,12 @@ func (m *QueryGetJobByIDResponse) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-
 func (m *QueryGetJobByIDResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetJobByIDResponse.Merge(m, src)
 }
-
 func (m *QueryGetJobByIDResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryGetJobByIDResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetJobByIDResponse.DiscardUnknown(m)
 }
@@ -265,10 +243,8 @@ var fileDescriptor_200967cdd6bd676b = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -319,12 +295,12 @@ type QueryServer interface {
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
-type UnimplementedQueryServer struct{}
+type UnimplementedQueryServer struct {
+}
 
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
-
 func (*UnimplementedQueryServer) QueryGetJobByID(ctx context.Context, req *QueryGetJobByIDRequest) (*QueryGetJobByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryGetJobByID not implemented")
 }
@@ -518,7 +494,6 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *QueryParamsRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -568,11 +543,9 @@ func (m *QueryGetJobByIDResponse) Size() (n int) {
 func sovQuery(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -623,7 +596,6 @@ func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -707,7 +679,6 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryGetJobByIDRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -790,7 +761,6 @@ func (m *QueryGetJobByIDRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryGetJobByIDResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -877,7 +847,6 @@ func (m *QueryGetJobByIDResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipQuery(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

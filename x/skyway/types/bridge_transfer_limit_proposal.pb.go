@@ -4,22 +4,19 @@
 package types
 
 import (
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	cosmossdk_io_math "cosmossdk.io/math"
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -42,11 +39,9 @@ func (*SetBridgeTransferLimitProposal) ProtoMessage()    {}
 func (*SetBridgeTransferLimitProposal) Descriptor() ([]byte, []int) {
 	return fileDescriptor_e913872479061690, []int{0}
 }
-
 func (m *SetBridgeTransferLimitProposal) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SetBridgeTransferLimitProposal) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SetBridgeTransferLimitProposal.Marshal(b, m, deterministic)
@@ -59,15 +54,12 @@ func (m *SetBridgeTransferLimitProposal) XXX_Marshal(b []byte, deterministic boo
 		return b[:n], nil
 	}
 }
-
 func (m *SetBridgeTransferLimitProposal) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SetBridgeTransferLimitProposal.Merge(m, src)
 }
-
 func (m *SetBridgeTransferLimitProposal) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SetBridgeTransferLimitProposal) XXX_DiscardUnknown() {
 	xxx_messageInfo_SetBridgeTransferLimitProposal.DiscardUnknown(m)
 }
@@ -222,7 +214,6 @@ func encodeVarintBridgeTransferLimitProposal(dAtA []byte, offset int, v uint64) 
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *SetBridgeTransferLimitProposal) Size() (n int) {
 	if m == nil {
 		return 0
@@ -258,11 +249,9 @@ func (m *SetBridgeTransferLimitProposal) Size() (n int) {
 func sovBridgeTransferLimitProposal(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozBridgeTransferLimitProposal(x uint64) (n int) {
 	return sovBridgeTransferLimitProposal(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *SetBridgeTransferLimitProposal) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -494,7 +483,6 @@ func (m *SetBridgeTransferLimitProposal) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipBridgeTransferLimitProposal(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

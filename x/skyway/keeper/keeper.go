@@ -45,6 +45,7 @@ type Keeper struct {
 	EVMKeeper          types.EVMKeeper
 	consensusKeeper    types.ConsensusKeeper
 	palomaKeeper       types.PalomaKeeper
+	ValsetKeeper       types.ValsetKeeper
 	tokenFactoryKeeper types.TokenFactoryKeeper
 	AddressCodec       address.Codec
 	storeGetter        keeperutil.StoreGetter
@@ -67,6 +68,7 @@ func NewKeeper(
 	evmKeeper types.EVMKeeper,
 	consensusKeeper types.ConsensusKeeper,
 	palomaKeeper types.PalomaKeeper,
+	valsetKeeper types.ValsetKeeper,
 	tokenFactoryKeeper types.TokenFactoryKeeper,
 	storeGetter keeperutil.StoreGetter,
 	authority string,
@@ -83,6 +85,7 @@ func NewKeeper(
 		EVMKeeper:          evmKeeper,
 		consensusKeeper:    consensusKeeper,
 		palomaKeeper:       palomaKeeper,
+		ValsetKeeper:       valsetKeeper,
 		tokenFactoryKeeper: tokenFactoryKeeper,
 		storeGetter:        storeGetter,
 		AttestationHandler: nil,

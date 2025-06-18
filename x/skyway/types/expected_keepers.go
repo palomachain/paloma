@@ -30,7 +30,6 @@ type StakingKeeper interface {
 	Validator(context.Context, sdk.ValAddress) (stakingtypes.ValidatorI, error)
 	ValidatorByConsAddr(context.Context, sdk.ConsAddress) (stakingtypes.ValidatorI, error)
 	Slash(ctx context.Context, consAddr sdk.ConsAddress, infractionHeight int64, power int64, slashFactor math.LegacyDec) (math.Int, error)
-	Jail(context.Context, sdk.ConsAddress) error
 }
 
 // BankKeeper defines the expected bank keeper methods
@@ -82,6 +81,10 @@ type EVMKeeper interface {
 
 type PalomaKeeper interface {
 	CreateSaleLightNodeClientLicense(ctx context.Context, clientAddr string, amount math.Int) error
+}
+
+type ValsetKeeper interface {
+	Jail(ctx context.Context, valAddr sdk.ValAddress, reason string) error
 }
 
 type TokenFactoryKeeper interface {

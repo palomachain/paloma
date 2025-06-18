@@ -582,6 +582,7 @@ func New(
 		app.SlashingKeeper,
 		sdk.DefaultPowerReduction,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
+		authorityAddress,
 	)
 
 	consensusRegistry := consensusmodulekeeper.NewRegistry()
@@ -651,6 +652,7 @@ func New(
 		app.EvmKeeper,
 		app.ConsensusKeeper,
 		app.PalomaKeeper,
+		app.ValsetKeeper,
 		app.TokenFactoryKeeper,
 		skywaymodulekeeper.NewSkywayStoreGetter(keys[skywaymoduletypes.StoreKey]),
 		authorityAddress,

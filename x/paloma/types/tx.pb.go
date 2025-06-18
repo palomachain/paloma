@@ -6,10 +6,6 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	_ "github.com/cosmos/cosmos-proto"
 	types1 "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
@@ -21,14 +17,15 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -77,11 +74,9 @@ func (*MsgAddStatusUpdate) ProtoMessage()    {}
 func (*MsgAddStatusUpdate) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{0}
 }
-
 func (m *MsgAddStatusUpdate) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgAddStatusUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAddStatusUpdate.Marshal(b, m, deterministic)
@@ -94,15 +89,12 @@ func (m *MsgAddStatusUpdate) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-
 func (m *MsgAddStatusUpdate) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAddStatusUpdate.Merge(m, src)
 }
-
 func (m *MsgAddStatusUpdate) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgAddStatusUpdate) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAddStatusUpdate.DiscardUnknown(m)
 }
@@ -148,11 +140,9 @@ func (*MsgAddStatusUpdate_KeyValuePair) ProtoMessage()    {}
 func (*MsgAddStatusUpdate_KeyValuePair) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{0, 0}
 }
-
 func (m *MsgAddStatusUpdate_KeyValuePair) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgAddStatusUpdate_KeyValuePair) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAddStatusUpdate_KeyValuePair.Marshal(b, m, deterministic)
@@ -165,15 +155,12 @@ func (m *MsgAddStatusUpdate_KeyValuePair) XXX_Marshal(b []byte, deterministic bo
 		return b[:n], nil
 	}
 }
-
 func (m *MsgAddStatusUpdate_KeyValuePair) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAddStatusUpdate_KeyValuePair.Merge(m, src)
 }
-
 func (m *MsgAddStatusUpdate_KeyValuePair) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgAddStatusUpdate_KeyValuePair) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAddStatusUpdate_KeyValuePair.DiscardUnknown(m)
 }
@@ -194,7 +181,8 @@ func (m *MsgAddStatusUpdate_KeyValuePair) GetValue() string {
 	return ""
 }
 
-type EmptyResponse struct{}
+type EmptyResponse struct {
+}
 
 func (m *EmptyResponse) Reset()         { *m = EmptyResponse{} }
 func (m *EmptyResponse) String() string { return proto.CompactTextString(m) }
@@ -202,11 +190,9 @@ func (*EmptyResponse) ProtoMessage()    {}
 func (*EmptyResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{1}
 }
-
 func (m *EmptyResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *EmptyResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_EmptyResponse.Marshal(b, m, deterministic)
@@ -219,15 +205,12 @@ func (m *EmptyResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 		return b[:n], nil
 	}
 }
-
 func (m *EmptyResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_EmptyResponse.Merge(m, src)
 }
-
 func (m *EmptyResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *EmptyResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_EmptyResponse.DiscardUnknown(m)
 }
@@ -244,11 +227,9 @@ func (*MsgRegisterLightNodeClient) ProtoMessage()    {}
 func (*MsgRegisterLightNodeClient) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{2}
 }
-
 func (m *MsgRegisterLightNodeClient) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgRegisterLightNodeClient) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgRegisterLightNodeClient.Marshal(b, m, deterministic)
@@ -261,15 +242,12 @@ func (m *MsgRegisterLightNodeClient) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-
 func (m *MsgRegisterLightNodeClient) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgRegisterLightNodeClient.Merge(m, src)
 }
-
 func (m *MsgRegisterLightNodeClient) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgRegisterLightNodeClient) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgRegisterLightNodeClient.DiscardUnknown(m)
 }
@@ -296,11 +274,9 @@ func (*MsgAddLightNodeClientLicense) ProtoMessage()    {}
 func (*MsgAddLightNodeClientLicense) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{3}
 }
-
 func (m *MsgAddLightNodeClientLicense) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgAddLightNodeClientLicense) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAddLightNodeClientLicense.Marshal(b, m, deterministic)
@@ -313,15 +289,12 @@ func (m *MsgAddLightNodeClientLicense) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-
 func (m *MsgAddLightNodeClientLicense) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAddLightNodeClientLicense.Merge(m, src)
 }
-
 func (m *MsgAddLightNodeClientLicense) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgAddLightNodeClientLicense) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAddLightNodeClientLicense.DiscardUnknown(m)
 }
@@ -366,11 +339,9 @@ func (*MsgAuthLightNodeClient) ProtoMessage()    {}
 func (*MsgAuthLightNodeClient) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{4}
 }
-
 func (m *MsgAuthLightNodeClient) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgAuthLightNodeClient) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgAuthLightNodeClient.Marshal(b, m, deterministic)
@@ -383,15 +354,12 @@ func (m *MsgAuthLightNodeClient) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-
 func (m *MsgAuthLightNodeClient) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgAuthLightNodeClient.Merge(m, src)
 }
-
 func (m *MsgAuthLightNodeClient) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgAuthLightNodeClient) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgAuthLightNodeClient.DiscardUnknown(m)
 }
@@ -415,11 +383,9 @@ func (*MsgSetLegacyLightNodeClients) ProtoMessage()    {}
 func (*MsgSetLegacyLightNodeClients) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{5}
 }
-
 func (m *MsgSetLegacyLightNodeClients) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgSetLegacyLightNodeClients) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgSetLegacyLightNodeClients.Marshal(b, m, deterministic)
@@ -432,15 +398,12 @@ func (m *MsgSetLegacyLightNodeClients) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-
 func (m *MsgSetLegacyLightNodeClients) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgSetLegacyLightNodeClients.Merge(m, src)
 }
-
 func (m *MsgSetLegacyLightNodeClients) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgSetLegacyLightNodeClients) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgSetLegacyLightNodeClients.DiscardUnknown(m)
 }
@@ -469,11 +432,9 @@ func (*MsgUpdateParams) ProtoMessage()    {}
 func (*MsgUpdateParams) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{6}
 }
-
 func (m *MsgUpdateParams) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgUpdateParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgUpdateParams.Marshal(b, m, deterministic)
@@ -486,15 +447,12 @@ func (m *MsgUpdateParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
-
 func (m *MsgUpdateParams) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgUpdateParams.Merge(m, src)
 }
-
 func (m *MsgUpdateParams) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgUpdateParams) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgUpdateParams.DiscardUnknown(m)
 }
@@ -522,7 +480,8 @@ func (m *MsgUpdateParams) GetMetadata() types.MsgMetadata {
 	return types.MsgMetadata{}
 }
 
-type MsgUpdateParamsResponse struct{}
+type MsgUpdateParamsResponse struct {
+}
 
 func (m *MsgUpdateParamsResponse) Reset()         { *m = MsgUpdateParamsResponse{} }
 func (m *MsgUpdateParamsResponse) String() string { return proto.CompactTextString(m) }
@@ -530,11 +489,9 @@ func (*MsgUpdateParamsResponse) ProtoMessage()    {}
 func (*MsgUpdateParamsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8dc46060aeb172a8, []int{7}
 }
-
 func (m *MsgUpdateParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *MsgUpdateParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_MsgUpdateParamsResponse.Marshal(b, m, deterministic)
@@ -547,15 +504,12 @@ func (m *MsgUpdateParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-
 func (m *MsgUpdateParamsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_MsgUpdateParamsResponse.Merge(m, src)
 }
-
 func (m *MsgUpdateParamsResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_MsgUpdateParamsResponse.DiscardUnknown(m)
 }
@@ -636,10 +590,8 @@ var fileDescriptor_8dc46060aeb172a8 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -730,28 +682,24 @@ type MsgServer interface {
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
-type UnimplementedMsgServer struct{}
+type UnimplementedMsgServer struct {
+}
 
 func (*UnimplementedMsgServer) AddStatusUpdate(ctx context.Context, req *MsgAddStatusUpdate) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddStatusUpdate not implemented")
 }
-
 func (*UnimplementedMsgServer) RegisterLightNodeClient(ctx context.Context, req *MsgRegisterLightNodeClient) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterLightNodeClient not implemented")
 }
-
 func (*UnimplementedMsgServer) AddLightNodeClientLicense(ctx context.Context, req *MsgAddLightNodeClientLicense) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddLightNodeClientLicense not implemented")
 }
-
 func (*UnimplementedMsgServer) AuthLightNodeClient(ctx context.Context, req *MsgAuthLightNodeClient) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuthLightNodeClient not implemented")
 }
-
 func (*UnimplementedMsgServer) SetLegacyLightNodeClients(ctx context.Context, req *MsgSetLegacyLightNodeClients) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetLegacyLightNodeClients not implemented")
 }
-
 func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
@@ -1258,7 +1206,6 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *MsgAddStatusUpdate) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1391,11 +1338,9 @@ func (m *MsgUpdateParamsResponse) Size() (n int) {
 func sovTx(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *MsgAddStatusUpdate) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1564,7 +1509,6 @@ func (m *MsgAddStatusUpdate) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *MsgAddStatusUpdate_KeyValuePair) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1679,7 +1623,6 @@ func (m *MsgAddStatusUpdate_KeyValuePair) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *EmptyResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1730,7 +1673,6 @@ func (m *EmptyResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *MsgRegisterLightNodeClient) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1814,7 +1756,6 @@ func (m *MsgRegisterLightNodeClient) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *MsgAddLightNodeClientLicense) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1982,7 +1923,6 @@ func (m *MsgAddLightNodeClientLicense) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *MsgAuthLightNodeClient) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2066,7 +2006,6 @@ func (m *MsgAuthLightNodeClient) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *MsgSetLegacyLightNodeClients) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2150,7 +2089,6 @@ func (m *MsgSetLegacyLightNodeClients) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *MsgUpdateParams) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2299,7 +2237,6 @@ func (m *MsgUpdateParams) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2350,7 +2287,6 @@ func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipTx(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

@@ -5,22 +5,19 @@ package types
 
 import (
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	_ "github.com/cosmos/cosmos-proto"
 	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -40,11 +37,9 @@ func (*LightNodeClientLicense) ProtoMessage()    {}
 func (*LightNodeClientLicense) Descriptor() ([]byte, []int) {
 	return fileDescriptor_9a9c668113db9311, []int{0}
 }
-
 func (m *LightNodeClientLicense) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *LightNodeClientLicense) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_LightNodeClientLicense.Marshal(b, m, deterministic)
@@ -57,15 +52,12 @@ func (m *LightNodeClientLicense) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-
 func (m *LightNodeClientLicense) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_LightNodeClientLicense.Merge(m, src)
 }
-
 func (m *LightNodeClientLicense) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *LightNodeClientLicense) XXX_DiscardUnknown() {
 	xxx_messageInfo_LightNodeClientLicense.DiscardUnknown(m)
 }
@@ -181,7 +173,6 @@ func encodeVarintLightNodeClientLicense(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *LightNodeClientLicense) Size() (n int) {
 	if m == nil {
 		return 0
@@ -203,11 +194,9 @@ func (m *LightNodeClientLicense) Size() (n int) {
 func sovLightNodeClientLicense(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozLightNodeClientLicense(x uint64) (n int) {
 	return sovLightNodeClientLicense(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *LightNodeClientLicense) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -342,7 +331,6 @@ func (m *LightNodeClientLicense) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipLightNodeClientLicense(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

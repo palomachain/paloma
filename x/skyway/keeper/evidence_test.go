@@ -25,6 +25,7 @@ func TestSubmitBadSignatureEvidenceBatchExists(t *testing.T) {
 		token, e2    = types.NewInternalERC20Token(math.NewInt(99999), testERC20Address, "test-chain")
 		allVouchers  = sdk.NewCoins(sdk.NewCoin(testDenom, token.Amount))
 	)
+
 	require.NoError(t, e1)
 	require.NoError(t, e2)
 	receiver, err := types.NewEthAddress(myReceiver)

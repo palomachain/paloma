@@ -5,20 +5,17 @@ package gravity
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
+	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	_ "github.com/cosmos/cosmos-proto"
-	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -40,11 +37,9 @@ func (*SetBridgeTaxProposal) ProtoMessage()    {}
 func (*SetBridgeTaxProposal) Descriptor() ([]byte, []int) {
 	return fileDescriptor_7b15146dd277be39, []int{0}
 }
-
 func (m *SetBridgeTaxProposal) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SetBridgeTaxProposal) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SetBridgeTaxProposal.Marshal(b, m, deterministic)
@@ -57,15 +52,12 @@ func (m *SetBridgeTaxProposal) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-
 func (m *SetBridgeTaxProposal) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SetBridgeTaxProposal.Merge(m, src)
 }
-
 func (m *SetBridgeTaxProposal) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SetBridgeTaxProposal) XXX_DiscardUnknown() {
 	xxx_messageInfo_SetBridgeTaxProposal.DiscardUnknown(m)
 }
@@ -212,7 +204,6 @@ func encodeVarintBridgeTaxProposal(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *SetBridgeTaxProposal) Size() (n int) {
 	if m == nil {
 		return 0
@@ -249,11 +240,9 @@ func (m *SetBridgeTaxProposal) Size() (n int) {
 func sovBridgeTaxProposal(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozBridgeTaxProposal(x uint64) (n int) {
 	return sovBridgeTaxProposal(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *SetBridgeTaxProposal) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -464,7 +453,6 @@ func (m *SetBridgeTaxProposal) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipBridgeTaxProposal(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

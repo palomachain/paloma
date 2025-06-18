@@ -4,24 +4,21 @@
 package types
 
 import (
-	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	cosmossdk_io_math "cosmossdk.io/math"
+	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -42,11 +39,9 @@ func (*Valset) ProtoMessage()    {}
 func (*Valset) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{0}
 }
-
 func (m *Valset) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Valset) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Valset.Marshal(b, m, deterministic)
@@ -59,15 +54,12 @@ func (m *Valset) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Valset) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Valset.Merge(m, src)
 }
-
 func (m *Valset) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Valset) XXX_DiscardUnknown() {
 	xxx_messageInfo_Valset.DiscardUnknown(m)
 }
@@ -107,11 +99,9 @@ func (*Fees) ProtoMessage()    {}
 func (*Fees) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{1}
 }
-
 func (m *Fees) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Fees) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Fees.Marshal(b, m, deterministic)
@@ -124,15 +114,12 @@ func (m *Fees) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Fees) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Fees.Merge(m, src)
 }
-
 func (m *Fees) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Fees) XXX_DiscardUnknown() {
 	xxx_messageInfo_Fees.DiscardUnknown(m)
 }
@@ -178,11 +165,9 @@ func (*SubmitLogicCall) ProtoMessage()    {}
 func (*SubmitLogicCall) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{2}
 }
-
 func (m *SubmitLogicCall) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SubmitLogicCall) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SubmitLogicCall.Marshal(b, m, deterministic)
@@ -195,15 +180,12 @@ func (m *SubmitLogicCall) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
-
 func (m *SubmitLogicCall) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SubmitLogicCall.Merge(m, src)
 }
-
 func (m *SubmitLogicCall) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SubmitLogicCall) XXX_DiscardUnknown() {
 	xxx_messageInfo_SubmitLogicCall.DiscardUnknown(m)
 }
@@ -283,11 +265,9 @@ func (*SubmitLogicCall_ExecutionRequirements) ProtoMessage()    {}
 func (*SubmitLogicCall_ExecutionRequirements) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{2, 0}
 }
-
 func (m *SubmitLogicCall_ExecutionRequirements) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SubmitLogicCall_ExecutionRequirements) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SubmitLogicCall_ExecutionRequirements.Marshal(b, m, deterministic)
@@ -300,15 +280,12 @@ func (m *SubmitLogicCall_ExecutionRequirements) XXX_Marshal(b []byte, determinis
 		return b[:n], nil
 	}
 }
-
 func (m *SubmitLogicCall_ExecutionRequirements) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SubmitLogicCall_ExecutionRequirements.Merge(m, src)
 }
-
 func (m *SubmitLogicCall_ExecutionRequirements) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SubmitLogicCall_ExecutionRequirements) XXX_DiscardUnknown() {
 	xxx_messageInfo_SubmitLogicCall_ExecutionRequirements.DiscardUnknown(m)
 }
@@ -332,11 +309,9 @@ func (*UpdateValset) ProtoMessage()    {}
 func (*UpdateValset) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{3}
 }
-
 func (m *UpdateValset) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *UpdateValset) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_UpdateValset.Marshal(b, m, deterministic)
@@ -349,15 +324,12 @@ func (m *UpdateValset) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return b[:n], nil
 	}
 }
-
 func (m *UpdateValset) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_UpdateValset.Merge(m, src)
 }
-
 func (m *UpdateValset) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *UpdateValset) XXX_DiscardUnknown() {
 	xxx_messageInfo_UpdateValset.DiscardUnknown(m)
 }
@@ -384,11 +356,9 @@ func (*CompassHandover) ProtoMessage()    {}
 func (*CompassHandover) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{4}
 }
-
 func (m *CompassHandover) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *CompassHandover) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_CompassHandover.Marshal(b, m, deterministic)
@@ -401,15 +371,12 @@ func (m *CompassHandover) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
-
 func (m *CompassHandover) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_CompassHandover.Merge(m, src)
 }
-
 func (m *CompassHandover) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *CompassHandover) XXX_DiscardUnknown() {
 	xxx_messageInfo_CompassHandover.DiscardUnknown(m)
 }
@@ -448,11 +415,9 @@ func (*CompassHandover_ForwardCallArgs) ProtoMessage()    {}
 func (*CompassHandover_ForwardCallArgs) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{4, 0}
 }
-
 func (m *CompassHandover_ForwardCallArgs) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *CompassHandover_ForwardCallArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_CompassHandover_ForwardCallArgs.Marshal(b, m, deterministic)
@@ -465,15 +430,12 @@ func (m *CompassHandover_ForwardCallArgs) XXX_Marshal(b []byte, deterministic bo
 		return b[:n], nil
 	}
 }
-
 func (m *CompassHandover_ForwardCallArgs) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_CompassHandover_ForwardCallArgs.Merge(m, src)
 }
-
 func (m *CompassHandover_ForwardCallArgs) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *CompassHandover_ForwardCallArgs) XXX_DiscardUnknown() {
 	xxx_messageInfo_CompassHandover_ForwardCallArgs.DiscardUnknown(m)
 }
@@ -508,11 +470,9 @@ func (*UploadSmartContract) ProtoMessage()    {}
 func (*UploadSmartContract) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{5}
 }
-
 func (m *UploadSmartContract) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *UploadSmartContract) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_UploadSmartContract.Marshal(b, m, deterministic)
@@ -525,15 +485,12 @@ func (m *UploadSmartContract) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-
 func (m *UploadSmartContract) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_UploadSmartContract.Merge(m, src)
 }
-
 func (m *UploadSmartContract) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *UploadSmartContract) XXX_DiscardUnknown() {
 	xxx_messageInfo_UploadSmartContract.DiscardUnknown(m)
 }
@@ -592,11 +549,9 @@ func (*UploadUserSmartContract) ProtoMessage()    {}
 func (*UploadUserSmartContract) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{6}
 }
-
 func (m *UploadUserSmartContract) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *UploadUserSmartContract) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_UploadUserSmartContract.Marshal(b, m, deterministic)
@@ -609,15 +564,12 @@ func (m *UploadUserSmartContract) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-
 func (m *UploadUserSmartContract) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_UploadUserSmartContract.Merge(m, src)
 }
-
 func (m *UploadUserSmartContract) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *UploadUserSmartContract) XXX_DiscardUnknown() {
 	xxx_messageInfo_UploadUserSmartContract.DiscardUnknown(m)
 }
@@ -705,11 +657,9 @@ func (*Message) ProtoMessage()    {}
 func (*Message) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{7}
 }
-
 func (m *Message) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Message) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Message.Marshal(b, m, deterministic)
@@ -722,15 +672,12 @@ func (m *Message) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Message) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Message.Merge(m, src)
 }
-
 func (m *Message) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Message) XXX_DiscardUnknown() {
 	xxx_messageInfo_Message.DiscardUnknown(m)
 }
@@ -864,11 +811,9 @@ func (*TxExecutedProof) ProtoMessage()    {}
 func (*TxExecutedProof) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{8}
 }
-
 func (m *TxExecutedProof) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *TxExecutedProof) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_TxExecutedProof.Marshal(b, m, deterministic)
@@ -881,15 +826,12 @@ func (m *TxExecutedProof) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
-
 func (m *TxExecutedProof) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_TxExecutedProof.Merge(m, src)
 }
-
 func (m *TxExecutedProof) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *TxExecutedProof) XXX_DiscardUnknown() {
 	xxx_messageInfo_TxExecutedProof.DiscardUnknown(m)
 }
@@ -920,11 +862,9 @@ func (*SmartContractExecutionErrorProof) ProtoMessage()    {}
 func (*SmartContractExecutionErrorProof) Descriptor() ([]byte, []int) {
 	return fileDescriptor_86cc126a804337fd, []int{9}
 }
-
 func (m *SmartContractExecutionErrorProof) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SmartContractExecutionErrorProof) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SmartContractExecutionErrorProof.Marshal(b, m, deterministic)
@@ -937,15 +877,12 @@ func (m *SmartContractExecutionErrorProof) XXX_Marshal(b []byte, deterministic b
 		return b[:n], nil
 	}
 }
-
 func (m *SmartContractExecutionErrorProof) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SmartContractExecutionErrorProof.Merge(m, src)
 }
-
 func (m *SmartContractExecutionErrorProof) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SmartContractExecutionErrorProof) XXX_DiscardUnknown() {
 	xxx_messageInfo_SmartContractExecutionErrorProof.DiscardUnknown(m)
 }
@@ -1614,7 +1551,6 @@ func (m *Message_SubmitLogicCall) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	}
 	return len(dAtA) - i, nil
 }
-
 func (m *Message_UpdateValset) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
@@ -1636,7 +1572,6 @@ func (m *Message_UpdateValset) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	return len(dAtA) - i, nil
 }
-
 func (m *Message_UploadSmartContract) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
@@ -1658,7 +1593,6 @@ func (m *Message_UploadSmartContract) MarshalToSizedBuffer(dAtA []byte) (int, er
 	}
 	return len(dAtA) - i, nil
 }
-
 func (m *Message_UploadUserSmartContract) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
@@ -1680,7 +1614,6 @@ func (m *Message_UploadUserSmartContract) MarshalToSizedBuffer(dAtA []byte) (int
 	}
 	return len(dAtA) - i, nil
 }
-
 func (m *Message_CompassHandover) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
@@ -1702,7 +1635,6 @@ func (m *Message_CompassHandover) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	}
 	return len(dAtA) - i, nil
 }
-
 func (m *TxExecutedProof) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1781,7 +1713,6 @@ func encodeVarintTurnstone(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *Valset) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2039,7 +1970,6 @@ func (m *Message_SubmitLogicCall) Size() (n int) {
 	}
 	return n
 }
-
 func (m *Message_UpdateValset) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2052,7 +1982,6 @@ func (m *Message_UpdateValset) Size() (n int) {
 	}
 	return n
 }
-
 func (m *Message_UploadSmartContract) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2065,7 +1994,6 @@ func (m *Message_UploadSmartContract) Size() (n int) {
 	}
 	return n
 }
-
 func (m *Message_UploadUserSmartContract) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2078,7 +2006,6 @@ func (m *Message_UploadUserSmartContract) Size() (n int) {
 	}
 	return n
 }
-
 func (m *Message_CompassHandover) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2091,7 +2018,6 @@ func (m *Message_CompassHandover) Size() (n int) {
 	}
 	return n
 }
-
 func (m *TxExecutedProof) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2125,11 +2051,9 @@ func (m *SmartContractExecutionErrorProof) Size() (n int) {
 func sovTurnstone(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozTurnstone(x uint64) (n int) {
 	return sovTurnstone(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *Valset) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2307,7 +2231,6 @@ func (m *Valset) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Fees) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2415,7 +2338,6 @@ func (m *Fees) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SubmitLogicCall) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2741,7 +2663,6 @@ func (m *SubmitLogicCall) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SubmitLogicCall_ExecutionRequirements) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2812,7 +2733,6 @@ func (m *SubmitLogicCall_ExecutionRequirements) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UpdateValset) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2899,7 +2819,6 @@ func (m *UpdateValset) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *CompassHandover) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3022,7 +2941,6 @@ func (m *CompassHandover) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *CompassHandover_ForwardCallArgs) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3139,7 +3057,6 @@ func (m *CompassHandover_ForwardCallArgs) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UploadSmartContract) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3328,7 +3245,6 @@ func (m *UploadSmartContract) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UploadUserSmartContract) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3591,7 +3507,6 @@ func (m *UploadUserSmartContract) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Message) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4011,7 +3926,6 @@ func (m *Message) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *TxExecutedProof) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4130,7 +4044,6 @@ func (m *TxExecutedProof) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SmartContractExecutionErrorProof) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -4213,7 +4126,6 @@ func (m *SmartContractExecutionErrorProof) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipTurnstone(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

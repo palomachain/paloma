@@ -6,10 +6,6 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/cosmos/gogoproto/gogoproto"
@@ -19,14 +15,15 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -35,7 +32,8 @@ var (
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
-type QueryParamsRequest struct{}
+type QueryParamsRequest struct {
+}
 
 func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
 func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
@@ -43,11 +41,9 @@ func (*QueryParamsRequest) ProtoMessage()    {}
 func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{0}
 }
-
 func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsRequest.Marshal(b, m, deterministic)
@@ -60,15 +56,12 @@ func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-
 func (m *QueryParamsRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsRequest.Merge(m, src)
 }
-
 func (m *QueryParamsRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsRequest.DiscardUnknown(m)
 }
@@ -87,11 +80,9 @@ func (*QueryParamsResponse) ProtoMessage()    {}
 func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{1}
 }
-
 func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryParamsResponse.Marshal(b, m, deterministic)
@@ -104,15 +95,12 @@ func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-
 func (m *QueryParamsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryParamsResponse.Merge(m, src)
 }
-
 func (m *QueryParamsResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryParamsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryParamsResponse.DiscardUnknown(m)
 }
@@ -137,11 +125,9 @@ func (*QueryGetValsetByIDRequest) ProtoMessage()    {}
 func (*QueryGetValsetByIDRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{2}
 }
-
 func (m *QueryGetValsetByIDRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryGetValsetByIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetValsetByIDRequest.Marshal(b, m, deterministic)
@@ -154,15 +140,12 @@ func (m *QueryGetValsetByIDRequest) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-
 func (m *QueryGetValsetByIDRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetValsetByIDRequest.Merge(m, src)
 }
-
 func (m *QueryGetValsetByIDRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryGetValsetByIDRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetValsetByIDRequest.DiscardUnknown(m)
 }
@@ -193,11 +176,9 @@ func (*QueryGetValsetByIDResponse) ProtoMessage()    {}
 func (*QueryGetValsetByIDResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{3}
 }
-
 func (m *QueryGetValsetByIDResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryGetValsetByIDResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetValsetByIDResponse.Marshal(b, m, deterministic)
@@ -210,15 +191,12 @@ func (m *QueryGetValsetByIDResponse) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-
 func (m *QueryGetValsetByIDResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetValsetByIDResponse.Merge(m, src)
 }
-
 func (m *QueryGetValsetByIDResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryGetValsetByIDResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetValsetByIDResponse.DiscardUnknown(m)
 }
@@ -232,7 +210,8 @@ func (m *QueryGetValsetByIDResponse) GetValset() *Valset {
 	return nil
 }
 
-type QueryChainsInfosRequest struct{}
+type QueryChainsInfosRequest struct {
+}
 
 func (m *QueryChainsInfosRequest) Reset()         { *m = QueryChainsInfosRequest{} }
 func (m *QueryChainsInfosRequest) String() string { return proto.CompactTextString(m) }
@@ -240,11 +219,9 @@ func (*QueryChainsInfosRequest) ProtoMessage()    {}
 func (*QueryChainsInfosRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{4}
 }
-
 func (m *QueryChainsInfosRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryChainsInfosRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryChainsInfosRequest.Marshal(b, m, deterministic)
@@ -257,15 +234,12 @@ func (m *QueryChainsInfosRequest) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-
 func (m *QueryChainsInfosRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryChainsInfosRequest.Merge(m, src)
 }
-
 func (m *QueryChainsInfosRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryChainsInfosRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryChainsInfosRequest.DiscardUnknown(m)
 }
@@ -282,11 +256,9 @@ func (*QueryChainsInfosResponse) ProtoMessage()    {}
 func (*QueryChainsInfosResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{5}
 }
-
 func (m *QueryChainsInfosResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryChainsInfosResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryChainsInfosResponse.Marshal(b, m, deterministic)
@@ -299,15 +271,12 @@ func (m *QueryChainsInfosResponse) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
-
 func (m *QueryChainsInfosResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryChainsInfosResponse.Merge(m, src)
 }
-
 func (m *QueryChainsInfosResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryChainsInfosResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryChainsInfosResponse.DiscardUnknown(m)
 }
@@ -331,11 +300,9 @@ func (*QueryGetSmartContractRequest) ProtoMessage()    {}
 func (*QueryGetSmartContractRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{6}
 }
-
 func (m *QueryGetSmartContractRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryGetSmartContractRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetSmartContractRequest.Marshal(b, m, deterministic)
@@ -348,15 +315,12 @@ func (m *QueryGetSmartContractRequest) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-
 func (m *QueryGetSmartContractRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetSmartContractRequest.Merge(m, src)
 }
-
 func (m *QueryGetSmartContractRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryGetSmartContractRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetSmartContractRequest.DiscardUnknown(m)
 }
@@ -382,11 +346,9 @@ func (*QueryGetSmartContractResponse) ProtoMessage()    {}
 func (*QueryGetSmartContractResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{7}
 }
-
 func (m *QueryGetSmartContractResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryGetSmartContractResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetSmartContractResponse.Marshal(b, m, deterministic)
@@ -399,15 +361,12 @@ func (m *QueryGetSmartContractResponse) XXX_Marshal(b []byte, deterministic bool
 		return b[:n], nil
 	}
 }
-
 func (m *QueryGetSmartContractResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetSmartContractResponse.Merge(m, src)
 }
-
 func (m *QueryGetSmartContractResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryGetSmartContractResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetSmartContractResponse.DiscardUnknown(m)
 }
@@ -435,7 +394,8 @@ func (m *QueryGetSmartContractResponse) GetBytecode() []byte {
 	return nil
 }
 
-type QueryGetSmartContractDeploymentsRequest struct{}
+type QueryGetSmartContractDeploymentsRequest struct {
+}
 
 func (m *QueryGetSmartContractDeploymentsRequest) Reset() {
 	*m = QueryGetSmartContractDeploymentsRequest{}
@@ -445,11 +405,9 @@ func (*QueryGetSmartContractDeploymentsRequest) ProtoMessage()    {}
 func (*QueryGetSmartContractDeploymentsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{8}
 }
-
 func (m *QueryGetSmartContractDeploymentsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryGetSmartContractDeploymentsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetSmartContractDeploymentsRequest.Marshal(b, m, deterministic)
@@ -462,15 +420,12 @@ func (m *QueryGetSmartContractDeploymentsRequest) XXX_Marshal(b []byte, determin
 		return b[:n], nil
 	}
 }
-
 func (m *QueryGetSmartContractDeploymentsRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetSmartContractDeploymentsRequest.Merge(m, src)
 }
-
 func (m *QueryGetSmartContractDeploymentsRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryGetSmartContractDeploymentsRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetSmartContractDeploymentsRequest.DiscardUnknown(m)
 }
@@ -489,11 +444,9 @@ func (*QueryGetSmartContractDeploymentsResponse) ProtoMessage()    {}
 func (*QueryGetSmartContractDeploymentsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{9}
 }
-
 func (m *QueryGetSmartContractDeploymentsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryGetSmartContractDeploymentsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryGetSmartContractDeploymentsResponse.Marshal(b, m, deterministic)
@@ -506,15 +459,12 @@ func (m *QueryGetSmartContractDeploymentsResponse) XXX_Marshal(b []byte, determi
 		return b[:n], nil
 	}
 }
-
 func (m *QueryGetSmartContractDeploymentsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryGetSmartContractDeploymentsResponse.Merge(m, src)
 }
-
 func (m *QueryGetSmartContractDeploymentsResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryGetSmartContractDeploymentsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryGetSmartContractDeploymentsResponse.DiscardUnknown(m)
 }
@@ -538,11 +488,9 @@ func (*QueryUserSmartContractsRequest) ProtoMessage()    {}
 func (*QueryUserSmartContractsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{10}
 }
-
 func (m *QueryUserSmartContractsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryUserSmartContractsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryUserSmartContractsRequest.Marshal(b, m, deterministic)
@@ -555,15 +503,12 @@ func (m *QueryUserSmartContractsRequest) XXX_Marshal(b []byte, deterministic boo
 		return b[:n], nil
 	}
 }
-
 func (m *QueryUserSmartContractsRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryUserSmartContractsRequest.Merge(m, src)
 }
-
 func (m *QueryUserSmartContractsRequest) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryUserSmartContractsRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryUserSmartContractsRequest.DiscardUnknown(m)
 }
@@ -587,11 +532,9 @@ func (*QueryUserSmartContractsResponse) ProtoMessage()    {}
 func (*QueryUserSmartContractsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_dd77ddf5be861c95, []int{11}
 }
-
 func (m *QueryUserSmartContractsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueryUserSmartContractsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueryUserSmartContractsResponse.Marshal(b, m, deterministic)
@@ -604,15 +547,12 @@ func (m *QueryUserSmartContractsResponse) XXX_Marshal(b []byte, deterministic bo
 		return b[:n], nil
 	}
 }
-
 func (m *QueryUserSmartContractsResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueryUserSmartContractsResponse.Merge(m, src)
 }
-
 func (m *QueryUserSmartContractsResponse) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueryUserSmartContractsResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueryUserSmartContractsResponse.DiscardUnknown(m)
 }
@@ -704,10 +644,8 @@ var fileDescriptor_dd77ddf5be861c95 = []byte{
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ context.Context
-	_ grpc.ClientConn
-)
+var _ context.Context
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
@@ -810,28 +748,24 @@ type QueryServer interface {
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
-type UnimplementedQueryServer struct{}
+type UnimplementedQueryServer struct {
+}
 
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
-
 func (*UnimplementedQueryServer) GetValsetByID(ctx context.Context, req *QueryGetValsetByIDRequest) (*QueryGetValsetByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetValsetByID not implemented")
 }
-
 func (*UnimplementedQueryServer) ChainsInfos(ctx context.Context, req *QueryChainsInfosRequest) (*QueryChainsInfosResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChainsInfos not implemented")
 }
-
 func (*UnimplementedQueryServer) QueryGetSmartContract(ctx context.Context, req *QueryGetSmartContractRequest) (*QueryGetSmartContractResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryGetSmartContract not implemented")
 }
-
 func (*UnimplementedQueryServer) QueryGetSmartContractDeployments(ctx context.Context, req *QueryGetSmartContractDeploymentsRequest) (*QueryGetSmartContractDeploymentsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryGetSmartContractDeployments not implemented")
 }
-
 func (*UnimplementedQueryServer) QueryUserSmartContracts(ctx context.Context, req *QueryUserSmartContractsRequest) (*QueryUserSmartContractsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryUserSmartContracts not implemented")
 }
@@ -1375,7 +1309,6 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *QueryParamsRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1536,11 +1469,9 @@ func (m *QueryUserSmartContractsResponse) Size() (n int) {
 func sovQuery(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1591,7 +1522,6 @@ func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1675,7 +1605,6 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryGetValsetByIDRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1777,7 +1706,6 @@ func (m *QueryGetValsetByIDRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryGetValsetByIDResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1864,7 +1792,6 @@ func (m *QueryGetValsetByIDResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryChainsInfosRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1915,7 +1842,6 @@ func (m *QueryChainsInfosRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryChainsInfosResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2000,7 +1926,6 @@ func (m *QueryChainsInfosResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryGetSmartContractRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2070,7 +1995,6 @@ func (m *QueryGetSmartContractRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryGetSmartContractResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2206,7 +2130,6 @@ func (m *QueryGetSmartContractResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryGetSmartContractDeploymentsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2257,7 +2180,6 @@ func (m *QueryGetSmartContractDeploymentsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryGetSmartContractDeploymentsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2342,7 +2264,6 @@ func (m *QueryGetSmartContractDeploymentsResponse) Unmarshal(dAtA []byte) error 
 	}
 	return nil
 }
-
 func (m *QueryUserSmartContractsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2425,7 +2346,6 @@ func (m *QueryUserSmartContractsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *QueryUserSmartContractsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2510,7 +2430,6 @@ func (m *QueryUserSmartContractsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipQuery(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

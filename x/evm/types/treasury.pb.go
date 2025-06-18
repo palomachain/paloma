@@ -5,20 +5,17 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -39,11 +36,9 @@ func (*FundCollectedEvent) ProtoMessage()    {}
 func (*FundCollectedEvent) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a3d48b3c1757ff6c, []int{0}
 }
-
 func (m *FundCollectedEvent) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *FundCollectedEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_FundCollectedEvent.Marshal(b, m, deterministic)
@@ -56,15 +51,12 @@ func (m *FundCollectedEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-
 func (m *FundCollectedEvent) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_FundCollectedEvent.Merge(m, src)
 }
-
 func (m *FundCollectedEvent) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *FundCollectedEvent) XXX_DiscardUnknown() {
 	xxx_messageInfo_FundCollectedEvent.DiscardUnknown(m)
 }
@@ -111,11 +103,9 @@ func (*CollectFunds) ProtoMessage()    {}
 func (*CollectFunds) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a3d48b3c1757ff6c, []int{1}
 }
-
 func (m *CollectFunds) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *CollectFunds) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_CollectFunds.Marshal(b, m, deterministic)
@@ -128,15 +118,12 @@ func (m *CollectFunds) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return b[:n], nil
 	}
 }
-
 func (m *CollectFunds) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_CollectFunds.Merge(m, src)
 }
-
 func (m *CollectFunds) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *CollectFunds) XXX_DiscardUnknown() {
 	xxx_messageInfo_CollectFunds.DiscardUnknown(m)
 }
@@ -295,7 +282,6 @@ func encodeVarintTreasury(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *FundCollectedEvent) Size() (n int) {
 	if m == nil {
 		return 0
@@ -342,11 +328,9 @@ func (m *CollectFunds) Size() (n int) {
 func sovTreasury(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozTreasury(x uint64) (n int) {
 	return sovTreasury(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *FundCollectedEvent) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -512,7 +496,6 @@ func (m *FundCollectedEvent) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *CollectFunds) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -633,7 +616,6 @@ func (m *CollectFunds) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipTreasury(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

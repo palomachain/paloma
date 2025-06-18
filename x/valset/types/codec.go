@@ -9,6 +9,7 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
+	cdc.RegisterConcrete(&MsgUpdateParams{}, "valset/UpdateParams", nil)
 	cdc.RegisterConcrete(&MsgAddExternalChainInfoForValidator{}, "valset/AddExternalChainInfoForValidator", nil)
 	cdc.RegisterConcrete(&MsgKeepAlive{}, "valset/KeepAlive", nil)
 	cdc.RegisterConcrete(&SetPigeonRequirementsProposal{}, "valset/SetPigeonRequirementsProposal", nil)
@@ -16,6 +17,7 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgUpdateParams{},
 		&MsgAddExternalChainInfoForValidator{},
 		&MsgKeepAlive{},
 	)
@@ -31,3 +33,6 @@ var (
 	Amino     = codec.NewLegacyAmino()
 	ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
 )
+
+//- Jail validators who fail to attest bridge claim
+//- Stop sending new batches while waiting for claim confirmation

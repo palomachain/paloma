@@ -5,20 +5,21 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
+	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
+	_ "google.golang.org/protobuf/types/known/durationpb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
+	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
+var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -27,18 +28,19 @@ var (
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params defines the parameters for the module.
-type Params struct{}
+type Params struct {
+	MissedAttestationJailDuration time.Duration `protobuf:"bytes,1,opt,name=missed_attestation_jail_duration,json=missedAttestationJailDuration,proto3,stdduration" json:"missed_attestation_jail_duration"`
+	MissedBridgeClaimJailDuration time.Duration `protobuf:"bytes,2,opt,name=missed_bridge_claim_jail_duration,json=missedBridgeClaimJailDuration,proto3,stdduration" json:"missed_bridge_claim_jail_duration"`
+}
 
 func (m *Params) Reset()      { *m = Params{} }
 func (*Params) ProtoMessage() {}
 func (*Params) Descriptor() ([]byte, []int) {
 	return fileDescriptor_47ceef5f87d4afe7, []int{0}
 }
-
 func (m *Params) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Params.Marshal(b, m, deterministic)
@@ -51,20 +53,31 @@ func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Params) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Params.Merge(m, src)
 }
-
 func (m *Params) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Params) XXX_DiscardUnknown() {
 	xxx_messageInfo_Params.DiscardUnknown(m)
 }
 
 var xxx_messageInfo_Params proto.InternalMessageInfo
+
+func (m *Params) GetMissedAttestationJailDuration() time.Duration {
+	if m != nil {
+		return m.MissedAttestationJailDuration
+	}
+	return 0
+}
+
+func (m *Params) GetMissedBridgeClaimJailDuration() time.Duration {
+	if m != nil {
+		return m.MissedBridgeClaimJailDuration
+	}
+	return 0
+}
 
 func init() {
 	proto.RegisterType((*Params)(nil), "palomachain.paloma.valset.Params")
@@ -75,17 +88,25 @@ func init() {
 }
 
 var fileDescriptor_47ceef5f87d4afe7 = []byte{
-	// 154 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x2b, 0x48, 0xcc, 0xc9,
-	0xcf, 0x4d, 0x4c, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x87, 0xb0, 0xf5, 0xcb, 0x12, 0x73, 0x8a, 0x53,
-	0x4b, 0xf4, 0x0b, 0x12, 0x8b, 0x12, 0x73, 0x8b, 0xf5, 0x0a, 0x8a, 0xf2, 0x4b, 0xf2, 0x85, 0x24,
-	0x91, 0xd4, 0xe9, 0x41, 0xd8, 0x7a, 0x10, 0x75, 0x52, 0x22, 0xe9, 0xf9, 0xe9, 0xf9, 0x60, 0x55,
-	0xfa, 0x20, 0x16, 0x44, 0x83, 0x12, 0x1f, 0x17, 0x5b, 0x00, 0xd8, 0x00, 0x2b, 0x96, 0x19, 0x0b,
-	0xe4, 0x19, 0x9c, 0x3c, 0x4f, 0x3c, 0x92, 0x63, 0xbc, 0xf0, 0x48, 0x8e, 0xf1, 0xc1, 0x23, 0x39,
-	0xc6, 0x09, 0x8f, 0xe5, 0x18, 0x2e, 0x3c, 0x96, 0x63, 0xb8, 0xf1, 0x58, 0x8e, 0x21, 0x4a, 0x3f,
-	0x3d, 0xb3, 0x24, 0xa3, 0x34, 0x49, 0x2f, 0x39, 0x3f, 0x57, 0x1f, 0x9b, 0x6b, 0x8c, 0xf4, 0x2b,
-	0x60, 0x4e, 0x2a, 0xa9, 0x2c, 0x48, 0x2d, 0x4e, 0x62, 0x03, 0xdb, 0x60, 0x0c, 0x08, 0x00, 0x00,
-	0xff, 0xff, 0xc7, 0x3c, 0x2b, 0xf9, 0xbc, 0x00, 0x00, 0x00,
+	// 281 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x91, 0xb1, 0x4e, 0xc3, 0x30,
+	0x10, 0x86, 0x6d, 0x84, 0x2a, 0x14, 0xb6, 0x88, 0x81, 0x56, 0xc2, 0x29, 0x0c, 0x88, 0xc9, 0x96,
+	0xca, 0xc6, 0x46, 0x60, 0x81, 0x09, 0x31, 0xb2, 0x44, 0x97, 0xc4, 0xb8, 0x46, 0x76, 0x1d, 0xc5,
+	0x0e, 0x82, 0xb7, 0x60, 0xec, 0xc8, 0xe3, 0x74, 0xec, 0xc8, 0x04, 0x28, 0x19, 0x79, 0x09, 0x54,
+	0xbb, 0x11, 0x15, 0x62, 0x61, 0xfb, 0x2d, 0x7f, 0xf7, 0xfd, 0x27, 0x5d, 0x74, 0x5c, 0x81, 0x32,
+	0x1a, 0x8a, 0x29, 0xc8, 0x19, 0x0b, 0x99, 0x3d, 0x82, 0xb2, 0xdc, 0xb1, 0x0a, 0x6a, 0xd0, 0x96,
+	0x56, 0xb5, 0x71, 0x26, 0x1e, 0x6e, 0x70, 0x34, 0x64, 0x1a, 0xb8, 0xd1, 0x9e, 0x30, 0xc2, 0x78,
+	0x8a, 0xad, 0x52, 0x18, 0x18, 0x11, 0x61, 0x8c, 0x50, 0x9c, 0xf9, 0x57, 0xde, 0xdc, 0xb3, 0xb2,
+	0xa9, 0xc1, 0x49, 0x33, 0x0b, 0xff, 0x47, 0x5f, 0x38, 0x1a, 0xdc, 0xf8, 0x86, 0x58, 0x45, 0x63,
+	0x2d, 0xad, 0xe5, 0x65, 0x06, 0xce, 0x71, 0xeb, 0x3c, 0x96, 0x3d, 0x80, 0x54, 0x59, 0x3f, 0xb4,
+	0x8f, 0xc7, 0xf8, 0x64, 0x77, 0x32, 0xa4, 0xc1, 0x4a, 0x7b, 0x2b, 0xbd, 0x5c, 0x03, 0xe9, 0xce,
+	0xe2, 0x3d, 0x41, 0xf3, 0x8f, 0x04, 0xdf, 0x1e, 0x04, 0xd9, 0xf9, 0x8f, 0xeb, 0x1a, 0xa4, 0xea,
+	0xc1, 0x58, 0x47, 0x87, 0xeb, 0xb6, 0xbc, 0x96, 0xa5, 0xe0, 0x59, 0xa1, 0x40, 0xea, 0x5f, 0x75,
+	0x5b, 0xff, 0xae, 0x4b, 0xbd, 0xec, 0x62, 0xe5, 0xda, 0xac, 0x3b, 0xdb, 0x9e, 0xbf, 0x26, 0x28,
+	0xbd, 0x5a, 0xb4, 0x04, 0x2f, 0x5b, 0x82, 0x3f, 0x5b, 0x82, 0x5f, 0x3a, 0x82, 0x96, 0x1d, 0x41,
+	0x6f, 0x1d, 0x41, 0x77, 0x4c, 0x48, 0x37, 0x6d, 0x72, 0x5a, 0x18, 0xcd, 0xfe, 0xba, 0xc5, 0x84,
+	0x3d, 0xf5, 0x07, 0x71, 0xcf, 0x15, 0xb7, 0xf9, 0xc0, 0x2f, 0x73, 0xfa, 0x1d, 0x00, 0x00, 0xff,
+	0xff, 0x31, 0x1e, 0x74, 0x14, 0xba, 0x01, 0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -108,6 +129,22 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	n1, err1 := github_com_cosmos_gogoproto_types.StdDurationMarshalTo(m.MissedBridgeClaimJailDuration, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.MissedBridgeClaimJailDuration):])
+	if err1 != nil {
+		return 0, err1
+	}
+	i -= n1
+	i = encodeVarintParams(dAtA, i, uint64(n1))
+	i--
+	dAtA[i] = 0x12
+	n2, err2 := github_com_cosmos_gogoproto_types.StdDurationMarshalTo(m.MissedAttestationJailDuration, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.MissedAttestationJailDuration):])
+	if err2 != nil {
+		return 0, err2
+	}
+	i -= n2
+	i = encodeVarintParams(dAtA, i, uint64(n2))
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -122,24 +159,25 @@ func encodeVarintParams(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *Params) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
+	l = github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.MissedAttestationJailDuration)
+	n += 1 + l + sovParams(uint64(l))
+	l = github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.MissedBridgeClaimJailDuration)
+	n += 1 + l + sovParams(uint64(l))
 	return n
 }
 
 func sovParams(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozParams(x uint64) (n int) {
 	return sovParams(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *Params) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -169,6 +207,72 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: Params: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MissedAttestationJailDuration", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_cosmos_gogoproto_types.StdDurationUnmarshal(&m.MissedAttestationJailDuration, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MissedBridgeClaimJailDuration", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_cosmos_gogoproto_types.StdDurationUnmarshal(&m.MissedBridgeClaimJailDuration, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])
@@ -190,7 +294,6 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipParams(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

@@ -365,6 +365,7 @@ func InitFixture(t ginkgo.FullGinkgoTInterface) *Fixture {
 		slashingKeeper,
 		sdk.DefaultPowerReduction,
 		authcodec.NewBech32Codec(params2.ValidatorAddressPrefix),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	consensusKeeper := *consensusmodulekeeper.NewKeeper(
@@ -407,6 +408,7 @@ func InitFixture(t ginkgo.FullGinkgoTInterface) *Fixture {
 		transferKeeper,
 		evmKeeper,
 		consensusKeeper,
+		nil,
 		nil,
 		nil,
 		skywaymodulekeeper.NewSkywayStoreGetter(keys[skywaymoduletypes.StoreKey]),

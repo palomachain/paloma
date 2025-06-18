@@ -5,20 +5,17 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	_ "github.com/cosmos/gogoproto/gogoproto"
-	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -145,11 +142,9 @@ func (*ChainInfo) ProtoMessage()    {}
 func (*ChainInfo) Descriptor() ([]byte, []int) {
 	return fileDescriptor_61bfdb7d30bf7e88, []int{0}
 }
-
 func (m *ChainInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *ChainInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ChainInfo.Marshal(b, m, deterministic)
@@ -162,15 +157,12 @@ func (m *ChainInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *ChainInfo) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ChainInfo.Merge(m, src)
 }
-
 func (m *ChainInfo) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *ChainInfo) XXX_DiscardUnknown() {
 	xxx_messageInfo_ChainInfo.DiscardUnknown(m)
 }
@@ -301,11 +293,9 @@ func (*SmartContract) ProtoMessage()    {}
 func (*SmartContract) Descriptor() ([]byte, []int) {
 	return fileDescriptor_61bfdb7d30bf7e88, []int{1}
 }
-
 func (m *SmartContract) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SmartContract) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SmartContract.Marshal(b, m, deterministic)
@@ -318,15 +308,12 @@ func (m *SmartContract) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 		return b[:n], nil
 	}
 }
-
 func (m *SmartContract) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SmartContract.Merge(m, src)
 }
-
 func (m *SmartContract) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SmartContract) XXX_DiscardUnknown() {
 	xxx_messageInfo_SmartContract.DiscardUnknown(m)
 }
@@ -381,11 +368,9 @@ func (*SmartContractDeployment) ProtoMessage()    {}
 func (*SmartContractDeployment) Descriptor() ([]byte, []int) {
 	return fileDescriptor_61bfdb7d30bf7e88, []int{2}
 }
-
 func (m *SmartContractDeployment) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SmartContractDeployment) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SmartContractDeployment.Marshal(b, m, deterministic)
@@ -398,15 +383,12 @@ func (m *SmartContractDeployment) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-
 func (m *SmartContractDeployment) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SmartContractDeployment.Merge(m, src)
 }
-
 func (m *SmartContractDeployment) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SmartContractDeployment) XXX_DiscardUnknown() {
 	xxx_messageInfo_SmartContractDeployment.DiscardUnknown(m)
 }
@@ -474,11 +456,9 @@ func (*SmartContractDeployment_ERC20Transfer) ProtoMessage()    {}
 func (*SmartContractDeployment_ERC20Transfer) Descriptor() ([]byte, []int) {
 	return fileDescriptor_61bfdb7d30bf7e88, []int{2, 0}
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SmartContractDeployment_ERC20Transfer.Marshal(b, m, deterministic)
@@ -491,15 +471,12 @@ func (m *SmartContractDeployment_ERC20Transfer) XXX_Marshal(b []byte, determinis
 		return b[:n], nil
 	}
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SmartContractDeployment_ERC20Transfer.Merge(m, src)
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) XXX_DiscardUnknown() {
 	xxx_messageInfo_SmartContractDeployment_ERC20Transfer.DiscardUnknown(m)
 }
@@ -905,7 +882,6 @@ func encodeVarintChainInfo(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *ChainInfo) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1053,11 +1029,9 @@ func (m *SmartContractDeployment_ERC20Transfer) Size() (n int) {
 func sovChainInfo(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozChainInfo(x uint64) (n int) {
 	return sovChainInfo(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *ChainInfo) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1565,7 +1539,6 @@ func (m *ChainInfo) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SmartContract) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1701,7 +1674,6 @@ func (m *SmartContract) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SmartContractDeployment) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1922,7 +1894,6 @@ func (m *SmartContractDeployment) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SmartContractDeployment_ERC20Transfer) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2075,7 +2046,6 @@ func (m *SmartContractDeployment_ERC20Transfer) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipChainInfo(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

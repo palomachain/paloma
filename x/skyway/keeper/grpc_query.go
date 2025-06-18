@@ -96,6 +96,23 @@ func (k Keeper) OutgoingTxBatches(
 			Batches: []types.OutgoingTxBatch{},
 		}, nil
 	}
+
+	att, err := k.GetAttestations(c, &types.QueryAttestationsRequest{
+		ChainReferenceId: req.ChainReferenceId,
+		OrderBy:          "desc",
+		Height:           1,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get attestations: %w", err)
+	}
+
+	if len(att.Attestations) > 0 && !att.Attestations[0].Observed {
+		// If the latest attestation is not observed,
+		// we don't want to give out batches to avoid spamming the bridge
+		// in case of missed attestations.
+		return &types.QueryOutgoingTxBatchesResponse{Batches: batches}, nil
+	}
+
 	err = k.IterateOutgoingTxBatches(sdk.UnwrapSDKContext(c), func(_ []byte, batch types.InternalOutgoingTxBatch) bool {
 		batchChainReferenceID := batch.ChainReferenceID
 		reqChainReferenceID := req.ChainReferenceId

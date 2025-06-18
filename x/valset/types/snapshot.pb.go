@@ -4,13 +4,8 @@
 package types
 
 import (
-	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-	time "time"
-
 	cosmossdk_io_math "cosmossdk.io/math"
+	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
@@ -18,15 +13,17 @@ import (
 	proto "github.com/cosmos/gogoproto/proto"
 	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
 	_ "google.golang.org/protobuf/types/known/timestamppb"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-	_ = time.Kitchen
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
+var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -75,11 +72,9 @@ func (*Validator) ProtoMessage()    {}
 func (*Validator) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5e751d08b53d6c50, []int{0}
 }
-
 func (m *Validator) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Validator) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Validator.Marshal(b, m, deterministic)
@@ -92,15 +87,12 @@ func (m *Validator) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Validator) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Validator.Merge(m, src)
 }
-
 func (m *Validator) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Validator) XXX_DiscardUnknown() {
 	xxx_messageInfo_Validator.DiscardUnknown(m)
 }
@@ -139,11 +131,9 @@ func (*ValidatorExternalAccounts) ProtoMessage()    {}
 func (*ValidatorExternalAccounts) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5e751d08b53d6c50, []int{1}
 }
-
 func (m *ValidatorExternalAccounts) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *ValidatorExternalAccounts) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ValidatorExternalAccounts.Marshal(b, m, deterministic)
@@ -156,15 +146,12 @@ func (m *ValidatorExternalAccounts) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-
 func (m *ValidatorExternalAccounts) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ValidatorExternalAccounts.Merge(m, src)
 }
-
 func (m *ValidatorExternalAccounts) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *ValidatorExternalAccounts) XXX_DiscardUnknown() {
 	xxx_messageInfo_ValidatorExternalAccounts.DiscardUnknown(m)
 }
@@ -200,11 +187,9 @@ func (*Snapshot) ProtoMessage()    {}
 func (*Snapshot) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5e751d08b53d6c50, []int{2}
 }
-
 func (m *Snapshot) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Snapshot) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Snapshot.Marshal(b, m, deterministic)
@@ -217,15 +202,12 @@ func (m *Snapshot) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Snapshot) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Snapshot.Merge(m, src)
 }
-
 func (m *Snapshot) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Snapshot) XXX_DiscardUnknown() {
 	xxx_messageInfo_Snapshot.DiscardUnknown(m)
 }
@@ -282,11 +264,9 @@ func (*ExternalChainInfo) ProtoMessage()    {}
 func (*ExternalChainInfo) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5e751d08b53d6c50, []int{3}
 }
-
 func (m *ExternalChainInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *ExternalChainInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ExternalChainInfo.Marshal(b, m, deterministic)
@@ -299,15 +279,12 @@ func (m *ExternalChainInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-
 func (m *ExternalChainInfo) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ExternalChainInfo.Merge(m, src)
 }
-
 func (m *ExternalChainInfo) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *ExternalChainInfo) XXX_DiscardUnknown() {
 	xxx_messageInfo_ExternalChainInfo.DiscardUnknown(m)
 }
@@ -667,7 +644,6 @@ func encodeVarintSnapshot(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *Validator) Size() (n int) {
 	if m == nil {
 		return 0
@@ -780,11 +756,9 @@ func (m *ExternalChainInfo) Size() (n int) {
 func sovSnapshot(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozSnapshot(x uint64) (n int) {
 	return sovSnapshot(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *Validator) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -955,7 +929,6 @@ func (m *Validator) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *ValidatorExternalAccounts) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1074,7 +1047,6 @@ func (m *ValidatorExternalAccounts) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Snapshot) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1295,7 +1267,6 @@ func (m *Snapshot) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *ExternalChainInfo) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1540,7 +1511,6 @@ func (m *ExternalChainInfo) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipSnapshot(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

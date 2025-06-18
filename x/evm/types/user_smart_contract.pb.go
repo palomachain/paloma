@@ -5,20 +5,17 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
+	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
 	math_bits "math/bits"
-
-	_ "github.com/cosmos/cosmos-proto"
-	proto "github.com/cosmos/gogoproto/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -77,11 +74,9 @@ func (*UserSmartContract) ProtoMessage()    {}
 func (*UserSmartContract) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5825d6d955923c9c, []int{0}
 }
-
 func (m *UserSmartContract) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *UserSmartContract) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_UserSmartContract.Marshal(b, m, deterministic)
@@ -94,15 +89,12 @@ func (m *UserSmartContract) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-
 func (m *UserSmartContract) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_UserSmartContract.Merge(m, src)
 }
-
 func (m *UserSmartContract) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *UserSmartContract) XXX_DiscardUnknown() {
 	xxx_messageInfo_UserSmartContract.DiscardUnknown(m)
 }
@@ -186,11 +178,9 @@ func (*UserSmartContract_Deployment) ProtoMessage()    {}
 func (*UserSmartContract_Deployment) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5825d6d955923c9c, []int{0, 0}
 }
-
 func (m *UserSmartContract_Deployment) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *UserSmartContract_Deployment) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_UserSmartContract_Deployment.Marshal(b, m, deterministic)
@@ -203,15 +193,12 @@ func (m *UserSmartContract_Deployment) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-
 func (m *UserSmartContract_Deployment) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_UserSmartContract_Deployment.Merge(m, src)
 }
-
 func (m *UserSmartContract_Deployment) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *UserSmartContract_Deployment) XXX_DiscardUnknown() {
 	xxx_messageInfo_UserSmartContract_Deployment.DiscardUnknown(m)
 }
@@ -450,7 +437,6 @@ func encodeVarintUserSmartContract(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *UserSmartContract) Size() (n int) {
 	if m == nil {
 		return 0
@@ -524,11 +510,9 @@ func (m *UserSmartContract_Deployment) Size() (n int) {
 func sovUserSmartContract(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozUserSmartContract(x uint64) (n int) {
 	return sovUserSmartContract(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *UserSmartContract) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -830,7 +814,6 @@ func (m *UserSmartContract) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *UserSmartContract_Deployment) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1002,7 +985,6 @@ func (m *UserSmartContract_Deployment) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipUserSmartContract(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

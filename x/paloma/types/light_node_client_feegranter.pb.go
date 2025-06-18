@@ -5,22 +5,19 @@ package types
 
 import (
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	_ "github.com/cosmos/cosmos-proto"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -38,11 +35,9 @@ func (*LightNodeClientFeegranter) ProtoMessage()    {}
 func (*LightNodeClientFeegranter) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8b3e305dcd8c47a6, []int{0}
 }
-
 func (m *LightNodeClientFeegranter) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *LightNodeClientFeegranter) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_LightNodeClientFeegranter.Marshal(b, m, deterministic)
@@ -55,15 +50,12 @@ func (m *LightNodeClientFeegranter) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-
 func (m *LightNodeClientFeegranter) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_LightNodeClientFeegranter.Merge(m, src)
 }
-
 func (m *LightNodeClientFeegranter) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *LightNodeClientFeegranter) XXX_DiscardUnknown() {
 	xxx_messageInfo_LightNodeClientFeegranter.DiscardUnknown(m)
 }
@@ -145,7 +137,6 @@ func encodeVarintLightNodeClientFeegranter(dAtA []byte, offset int, v uint64) in
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *LightNodeClientFeegranter) Size() (n int) {
 	if m == nil {
 		return 0
@@ -162,11 +153,9 @@ func (m *LightNodeClientFeegranter) Size() (n int) {
 func sovLightNodeClientFeegranter(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozLightNodeClientFeegranter(x uint64) (n int) {
 	return sovLightNodeClientFeegranter(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *LightNodeClientFeegranter) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -251,7 +240,6 @@ func (m *LightNodeClientFeegranter) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipLightNodeClientFeegranter(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
