@@ -717,6 +717,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		slashingKeeper,
 		sdk.DefaultPowerReduction,
 		authcodec.NewBech32Codec(chainparams.ValidatorAddressPrefix),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	consensusRegistry := consensuskeeper.NewRegistry()
@@ -783,6 +784,7 @@ func CreateTestEnv(t *testing.T) TestInput {
 		evmKeeper,
 		consensusKeeper,
 		nil,
+		valsetKeeper,
 		nil,
 		NewSkywayStoreGetter(skywayKey),
 		"",

@@ -8,5 +8,6 @@ import (
 
 // x/valset module sentinel errors
 var (
-	ErrSample = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrSample       = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrUnauthorized = sdkerrors.Register(ModuleName, 23, "unauthorized")
 )

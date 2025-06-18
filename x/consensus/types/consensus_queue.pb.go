@@ -4,13 +4,8 @@
 package types
 
 import (
-	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-	time "time"
-
 	cosmossdk_io_math "cosmossdk.io/math"
+	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
@@ -19,15 +14,17 @@ import (
 	proto "github.com/cosmos/gogoproto/proto"
 	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
 	_ "google.golang.org/protobuf/types/known/timestamppb"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-	_ = time.Kitchen
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
+var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -61,11 +58,9 @@ func (*QueuedSignedMessage) ProtoMessage() {}
 func (*QueuedSignedMessage) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3a5520bff1a7c91d, []int{0}
 }
-
 func (m *QueuedSignedMessage) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *QueuedSignedMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_QueuedSignedMessage.Marshal(b, m, deterministic)
@@ -78,15 +73,12 @@ func (m *QueuedSignedMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-
 func (m *QueuedSignedMessage) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_QueuedSignedMessage.Merge(m, src)
 }
-
 func (m *QueuedSignedMessage) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *QueuedSignedMessage) XXX_DiscardUnknown() {
 	xxx_messageInfo_QueuedSignedMessage.DiscardUnknown(m)
 }
@@ -187,11 +179,9 @@ func (*BatchOfConsensusMessages) ProtoMessage()    {}
 func (*BatchOfConsensusMessages) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3a5520bff1a7c91d, []int{1}
 }
-
 func (m *BatchOfConsensusMessages) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *BatchOfConsensusMessages) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_BatchOfConsensusMessages.Marshal(b, m, deterministic)
@@ -204,15 +194,12 @@ func (m *BatchOfConsensusMessages) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
-
 func (m *BatchOfConsensusMessages) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_BatchOfConsensusMessages.Merge(m, src)
 }
-
 func (m *BatchOfConsensusMessages) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *BatchOfConsensusMessages) XXX_DiscardUnknown() {
 	xxx_messageInfo_BatchOfConsensusMessages.DiscardUnknown(m)
 }
@@ -237,11 +224,9 @@ func (*Batch) ProtoMessage()    {}
 func (*Batch) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3a5520bff1a7c91d, []int{2}
 }
-
 func (m *Batch) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Batch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Batch.Marshal(b, m, deterministic)
@@ -254,15 +239,12 @@ func (m *Batch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Batch) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Batch.Merge(m, src)
 }
-
 func (m *Batch) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Batch) XXX_DiscardUnknown() {
 	xxx_messageInfo_Batch.DiscardUnknown(m)
 }
@@ -297,11 +279,9 @@ func (*SignData) ProtoMessage()    {}
 func (*SignData) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3a5520bff1a7c91d, []int{3}
 }
-
 func (m *SignData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *SignData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_SignData.Marshal(b, m, deterministic)
@@ -314,15 +294,12 @@ func (m *SignData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *SignData) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_SignData.Merge(m, src)
 }
-
 func (m *SignData) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *SignData) XXX_DiscardUnknown() {
 	xxx_messageInfo_SignData.DiscardUnknown(m)
 }
@@ -375,11 +352,9 @@ func (*Evidence) ProtoMessage()    {}
 func (*Evidence) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3a5520bff1a7c91d, []int{4}
 }
-
 func (m *Evidence) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *Evidence) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Evidence.Marshal(b, m, deterministic)
@@ -392,15 +367,12 @@ func (m *Evidence) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *Evidence) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_Evidence.Merge(m, src)
 }
-
 func (m *Evidence) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *Evidence) XXX_DiscardUnknown() {
 	xxx_messageInfo_Evidence.DiscardUnknown(m)
 }
@@ -432,11 +404,9 @@ func (*GasEstimate) ProtoMessage()    {}
 func (*GasEstimate) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3a5520bff1a7c91d, []int{5}
 }
-
 func (m *GasEstimate) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *GasEstimate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_GasEstimate.Marshal(b, m, deterministic)
@@ -449,15 +419,12 @@ func (m *GasEstimate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return b[:n], nil
 	}
 }
-
 func (m *GasEstimate) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_GasEstimate.Merge(m, src)
 }
-
 func (m *GasEstimate) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *GasEstimate) XXX_DiscardUnknown() {
 	xxx_messageInfo_GasEstimate.DiscardUnknown(m)
 }
@@ -490,11 +457,9 @@ func (*PublicAccessData) ProtoMessage()    {}
 func (*PublicAccessData) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3a5520bff1a7c91d, []int{6}
 }
-
 func (m *PublicAccessData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *PublicAccessData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_PublicAccessData.Marshal(b, m, deterministic)
@@ -507,15 +472,12 @@ func (m *PublicAccessData) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-
 func (m *PublicAccessData) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_PublicAccessData.Merge(m, src)
 }
-
 func (m *PublicAccessData) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *PublicAccessData) XXX_DiscardUnknown() {
 	xxx_messageInfo_PublicAccessData.DiscardUnknown(m)
 }
@@ -554,11 +516,9 @@ func (*ErrorData) ProtoMessage()    {}
 func (*ErrorData) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3a5520bff1a7c91d, []int{7}
 }
-
 func (m *ErrorData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *ErrorData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ErrorData.Marshal(b, m, deterministic)
@@ -571,15 +531,12 @@ func (m *ErrorData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-
 func (m *ErrorData) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ErrorData.Merge(m, src)
 }
-
 func (m *ErrorData) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *ErrorData) XXX_DiscardUnknown() {
 	xxx_messageInfo_ErrorData.DiscardUnknown(m)
 }
@@ -1127,7 +1084,6 @@ func encodeVarintConsensusQueue(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *QueuedSignedMessage) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1322,11 +1278,9 @@ func (m *ErrorData) Size() (n int) {
 func sovConsensusQueue(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozConsensusQueue(x uint64) (n int) {
 	return sovConsensusQueue(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *QueuedSignedMessage) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1752,7 +1706,6 @@ func (m *QueuedSignedMessage) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *BatchOfConsensusMessages) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1839,7 +1792,6 @@ func (m *BatchOfConsensusMessages) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Batch) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1958,7 +1910,6 @@ func (m *Batch) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *SignData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2177,7 +2128,6 @@ func (m *SignData) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *Evidence) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2298,7 +2248,6 @@ func (m *Evidence) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *GasEstimate) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2402,7 +2351,6 @@ func (m *GasEstimate) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *PublicAccessData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2540,7 +2488,6 @@ func (m *PublicAccessData) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *ErrorData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2659,7 +2606,6 @@ func (m *ErrorData) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipConsensusQueue(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

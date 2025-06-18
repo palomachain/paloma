@@ -5,24 +5,21 @@ package types
 
 import (
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-	time "time"
-
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
 	_ "google.golang.org/protobuf/types/known/timestamppb"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-	_ = time.Kitchen
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
+var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -40,11 +37,9 @@ func (*ReferenceBlockAttestation) ProtoMessage()    {}
 func (*ReferenceBlockAttestation) Descriptor() ([]byte, []int) {
 	return fileDescriptor_181c5ad50f766137, []int{0}
 }
-
 func (m *ReferenceBlockAttestation) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *ReferenceBlockAttestation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ReferenceBlockAttestation.Marshal(b, m, deterministic)
@@ -57,15 +52,12 @@ func (m *ReferenceBlockAttestation) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-
 func (m *ReferenceBlockAttestation) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ReferenceBlockAttestation.Merge(m, src)
 }
-
 func (m *ReferenceBlockAttestation) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *ReferenceBlockAttestation) XXX_DiscardUnknown() {
 	xxx_messageInfo_ReferenceBlockAttestation.DiscardUnknown(m)
 }
@@ -90,11 +82,9 @@ func (*ReferenceBlockAttestationRes) ProtoMessage()    {}
 func (*ReferenceBlockAttestationRes) Descriptor() ([]byte, []int) {
 	return fileDescriptor_181c5ad50f766137, []int{1}
 }
-
 func (m *ReferenceBlockAttestationRes) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *ReferenceBlockAttestationRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_ReferenceBlockAttestationRes.Marshal(b, m, deterministic)
@@ -107,15 +97,12 @@ func (m *ReferenceBlockAttestationRes) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-
 func (m *ReferenceBlockAttestationRes) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ReferenceBlockAttestationRes.Merge(m, src)
 }
-
 func (m *ReferenceBlockAttestationRes) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *ReferenceBlockAttestationRes) XXX_DiscardUnknown() {
 	xxx_messageInfo_ReferenceBlockAttestationRes.DiscardUnknown(m)
 }
@@ -245,7 +232,6 @@ func encodeVarintEvmReferenceBlockAttestation(dAtA []byte, offset int, v uint64)
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *ReferenceBlockAttestation) Size() (n int) {
 	if m == nil {
 		return 0
@@ -276,11 +262,9 @@ func (m *ReferenceBlockAttestationRes) Size() (n int) {
 func sovEvmReferenceBlockAttestation(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozEvmReferenceBlockAttestation(x uint64) (n int) {
 	return sovEvmReferenceBlockAttestation(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *ReferenceBlockAttestation) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -364,7 +348,6 @@ func (m *ReferenceBlockAttestation) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func (m *ReferenceBlockAttestationRes) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -466,7 +449,6 @@ func (m *ReferenceBlockAttestationRes) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipEvmReferenceBlockAttestation(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0

@@ -12,6 +12,7 @@ import (
 	"github.com/palomachain/paloma/v2/util/slice"
 	"github.com/palomachain/paloma/v2/x/skyway/keeper"
 	"github.com/palomachain/paloma/v2/x/skyway/types"
+	valsettypes "github.com/palomachain/paloma/v2/x/valset/types"
 )
 
 const updateValidatorNoncesPeriod = 50
@@ -45,6 +46,11 @@ func EndBlocker(ctx context.Context, k keeper.Keeper, cc *libcons.ConsensusCheck
 		err = pruneAttestations(ctx, k, v)
 		if err != nil {
 			logger.WithError(err).Warn("Failed to prune attestations.")
+		}
+
+		err = slashUnattestingValidators(ctx, k, v)
+		if err != nil {
+			logger.WithError(err).Warn("Failed to slash unattesting validators.")
 		}
 
 		if sdkCtx.BlockHeight()%updateValidatorNoncesPeriod == 0 {
@@ -281,5 +287,56 @@ func pruneAttestations(ctx context.Context, k keeper.Keeper, chainReferenceID st
 			}
 		}
 	}
+	return nil
+}
+
+func slashUnattestingValidators(ctx context.Context, k keeper.Keeper, chainReferenceID string) error {
+	at, err := k.GetMostRecentAttestations(ctx, chainReferenceID, 1)
+	if err != nil {
+		return fmt.Errorf("failed to get most recent attestations: %w", err)
+	}
+	if len(at) != 1 {
+		return fmt.Errorf("expected 1 attestation, got %d", len(at))
+	}
+
+	if at[0].Observed {
+		return nil
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if (uint64(sdkCtx.BlockHeight())-at[0].Height)%300 != 0 {
+		// Not enough time has passed since the last attestation, so we don't slash
+		return nil
+	}
+
+	voterLkup := map[string]struct{}{}
+	for _, v := range at[0].Votes {
+		voterLkup[v] = struct{}{}
+	}
+
+	vals, err := k.StakingKeeper.GetBondedValidatorsByPower(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get bonded validators: %w", err)
+	}
+
+	for _, v := range vals {
+		if v.IsJailed() {
+			continue
+		}
+
+		if _, ok := voterLkup[v.GetOperator()]; !ok {
+			// This validator did not vote on the attestation, so we slash them
+			valAddr, err := sdk.ValAddressFromBech32(v.GetOperator())
+			if err != nil {
+				return fmt.Errorf("failed to parse validator address %s: %w", v.GetOperator(), err)
+			}
+
+			k.ValsetKeeper.Jail(ctx, valAddr, valsettypes.JailReasonMissedBridgeAttestation)
+			if err != nil {
+				return fmt.Errorf("failed to jail validator %s: %w", valAddr, err)
+			}
+		}
+	}
+
 	return nil
 }

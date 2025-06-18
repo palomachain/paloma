@@ -80,19 +80,23 @@ func (k Keeper) checkBadSignatureEvidenceInternal(ctx context.Context, subject t
 	}
 
 	// Slash the offending validator
-	cons, err := val.GetConsAddr()
+	valAddr, err := sdk.ValAddressFromBech32(val.OperatorAddress)
 	if err != nil {
-		return sdkerrors.Wrap(err, "Could not get consensus key address for validator")
+		return sdkerrors.Wrap(err, "failed to parse validator address")
 	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if !val.IsJailed() {
-		err := k.StakingKeeper.Jail(ctx, cons)
+		err := k.ValsetKeeper.Jail(ctx, valAddr, "bad eth signature evidence")
 		if err != nil {
 			return fmt.Errorf("checkBadSignatureEvidenceInternal jail: %w", err)
 		}
 		// TODO: Establish slashing fraction parameter
 		// slashingFrac := params.SlashFractionBadEthSignature
 		slashingFrac := math.LegacyZeroDec()
+		cons, err := val.GetConsAddr()
+		if err != nil {
+			return sdkerrors.Wrap(err, "Could not get consensus key address for validator")
+		}
 		_, err = k.StakingKeeper.Slash(ctx, cons, sdkCtx.BlockHeight(), val.ConsensusPower(sdk.DefaultPowerReduction), slashingFrac)
 		if err != nil {
 			return err

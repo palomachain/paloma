@@ -25,17 +25,17 @@ import (
 )
 
 // Suppress "imported and not used" errors
-var (
-	_ codes.Code
-	_ io.Reader
-	_ status.Status
-	_ = runtime.String
-	_ = utilities.NewDoubleArray
-	_ = descriptor.ForMessage
-	_ = metadata.Join
-)
+var _ codes.Code
+var _ io.Reader
+var _ status.Status
+var _ = runtime.String
+var _ = utilities.NewDoubleArray
+var _ = descriptor.ForMessage
+var _ = metadata.Join
 
-var filter_Msg_SendToRemote_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_Msg_SendToRemote_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_Msg_SendToRemote_0(ctx context.Context, marshaler runtime.Marshaler, client MsgClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MsgSendToRemote
@@ -50,6 +50,7 @@ func request_Msg_SendToRemote_0(ctx context.Context, marshaler runtime.Marshaler
 
 	msg, err := client.SendToRemote(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_Msg_SendToRemote_0(ctx context.Context, marshaler runtime.Marshaler, server MsgServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -65,9 +66,12 @@ func local_request_Msg_SendToRemote_0(ctx context.Context, marshaler runtime.Mar
 
 	msg, err := server.SendToRemote(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_Msg_ConfirmBatch_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_Msg_ConfirmBatch_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_Msg_ConfirmBatch_0(ctx context.Context, marshaler runtime.Marshaler, client MsgClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MsgConfirmBatch
@@ -82,6 +86,7 @@ func request_Msg_ConfirmBatch_0(ctx context.Context, marshaler runtime.Marshaler
 
 	msg, err := client.ConfirmBatch(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_Msg_ConfirmBatch_0(ctx context.Context, marshaler runtime.Marshaler, server MsgServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -97,9 +102,12 @@ func local_request_Msg_ConfirmBatch_0(ctx context.Context, marshaler runtime.Mar
 
 	msg, err := server.ConfirmBatch(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_Msg_EstimateBatchGas_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_Msg_EstimateBatchGas_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_Msg_EstimateBatchGas_0(ctx context.Context, marshaler runtime.Marshaler, client MsgClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MsgEstimateBatchGas
@@ -114,6 +122,7 @@ func request_Msg_EstimateBatchGas_0(ctx context.Context, marshaler runtime.Marsh
 
 	msg, err := client.EstimateBatchGas(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_Msg_EstimateBatchGas_0(ctx context.Context, marshaler runtime.Marshaler, server MsgServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -129,9 +138,12 @@ func local_request_Msg_EstimateBatchGas_0(ctx context.Context, marshaler runtime
 
 	msg, err := server.EstimateBatchGas(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_Msg_SendToPalomaClaim_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_Msg_SendToPalomaClaim_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_Msg_SendToPalomaClaim_0(ctx context.Context, marshaler runtime.Marshaler, client MsgClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MsgSendToPalomaClaim
@@ -146,6 +158,7 @@ func request_Msg_SendToPalomaClaim_0(ctx context.Context, marshaler runtime.Mars
 
 	msg, err := client.SendToPalomaClaim(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_Msg_SendToPalomaClaim_0(ctx context.Context, marshaler runtime.Marshaler, server MsgServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -161,9 +174,12 @@ func local_request_Msg_SendToPalomaClaim_0(ctx context.Context, marshaler runtim
 
 	msg, err := server.SendToPalomaClaim(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_Msg_BatchSendToRemoteClaim_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_Msg_BatchSendToRemoteClaim_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_Msg_BatchSendToRemoteClaim_0(ctx context.Context, marshaler runtime.Marshaler, client MsgClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MsgBatchSendToRemoteClaim
@@ -178,6 +194,7 @@ func request_Msg_BatchSendToRemoteClaim_0(ctx context.Context, marshaler runtime
 
 	msg, err := client.BatchSendToRemoteClaim(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_Msg_BatchSendToRemoteClaim_0(ctx context.Context, marshaler runtime.Marshaler, server MsgServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -193,9 +210,12 @@ func local_request_Msg_BatchSendToRemoteClaim_0(ctx context.Context, marshaler r
 
 	msg, err := server.BatchSendToRemoteClaim(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_Msg_CancelSendToRemote_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_Msg_CancelSendToRemote_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_Msg_CancelSendToRemote_0(ctx context.Context, marshaler runtime.Marshaler, client MsgClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MsgCancelSendToRemote
@@ -210,6 +230,7 @@ func request_Msg_CancelSendToRemote_0(ctx context.Context, marshaler runtime.Mar
 
 	msg, err := client.CancelSendToRemote(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_Msg_CancelSendToRemote_0(ctx context.Context, marshaler runtime.Marshaler, server MsgServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -225,9 +246,12 @@ func local_request_Msg_CancelSendToRemote_0(ctx context.Context, marshaler runti
 
 	msg, err := server.CancelSendToRemote(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_Msg_SubmitBadSignatureEvidence_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_Msg_SubmitBadSignatureEvidence_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_Msg_SubmitBadSignatureEvidence_0(ctx context.Context, marshaler runtime.Marshaler, client MsgClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MsgSubmitBadSignatureEvidence
@@ -242,6 +266,7 @@ func request_Msg_SubmitBadSignatureEvidence_0(ctx context.Context, marshaler run
 
 	msg, err := client.SubmitBadSignatureEvidence(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_Msg_SubmitBadSignatureEvidence_0(ctx context.Context, marshaler runtime.Marshaler, server MsgServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -257,9 +282,12 @@ func local_request_Msg_SubmitBadSignatureEvidence_0(ctx context.Context, marshal
 
 	msg, err := server.SubmitBadSignatureEvidence(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_Msg_UpdateParams_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_Msg_UpdateParams_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_Msg_UpdateParams_0(ctx context.Context, marshaler runtime.Marshaler, client MsgClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MsgUpdateParams
@@ -274,6 +302,7 @@ func request_Msg_UpdateParams_0(ctx context.Context, marshaler runtime.Marshaler
 
 	msg, err := client.UpdateParams(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_Msg_UpdateParams_0(ctx context.Context, marshaler runtime.Marshaler, server MsgServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -289,9 +318,12 @@ func local_request_Msg_UpdateParams_0(ctx context.Context, marshaler runtime.Mar
 
 	msg, err := server.UpdateParams(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_Msg_LightNodeSaleClaim_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_Msg_LightNodeSaleClaim_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_Msg_LightNodeSaleClaim_0(ctx context.Context, marshaler runtime.Marshaler, client MsgClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MsgLightNodeSaleClaim
@@ -306,6 +338,7 @@ func request_Msg_LightNodeSaleClaim_0(ctx context.Context, marshaler runtime.Mar
 
 	msg, err := client.LightNodeSaleClaim(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_Msg_LightNodeSaleClaim_0(ctx context.Context, marshaler runtime.Marshaler, server MsgServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -321,9 +354,12 @@ func local_request_Msg_LightNodeSaleClaim_0(ctx context.Context, marshaler runti
 
 	msg, err := server.LightNodeSaleClaim(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
-var filter_Msg_SetERC20ToTokenDenom_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+var (
+	filter_Msg_SetERC20ToTokenDenom_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
 
 func request_Msg_SetERC20ToTokenDenom_0(ctx context.Context, marshaler runtime.Marshaler, client MsgClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq MsgSetERC20ToTokenDenom
@@ -338,6 +374,7 @@ func request_Msg_SetERC20ToTokenDenom_0(ctx context.Context, marshaler runtime.M
 
 	msg, err := client.SetERC20ToTokenDenom(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
+
 }
 
 func local_request_Msg_SetERC20ToTokenDenom_0(ctx context.Context, marshaler runtime.Marshaler, server MsgServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -353,6 +390,7 @@ func local_request_Msg_SetERC20ToTokenDenom_0(ctx context.Context, marshaler run
 
 	msg, err := server.SetERC20ToTokenDenom(ctx, &protoReq)
 	return msg, metadata, err
+
 }
 
 // RegisterMsgHandlerServer registers the http handlers for service Msg to "mux".
@@ -360,6 +398,7 @@ func local_request_Msg_SetERC20ToTokenDenom_0(ctx context.Context, marshaler run
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterMsgHandlerFromEndpoint instead.
 func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server MsgServer) error {
+
 	mux.Handle("POST", pattern_Msg_SendToRemote_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -380,6 +419,7 @@ func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 		}
 
 		forward_Msg_SendToRemote_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_ConfirmBatch_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -402,6 +442,7 @@ func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 		}
 
 		forward_Msg_ConfirmBatch_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_EstimateBatchGas_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -424,6 +465,7 @@ func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 		}
 
 		forward_Msg_EstimateBatchGas_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_SendToPalomaClaim_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -446,6 +488,7 @@ func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 		}
 
 		forward_Msg_SendToPalomaClaim_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_BatchSendToRemoteClaim_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -468,6 +511,7 @@ func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 		}
 
 		forward_Msg_BatchSendToRemoteClaim_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_CancelSendToRemote_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -490,6 +534,7 @@ func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 		}
 
 		forward_Msg_CancelSendToRemote_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_SubmitBadSignatureEvidence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -512,6 +557,7 @@ func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 		}
 
 		forward_Msg_SubmitBadSignatureEvidence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_UpdateParams_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -534,6 +580,7 @@ func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 		}
 
 		forward_Msg_UpdateParams_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_LightNodeSaleClaim_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -556,6 +603,7 @@ func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 		}
 
 		forward_Msg_LightNodeSaleClaim_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_SetERC20ToTokenDenom_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -578,6 +626,7 @@ func RegisterMsgHandlerServer(ctx context.Context, mux *runtime.ServeMux, server
 		}
 
 		forward_Msg_SetERC20ToTokenDenom_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	return nil
@@ -620,6 +669,7 @@ func RegisterMsgHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.C
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "MsgClient" to call the correct interceptors.
 func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client MsgClient) error {
+
 	mux.Handle("POST", pattern_Msg_SendToRemote_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -637,6 +687,7 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 		}
 
 		forward_Msg_SendToRemote_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_ConfirmBatch_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -656,6 +707,7 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 		}
 
 		forward_Msg_ConfirmBatch_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_EstimateBatchGas_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -675,6 +727,7 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 		}
 
 		forward_Msg_EstimateBatchGas_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_SendToPalomaClaim_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -694,6 +747,7 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 		}
 
 		forward_Msg_SendToPalomaClaim_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_BatchSendToRemoteClaim_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -713,6 +767,7 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 		}
 
 		forward_Msg_BatchSendToRemoteClaim_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_CancelSendToRemote_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -732,6 +787,7 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 		}
 
 		forward_Msg_CancelSendToRemote_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_SubmitBadSignatureEvidence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -751,6 +807,7 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 		}
 
 		forward_Msg_SubmitBadSignatureEvidence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_UpdateParams_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -770,6 +827,7 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 		}
 
 		forward_Msg_UpdateParams_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_LightNodeSaleClaim_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -789,6 +847,7 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 		}
 
 		forward_Msg_LightNodeSaleClaim_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	mux.Handle("POST", pattern_Msg_SetERC20ToTokenDenom_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -808,6 +867,7 @@ func RegisterMsgHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 		}
 
 		forward_Msg_SetERC20ToTokenDenom_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
 	})
 
 	return nil

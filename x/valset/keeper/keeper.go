@@ -37,20 +37,13 @@ const (
 	defaultMinimumPigeonVersion = "v1.11.3"
 )
 
-var jailSentences = []time.Duration{
-	time.Minute,
-	time.Minute * 5,
-	time.Minute * 15,
-	time.Hour,
-	time.Hour * 24,
-}
-
 type Keeper struct {
 	EvmKeeper         types.EvmKeeper
 	SnapshotListeners []types.OnSnapshotBuiltListener
 
 	cdc            codec.BinaryCodec
 	ider           keeperutil.IDGenerator
+	authority      string
 	paramstore     paramtypes.Subspace
 	powerReduction sdkmath.Int
 	staking        types.StakingKeeper
@@ -69,6 +62,7 @@ func NewKeeper(
 	slashing types.SlashingKeeper,
 	powerReduction sdkmath.Int,
 	addressCodec address.Codec,
+	authority string,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -83,6 +77,7 @@ func NewKeeper(
 		slashing:       slashing,
 		powerReduction: powerReduction,
 		AddressCodec:   addressCodec,
+		authority:      authority,
 	}
 	k.ider = keeperutil.NewIDGenerator(keeperutil.StoreGetterFn(func(ctx context.Context) storetypes.KVStore {
 		store := runtime.KVStoreAdapter(k.storeKey.OpenKVStore(ctx))
@@ -558,10 +553,10 @@ func (k Keeper) IsJailed(ctx context.Context, val sdk.ValAddress) (bool, error) 
 	return a.IsJailed(), nil
 }
 
-func (k Keeper) Jail(_ctx context.Context, valAddr sdk.ValAddress, reason string) error {
-	ctx := sdk.UnwrapSDKContext(_ctx)
-	jailTime := ctx.BlockTime()
-	val, err := k.staking.Validator(ctx, valAddr)
+func (k Keeper) Jail(ctx context.Context, valAddr sdk.ValAddress, reason string) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	jailTime := sdkCtx.BlockTime()
+	val, err := k.staking.Validator(sdkCtx, valAddr)
 	if err != nil {
 		return err
 	}
@@ -575,7 +570,7 @@ func (k Keeper) Jail(_ctx context.Context, valAddr sdk.ValAddress, reason string
 	consensusPower := val.GetConsensusPower(k.powerReduction)
 	totalConsensusPower := int64(0)
 	count := 0
-	err = k.staking.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
+	err = k.staking.IterateValidators(sdkCtx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		if val.IsBonded() && !val.IsJailed() {
 			totalConsensusPower += val.GetConsensusPower(k.powerReduction)
 			count++
@@ -614,12 +609,12 @@ func (k Keeper) Jail(_ctx context.Context, valAddr sdk.ValAddress, reason string
 			}
 		}()
 
-		err := k.slashing.Jail(ctx, cons)
+		err := k.slashing.Jail(sdkCtx, cons)
 		if err != nil {
 			return fmt.Errorf("failed to jail log: %w", err)
 		}
 		valAddr := sdk.ValAddress(cons)
-		r, err := k.jailLog.Get(ctx, valAddr)
+		r, err := k.jailLog.Get(sdkCtx, valAddr)
 		if err != nil {
 			if !errors.Is(err, keeperutil.ErrNotFound) {
 				return err
@@ -636,58 +631,33 @@ func (k Keeper) Jail(_ctx context.Context, valAddr sdk.ValAddress, reason string
 		}
 
 		var sentence time.Duration
-		threshold := calculateJailSentenceResetThreshold(r.Duration)
-		if ctx.BlockTime().Sub(r.JailedAt) < threshold {
-			// Extend their sentence
-			sentence = deriveJailSentence(r.Duration)
-		} else {
-			// Reset their sentence
-			sentence = deriveJailSentence(time.Duration(0))
+		switch reason {
+		case types.JailReasonMissedBridgeAttestation:
+			sentence = k.GetParams(ctx).MissedBridgeClaimJailDuration
+		default:
+			sentence = k.GetParams(ctx).MissedAttestationJailDuration
 		}
-
 		r = &types.JailRecord{
 			Address:  valAddr,
 			Duration: sentence,
-			JailedAt: ctx.BlockTime(),
+			JailedAt: sdkCtx.BlockTime(),
 		}
 
-		if err := k.jailLog.Set(ctx, valAddr, r); err != nil {
+		if err := k.jailLog.Set(sdkCtx, valAddr, r); err != nil {
 			return fmt.Errorf("failed to set jail log: %w", err)
 		}
 
-		jailTime = ctx.BlockTime().Add(sentence)
-		err = k.slashing.JailUntil(ctx, cons, jailTime)
+		jailTime = sdkCtx.BlockTime().Add(sentence)
+		err = k.slashing.JailUntil(sdkCtx, cons, jailTime)
 		return err
 	}()
 	if err != nil {
 		return err
 	}
 
-	k.Logger(ctx).Info("jailing a validator", "val-addr", valAddr, "reason", reason, "jail-time", jailTime)
-	k.jailReasonStore(ctx).Set(valAddr, []byte(reason))
+	k.Logger(sdkCtx).Info("jailing a validator", "val-addr", valAddr, "reason", reason, "jail-time", jailTime)
+	k.jailReasonStore(sdkCtx).Set(valAddr, []byte(reason))
 	return nil
-}
-
-// calculateJailSentenceResetThreshold returns
-// 30 minutes, or the last
-// sentence duration + 20 percect of it, whichever
-// value is higher.
-// The longer you got jailed, the longer you will
-// have to behave in order to get reset.
-func calculateJailSentenceResetThreshold(d time.Duration) time.Duration {
-	return max(time.Minute*30, d+time.Duration(d/20))
-}
-
-// deriveJailSentence returns the next highest jail sentence that is greater
-// than the give duration. Caps at the max jail sentence.
-func deriveJailSentence(d time.Duration) time.Duration {
-	for _, sentence := range jailSentences {
-		if d < sentence {
-			return sentence
-		}
-	}
-
-	return jailSentences[len(jailSentences)-1]
 }
 
 func (k Keeper) jailReasonStore(ctx context.Context) storetypes.KVStore {

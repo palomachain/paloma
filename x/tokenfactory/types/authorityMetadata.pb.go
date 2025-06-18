@@ -5,22 +5,19 @@ package types
 
 import (
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var (
-	_ = proto.Marshal
-	_ = fmt.Errorf
-	_ = math.Inf
-)
+var _ = proto.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -42,11 +39,9 @@ func (*DenomAuthorityMetadata) ProtoMessage()    {}
 func (*DenomAuthorityMetadata) Descriptor() ([]byte, []int) {
 	return fileDescriptor_0e118f93d35eb685, []int{0}
 }
-
 func (m *DenomAuthorityMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-
 func (m *DenomAuthorityMetadata) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_DenomAuthorityMetadata.Marshal(b, m, deterministic)
@@ -59,15 +54,12 @@ func (m *DenomAuthorityMetadata) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-
 func (m *DenomAuthorityMetadata) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_DenomAuthorityMetadata.Merge(m, src)
 }
-
 func (m *DenomAuthorityMetadata) XXX_Size() int {
 	return m.Size()
 }
-
 func (m *DenomAuthorityMetadata) XXX_DiscardUnknown() {
 	xxx_messageInfo_DenomAuthorityMetadata.DiscardUnknown(m)
 }
@@ -134,7 +126,6 @@ func (this *DenomAuthorityMetadata) Equal(that interface{}) bool {
 	}
 	return true
 }
-
 func (m *DenomAuthorityMetadata) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -176,7 +167,6 @@ func encodeVarintAuthorityMetadata(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
 func (m *DenomAuthorityMetadata) Size() (n int) {
 	if m == nil {
 		return 0
@@ -193,11 +183,9 @@ func (m *DenomAuthorityMetadata) Size() (n int) {
 func sovAuthorityMetadata(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-
 func sozAuthorityMetadata(x uint64) (n int) {
 	return sovAuthorityMetadata(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-
 func (m *DenomAuthorityMetadata) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -280,7 +268,6 @@ func (m *DenomAuthorityMetadata) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-
 func skipAuthorityMetadata(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
