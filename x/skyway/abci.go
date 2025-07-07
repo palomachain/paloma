@@ -160,7 +160,31 @@ func createBatch(ctx context.Context, k keeper.Keeper) error {
 		if err != nil {
 			return err
 		}
+
+		lkup := make(map[string]bool)
 		for _, erc20ToDenom := range denoms {
+			pendingAttestation, ok := lkup[erc20ToDenom.ChainReferenceId]
+			if !ok {
+				att, err := k.GetAttestations(ctx, &types.QueryAttestationsRequest{
+					ChainReferenceId: erc20ToDenom.ChainReferenceId,
+					OrderBy:          "desc",
+					Height:           1,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to get attestations: %w", err)
+				}
+
+				pendingAttestation = len(att.Attestations) > 0 && att.Attestations[0].Observed
+				lkup[erc20ToDenom.ChainReferenceId] = pendingAttestation
+			}
+
+			if pendingAttestation {
+				// If the latest attestation is not observed,
+				// we don't want to create new batches to avoid sending an
+				// already sent but not yet acknowleged transaction again.
+				return nil
+			}
+
 			tokenContract, err := k.GetERC20OfDenom(ctx, erc20ToDenom.GetChainReferenceId(), erc20ToDenom.Denom)
 			if err != nil {
 				return err
