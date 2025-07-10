@@ -161,7 +161,7 @@ func TestBatchTimeout(t *testing.T) {
 	// check that we can make a batch without first setting an ethereum block height
 	b1, err1 := pk.BuildOutgoingTXBatch(ctx, "test-chain", *tokenContract, 1)
 	require.NoError(t, err1)
-	require.Equal(t, b1.BatchTimeout, uint64(1693425290))
+	require.Equal(t, b1.BatchTimeout, uint64(1693428290))
 
 	pk.SetLastObservedEthereumBlockHeight(ctx, "test-chain", 500)
 
@@ -169,7 +169,7 @@ func TestBatchTimeout(t *testing.T) {
 	b2, err2 := pk.BuildOutgoingTXBatch(ctx, "test-chain", *tokenContract, 2)
 	require.NoError(t, err2)
 	// this is exactly block 500 plus twelve hours
-	require.Equal(t, b2.BatchTimeout, uint64(1693425290))
+	require.Equal(t, b2.BatchTimeout, uint64(1693428290))
 
 	// make sure the batches got stored in the first place
 	gotFirstBatch, err := input.SkywayKeeper.GetOutgoingTXBatch(ctx, b1.TokenContract, b1.BatchNonce)
@@ -201,7 +201,7 @@ func TestBatchTimeout(t *testing.T) {
 	require.Equal(t, len(keeper.OrchAddrs), len(secondBatchConfirms))
 
 	// when, beyond the timeout
-	ctx = sdkCtx.WithBlockTime(testTime.Add(20 * time.Minute))
+	ctx = sdkCtx.WithBlockTime(testTime.Add(61 * time.Minute))
 
 	EndBlocker(ctx, pk, cc)
 
