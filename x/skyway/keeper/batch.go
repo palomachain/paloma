@@ -102,7 +102,7 @@ func (k Keeper) BuildOutgoingTXBatch(
 
 func (k Keeper) getBatchTimeoutHeight(ctx context.Context) uint64 {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return uint64(sdkCtx.BlockTime().Add(10 * time.Minute).Unix())
+	return uint64(sdkCtx.BlockTime().Add(60 * time.Minute).Unix())
 }
 
 // OutgoingTxBatchExecuted is run when the Cosmos chain detects that a batch has been executed on Ethereum
