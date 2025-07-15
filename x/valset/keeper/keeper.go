@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"slices"
 	"sort"
 	"time"
 
@@ -461,10 +462,8 @@ func (k Keeper) GetLatestSnapshotOnChain(ctx context.Context, chainReferenceID s
 		}
 
 		// See if this snapshot is active on this chain
-		for _, chain := range snapshot.Chains {
-			if chain == chainReferenceID {
-				return snapshot, nil
-			}
+		if slices.Contains(snapshot.Chains, chainReferenceID) {
+			return snapshot, nil
 		}
 
 		snapshotId = snapshot.GetId() - 1
