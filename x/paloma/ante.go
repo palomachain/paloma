@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"slices"
 
 	sdkerrors "cosmossdk.io/errors"
 	"cosmossdk.io/log"
@@ -192,13 +193,7 @@ func (d GasExemptAddressDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 
 	sender := sdk.AccAddress(feeTx.FeePayer()).String()
 	params := d.k.GetParams(ctx)
-	found := false
-	for _, v := range params.GasExemptAddresses {
-		if v == sender {
-			found = true
-			break
-		}
-	}
+	found := slices.Contains(params.GasExemptAddresses, sender)
 
 	if found {
 		ctx = ctx.WithGasMeter(&freeGasMeter{})

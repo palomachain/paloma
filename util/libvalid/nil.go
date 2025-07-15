@@ -1,5 +1,7 @@
 package libvalid
 
+import "slices"
+
 import "unsafe"
 
 func IsNil(parameter interface{}) bool {
@@ -12,10 +14,5 @@ func NotNil(parameter interface{}) bool {
 }
 
 func AnyNil(values ...interface{}) bool {
-	for _, val := range values {
-		if IsNil(val) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(values, IsNil)
 }

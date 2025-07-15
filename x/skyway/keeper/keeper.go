@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"slices"
 
 	"cosmossdk.io/core/address"
 	sdkerrors "cosmossdk.io/errors"
@@ -300,11 +301,9 @@ func (k Keeper) bridgeTaxAmount(
 		return math.ZeroInt(), nil
 	}
 
-	for _, addr := range bridgeTax.ExemptAddresses {
-		if sender.Equals(addr) {
-			// The sender is exempt from bridge tax
-			return math.ZeroInt(), nil
-		}
+	if slices.ContainsFunc(bridgeTax.ExemptAddresses, sender.Equals) {
+		// The sender is exempt from bridge tax
+		return math.ZeroInt(), nil
 	}
 
 	num := math.NewIntFromBigInt(bRate.Num())
@@ -364,11 +363,9 @@ func (k Keeper) UpdateBridgeTransferUsageWithLimit(
 		return err
 	}
 
-	for _, addr := range limits.ExemptAddresses {
-		if sender.Equals(addr) {
-			// The sender is exempt from bridge transfer limits
-			return nil
-		}
+	if slices.ContainsFunc(limits.ExemptAddresses, sender.Equals) {
+		// The sender is exempt from bridge transfer limits
+		return nil
 	}
 
 	if limits.LimitPeriod == types.LimitPeriod_NONE {
