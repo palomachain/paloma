@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"sort"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -18,9 +19,16 @@ var (
 )
 
 type (
+	ordered interface {
+		~int | ~int8 | ~int16 | ~int32 | ~int64 |
+			~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+			~float32 | ~float64 |
+			~string
+	}
+
 	// PriorityNonceMempoolConfig defines the configuration used to configure the
 	// PriorityNonceMempool.
-	PriorityNonceMempoolConfig[C comparable] struct {
+	PriorityNonceMempoolConfig[C ordered] struct {
 		// TxPriority defines the transaction priority and comparator.
 		TxPriority TxPriority[C]
 
@@ -46,10 +54,10 @@ type (
 	// in a partially ordered set by 2 dimensions: priority, and sender-nonce
 	// (sequence number). Internally it uses one priority ordered skip list and one
 	// skip list per sender ordered by sender-nonce (sequence number). When there
-	// are multiple txs from the same sender, they are not always comparable by
+	// are multiple txs from the same sender, they are not always ordered by
 	// priority to other sender txs and must be partially ordered by both sender-nonce
 	// and priority.
-	PriorityNonceMempool[C comparable] struct {
+	PriorityNonceMempool[C ordered] struct {
 		priorityIndex  *skiplist.SkipList
 		priorityCounts map[C]int
 		senderIndices  map[string]*skiplist.SkipList
@@ -59,7 +67,7 @@ type (
 
 	// PriorityNonceIterator defines an iterator that is used for mempool iteration
 	// on Select().
-	PriorityNonceIterator[C comparable] struct {
+	PriorityNonceIterator[C ordered] struct {
 		mempool       *PriorityNonceMempool[C]
 		priorityNode  *skiplist.Element
 		senderCursors map[string]*skiplist.Element
@@ -68,10 +76,10 @@ type (
 	}
 
 	// TxPriority defines a type that is used to retrieve and compare transaction
-	// priorities. Priorities must be comparable.
-	TxPriority[C comparable] struct {
+	// priorities. Priorities must be ordered.
+	TxPriority[C ordered] struct {
 		// GetTxPriority returns the priority of the transaction. A priority must be
-		// comparable via Compare.
+		// ordered via Compare.
 		GetTxPriority func(ctx context.Context, tx sdk.Tx) C
 
 		// CompareTxPriority compares two transaction priorities. The result should be
@@ -84,7 +92,7 @@ type (
 	}
 
 	// txMeta stores transaction metadata used in indices
-	txMeta[C comparable] struct {
+	txMeta[C ordered] struct {
 		// nonce is the sender's sequence number
 		nonce uint64
 		// priority is the transaction's priority
@@ -148,7 +156,7 @@ func DefaultPriorityNonceMempoolConfig() PriorityNonceMempoolConfig[int64] {
 // then weight, then sender, then nonce, uniquely identifying a transaction.
 //
 // Note, skiplistComparable is used as the comparator in the priority index.
-func skiplistComparable[C comparable](txPriority TxPriority[C]) skiplist.Comparable {
+func skiplistComparable[C ordered](txPriority TxPriority[C]) skiplist.Comparable {
 	return skiplist.LessThanFunc(func(a, b any) int {
 		keyA := a.(txMeta[C])
 		keyB := b.(txMeta[C])
@@ -180,7 +188,7 @@ func skiplistComparable[C comparable](txPriority TxPriority[C]) skiplist.Compara
 
 // NewPriorityMempool returns the SDK's default mempool implementation which
 // returns txs in a partial order by 2 dimensions; priority, and sender-nonce.
-func NewPriorityMempool[C comparable](cfg PriorityNonceMempoolConfig[C]) *PriorityNonceMempool[C] {
+func NewPriorityMempool[C ordered](cfg PriorityNonceMempoolConfig[C]) *PriorityNonceMempool[C] {
 	mp := &PriorityNonceMempool[C]{
 		priorityIndex:  skiplist.New(skiplistComparable(cfg.TxPriority)),
 		priorityCounts: make(map[C]int),
@@ -378,7 +386,7 @@ func (mp *PriorityNonceMempool[C]) Select(_ context.Context, _ [][]byte) sdkmemp
 	return iterator.iteratePriority()
 }
 
-type reorderKey[C comparable] struct {
+type reorderKey[C ordered] struct {
 	deleteKey txMeta[C]
 	insertKey txMeta[C]
 	tx        sdk.Tx
@@ -411,7 +419,7 @@ func (mp *PriorityNonceMempool[C]) reorderPriorityTies() {
 // defined as the first (nonce-wise) same sender tx with a priority not equal to
 // t. It is used to resolve priority collisions, that is when 2 or more txs from
 // different senders have the same priority.
-func senderWeight[C comparable](txPriority TxPriority[C], senderCursor *skiplist.Element) C {
+func senderWeight[C ordered](txPriority TxPriority[C], senderCursor *skiplist.Element) C {
 	if senderCursor == nil {
 		return txPriority.MinValue
 	}
@@ -470,7 +478,7 @@ func (mp *PriorityNonceMempool[C]) Remove(tx sdk.Tx) error {
 	return nil
 }
 
-func IsEmpty[C comparable](mempool sdkmempool.Mempool) error {
+func IsEmpty[C ordered](mempool sdkmempool.Mempool) error {
 	mp := mempool.(*PriorityNonceMempool[C])
 	if mp.priorityIndex.Len() != 0 {
 		return fmt.Errorf("priorityIndex not empty")
@@ -480,6 +488,7 @@ func IsEmpty[C comparable](mempool sdkmempool.Mempool) error {
 	for k := range mp.priorityCounts {
 		countKeys = append(countKeys, k)
 	}
+	sort.Slice(countKeys, func(i, j int) bool { return countKeys[i] < countKeys[j] })
 
 	for _, k := range countKeys {
 		if mp.priorityCounts[k] != 0 {
@@ -491,6 +500,7 @@ func IsEmpty[C comparable](mempool sdkmempool.Mempool) error {
 	for k := range mp.senderIndices {
 		senderKeys = append(senderKeys, k)
 	}
+	sort.Strings(senderKeys)
 
 	for _, k := range senderKeys {
 		if mp.senderIndices[k].Len() != 0 {
