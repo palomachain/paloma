@@ -181,7 +181,7 @@ func createBatch(ctx context.Context, k keeper.Keeper) error {
 			if pendingAttestation {
 				// If the latest attestation is not observed,
 				// we don't want to create new batches to avoid sending an
-				// already sent but not yet acknowleged transaction again.
+				// already sent but not yet acknowledged transaction again.
 				return nil
 			}
 
@@ -355,9 +355,13 @@ func slashUnattestingValidators(ctx context.Context, k keeper.Keeper, chainRefer
 				return fmt.Errorf("failed to parse validator address %s: %w", v.GetOperator(), err)
 			}
 
-			k.ValsetKeeper.Jail(ctx, valAddr, valsettypes.JailReasonMissedBridgeAttestation)
+			err = k.ValsetKeeper.Jail(ctx, valAddr, valsettypes.JailReasonMissedBridgeAttestation)
 			if err != nil {
-				return fmt.Errorf("failed to jail validator %s: %w", valAddr, err)
+				liblog.FromKeeper(ctx, k).
+					WithComponent("skyway-endblocker").
+					WithValidator(valAddr.String()).
+					WithError(err).
+					Warn("failed to jail validator")
 			}
 		}
 	}
