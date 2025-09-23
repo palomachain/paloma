@@ -23,7 +23,7 @@ if [[ -z ${PALOMA_CMD:-} ]]; then
   go build -o /tmp/palomad ./cmd/palomad 
   PALOMA="/tmp/palomad"
 else
-  PALOMA="go run ./cmd/palomad"
+  PALOMA="$PALOMA_CMD"
 fi
 
 $PALOMA init my_validator --chain-id "$CHAIN_ID"
