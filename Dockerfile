@@ -21,8 +21,9 @@ RUN \
 ####    Local chain setup    ####
 #################################
 FROM ubuntu AS setup-chain-locally
-RUN apt-get update && \
-  apt-get install -y jq
+RUN apt-get update && apt-get install -y \
+  jq \
+  && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /palomad /palomad
 COPY --from=builder /app/scripts/setup-chain-validator.sh /app/scripts/setup-chain-validator.sh
 RUN PALOMA_CMD="/palomad" /app/scripts/setup-chain-validator.sh
